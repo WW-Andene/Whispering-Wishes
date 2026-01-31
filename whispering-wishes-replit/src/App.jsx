@@ -1241,6 +1241,7 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
+      {imgUrl && <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />}
       
       <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div>
@@ -1297,6 +1298,7 @@ const EventCard = ({ event, server, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
+      {imgUrl && <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />}
       
       <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div className="flex justify-between items-start">
@@ -1853,10 +1855,13 @@ function WhisperingWishesInner() {
                 {/* Standard Resonator Banner */}
                 <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: activeBanners.standardCharBannerImage ? '180px' : 'auto' }}>
                   {activeBanners.standardCharBannerImage && (
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
-                    />
+                    <>
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
+                    </>
                   )}
                   <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                     <div className="flex justify-between items-start mb-2">
@@ -1880,10 +1885,13 @@ function WhisperingWishesInner() {
                 {/* Standard Weapon Banner */}
                 <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ minHeight: activeBanners.standardWeapBannerImage ? '180px' : 'auto' }}>
                   {activeBanners.standardWeapBannerImage && (
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
-                    />
+                    <>
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent" />
+                    </>
                   )}
                   <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                     <div className="flex justify-between items-start mb-2">
@@ -2036,6 +2044,7 @@ function WhisperingWishesInner() {
                   doubledPawns: activeBanners.doubledPawnsImage,
                   towerOfAdversity: activeBanners.towerOfAdversityImage,
                   illusiveRealm: activeBanners.illusiveRealmImage,
+                  dailyReset: activeBanners.dailyResetImage,
                 };
                 return <EventCard key={key} event={ev} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} />;
               })}
@@ -3926,6 +3935,16 @@ function WhisperingWishesInner() {
                           className="kuro-input flex-1 text-[10px] py-1"
                         />
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Daily Reset</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-dr-img"
+                          defaultValue={activeBanners.dailyResetImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                        />
+                      </div>
                     </div>
                     <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
                   </div>
@@ -3962,6 +3981,7 @@ function WhisperingWishesInner() {
                           const dpImg = document.getElementById('admin-event-dp-img').value.trim();
                           const toaImg = document.getElementById('admin-event-toa-img').value.trim();
                           const irImg = document.getElementById('admin-event-ir-img').value.trim();
+                          const drImg = document.getElementById('admin-event-dr-img').value.trim();
                           const newBanners = {
                             ...activeBanners,
                             version: document.getElementById('admin-version').value || '1.0',
@@ -3976,6 +3996,7 @@ function WhisperingWishesInner() {
                             doubledPawnsImage: dpImg || '',
                             towerOfAdversityImage: toaImg || '',
                             illusiveRealmImage: irImg || '',
+                            dailyResetImage: drImg || '',
                           };
                           saveCustomBanners(newBanners);
                           setShowAdminPanel(false);
