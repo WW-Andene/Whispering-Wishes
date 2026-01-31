@@ -1230,7 +1230,7 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
   };
   
   const style = gradientMap[item.element] || gradientMap.Fusion;
-  const imgUrl = bannerImage;
+  const imgUrl = item.imageUrl || bannerImage;
   
   return (
     <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
@@ -3810,40 +3810,51 @@ function WhisperingWishesInner() {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-white text-sm font-medium">Banner Images (ibb.co or any image URL)</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-gray-400 text-[10px] block mb-1">Resonator Banner Image</label>
-                        <input
-                          type="text"
-                          placeholder="https://i.ibb.co/..."
-                          id="admin-char-img"
-                          defaultValue={activeBanners.characterBannerImage || ''}
-                          className="kuro-input w-full text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-gray-400 text-[10px] block mb-1">Weapon Banner Image</label>
-                        <input
-                          type="text"
-                          placeholder="https://i.ibb.co/..."
-                          id="admin-weap-img"
-                          defaultValue={activeBanners.weaponBannerImage || ''}
-                          className="kuro-input w-full text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-gray-400 text-[10px] block mb-1">Event Banner Image</label>
-                        <input
-                          type="text"
-                          placeholder="https://i.ibb.co/..."
-                          id="admin-event-img"
-                          defaultValue={activeBanners.eventBannerImage || ''}
-                          className="kuro-input w-full text-xs"
-                        />
-                      </div>
+                    <h3 className="text-white text-sm font-medium">Resonator Images</h3>
+                    <div className="space-y-1">
+                      {activeBanners.characters.map((c, i) => (
+                        <div key={c.id} className="flex items-center gap-2">
+                          <span className="text-gray-300 text-[10px] w-20 truncate">{c.name}</span>
+                          <input
+                            type="text"
+                            placeholder="https://i.ibb.co/..."
+                            id={`admin-char-img-${i}`}
+                            defaultValue={c.imageUrl || ''}
+                            className="kuro-input flex-1 text-[10px] py-1"
+                          />
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co or any image hosting service</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Weapon Images</h3>
+                    <div className="space-y-1">
+                      {activeBanners.weapons.map((w, i) => (
+                        <div key={w.id} className="flex items-center gap-2">
+                          <span className="text-gray-300 text-[10px] w-20 truncate">{w.name}</span>
+                          <input
+                            type="text"
+                            placeholder="https://i.ibb.co/..."
+                            id={`admin-weap-img-${i}`}
+                            defaultValue={w.imageUrl || ''}
+                            className="kuro-input flex-1 text-[10px] py-1"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Event Banner Image</h3>
+                    <input
+                      type="text"
+                      placeholder="https://i.ibb.co/..."
+                      id="admin-event-img"
+                      defaultValue={activeBanners.eventBannerImage || ''}
+                      className="kuro-input w-full text-xs"
+                    />
+                    <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -3857,9 +3868,13 @@ function WhisperingWishesInner() {
                           if (weaps.length === 0) throw new Error('At least one weapon required');
                           chars.forEach((c, i) => {
                             if (!c.id || !c.name) throw new Error(`Character ${i + 1} missing id or name`);
+                            const imgInput = document.getElementById(`admin-char-img-${i}`);
+                            if (imgInput) c.imageUrl = imgInput.value.trim();
                           });
                           weaps.forEach((w, i) => {
                             if (!w.id || !w.name) throw new Error(`Weapon ${i + 1} missing id or name`);
+                            const imgInput = document.getElementById(`admin-weap-img-${i}`);
+                            if (imgInput) w.imageUrl = imgInput.value.trim();
                           });
                           const startVal = document.getElementById('admin-start').value;
                           const endVal = document.getElementById('admin-end').value;
@@ -3868,8 +3883,6 @@ function WhisperingWishesInner() {
                           if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
                           if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
                           if (endDate <= startDate) throw new Error('End date must be after start date');
-                          const charImg = document.getElementById('admin-char-img').value.trim();
-                          const weapImg = document.getElementById('admin-weap-img').value.trim();
                           const eventImg = document.getElementById('admin-event-img').value.trim();
                           const newBanners = {
                             ...activeBanners,
@@ -3879,8 +3892,6 @@ function WhisperingWishesInner() {
                             endDate: endDate.toISOString(),
                             characters: chars,
                             weapons: weaps,
-                            characterBannerImage: charImg || '',
-                            weaponBannerImage: weapImg || '',
                             eventBannerImage: eventImg || '',
                           };
                           saveCustomBanners(newBanners);
