@@ -1270,7 +1270,7 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
   );
 };
 
-const EventCard = ({ event, server }) => {
+const EventCard = ({ event, server, bannerImage }) => {
   const endDate = event.dailyReset ? getNextDailyReset(server) : event.weeklyReset ? getNextWeeklyReset(server) : event.currentEnd;
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
@@ -1284,33 +1284,36 @@ const EventCard = ({ event, server }) => {
   };
   
   const colors = accentColors[event.accentColor] || accentColors.cyan;
+  const imgUrl = bannerImage || event.imageUrl;
   
   return (
-    <div className={`relative overflow-hidden rounded-2xl border ${colors.border} bg-gradient-to-r ${event.gradient}`} style={{ minHeight: '100px', backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5 }}>
-      {/* Decorative gradient circles */}
-      <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
-        <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${colors.bg} blur-2xl opacity-30`} />
-        <div className={`absolute right-12 top-1/4 w-10 h-10 rounded-full ${colors.bg} blur-xl opacity-20`} />
-      </div>
+    <div className={`relative overflow-hidden rounded-2xl border ${colors.border}`} style={{ minHeight: imgUrl ? '140px' : '100px' }}>
+      {imgUrl && (
+        <img 
+          src={imgUrl} 
+          alt={event.name} 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
       
-      {/* Content */}
-      <div className="relative z-10 p-4">
+      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px' }}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${colors.text}`}>{event.name}</h4>
-            <p className="text-gray-400 text-[10px]">{event.subtitle}</p>
+            <h4 className={`font-bold text-sm ${colors.text} drop-shadow-lg`}>{event.name}</h4>
+            <p className="text-gray-300 text-[10px] drop-shadow">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-gray-400 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+            <div className="text-gray-300 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
             <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly} />
           </div>
         </div>
         
-        <div className="flex justify-between items-end mt-3">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${colors.bg} ${colors.text}`}>
+        <div className="flex justify-between items-end mt-auto pt-3">
+          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${colors.bg} ${colors.text} backdrop-blur-sm`}>
             {event.rewards}
           </div>
-          <div className="text-gray-400 text-[9px]">
+          <div className="text-gray-300 text-[9px] drop-shadow">
             {event.resetType}
           </div>
         </div>
@@ -2020,7 +2023,7 @@ function WhisperingWishesInner() {
               <span className="text-gray-300 text-[10px]">Server: {state.server}</span>
             </div>
             <div className="space-y-2">
-              {Object.values(EVENTS).map((ev, i) => <EventCard key={i} event={ev} server={state.server} />)}
+              {Object.values(EVENTS).map((ev, i) => <EventCard key={i} event={ev} server={state.server} bannerImage={activeBanners.eventBannerImage} />)}
             </div>
             <p className="text-neutral-500 text-[10px] text-center" style={{position: 'relative', zIndex: 5}}>Reset times based on {state.server} server (UTC{SERVERS[state.server]?.utcOffset >= 0 ? '+' : ''}{SERVERS[state.server]?.utcOffset})</p>
           </div>
