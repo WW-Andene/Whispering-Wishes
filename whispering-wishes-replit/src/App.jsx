@@ -3,7 +3,7 @@ import { Sparkles, Swords, Sword, Star, Calculator, User, Clock, Calendar, Trend
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.1.0 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v2.2.0 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -1047,7 +1047,7 @@ const initialState = {
 };
 
 // Load saved state from persistent storage
-const STORAGE_KEY = 'whispering-wishes-v2.0';
+const STORAGE_KEY = 'whispering-wishes-v2.2';
 
 const loadState = () => {
   return initialState;
@@ -1056,7 +1056,18 @@ const loadState = () => {
 const loadFromStorage = async () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+    const parsed = JSON.parse(saved);
+    return {
+      ...initialState,
+      ...parsed,
+      server: parsed.server || initialState.server,
+      profile: { ...initialState.profile, ...parsed.profile },
+      calc: { ...initialState.calc, ...parsed.calc },
+      planner: { ...initialState.planner, ...parsed.planner },
+      settings: { ...initialState.settings, ...parsed.settings },
+      bookmarks: parsed.bookmarks || [],
+    };
   } catch (e) {
     console.error('Load failed:', e);
     return null;
@@ -1523,15 +1534,20 @@ function WhisperingWishesInner() {
         ['featured', 'weapon', 'standardChar', 'standardWeap', 'beginner'].forEach(type => {
           const history = convert(pulls, type);
           if (history.length) {
-            let currentPity = 0;
+            let currentPity5 = 0;
+            let currentPity4 = 0;
             for (let i = history.length - 1; i >= 0; i--) {
               if (history[i].rarity === 5) break;
-              currentPity++;
+              currentPity5++;
+            }
+            for (let i = history.length - 1; i >= 0; i--) {
+              if (history[i].rarity >= 4) break;
+              currentPity4++;
             }
             const fiveStars = history.filter(p => p.rarity === 5);
             const lastFive = fiveStars[fiveStars.length - 1];
             const guaranteed = type === 'featured' && lastFive?.won5050 === false;
-            dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity, pity4: history.length % 10, guaranteed, uid: data.uid || data.playerId });
+            dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
             totalImported += history.length;
           }
         });
@@ -1546,7 +1562,7 @@ function WhisperingWishesInner() {
 
   // Export data
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: '2.0', state };
+    const data = { timestamp: new Date().toISOString(), version: '2.2', state };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -1557,8 +1573,6 @@ function WhisperingWishesInner() {
     setShowOnboarding(false);
     dispatch({ type: 'SET_SETTINGS', field: 'showOnboarding', value: false });
   }, []);
-
-  const currentPulls = state.calc.charBanner ? charPulls : weapPulls;
 
   return (
     <div className="min-h-screen bg-neutral-950">
@@ -2257,13 +2271,13 @@ function WhisperingWishesInner() {
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div style={{color: '#fde047'}} className="kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.radiant || 0)}</div>
-                          <div className="text-gray-200 text-[10px]">Char Convenes</div>
+                          <div className="text-gray-200 text-[10px]">Resonator Convenes</div>
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div style={{color: '#fde047'}} className="kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.forging || 0)}</div>
-                          <div className="text-gray-200 text-[10px]">Weap Convenes</div>
+                          <div className="text-gray-200 text-[10px]">Weapon Convenes</div>
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (
@@ -2669,12 +2683,12 @@ function WhisperingWishesInner() {
                   let copies = 1;
                   let bannerLabel = '';
                   if (isFeatured) {
-                    if (isChar) { copies = state.calc.charCopies; bannerLabel = 'Featured Char'; }
-                    else if (isWeap) { copies = state.calc.weapCopies; bannerLabel = 'Featured Weap'; }
+                    if (isChar) { copies = state.calc.charCopies; bannerLabel = 'Featured Resonator'; }
+                    else if (isWeap) { copies = state.calc.weapCopies; bannerLabel = 'Featured Weapon'; }
                     else { copies = Math.max(state.calc.charCopies, state.calc.weapCopies); bannerLabel = 'Featured Both'; }
                   } else {
-                    if (isChar) { copies = state.calc.stdCharCopies; bannerLabel = 'Standard Char'; }
-                    else if (isWeap) { copies = state.calc.stdWeapCopies; bannerLabel = 'Standard Weap'; }
+                    if (isChar) { copies = state.calc.stdCharCopies; bannerLabel = 'Standard Resonator'; }
+                    else if (isWeap) { copies = state.calc.stdWeapCopies; bannerLabel = 'Standard Weapon'; }
                     else { copies = Math.max(state.calc.stdCharCopies, state.calc.stdWeapCopies); bannerLabel = 'Standard Both'; }
                   }
                   
@@ -2998,9 +3012,9 @@ function WhisperingWishesInner() {
                   <CardHeader>Per-Banner Breakdown</CardHeader>
                   <CardBody className="space-y-2">
                     {[
-                      { name: 'Featured Character', key: 'featured', color: 'yellow' },
+                      { name: 'Featured Resonator', key: 'featured', color: 'yellow' },
                       { name: 'Featured Weapon', key: 'weapon', color: 'pink' },
-                      { name: 'Standard Character', key: 'standardChar', color: 'cyan' },
+                      { name: 'Standard Resonator', key: 'standardChar', color: 'cyan' },
                       { name: 'Standard Weapon', key: 'standardWeap', color: 'purple' },
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
@@ -3574,8 +3588,18 @@ function WhisperingWishesInner() {
                     const textarea = document.getElementById('import-textarea');
                     const data = JSON.parse(textarea.value);
                     if (data.state) {
-                      dispatch({ type: 'LOAD_STATE', state: { ...state, ...data.state } });
-                      toast?.addToast?.('Backup restored!', 'success');
+                      const restoredState = {
+                        ...initialState,
+                        ...data.state,
+                        server: data.state.server || initialState.server,
+                        profile: { ...initialState.profile, ...data.state.profile },
+                        calc: { ...initialState.calc, ...data.state.calc },
+                        planner: { ...initialState.planner, ...data.state.planner },
+                        settings: { ...initialState.settings, ...data.state.settings },
+                        bookmarks: data.state.bookmarks || [],
+                      };
+                      dispatch({ type: 'LOAD_STATE', state: restoredState });
+                      toast?.addToast?.(`Backup restored! (v${data.version || 'unknown'})`, 'success');
                       setShowExportModal(false);
                     } else {
                       toast?.addToast?.('Invalid backup format', 'error');
@@ -3596,7 +3620,7 @@ function WhisperingWishesInner() {
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/5" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-600 text-[9px]">
-          Whispering Wishes v2.1.0 • by u/WW_Andene • Not affiliated with Kuro Games • 
+          Whispering Wishes v2.2.0 • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
