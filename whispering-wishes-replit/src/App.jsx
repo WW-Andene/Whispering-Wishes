@@ -1053,80 +1053,19 @@ const loadState = () => {
   return initialState;
 };
 
-// Async function to load from persistent storage after mount
 const loadFromStorage = async () => {
-  if (typeof window === 'undefined' || !window.storage) {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (e) {
+    console.error('Load failed:', e);
     return null;
   }
-  
-  try {
-    const result = await window.storage.get(STORAGE_KEY);
-    if (result && result.value) {
-      const parsed = JSON.parse(result.value);
-      return {
-        ...initialState,
-        ...parsed,
-        server: parsed.server || initialState.server,
-        profile: { ...initialState.profile, ...parsed.profile },
-        calc: { ...initialState.calc, ...parsed.calc },
-        planner: { ...initialState.planner, ...parsed.planner },
-        settings: { ...initialState.settings, ...parsed.settings },
-        bookmarks: parsed.bookmarks || [],
-      };
-    }
-  } catch (e) {
-    // Key doesn't exist yet - expected on first run
-  }
-  
-  // Try to migrate from v1.5 storage
-  try {
-    const oldResult = await window.storage.get('whispering-wishes-v1.5');
-    if (oldResult && oldResult.value) {
-      const parsed = JSON.parse(oldResult.value);
-      return {
-        ...initialState,
-        ...parsed,
-        server: parsed.server || initialState.server,
-        profile: { ...initialState.profile, ...parsed.profile },
-        calc: { ...initialState.calc, ...parsed.calc },
-        planner: { ...initialState.planner, ...parsed.planner },
-        settings: { ...initialState.settings, ...parsed.settings },
-        bookmarks: parsed.bookmarks || [],
-      };
-    }
-  } catch (e) {
-    // No old data to migrate
-  }
-  
-  // Try to migrate from v1 storage
-  try {
-    const oldResult = await window.storage.get('whispering-wishes-v1');
-    if (oldResult && oldResult.value) {
-      const parsed = JSON.parse(oldResult.value);
-      return {
-        ...initialState,
-        ...parsed,
-        server: parsed.server || initialState.server,
-        profile: { ...initialState.profile, ...parsed.profile },
-        calc: { ...initialState.calc, ...parsed.calc },
-        planner: { ...initialState.planner, ...parsed.planner },
-        settings: { ...initialState.settings, ...parsed.settings },
-        bookmarks: parsed.bookmarks || [],
-      };
-    }
-  } catch (e) {
-    // No old data to migrate
-  }
-  
-  return null;
 };
 
-// Save to persistent storage
 const saveToStorage = async (state) => {
-  if (typeof window === 'undefined' || !window.storage) return;
-  
   try {
-    await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
     console.error('Save failed:', e);
   }
@@ -1418,9 +1357,8 @@ function WhisperingWishesInner() {
   // Save on page unload
   useEffect(() => {
     const handleUnload = () => {
-      if (window.storage && stateRef.current) {
-        // Use sync version if available, or at least try
-        window.storage.set(STORAGE_KEY, JSON.stringify(stateRef.current));
+      if (stateRef.current) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateRef.current));
       }
     };
     window.addEventListener('beforeunload', handleUnload);
