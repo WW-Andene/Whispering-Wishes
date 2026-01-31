@@ -1347,12 +1347,12 @@ function WhisperingWishesInner() {
         if (savedState.profile.importedAt) {
           toast?.addToast?.('Data restored', 'success');
         }
-        // Only show onboarding if explicitly not disabled
-        if (savedState.settings?.showOnboarding === true) {
-          setShowOnboarding(true);
-        }
+        // Never show onboarding for existing users - they have saved data
+        // Only explicit true means they want to see it again (edge case)
+        // The showOnboarding setting is set to false when dismissed
+        setShowOnboarding(false);
       } else {
-        // First time user - show onboarding
+        // First time user only - show onboarding
         setShowOnboarding(true);
       }
       setStorageLoaded(true);
