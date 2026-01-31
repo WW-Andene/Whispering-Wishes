@@ -14,6 +14,8 @@ The app is a client-side React SPA with all data stored in browser localStorage.
 - Updated terminology consistency: "Resonator" instead of "Character", full "Weapon" instead of "Weap"
 - Backup restore now shows version information in success message
 - Code cleanup: removed unused variables
+- Added hidden admin panel for banner management
+- Integrated Imgur API for fetching banner images
 
 ### Core Features
 - **Tracker**: View current banners, pity progress, time remaining
@@ -98,3 +100,28 @@ This is a fully client-side application with:
 - No authentication service
 - No API server
 - No cloud storage
+
+## Admin Panel
+
+### Access
+1. Tap the version text ("Whispering Wishes v2.2.0") in the footer 5 times rapidly
+2. Enter your password (first time sets it, subsequent times verify it)
+3. Password must be at least 4 characters
+
+### Features
+- Update banner version and phase
+- Set banner start/end dates with validation
+- Edit characters and weapons JSON arrays
+- Fetch images from Imgur albums using Client ID
+- Reset to default banners
+
+### Storage Keys
+- `whispering-wishes-admin-banners` - Custom banner data
+- `whispering-wishes-admin-pass` - Admin password
+- `whispering-wishes-imgur-config` - Imgur Client ID
+
+### Validation
+- Characters and weapons must be arrays with at least 1 item
+- Each item must have `id` and `name` fields
+- End date must be after start date
+- Invalid data prevents saving
