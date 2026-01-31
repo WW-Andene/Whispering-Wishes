@@ -1214,7 +1214,7 @@ const CountdownTimer = ({ endDate, color = 'yellow', compact = false, alwaysShow
   );
 };
 
-const BannerCard = ({ item, type, stats }) => {
+const BannerCard = ({ item, type, stats, bannerImage }) => {
   const isChar = type === 'character';
   
   const gradientMap = {
@@ -1227,13 +1227,20 @@ const BannerCard = ({ item, type, stats }) => {
   };
   
   const style = gradientMap[item.element] || gradientMap.Fusion;
+  const imgUrl = bannerImage || item.splashUrl;
   
   return (
     <div className={`relative overflow-hidden rounded-xl border ${style.border} bg-gradient-to-r ${style.gradient}`} style={{ backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5 }}>
-      {/* Decorative gradient circle */}
-      <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
-        <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${style.bg} blur-2xl opacity-30`} />
-      </div>
+      {imgUrl && (
+        <div className="absolute right-0 top-0 bottom-0 w-2/5 pointer-events-none overflow-hidden">
+          <img src={imgUrl} alt={item.name} className="absolute right-0 top-1/2 -translate-y-1/2 h-full w-auto object-contain opacity-60" style={{ maxWidth: 'none' }} />
+        </div>
+      )}
+      {!imgUrl && (
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
+          <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${style.bg} blur-2xl opacity-30`} />
+        </div>
+      )}
       
       {/* Content */}
       <div className="relative z-10 p-4">
@@ -1326,7 +1333,6 @@ const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
 
 // Admin banner storage key
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
-const ADMIN_IMGUR_KEY = 'whispering-wishes-imgur-config';
 
 // Load custom banners from localStorage
 const loadCustomBanners = () => {
@@ -1361,10 +1367,6 @@ function WhisperingWishesInner() {
   const [adminTapCount, setAdminTapCount] = useState(0);
   const [adminTapTimer, setAdminTapTimer] = useState(null);
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
-  const [imgurImages, setImgurImages] = useState([]);
-  const [imgurClientId, setImgurClientId] = useState(() => {
-    try { return localStorage.getItem(ADMIN_IMGUR_KEY) || ''; } catch { return ''; }
-  });
   
   // Admin password - stored in localStorage (user sets their own)
   const ADMIN_PASS_KEY = 'whispering-wishes-admin-pass';
@@ -1645,32 +1647,6 @@ function WhisperingWishesInner() {
     }
   }, [toast]);
 
-  // Fetch images from Imgur album
-  const fetchImgurImages = useCallback(async (albumId) => {
-    if (!imgurClientId) {
-      toast?.addToast?.('Please set Imgur Client ID first', 'error');
-      return;
-    }
-    try {
-      const res = await fetch(`https://api.imgur.com/3/album/${albumId}/images`, {
-        headers: { Authorization: `Client-ID ${imgurClientId}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        const images = data.data.map(img => ({ 
-          id: img.id, 
-          url: img.link, 
-          title: (img.title || img.description || img.id).replace(/[<>]/g, '') 
-        }));
-        setImgurImages(images);
-        toast?.addToast?.(`Found ${images.length} images`, 'success');
-      } else {
-        toast?.addToast?.('Failed to fetch Imgur images', 'error');
-      }
-    } catch (e) {
-      toast?.addToast?.('Imgur API error: ' + e.message, 'error');
-    }
-  }, [imgurClientId, toast]);
 
   // Verify admin password
   const verifyAdminPassword = useCallback(() => {
@@ -1689,17 +1665,6 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Incorrect password', 'error');
     }
   }, [adminPassword, storedAdminPass, toast]);
-
-  // Save Imgur Client ID
-  const saveImgurClientId = useCallback((clientId) => {
-    try {
-      localStorage.setItem(ADMIN_IMGUR_KEY, clientId);
-      setImgurClientId(clientId);
-      toast?.addToast?.('Imgur Client ID saved!', 'success');
-    } catch (e) {
-      toast?.addToast?.('Failed to save Imgur settings', 'error');
-    }
-  }, [toast]);
 
   return (
     <div className="min-h-screen bg-neutral-950">
@@ -1867,13 +1832,13 @@ function WhisperingWishesInner() {
 
             {trackerCategory === 'character' && (
               <div className="space-y-2">
-                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} />)}
+                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} />)}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
               <div className="space-y-2">
-                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} />)}
+                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} />)}
               </div>
             )}
 
@@ -3783,21 +3748,6 @@ function WhisperingWishesInner() {
                   <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-2 text-center">
                     <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <h3 className="text-white text-sm font-medium">Imgur Configuration</h3>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Imgur Client ID"
-                        value={imgurClientId}
-                        onChange={(e) => setImgurClientId(e.target.value)}
-                        className="kuro-input flex-1 text-xs"
-                      />
-                      <button onClick={() => saveImgurClientId(imgurClientId)} className="kuro-btn text-xs px-3">Save</button>
-                    </div>
-                    <p className="text-gray-500 text-[9px]">Get your Client ID at api.imgur.com/oauth2/addclient</p>
-                  </div>
 
                   <div className="space-y-2">
                     <h3 className="text-white text-sm font-medium">Quick Banner Update</h3>
@@ -3854,47 +3804,40 @@ function WhisperingWishesInner() {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-white text-sm font-medium">Fetch Images from Imgur Album</h3>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Album ID (from imgur.com/a/XXXXX)"
-                        id="admin-album"
-                        className="kuro-input flex-1 text-xs"
-                      />
-                      <button
-                        onClick={() => {
-                          const albumId = document.getElementById('admin-album').value;
-                          if (albumId) fetchImgurImages(albumId);
-                        }}
-                        className="kuro-btn text-xs px-3"
-                      >
-                        Fetch
-                      </button>
-                    </div>
-                    {imgurImages.length > 0 && (
-                      <div className="space-y-1 max-h-40 overflow-auto">
-                        {imgurImages.map(img => (
-                          <div key={img.id} className="p-2 bg-white/5 rounded text-xs flex items-center gap-2">
-                            <img src={img.url} alt={img.title} className="w-12 h-12 object-cover rounded" />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-gray-300 truncate text-[9px]">{img.title}</div>
-                              <code className="text-gray-500 text-[8px] block truncate">{img.url}</code>
-                            </div>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(img.url);
-                                toast?.addToast?.('URL copied!', 'success');
-                              }}
-                              className="text-yellow-400 text-[9px] hover:underline"
-                            >
-                              Copy
-                            </button>
-                          </div>
-                        ))}
+                    <h3 className="text-white text-sm font-medium">Banner Images (ibb.co or any image URL)</h3>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-gray-400 text-[10px] block mb-1">Resonator Banner Image</label>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-char-img"
+                          defaultValue={activeBanners.characterBannerImage || ''}
+                          className="kuro-input w-full text-xs"
+                        />
                       </div>
-                    )}
-                    <p className="text-gray-500 text-[9px]">Copy image URLs and paste them as "splashUrl" in the JSON above</p>
+                      <div>
+                        <label className="text-gray-400 text-[10px] block mb-1">Weapon Banner Image</label>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-weap-img"
+                          defaultValue={activeBanners.weaponBannerImage || ''}
+                          className="kuro-input w-full text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-gray-400 text-[10px] block mb-1">Event Banner Image</label>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-img"
+                          defaultValue={activeBanners.eventBannerImage || ''}
+                          className="kuro-input w-full text-xs"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co or any image hosting service</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -3919,6 +3862,9 @@ function WhisperingWishesInner() {
                           if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
                           if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
                           if (endDate <= startDate) throw new Error('End date must be after start date');
+                          const charImg = document.getElementById('admin-char-img').value.trim();
+                          const weapImg = document.getElementById('admin-weap-img').value.trim();
+                          const eventImg = document.getElementById('admin-event-img').value.trim();
                           const newBanners = {
                             ...activeBanners,
                             version: document.getElementById('admin-version').value || '1.0',
@@ -3927,6 +3873,9 @@ function WhisperingWishesInner() {
                             endDate: endDate.toISOString(),
                             characters: chars,
                             weapons: weaps,
+                            characterBannerImage: charImg || '',
+                            weaponBannerImage: weapImg || '',
+                            eventBannerImage: eventImg || '',
                           };
                           saveCustomBanners(newBanners);
                           setShowAdminPanel(false);
