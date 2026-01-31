@@ -772,15 +772,18 @@ const CURRENT_BANNERS = {
   version: '3.0', phase: 2,
   startDate: '2026-01-15T06:00:00Z',
   endDate: '2026-02-04T05:59:59Z',
+  characterBannerImage: '',
+  weaponBannerImage: '',
+  eventBannerImage: '',
   characters: [
-    { id: 'mornye', name: 'Mornye', title: 'Distant May the Starlights Be', element: 'Fusion', weaponType: 'Broadblade', isNew: true, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], splashUrl: 'https://i.imgur.com/QpQVZl7.png' },
-    { id: 'augusta', name: 'Augusta', title: 'The Eternal Radiance on the Crown', element: 'Electro', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], splashUrl: 'https://i.imgur.com/26n9zN2.jpeg' },
-    { id: 'iuno', name: 'Iuno', title: "Across Time's Waxes and Wanes", element: 'Aero', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], splashUrl: 'https://i.imgur.com/XacRZBK.png' },
+    { id: 'mornye', name: 'Mornye', title: 'Distant May the Starlights Be', element: 'Fusion', weaponType: 'Broadblade', isNew: true, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'] },
+    { id: 'augusta', name: 'Augusta', title: 'The Eternal Radiance on the Crown', element: 'Electro', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'] },
+    { id: 'iuno', name: 'Iuno', title: "Across Time's Waxes and Wanes", element: 'Aero', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'] },
   ],
   weapons: [
-    { id: 'starfield', name: 'Starfield Calibrator', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Mornye', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], splashUrl: 'https://i.imgur.com/HvspqVf.png' },
-    { id: 'thunderflare', name: 'Thunderflare Dominion', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Augusta', element: 'Electro', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], splashUrl: 'https://i.imgur.com/uQeHItX.png' },
-    { id: 'moongazer', name: "Moongazer's Sigil", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Iuno', element: 'Aero', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], splashUrl: 'https://i.imgur.com/66Ndq6U.jpeg' },
+    { id: 'starfield', name: 'Starfield Calibrator', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Mornye', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'] },
+    { id: 'thunderflare', name: 'Thunderflare Dominion', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Augusta', element: 'Electro', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'] },
+    { id: 'moongazer', name: "Moongazer's Sigil", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Iuno', element: 'Aero', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'] },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -1227,7 +1230,7 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
   };
   
   const style = gradientMap[item.element] || gradientMap.Fusion;
-  const imgUrl = bannerImage || item.splashUrl;
+  const imgUrl = bannerImage;
   
   return (
     <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
@@ -1284,7 +1287,7 @@ const EventCard = ({ event, server, bannerImage }) => {
   };
   
   const colors = accentColors[event.accentColor] || accentColors.cyan;
-  const imgUrl = bannerImage || event.imageUrl;
+  const imgUrl = bannerImage;
   
   return (
     <div className={`relative overflow-hidden rounded-2xl border ${colors.border}`} style={{ minHeight: imgUrl ? '140px' : '100px' }}>
