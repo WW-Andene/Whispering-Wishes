@@ -1853,10 +1853,14 @@ function WhisperingWishesInner() {
                 <div className="text-gray-300 text-xs uppercase tracking-wider" style={{position: 'relative', zIndex: 5}}>Permanent Banners</div>
                 
                 {/* Standard Resonator Banner */}
-                <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-gradient-to-r from-neutral-900/30 via-neutral-900/20 to-cyan-900/30" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5}}>
-                  <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-cyan-500/20 blur-2xl opacity-30" />
-                  </div>
+                <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: activeBanners.standardBannerImage ? '180px' : 'auto' }}>
+                  {activeBanners.standardBannerImage && (
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${activeBanners.standardBannerImage})` }}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/60 to-black/90" />
                   <div className="relative z-10 p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
@@ -1877,10 +1881,14 @@ function WhisperingWishesInner() {
                 </div>
 
                 {/* Standard Weapon Banner */}
-                <div className="relative overflow-hidden rounded-xl border border-purple-500/30 bg-gradient-to-r from-neutral-900/30 via-neutral-900/20 to-purple-900/30" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5}}>
-                  <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-purple-500/20 blur-2xl opacity-30" />
-                  </div>
+                <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ minHeight: activeBanners.standardBannerImage ? '180px' : 'auto' }}>
+                  {activeBanners.standardBannerImage && (
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${activeBanners.standardBannerImage})` }}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/60 to-black/90" />
                   <div className="relative z-10 p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-sm text-purple-400">Winter Brume</h3>
@@ -3846,14 +3854,29 @@ function WhisperingWishesInner() {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-white text-sm font-medium">Event Banner Image</h3>
-                    <input
-                      type="text"
-                      placeholder="https://i.ibb.co/..."
-                      id="admin-event-img"
-                      defaultValue={activeBanners.eventBannerImage || ''}
-                      className="kuro-input w-full text-xs"
-                    />
+                    <h3 className="text-white text-sm font-medium">Other Banner Images</h3>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-gray-400 text-[10px] block mb-1">Standard Banner Image</label>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-standard-img"
+                          defaultValue={activeBanners.standardBannerImage || ''}
+                          className="kuro-input w-full text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-gray-400 text-[10px] block mb-1">Event Banner Image</label>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-img"
+                          defaultValue={activeBanners.eventBannerImage || ''}
+                          className="kuro-input w-full text-xs"
+                        />
+                      </div>
+                    </div>
                     <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
                   </div>
 
@@ -3883,6 +3906,7 @@ function WhisperingWishesInner() {
                           if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
                           if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
                           if (endDate <= startDate) throw new Error('End date must be after start date');
+                          const standardImg = document.getElementById('admin-standard-img').value.trim();
                           const eventImg = document.getElementById('admin-event-img').value.trim();
                           const newBanners = {
                             ...activeBanners,
@@ -3892,6 +3916,7 @@ function WhisperingWishesInner() {
                             endDate: endDate.toISOString(),
                             characters: chars,
                             weapons: weaps,
+                            standardBannerImage: standardImg || '',
                             eventBannerImage: eventImg || '',
                           };
                           saveCustomBanners(newBanners);
