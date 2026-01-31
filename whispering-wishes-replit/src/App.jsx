@@ -1218,53 +1218,53 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
   const isChar = type === 'character';
   
   const gradientMap = {
-    Fusion: { gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30', border: 'border-orange-500/30', bg: 'bg-orange-500/20', text: 'text-orange-400' },
-    Electro: { gradient: 'from-neutral-900/30 via-neutral-900/20 to-violet-900/30', border: 'border-violet-500/30', bg: 'bg-violet-500/20', text: 'text-violet-400' },
-    Aero: { gradient: 'from-neutral-900/30 via-neutral-900/20 to-emerald-900/30', border: 'border-emerald-500/30', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-    Glacio: { gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
-    Havoc: { gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30', border: 'border-pink-500/30', bg: 'bg-pink-500/20', text: 'text-pink-400' },
-    Spectro: { gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+    Fusion: { border: 'border-orange-500/40', bg: 'bg-orange-500/20', text: 'text-orange-400' },
+    Electro: { border: 'border-violet-500/40', bg: 'bg-violet-500/20', text: 'text-violet-400' },
+    Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+    Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
+    Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
+    Spectro: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
   };
   
   const style = gradientMap[item.element] || gradientMap.Fusion;
   const imgUrl = bannerImage || item.splashUrl;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border} bg-gradient-to-r ${style.gradient}`} style={{ backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
       {imgUrl && (
-        <div className="absolute right-0 top-0 bottom-0 w-2/5 pointer-events-none overflow-hidden">
-          <img src={imgUrl} alt={item.name} className="absolute right-0 top-1/2 -translate-y-1/2 h-full w-auto object-contain opacity-60" style={{ maxWidth: 'none' }} />
-        </div>
+        <img 
+          src={imgUrl} 
+          alt={item.name} 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       )}
-      {!imgUrl && (
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
-          <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${style.bg} blur-2xl opacity-30`} />
-        </div>
-      )}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
       
-      {/* Content */}
-      <div className="relative z-10 p-4">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-2">
+      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold">NEW</span>}
-            <h4 className={`font-bold text-sm ${style.text}`}>{item.name}</h4>
+            <span className={`text-[10px] px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>{isChar ? item.element : item.type}</span>
           </div>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded border ${style.border} ${style.bg} ${style.text}`}>{isChar ? item.element : item.type}</span>
+          <h4 className={`font-bold text-lg text-white drop-shadow-lg`}>{item.name}</h4>
+          {item.title && <p className="text-gray-300 text-xs mt-0.5 drop-shadow">{item.title}</p>}
         </div>
         
-        <div className="text-gray-300 text-[9px] mb-1">Featured 4★</div>
-        <div className="flex gap-1 flex-wrap">
-          {item.featured4Stars.map(n => <span key={n} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
+        <div className="mt-auto pt-3">
+          <div className="text-gray-300 text-[10px] mb-1">Featured 4★</div>
+          <div className="flex gap-1 flex-wrap">
+            {item.featured4Stars.map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-2 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+          </div>
         </div>
         
         {stats && (
-          <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/10">
-            <div><div className="text-yellow-400 font-bold">{stats.pity5}/80</div><div className="text-gray-300 text-[9px]">5★ Pity</div></div>
-            <div><div className="text-purple-400 font-bold">{stats.pity4}/10</div><div className="text-gray-300 text-[9px]">4★ Pity</div></div>
-            <div><div className="text-white font-bold">{stats.totalPulls}</div><div className="text-gray-300 text-[9px]">Convenes</div></div>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/20">
+            <div><div className="text-yellow-400 font-bold drop-shadow">{stats.pity5}/80</div><div className="text-gray-300 text-[9px]">5★ Pity</div></div>
+            <div><div className="text-purple-400 font-bold drop-shadow">{stats.pity4}/10</div><div className="text-gray-300 text-[9px]">4★ Pity</div></div>
+            <div><div className="text-white font-bold drop-shadow">{stats.totalPulls}</div><div className="text-gray-300 text-[9px]">Convenes</div></div>
           </div>
         )}
-        {stats && isChar && <div className={`mt-1.5 text-center text-[10px] py-1 rounded ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-neutral-800 text-gray-400'}`}>{stats.guaranteed ? '✓ Guaranteed' : '50/50'}</div>}
+        {stats && isChar && <div className={`mt-1.5 text-center text-[10px] py-1 rounded backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/30 text-emerald-400' : 'bg-neutral-800/50 text-gray-400'}`}>{stats.guaranteed ? '✓ Guaranteed' : '50/50'}</div>}
       </div>
     </div>
   );
