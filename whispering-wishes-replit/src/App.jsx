@@ -1241,20 +1241,19 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent w-1/2" />
       
-      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
+      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold">NEW</span>}
+            {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`text-[10px] px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>{isChar ? item.element : item.type}</span>
           </div>
-          <h4 className={`font-bold text-lg text-white drop-shadow-lg`}>{item.name}</h4>
-          {item.title && <p className="text-gray-300 text-xs mt-0.5 drop-shadow">{item.title}</p>}
+          <h4 className="font-bold text-lg text-white">{item.name}</h4>
+          {item.title && <p className="text-gray-200 text-xs mt-0.5">{item.title}</p>}
         </div>
         
         <div className="mt-auto pt-3">
-          <div className="text-gray-300 text-[10px] mb-1">Featured 4★</div>
+          <div className="text-gray-200 text-[10px] mb-1">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
             {item.featured4Stars.map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-2 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
@@ -1298,16 +1297,15 @@ const EventCard = ({ event, server, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent w-1/2" />
       
-      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px' }}>
+      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${colors.text} drop-shadow-lg`}>{event.name}</h4>
-            <p className="text-gray-300 text-[10px] drop-shadow">{event.subtitle}</p>
+            <h4 className={`font-bold text-sm ${colors.text}`}>{event.name}</h4>
+            <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-gray-300 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+            <div className="text-gray-200 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
             <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly} />
           </div>
         </div>
@@ -1316,7 +1314,7 @@ const EventCard = ({ event, server, bannerImage }) => {
           <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${colors.bg} ${colors.text} backdrop-blur-sm`}>
             {event.rewards}
           </div>
-          <div className="text-gray-300 text-[9px] drop-shadow">
+          <div className="text-gray-200 text-[9px]">
             {event.resetType}
           </div>
         </div>
@@ -1860,13 +1858,12 @@ function WhisperingWishesInner() {
                       style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent w-1/2" />
-                  <div className="relative z-10 p-4">
+                  <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
-                      <span className="text-gray-400 text-[10px]">Standard Resonator</span>
+                      <span className="text-gray-200 text-[10px]">Standard Resonator</span>
                     </div>
-                    <div className="text-gray-300 text-[9px] mb-1">Available 5★</div>
+                    <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
                     <div className="flex gap-1 flex-wrap">
                       {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
                     </div>
@@ -1888,13 +1885,12 @@ function WhisperingWishesInner() {
                       style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent w-1/2" />
-                  <div className="relative z-10 p-4">
+                  <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-sm text-purple-400">Winter Brume</h3>
-                      <span className="text-gray-400 text-[10px]">Standard Weapon</span>
+                      <span className="text-gray-200 text-[10px]">Standard Weapon</span>
                     </div>
-                    <div className="text-gray-300 text-[9px] mb-1">Available 5★</div>
+                    <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
                     <div className="flex gap-1 flex-wrap">
                       {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{w.name}</span>)}
                     </div>
