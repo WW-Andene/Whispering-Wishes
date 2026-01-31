@@ -1241,7 +1241,7 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
       
       <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
         <div>
@@ -1298,7 +1298,7 @@ const EventCard = ({ event, server, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
       
       <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px' }}>
         <div className="flex justify-between items-start">
@@ -1860,7 +1860,7 @@ function WhisperingWishesInner() {
                       style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/60 to-black/90" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
                   <div className="relative z-10 p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
@@ -1888,7 +1888,7 @@ function WhisperingWishesInner() {
                       style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/60 to-black/90" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
                   <div className="relative z-10 p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-sm text-purple-400">Winter Brume</h3>
