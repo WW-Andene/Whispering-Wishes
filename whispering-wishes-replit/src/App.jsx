@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, createContext, useContext } from 'react';
-import { Sparkles, Swords, Sword, Star, Calculator, User, Clock, Calendar, TrendingUp, Upload, Download, RefreshCcw, Globe, Monitor, Smartphone, Gamepad2, Trash2, Plus, Minus, Check, Target, BarChart3, Zap, Bell, Save, BookmarkPlus, X, ChevronDown, ChevronUp, LayoutGrid, Archive, History, HelpCircle, Info, CheckCircle, AlertCircle, Trophy, Award, Loader2 } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, Calculator, User, Clock, Calendar, TrendingUp, Upload, Download, RefreshCcw, Globe, Monitor, Smartphone, Gamepad2, Trash2, Plus, Minus, Check, Target, BarChart3, Zap, Bell, Save, BookmarkPlus, X, ChevronDown, ChevronUp, LayoutGrid, Archive, History, HelpCircle, Info, CheckCircle, AlertCircle, Trophy, Award, Loader2, Settings } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
