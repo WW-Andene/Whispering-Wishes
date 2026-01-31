@@ -1341,16 +1341,24 @@ function WhisperingWishesInner() {
   
   // Load state from persistent storage on mount
   useEffect(() => {
+    const rawSaved = localStorage.getItem(STORAGE_KEY);
     loadFromStorage().then(savedState => {
       if (savedState) {
         dispatch({ type: 'LOAD_STATE', state: savedState });
         if (savedState.profile.importedAt) {
           toast?.addToast?.('Data restored', 'success');
         }
-        // Never show onboarding for existing users - they have saved data
-        // Only explicit true means they want to see it again (edge case)
-        // The showOnboarding setting is set to false when dismissed
-        setShowOnboarding(false);
+        // For existing users: check if they've explicitly dismissed onboarding
+        // Parse raw data to check original settings, not merged with initialState
+        let originalSettings = {};
+        try {
+          const parsed = rawSaved ? JSON.parse(rawSaved) : null;
+          originalSettings = parsed?.settings || {};
+        } catch (e) {}
+        // Only show onboarding if the original saved data had it explicitly true
+        // If settings.showOnboarding is missing/undefined, user is existing - don't show
+        const shouldShow = originalSettings.showOnboarding === true;
+        setShowOnboarding(shouldShow);
       } else {
         // First time user only - show onboarding
         setShowOnboarding(true);
@@ -1730,6 +1738,13 @@ function WhisperingWishesInner() {
               <span>v{CURRENT_BANNERS.version} Phase {CURRENT_BANNERS.phase} • {state.server}</span>
               <CountdownTimer endDate={CURRENT_BANNERS.endDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
             </div>
+            
+            {new Date() > new Date(CURRENT_BANNERS.endDate) && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center" style={{position: 'relative', zIndex: 5}}>
+                <p className="text-yellow-400 text-xs font-medium">Banner period ended</p>
+                <p className="text-gray-400 text-[10px] mt-1">New banners are now live in-game. App update coming soon!</p>
+              </div>
+            )}
 
             {trackerCategory === 'character' && (
               <div className="space-y-2">
