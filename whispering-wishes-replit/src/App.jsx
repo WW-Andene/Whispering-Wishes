@@ -1324,6 +1324,26 @@ const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
   </div>
 );
 
+// Admin banner storage key
+const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
+const ADMIN_IMGUR_KEY = 'whispering-wishes-imgur-config';
+
+// Load custom banners from localStorage
+const loadCustomBanners = () => {
+  try {
+    const saved = localStorage.getItem(ADMIN_BANNER_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// Get active banners (custom or default)
+const getActiveBanners = () => {
+  const custom = loadCustomBanners();
+  return custom || CURRENT_BANNERS;
+};
+
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   const toast = useToast();
@@ -1333,6 +1353,24 @@ function WhisperingWishesInner() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportData, setExportData] = useState('');
   const stateRef = useRef(state);
+  
+  // Admin panel state
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminTapCount, setAdminTapCount] = useState(0);
+  const [adminTapTimer, setAdminTapTimer] = useState(null);
+  const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
+  const [imgurImages, setImgurImages] = useState([]);
+  const [imgurClientId, setImgurClientId] = useState(() => {
+    try { return localStorage.getItem(ADMIN_IMGUR_KEY) || ''; } catch { return ''; }
+  });
+  
+  // Admin password - stored in localStorage (user sets their own)
+  const ADMIN_PASS_KEY = 'whispering-wishes-admin-pass';
+  const [storedAdminPass, setStoredAdminPass] = useState(() => {
+    try { return localStorage.getItem(ADMIN_PASS_KEY) || ''; } catch { return ''; }
+  });
   
   // Keep ref updated
   useEffect(() => {
@@ -1582,6 +1620,87 @@ function WhisperingWishesInner() {
     dispatch({ type: 'SET_SETTINGS', field: 'showOnboarding', value: false });
   }, []);
 
+  // Secret admin access - tap version 5 times quickly
+  const handleAdminTap = useCallback(() => {
+    if (adminTapTimer) clearTimeout(adminTapTimer);
+    const newCount = adminTapCount + 1;
+    setAdminTapCount(newCount);
+    if (newCount >= 5) {
+      setShowAdminPanel(true);
+      setAdminTapCount(0);
+    } else {
+      const timer = setTimeout(() => setAdminTapCount(0), 1500);
+      setAdminTapTimer(timer);
+    }
+  }, [adminTapCount, adminTapTimer]);
+
+  // Save custom banners
+  const saveCustomBanners = useCallback((banners) => {
+    try {
+      localStorage.setItem(ADMIN_BANNER_KEY, JSON.stringify(banners));
+      setActiveBanners(banners);
+      toast?.addToast?.('Banner data updated!', 'success');
+    } catch (e) {
+      toast?.addToast?.('Failed to save banner data', 'error');
+    }
+  }, [toast]);
+
+  // Fetch images from Imgur album
+  const fetchImgurImages = useCallback(async (albumId) => {
+    if (!imgurClientId) {
+      toast?.addToast?.('Please set Imgur Client ID first', 'error');
+      return;
+    }
+    try {
+      const res = await fetch(`https://api.imgur.com/3/album/${albumId}/images`, {
+        headers: { Authorization: `Client-ID ${imgurClientId}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        const images = data.data.map(img => ({ 
+          id: img.id, 
+          url: img.link, 
+          title: (img.title || img.description || img.id).replace(/[<>]/g, '') 
+        }));
+        setImgurImages(images);
+        toast?.addToast?.(`Found ${images.length} images`, 'success');
+      } else {
+        toast?.addToast?.('Failed to fetch Imgur images', 'error');
+      }
+    } catch (e) {
+      toast?.addToast?.('Imgur API error: ' + e.message, 'error');
+    }
+  }, [imgurClientId, toast]);
+
+  // Verify admin password
+  const verifyAdminPassword = useCallback(() => {
+    if (!adminPassword || adminPassword.length < 4) {
+      toast?.addToast?.('Password must be at least 4 characters', 'error');
+      return;
+    }
+    if (!storedAdminPass) {
+      localStorage.setItem(ADMIN_PASS_KEY, adminPassword);
+      setStoredAdminPass(adminPassword);
+      setAdminUnlocked(true);
+      toast?.addToast?.('Admin password set!', 'success');
+    } else if (adminPassword === storedAdminPass) {
+      setAdminUnlocked(true);
+    } else {
+      toast?.addToast?.('Incorrect password', 'error');
+    }
+  }, [adminPassword, storedAdminPass, toast]);
+
+  // Save Imgur Client ID
+  const saveImgurClientId = useCallback((clientId) => {
+    try {
+      localStorage.setItem(ADMIN_IMGUR_KEY, clientId);
+      setImgurClientId(clientId);
+      toast?.addToast?.('Imgur Client ID saved!', 'success');
+    } catch (e) {
+      toast?.addToast?.('Failed to save Imgur settings', 'error');
+    }
+  }, [toast]);
+
   return (
     <div className="min-h-screen bg-neutral-950">
       <KuroStyles />
@@ -1735,11 +1854,11 @@ function WhisperingWishesInner() {
             </div>
 
             <div className="flex items-center justify-between text-gray-300 text-[10px]" style={{position: 'relative', zIndex: 5}}>
-              <span>v{CURRENT_BANNERS.version} Phase {CURRENT_BANNERS.phase} • {state.server}</span>
-              <CountdownTimer endDate={CURRENT_BANNERS.endDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
+              <span>v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
+              <CountdownTimer endDate={activeBanners.endDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
             </div>
             
-            {new Date() > new Date(CURRENT_BANNERS.endDate) && (
+            {new Date() > new Date(activeBanners.endDate) && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center" style={{position: 'relative', zIndex: 5}}>
                 <p className="text-yellow-400 text-xs font-medium">Banner period ended</p>
                 <p className="text-gray-400 text-[10px] mt-1">New banners are now live in-game. App update coming soon!</p>
@@ -1748,13 +1867,13 @@ function WhisperingWishesInner() {
 
             {trackerCategory === 'character' && (
               <div className="space-y-2">
-                {CURRENT_BANNERS.characters.map(c => <BannerCard key={c.id} item={c} type="character" stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} />)}
+                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} />)}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
               <div className="space-y-2">
-                {CURRENT_BANNERS.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} />)}
+                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} />)}
               </div>
             )}
 
@@ -1774,7 +1893,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div className="text-gray-300 text-[9px] mb-1">Available 5★</div>
                     <div className="flex gap-1 flex-wrap">
-                      {CURRENT_BANNERS.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
+                      {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
                     </div>
                     {state.profile.standardChar?.history?.length > 0 && (
                       <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/10">
@@ -1798,7 +1917,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div className="text-gray-300 text-[9px] mb-1">Available 5★</div>
                     <div className="flex gap-1 flex-wrap">
-                      {CURRENT_BANNERS.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{w.name}</span>)}
+                      {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{w.name}</span>)}
                     </div>
                     {state.profile.standardWeap?.history?.length > 0 && (
                       <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/10">
@@ -3632,10 +3751,216 @@ function WhisperingWishesInner() {
         </div>
       )}
 
+      {/* Admin Panel Modal */}
+      {showAdminPanel && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 overflow-auto">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <CardHeader className="flex items-center justify-between">
+              <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
+              <button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="text-gray-400 hover:text-white"><X size={18} /></button>
+            </CardHeader>
+            <CardBody className="space-y-4">
+              {!adminUnlocked ? (
+                <div className="space-y-3">
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
+                    <p className="text-yellow-400 text-sm font-medium">Admin Access Required</p>
+                    <p className="text-gray-400 text-[10px] mt-1">{storedAdminPass ? 'Enter your password' : 'Set a new password (first time)'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      placeholder={storedAdminPass ? "Enter password" : "Create new password"}
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && verifyAdminPassword()}
+                      className="kuro-input flex-1 text-sm"
+                    />
+                    <button onClick={verifyAdminPassword} className="kuro-btn px-4">{storedAdminPass ? 'Unlock' : 'Set'}</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-2 text-center">
+                    <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Imgur Configuration</h3>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Imgur Client ID"
+                        value={imgurClientId}
+                        onChange={(e) => setImgurClientId(e.target.value)}
+                        className="kuro-input flex-1 text-xs"
+                      />
+                      <button onClick={() => saveImgurClientId(imgurClientId)} className="kuro-btn text-xs px-3">Save</button>
+                    </div>
+                    <p className="text-gray-500 text-[9px]">Get your Client ID at api.imgur.com/oauth2/addclient</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Quick Banner Update</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Version (e.g., 3.1)"
+                        id="admin-version"
+                        defaultValue={activeBanners.version}
+                        className="kuro-input text-xs"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Phase"
+                        id="admin-phase"
+                        defaultValue={activeBanners.phase}
+                        className="kuro-input text-xs"
+                      />
+                      <input
+                        type="datetime-local"
+                        placeholder="Start Date"
+                        id="admin-start"
+                        defaultValue={activeBanners.startDate?.slice(0, 16)}
+                        className="kuro-input text-xs"
+                      />
+                      <input
+                        type="datetime-local"
+                        placeholder="End Date"
+                        id="admin-end"
+                        defaultValue={activeBanners.endDate?.slice(0, 16)}
+                        className="kuro-input text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Featured Resonators (JSON)</h3>
+                    <textarea
+                      id="admin-chars"
+                      className="kuro-input w-full h-32 text-[9px] font-mono"
+                      defaultValue={JSON.stringify(activeBanners.characters, null, 2)}
+                      placeholder="Paste characters array JSON"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Featured Weapons (JSON)</h3>
+                    <textarea
+                      id="admin-weaps"
+                      className="kuro-input w-full h-32 text-[9px] font-mono"
+                      defaultValue={JSON.stringify(activeBanners.weapons, null, 2)}
+                      placeholder="Paste weapons array JSON"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Fetch Images from Imgur Album</h3>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Album ID (from imgur.com/a/XXXXX)"
+                        id="admin-album"
+                        className="kuro-input flex-1 text-xs"
+                      />
+                      <button
+                        onClick={() => {
+                          const albumId = document.getElementById('admin-album').value;
+                          if (albumId) fetchImgurImages(albumId);
+                        }}
+                        className="kuro-btn text-xs px-3"
+                      >
+                        Fetch
+                      </button>
+                    </div>
+                    {imgurImages.length > 0 && (
+                      <div className="space-y-1 max-h-40 overflow-auto">
+                        {imgurImages.map(img => (
+                          <div key={img.id} className="p-2 bg-white/5 rounded text-xs flex items-center gap-2">
+                            <img src={img.url} alt={img.title} className="w-12 h-12 object-cover rounded" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-gray-300 truncate text-[9px]">{img.title}</div>
+                              <code className="text-gray-500 text-[8px] block truncate">{img.url}</code>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(img.url);
+                                toast?.addToast?.('URL copied!', 'success');
+                              }}
+                              className="text-yellow-400 text-[9px] hover:underline"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-gray-500 text-[9px]">Copy image URLs and paste them as "splashUrl" in the JSON above</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        try {
+                          const chars = JSON.parse(document.getElementById('admin-chars').value);
+                          const weaps = JSON.parse(document.getElementById('admin-weaps').value);
+                          if (!Array.isArray(chars) || !Array.isArray(weaps)) throw new Error('Characters and weapons must be arrays');
+                          if (chars.length === 0) throw new Error('At least one character required');
+                          if (weaps.length === 0) throw new Error('At least one weapon required');
+                          chars.forEach((c, i) => {
+                            if (!c.id || !c.name) throw new Error(`Character ${i + 1} missing id or name`);
+                          });
+                          weaps.forEach((w, i) => {
+                            if (!w.id || !w.name) throw new Error(`Weapon ${i + 1} missing id or name`);
+                          });
+                          const startVal = document.getElementById('admin-start').value;
+                          const endVal = document.getElementById('admin-end').value;
+                          const startDate = new Date(startVal);
+                          const endDate = new Date(endVal);
+                          if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
+                          if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
+                          if (endDate <= startDate) throw new Error('End date must be after start date');
+                          const newBanners = {
+                            ...activeBanners,
+                            version: document.getElementById('admin-version').value || '1.0',
+                            phase: parseInt(document.getElementById('admin-phase').value) || 1,
+                            startDate: startDate.toISOString(),
+                            endDate: endDate.toISOString(),
+                            characters: chars,
+                            weapons: weaps,
+                          };
+                          saveCustomBanners(newBanners);
+                          setShowAdminPanel(false);
+                          setAdminUnlocked(false);
+                        } catch (e) {
+                          toast?.addToast?.('Invalid data: ' + e.message, 'error');
+                        }
+                      }}
+                      className="kuro-btn flex-1"
+                    >
+                      Save Banner Updates
+                    </button>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem(ADMIN_BANNER_KEY);
+                        setActiveBanners(CURRENT_BANNERS);
+                        toast?.addToast?.('Reset to default banners', 'success');
+                      }}
+                      className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </>
+              )}
+            </CardBody>
+          </Card>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/5" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-600 text-[9px]">
-          Whispering Wishes v2.2.0 • by u/WW_Andene • Not affiliated with Kuro Games • 
+          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.2.0</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
