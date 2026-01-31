@@ -1853,11 +1853,11 @@ function WhisperingWishesInner() {
                 <div className="text-gray-300 text-xs uppercase tracking-wider" style={{position: 'relative', zIndex: 5}}>Permanent Banners</div>
                 
                 {/* Standard Resonator Banner */}
-                <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: activeBanners.standardBannerImage ? '180px' : 'auto' }}>
-                  {activeBanners.standardBannerImage && (
+                <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: activeBanners.standardCharBannerImage ? '180px' : 'auto' }}>
+                  {activeBanners.standardCharBannerImage && (
                     <div 
                       className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: `url(${activeBanners.standardBannerImage})` }}
+                      style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/60 to-black/90" />
@@ -1881,11 +1881,11 @@ function WhisperingWishesInner() {
                 </div>
 
                 {/* Standard Weapon Banner */}
-                <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ minHeight: activeBanners.standardBannerImage ? '180px' : 'auto' }}>
-                  {activeBanners.standardBannerImage && (
+                <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ minHeight: activeBanners.standardWeapBannerImage ? '180px' : 'auto' }}>
+                  {activeBanners.standardWeapBannerImage && (
                     <div 
                       className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: `url(${activeBanners.standardBannerImage})` }}
+                      style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/60 to-black/90" />
@@ -2034,7 +2034,15 @@ function WhisperingWishesInner() {
               <span className="text-gray-300 text-[10px]">Server: {state.server}</span>
             </div>
             <div className="space-y-2">
-              {Object.values(EVENTS).map((ev, i) => <EventCard key={i} event={ev} server={state.server} bannerImage={activeBanners.eventBannerImage} />)}
+              {Object.entries(EVENTS).map(([key, ev]) => {
+                const eventImageMap = {
+                  whimperingWastes: activeBanners.whimperingWastesImage,
+                  doubledPawns: activeBanners.doubledPawnsImage,
+                  towerOfAdversity: activeBanners.towerOfAdversityImage,
+                  illusiveRealm: activeBanners.illusiveRealmImage,
+                };
+                return <EventCard key={key} event={ev} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} />;
+              })}
             </div>
             <p className="text-neutral-500 text-[10px] text-center" style={{position: 'relative', zIndex: 5}}>Reset times based on {state.server} server (UTC{SERVERS[state.server]?.utcOffset >= 0 ? '+' : ''}{SERVERS[state.server]?.utcOffset})</p>
           </div>
@@ -3854,26 +3862,72 @@ function WhisperingWishesInner() {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-white text-sm font-medium">Other Banner Images</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-gray-400 text-[10px] block mb-1">Standard Banner Image</label>
+                    <h3 className="text-white text-sm font-medium">Standard Banner Images</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Tidal Chorus</span>
                         <input
                           type="text"
                           placeholder="https://i.ibb.co/..."
-                          id="admin-standard-img"
-                          defaultValue={activeBanners.standardBannerImage || ''}
-                          className="kuro-input w-full text-xs"
+                          id="admin-standard-char-img"
+                          defaultValue={activeBanners.standardCharBannerImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
                         />
                       </div>
-                      <div>
-                        <label className="text-gray-400 text-[10px] block mb-1">Event Banner Image</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Winter Brume</span>
                         <input
                           type="text"
                           placeholder="https://i.ibb.co/..."
-                          id="admin-event-img"
-                          defaultValue={activeBanners.eventBannerImage || ''}
-                          className="kuro-input w-full text-xs"
+                          id="admin-standard-weap-img"
+                          defaultValue={activeBanners.standardWeapBannerImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Event Banner Images</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Whimpering Wastes</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-ww-img"
+                          defaultValue={activeBanners.whimperingWastesImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Doubled Pawns</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-dp-img"
+                          defaultValue={activeBanners.doubledPawnsImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Tower of Adversity</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-toa-img"
+                          defaultValue={activeBanners.towerOfAdversityImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Illusive Realm</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          id="admin-event-ir-img"
+                          defaultValue={activeBanners.illusiveRealmImage || ''}
+                          className="kuro-input flex-1 text-[10px] py-1"
                         />
                       </div>
                     </div>
@@ -3906,8 +3960,12 @@ function WhisperingWishesInner() {
                           if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
                           if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
                           if (endDate <= startDate) throw new Error('End date must be after start date');
-                          const standardImg = document.getElementById('admin-standard-img').value.trim();
-                          const eventImg = document.getElementById('admin-event-img').value.trim();
+                          const standardCharImg = document.getElementById('admin-standard-char-img').value.trim();
+                          const standardWeapImg = document.getElementById('admin-standard-weap-img').value.trim();
+                          const wwImg = document.getElementById('admin-event-ww-img').value.trim();
+                          const dpImg = document.getElementById('admin-event-dp-img').value.trim();
+                          const toaImg = document.getElementById('admin-event-toa-img').value.trim();
+                          const irImg = document.getElementById('admin-event-ir-img').value.trim();
                           const newBanners = {
                             ...activeBanners,
                             version: document.getElementById('admin-version').value || '1.0',
@@ -3916,8 +3974,12 @@ function WhisperingWishesInner() {
                             endDate: endDate.toISOString(),
                             characters: chars,
                             weapons: weaps,
-                            standardBannerImage: standardImg || '',
-                            eventBannerImage: eventImg || '',
+                            standardCharBannerImage: standardCharImg || '',
+                            standardWeapBannerImage: standardWeapImg || '',
+                            whimperingWastesImage: wwImg || '',
+                            doubledPawnsImage: dpImg || '',
+                            towerOfAdversityImage: toaImg || '',
+                            illusiveRealmImage: irImg || '',
                           };
                           saveCustomBanners(newBanners);
                           setShowAdminPanel(false);
