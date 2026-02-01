@@ -1241,7 +1241,7 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
-      {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.20) 60%, rgba(0,0,0,0) 80%)'}} />}
+      {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.90) 10%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0) 60%)'}} />}
       
       <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div>
@@ -1298,7 +1298,7 @@ const EventCard = ({ event, server, bannerImage }) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
-      {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.20) 60%, rgba(0,0,0,0) 80%)'}} />}
+      {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.90) 10%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0) 60%)'}} />}
       
       <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div className="flex justify-between items-start">
@@ -1860,7 +1860,7 @@ function WhisperingWishesInner() {
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
                       />
-                      <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.20) 60%, rgba(0,0,0,0) 80%)'}} />
+                      <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.90) 10%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0) 60%)'}} />
                     </>
                   )}
                   <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
@@ -1890,7 +1890,7 @@ function WhisperingWishesInner() {
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                         style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
                       />
-                      <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.20) 60%, rgba(0,0,0,0) 80%)'}} />
+                      <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.90) 10%, rgba(0,0,0,0.80) 20%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.60) 40%, rgba(0,0,0,0.50) 50%, rgba(0,0,0,0) 60%)'}} />
                     </>
                   )}
                   <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
