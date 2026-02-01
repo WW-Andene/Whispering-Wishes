@@ -1239,6 +1239,10 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
           src={imgUrl} 
           alt={item.name} 
           className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
+            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
+          }}
         />
       )}
       {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />}
@@ -1296,6 +1300,10 @@ const EventCard = ({ event, server, bannerImage }) => {
           src={imgUrl} 
           alt={event.name} 
           className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
+            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
+          }}
         />
       )}
       {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />}
@@ -1858,7 +1866,11 @@ function WhisperingWishesInner() {
                     <>
                       <div 
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: `url(${activeBanners.standardCharBannerImage})` }}
+                        style={{ 
+                          backgroundImage: `url(${activeBanners.standardCharBannerImage})`,
+                          maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
+                          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
+                        }}
                       />
                       <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />
                     </>
@@ -1888,7 +1900,11 @@ function WhisperingWishesInner() {
                     <>
                       <div 
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ backgroundImage: `url(${activeBanners.standardWeapBannerImage})` }}
+                        style={{ 
+                          backgroundImage: `url(${activeBanners.standardWeapBannerImage})`,
+                          maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
+                          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
+                        }}
                       />
                       <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />
                     </>
