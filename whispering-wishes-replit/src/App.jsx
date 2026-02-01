@@ -1240,8 +1240,8 @@ const BannerCard = ({ item, type, stats, bannerImage }) => {
           alt={item.name} 
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
-            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
+            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)',
+            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)'
           }}
         />
       )}
@@ -1301,8 +1301,8 @@ const EventCard = ({ event, server, bannerImage }) => {
           alt={event.name} 
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
-            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
+            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)',
+            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)'
           }}
         />
       )}
