@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, createContext, useContext } from 'react';
-import { Sparkles, Swords, Sword, Star, Calculator, User, Clock, Calendar, TrendingUp, Upload, Download, RefreshCcw, Globe, Monitor, Smartphone, Gamepad2, Trash2, Plus, Minus, Check, Target, BarChart3, Zap, Bell, Save, BookmarkPlus, X, ChevronDown, ChevronUp, LayoutGrid, Archive, History, HelpCircle, Info, CheckCircle, AlertCircle, Trophy, Award, Loader2, Settings } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, Upload, Download, RefreshCcw, Plus, Minus, Check, Target, BarChart3, Zap, BookmarkPlus, X, ChevronDown, LayoutGrid, Archive, Info, CheckCircle, AlertCircle, Settings, Monitor, Smartphone, Gamepad2 } from 'lucide-react';
+import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.2.0 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v2.9.0 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -16,6 +16,8 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 // [SECTION:SERVERS]      - Server/region data
 // [SECTION:BANNERS]      - Current banner data
 // [SECTION:HISTORY]      - Banner history archive
+// [SECTION:CHARACTER_DATA] - Character database
+// [SECTION:WEAPON_DATA]  - Weapon database
 // [SECTION:EVENTS]       - Time-gated events data
 // [SECTION:CONSTANTS]    - Game constants (pity, rates)
 // [SECTION:TIME]         - Time utilities
@@ -166,34 +168,331 @@ const KuroStyles = () => (
       color: #e2e8f0;
     }
     
-    @keyframes rotate-ring {
-      from { transform: translateX(-50%) rotate(0deg); }
-      to { transform: translateX(-50%) rotate(360deg); }
-    }
-    
-    @keyframes pulse-glow {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 0.6; }
-    }
-    
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes borderGlow {
+      0%, 100% { border-color: rgba(251, 191, 36, 0.3); }
+      50% { border-color: rgba(251, 191, 36, 0.6); }
+    }
+    
+    @keyframes shimmerSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes pulseScale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    
+    @keyframes staggerFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Hide scrollbar for nav */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* ═══ TAB CONTENT TRANSITIONS ═══ */
+    .tab-content {
+      animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .tab-content > * {
+      animation: staggerFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    
+    .tab-content > *:nth-child(1) { animation-delay: 0.02s; }
+    .tab-content > *:nth-child(2) { animation-delay: 0.04s; }
+    .tab-content > *:nth-child(3) { animation-delay: 0.06s; }
+    .tab-content > *:nth-child(4) { animation-delay: 0.08s; }
+    .tab-content > *:nth-child(5) { animation-delay: 0.10s; }
+    .tab-content > *:nth-child(6) { animation-delay: 0.12s; }
+    .tab-content > *:nth-child(7) { animation-delay: 0.14s; }
+    .tab-content > *:nth-child(8) { animation-delay: 0.16s; }
+    
+    /* ═══ MICRO-INTERACTIONS ═══ */
+    .btn-interact {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .btn-interact:hover {
+      transform: translateY(-1px);
+    }
+    
+    .btn-interact:active {
+      transform: translateY(0) scale(0.98);
+      transition: transform 0.1s ease;
+    }
+    
+    .btn-interact::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.2) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .btn-interact:active::after {
+      opacity: 1;
+    }
+    
+    /* Card shimmer effect on hover */
+    .card-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      transition: left 0.5s ease;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .card-shimmer:hover::before {
+      left: 100%;
+    }
+    
+    /* Collection card hover lift */
+    .collection-card {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .collection-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+    }
+    
+    .collection-card:active {
+      transform: translateY(-2px) scale(1.01);
+    }
+    
+    /* Glow effect for 5-star items */
+    .glow-gold {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .glow-gold:hover {
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+    }
+    
+    .glow-purple {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .glow-purple:hover {
+      box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+    }
+    
+    /* ═══ ANIMATED PITY PROGRESS BAR ═══ */
+    .pity-bar {
+      position: relative;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .pity-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .pity-bar-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmerSlide 2s ease-in-out infinite;
+    }
+    
+    .pity-bar-fill.gold {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+    
+    .pity-bar-fill.purple {
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa, #8b5cf6);
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+    }
+    
+    .pity-bar-fill.cyan {
+      background: linear-gradient(90deg, #06b6d4, #22d3ee, #06b6d4);
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+    }
+    
+    .pity-bar-fill.red {
+      background: linear-gradient(90deg, #ef4444, #f87171, #ef4444);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    }
+    
+    /* Soft pity warning glow */
+    .pity-bar-fill.soft-pity {
+      animation: pulseGlow 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.3); }
+    }
+    
+    /* ═══ PREMIUM VISUAL EFFECTS ═══ */
+    .glass-panel {
+      background: rgba(12, 16, 24, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+    }
+    
+    .text-glow-gold {
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.3);
+    }
+    
+    .text-glow-purple {
+      text-shadow: 0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
+    }
+    
+    /* Floating animation for highlights */
+    .float-subtle {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Pulse animation for important elements */
+    .pulse-subtle {
+      animation: pulseScale 2s ease-in-out infinite;
+    }
+    
+    /* Smooth number transitions */
+    .number-animate {
+      transition: all 0.3s ease;
+    }
+    
+    /* ═══ PITY RING ═══ */
+    .pity-ring-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.06);
+    }
+    .pity-ring-fill {
+      fill: none;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: drop-shadow(0 0 4px var(--ring-glow));
+    }
+    .pity-ring-text {
+      font-family: 'Geist Mono', monospace;
+      font-weight: 700;
+      fill: currentColor;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    
+    /* ═══ LUCK BADGE ═══ */
+    .luck-badge {
+      position: relative;
+      overflow: hidden;
+    }
+    .luck-badge::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, var(--badge-color), transparent, var(--badge-color), transparent);
+      animation: badgeRotate 4s linear infinite;
+      opacity: 0.15;
+    }
+    @keyframes badgeRotate {
+      to { transform: rotate(360deg); }
+    }
+    .luck-badge-inner {
+      position: relative;
+      z-index: 1;
+      background: rgba(12, 16, 24, 0.9);
+      border-radius: inherit;
+    }
+    
+    /* ═══ PULL LOG BORDER ═══ */
+    .pull-log-row {
+      border-left: 3px solid var(--pity-color);
+      transition: all 0.2s ease;
+    }
+    .pull-log-row:hover {
+      background: rgba(255,255,255,0.08) !important;
+    }
+    
+    /* ═══ TAB SLIDING INDICATOR ═══ */
+    .tab-indicator {
+      position: absolute;
+      bottom: 0;
+      height: 2px;
+      border-radius: 1px;
+      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     /* ═══ CARD SYSTEM - Glassy gradient with ambient glow ═══ */
     .kuro-card {
       position: relative;
       z-index: 5;
-      background: rgba(12, 16, 24, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
+      background: rgba(12, 16, 24, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
       overflow: visible;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       box-shadow: 
-        0 4px 24px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        0 4px 24px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .kuro-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
     
     /* Ambient glow behind card - creates depth */
@@ -244,82 +543,85 @@ const KuroStyles = () => (
     .kuro-card-inner {
       position: relative;
       overflow: hidden;
-      border-radius: 11px;
+      border-radius: 15px;
     }
     
-    /* Corner decorations */
+    /* Corner decorations - more subtle */
     .kuro-card-inner::before {
       content: '';
       position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 20px;
-      height: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
-      border-right: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 0 4px 0 0;
+      top: 10px;
+      right: 10px;
+      width: 16px;
+      height: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0 6px 0 0;
       z-index: 2;
+      opacity: 0.8;
     }
     
     .kuro-card-inner::after {
       content: '';
       position: absolute;
-      bottom: 8px;
-      left: 8px;
-      width: 20px;
-      height: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      border-left: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0 0 0 4px;
+      bottom: 10px;
+      left: 10px;
+      width: 16px;
+      height: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0 0 0 6px;
       z-index: 2;
+      opacity: 0.8;
     }
     
     .kuro-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%, rgba(255, 255, 255, 0.03) 100%);
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%, transparent 60%, rgba(255, 255, 255, 0.02) 100%);
     }
     
     .kuro-header h3 {
       color: #f8fafc;
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
       display: flex;
       align-items: center;
-      gap: 8px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      gap: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     
-    /* Header icon decoration - white accent */
+    /* Header icon decoration - gradient accent */
     .kuro-header h3::before {
       content: '';
       width: 3px;
-      height: 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+      height: 16px;
+      background: linear-gradient(180deg, rgba(251, 191, 36, 0.9), rgba(251, 191, 36, 0.4));
       border-radius: 2px;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
     }
     
     .kuro-body {
-      padding: 16px;
+      padding: 18px;
       color: #e2e8f0;
     }
     
     /* ═══ BUTTONS - Glassy style with bright text ═══ */
     .kuro-btn {
       position: relative;
-      background: rgba(15, 20, 28, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
+      background: rgba(15, 20, 28, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
       padding: 12px;
       color: #f1f5f9;
       font-size: 11px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       text-align: center;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -327,62 +629,83 @@ const KuroStyles = () => (
       -webkit-backdrop-filter: blur(8px);
     }
     
+    /* Ripple container */
+    .kuro-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
     .kuro-btn:hover {
-      border-color: rgba(255, 255, 255, 0.35);
+      border-color: rgba(255, 255, 255, 0.2);
       color: #ffffff;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    
+    .kuro-btn:hover::before {
+      opacity: 1;
+    }
+    
+    .kuro-btn:active {
+      transform: translateY(0) scale(0.97);
+      transition: transform 0.1s ease;
     }
     
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
-      background: rgba(240, 192, 64, 0.2);
-      border-color: rgba(240, 192, 64, 0.8);
+      background: rgba(240, 192, 64, 0.15);
+      border-color: rgba(240, 192, 64, 0.7);
       color: #fef08a;
-      box-shadow: 0 0 30px rgba(240, 192, 64, 0.35), inset 0 0 20px rgba(240, 192, 64, 0.1);
-      text-shadow: 0 0 10px rgba(240, 192, 64, 0.5);
+      box-shadow: 0 0 25px rgba(240, 192, 64, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(240, 192, 64, 0.08);
+      text-shadow: 0 0 12px rgba(240, 192, 64, 0.6);
+      animation: borderGlow 2s ease-in-out infinite;
     }
     
     .kuro-btn.active-pink {
-      background: rgba(236, 72, 153, 0.2);
-      border-color: rgba(236, 72, 153, 0.8);
+      background: rgba(236, 72, 153, 0.15);
+      border-color: rgba(236, 72, 153, 0.7);
       color: #fbcfe8;
-      box-shadow: 0 0 30px rgba(236, 72, 153, 0.35), inset 0 0 20px rgba(236, 72, 153, 0.1);
-      text-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+      box-shadow: 0 0 25px rgba(236, 72, 153, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(236, 72, 153, 0.08);
+      text-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
     }
     
     /* Blue for Standard banners */
     .kuro-btn.active-cyan {
-      background: rgba(56, 189, 248, 0.2);
-      border-color: rgba(56, 189, 248, 0.8);
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.7);
       color: #bae6fd;
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.1);
-      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(56, 189, 248, 0.08);
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
     }
     
     .kuro-btn.active-purple {
-      background: rgba(168, 85, 247, 0.2);
-      border-color: rgba(168, 85, 247, 0.8);
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.7);
       color: #e9d5ff;
-      box-shadow: 0 0 30px rgba(168, 85, 247, 0.35), inset 0 0 20px rgba(168, 85, 247, 0.1);
-      text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(168, 85, 247, 0.08);
+      text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
     }
     
     /* Muted green for Both options */
     .kuro-btn.active-emerald {
-      background: rgba(34, 197, 94, 0.2);
-      border-color: rgba(34, 197, 94, 0.8);
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.7);
       color: #86efac;
-      box-shadow: 0 0 30px rgba(34, 197, 94, 0.3), inset 0 0 20px rgba(34, 197, 94, 0.1);
-      text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(34, 197, 94, 0.08);
+      text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
     }
     
     .kuro-btn.active-orange {
-      background: rgba(251, 146, 60, 0.2);
-      border-color: rgba(251, 146, 60, 0.8);
+      background: rgba(251, 146, 60, 0.15);
+      border-color: rgba(251, 146, 60, 0.7);
       color: #fed7aa;
-      box-shadow: 0 0 30px rgba(251, 146, 60, 0.35), inset 0 0 20px rgba(251, 146, 60, 0.1);
-      text-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+      box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 146, 60, 0.08);
+      text-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
     }
     
     /* Red for 50/50 */
@@ -511,14 +834,6 @@ const KuroStyles = () => (
     }
     .kuro-stat-cyan::before {
       background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 1), transparent);
-    }
-    
-    .kuro-stat-green {
-      background: rgba(34, 197, 94, 0.15);
-      border-color: rgba(34, 197, 94, 0.5);
-    }
-    .kuro-stat-green::before {
-      background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 1), transparent);
     }
     
     .kuro-stat-purple {
@@ -723,41 +1038,6 @@ const KuroStyles = () => (
 );
 
 // [SECTION:PITYRING]
-const PityRing = ({ value, max, color, softPity }) => {
-  const radius = 24;
-  const circumference = 2 * Math.PI * radius;
-  const progress = (value / max) * circumference;
-  const strokeColor = {
-    gold: '#fbbf24',    // Gold/Yellow for Featured
-    pink: '#f472b6',    // Pink for Featured Weapon
-    cyan: '#38bdf8',    // Blue for Standard banners
-    purple: '#a855f7'   // Purple for 4★
-  }[color] || '#fbbf24';
-  
-  const isSoft = value >= (softPity || 66);
-  const softColor = color === 'cyan' ? '#67e8f9' : color === 'pink' ? '#f9a8d4' : '#fb923c';
-  const softPityClass = color === 'cyan' ? 'kuro-soft-pity-cyan' : color === 'pink' ? 'kuro-soft-pity-pink' : 'kuro-soft-pity';
-  
-  return (
-    <div className="kuro-pity-ring">
-      <svg width="56" height="56" viewBox="0 0 56 56">
-        <circle className="ring-bg" cx="28" cy="28" r={radius} />
-        <circle 
-          className="ring-progress" 
-          cx="28" cy="28" r={radius}
-          stroke={isSoft ? softColor : strokeColor}
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference - progress}
-          style={{ filter: `drop-shadow(0 0 8px ${isSoft ? (color === 'cyan' ? 'rgba(103,232,249,0.7)' : color === 'pink' ? 'rgba(244,114,182,0.7)' : 'rgba(251,146,60,0.7)') : strokeColor + '80'})` }}
-        />
-      </svg>
-      <div className={`kuro-pity-value ${isSoft ? softPityClass : ''}`} style={{ color: isSoft ? softColor : strokeColor }}>
-        {value}
-      </div>
-    </div>
-  );
-};
-
 // [SECTION:SERVERS]
 const SERVERS = {
   'Asia': { name: 'Asia', timezone: 'Asia/Shanghai', utcOffset: 8, resetHour: 4 },
@@ -775,15 +1055,22 @@ const CURRENT_BANNERS = {
   characterBannerImage: '',
   weaponBannerImage: '',
   eventBannerImage: '',
+  whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
+  doubledPawnsImage: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg',
+  towerOfAdversityImage: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg',
+  illusiveRealmImage: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg',
+  standardCharBannerImage: 'https://i.ibb.co/zVf13CMn/Tidal-Chorus.webp',
+  standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
+  dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'mornye', name: 'Mornye', title: 'Distant May the Starlights Be', element: 'Fusion', weaponType: 'Broadblade', isNew: true, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'] },
-    { id: 'augusta', name: 'Augusta', title: 'The Eternal Radiance on the Crown', element: 'Electro', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'] },
-    { id: 'iuno', name: 'Iuno', title: "Across Time's Waxes and Wanes", element: 'Aero', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'] },
+    { id: 'mornye', name: 'Mornye', title: 'Distant May the Starlights Be', element: 'Fusion', weaponType: 'Broadblade', isNew: true, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], imageUrl: 'https://i.ibb.co/8nY1VYry/Mornye-Banner-Art.png' },
+    { id: 'augusta', name: 'Augusta', title: 'The Eternal Radiance on the Crown', element: 'Electro', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], imageUrl: 'https://i.ibb.co/wFwjx4pT/Augusta-Banner-Art.jpg' },
+    { id: 'iuno', name: 'Iuno', title: "Across Time's Waxes and Wanes", element: 'Aero', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], imageUrl: 'https://i.ibb.co/yc7zDHbS/Iuno-Banner-Art.png' },
   ],
   weapons: [
-    { id: 'starfield', name: 'Starfield Calibrator', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Mornye', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'] },
-    { id: 'thunderflare', name: 'Thunderflare Dominion', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Augusta', element: 'Electro', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'] },
-    { id: 'moongazer', name: "Moongazer's Sigil", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Iuno', element: 'Aero', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'] },
+    { id: 'starfield', name: 'Starfield Calibrator', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Mornye', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/8nYg7XGW/Starfield-Calibrator-Banner-Art.png' },
+    { id: 'thunderflare', name: 'Thunderflare Dominion', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Augusta', element: 'Electro', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/hRxH8pdS/Thunderflare-Dominion-Banner-Art.png' },
+    { id: 'moongazer', name: "Moongazer's Sigil", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Iuno', element: 'Aero', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/GfwBK9gB/Moongazer-039-s-Sigil-Banner-Art.jpg' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -794,6 +1081,11 @@ const CURRENT_BANNERS = {
     { name: 'Static Mist', type: 'Pistols' },
     { name: 'Abyss Surges', type: 'Gauntlets' },
     { name: 'Cosmic Ripples', type: 'Rectifier' },
+    { name: 'Radiance Cleaver', type: 'Broadblade' },
+    { name: 'Laser Shearer', type: 'Sword' },
+    { name: 'Phasic Homogenizer', type: 'Pistols' },
+    { name: 'Pulsation Bracer', type: 'Gauntlets' },
+    { name: 'Boson Astrolabe', type: 'Rectifier' },
   ],
 };
 
@@ -846,6 +1138,409 @@ const BANNER_HISTORY = [
   { version: '1.0', phase: 1, characters: ['Jiyan'], weapons: ['Verdant Summit'], startDate: '2024-05-23', endDate: '2024-06-13' },
 ];
 
+// [SECTION:CHARACTER_DATA]
+const CHARACTER_DATA = {
+  // 5★ Resonators
+  'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
+    desc: 'General of the Midnight Rangers. Powerful burst DPS in Qingloong Mode.',
+    skills: ['Lone Lance', 'Windqueller', 'Emerald Storm: Prelude', 'Qingloong Mode'],
+    ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
+    bestEchoes: ['Feilian Beringal', 'Sierra Gale 4pc'], bestWeapon: 'Verdant Summit',
+    teams: ['Jiyan + Iuno + Shorekeeper', 'Jiyan + Mortefi + Verina'] },
+  'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
+    desc: 'Notorious mercenary "The Ghost". Combo-focused Electro DPS.',
+    skills: ['Gnawing Fangs', 'Extermination Order', 'Phantom Etching', 'Death Messenger'],
+    ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
+    bestEchoes: ['Thundering Mephis', 'Void Thunder 4pc'], bestWeapon: 'Lustrous Razor',
+    teams: ['Calcharo + Yinlin + Verina', 'Calcharo + Yinlin + Shorekeeper'] },
+  'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
+    desc: 'Eccentric puppeteer with Cosmos & Cloudy. Rampage mode specialist.',
+    skills: ['Wooly Attack', 'Flaming Woolies', 'Cloudburst', 'Cosmos Rampage'],
+    ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
+    bestEchoes: ['Inferno Rider', 'Molten Rift 4pc'], bestWeapon: 'Cosmic Ripples',
+    teams: ['Encore + Changli + Verina', 'Encore + Sanhua + Shorekeeper'] },
+  'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
+    desc: 'Martial artist seeking peace. Shields, grouping, and Aero buff.',
+    skills: ['Fengyiquan', 'Calming Air', 'Purifying Waltz', 'Chi Counter'],
+    ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Abyss Surges',
+    teams: ['Jianxin + Jiyan + Verina', 'Jianxin + Main DPS + Healer'] },
+  'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
+    desc: 'Opera performer with lion spirit. Aerial combo specialist.',
+    skills: ['Frost Fang', 'Ancient Arts', 'Stormbreaker', 'Lion Form'],
+    ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
+    bestEchoes: ['Crownless', 'Freezing Frost 4pc'], bestWeapon: 'Abyss Surges',
+    teams: ['Lingyang + Sanhua + Verina', 'Lingyang + Zhezhi + Shorekeeper'] },
+  'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
+    desc: 'Researcher of life. Premium healer with ATK buff and DMG Deepen.',
+    skills: ['Cultivation', 'Botany Experiment', 'Arboreal Flourish', 'Starflower Blooms'],
+    ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Cosmic Ripples',
+    teams: ['Any team - universal healer and buffer'] },
+  'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
+    desc: 'Covert investigator with puppet Zapstring. Off-field Electro Coordinated Attacks.',
+    skills: ['Zapstring Dance', 'Magnetic Roar', 'Thunder Wrath', 'Chameleon Cipher'],
+    ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Iris' },
+    bestEchoes: ['Thundering Mephis', 'Void Thunder 4pc'], bestWeapon: 'Stringmaster',
+    teams: ['Yinlin + Jinhsi + Verina', 'Yinlin + Calcharo + Shorekeeper'] },
+  'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
+    desc: 'Magistrate of Jinzhou. Incarnation burst with massive AoE.',
+    skills: ['Trailing Slash', 'Illuminous Epiphany', 'Purge of Light', 'Incarnation'],
+    ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: "Loong's Pearl" },
+    bestEchoes: ['Sentinel Jué', 'Celestial Light 4pc'], bestWeapon: 'Ages of Harvest',
+    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
+  'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'True Sentinel of Jinzhou. Fast Fusion combos and Fusion DMG Amp.',
+    skills: ['Blazing Enlightenment', 'Tripartite Flames', 'Radiance of Fealty', 'Enflamement'],
+    ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Pavo Plum' },
+    bestEchoes: ['Inferno Rider', 'Molten Rift 4pc'], bestWeapon: 'Blazing Brilliance',
+    teams: ['Changli + Brant + Shorekeeper', 'Changli + Encore + Verina'] },
+  'Zhezhi': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
+    desc: 'Painter who brings art to life. Off-field Glacio Coordinated Attacks.',
+    skills: ['Frost Ink', 'Manifestation', 'Living Canvas', 'Creations Abound'],
+    ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
+    bestEchoes: ['Crownless', 'Freezing Frost 4pc'], bestWeapon: 'Rime-Draped Sprouts',
+    teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
+  'Xiangli Yao': { rarity: 5, element: 'Electro', weapon: 'Gauntlets', role: 'Main DPS',
+    desc: 'Huaxu Academy researcher. Transforms into combat mech for burst.',
+    skills: ['Probe', 'Deduction', 'Cogitation Model', 'Law of Reigns'],
+    ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Whisperin Core', specialty: 'Violet Coral' },
+    bestEchoes: ['Thundering Mephis', 'Void Thunder 4pc'], bestWeapon: "Verity's Handle",
+    teams: ['Xiangli Yao + Yinlin + Verina', 'Xiangli Yao + Yinlin + Shorekeeper'] },
+  'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
+    desc: 'Guardian of the Tethys. Premium healer with Crit buffs via Stellarealm.',
+    skills: ['Origin Calculus', 'Chaos Theory', 'End Loop', 'Illation'],
+    ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Stellar Symphony',
+    teams: ['Any team - best support in game'] },
+  'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
+    desc: 'Flower-like assassin. Stance-dancer with Budding and Blossom modes.',
+    skills: ['Thorn Blossom', 'Crimson Bud', 'Fervor Efflorescent', 'Ephemeral'],
+    ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
+    bestEchoes: ['Crownless', 'Sun-Sinking Eclipse 4pc'], bestWeapon: 'Red Spring',
+    teams: ['Camellya + Roccia + Shorekeeper', 'Camellya + Sanhua + Verina'] },
+  'Carlotta': { rarity: 5, element: 'Glacio', weapon: 'Pistols', role: 'Main DPS',
+    desc: 'Heiress of the Montelli family. Stylish Glacio burst gunslinger.',
+    skills: ['Silent Execution', 'Art of Violence', 'Era of New Wave', 'Imminent Oblivion'],
+    ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
+    bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'The Last Dance',
+    teams: ['Carlotta + Zhezhi + Shorekeeper', 'Carlotta + Buling + Verina'] },
+  'Roccia': { rarity: 5, element: 'Havoc', weapon: 'Gauntlets', role: 'Sub DPS',
+    desc: 'Clown performer from Rinascita. Havoc buffer with Basic ATK Amp.',
+    skills: ['Pero, Help', 'Acrobatic Trick', 'Commedia Improvviso!', 'Real Fantasy'],
+    ascension: { boss: 'Cleansing Conch', common: 'Tidal Residuum', specialty: 'Firecracker Jewelweed' },
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 4pc'], bestWeapon: 'Tragicomedy',
+    teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Cantarella + Verina'] },
+  'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Sub DPS',
+    desc: 'Acolyte of the Order of the Deep. Premier Spectro Frazzle applicator.',
+    skills: ['Chamuel\'s Star', 'Seeking the Light', 'Dawn of Enlightenment', 'Starflash'],
+    ascension: { boss: 'Cleansing Conch', common: 'Whisperin Core', specialty: 'Firecracker Jewelweed' },
+    bestEchoes: ['Mourning Aix', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
+    teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Spectro Rover + Verina'] },
+  'Brant': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
+    desc: 'Knight from Rinascita. Dual-DPS Fusion swordsman with self-heal.',
+    skills: ['Blazing Strike', 'Flame Rush', 'Inferno Judgment', 'Burning Soul'],
+    ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
+    bestEchoes: ['Dragon of Dirge', 'Tidebreaking Courage 5pc'], bestWeapon: 'Unflickering Valor',
+    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
+  'Cantarella': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Sub DPS',
+    desc: 'Head of the Fisalia family. Havoc sub-DPS with coordinated attacks and healing.',
+    skills: ['Shadow Strike', 'Venomous Dart', 'Lethal Masquerade', 'Twilight Veil'],
+    ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
+    bestEchoes: ['Hecate', 'Empyrean Anthem 5pc'], bestWeapon: 'Whispers of Sirens',
+    teams: ['Cantarella + Phrolova + Roccia', 'Cantarella + Camellya + Shorekeeper'] },
+  'Zani': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
+    desc: 'Averardo Vault security member. Spectro Frazzle DPS with counter-based burst.',
+    skills: ['Standard Defense Protocol', 'Crisis Response Protocol', 'Rekindle', 'Heliacal Embers'],
+    ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
+    bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Blazing Justice',
+    teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Spectro Rover + Verina'] },
+  'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
+    desc: 'Wandering bard. Aero Erosion applicator and off-field Aero buffer.',
+    skills: ['Solo Concert', 'Ensemble Sylph', 'Improvised Symphonic Poem', 'Recital'],
+    ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
+    bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 4pc'], bestWeapon: 'Woodland Aria',
+    teams: ['Ciaccona + Cartethyia + Aero Rover', 'Ciaccona + Cartethyia + Chisa'] },
+  'Cartethyia': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
+    desc: 'Blessed Maiden of Rinascita. HP-scaling Aero Erosion hypercarry with dual forms.',
+    skills: ['Sword Shadow', 'Plunging Recall', 'Blade of Howling Squall', 'Fleurdelys Form'],
+    ascension: { boss: 'Unfading Glory', common: 'Tidal Residuum', specialty: 'Bamboo Iris' },
+    bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 4pc'], bestWeapon: "Defier's Thorn",
+    teams: ['Cartethyia + Ciaccona + Aero Rover', 'Cartethyia + Ciaccona + Chisa'] },
+  'Lupa': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Sub DPS',
+    desc: 'Star Gladiator. Mono-Fusion enabler with Fusion RES shred and team DMG buffs.',
+    skills: ['Wolflame', 'Wolfaith', 'Dance With the Wolf', 'Pack Hunt'],
+    ascension: { boss: 'Unfading Glory', common: 'Howler Core', specialty: 'Bloodleaf Viburnum' },
+    bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 4pc'], bestWeapon: 'Wildfire Mark',
+    teams: ['Lupa + Brant + Changli', 'Lupa + Galbrena + Qiuyuan'] },
+  'Phrolova': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Main DPS',
+    desc: 'Fractsidus Overseer and former violinist. Havoc DPS with off-field Hecate summon.',
+    skills: ['Void Touch', 'Dark Blessing', 'Chaos Rift', 'Hecate'],
+    ascension: { boss: 'Truth in Lies', common: 'Polygon Core', specialty: 'Afterlife' },
+    bestEchoes: ['Nightmare: Hecate', 'Dream of the Lost 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Lethean Elegy',
+    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Roccia'] },
+  'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
+    desc: 'Ephor of Septimont. Electro DPS with time-stop and innate shielding.',
+    skills: ['Thunder Cleave', 'Storm Surge', 'Divine Judgment', 'Crown of Wills'],
+    ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
+    bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
+    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Yinlin + Verina'] },
+  'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
+    desc: 'Priestess of Septimont\'s Tetragon Temple. Heavy ATK buffer with healing and shield.',
+    skills: ['Temporal Fist', 'Chrono Shift', 'Time Dilation', 'Wan Light'],
+    ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
+    bestEchoes: ['Lady of the Sea', 'Crown of Valor 3pc + Sierra Gale 2pc'], bestWeapon: "Moongazer's Sigil",
+    teams: ['Iuno + Augusta + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
+  'Galbrena': { rarity: 5, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
+    desc: 'Black Shores Consultant, the Discord Slayer. Fusion Echo Skill & Heavy ATK hypercarry.',
+    skills: ['Light Slash', 'Radiant Barrier', 'Solar Flare', 'Divine Retribution'],
+    ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Stone Rose' },
+    bestEchoes: ['Corrosaurus', 'Flamewing\u0027s Shadow 3pc + Molten Rift 2pc'], bestWeapon: 'Lux & Umbra',
+    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Lupa + Brant'] },
+  'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'Former Mingting intelligence agent. Echo Skill DMG buffer with Crit DMG Amp.',
+    skills: ['Frost Edge', 'Winter Slash', 'Blizzard Dance', 'Eternal Winter'],
+    ascension: { boss: 'Truth in Lies', common: 'Whisperin Core', specialty: 'Wintry Bell' },
+    bestEchoes: ['Impermanence Heron', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
+    teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
+  'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Sub DPS',
+    desc: 'Startorch Academy student. Havoc support with DEF shred and Negative Status stacks.',
+    skills: ['Unseen Snare', 'Eye of Unraveling', 'Moment of Nihility', 'Chainsaw Mode'],
+    ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
+    bestEchoes: ['Threnodian: Leviathan', 'Thread of Severed Fate 3pc + Sun-Sinking Eclipse 2pc'], bestWeapon: 'Kumokiri',
+    teams: ['Chisa + Cartethyia + Ciaccona', 'Chisa + Zani + Phoebe'] },
+  'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
+    desc: 'Startorch Academy student and ex-mercenary. Tune Break DMG buffer for Off-Tune teams.',
+    skills: ['Light Shot', 'Radiant Bullet', 'Stellar Barrage', 'Supernova'],
+    ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
+    bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc'], bestWeapon: 'Spectrum Blaster',
+    teams: ['Lynae + Mornye + Iuno', 'Lynae + Mornye + Shorekeeper'] },
+  'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
+    desc: 'Startorch Academy professor. DEF-scaling Fusion healer with Off-Tune Buildup.',
+    skills: ['Rest Mass Energy', 'Syntony Field', 'Critical Protocol', 'Tune Rupture Response'],
+    ascension: { boss: 'Abyssal Husk', common: 'Tidal Residuum', specialty: 'Summer Flower' },
+    bestEchoes: ['Reactor Husk', 'Halo of Starry Radiance 5pc'], bestWeapon: 'Starfield Calibrator',
+    teams: ['Mornye + Lynae + Iuno', 'Mornye + Any DPS + Shorekeeper'] },
+  'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
+    desc: 'Startorch Academy doctor. Aerial Basic ATK Spectro DPS with sustained pressure.',
+    skills: ['Golden Reflux', 'Aureole of Execution', 'Scalpel Judgment', 'Ichor Flow'],
+    ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Lanternberry' },
+    bestEchoes: ['Twin Nova: Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
+    teams: ['Luuk Herssen + Lynae + Mornye', 'Luuk Herssen + Sanhua + Verina'] },
+  'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
+    desc: 'Digital ghost. Dual combat mode Fusion DPS with Tune Rupture and Fusion Burst.',
+    skills: ['Mech Transform', 'Tune Rupture Mode', 'Fusion Burst Mode', 'Resonance Liberation'],
+    ascension: { boss: 'Rage Tacet Core', common: 'Tidal Residuum', specialty: 'Pecok Flower' },
+    bestEchoes: ['Trailblazing Star echo', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
+    teams: ['Aemeath + Changli + Shorekeeper', 'Aemeath + Lynae + Mornye'] },
+  // 4★ Resonators
+  'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
+    desc: 'Suave information broker. Aero off-field applicator.',
+    skills: ['Mist Bullets', 'Shift Trick', 'Flower in the Mist', 'Mist Avatar'],
+    ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Wintry Bell' },
+    bestEchoes: ['Cyan Feathered Heron', 'Sierra Gale 4pc'], bestWeapon: 'Static Mist',
+    teams: ['Aalto + Jiyan + Verina', 'Aalto + Aero DPS + Shorekeeper'] },
+  'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
+    desc: "Huaxu Academy researcher with companion You'an. Free-to-play healer.",
+    skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Rejuvenation'],
+    ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Variation',
+    teams: ['Any team needing F2P healer'] },
+  'Chixia': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
+    desc: 'Enthusiastic patroller with dual pistols. Fusion DPS.',
+    skills: ['POW POW', 'Whizzing Fight Spirit', 'Blazing Flames', 'Burning Burst'],
+    ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
+    bestEchoes: ['Inferno Rider', 'Molten Rift 4pc'], bestWeapon: 'Static Mist',
+    teams: ['Chixia + Changli + Verina', 'Chixia + Mortefi + Baizhi'] },
+  'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'Midnight Ranger with HP consumption. Havoc DMG Bonus buffer.',
+    skills: ['Roaming Dragon', 'Crimson Fragment', 'Crimson Erosion', 'Sanguine Pulse'],
+    ascension: { boss: 'Group Abomination Tacet Core', common: 'Ring', specialty: 'Wintry Bell' },
+    bestEchoes: ['Impermanence Heron', 'Sun-Sinking Eclipse 4pc'], bestWeapon: 'Emerald of Genesis',
+    teams: ['Danjin + Camellya + Shorekeeper', 'Danjin + Havoc DPS + Verina'] },
+  'Yangyang': { rarity: 4, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'Midnight Rangers outrider. Free starter Aero Energy battery.',
+    skills: ['Feather as Blade', 'Zephyr Domain', 'Wind Spirals', 'Cerulean Song'],
+    ascension: { boss: 'Roaring Rock Fist', common: 'Ring', specialty: 'Wintry Bell' },
+    bestEchoes: ['Cyan Feathered Heron', 'Sierra Gale 4pc'], bestWeapon: 'Emerald of Genesis',
+    teams: ['Yangyang + Jiyan + Baizhi', 'Yangyang + Jiyan + Verina'] },
+  'Sanhua': { rarity: 4, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'Jinhsi\'s personal guard. Quick-swap Basic ATK Amp buffer.',
+    skills: ['Frigid Light', 'Eternal Frost', 'Glacial Gaze', 'Ice Prism'],
+    ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Ring', specialty: 'Coriolus' },
+    bestEchoes: ['Crownless', 'Freezing Frost 4pc'], bestWeapon: 'Emerald of Genesis',
+    teams: ['Sanhua + Camellya + Verina', 'Sanhua + Any Basic ATK DPS + Healer'] },
+  'Taoqi': { rarity: 4, element: 'Havoc', weapon: 'Broadblade', role: 'Support',
+    desc: 'Border defense director. Shielder with Resonance Skill DMG Deepen.',
+    skills: ['Concealed Edge', 'Fortified Defense', 'Iron Will', 'Rocksteady Shield'],
+    ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Lanternberry' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Discord',
+    teams: ['Taoqi + Jinhsi + Verina', 'Taoqi + DPS + Healer'] },
+  'Yuanwu': { rarity: 4, element: 'Electro', weapon: 'Gauntlets', role: 'Support',
+    desc: 'Boxing gym owner. Electro Coordinated Attacks and shields.',
+    skills: ['Leihuangquan', 'Thunder Wedge', 'Blazing Might', 'Rumbling Spark'],
+    ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
+    bestEchoes: ['Thundering Mephis', 'Rejuvenating Glow 4pc'], bestWeapon: 'Marcato',
+    teams: ['Yuanwu + Jinhsi + Verina', 'Yuanwu + Electro DPS + Healer'] },
+  'Mortefi': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Sub DPS',
+    desc: 'Hot-tempered researcher. Heavy ATK DMG buffer via Coordinated Attacks.',
+    skills: ['Impromptu', 'Passionate Variation', 'Violent Finale', 'Fury Fugue'],
+    ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Lanternberry' },
+    bestEchoes: ['Inferno Rider', 'Moonlit Clouds 4pc'], bestWeapon: 'Static Mist',
+    teams: ['Mortefi + Jiyan + Verina', 'Mortefi + Heavy ATK DPS + Shorekeeper'] },
+  'Youhu': { rarity: 4, element: 'Glacio', weapon: 'Gauntlets', role: 'Support',
+    desc: 'Whimsical antique appraiser. Glacio healer with Coordinated ATK Amp.',
+    skills: ['Frosty Punch', 'Lucky Draw', 'Fortune Blast', 'Icy Gourd'],
+    ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Ring', specialty: 'Coriolus' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Marcato',
+    teams: ['Youhu + Glacio DPS + Sub DPS'] },
+  'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
+    desc: 'Lollo Logistics navigator. Electro sub-DPS with Res. Skill DMG Amp.',
+    skills: ['Frost Touch', 'Cold Blessing', 'Winter Veil', 'Glacial Embrace'],
+    ascension: { boss: 'Elegy Tacet Core', common: 'Whisperin Core', specialty: "Loong's Pearl" },
+    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Variation',
+    teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Glacio DPS + Verina'] },
+  'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
+    desc: 'Spiritchaser Taoist and fortune-teller. Electro healer with DMG Amp buffs.',
+    skills: ['Twin Thunders', 'Trigram Combo', 'Lightning Burst', 'Blazing Aura'],
+    ascension: { boss: 'Topological Confinement', common: 'Polygon Core', specialty: 'Nova' },
+    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Stellar Symphony',
+    teams: ['Buling + Carlotta + Zhezhi', 'Buling + DPS + Sub DPS'] },
+}
+
+// [SECTION:WEAPON_DATA]
+const WEAPON_DATA = {
+  // 5★ Weapons
+  'Verdant Summit': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
+    desc: 'Jiyan signature. Increases Resonance Skill DMG after Heavy Attack hits.',
+    passive: 'Heavy Attack hits grant Resonance Skill DMG +20%', bestFor: ['Jiyan'] },
+  'Lustrous Razor': { rarity: 5, type: 'Broadblade', stat: 'ATK%',
+    desc: 'Standard 5★ Broadblade. Electro DMG and combo finisher boost.',
+    passive: 'ATK +12%, Electro DMG +12% on combo finisher', bestFor: ['Calcharo'] },
+  'Emerald of Genesis': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
+    desc: 'Standard 5★. Increases ATK after using Resonance Skill.',
+    passive: 'Resonance Skill use grants ATK +12%', bestFor: ['Danjin', 'Yangyang'] },
+  'Static Mist': { rarity: 5, type: 'Pistols', stat: 'Crit Rate',
+    desc: 'Standard 5★. Energy regeneration and ATK boost.',
+    passive: 'Energy Regen +12%, ATK +12% when full energy', bestFor: ['Mortefi', 'Aalto'] },
+  'Abyss Surges': { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate',
+    desc: 'Standard 5★. Increases ATK based on energy consumed.',
+    passive: 'ATK +8% per 10 energy consumed, max 4 stacks', bestFor: ['Jianxin', 'Lingyang'] },
+  'Cosmic Ripples': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate',
+    desc: 'Standard 5★. Basic Attack DMG increase.',
+    passive: 'Basic Attack DMG +12%, stacks on hit', bestFor: ['Encore', 'Verina'] },
+  'Stringmaster': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG',
+    desc: 'Yinlin signature. Increases Resonance Skill DMG.',
+    passive: 'Resonance Skill DMG +24%, Crit Rate +8%', bestFor: ['Yinlin'] },
+  'Ages of Harvest': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG',
+    desc: 'Jinhsi signature. Spectro DMG and Liberation buff.',
+    passive: 'Spectro DMG +12%, Liberation DMG +24%', bestFor: ['Jinhsi'] },
+  'Blazing Brilliance': { rarity: 5, type: 'Sword', stat: 'Crit DMG',
+    desc: 'Changli signature. Fusion DMG and Skill Enhancement.',
+    passive: 'Fusion DMG +12%, Resonance Skill +24%', bestFor: ['Changli'] },
+  'Rime-Draped Sprouts': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG',
+    desc: 'Zhezhi signature. Increases off-field DMG.',
+    passive: 'Off-field DMG +24%, Glacio DMG +12%', bestFor: ['Zhezhi'] },
+  "Verity's Handle": { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
+    desc: 'Xiangli Yao signature. Electro and mech bonuses.',
+    passive: 'Electro DMG +12%, Mech form +24%', bestFor: ['Xiangli Yao'] },
+  'Stellar Symphony': { rarity: 5, type: 'Rectifier', stat: 'Energy Regen',
+    desc: 'Shorekeeper signature. Ultimate support weapon.',
+    passive: 'Energy Regen +20%, team ATK buff +20%', bestFor: ['Shorekeeper'] },
+  'Red Spring': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
+    desc: 'Camellya signature. Havoc DMG amplification.',
+    passive: 'Havoc DMG +12%, Skill DMG +24%', bestFor: ['Camellya'] },
+  'The Last Dance': { rarity: 5, type: 'Pistols', stat: 'Crit DMG',
+    desc: 'Carlotta signature. Glacio and charged attack focus.',
+    passive: 'Glacio DMG +12%, Charged ATK +24%', bestFor: ['Carlotta'] },
+  'Tragicomedy': { rarity: 5, type: 'Gauntlets', stat: 'ATK%',
+    desc: 'Roccia signature. Support gauntlets.',
+    passive: 'Team ATK +12%, Outro Skill +24%', bestFor: ['Roccia'] },
+  'Luminous Hymn': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG',
+    desc: 'Phoebe signature. Spectro DPS rectifier.',
+    passive: 'Spectro DMG +12%, Card skills +24%', bestFor: ['Phoebe'] },
+  'Unflickering Valor': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
+    desc: 'Brant signature. Aggressive Fusion sword.',
+    passive: 'Fusion DMG +12%, ATK speed +10%', bestFor: ['Brant'] },
+  'Whispers of Sirens': { rarity: 5, type: 'Pistols', stat: 'Crit DMG',
+    desc: 'Cantarella signature. Havoc pistols.',
+    passive: 'Havoc DMG +12%, Off-field +24%', bestFor: ['Cantarella'] },
+  'Blazing Justice': { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
+    desc: 'Zani signature. Spectro DPS gauntlets with DEF ignore and Frazzle Amp.',
+    passive: 'ATK +24%, Spectro Frazzle DMG Amp +50%, DEF Ignore +16%', bestFor: ['Zani'] },
+  'Woodland Aria': { rarity: 5, type: 'Pistols', stat: 'Crit Rate',
+    desc: 'Ciaccona signature. Aero Erosion pistols with Aero RES shred.',
+    passive: 'ATK +12%, Aero DMG +24% on Erosion, Aero RES -16%', bestFor: ['Ciaccona'] },
+  "Defier's Thorn": { rarity: 5, type: 'Sword', stat: 'HP%',
+    desc: 'Cartethyia signature. Aero sword with HP scaling and DEF ignore.',
+    passive: 'HP +24%, DEF Ignore +16% on Aero Eroded targets', bestFor: ['Cartethyia'] },
+  'Wildfire Mark': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG',
+    desc: 'Lupa signature. Fusion broadblade with Liberation DMG boost and team buff.',
+    passive: 'ATK +12%, Res. Liberation DMG +44%, team DMG +24%', bestFor: ['Lupa'] },
+  'Lethean Elegy': { rarity: 5, type: 'Rectifier', stat: 'ATK%',
+    desc: 'Phrolova signature. Havoc support.',
+    passive: 'Havoc DMG +12%, Team buff +20%', bestFor: ['Phrolova'] },
+  'Thunderflare Dominion': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG',
+    desc: 'Augusta signature. Electro broadblade.',
+    passive: 'Electro DMG +12%, Heavy ATK +24%', bestFor: ['Augusta'] },
+  "Moongazer's Sigil": { rarity: 5, type: 'Gauntlets', stat: 'Energy Regen',
+    desc: 'Iuno signature. Aero support gauntlets.',
+    passive: 'Aero DMG +12%, Time skills +24%', bestFor: ['Iuno'] },
+  'Lux & Umbra': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
+    desc: 'Galbrena signature. Spectro broadblade.',
+    passive: 'Spectro DMG +12%, Liberation +24%', bestFor: ['Galbrena'] },
+  'Emerald Sentence': { rarity: 5, type: 'Sword', stat: 'Crit DMG',
+    desc: 'Qiuyuan signature. Glacio sword.',
+    passive: 'Glacio DMG +12%, Skill +24%', bestFor: ['Qiuyuan'] },
+  'Kumokiri': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
+    desc: 'Chisa signature. Havoc broadblade with Negative Status synergy and team DMG buff.',
+    passive: 'ATK +12%, Res. Liberation DMG +24%, All-Type DMG +24% at max stacks', bestFor: ['Chisa'] },
+  'Spectrum Blaster': { rarity: 5, type: 'Pistols', stat: 'Crit DMG',
+    desc: 'Lynae signature. Spectro pistols.',
+    passive: 'Spectro DMG +12%, Charged +24%', bestFor: ['Lynae'] },
+  'Starfield Calibrator': { rarity: 5, type: 'Broadblade', stat: 'Energy Regen',
+    desc: 'Mornye signature. Fusion broadblade with DEF scaling and Crit DMG team buff.',
+    passive: 'DEF +32%, Concerto +16, team Crit DMG +40% on heal', bestFor: ['Mornye'] },
+  'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit DMG',
+    desc: 'Aemeath signature. Fusion sword with DEF Ignore and Melt RES Ignore.',
+    passive: 'DEF Ignore +32%, Melt RES Ignore +10%, Res. Liberation DMG boost', bestFor: ['Aemeath'] },
+  "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
+    desc: 'Luuk Herssen signature. Spectro gauntlets with aerial combat enhancement.',
+    passive: 'Spectro DMG +12%, Aerial Basic ATK +24%', bestFor: ['Luuk Herssen'] },
+  // Standard 5★ Weapons (Lustrous Tide pool - v3.0)
+  'Radiance Cleaver': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
+    desc: 'Standard 5★ Broadblade. Enhances Heavy Attack damage.',
+    passive: 'Heavy ATK DMG +12%, ATK +12% on hit', bestFor: ['Broadblade users'] },
+  'Laser Shearer': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
+    desc: 'Standard 5★ Sword. Energy and Skill DMG synergy.',
+    passive: 'Energy Regen +12%, Res. Skill DMG +12%', bestFor: ['Sword users'] },
+  'Phasic Homogenizer': { rarity: 5, type: 'Pistols', stat: 'Crit Rate',
+    desc: 'Standard 5★ Pistols. Off-field and Liberation synergy.',
+    passive: 'Off-field DMG +12%, Res. Liberation +12%', bestFor: ['Pistol users'] },
+  'Pulsation Bracer': { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate',
+    desc: 'Standard 5★ Gauntlets. Coordinated Attack enhancement.',
+    passive: 'Coordinated ATK +12%, ATK +12% on swap', bestFor: ['Gauntlet users'] },
+  'Boson Astrolabe': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate',
+    desc: 'Standard 5★ Rectifier. Healing and team ATK boost.',
+    passive: 'Healing +12%, team ATK +12% on heal', bestFor: ['Rectifier users'] },
+  // 4★ Weapons (selected important ones)
+  'Discord': { rarity: 4, type: 'Broadblade', stat: 'ATK%',
+    desc: 'Battle Pass broadblade. Good general option.',
+    passive: 'Resonance Skill +16%', bestFor: ['Taoqi', 'Any Broadblade'] },
+  'Variation': { rarity: 4, type: 'Rectifier', stat: 'Energy Regen',
+    desc: 'Free healing rectifier. Good for supports.',
+    passive: 'Healing +15%, Energy +12%', bestFor: ['Baizhi', 'Healers'] },
+  'Marcato': { rarity: 4, type: 'Gauntlets', stat: 'ATK%',
+    desc: 'Battle Pass gauntlets. General DPS option.',
+    passive: 'ATK +12% on skill use', bestFor: ['Yuanwu', 'Gauntlet users'] },
+  'Lunar Cutter': { rarity: 4, type: 'Sword', stat: 'ATK%',
+    desc: 'Free sword. Solid general choice.',
+    passive: 'Basic ATK +16%', bestFor: ['Sword users'] },
+  'Thunderbolt': { rarity: 4, type: 'Pistols', stat: 'ATK%',
+    desc: 'Free pistols. Good starter option.',
+    passive: 'Electro DMG +12%', bestFor: ['Pistol users'] },
+};
+
 // [SECTION:EVENTS]
 const EVENTS = {
   whimperingWastes: { 
@@ -858,7 +1553,7 @@ const EVENTS = {
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    imageUrl: 'https://i.imgur.com/DyzH6nH.png'
+    imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
   doubledPawns: { 
     name: 'Doubled Pawns Matrix', 
@@ -870,7 +1565,7 @@ const EVENTS = {
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: 'https://i.imgur.com/mOFZ4A8.jpeg'
+    imageUrl: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg'
   },
   towerOfAdversity: { 
     name: 'Tower of Adversity', 
@@ -881,7 +1576,8 @@ const EVENTS = {
     currentEnd: '2026-02-02T04:00:00Z',
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
-    accentColor: 'orange'
+    accentColor: 'orange',
+    imageUrl: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg'
   },
   illusiveRealm: { 
     name: 'Fantasies of the Thousand Gateways', 
@@ -893,7 +1589,7 @@ const EVENTS = {
     rewards: '300 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
-    imageUrl: 'https://i.imgur.com/KG3PwMv.jpeg'
+    imageUrl: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg'
   },
   dailyReset: { 
     name: 'Daily Reset', 
@@ -935,6 +1631,7 @@ const HARD_PITY = 80, SOFT_PITY_START = 66, AVG_PITY = 62.5;
 // Subscription and top-up prices (USD) - Updated January 2026
 const SUBSCRIPTIONS = {
   lunite: { name: 'Lunite Subscription', price: 4.99, astrite: 3000, daily: 90, duration: 30, desc: '300 Lunite + 90 Astrite/day for 30 days' },
+  weekly: { name: 'Weekly Subscription', price: 9.99, astrite: 1600, lunite: 680, duration: 15, desc: '680 Lunite + 1600 Astrite over 15 days (Day 1 + Day 3 + Day 7)' },
   bpInsider: { name: 'Pioneer Podcast - Insider', price: 9.99, astrite: 680, radiant: 5, lustrous: 2, desc: '680 Astrite + 5 Radiant Tides + 2 Lustrous Tides' },
   bpConnoisseur: { name: 'Pioneer Podcast - Connoisseur', price: 19.99, astrite: 680, radiant: 5, lustrous: 5, desc: '680 Astrite + 5 Radiant Tides + 5 Lustrous Tides' },
   directTop60: { name: 'Direct Top-Up (60)', price: 0.99, astrite: 60, desc: '60 Astrite' },
@@ -992,8 +1689,8 @@ const simulateGacha = (pulls, pity, guaranteed, type, target) => {
     while (r > 0 && c < target) {
       p++; r--;
       let rate = 0.008;
-      if (p >= 66) rate = Math.min(0.008 + (p - 65) * 0.055, 1.0);
-      if (p >= 80) rate = 1.0;
+      if (p >= SOFT_PITY_START) rate = Math.min(0.008 + (p - SOFT_PITY_START + 1) * 0.055, 1.0);
+      if (p >= HARD_PITY) rate = 1.0;
       if (Math.random() < rate) {
         if (type === 'char') {
           // Character banner: 50/50 system
@@ -1012,10 +1709,13 @@ const simulateGacha = (pulls, pity, guaranteed, type, target) => {
 
 const factorial = (n) => {
   if (n <= 1) return 1;
-  if (n > 20) return 2.43290200817664e18;
-  let result = 1;
-  for (let i = 2; i <= n; i++) result *= i;
-  return result;
+  if (n <= 20) {
+    let result = 1;
+    for (let i = 2; i <= n; i++) result *= i;
+    return result;
+  }
+  // Stirling's approximation for n > 20 (avoids overflow)
+  return Math.sqrt(2 * Math.PI * n) * Math.pow(n / Math.E, n);
 };
 
 // [SECTION:STATE]
@@ -1046,17 +1746,32 @@ const initialState = {
     addedIncome: [],
   },
   bookmarks: [],
-  settings: { showOnboarding: true, autoSyncPity: true, theme: 'default' },
+  settings: { showOnboarding: true, autoSyncPity: false, theme: 'default' },
 };
 
 // Load saved state from persistent storage
 const STORAGE_KEY = 'whispering-wishes-v2.2';
+
+// Helper to check if localStorage is available (fails in some preview modes)
+const isStorageAvailable = () => {
+  try {
+    const test = '__storage_test__';
+    localStorage.setItem(test, test);
+    localStorage.removeItem(test);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const storageAvailable = isStorageAvailable();
 
 const loadState = () => {
   return initialState;
 };
 
 const loadFromStorage = async () => {
+  if (!storageAvailable) return null;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return null;
@@ -1065,8 +1780,16 @@ const loadFromStorage = async () => {
       ...initialState,
       ...parsed,
       server: parsed.server || initialState.server,
-      profile: { ...initialState.profile, ...parsed.profile },
-      calc: { ...initialState.calc, ...parsed.calc },
+      profile: {
+        ...initialState.profile,
+        ...parsed.profile,
+        featured: { ...initialState.profile.featured, ...(parsed.profile?.featured || {}) },
+        weapon: { ...initialState.profile.weapon, ...(parsed.profile?.weapon || {}) },
+        standardChar: { ...initialState.profile.standardChar, ...(parsed.profile?.standardChar || {}) },
+        standardWeap: { ...initialState.profile.standardWeap, ...(parsed.profile?.standardWeap || {}) },
+        beginner: { ...initialState.profile.beginner, ...(parsed.profile?.beginner || {}) },
+      },
+      calc: { ...initialState.calc }, // Always start calculator fresh - no sync from saved data
       planner: { ...initialState.planner, ...parsed.planner },
       settings: { ...initialState.settings, ...parsed.settings },
       bookmarks: parsed.bookmarks || [],
@@ -1078,6 +1801,7 @@ const loadFromStorage = async () => {
 };
 
 const saveToStorage = async (state) => {
+  if (!storageAvailable) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
@@ -1101,7 +1825,7 @@ const reducer = (state, action) => {
       const totalAstrite = dailyTotal * action.days;
       return { ...state, calc: { ...state.calc, astrite: String((+state.calc.astrite || 0) + totalAstrite) } };
     }
-    case 'SYNC_PITY': return { ...state, calc: { ...state.calc, charPity: state.profile.featured.pity5 || 0, charGuaranteed: state.profile.featured.guaranteed || false, weapPity: state.profile.weapon.pity5 || 0, stdCharPity: state.profile.standardChar?.pity5 || 0, stdWeapPity: state.profile.standardWeap?.pity5 || 0 }};
+    // SYNC_PITY removed - calculator is fully independent from history
     case 'IMPORT_HISTORY': {
       const newProfile = { ...state.profile, importedAt: new Date().toISOString(), uid: action.uid || state.profile.uid };
       if (action.bannerType === 'featured') {
@@ -1134,18 +1858,22 @@ const reducer = (state, action) => {
 // [SECTION:CALCULATIONS]
 const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   const effective = pulls + pity;
-  // Character: 50/50 means avg ~125 pulls, guaranteed means avg ~62.5
+  // Character: 50/50 means avg ~93.75 pulls per featured (1.5x), guaranteed means avg ~62.5
   // Weapon: 100% featured rate, avg ~62.5 pulls per 5★
-  const avgForFeatured = isChar ? (guaranteed ? AVG_PITY : AVG_PITY * 2) : AVG_PITY;
+  const avgForFeatured = isChar ? (guaranteed ? AVG_PITY : AVG_PITY * 1.5) : AVG_PITY;
   const lambda = effective / avgForFeatured;
   
   const poisson = (n) => {
     if (lambda <= 0) return 0;
+    // CDF complement: P(X >= n) using Poisson
     let prob = 0;
-    for (let k = n; k <= n + 10; k++) prob += (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+    for (let k = n; k <= Math.max(n + 20, Math.ceil(lambda * 3)); k++) {
+      prob += (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+    }
     return Math.min(100, Math.max(0, prob * 100));
   };
   
+  // Worst case: hard pity every time, always losing 50/50
   const worstCase = HARD_PITY * copies * (isChar && !guaranteed ? 2 : 1);
   const successRate = effective >= worstCase ? 100 : poisson(copies);
   const missingPulls = Math.max(0, worstCase - effective);
@@ -1171,16 +1899,334 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   };
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// UNIFIED MASK GENERATORS & SHARED COLOR MAPS (deduplicated from v2.6)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Unified mask gradient generator (horizontal)
+const generateMaskGradient = (fadePos, fadeIntensity) => {
+  if (fadePos === undefined || fadeIntensity === undefined) {
+    return 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0.9) 100%)';
+  }
+  const maxOpacity = fadeIntensity / 100;
+  const endPos = fadePos;
+  if (endPos <= 10) {
+    return `linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
+  }
+  const steps = [`rgba(0,0,0,0) 0%`];
+  const fadeStart = Math.max(0, endPos - 40);
+  if (fadeStart > 0) steps.push(`rgba(0,0,0,0) ${fadeStart}%`);
+  for (let i = 1; i <= 5; i++) {
+    const pos = fadeStart + (endPos - fadeStart) * (i / 5);
+    const opacity = maxOpacity * (i / 5);
+    steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
+  }
+  steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
+  return `linear-gradient(to right, ${steps.join(', ')})`;
+};
+
+// Unified vertical mask gradient generator (for collection)
+const generateVerticalMaskGradient = (fadePos, fadeIntensity, direction = 'bottom') => {
+  const maxOpacity = fadeIntensity / 100;
+  const endPos = fadePos;
+  const dir = direction === 'top' ? 'to top' : 'to bottom';
+  if (endPos <= 10) {
+    return `linear-gradient(${dir}, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
+  }
+  const steps = [`rgba(0,0,0,0) 0%`];
+  const fadeStart = Math.max(0, endPos - 40);
+  if (fadeStart > 0) steps.push(`rgba(0,0,0,0) ${fadeStart}%`);
+  for (let i = 1; i <= 5; i++) {
+    const pos = fadeStart + (endPos - fadeStart) * (i / 5);
+    const opacity = maxOpacity * (i / 5);
+    steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
+  }
+  steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
+  return `linear-gradient(${dir}, ${steps.join(', ')})`;
+};
+
+// Shared element color maps (extracted to avoid recreation per render)
+const DETAIL_ELEMENT_COLORS = {
+  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50' },
+  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
+  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
+  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
+  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
+  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
+};
+
+const BANNER_GRADIENT_MAP = {
+  Fusion: { border: 'border-orange-500/40', bg: 'bg-orange-500/20', text: 'text-orange-400' },
+  Electro: { border: 'border-violet-500/40', bg: 'bg-violet-500/20', text: 'text-violet-400' },
+  Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+  Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
+  Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
+  Spectro: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+};
+
+const EVENT_ACCENT_COLORS = {
+  cyan: { text: 'text-cyan-400', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20' },
+  pink: { text: 'text-pink-400', border: 'border-pink-500/30', bg: 'bg-pink-500/20' },
+  orange: { text: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/20' },
+  purple: { text: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/20' },
+  yellow: { text: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20' },
+};
+
+// Tab background component - eliminates ~400 lines of duplication across 6 tabs
+const TabBackground = ({ id, glowColor = 'neutral' }) => {
+  const ambientGlow = glowColor === 'gold'
+    ? 'linear-gradient(0deg, rgba(251,191,36,0.1) 0%, rgba(251,191,36,0.04) 30%, transparent 60%)'
+    : 'linear-gradient(0deg, rgba(150,180,205,0.1) 0%, rgba(130,160,185,0.04) 30%, transparent 60%)';
+  return (
+    <>
+      <div style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none', background:'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)' }} />
+      <div style={{ position:'fixed', bottom:0, left:0, right:0, height:'70%', zIndex:1, pointerEvents:'none', background:'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)' }} />
+      <div style={{ position:'fixed', bottom:0, left:'-10%', right:'-10%', height:'35%', zIndex:1, pointerEvents:'none', background:'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)', filter:'blur(20px)' }} />
+      <div style={{ position:'fixed', top:0, left:0, right:0, height:'25%', zIndex:1, pointerEvents:'none', background:'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)' }} />
+      <div style={{ position:'fixed', inset:0, zIndex:2, pointerEvents:'none', opacity:0.6 }}>
+        <svg style={{width:'100%', height:'100%'}} xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id={`${id}Glow`} x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <pattern id={`${id}Grid`} x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+              <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
+              <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
+              <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter={`url(#${id}Glow)`}/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#${id}Grid)`}/>
+        </svg>
+      </div>
+      <div style={{ position:'fixed', inset:0, zIndex:3, pointerEvents:'none', background: ambientGlow }} />
+      <div style={{ position:'fixed', inset:0, zIndex:4, pointerEvents:'none', background:'linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%), radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)' }} />
+    </>
+  );
+};
+
 // [SECTION:COMPONENTS]
 const Card = ({ children, className = '' }) => <div className={`kuro-card ${className}`} style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}><div className="kuro-card-inner">{children}</div></div>;
 const CardHeader = ({ children, action }) => <div className="kuro-header" style={{position:'relative'}}><h3>{children}</h3>{action && <div style={{position:'relative', zIndex:10}}>{action}</div>}</div>;
 const CardBody = ({ children, className = '' }) => <div className={`kuro-body ${className}`}>{children}</div>;
 
-const TabButton = ({ active, onClick, children }) => (
-  <button onClick={onClick} className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all whitespace-nowrap ${active ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-gray-400 hover:text-gray-200 border-b-2 border-transparent'}`}>
-    {children}
-  </button>
-);
+// Character Detail Modal
+const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
+  const data = CHARACTER_DATA[name];
+  if (!data) return null;
+  
+  const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
+  
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div 
+        className={`relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border ${colors.border}`}
+        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'scaleIn 0.3s ease-out' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header with image */}
+        <div className="relative h-40 overflow-hidden rounded-t-2xl">
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          {imageUrl && (
+            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" style={{ transform: 'translateY(10%)' }} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
+          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
+            <X size={16} />
+          </button>
+          <div className="absolute bottom-3 left-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.weapon}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.role}</span>
+            </div>
+            <h2 className="text-xl font-bold text-white">{name}</h2>
+            <div className="flex items-center gap-0.5 mt-0.5">
+              {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
+            </div>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {/* Description */}
+          <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>
+          
+          {/* Skills */}
+          <div>
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+              <Zap size={14} className={colors.text} /> Skills
+            </h3>
+            <div className="flex flex-wrap gap-1">
+              {data.skills.map((skill, i) => (
+                <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-white/10">{skill}</span>
+              ))}
+            </div>
+          </div>
+          
+          {/* Best Weapon & Echoes */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Best Weapon</div>
+              <div className="text-yellow-400 text-xs font-medium">{data.bestWeapon}</div>
+            </div>
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Best Echoes</div>
+              <div className="text-cyan-400 text-xs font-medium">{data.bestEchoes[0]}</div>
+              <div className="text-gray-400 text-[10px]">{data.bestEchoes[1]}</div>
+            </div>
+          </div>
+          
+          {/* Ascension Materials */}
+          <div>
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
+                <div className="text-[9px] text-gray-500 mb-0.5">Boss</div>
+                <div className="text-[10px] text-orange-400">{data.ascension.boss}</div>
+              </div>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
+                <div className="text-[9px] text-gray-500 mb-0.5">Common</div>
+                <div className="text-[10px] text-purple-400">{data.ascension.common}</div>
+              </div>
+              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
+                <div className="text-[9px] text-gray-500 mb-0.5">Specialty</div>
+                <div className="text-[10px] text-cyan-400">{data.ascension.specialty}</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Team Suggestions */}
+          <div>
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+              <User size={14} className="text-pink-400" /> Team Suggestions
+            </h3>
+            <div className="space-y-1">
+              {data.teams.map((team, i) => (
+                <div key={i} className="text-[11px] text-gray-300 p-2 rounded-lg bg-white/5 border border-white/10">{team}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Weapon Detail Modal
+const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
+  const data = WEAPON_DATA[name];
+  if (!data) return null;
+  
+  const rarityColors = {
+    5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
+    4: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
+    3: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
+  };
+  const colors = rarityColors[data.rarity] || rarityColors[4];
+  
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div 
+        className={`relative w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl border ${colors.border}`}
+        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'scaleIn 0.3s ease-out' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="relative h-32 overflow-hidden rounded-t-2xl">
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          {imageUrl && (
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-28 object-contain opacity-90" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
+          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
+            <X size={16} />
+          </button>
+          <div className="absolute bottom-3 left-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.type}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.stat}</span>
+            </div>
+            <h2 className="text-lg font-bold text-white">{name}</h2>
+            <div className="flex items-center gap-0.5 mt-0.5">
+              {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
+            </div>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="p-4 space-y-3">
+          <p className="text-gray-300 text-sm">{data.desc}</p>
+          
+          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Passive</div>
+            <div className={`text-xs ${colors.text}`}>{data.passive}</div>
+          </div>
+          
+          {data.bestFor && data.bestFor.length > 0 && (
+            <div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Best For</div>
+              <div className="flex flex-wrap gap-1">
+                {data.bestFor.map((char, i) => (
+                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TabButton = ({ active, onClick, children, tabRef }) => {
+  const childArray = React.Children.toArray(children);
+  const icon = childArray.find(child => React.isValidElement(child));
+  const text = childArray.find(child => typeof child === 'string')?.trim();
+  const btnRef = useRef(null);
+  
+  useEffect(() => {
+    try {
+      if (active && btnRef.current && tabRef?.current) {
+        requestAnimationFrame(() => {
+          const btn = btnRef.current;
+          const nav = tabRef?.current;
+          if (!btn || !nav) return;
+          const indicator = nav.querySelector('.tab-indicator');
+          if (indicator) {
+            indicator.style.left = `${btn.offsetLeft + btn.offsetWidth * 0.2}px`;
+            indicator.style.width = `${btn.offsetWidth * 0.6}px`;
+            indicator.style.background = `linear-gradient(90deg, rgba(251,191,36,0.6), rgba(251,191,36,1), rgba(251,191,36,0.6))`;
+            indicator.style.boxShadow = `0 0 12px rgba(251,191,36,0.5)`;
+          }
+        });
+      }
+    } catch (e) { /* ignore indicator errors */ }
+  }, [active, tabRef]);
+  
+  return (
+    <button 
+      ref={btnRef}
+      onClick={onClick} 
+      className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
+    >
+      <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/15 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5'}`}>
+        {icon}
+      </div>
+      <span className="relative z-10">{text}</span>
+    </button>
+  );
+};
 
 const CountdownTimer = ({ endDate, color = 'yellow', compact = false, alwaysShow = false }) => {
   const [time, setTime] = useState(() => getTimeRemaining(endDate));
@@ -1208,107 +2254,136 @@ const CountdownTimer = ({ endDate, color = 'yellow', compact = false, alwaysShow
   }
   
   return (
-    <div className="flex gap-1">
-      {time.days > 0 && <div className="bg-neutral-800 rounded px-1.5 py-0.5 text-center"><div className="text-white font-bold text-sm">{time.days}</div><div className="text-gray-300 text-[8px]">D</div></div>}
-      <div className="bg-neutral-800 rounded px-1.5 py-0.5 text-center"><div className="text-white font-bold text-sm">{String(time.hours).padStart(2,'0')}</div><div className="text-gray-300 text-[8px]">H</div></div>
-      <div className="bg-neutral-800 rounded px-1.5 py-0.5 text-center"><div className="text-white font-bold text-sm">{String(time.minutes).padStart(2,'0')}</div><div className="text-gray-300 text-[8px]">M</div></div>
-      <div className="bg-neutral-800 rounded px-1.5 py-0.5 text-center"><div className={`font-bold text-sm ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-300 text-[8px]">S</div></div>
+    <div className="flex items-center gap-1">
+      {time.days > 0 && <><div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{time.days}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Day</div></div><span className={`${textColor} font-bold text-xs opacity-60`}>:</span></>}
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.hours).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Hr</div></div>
+      <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Min</div></div>
+      <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)', borderColor: `${color === 'yellow' ? 'rgba(251,191,36,0.2)' : color === 'pink' ? 'rgba(244,114,182,0.2)' : 'rgba(34,211,238,0.2)'}`}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Sec</div></div>
     </div>
   );
 };
 
-const BannerCard = ({ item, type, stats, bannerImage }) => {
+const PityRing = ({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#fbbf24', glowColor = 'rgba(251,191,36,0.4)', label, sublabel }) => {
+  const safeValue = Number(value) || 0;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.min(safeValue / max, 1);
+  const offset = circumference * (1 - pct);
+  const isSoftPity = max === 80 && safeValue >= 66;
+  return (
+    <div className="flex flex-col items-center">
+      <svg width={size} height={size} className={isSoftPity ? 'pulse-subtle' : ''}>
+        <circle className="pity-ring-track" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} />
+        <circle className="pity-ring-fill" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} stroke={color} strokeDasharray={circumference} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{'--ring-glow': glowColor}} />
+        <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.28} fill={color}>{safeValue}</text>
+      </svg>
+      {label && <div className="text-gray-300 text-[8px] mt-0.5">{label}</div>}
+      {sublabel && <div className="text-gray-500 text-[7px]">{sublabel}</div>}
+    </div>
+  );
+};
+
+const BannerCard = ({ item, type, stats, bannerImage, visualSettings }) => {
   const isChar = type === 'character';
-  
-  const gradientMap = {
-    Fusion: { border: 'border-orange-500/40', bg: 'bg-orange-500/20', text: 'text-orange-400' },
-    Electro: { border: 'border-violet-500/40', bg: 'bg-violet-500/20', text: 'text-violet-400' },
-    Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-    Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
-    Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
-    Spectro: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
-  };
-  
-  const style = gradientMap[item.element] || gradientMap.Fusion;
+  const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
   
+  // Use unified mask generator
+  const maskGradient = visualSettings 
+    ? generateMaskGradient(visualSettings.fadePosition, visualSettings.fadeIntensity)
+    : generateMaskGradient();
+  const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
+  
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ minHeight: imgUrl ? '180px' : 'auto' }}>
+    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '180px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
           alt={item.name} 
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)',
-            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)'
+            zIndex: 1,
+            opacity: pictureOpacity,
+            maskImage: maskGradient,
+            WebkitMaskImage: maskGradient
           }}
+          loading="eager"
+          crossOrigin="anonymous"
+          onError={(e) => { e.target.style.display = 'none'; }}
         />
       )}
-      {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />}
       
-      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '180px' : 'auto', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div>
           <div className="flex items-center gap-2 mb-1">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`text-[10px] px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>{isChar ? item.element : item.type}</span>
           </div>
-          <h4 className="font-bold text-lg text-white">{item.name}</h4>
-          {item.title && <p className="text-gray-200 text-xs mt-0.5">{item.title}</p>}
+          <h4 className="font-bold text-base text-white">{item.name}</h4>
+          {item.title && <p className="text-gray-200 text-[10px] mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
-        <div className="mt-auto pt-3">
-          <div className="text-gray-200 text-[10px] mb-1">Featured 4★</div>
+        <div>
+          <div className="text-gray-200 text-[9px] mb-1">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
-            {item.featured4Stars.map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-2 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+            {item.featured4Stars.map(n => <span key={n} className="text-[9px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
         
         {stats && (
-          <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/20">
-            <div><div className="text-yellow-400 font-bold drop-shadow">{stats.pity5}/80</div><div className="text-gray-300 text-[9px]">5★ Pity</div></div>
-            <div><div className="text-purple-400 font-bold drop-shadow">{stats.pity4}/10</div><div className="text-gray-300 text-[9px]">4★ Pity</div></div>
-            <div><div className="text-white font-bold drop-shadow">{stats.totalPulls}</div><div className="text-gray-300 text-[9px]">Convenes</div></div>
+          <div className="space-y-2 pt-2 border-t border-white/20">
+            <div className="flex items-center justify-around">
+              <PityRing value={stats.pity5} max={80} size={56} strokeWidth={4} color={isChar ? '#fbbf24' : '#f472b6'} glowColor={isChar ? 'rgba(251,191,36,0.4)' : 'rgba(244,114,182,0.4)'} label="5★ Pity" />
+              <PityRing value={stats.pity4} max={10} size={42} strokeWidth={3} color="#a855f7" glowColor="rgba(168,85,247,0.4)" label="4★ Pity" />
+              <div className="text-center">
+                <div className="text-white font-bold text-lg drop-shadow">{stats.totalPulls}</div>
+                <div className="text-gray-300 text-[8px]">Convenes</div>
+              </div>
+            </div>
           </div>
         )}
-        {stats && isChar && <div className={`mt-1.5 text-center text-[10px] py-1 rounded backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/30 text-emerald-400' : 'bg-neutral-800/50 text-gray-400'}`}>{stats.guaranteed ? '✓ Guaranteed' : '50/50'}</div>}
+        {stats && isChar && <div className={`text-center text-[9px] py-0.5 rounded backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/30 text-emerald-400' : 'bg-neutral-800/50 text-gray-400'}`}>{stats.guaranteed ? '✓ Guaranteed' : '50/50'}</div>}
       </div>
     </div>
   );
 };
 
-const EventCard = ({ event, server, bannerImage }) => {
+const EventCard = ({ event, server, bannerImage, visualSettings }) => {
   const endDate = event.dailyReset ? getNextDailyReset(server) : event.weeklyReset ? getNextWeeklyReset(server) : event.currentEnd;
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
   
-  const accentColors = {
-    cyan: { text: 'text-cyan-400', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20' },
-    pink: { text: 'text-pink-400', border: 'border-pink-500/30', bg: 'bg-pink-500/20' },
-    orange: { text: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/20' },
-    purple: { text: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/20' },
-    yellow: { text: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20' },
-  };
-  
-  const colors = accentColors[event.accentColor] || accentColors.cyan;
+  const colors = EVENT_ACCENT_COLORS[event.accentColor] || EVENT_ACCENT_COLORS.cyan;
   const imgUrl = bannerImage;
   
+  // Use unified mask generator with shadow (event) settings
+  const maskGradient = visualSettings 
+    ? generateMaskGradient(visualSettings.shadowFadePosition, visualSettings.shadowFadeIntensity)
+    : generateMaskGradient();
+  const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
+  
   return (
-    <div className={`relative overflow-hidden rounded-2xl border ${colors.border}`} style={{ minHeight: imgUrl ? '140px' : '100px' }}>
+    <div className={`relative overflow-hidden rounded-xl border ${colors.border}`} style={{ height: '180px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
           alt={event.name} 
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)',
-            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.50) 10%, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.60) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.70) 30%, rgba(0,0,0,0.75) 35%, rgba(0,0,0,0.85) 40%, rgba(0,0,0,0.90) 45%, rgba(0,0,0,0.95) 50%)'
+            zIndex: 1,
+            opacity: pictureOpacity,
+            maskImage: maskGradient,
+            WebkitMaskImage: maskGradient
           }}
+          loading="eager"
+          crossOrigin="anonymous"
+          onError={(e) => { e.target.style.display = 'none'; }}
         />
       )}
-      {imgUrl && <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />}
       
-      <div className="relative z-10 p-4 flex flex-col justify-between h-full" style={{ minHeight: imgUrl ? '140px' : '100px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
             <h4 className={`font-bold text-sm ${colors.text}`}>{event.name}</h4>
@@ -1320,7 +2395,7 @@ const EventCard = ({ event, server, bannerImage }) => {
           </div>
         </div>
         
-        <div className="flex justify-between items-end mt-auto pt-3">
+        <div className="flex justify-between items-end mt-auto">
           <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${colors.bg} ${colors.text} backdrop-blur-sm`}>
             {event.rewards}
           </div>
@@ -1348,8 +2423,58 @@ const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
 // Admin banner storage key
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
 
+// [SECTION:COLLECTION-GRID]
+// Shared component for all collection grids (5★/4★/3★ chars & weapons)
+const CollectionGridCard = ({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew }) => (
+  <div 
+    key={name} 
+    className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
+    style={{ height: '140px' }}
+    onClick={() => {
+      if (framingMode) {
+        setEditingImage(imageKey);
+      } else if (onClickCard) {
+        onClickCard();
+      }
+    }}
+  >
+    {isNew && (
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wider uppercase" style={{background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+    )}
+    {imgUrl && (
+      <img 
+        src={imgUrl} 
+        alt={name}
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        style={{ 
+          transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+          opacity: owned ? collOpacity : 0.3,
+          filter: owned ? 'none' : 'grayscale(100%)',
+          maskImage: collMask, 
+          WebkitMaskImage: collMask
+        }}
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
+    )}
+    {isSelected && (
+      <div className="absolute top-1 right-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+        <span className="text-black text-[10px]">✓</span>
+      </div>
+    )}
+    <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+      {owned ? (
+        <div className={`${countColor} font-bold text-lg`}>{countLabel}</div>
+      ) : (
+        <div className="text-gray-600 font-bold text-lg">—</div>
+      )}
+      <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{name}</div>
+    </div>
+  </div>
+);
+
 // Load custom banners from localStorage
 const loadCustomBanners = () => {
+  if (!storageAvailable) return null;
   try {
     const saved = localStorage.getItem(ADMIN_BANNER_KEY);
     return saved ? JSON.parse(saved) : null;
@@ -1366,6 +2491,37 @@ const getActiveBanners = () => {
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
+  // Check app lockout first
+  const [isLockedOut, setIsLockedOut] = useState(() => {
+    try {
+      const lockoutUntil = localStorage.getItem('ww-app-lockout');
+      if (lockoutUntil && Date.now() < parseInt(lockoutUntil)) {
+        return parseInt(lockoutUntil);
+      }
+      // Clear expired lockout
+      if (lockoutUntil) localStorage.removeItem('ww-app-lockout');
+      localStorage.removeItem('ww-admin-fails');
+    } catch {}
+    return false;
+  });
+  
+  // Show lockout screen
+  if (isLockedOut) {
+    const remaining = Math.max(0, isLockedOut - Date.now());
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    return (
+      <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-xl font-bold text-red-400 mb-2">Access Temporarily Restricted</h1>
+          <p className="text-gray-400 text-sm mb-4">Too many failed attempts.</p>
+          <p className="text-gray-500 text-xs">Try again in {hours}h {minutes}m</p>
+        </div>
+      </div>
+    );
+  }
+  
   const toast = useToast();
   const [state, dispatch] = useReducer(reducer, null, loadState);
   const [storageLoaded, setStorageLoaded] = useState(false);
@@ -1379,12 +2535,477 @@ function WhisperingWishesInner() {
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminTapCount, setAdminTapCount] = useState(0);
-  const [adminTapTimer, setAdminTapTimer] = useState(null);
+  const adminTapTimerRef = useRef(null);
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
+  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', or 'visuals'
+  const [adminMiniMode, setAdminMiniMode] = useState(false);
+  
+  // Banner visual settings - v3 forces fresh defaults
+  const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
+  const defaultVisualSettings = {
+    // Featured Banner Cards
+    fadePosition: 50,
+    fadeIntensity: 100,
+    pictureOpacity: 100,
+    // Standard Banner Cards
+    standardFadePosition: 50,
+    standardFadeIntensity: 100,
+    standardOpacity: 100,
+    // Event Cards
+    shadowFadePosition: 50,
+    shadowFadeIntensity: 100,
+    shadowOpacity: 100,
+    // Collection Cards (vertical fade)
+    collectionFadePosition: 50,
+    collectionFadeIntensity: 100,
+    collectionOpacity: 100,
+    collectionFadeDirection: 'top',
+    collectionZoom: 120
+  };
+  // Always start with defaults - localStorage can override but we validate each property
+  const [visualSettings, setVisualSettings] = useState(() => {
+    // Return defaults - don't load from localStorage on initial load
+    // This ensures fresh users always get correct defaults
+    return { ...defaultVisualSettings };
+  });
+  
+  // Load from localStorage after mount (so SSR/preview gets defaults)
+  useEffect(() => {
+    if (!storageAvailable) return;
+    try {
+      const saved = localStorage.getItem(VISUAL_SETTINGS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setVisualSettings(prev => ({
+          ...prev,
+          fadePosition: parsed.fadePosition ?? prev.fadePosition,
+          fadeIntensity: parsed.fadeIntensity ?? prev.fadeIntensity,
+          pictureOpacity: parsed.pictureOpacity ?? prev.pictureOpacity,
+          standardFadePosition: parsed.standardFadePosition ?? prev.standardFadePosition,
+          standardFadeIntensity: parsed.standardFadeIntensity ?? prev.standardFadeIntensity,
+          standardOpacity: parsed.standardOpacity ?? prev.standardOpacity,
+          shadowFadePosition: parsed.shadowFadePosition ?? prev.shadowFadePosition,
+          shadowFadeIntensity: parsed.shadowFadeIntensity ?? prev.shadowFadeIntensity,
+          shadowOpacity: parsed.shadowOpacity ?? prev.shadowOpacity,
+          collectionFadePosition: parsed.collectionFadePosition ?? prev.collectionFadePosition,
+          collectionFadeIntensity: parsed.collectionFadeIntensity ?? prev.collectionFadeIntensity,
+          collectionOpacity: parsed.collectionOpacity ?? prev.collectionOpacity,
+          collectionFadeDirection: parsed.collectionFadeDirection ?? prev.collectionFadeDirection,
+          collectionZoom: parsed.collectionZoom ?? prev.collectionZoom
+        }));
+      }
+    } catch {}
+  }, []);
+  
+  const saveVisualSettings = (newSettings) => {
+    setVisualSettings(newSettings);
+    if (!storageAvailable) return;
+    try { localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(newSettings)); } catch {}
+  };
+  
+  // Image framing state - stores position/zoom for each image by key
+  const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
+  const [imageFraming, setImageFraming] = useState({});
+  const [editingImage, setEditingImage] = useState(null); // currently selected image key
+  const [framingMode, setFramingMode] = useState(false);
+  const [miniPanelPosition, setMiniPanelPosition] = useState('bottom-right'); // top-left, top-right, bottom-left, bottom-right
+  
+  // Load image framing from localStorage
+  useEffect(() => {
+    if (!storageAvailable) return;
+    try {
+      const saved = localStorage.getItem(IMAGE_FRAMING_KEY);
+      if (saved) setImageFraming(JSON.parse(saved));
+      const pos = localStorage.getItem('ww-mini-panel-pos');
+      if (pos) setMiniPanelPosition(pos);
+    } catch {}
+  }, []);
+  
+  // Save image framing
+  const saveImageFraming = (key, settings) => {
+    const newFraming = { ...imageFraming, [key]: settings };
+    setImageFraming(newFraming);
+    if (storageAvailable) {
+      try { localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(newFraming)); } catch {}
+    }
+  };
+  
+  // Get framing for an image (returns defaults if not set)
+  const getImageFraming = (key) => {
+    return imageFraming[key] || { x: 0, y: 0, zoom: 100 };
+  };
+  
+  // Update framing for currently editing image
+  const updateEditingFraming = (changes) => {
+    if (!editingImage) return;
+    const current = getImageFraming(editingImage);
+    const newFraming = { ...current, ...changes };
+    // Clamp values - larger range for better control
+    newFraming.x = Math.max(-100, Math.min(100, newFraming.x));
+    newFraming.y = Math.max(-100, Math.min(100, newFraming.y));
+    newFraming.zoom = Math.max(100, Math.min(300, newFraming.zoom));
+    saveImageFraming(editingImage, newFraming);
+  };
+  
+  const resetEditingFraming = () => {
+    if (!editingImage) return;
+    saveImageFraming(editingImage, { x: 0, y: 0, zoom: 100 });
+  };
+  
+  const saveMiniPanelPosition = (pos) => {
+    setMiniPanelPosition(pos);
+    if (storageAvailable) {
+      try { localStorage.setItem('ww-mini-panel-pos', pos); } catch {}
+    }
+  };
+  
+  // Get position classes for mini panel
+  const getMiniPanelPositionClasses = () => {
+    switch (miniPanelPosition) {
+      case 'top-left': return 'top-16 left-2';
+      case 'top-right': return 'top-16 right-2';
+      case 'bottom-left': return 'bottom-20 left-2';
+      default: return 'bottom-20 right-2';
+    }
+  };
+  
+  // Default character/weapon images (built-in)
+  const DEFAULT_COLLECTION_IMAGES = {
+    // 5★ Resonators (by release order)
+    'Jiyan': 'https://i.ibb.co/00C5Sqj/Jiyan-Full-Sprite.webp',
+    'Calcharo': 'https://i.ibb.co/tM11rtrL/Calcharo-Full-Sprite.webp',
+    'Encore': 'https://i.ibb.co/rGZBZ4HV/Encore-Full-Sprite.webp',
+    'Jianxin': 'https://i.ibb.co/ZDxNGkj/Jianxin-Full-Sprite.webp',
+    'Lingyang': 'https://i.ibb.co/gbjK568S/Lingyang-Full-Sprite.webp',
+    'Verina': 'https://i.ibb.co/mV6qxb5h/Verina-Full-Sprite.webp',
+    'Yinlin': 'https://i.ibb.co/S79CF3R3/Yinlin-Full-Sprite.webp',
+    'Changli': 'https://i.ibb.co/mr6BwwP0/Changli-Full-Sprite.webp',
+    'Jinhsi': 'https://i.ibb.co/fG9sf6cc/Jinhsi-Full-Sprite.webp',
+    'Shorekeeper': 'https://i.ibb.co/svHmQWYB/Shorekeeper-Full-Sprite.webp',
+    'Camellya': 'https://i.ibb.co/6Rg494Ld/Camellya-Full-Sprite.webp',
+    'Xiangli Yao': 'https://i.ibb.co/27jds05D/Xiangli-Yao-Full-Sprite.webp',
+    'Zhezhi': 'https://i.ibb.co/0VpsfXkK/Zhezhi-Full-Sprite.webp',
+    'Carlotta': 'https://i.ibb.co/bRBx4Ymx/Carlotta-Full-Sprite.webp',
+    'Roccia': 'https://i.ibb.co/b548Jj2Y/Roccia-Full-Sprite.webp',
+    'Phoebe': 'https://i.ibb.co/6SdsQ7M/Phoebe-Full-Sprite.webp',
+    'Brant': 'https://i.ibb.co/CDg2QgM/Brant-Full-Sprite.webp',
+    'Cantarella': 'https://i.ibb.co/jZs3MWvV/Cantarella-Full-Sprite.webp',
+    'Zani': 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp',
+    'Ciaccona': 'https://i.ibb.co/N6dKs9zy/Ciaccona-Full-Sprite.webp',
+    'Cartethyia': 'https://i.ibb.co/QFR5LVdc/Cartethyia-Full-Sprite.webp',
+    'Lupa': 'https://i.ibb.co/8n4kck2M/Lupa-Full-Sprite.webp',
+    'Augusta': 'https://i.ibb.co/V0TXt2Ty/Augusta-Full-Sprite.webp',
+    'Galbrena': 'https://i.ibb.co/rK0yjSr6/Galbrena-Full-Sprite.webp',
+    'Iuno': 'https://i.ibb.co/5WmnWgtG/Iuno-Full-Sprite.webp',
+    'Luuk Herssen': 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp',
+    'Aemeath': 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp',
+    'Mornye': 'https://i.ibb.co/QvyQ33zv/Mornye-Full-Sprite.webp',
+    'Rover': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
+    'Chisa': 'https://i.ibb.co/x8zB67Vh/Chisa-Full-Sprite.webp',
+    'Phrolova': 'https://i.ibb.co/Nd0HbF4v/Phrolova-Full-Sprite.webp',
+    'Qiuyuan': 'https://i.ibb.co/JRvP5fnx/Qiuyuan-Full-Sprite.webp',
+    'Lynae': 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp',
+    // 4★ Resonators
+    'Aalto': 'https://i.ibb.co/v81v3Hq/Aalto-Full-Sprite.webp',
+    'Baizhi': 'https://i.ibb.co/4Ztm8DCG/Baizhi-Full-Sprite.webp',
+    'Chixia': 'https://i.ibb.co/r2SVVmPv/Chixia-Full-Sprite.webp',
+    'Danjin': 'https://i.ibb.co/CK3XQCpM/Danjin-Full-Sprite.webp',
+    'Yangyang': 'https://i.ibb.co/kV1hBqbv/Yangyang-Full-Sprite.webp',
+    'Sanhua': 'https://i.ibb.co/yc0XTQVB/Sanhua-Full-Sprite.webp',
+    'Taoqi': 'https://i.ibb.co/qM2r22RR/Taoqi-Full-Sprite.webp',
+    'Yuanwu': 'https://i.ibb.co/p6ZQJkcC/Yuanwu-Full-Sprite.webp',
+    'Mortefi': 'https://i.ibb.co/xq8hFgpc/Mortefi-Full-Sprite.webp',
+    'Youhu': 'https://i.ibb.co/Zzc0PMWX/Youhu-Full-Sprite.webp',
+    'Lumi': 'https://i.ibb.co/rRy25xmt/Lumi-Full-Sprite.webp',
+    'Buling': 'https://i.ibb.co/fGZBRCWp/Buling-Full-Sprite.webp',
+    // 5★ Weapons
+    'Verdant Summit': 'https://i.ibb.co/5gjYYrHj/Verdant-Summit.webp',
+    'Emerald of Genesis': 'https://i.ibb.co/HTj8Lp7N/Weapon-Emerald-of-Genesis.webp',
+    'Static Mist': 'https://i.ibb.co/cKVzgTJ4/Weapon-Static-Mist.webp',
+    'Abyss Surges': 'https://i.ibb.co/FLVx6xwt/Abyss-Surges.webp',
+    'Lustrous Razor': 'https://i.ibb.co/mCmkydWk/Weapon-Lustrous-Razor.webp',
+    'Cosmic Ripples': 'https://i.ibb.co/XfGk2sVG/Cosmic-Ripples.webp',
+    'Stringmaster': 'https://i.ibb.co/wNGPxnmH/Stringmaster.webp',
+    'Ages of Harvest': 'https://i.ibb.co/5gGBmzX8/Ages-of-Harvest.webp',
+    'Blazing Brilliance': 'https://i.ibb.co/gLJbgvwg/Blazing-Brilliance.webp',
+    'Rime-Draped Sprouts': 'https://i.ibb.co/NgNshLYy/Rime-Draped-Sprouts.png',
+    "Verity's Handle": 'https://i.ibb.co/k2hFQfx8/Veritys-Handle.webp',
+    'Stellar Symphony': 'https://i.ibb.co/yBB4Kzxs/Stellar-Symphony.webp',
+    'Red Spring': 'https://i.ibb.co/Cp3d2vg2/Red-Spring.webp',
+    'The Last Dance': 'https://i.ibb.co/zhtJWLk0/The-Last-Dance.png',
+    'Tragicomedy': 'https://i.ibb.co/4RRD3mLv/Tragicomedy.png',
+    'Luminous Hymn': 'https://i.ibb.co/prdDZjKg/Luminous-Hymn.png',
+    'Unflickering Valor': 'https://i.ibb.co/PGbr24Xp/Unflickering-Valor.png',
+    'Whispers of Sirens': 'https://i.ibb.co/YT73fDrB/Whispers-of-Sirens.webp',
+    'Blazing Justice': 'https://i.ibb.co/pjbhYHP4/Blazing-Justice.webp',
+    'Woodland Aria': 'https://i.ibb.co/8nXkG8d5/Woodland-Aria.png',
+    "Defier's Thorn": 'https://i.ibb.co/KpG4cbZJ/Defier-s-Thorn.webp',
+    'Wildfire Mark': 'https://i.ibb.co/RGqLJKGK/Wildfire-Mark.webp',
+    'Lethean Elegy': 'https://i.ibb.co/YF3fJtF7/Lethean-Elegy.webp',
+    'Thunderflare Dominion': 'https://i.ibb.co/d062x9ZH/Thunderflare-Dominion.webp',
+    "Moongazer's Sigil": 'https://i.ibb.co/zhF435g4/Moongazers-Sigil.webp',
+    'Lux & Umbra': 'https://i.ibb.co/FqVkK4Tn/Lux-Umbra.webp',
+    'Emerald Sentence': 'https://i.ibb.co/chmx3GgM/Emerald-Sentence.webp',
+    'Kumokiri': 'https://i.ibb.co/VWxG9pSF/Kumokiri.webp',
+    'Spectrum Blaster': 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp',
+    'Starfield Calibrator': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
+    'Everbright Polestar': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp', // placeholder
+    // 4★ Weapons
+    'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
+    "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
+    "Bloodpact's Pledge": 'https://i.ibb.co/V0WH0NSV/Bloodpacts-Pledge-1.webp',
+    'Waltz in Masquerade': 'https://i.ibb.co/5XXfstH6/Waltz-in-Masquerade.webp',
+    'Legend of Drunken Hero': 'https://i.ibb.co/v65yf4Bd/Legend-of-Drunken-Hero.webp',
+    'Romance in Farewell': 'https://i.ibb.co/BKc9hdKC/Romance-in-Farewell.webp',
+    'Fables of Wisdom': 'https://i.ibb.co/whCyQys6/Fables-of-Wisdom.webp',
+    'Meditations on Mercy': 'https://i.ibb.co/pBBrZM0b/Meditations-on-Mercy.webp',
+    'Call of the Abyss': 'https://i.ibb.co/Z92nYnW/Call-of-the-Abyss.webp',
+    'Somnoire Anchor': 'https://i.ibb.co/N2cJ3qc7/Somnoire-Anchor.webp',
+    'Fusion Accretion': 'https://i.ibb.co/xSMHxtL0/Fusion-Accretion.webp',
+    'Celestial Spiral': 'https://i.ibb.co/ZRT3sr7g/Celestial-Spiral.webp',
+    'Relativistic Jet': 'https://i.ibb.co/nM5rjSNw/Relativistic-Jet.webp',
+    'Endless Collapse': 'https://i.ibb.co/gZtL25jN/Endless-Collapse.webp',
+    'Waning Redshift': 'https://i.ibb.co/27NQSk1n/Waning-Redshif.webp',
+    'Beguiling Melody': 'https://i.ibb.co/wZXxz8MC/Beguiling-Melody.webp',
+    'Boson Astrolabe': 'https://i.ibb.co/RkcX6zQK/Boson-Astrolabe-1.webp',
+    'Pulsation Bracer': 'https://i.ibb.co/k2kVPjmf/Pulsation-Bracer.webp',
+    'Phasic Homogenizer': 'https://i.ibb.co/RpKTNDq1/Phasic-Homogenizer.webp',
+    'Laser Shearer': 'https://i.ibb.co/hFqKgw50/Laser-Shearer.webp',
+    'Radiance Cleaver': 'https://i.ibb.co/WNxbm8DB/Radiance-Cleaver.webp',
+    'Aureate Zenith': 'https://i.ibb.co/0j0M2Bwm/Aureate-Zenith.webp',
+    'Radiant Dawn': 'https://i.ibb.co/RkGdFttY/Radiant-Dawn.webp',
+    'Aether Strike': 'https://i.ibb.co/5XJNVHgT/Aether-Strike.webp',
+    'Solar Flame': 'https://i.ibb.co/YMsf52M/Solar-Flame.webp',
+    'Feather Edge': 'https://i.ibb.co/fzG8JpvG/Feather-Edge.webp',
+    // Swords
+    'Training Sword': 'https://i.ibb.co/23XjFZHD/Training-Sword.webp',
+    'Tyro Sword': 'https://i.ibb.co/Qv4nYxF1/Tyro-Sword.webp',
+    'Guardian Sword': 'https://i.ibb.co/8LSknxRS/Guardian-Sword.webp',
+    'Sword of Voyager': 'https://i.ibb.co/TBCX9fFQ/Sword-of-Voyager.webp',
+    'Originite: Type II': 'https://i.ibb.co/j9M4LLSf/Originite-Type-II.webp',
+    'Sword of Night': 'https://i.ibb.co/csfb39w/Sword-of-Night.webp',
+    'Commando of Conviction': 'https://i.ibb.co/RkTdFgNG/Commando-of-Conviction.webp',
+    'Scale Slasher': 'https://i.ibb.co/Ng7QmthQ/Scale-Slasher.webp',
+    'Sword#18': 'https://i.ibb.co/wrWDmBcp/Sword18.webp',
+    'Lunar Cutter': 'https://i.ibb.co/tpSR66cR/Lunar-Cutter.webp',
+    'Lumingloss': 'https://i.ibb.co/dsJQhndm/Lumingloss.webp',
+    // Rectifiers
+    'Rectifier of Voyager': 'https://i.ibb.co/KjNy5C91/Rectifier-of-Voyager.webp',
+    'Rectifier of Night': 'https://i.ibb.co/ksQ3Zswf/Rectifier-of-Night.webp',
+    'Variation': 'https://i.ibb.co/5WZP5mKD/Variation.webp',
+    'Tyro Rectifier': 'https://i.ibb.co/Df8dXQRf/Tyro-Rectifier.webp',
+    'Training Rectifier': 'https://i.ibb.co/Y7rT1gJw/Training-Rectifier.webp',
+    'Originite: Type V': 'https://i.ibb.co/9H5GNPVw/Originite-Type-V.webp',
+    'Rectifier#25': 'https://i.ibb.co/B9T1f3f/Rectifier25.webp',
+    'Jinzhou Keeper': 'https://i.ibb.co/WvvYvwx0/Jinzhou-Keeper.webp',
+    'Comet Flare': 'https://i.ibb.co/xKTWZWzs/Comet-Flare.webp',
+    'Guardian Rectifier': 'https://i.ibb.co/Wp618BH3/Guardian-Rectifier.webp',
+    'Augment': 'https://i.ibb.co/Mk44Y5W4/Augment.webp',
+    // Broadblades
+    'Broadblade of Night': 'https://i.ibb.co/m5kvbBJH/Broadblade-of-Night.webp',
+    'Discord': 'https://i.ibb.co/p6L36v9V/Discord.webp',
+    // Gauntlets
+    'Tyro Gauntlets': 'https://i.ibb.co/NgZL4WFR/Tyro-Gauntlets.webp',
+    'Training Gauntlets': 'https://i.ibb.co/b50Nnc2w/Training-Gauntlets.webp',
+    'Hollow Mirage': 'https://i.ibb.co/JjP9sjJm/Hollow-Mirage.webp',
+    'Stonard': 'https://i.ibb.co/yn59hz0y/Stonard.webp',
+    'Gauntlets#21': 'https://i.ibb.co/XxFKztMj/Gauntlets21-D.webp',
+    'Amity Accord': 'https://i.ibb.co/tpxP1SM8/Amity-Accord.webp',
+    'Marcato': 'https://i.ibb.co/hFX9MK4t/Marcato.webp',
+    'Gauntlets of Night': 'https://i.ibb.co/dFF1GyP/Gauntlets-of-Night.webp',
+    'Guardian Gauntlets': 'https://i.ibb.co/k2vd2xW0/Guardian-Gauntlets.webp',
+    'Originite: Type III': 'https://i.ibb.co/bg4GXQbS/Originite-Type-III.webp',
+    'Gauntlets of Voyager': 'https://i.ibb.co/tVq4bTZ/Gauntlets-of-Voyager.webp',
+    // Pistols
+    'Pistols#26': 'https://i.ibb.co/FLJ14pcp/Pistols26.webp',
+    'Originite: Type IV': 'https://i.ibb.co/wZ2tjtwj/Originite-Type-IV.webp',
+    'Pistols of Voyager': 'https://i.ibb.co/pjWf99Qb/Pistols-of-Voyager.webp',
+    'Novaburst': 'https://i.ibb.co/NdnmMWcp/Novaburst.webp',
+    'Thunderbolt': 'https://i.ibb.co/99rqCmM0/Thunderbolt.webp',
+    'Undying Flame': 'https://i.ibb.co/XfM9BJVX/Undying-Flame.webp',
+    'Guardian Pistols': 'https://i.ibb.co/m59fPcVF/Guardian-Pistols.webp',
+    'Tyro Pistols': 'https://i.ibb.co/Ldtk0QGN/Tyro-Pistols.webp',
+    'Training Pistols': 'https://i.ibb.co/PsZhn5d0/Training-Pistols.webp',
+    'Pistols of Night': 'https://i.ibb.co/zhf1hxsG/Pistols-of-Night.webp',
+    'Cadenza': 'https://i.ibb.co/bRHfTQh1/Cadenza.webp',
+    // Missing weapons
+    'Originite: Type I': 'https://i.ibb.co/398KxX0f/Weapon-Originite-Type-I.webp',
+    'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
+    'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
+    'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
+  };
+  
+  // Release order for sorting (based on first banner appearance)
+  const RELEASE_ORDER = [
+    // 1.0 - Launch (May 2024)
+    'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
+    'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 'Mortefi',
+    // 1.1
+    'Jinhsi', 'Changli', 'Youhu',
+    // 1.2
+    'Zhezhi', 'Xiangli Yao',
+    // 1.3
+    'Shorekeeper', 'Lumi',
+    // 1.4
+    'Camellya',
+    // 2.0
+    'Carlotta', 'Roccia',
+    // 2.1
+    'Phoebe', 'Brant',
+    // 2.2
+    'Cantarella', 'Buling',
+    // 2.3
+    'Zani', 'Ciaccona',
+    // 2.4
+    'Cartethyia', 'Lupa',
+    // 2.5
+    'Phrolova',
+    // 2.6
+    'Augusta', 'Iuno',
+    // 2.7
+    'Galbrena', 'Qiuyuan',
+    // 2.8
+    'Chisa',
+    // 3.0
+    'Lynae', 'Mornye',
+    // 3.1 (unreleased)
+    'Luuk Herssen', 'Aemeath',
+  ];
+  
+  // All known character names (for filtering weapons vs characters)
+  const ALL_CHARACTERS = new Set([
+    // 5★
+    'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
+    'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
+    'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
+    'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
+    'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
+    // 4★
+    'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
+    'Mortefi', 'Youhu', 'Lumi', 'Buling',
+  ]);
+  
+  // Complete lists for Collection display (show all, grey out unpossessed)
+  const ALL_5STAR_RESONATORS = [
+    'Jiyan', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina', 'Yinlin',
+    'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
+    'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
+    'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
+    'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
+  ];
+  
+  const ALL_4STAR_RESONATORS = [
+    'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
+    'Mortefi', 'Youhu', 'Lumi', 'Buling',
+  ];
+  
+  const ALL_5STAR_WEAPONS = [
+    'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
+    'Stringmaster', 'Ages of Harvest', 'Blazing Brilliance', 'Rime-Draped Sprouts', "Verity's Handle",
+    'Stellar Symphony', 'Red Spring', 'The Last Dance', 'Tragicomedy', 'Luminous Hymn', 
+    'Unflickering Valor', 'Whispers of Sirens', 'Blazing Justice', 'Woodland Aria',
+    "Defier's Thorn", 'Wildfire Mark', 'Lethean Elegy', 'Thunderflare Dominion', "Moongazer's Sigil",
+    'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
+    'Everbright Polestar', "Daybreaker's Spine",
+    'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
+  ];
+  
+  const ALL_4STAR_WEAPONS = [
+    'Overture', "Ocean's Gift", "Bloodpact's Pledge", 'Waltz in Masquerade', 'Legend of Drunken Hero',
+    'Romance in Farewell', 'Fables of Wisdom', 'Meditations on Mercy', 'Call of the Abyss',
+    'Somnoire Anchor', 'Fusion Accretion', 'Celestial Spiral', 'Relativistic Jet', 'Endless Collapse',
+    'Waning Redshift', 'Beguiling Melody', 'Lumingloss', 'Lunar Cutter', 'Commando of Conviction',
+    'Scale Slasher', 'Jinzhou Keeper', 'Comet Flare', 'Augment', 'Variation', 'Hollow Mirage',
+    'Stonard', 'Amity Accord', 'Marcato', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Cadenza',
+    'Discord', 'Helios Cleaver', 'Dauntless Evernight',
+    'Autumntrace', 'Solar Flame', 'Feather Edge',
+  ];
+  
+  const ALL_3STAR_WEAPONS = [
+    'Training Sword', 'Tyro Sword', 'Guardian Sword', 'Sword of Voyager', 'Originite: Type II',
+    'Sword of Night', 'Sword#18', 'Training Rectifier', 'Tyro Rectifier', 'Guardian Rectifier',
+    'Rectifier of Voyager', 'Rectifier of Night', 'Originite: Type V', 'Rectifier#25',
+    'Training Gauntlets', 'Tyro Gauntlets', 'Guardian Gauntlets', 'Gauntlets of Voyager',
+    'Gauntlets of Night', 'Originite: Type III', 'Gauntlets#21', 'Training Pistols', 'Tyro Pistols',
+    'Guardian Pistols', 'Pistols of Voyager', 'Pistols of Night', 'Originite: Type IV', 'Pistols#26',
+    'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I',
+    'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
+  ];
+  
+  // Weapon release order for sorting (based on first banner appearance)
+  const WEAPON_RELEASE_ORDER = [
+    // 1.0 - Standard 5★ + Launch
+    'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
+    'Stringmaster',
+    // 1.1
+    'Ages of Harvest', 'Blazing Brilliance',
+    // 1.2
+    'Rime-Draped Sprouts', "Verity's Handle",
+    // 1.3
+    'Stellar Symphony',
+    // 1.4
+    'Red Spring',
+    // 2.0
+    'The Last Dance', 'Tragicomedy',
+    // 2.1
+    'Luminous Hymn', 'Unflickering Valor',
+    // 2.2
+    'Whispers of Sirens',
+    // 2.3
+    'Blazing Justice', 'Woodland Aria',
+    // 2.4
+    "Defier's Thorn", 'Wildfire Mark',
+    // 2.5
+    'Lethean Elegy',
+    // 2.6
+    'Thunderflare Dominion', "Moongazer's Sigil",
+    // 2.7
+    'Lux & Umbra', 'Emerald Sentence',
+    // 2.8
+    'Kumokiri',
+    // 3.0
+    'Spectrum Blaster', 'Starfield Calibrator',
+    // 3.1
+    'Everbright Polestar', "Daybreaker's Spine",
+  ];
+  
+  // Collection sort state
+  const [collectionSort, setCollectionSort] = useState('copies'); // 'copies' or 'release'
+  
+  // Cache-busting for images (refreshes on mount or manual refresh)
+  const [imageCacheBuster, setImageCacheBuster] = useState(() => Date.now());
+  const refreshImages = useCallback(() => setImageCacheBuster(Date.now()), []);
+  
+  // Helper to add cache-busting to image URL
+  const withCacheBuster = useCallback((url) => {
+    if (!url) return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${imageCacheBuster}`;
+  }, [imageCacheBuster]);
+  
+  // Collection images storage (merges with defaults)
+  const COLLECTION_IMAGES_KEY = 'whispering-wishes-collection-images';
+  const [customCollectionImages, setCustomCollectionImages] = useState(() => {
+    if (!storageAvailable) return {};
+    try {
+      const saved = localStorage.getItem(COLLECTION_IMAGES_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+  
+  // Merged collection images (custom overrides defaults)
+  const collectionImages = { ...DEFAULT_COLLECTION_IMAGES, ...customCollectionImages };
+  
+  const saveCollectionImages = (newImages) => {
+    setCustomCollectionImages(newImages);
+    if (!storageAvailable) return;
+    try { localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(newImages)); } catch {}
+  };
   
   // Admin password - stored in localStorage (user sets their own)
   const ADMIN_PASS_KEY = 'whispering-wishes-admin-pass';
   const [storedAdminPass, setStoredAdminPass] = useState(() => {
+    if (!storageAvailable) return '';
     try { return localStorage.getItem(ADMIN_PASS_KEY) || ''; } catch { return ''; }
   });
   
@@ -1395,7 +3016,7 @@ function WhisperingWishesInner() {
   
   // Load state from persistent storage on mount
   useEffect(() => {
-    const rawSaved = localStorage.getItem(STORAGE_KEY);
+    const rawSaved = storageAvailable ? localStorage.getItem(STORAGE_KEY) : null;
     loadFromStorage().then(savedState => {
       if (savedState) {
         dispatch({ type: 'LOAD_STATE', state: savedState });
@@ -1429,15 +3050,23 @@ function WhisperingWishesInner() {
   
   // Save on page unload
   useEffect(() => {
+    if (!storageAvailable) return;
     const handleUnload = () => {
       if (stateRef.current) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateRef.current));
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stateRef.current));
+        } catch {}
       }
     };
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, []);
-  const [activeTab, setActiveTab] = useState('tracker');
+  const [activeTab, setActiveTabRaw] = useState('tracker');
+  const tabNavRef = useRef(null);
+  const setActiveTab = useCallback((tab) => {
+    setActiveTabRaw(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
   const [trackerCategory, setTrackerCategory] = useState('character');
   const [importPlatform, setImportPlatform] = useState(null);
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
@@ -1445,6 +3074,7 @@ function WhisperingWishesInner() {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
   const [chartRange, setChartRange] = useState('monthly');
   const [chartOffset, setChartOffset] = useState(9999);
+  const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null });
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
@@ -1457,7 +3087,7 @@ function WhisperingWishesInner() {
   // Calculate stats for each banner type
   const charStats = useMemo(() => calcStats(charPulls, state.calc.charPity, state.calc.charGuaranteed, true, state.calc.charCopies), [charPulls, state.calc.charPity, state.calc.charGuaranteed, state.calc.charCopies]);
   const weapStats = useMemo(() => calcStats(weapPulls, state.calc.weapPity, false, false, state.calc.weapCopies), [weapPulls, state.calc.weapPity, state.calc.weapCopies]);
-  const stdCharStats = useMemo(() => calcStats(stdCharPulls, state.calc.stdCharPity, false, true, state.calc.stdCharCopies), [stdCharPulls, state.calc.stdCharPity, state.calc.stdCharCopies]);
+  const stdCharStats = useMemo(() => calcStats(stdCharPulls, state.calc.stdCharPity, false, false, state.calc.stdCharCopies), [stdCharPulls, state.calc.stdCharPity, state.calc.stdCharCopies]);
   const stdWeapStats = useMemo(() => calcStats(stdWeapPulls, state.calc.stdWeapPity, false, false, state.calc.stdWeapCopies), [stdWeapPulls, state.calc.stdWeapPity, state.calc.stdWeapCopies]);
 
   // Combined stats for "Both" mode
@@ -1587,7 +3217,8 @@ function WhisperingWishesInner() {
               rarity, 
               pity: rarity === 5 ? pity : 0, 
               won5050, 
-              timestamp: p.timestamp || p.time 
+              timestamp: p.timestamp || p.time,
+              resourceType: p.resourceType || p.type || null
             };
           });
         };
@@ -1613,8 +3244,6 @@ function WhisperingWishesInner() {
             totalImported += history.length;
           }
         });
-        // Auto-sync pity - longer delay to ensure state updates are processed
-        setTimeout(() => dispatch({ type: 'SYNC_PITY' }), 500);
         toast?.addToast?.(`Imported ${totalImported} Convenes!`, 'success');
       } catch (err) { toast?.addToast?.('Import failed: ' + err.message, 'error'); }
     };
@@ -1624,7 +3253,7 @@ function WhisperingWishesInner() {
 
   // Export data
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: '2.2', state };
+    const data = { timestamp: new Date().toISOString(), version: '2.9', state };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -1638,20 +3267,57 @@ function WhisperingWishesInner() {
 
   // Secret admin access - tap version 5 times quickly
   const handleAdminTap = useCallback(() => {
-    if (adminTapTimer) clearTimeout(adminTapTimer);
+    if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
     const newCount = adminTapCount + 1;
     setAdminTapCount(newCount);
     if (newCount >= 5) {
-      setShowAdminPanel(true);
+      // Check failed attempts
+      let failedAttempts = 0;
+      try {
+        failedAttempts = parseInt(localStorage.getItem('ww-admin-fails') || '0');
+      } catch {}
+      
+      if (failedAttempts >= 3) {
+        setAdminTapCount(0);
+        return; // Already locked out
+      }
+      
+      const password = prompt(`Enter admin password (${3 - failedAttempts} attempts remaining):`);
+      if (password === null || password === '') {
+        // User cancelled or empty - no penalty
+        setAdminTapCount(0);
+        return;
+      }
+      if (password === 'ADN3699@WW_ANDENE') {
+        setShowAdminPanel(true);
+        setAdminUnlocked(true); // Auto-unlock since password was verified
+        try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
+      } else {
+        // Wrong password - increment fails
+        try {
+          const newFails = failedAttempts + 1;
+          localStorage.setItem('ww-admin-fails', newFails.toString());
+          if (newFails >= 3) {
+            // Lock out entire app for 24h
+            const lockoutTime = Date.now() + (24 * 60 * 60 * 1000);
+            localStorage.setItem('ww-app-lockout', lockoutTime.toString());
+            window.location.reload();
+          }
+        } catch {}
+      }
       setAdminTapCount(0);
     } else {
-      const timer = setTimeout(() => setAdminTapCount(0), 1500);
-      setAdminTapTimer(timer);
+      adminTapTimerRef.current = setTimeout(() => setAdminTapCount(0), 1500);
     }
-  }, [adminTapCount, adminTapTimer]);
+  }, [adminTapCount]);
 
   // Save custom banners
   const saveCustomBanners = useCallback((banners) => {
+    if (!storageAvailable) {
+      setActiveBanners(banners);
+      toast?.addToast?.('Banner data updated (preview mode - not saved)', 'info');
+      return;
+    }
     try {
       localStorage.setItem(ADMIN_BANNER_KEY, JSON.stringify(banners));
       setActiveBanners(banners);
@@ -1669,7 +3335,9 @@ function WhisperingWishesInner() {
       return;
     }
     if (!storedAdminPass) {
-      localStorage.setItem(ADMIN_PASS_KEY, adminPassword);
+      if (storageAvailable) {
+        try { localStorage.setItem(ADMIN_PASS_KEY, adminPassword); } catch {}
+      }
       setStoredAdminPass(adminPassword);
       setAdminUnlocked(true);
       toast?.addToast?.('Admin password set!', 'success');
@@ -1688,35 +3356,39 @@ function WhisperingWishesInner() {
       {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
       
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/15" style={{backgroundColor: 'rgba(12, 16, 24, 0.85)', backdropFilter: 'blur(12px)'}}>
+      <header className="sticky top-0 z-50 border-b border-white/10" style={{backgroundColor: 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)'}}>
         <div className="max-w-lg mx-auto px-3">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
-                <Sparkles size={16} className="text-black" />
+          <div className="flex items-center justify-between py-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50" />
+                <div className="relative w-9 h-9 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <Sparkles size={18} className="text-black" />
+                </div>
               </div>
               <div>
-                <h1 className="text-white font-semibold text-sm">Whispering Wishes</h1>
-                <p className="text-gray-300 text-[10px]">WuWa Gacha Companion</p>
+                <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
+                <p className="text-gray-400 text-[9px] tracking-wider uppercase">Wuthering Waves Companion</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} className="text-gray-200 text-xs px-2 py-1 rounded border border-white/20" style={{backgroundColor: 'rgba(12, 16, 24, 0.8)'}}>
+            <div className="flex items-center gap-1.5">
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} className="p-1.5 rounded border border-white/20 text-gray-300 hover:text-white hover:border-white/40 active:scale-95 transition-all" style={{backgroundColor: 'rgba(12, 16, 24, 0.8)'}}>
+              <button onClick={handleExport} className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
                 <Download size={14} />
               </button>
             </div>
           </div>
-          <nav className="flex -mb-px overflow-x-auto">
-            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')}><Sparkles size={14} /> Tracker</TabButton>
-            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')}><Calendar size={14} /> Events</TabButton>
-            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')}><Calculator size={14} /> Calc</TabButton>
-            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')}><TrendingUp size={14} /> Plan</TabButton>
-            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')}><BarChart3 size={14} /> Stats</TabButton>
-            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')}><Archive size={14} /> Collection</TabButton>
-            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')}><User size={14} /> Profile</TabButton>
+          <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <div className="tab-indicator" />
+            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef}><Sparkles size={16} /> Tracker</TabButton>
+            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef}><Calendar size={16} /> Events</TabButton>
+            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef}><Calculator size={16} /> Calc</TabButton>
+            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef}><TrendingUp size={16} /> Plan</TabButton>
+            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef}><BarChart3 size={16} /> Stats</TabButton>
+            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef}><Archive size={16} /> Collection</TabButton>
+            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef}><User size={16} /> Profile</TabButton>
           </nav>
         </div>
       </header>
@@ -1725,96 +3397,8 @@ function WhisperingWishesInner() {
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* LAHAI-ROI BACKGROUND */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '-10%',
-              right: '-10%',
-              height: '35%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)',
-              filter: 'blur(20px)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '25%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 2,
-              pointerEvents: 'none',
-              opacity: 0.6
-            }}>
-              <svg style={{width: '100%', height: '100%'}} xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="trackerNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <pattern id="trackerGrid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter="url(#trackerNodeGlow)"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#trackerGrid)"/>
-              </svg>
-            </div>
-            
-            {/* Bottom ambient glow */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 3,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(251,191,36,0.1) 0%, rgba(251,191,36,0.04) 30%, transparent 60%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%),
-                radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)
-              `
-            }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="tracker" glowColor="gold" />
 
             {/* Category Tabs */}
             <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
@@ -1845,88 +3429,118 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'character' && (
-              <div className="space-y-2">
-                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} />)}
+              <div className="space-y-2" style={{position: 'relative', zIndex: 5}}>
+                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} visualSettings={visualSettings} />)}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
-              <div className="space-y-2">
-                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} />)}
+              <div className="space-y-2" style={{position: 'relative', zIndex: 5}}>
+                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} visualSettings={visualSettings} />)}
               </div>
             )}
 
             {trackerCategory === 'standard' && (
-              <div className="space-y-3">
+              <div className="space-y-3" style={{position: 'relative', zIndex: 5}}>
                 <div className="text-gray-300 text-xs uppercase tracking-wider" style={{position: 'relative', zIndex: 5}}>Permanent Banners</div>
                 
                 {/* Standard Resonator Banner */}
-                <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: activeBanners.standardCharBannerImage ? '180px' : 'auto' }}>
-                  {activeBanners.standardCharBannerImage && (
-                    <>
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ 
-                          backgroundImage: `url(${activeBanners.standardCharBannerImage})`,
-                          maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
-                          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
-                        }}
-                      />
-                      <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />
-                    </>
-                  )}
-                  <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
-                      <span className="text-gray-200 text-[10px]">Standard Resonator</span>
-                    </div>
-                    <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
-                    <div className="flex gap-1 flex-wrap">
-                      {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
-                    </div>
-                    {state.profile.standardChar?.history?.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/10">
-                        <div><div className="text-cyan-400 font-bold">{state.profile.standardChar.pity5}/80</div><div className="text-gray-300 text-[9px]">5★ Pity</div></div>
-                        <div><div className="text-purple-400 font-bold">{state.profile.standardChar.pity4}/10</div><div className="text-gray-300 text-[9px]">4★ Pity</div></div>
-                        <div><div className="text-white font-bold">{state.profile.standardChar.history.length}</div><div className="text-gray-300 text-[9px]">Convenes</div></div>
+                {(() => {
+                  const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
+                  const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
+                  return (
+                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '180px', position: 'relative', zIndex: 5 }}>
+                      {activeBanners.standardCharBannerImage && (
+                        <img 
+                          src={activeBanners.standardCharBannerImage}
+                          alt="Tidal Chorus"
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ 
+                            opacity: stdOpacity,
+                            maskImage: stdMask,
+                            WebkitMaskImage: stdMask
+                          }}
+                          loading="eager"
+                          crossOrigin="anonymous"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      )}
+                      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+                        <div>
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
+                            <span className="text-gray-200 text-[10px]">Standard Resonator</span>
+                          </div>
+                          <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
+                          <div className="flex gap-1 flex-wrap">
+                            {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
+                          </div>
+                        </div>
+                        {state.profile.standardChar?.history?.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-white/10">
+                            <div className="flex items-center justify-around">
+                              <PityRing value={state.profile.standardChar.pity5} max={80} size={52} strokeWidth={4} color="#22d3ee" glowColor="rgba(34,211,238,0.4)" label="5★ Pity" />
+                              <PityRing value={state.profile.standardChar.pity4} max={10} size={38} strokeWidth={3} color="#a855f7" glowColor="rgba(168,85,247,0.4)" label="4★ Pity" />
+                              <div className="text-center">
+                                <div className="text-white font-bold text-lg drop-shadow">{state.profile.standardChar.history.length}</div>
+                                <div className="text-gray-300 text-[8px]">Convenes</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Standard Weapon Banner */}
-                <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ minHeight: activeBanners.standardWeapBannerImage ? '180px' : 'auto' }}>
-                  {activeBanners.standardWeapBannerImage && (
-                    <>
-                      <div 
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                        style={{ 
-                          backgroundImage: `url(${activeBanners.standardWeapBannerImage})`,
-                          maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)',
-                          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 5%, rgba(0,0,0,0.40) 10%, rgba(0,0,0,0.45) 15%, rgba(0,0,0,0.50) 20%, rgba(0,0,0,0.55) 25%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.70) 40%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.90) 50%)'
-                        }}
-                      />
-                      <div className="absolute inset-0" style={{background: 'linear-gradient(to right, rgba(0,0,0,1) 5%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 15%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.65) 25%, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.45) 35%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 50%)'}} />
-                    </>
-                  )}
-                  <div className="relative z-10 p-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-sm text-purple-400">Winter Brume</h3>
-                      <span className="text-gray-200 text-[10px]">Standard Weapon</span>
-                    </div>
-                    <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
-                    <div className="flex gap-1 flex-wrap">
-                      {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{w.name}</span>)}
-                    </div>
-                    {state.profile.standardWeap?.history?.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2 text-center text-xs mt-3 pt-3 border-t border-white/10">
-                        <div><div className="text-purple-400 font-bold">{state.profile.standardWeap.pity5}/80</div><div className="text-gray-300 text-[9px]">5★ Pity</div></div>
-                        <div><div className="text-purple-400 font-bold">{state.profile.standardWeap.pity4}/10</div><div className="text-gray-300 text-[9px]">4★ Pity</div></div>
-                        <div><div className="text-white font-bold">{state.profile.standardWeap.history.length}</div><div className="text-gray-300 text-[9px]">Convenes</div></div>
+                {(() => {
+                  const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
+                  const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
+                  return (
+                    <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ height: '180px', position: 'relative', zIndex: 5 }}>
+                      {activeBanners.standardWeapBannerImage && (
+                        <img 
+                          src={activeBanners.standardWeapBannerImage}
+                          alt="Winter Brume"
+                          className="absolute inset-0 w-full h-full object-cover"
+                          style={{ 
+                            opacity: stdOpacity,
+                            maskImage: stdMask,
+                            WebkitMaskImage: stdMask
+                          }}
+                          loading="eager"
+                          crossOrigin="anonymous"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      )}
+                      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+                        <div>
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-bold text-sm text-purple-400">Winter Brume</h3>
+                            <span className="text-gray-200 text-[10px]">Standard Weapon</span>
+                          </div>
+                          <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
+                          <div className="flex gap-1 flex-wrap">
+                            {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{w.name}</span>)}
+                          </div>
+                        </div>
+                        {state.profile.standardWeap?.history?.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-white/10">
+                            <div className="flex items-center justify-around">
+                              <PityRing value={state.profile.standardWeap.pity5} max={80} size={52} strokeWidth={4} color="#c084fc" glowColor="rgba(192,132,252,0.4)" label="5★ Pity" />
+                              <PityRing value={state.profile.standardWeap.pity4} max={10} size={38} strokeWidth={3} color="#a855f7" glowColor="rgba(168,85,247,0.4)" label="4★ Pity" />
+                              <div className="text-center">
+                                <div className="text-white font-bold text-lg drop-shadow">{state.profile.standardWeap.history.length}</div>
+                                <div className="text-gray-300 text-[8px]">Convenes</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -1959,99 +3573,16 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* LAHAI-ROI BACKGROUND */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '-10%',
-              right: '-10%',
-              height: '35%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)',
-              filter: 'blur(20px)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '25%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 2,
-              pointerEvents: 'none',
-              opacity: 0.6
-            }}>
-              <svg style={{width: '100%', height: '100%'}} xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="eventsNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <pattern id="eventsGrid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter="url(#eventsNodeGlow)"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#eventsGrid)"/>
-              </svg>
-            </div>
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 3,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(150,180,205,0.1) 0%, rgba(130,160,185,0.04) 30%, transparent 60%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%),
-                radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)
-              `
-            }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="events" />
 
             <div className="flex items-center justify-between" style={{position: 'relative', zIndex: 5}}>
               <h2 className="text-white font-semibold text-sm">Time-Gated Content</h2>
               <span className="text-gray-300 text-[10px]">Server: {state.server}</span>
+            </div>
+            <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center justify-between" style={{position: 'relative', zIndex: 5}}>
+              <span className="text-yellow-400 text-xs font-medium">Total Available Astrite</span>
+              <span className="text-yellow-400 font-bold text-sm">{Object.values(EVENTS).reduce((sum, ev) => sum + (parseInt(ev.rewards) || 0), 0).toLocaleString()} Astrite</span>
             </div>
             <div className="space-y-2">
               {Object.entries(EVENTS).map(([key, ev]) => {
@@ -2062,7 +3593,7 @@ function WhisperingWishesInner() {
                   illusiveRealm: activeBanners.illusiveRealmImage,
                   dailyReset: activeBanners.dailyResetImage,
                 };
-                return <EventCard key={key} event={ev} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} />;
+                return <EventCard key={key} event={{...ev, key}} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} visualSettings={visualSettings} />;
               })}
             </div>
             <p className="text-neutral-500 text-[10px] text-center" style={{position: 'relative', zIndex: 5}}>Reset times based on {state.server} server (UTC{SERVERS[state.server]?.utcOffset >= 0 ? '+' : ''}{SERVERS[state.server]?.utcOffset})</p>
@@ -2071,107 +3602,8 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* LAHAI-ROI 2D PATTERN */}
-            
-            {/* Dark base with slight blue tint - lighter at bottom */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)'
-            }} />
-            
-            {/* Volumetric light from BOTTOM - diffuse spread like lamp below screen */}
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)
-              `
-            }} />
-            
-            {/* Additional soft horizontal glow at very bottom */}
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '-10%',
-              right: '-10%',
-              height: '35%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)',
-              filter: 'blur(20px)'
-            }} />
-            
-            {/* Subtle top ambient - minimal */}
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '25%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)'
-            }} />
-            
-            {/* Square grid pattern with nodes at intersections */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 2,
-              pointerEvents: 'none',
-              opacity: 0.6
-            }}>
-              <svg style={{width: '100%', height: '100%'}} xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <pattern id="gridCell" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter="url(#nodeGlow)"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#gridCell)"/>
-              </svg>
-            </div>
-            
-            {/* Atmospheric depth layer - horizontal bottom glow */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 3,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(0deg, rgba(150,180,205,0.1) 0%, rgba(130,160,185,0.04) 30%, transparent 60%)
-              `
-            }} />
-            
-            {/* Soft vignette - darker at top, lighter at bottom */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%),
-                radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)
-              `
-            }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="calc" />
             
             {/* Banner Selection */}
             <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
@@ -2239,7 +3671,7 @@ function WhisperingWishesInner() {
                         <PityRing value={state.calc.charPity} max={80} color="gold" softPity={66} />
                         <div className="flex-1">
                           <div style={{color: '#fde047'}} className="text-sm font-medium mb-1">Featured Resonator</div>
-                          <input type="range" min="0" max="80" value={state.calc.charPity} onChange={e => { const v = +e.target.value; setCalc('charPity', v); if (v >= 80 && !state.calc.charGuaranteed) setCalc('charGuaranteed', true); else if (v < 80 && !state.calc.charGuaranteedManual) setCalc('charGuaranteed', false); }} className="kuro-slider" />
+                          <input type="range" min="0" max="80" value={state.calc.charPity} onChange={e => { const v = +e.target.value; setCalc('charPity', v); }} className="kuro-slider" />
                           {state.calc.charPity >= 66 && <p className="text-[10px] kuro-soft-pity" style={{color: '#fb923c'}}><Sparkles size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
                         <div className="text-right">
@@ -2250,7 +3682,7 @@ function WhisperingWishesInner() {
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
                           <span style={{color: '#fde047'}}>5★ Target:</span>
-                          <input type="text" inputMode="numeric" value={state.calc.charCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('charCopies', Math.max(0, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
+                          <input type="text" inputMode="numeric" value={state.calc.charCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('charCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
                           <span style={{color: '#c4b5fd'}}>4★ Target:</span>
@@ -2278,7 +3710,7 @@ function WhisperingWishesInner() {
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
                           <span style={{color: '#f472b6'}}>5★ Target:</span>
-                          <input type="text" inputMode="numeric" value={state.calc.weapCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('weapCopies', Math.max(0, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
+                          <input type="text" inputMode="numeric" value={state.calc.weapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('weapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
                           <span style={{color: '#c4b5fd'}}>4★ Target:</span>
@@ -2306,7 +3738,7 @@ function WhisperingWishesInner() {
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
                           <span style={{color: '#7dd3fc'}}>5★ Target:</span>
-                          <input type="text" inputMode="numeric" value={state.calc.stdCharCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('stdCharCopies', Math.max(0, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
+                          <input type="text" inputMode="numeric" value={state.calc.stdCharCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdCharCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
                           <span style={{color: '#c4b5fd'}}>4★ Target:</span>
@@ -2334,7 +3766,7 @@ function WhisperingWishesInner() {
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
                           <span style={{color: '#7dd3fc'}}>5★ Target:</span>
-                          <input type="text" inputMode="numeric" value={state.calc.stdWeapCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('stdWeapCopies', Math.max(0, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
+                          <input type="text" inputMode="numeric" value={state.calc.stdWeapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdWeapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
                           <span style={{color: '#c4b5fd'}}>4★ Target:</span>
@@ -2375,7 +3807,7 @@ function WhisperingWishesInner() {
                           <input type="number" value={state.calc.radiant} onChange={e => setCalc('radiant', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String((+state.calc.radiant || 0) + amt))} className="px-2 py-0.5 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String((+state.calc.radiant || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -2386,7 +3818,7 @@ function WhisperingWishesInner() {
                           <input type="number" value={state.calc.forging} onChange={e => setCalc('forging', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} className="px-2 py-0.5 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -2401,7 +3833,7 @@ function WhisperingWishesInner() {
                       <input type="number" value={state.calc.lustrous} onChange={e => setCalc('lustrous', e.target.value)} className="kuro-input" placeholder="0" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String((+state.calc.lustrous || 0) + amt))} className="px-2 py-0.5 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String((+state.calc.lustrous || 0) + amt))} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30">+{amt}</button>
                         ))}
                       </div>
                     </div>
@@ -2565,95 +3997,8 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* LAHAI-ROI BACKGROUND */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '-10%',
-              right: '-10%',
-              height: '35%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)',
-              filter: 'blur(20px)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '25%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 2,
-              pointerEvents: 'none',
-              opacity: 0.6
-            }}>
-              <svg style={{width: '100%', height: '100%'}} xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="plannerNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <pattern id="plannerGrid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter="url(#plannerNodeGlow)"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#plannerGrid)"/>
-              </svg>
-            </div>
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 3,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(150,180,205,0.1) 0%, rgba(130,160,185,0.04) 30%, transparent 60%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%),
-                radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)
-              `
-            }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="planner" />
 
             {/* Daily Income Setup - Clean summary only */}
             <Card>
@@ -2677,7 +4022,7 @@ function WhisperingWishesInner() {
 
                 <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span className="text-yellow-400 text-sm font-medium">📅 Daily Income</span>
+                    <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
                     <span className="text-yellow-400 font-bold">{dailyIncome} Astrite</span>
                   </div>
                   <div className="text-gray-200 text-[10px] mt-1">≈ {(dailyIncome / 160).toFixed(2)} Convenes/day • {Math.floor(dailyIncome * 30 / 160)} Convenes/month</div>
@@ -2709,6 +4054,17 @@ function WhisperingWishesInner() {
                         </div>
                       </div>
                       <span className="text-emerald-400 text-xs">$4.99/mo</span>
+                    </div>
+                  </button>
+
+                  {/* Weekly Subscription - One-time purchase */}
+                  <button onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: 1600, radiant: 0, lustrous: 0, label: 'Weekly Subscription', price: 9.99 } })} className="kuro-btn w-full text-left">
+                    <div className="flex items-center justify-between w-full">
+                      <div>
+                        <div className="text-gray-200 text-xs font-medium">Weekly Subscription</div>
+                        <div className="text-gray-300 text-[10px]">680 Lunite + 1600 Astrite over 15 days</div>
+                      </div>
+                      <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">$9.99</span><Plus size={12} className="text-yellow-400" /></div>
                     </div>
                   </button>
 
@@ -2761,6 +4117,44 @@ function WhisperingWishesInner() {
                 </CardBody>
               </Card>
             )}
+
+            {/* By Banner End */}
+            {(() => {
+              const bannerEnd = new Date(activeBanners.endDate);
+              const now = new Date();
+              const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
+              if (daysLeft <= 0) return null;
+              const incomeByEnd = dailyIncome * daysLeft;
+              const currentAstrite = +state.calc.astrite || 0;
+              const totalAstrite = currentAstrite + incomeByEnd;
+              const convenesByEnd = Math.floor(totalAstrite / 160) + (+state.calc.radiant || 0);
+              return (
+                <Card>
+                  <CardHeader>By Banner End</CardHeader>
+                  <CardBody>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-300 text-[10px]">v{activeBanners.version} P{activeBanners.phase} ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''}</span>
+                      <CountdownTimer endDate={activeBanners.endDate} compact />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="p-2.5 text-center rounded-lg border border-yellow-500/20" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)'}}>
+                        <div className="text-yellow-400 kuro-number text-xl">{convenesByEnd}</div>
+                        <div className="text-gray-300 text-[9px]">Total Convenes</div>
+                      </div>
+                      <div className="p-2.5 text-center rounded-lg border border-white/10" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)'}}>
+                        <div className="text-white kuro-number text-xl">{Math.floor(incomeByEnd / 160)}</div>
+                        <div className="text-gray-300 text-[9px]">Earned Convenes</div>
+                      </div>
+                      <div className="p-2.5 text-center rounded-lg border border-white/10" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)'}}>
+                        <div className="text-white kuro-number text-xl">{totalAstrite.toLocaleString()}</div>
+                        <div className="text-gray-300 text-[9px]">Total Astrite</div>
+                      </div>
+                    </div>
+                    <div className="text-gray-500 text-[9px] text-center mt-2">Current {currentAstrite.toLocaleString()} + {incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {daysLeft}d)</div>
+                  </CardBody>
+                </Card>
+              );
+            })()}
 
             {/* Income Projections */}
             <Card>
@@ -2821,24 +4215,24 @@ function WhisperingWishesInner() {
                   const isWeap = state.calc.selectedBanner === 'weap';
                   const isBoth = state.calc.selectedBanner === 'both';
                   
-                  // Get copies from Calculator
+                  // Get copies from Calculator - minimum 1
                   let copies = 1;
                   let bannerLabel = '';
                   if (isFeatured) {
-                    if (isChar) { copies = state.calc.charCopies; bannerLabel = 'Featured Resonator'; }
-                    else if (isWeap) { copies = state.calc.weapCopies; bannerLabel = 'Featured Weapon'; }
-                    else { copies = Math.max(state.calc.charCopies, state.calc.weapCopies); bannerLabel = 'Featured Both'; }
+                    if (isChar) { copies = Math.max(1, state.calc.charCopies || 1); bannerLabel = 'Featured Resonator'; }
+                    else if (isWeap) { copies = Math.max(1, state.calc.weapCopies || 1); bannerLabel = 'Featured Weapon'; }
+                    else { copies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); bannerLabel = 'Featured Both'; }
                   } else {
-                    if (isChar) { copies = state.calc.stdCharCopies; bannerLabel = 'Standard Resonator'; }
-                    else if (isWeap) { copies = state.calc.stdWeapCopies; bannerLabel = 'Standard Weapon'; }
-                    else { copies = Math.max(state.calc.stdCharCopies, state.calc.stdWeapCopies); bannerLabel = 'Standard Both'; }
+                    if (isChar) { copies = Math.max(1, state.calc.stdCharCopies || 1); bannerLabel = 'Standard Resonator'; }
+                    else if (isWeap) { copies = Math.max(1, state.calc.stdWeapCopies || 1); bannerLabel = 'Standard Weapon'; }
+                    else { copies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); bannerLabel = 'Standard Both'; }
                   }
                   
-                  const targetPulls = state.planner.goalPulls * copies * state.planner.goalModifier;
+                  const targetPulls = Math.max(1, state.planner.goalPulls * copies * state.planner.goalModifier);
                   const targetAstrite = targetPulls * 160;
                   const needed = Math.max(0, targetAstrite - currentAstrite);
                   const daysNeeded = dailyIncome > 0 ? Math.ceil(needed / dailyIncome) : Infinity;
-                  const progress = Math.min(100, (currentAstrite / targetAstrite) * 100);
+                  const progress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
                   
                   return (
                     <>
@@ -2870,6 +4264,12 @@ function WhisperingWishesInner() {
                           <div className="text-gray-200 text-[10px]">Days to Goal</div>
                         </div>
                       </div>
+                      {daysNeeded !== Infinity && daysNeeded > 0 && (
+                        <div className="p-2 bg-white/5 rounded text-center">
+                          <span className="text-gray-400 text-[10px]">Estimated: </span>
+                          <span className="text-yellow-400 text-xs font-medium">{new Date(Date.now() + daysNeeded * 86400000).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                      )}
                     </>
                   );
                 })()}
@@ -2901,11 +4301,8 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* Background */}
-            <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)' }} />
-            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '70%', zIndex: 1, pointerEvents: 'none', background: 'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)' }} />
-            <div style={{ position: 'fixed', inset: 0, zIndex: 4, pointerEvents: 'none', background: 'linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%)' }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="stats" />
 
             {!overallStats ? (
               <Card>
@@ -2920,18 +4317,27 @@ function WhisperingWishesInner() {
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
-                    <CardHeader>Success Rate</CardHeader>
+                    <CardHeader>Luck Rating</CardHeader>
                     <CardBody>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-2xl font-bold mb-1" style={{color: luckRating.color}}>{luckRating.rating}</div>
-                          <div className="text-xs text-gray-400">
-                            Rank <span className="font-bold" style={{color: luckRating.color}}>{luckRating.tier}</span> • Avg pity {overallStats.avgPity}
+                      <div className="flex items-center gap-4">
+                        <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
+                          <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
+                            <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color}}>{luckRating.tier}</div>
+                            <div className="text-lg font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`}}>{luckRating.rating}</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-white">Top {Math.max(1, 100 - luckRating.percentile)}%</div>
-                          <div className="text-[10px] text-gray-500">of players</div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-gray-400 text-[10px]">Percentile</span>
+                            <span className="text-white font-bold text-sm">Top {Math.max(1, 100 - luckRating.percentile)}%</span>
+                          </div>
+                          <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
+                          </div>
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-gray-400 text-[10px]">Avg Pity</span>
+                            <span className="text-gray-200 text-xs font-medium">{overallStats.avgPity}</span>
+                          </div>
                         </div>
                       </div>
                     </CardBody>
@@ -2946,7 +4352,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHist = [...(state.profile.featured?.history || []), ...(state.profile.weapon?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.standardWeap?.history || [])];
-                      if (allHist.length < 10) return <p className="text-gray-500 text-xs text-center py-6">Need more Convene data for trends</p>;
+                      if (allHist.length < 10) return <p className="text-gray-500 text-xs text-center py-4">Need more Convene data for trends</p>;
                       
                       const groupData = (range) => {
                         const grouped = {};
@@ -2996,7 +4402,7 @@ function WhisperingWishesInner() {
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="text-gray-500 text-xs text-center py-6">Need more data</p>;
+                      if (allData.length < 2) return <p className="text-gray-500 text-xs text-center py-4">Need more data</p>;
                       
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
@@ -3077,9 +4483,9 @@ function WhisperingWishesInner() {
                       <div className="p-2 bg-white/5 rounded text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
-                      <div className="p-1.5 bg-white/5 rounded text-center"><div className="text-emerald-400 font-bold text-sm">{overallStats.won5050}</div><div className="text-gray-400 text-[8px]">Won 50/50</div></div>
-                      <div className="p-1.5 bg-white/5 rounded text-center"><div className="text-red-400 font-bold text-sm">{overallStats.lost5050}</div><div className="text-gray-400 text-[8px]">Lost 50/50</div></div>
-                      <div className="p-1.5 bg-white/5 rounded text-center"><div className="text-white font-bold text-sm">{overallStats.avgPity}</div><div className="text-gray-400 text-[8px]">Avg. Pity</div></div>
+                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-emerald-400 font-bold text-sm">{overallStats.won5050}</div><div className="text-gray-400 text-[9px]">Won 50/50</div></div>
+                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-red-400 font-bold text-sm">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
+                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-white font-bold text-sm">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
                     </div>
                     {overallStats.winRate && <div className="text-center text-[10px] text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold">{overallStats.winRate}%</span></div>}
                   </CardBody>
@@ -3130,20 +4536,60 @@ function WhisperingWishesInner() {
                   </CardBody>
                 </Card>
 
+                {/* 5★ Pull Log */}
+                <Card>
+                  <CardHeader>5★ Pull Log</CardHeader>
+                  <CardBody>
+                    {(() => {
+                      const allPulls = [
+                        ...(state.profile.featured?.history || []).map(p => ({...p, banner: 'Featured'})),
+                        ...(state.profile.weapon?.history || []).map(p => ({...p, banner: 'Weapon'})),
+                        ...(state.profile.standardChar?.history || []).map(p => ({...p, banner: 'Std Char'})),
+                        ...(state.profile.standardWeap?.history || []).map(p => ({...p, banner: 'Std Weap'})),
+                      ];
+                      const fiveStars = allPulls.filter(p => p.rarity === 5 && p.name).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                      if (fiveStars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No 5★ pulls yet</p>;
+                      return (
+                        <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
+                          {fiveStars.map((p, i) => {
+                            const pityColor = p.pity <= 40 ? '#34d399' : p.pity <= 60 ? '#60a5fa' : p.pity <= 70 ? '#fbbf24' : '#f87171';
+                            const pityTextColor = p.pity <= 40 ? 'text-emerald-400' : p.pity <= 60 ? 'text-blue-400' : p.pity <= 70 ? 'text-yellow-400' : 'text-red-400';
+                            return (
+                              <div key={i} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-yellow-400 font-medium truncate">{p.name}</span>
+                                  <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
+                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-[8px] font-bold flex-shrink-0">W</span>}
+                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-[8px] font-bold flex-shrink-0">L</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-500 text-[8px] flex-shrink-0">G</span>}
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <span className={`font-bold ${pityTextColor}`}>{p.pity || '?'}</span>
+                                  {p.timestamp && <span className="text-gray-600 text-[9px]">{new Date(p.timestamp).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</span>}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </CardBody>
+                </Card>
+
                 {/* Total Obtained */}
                 <Card>
                   <CardHeader>Total Obtained</CardHeader>
                   <CardBody>
                     <p className="text-gray-400 text-[9px] mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-1.5 mb-3">
-                      <div className="p-1.5 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{[...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])].filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[8px]">5★</div></div>
-                      <div className="p-1.5 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{[...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])].filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[8px]">4★</div></div>
+                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{[...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])].filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
+                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{[...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])].filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-[9px] mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-1.5">
-                      <div className="p-1.5 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[8px]">5★</div></div>
-                      <div className="p-1.5 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[8px]">4★</div></div>
+                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
+                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
                       <div className="p-1.5 bg-blue-500/10 rounded text-center"><div className="text-blue-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 3).length}</div><div className="text-gray-400 text-[8px]">3★</div></div>
                     </div>
                   </CardBody>
@@ -3184,64 +4630,8 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* LAHAI-ROI BACKGROUND */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 2,
-              pointerEvents: 'none',
-              opacity: 0.6
-            }}>
-              <svg style={{width: '100%', height: '100%'}} xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="gatheringNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <pattern id="gatheringGrid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter="url(#gatheringNodeGlow)"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#gatheringGrid)"/>
-              </svg>
-            </div>
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%),
-                radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)
-              `
-            }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="gathering" />
 
             {!state.profile.importedAt ? (
               <Card>
@@ -3253,6 +4643,59 @@ function WhisperingWishesInner() {
               </Card>
             ) : (
               <>
+                {/* Overall Collection Summary */}
+                {(() => {
+                  try {
+                  const allHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || []), ...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])];
+                  const ownedChars5 = new Set(allHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)).size;
+                  const ownedChars4 = new Set(allHistory.filter(p => p.rarity === 4 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)).size;
+                  const ownedWeaps5 = new Set(allHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name)).size;
+                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5;
+                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length;
+                  const pct = totalItems > 0 ? Math.round((totalOwned / totalItems) * 100) : 0;
+                  return (
+                    <div className="p-3 rounded-lg border border-white/10" style={{backgroundColor: 'rgba(12, 16, 24, 0.4)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5}}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white text-xs font-medium">Collection Progress</span>
+                        <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
+                      </div>
+                      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden mb-2">
+                        <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-all" style={{width: `${pct}%`}} />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center text-[9px]">
+                        <div><span className="text-yellow-400 font-bold">{ownedChars5}</span><span className="text-gray-500">/{ALL_5STAR_RESONATORS.length} 5★ Res</span></div>
+                        <div><span className="text-purple-400 font-bold">{ownedChars4}</span><span className="text-gray-500">/{ALL_4STAR_RESONATORS.length} 4★ Res</span></div>
+                        <div><span className="text-yellow-400 font-bold">{ownedWeaps5}</span><span className="text-gray-500">/{ALL_5STAR_WEAPONS.length} 5★ Weap</span></div>
+                      </div>
+                    </div>
+                  );
+                  } catch (e) { return null; }
+                })()}
+
+                {/* Sort Toggle */}
+                <div className="flex justify-end gap-2 mb-2" style={{position: 'relative', zIndex: 10}}>
+                  <button
+                    onClick={refreshImages}
+                    className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 transition-all"
+                    title="Refresh images if they don't load"
+                  >
+                    <RefreshCcw size={10} className="inline mr-1" />Refresh
+                  </button>
+                  <span className="text-gray-500 text-[10px] self-center ml-auto">Sort:</span>
+                  <button
+                    onClick={() => setCollectionSort('copies')}
+                    className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400'}`}
+                  >
+                    Copies
+                  </button>
+                  <button
+                    onClick={() => setCollectionSort('release')}
+                    className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400'}`}
+                  >
+                    Release
+                  </button>
+                </div>
+
                 {/* 5★ Resonators */}
                 <Card>
                   <CardHeader>
@@ -3260,21 +4703,43 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      // Resonators come from featured banner and standard resonator banner
+                      // Get counts from history
                       const allHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-                      const chars5 = allHistory.filter(p => p.rarity === 5 && p.name);
+                      const chars5 = allHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name));
                       const charCounts = chars5.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      const uniqueChars = Object.entries(charCounts);
-                      if (uniqueChars.length === 0) return <p className="text-gray-500 text-xs text-center">No 5★ Resonators obtained</p>;
+                      
+                      // Create list with all 5★ resonators
+                      let allChars = ALL_5STAR_RESONATORS.map(name => [name, charCounts[name] || 0]);
+                      
+                      // Sort
+                      if (collectionSort === 'copies') {
+                        allChars.sort((a, b) => b[1] - a[1]); // Most copies first, then alphabetical
+                      } else {
+                        // Release order - use RELEASE_ORDER, newest first
+                        allChars.sort((a, b) => {
+                          const aIdx = RELEASE_ORDER.indexOf(a[0]);
+                          const bIdx = RELEASE_ORDER.indexOf(b[0]);
+                          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
+                        });
+                      }
+                      
+                      const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
+                      const collOpacity = visualSettings.collectionOpacity / 100;
+                      const ownedCount = allChars.filter(([_, c]) => c > 0).length;
+                      
                       return (
-                        <div className="grid grid-cols-3 gap-2">
-                          {uniqueChars.map(([name, count]) => (
-                            <div key={name} className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-center">
-                              <div className="text-yellow-400 font-bold text-lg">S{count - 1}</div>
-                              <div className="text-gray-200 text-[9px] truncate">{name}</div>
-                            </div>
-                          ))}
-                        </div>
+                        <>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allChars.length} owned</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {allChars.map(([name, count]) => {
+                              const imgUrl = collectionImages[name];
+                              const imageKey = `collection-${name}`;
+                              return (
+                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30" countLabel={`S${count - 1}`} countColor="text-yellow-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={CHARACTER_DATA[name] ? () => setDetailModal({ show: true, type: 'character', name, imageUrl: imgUrl }) : null} isNew={activeBanners.characters?.some(c => c.name === name && c.isNew)} />
+                              );
+                            })}
+                          </div>
+                        </>
                       );
                     })()}
                   </CardBody>
@@ -3287,21 +4752,40 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      // Resonators come from featured banner and standard resonator banner
                       const allHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-                      const chars4 = allHistory.filter(p => p.rarity === 4 && p.name);
+                      const chars4 = allHistory.filter(p => p.rarity === 4 && p.name && ALL_CHARACTERS.has(p.name));
                       const charCounts = chars4.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      const uniqueChars = Object.entries(charCounts);
-                      if (uniqueChars.length === 0) return <p className="text-gray-500 text-xs text-center">No 4★ Resonators obtained</p>;
+                      
+                      let allChars = ALL_4STAR_RESONATORS.map(name => [name, charCounts[name] || 0]);
+                      
+                      if (collectionSort === 'copies') {
+                        allChars.sort((a, b) => b[1] - a[1]);
+                      } else {
+                        // Release order - newest first (consistent with 5★)
+                        allChars.sort((a, b) => {
+                          const aIdx = RELEASE_ORDER.indexOf(a[0]);
+                          const bIdx = RELEASE_ORDER.indexOf(b[0]);
+                          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
+                        });
+                      }
+                      
+                      const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
+                      const collOpacity = visualSettings.collectionOpacity / 100;
+                      const ownedCount = allChars.filter(([_, c]) => c > 0).length;
+                      
                       return (
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {uniqueChars.map(([name, count]) => (
-                            <div key={name} className="p-1.5 bg-purple-500/10 border border-purple-500/30 rounded text-center">
-                              <div className="text-purple-400 font-bold text-sm">S{count - 1}</div>
-                              <div className="text-gray-200 text-[8px] truncate">{name}</div>
-                            </div>
-                          ))}
-                        </div>
+                        <>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allChars.length} owned</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {allChars.map(([name, count]) => {
+                              const imgUrl = collectionImages[name];
+                              const imageKey = `collection-${name}`;
+                              return (
+                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30" countLabel={`S${count - 1}`} countColor="text-purple-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={CHARACTER_DATA[name] ? () => setDetailModal({ show: true, type: 'character', name, imageUrl: imgUrl }) : null} />
+                              );
+                            })}
+                          </div>
+                        </>
                       );
                     })()}
                   </CardBody>
@@ -3315,19 +4799,39 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-                      const weaps5 = allHistory.filter(p => p.rarity === 5 && p.name);
+                      const weaps5 = allHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name));
                       const weapCounts = weaps5.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      const uniqueWeaps = Object.entries(weapCounts);
-                      if (uniqueWeaps.length === 0) return <p className="text-gray-500 text-xs text-center">No 5★ weapons obtained</p>;
+                      
+                      let allWeaps = ALL_5STAR_WEAPONS.map(name => [name, weapCounts[name] || 0]);
+                      
+                      if (collectionSort === 'copies') {
+                        allWeaps.sort((a, b) => b[1] - a[1]);
+                      } else {
+                        // Release order - newest first (consistent with resonators)
+                        allWeaps.sort((a, b) => {
+                          const aIdx = WEAPON_RELEASE_ORDER.indexOf(a[0]);
+                          const bIdx = WEAPON_RELEASE_ORDER.indexOf(b[0]);
+                          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
+                        });
+                      }
+                      
+                      const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
+                      const collOpacity = visualSettings.collectionOpacity / 100;
+                      const ownedCount = allWeaps.filter(([_, c]) => c > 0).length;
+                      
                       return (
-                        <div className="grid grid-cols-3 gap-2">
-                          {uniqueWeaps.map(([name, count]) => (
-                            <div key={name} className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-center">
-                              <div className="text-yellow-400 font-bold text-lg">R{count}</div>
-                              <div className="text-gray-200 text-[9px] truncate">{name}</div>
-                            </div>
-                          ))}
-                        </div>
+                        <>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} owned</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {allWeaps.map(([name, count]) => {
+                              const imgUrl = collectionImages[name];
+                              const imageKey = `collection-${name}`;
+                              return (
+                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30" countLabel={`R${count}`} countColor="text-yellow-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={WEAPON_DATA[name] ? () => setDetailModal({ show: true, type: 'weapon', name, imageUrl: imgUrl }) : null} isNew={activeBanners.weapons?.some(w => w.name === name && w.isNew)} />
+                              );
+                            })}
+                          </div>
+                        </>
                       );
                     })()}
                   </CardBody>
@@ -3341,19 +4845,31 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-                      const weaps4 = allHistory.filter(p => p.rarity === 4 && p.name);
+                      const weaps4 = allHistory.filter(p => p.rarity === 4 && p.name && !ALL_CHARACTERS.has(p.name));
                       const weapCounts = weaps4.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      const uniqueWeaps = Object.entries(weapCounts);
-                      if (uniqueWeaps.length === 0) return <p className="text-gray-500 text-xs text-center">No 4★ weapons obtained</p>;
+                      
+                      let allWeaps = ALL_4STAR_WEAPONS.map(name => [name, weapCounts[name] || 0]);
+                      
+                      // Sort by copies
+                      allWeaps.sort((a, b) => b[1] - a[1]);
+                      
+                      const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
+                      const collOpacity = visualSettings.collectionOpacity / 100;
+                      const ownedCount = allWeaps.filter(([_, c]) => c > 0).length;
+                      
                       return (
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {uniqueWeaps.map(([name, count]) => (
-                            <div key={name} className="p-1.5 bg-purple-500/10 border border-purple-500/30 rounded text-center">
-                              <div className="text-purple-400 font-bold text-sm">R{count}</div>
-                              <div className="text-gray-200 text-[8px] truncate">{name}</div>
-                            </div>
-                          ))}
-                        </div>
+                        <>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} owned</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {allWeaps.map(([name, count]) => {
+                              const imgUrl = collectionImages[name];
+                              const imageKey = `collection-${name}`;
+                              return (
+                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30" countLabel={`R${count}`} countColor="text-purple-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={WEAPON_DATA[name] ? () => setDetailModal({ show: true, type: 'weapon', name, imageUrl: imgUrl }) : null} />
+                              );
+                            })}
+                          </div>
+                        </>
                       );
                     })()}
                   </CardBody>
@@ -3367,19 +4883,31 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-                      const weaps3 = allHistory.filter(p => p.rarity === 3 && p.name);
+                      const weaps3 = allHistory.filter(p => p.rarity === 3 && p.name && !ALL_CHARACTERS.has(p.name));
                       const weapCounts = weaps3.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      const uniqueWeaps = Object.entries(weapCounts);
-                      if (uniqueWeaps.length === 0) return <p className="text-gray-500 text-xs text-center">No 3★ weapons obtained</p>;
+                      
+                      let allWeaps = ALL_3STAR_WEAPONS.map(name => [name, weapCounts[name] || 0]);
+                      
+                      // Sort by copies
+                      allWeaps.sort((a, b) => b[1] - a[1]);
+                      
+                      const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
+                      const collOpacity = visualSettings.collectionOpacity / 100;
+                      const ownedCount = allWeaps.filter(([_, c]) => c > 0).length;
+                      
                       return (
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {uniqueWeaps.map(([name, count]) => (
-                            <div key={name} className="p-1.5 bg-blue-500/10 border border-blue-500/30 rounded text-center">
-                              <div className="text-blue-400 font-bold text-sm">R{count}</div>
-                              <div className="text-gray-200 text-[8px] truncate">{name}</div>
-                            </div>
-                          ))}
-                        </div>
+                        <>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} owned</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {allWeaps.map(([name, count]) => {
+                              const imgUrl = collectionImages[name];
+                              const imageKey = `collection-${name}`;
+                              return (
+                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30" countLabel={`R${count}`} countColor="text-blue-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={null} />
+                              );
+                            })}
+                          </div>
+                        </>
                       );
                     })()}
                   </CardBody>
@@ -3391,95 +4919,8 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-PROFILE] */}
         {activeTab === 'profile' && (
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3">
-            {/* LAHAI-ROI BACKGROUND */}
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              bottom: 0,
-              left: '-10%',
-              right: '-10%',
-              height: '35%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)',
-              filter: 'blur(20px)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '25%',
-              zIndex: 1,
-              pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 2,
-              pointerEvents: 'none',
-              opacity: 0.6
-            }}>
-              <svg style={{width: '100%', height: '100%'}} xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="profileNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                    <feMerge>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="blur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <pattern id="profileGrid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-                    <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-                    <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter="url(#profileNodeGlow)"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#profileGrid)"/>
-              </svg>
-            </div>
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 3,
-              pointerEvents: 'none',
-              background: 'linear-gradient(0deg, rgba(150,180,205,0.1) 0%, rgba(130,160,185,0.04) 30%, transparent 60%)'
-            }} />
-            
-            <div style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 4,
-              pointerEvents: 'none',
-              background: `
-                linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%),
-                radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)
-              `
-            }} />
+          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+            <TabBackground id="profile" />
 
             <Card>
               <CardHeader>Server Region</CardHeader>
@@ -3617,7 +5058,7 @@ function WhisperingWishesInner() {
                 <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
                   <Download size={14} /> Export Backup
                 </button>
-                <button onClick={() => { dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); }} className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs border border-red-500/30">
+                <button onClick={() => { if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone.')) { dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs border border-red-500/30">
                   Reset All Data
                 </button>
               </CardBody>
@@ -3629,7 +5070,7 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 <div className="text-center">
                   <h4 className="text-gray-100 font-medium">Whispering Wishes</h4>
-                  <p className="text-gray-500 text-[10px]">Version 2.1.0</p>
+                  <p className="text-gray-500 text-[10px]">Version 2.9.0</p>
                 </div>
                 
                 <div className="text-center">
@@ -3705,11 +5146,16 @@ function WhisperingWishesInner() {
                 onClick={e => e.target.select()}
               />
               <button 
-                onClick={() => {
-                  const textarea = document.querySelector('textarea');
-                  textarea?.select();
-                  document.execCommand('copy');
-                  toast?.addToast?.('Copied to clipboard!', 'success');
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(exportData);
+                    toast?.addToast?.('Copied to clipboard!', 'success');
+                  } catch {
+                    const textarea = document.querySelector('textarea');
+                    textarea?.select();
+                    document.execCommand('copy');
+                    toast?.addToast?.('Copied to clipboard!', 'success');
+                  }
                 }} 
                 className="kuro-btn w-full"
               >
@@ -3760,7 +5206,7 @@ function WhisperingWishesInner() {
       )}
 
       {/* Admin Panel Modal */}
-      {showAdminPanel && (
+      {showAdminPanel && !adminMiniMode && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 overflow-auto">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto">
             <CardHeader className="flex items-center justify-between">
@@ -3792,6 +5238,300 @@ function WhisperingWishesInner() {
                     <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
                   </div>
 
+                  {/* Admin Tab Switcher */}
+                  <div className="flex gap-2 border-b border-white/10 pb-2 flex-wrap">
+                    <button
+                      onClick={() => setAdminTab('banners')}
+                      className={`px-3 py-1.5 rounded text-xs transition-all ${adminTab === 'banners' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      Banners
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('collection')}
+                      className={`px-3 py-1.5 rounded text-xs transition-all ${adminTab === 'collection' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      Collection
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('visuals')}
+                      className={`px-3 py-1.5 rounded text-xs transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      Visual Settings
+                    </button>
+                  </div>
+
+                  {/* Collection Tab */}
+                  {adminTab === 'collection' && (
+                    <div className="space-y-4">
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded p-3">
+                        <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
+                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Add custom URLs to override or add missing ones.</p>
+                        
+                        {/* Get unique names from history */}
+                        {(() => {
+                          const allHistory = [
+                            ...state.profile.featured.history,
+                            ...state.profile.weapon.history,
+                            ...(state.profile.standardChar?.history || []),
+                            ...(state.profile.standardWeap?.history || [])
+                          ];
+                          const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
+                          
+                          if (uniqueNames.length === 0) {
+                            return <p className="text-gray-500 text-xs text-center py-4">Import Convene data first to see your collection items</p>;
+                          }
+                          
+                          return (
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                              {uniqueNames.map(name => {
+                                const hasDefault = DEFAULT_COLLECTION_IMAGES[name];
+                                const hasCustom = customCollectionImages[name];
+                                const displayUrl = collectionImages[name];
+                                return (
+                                  <div key={name} className="flex items-center gap-2">
+                                    <span className={`text-[10px] w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
+                                      {name} {!hasDefault && '⚠'}
+                                    </span>
+                                    <input
+                                      type="text"
+                                      placeholder={hasDefault ? "(using default)" : "https://i.ibb.co/..."}
+                                      value={hasCustom || ''}
+                                      onChange={(e) => {
+                                        const newCustom = { ...customCollectionImages };
+                                        if (e.target.value) {
+                                          newCustom[name] = e.target.value;
+                                        } else {
+                                          delete newCustom[name];
+                                        }
+                                        saveCollectionImages(newCustom);
+                                      }}
+                                      className={`kuro-input flex-1 text-[10px] py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
+                                    />
+                                    {displayUrl && (
+                                      <img 
+                                        src={displayUrl} 
+                                        alt={name}
+                                        className="w-8 h-8 object-cover rounded border border-purple-500/30"
+                                        onError={(e) => e.target.style.display = 'none'}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => saveCollectionImages({})}
+                          className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                        >
+                          Clear Custom Overrides
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Visual Settings Tab */}
+                  {adminTab === 'visuals' && (
+                    <div className="space-y-4">
+                      <div className="bg-cyan-500/10 border border-cyan-500/30 rounded p-3">
+                        <h3 className="text-cyan-400 text-sm font-medium mb-3">Banner Card Settings</h3>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Position</span>
+                              <span className="text-cyan-400">{visualSettings.fadePosition}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.fadePosition}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, fadePosition: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Intensity</span>
+                              <span className="text-cyan-400">{visualSettings.fadeIntensity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.fadeIntensity}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, fadeIntensity: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Picture Opacity</span>
+                              <span className="text-cyan-400">{visualSettings.pictureOpacity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.pictureOpacity}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, pictureOpacity: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-pink-500/10 border border-pink-500/30 rounded p-3">
+                        <h3 className="text-pink-400 text-sm font-medium mb-3">Event Card Settings</h3>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Position</span>
+                              <span className="text-pink-400">{visualSettings.shadowFadePosition}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.shadowFadePosition}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, shadowFadePosition: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Intensity</span>
+                              <span className="text-pink-400">{visualSettings.shadowFadeIntensity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.shadowFadeIntensity}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, shadowFadeIntensity: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Picture Opacity</span>
+                              <span className="text-pink-400">{visualSettings.shadowOpacity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.shadowOpacity}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, shadowOpacity: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded p-3">
+                        <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Card Settings</h3>
+                        <p className="text-gray-500 text-[9px] mb-3">Vertical fade (top ↔ bottom)</p>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Direction</span>
+                              <span className="text-purple-400">{visualSettings.collectionFadeDirection === 'top' ? '↑ Top' : '↓ Bottom'}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => saveVisualSettings({ ...visualSettings, collectionFadeDirection: 'top' })}
+                                className={`flex-1 py-1.5 rounded text-[10px] transition-all ${visualSettings.collectionFadeDirection === 'top' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/50' : 'bg-neutral-700 text-gray-400'}`}
+                              >
+                                ↑ Fade to Top
+                              </button>
+                              <button
+                                onClick={() => saveVisualSettings({ ...visualSettings, collectionFadeDirection: 'bottom' })}
+                                className={`flex-1 py-1.5 rounded text-[10px] transition-all ${visualSettings.collectionFadeDirection === 'bottom' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/50' : 'bg-neutral-700 text-gray-400'}`}
+                              >
+                                ↓ Fade to Bottom
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Position</span>
+                              <span className="text-purple-400">{visualSettings.collectionFadePosition}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.collectionFadePosition}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, collectionFadePosition: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Intensity</span>
+                              <span className="text-purple-400">{visualSettings.collectionFadeIntensity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.collectionFadeIntensity}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, collectionFadeIntensity: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Picture Opacity</span>
+                              <span className="text-purple-400">{visualSettings.collectionOpacity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.collectionOpacity}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, collectionOpacity: parseInt(e.target.value) })}
+                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setAdminMiniMode(true)}
+                          className="flex-1 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded text-xs hover:bg-emerald-500/30"
+                        >
+                          🗗 Mini Window
+                        </button>
+                        <button
+                          onClick={() => saveVisualSettings(defaultVisualSettings)}
+                          className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
+                        >
+                          Reset to Defaults
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Banners Tab */}
+                  {adminTab === 'banners' && (
+                  <>
                   <div className="space-y-2">
                     <h3 className="text-white text-sm font-medium">Quick Banner Update</h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -4027,7 +5767,9 @@ function WhisperingWishesInner() {
                     </button>
                     <button
                       onClick={() => {
-                        localStorage.removeItem(ADMIN_BANNER_KEY);
+                        if (storageAvailable) {
+                          try { localStorage.removeItem(ADMIN_BANNER_KEY); } catch {}
+                        }
                         setActiveBanners(CURRENT_BANNERS);
                         toast?.addToast?.('Reset to default banners', 'success');
                       }}
@@ -4037,16 +5779,249 @@ function WhisperingWishesInner() {
                     </button>
                   </div>
                 </>
+                  )}
+                </>
               )}
             </CardBody>
           </Card>
         </div>
       )}
 
+      {/* Admin Mini Window */}
+      {showAdminPanel && adminMiniMode && adminUnlocked && (
+        <div 
+          className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/98 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
+          style={{ 
+            boxShadow: '0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3)'
+          }}
+        >
+          <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-2.5 flex items-center justify-between">
+            <span className="text-cyan-300 text-[11px] font-bold flex items-center gap-1.5"><Settings size={14} /> Visual Settings</span>
+            <div className="flex gap-1">
+              {/* Corner position buttons */}
+              <div className="flex gap-0.5 mr-1">
+                <button onClick={() => saveMiniPanelPosition('top-left')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
+                <button onClick={() => saveMiniPanelPosition('top-right')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
+                <button onClick={() => saveMiniPanelPosition('bottom-left')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
+                <button onClick={() => saveMiniPanelPosition('bottom-right')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
+              </div>
+              <button 
+                onClick={() => setAdminMiniMode(false)} 
+                className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10"
+                title="Expand"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+              <button 
+                onClick={() => { setShowAdminPanel(false); setAdminMiniMode(false); setFramingMode(false); setEditingImage(null); }} 
+                className="text-red-400 hover:text-white p-1 rounded hover:bg-red-500/30 bg-red-500/20"
+                title="Close"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-3 space-y-3">
+            {/* Framing Mode Toggle - only for Collection tab */}
+            <button 
+              onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}
+              className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'}`}
+            >
+              {framingMode ? '✓ Framing Mode ON (Collection only)' : '⊞ Enable Framing Mode (Collection)'}
+            </button>
+            
+            {/* Framing Controls - show when image selected */}
+            {framingMode && editingImage && (
+              <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                <div className="text-emerald-400 text-[9px] font-medium mb-2 truncate">
+                  Editing: {editingImage.replace('collection-', '')}
+                </div>
+                {/* Position controls */}
+                <div className="grid grid-cols-3 gap-1 mb-2">
+                  <div />
+                  <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs">▲</button>
+                  <div />
+                  <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs">◀</button>
+                  <button onClick={resetEditingFraming} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-[8px]">Reset</button>
+                  <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs">▶</button>
+                  <div />
+                  <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs">▼</button>
+                  <div />
+                </div>
+                {/* Zoom controls */}
+                <div className="flex gap-1 justify-center items-center">
+                  <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom - 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs">−</button>
+                  <span className="px-2 py-1 text-white text-xs min-w-[50px] text-center">{getImageFraming(editingImage).zoom}%</span>
+                  <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom + 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs">+</button>
+                </div>
+                <div className="text-center text-gray-500 text-[8px] mt-2">Tap another image to edit it</div>
+              </div>
+            )}
+            
+            {framingMode && !editingImage && (
+              <div className="p-2 bg-white/5 border border-white/10 rounded-lg text-center">
+                <div className="text-gray-400 text-[10px]">Go to Collection tab and tap an image to frame it</div>
+              </div>
+            )}
+            
+            {!framingMode && (
+              <>
+            {/* Reset Button */}
+            <button 
+              onClick={() => saveVisualSettings({
+                fadePosition: 50, fadeIntensity: 100, pictureOpacity: 100,
+                standardFadePosition: 50, standardFadeIntensity: 100, standardOpacity: 100,
+                shadowFadePosition: 50, shadowFadeIntensity: 100, shadowOpacity: 100,
+                collectionFadePosition: 50, collectionFadeIntensity: 100, collectionOpacity: 100,
+                collectionFadeDirection: 'top', collectionZoom: 120
+              })}
+              className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+            >
+              ↻ Reset All to Defaults
+            </button>
+
+            {/* Banner Card Settings */}
+            <div className="space-y-2">
+              <h4 className="text-cyan-400 text-[9px] font-medium uppercase tracking-wider">Featured Banners</h4>
+              <div className="space-y-1.5">
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Fade Pos</span>
+                    <span className="text-cyan-400">{visualSettings.fadePosition}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.fadePosition} onChange={(e) => saveVisualSettings({ ...visualSettings, fadePosition: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Intensity</span>
+                    <span className="text-cyan-400">{visualSettings.fadeIntensity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.fadeIntensity} onChange={(e) => saveVisualSettings({ ...visualSettings, fadeIntensity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Opacity</span>
+                    <span className="text-cyan-400">{visualSettings.pictureOpacity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.pictureOpacity} onChange={(e) => saveVisualSettings({ ...visualSettings, pictureOpacity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Standard Banner Settings */}
+            <div className="space-y-2 border-t border-white/10 pt-2">
+              <h4 className="text-emerald-400 text-[9px] font-medium uppercase tracking-wider">Standard Banners</h4>
+              <div className="space-y-1.5">
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Fade Pos</span>
+                    <span className="text-emerald-400">{visualSettings.standardFadePosition}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.standardFadePosition || 50} onChange={(e) => saveVisualSettings({ ...visualSettings, standardFadePosition: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Intensity</span>
+                    <span className="text-emerald-400">{visualSettings.standardFadeIntensity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.standardFadeIntensity || 100} onChange={(e) => saveVisualSettings({ ...visualSettings, standardFadeIntensity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Opacity</span>
+                    <span className="text-emerald-400">{visualSettings.standardOpacity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.standardOpacity || 100} onChange={(e) => saveVisualSettings({ ...visualSettings, standardOpacity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Event Card Settings */}
+            <div className="space-y-2 border-t border-white/10 pt-2">
+              <h4 className="text-pink-400 text-[9px] font-medium uppercase tracking-wider">Event Cards</h4>
+              <div className="space-y-1.5">
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Fade Pos</span>
+                    <span className="text-pink-400">{visualSettings.shadowFadePosition}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.shadowFadePosition} onChange={(e) => saveVisualSettings({ ...visualSettings, shadowFadePosition: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Intensity</span>
+                    <span className="text-pink-400">{visualSettings.shadowFadeIntensity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.shadowFadeIntensity} onChange={(e) => saveVisualSettings({ ...visualSettings, shadowFadeIntensity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Opacity</span>
+                    <span className="text-pink-400">{visualSettings.shadowOpacity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.shadowOpacity} onChange={(e) => saveVisualSettings({ ...visualSettings, shadowOpacity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Collection Card Settings */}
+            <div className="space-y-2 border-t border-white/10 pt-2">
+              <h4 className="text-purple-400 text-[9px] font-medium uppercase tracking-wider">Collection Cards</h4>
+              <div className="flex gap-1 mb-1.5">
+                <button onClick={() => saveVisualSettings({ ...visualSettings, collectionFadeDirection: 'top' })} className={`flex-1 py-1 rounded text-[8px] ${visualSettings.collectionFadeDirection === 'top' ? 'bg-purple-500/30 text-purple-400' : 'bg-neutral-700 text-gray-500'}`}>↑ Top</button>
+                <button onClick={() => saveVisualSettings({ ...visualSettings, collectionFadeDirection: 'bottom' })} className={`flex-1 py-1 rounded text-[8px] ${visualSettings.collectionFadeDirection === 'bottom' ? 'bg-purple-500/30 text-purple-400' : 'bg-neutral-700 text-gray-500'}`}>↓ Bottom</button>
+              </div>
+              <div className="space-y-1.5">
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Fade Pos</span>
+                    <span className="text-purple-400">{visualSettings.collectionFadePosition}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.collectionFadePosition} onChange={(e) => saveVisualSettings({ ...visualSettings, collectionFadePosition: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Intensity</span>
+                    <span className="text-purple-400">{visualSettings.collectionFadeIntensity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.collectionFadeIntensity} onChange={(e) => saveVisualSettings({ ...visualSettings, collectionFadeIntensity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+                </div>
+                <div>
+                  <div className="flex justify-between text-[9px] mb-0.5">
+                    <span className="text-gray-400">Opacity</span>
+                    <span className="text-purple-400">{visualSettings.collectionOpacity}%</span>
+                  </div>
+                  <input type="range" min="0" max="100" value={visualSettings.collectionOpacity} onChange={(e) => saveVisualSettings({ ...visualSettings, collectionOpacity: parseInt(e.target.value) })} className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500" />
+                </div>
+              </div>
+            </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Character/Weapon Detail Modal */}
+      {detailModal.show && detailModal.type === 'character' && (
+        <CharacterDetailModal 
+          name={detailModal.name} 
+          imageUrl={detailModal.imageUrl}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })} 
+        />
+      )}
+      {detailModal.show && detailModal.type === 'weapon' && (
+        <WeaponDetailModal 
+          name={detailModal.name} 
+          imageUrl={detailModal.imageUrl}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })} 
+        />
+      )}
+
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/5" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-600 text-[9px]">
-          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.2.0</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
+          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.0</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
