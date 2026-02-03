@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, createContext, useContext, memo } from 'react';
 import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, Upload, Download, RefreshCcw, Plus, Minus, Check, Target, BarChart3, Zap, BookmarkPlus, X, ChevronDown, LayoutGrid, Archive, Info, CheckCircle, AlertCircle, Settings, Monitor, Smartphone, Gamepad2 } from 'lucide-react';
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.9.0 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v2.9.27 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -12,7 +12,6 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:ONBOARDING]   - Onboarding modal
 // [SECTION:LUCK]         - Luck rating calculation
 // [SECTION:STYLES]       - KuroStyles CSS
-// [SECTION:PITYRING]     - PityRing component
 // [SECTION:SERVERS]      - Server/region data
 // [SECTION:BANNERS]      - Current banner data
 // [SECTION:HISTORY]      - Banner history archive
@@ -24,17 +23,250 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:SIMULATION]   - Gacha simulation
 // [SECTION:STATE]        - State management & reducer
 // [SECTION:CALCULATIONS] - Pull calculations
-// [SECTION:COMPONENTS]   - Reusable UI components
+// [SECTION:COMPONENTS]   - Reusable UI components (Card, PityRing, etc.)
+// [SECTION:BACKGROUND]   - BackgroundGlow & TriangleMirrorWave
+// [SECTION:STATIC_DATA]  - Static collection data (images, release orders)
 // [SECTION:MAINAPP]      - Main app component
-// [SECTION:TAB-TRACKER]  - Tracker tab UI
-// [SECTION:TAB-EVENTS]   - Events tab UI
-// [SECTION:TAB-CALC]     - Calculator tab UI
-// [SECTION:TAB-PLANNER]  - Planner tab UI
-// [SECTION:TAB-STATS]    - Stats/Analytics tab UI
-// [SECTION:TAB-COLLECT]  - Collection tab UI
-// [SECTION:TAB-PROFILE]  - Profile tab UI
 // [SECTION:EXPORT]       - Main export
 // ─────────────────────────────────────────────────────────────────────────────
+
+// [SECTION:PWA]
+// PWA Support - Manifest, Service Worker, Install Prompt
+
+const PWA_MANIFEST = {
+  name: 'Whispering Wishes',
+  short_name: 'Wishes',
+  description: 'Wuthering Waves Convene Companion - Track pulls, plan resources, analyze luck',
+  start_url: '/',
+  display: 'standalone',
+  background_color: '#0a0a0a',
+  theme_color: '#fbbf24',
+  orientation: 'portrait-primary',
+  icons: [
+    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23fbbf24" width="100" height="100" rx="20"/><text x="50" y="65" font-size="50" text-anchor="middle" fill="%23000">✨</text></svg>', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23fbbf24" width="100" height="100" rx="20"/><text x="50" y="65" font-size="50" text-anchor="middle" fill="%23000">✨</text></svg>', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+  ],
+  categories: ['games', 'utilities'],
+  screenshots: [],
+  shortcuts: [
+    { name: 'Tracker', url: '/?tab=tracker', description: 'View pity tracker' },
+    { name: 'Calculator', url: '/?tab=calculator', description: 'Calculate probabilities' },
+    { name: 'Collection', url: '/?tab=gathering', description: 'View your collection' }
+  ]
+};
+
+// Service Worker code as string (will be registered as blob)
+const SERVICE_WORKER_CODE = `
+const CACHE_NAME = 'whispering-wishes-v2921';
+const OFFLINE_URL = '/offline.html';
+
+// Assets to cache immediately
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html'
+];
+
+// Install event - cache core assets
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS);
+    }).then(() => self.skipWaiting())
+  );
+});
+
+// Activate event - clean old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Fetch event - network first, fallback to cache
+self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Skip chrome-extension and other non-http(s) requests
+  if (!event.request.url.startsWith('http')) return;
+  
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Cache successful responses
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          // Return offline page for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match(OFFLINE_URL);
+          }
+          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        });
+      })
+  );
+});
+
+// Handle messages from main thread
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
+`;
+
+// PWA Provider Component
+const PWAProvider = ({ children }) => {
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [swRegistration, setSwRegistration] = useState(null);
+  
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+    
+    // Listen for install prompt
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    
+    // Listen for successful install
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
+    
+    // Online/offline detection
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Inject manifest
+    const manifestBlob = new Blob([JSON.stringify(PWA_MANIFEST)], { type: 'application/json' });
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = manifestUrl;
+    document.head.appendChild(manifestLink);
+    
+    // Add meta tags for PWA
+    const metaTags = [
+      { name: 'mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+      { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
+      { name: 'theme-color', content: '#fbbf24' },
+      { name: 'msapplication-TileColor', content: '#fbbf24' },
+      { name: 'msapplication-navbutton-color', content: '#fbbf24' }
+    ];
+    
+    metaTags.forEach(({ name, content }) => {
+      if (!document.querySelector(`meta[name="${name}"]`)) {
+        const meta = document.createElement('meta');
+        meta.name = name;
+        meta.content = content;
+        document.head.appendChild(meta);
+      }
+    });
+    
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      const swBlob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      
+      navigator.serviceWorker.register(swUrl, { scope: '/' })
+        .then((registration) => {
+          setSwRegistration(registration);
+          console.log('SW registered:', registration.scope);
+          
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available
+                console.log('New version available');
+              }
+            });
+          });
+        })
+        .catch((err) => console.log('SW registration failed:', err));
+    }
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      URL.revokeObjectURL(manifestUrl);
+    };
+  }, []);
+  
+  // Expose install function
+  const promptInstall = useCallback(async () => {
+    if (!installPrompt) return false;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    setInstallPrompt(null);
+    return outcome === 'accepted';
+  }, [installPrompt]);
+  
+  return (
+    <>
+      {children}
+      {/* Offline indicator */}
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
+          ⚡ You're offline - Some features may be limited
+        </div>
+      )}
+      {/* Install prompt banner */}
+      {installPrompt && !isInstalled && (
+        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-yellow-500/90 to-amber-500/90 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center text-xl">✨</div>
+            <div className="flex-1">
+              <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
+              <div className="text-black/70 text-xs">Add to home screen for the best experience</div>
+            </div>
+            <button
+              onClick={promptInstall}
+              className="px-3 py-1.5 bg-black text-yellow-400 rounded-lg text-xs font-medium hover:bg-black/80 transition-colors"
+            >
+              Install
+            </button>
+            <button
+              onClick={() => setInstallPrompt(null)}
+              className="p-1 text-black/50 hover:text-black"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 // [SECTION:TOAST]
 
@@ -56,7 +288,7 @@ const ToastProvider = ({ children }) => {
         {toasts.map(toast => (
           <div key={toast.id} style={{
             padding: '12px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px',
-            fontSize: '13px', fontWeight: 500, pointerEvents: 'auto', animation: 'slideUp 0.2s ease-out',
+            fontSize: '12px', fontWeight: 500, pointerEvents: 'auto', animation: 'slideUp 0.2s ease-out',
             background: toast.type === 'success' ? 'rgba(16,185,129,0.9)' : toast.type === 'error' ? 'rgba(239,68,68,0.9)' : 'rgba(59,130,246,0.9)',
             color: 'white', border: '1px solid rgba(255,255,255,0.2)'
           }}>
@@ -98,7 +330,7 @@ const OnboardingModal = ({ onComplete }) => {
         </div>
         
         {/* Skip button - always white */}
-        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-[9px] px-2 py-0.5 rounded text-gray-400 hover:text-gray-300" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
+        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
         
         {/* Content */}
         <div className="relative z-10 p-5 pt-8 text-center">
@@ -120,7 +352,7 @@ const OnboardingModal = ({ onComplete }) => {
         <div className="p-3 flex justify-between items-center" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
           <div className="w-12">
             {step > 0 && (
-              <button onClick={() => setStep(step - 1)} className="text-[9px] px-2 py-1 rounded text-gray-400" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
+              <button onClick={() => setStep(step - 1)} className="text-[9px] px-3 py-1 rounded text-gray-400" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
             )}
           </div>
           <div>
@@ -162,9 +394,57 @@ const KuroStyles = () => (
        LAHAI-ROI DESIGN LANGUAGE - Black, White, Gold
        ══════════════════════════════════════════════════════════════════════ */
     
+    /* Global - prevent white flash, hide scrollbars on mobile */
+    html, body {
+      background: #0a0a0a;
+      margin: 0;
+      padding: 0;
+      overscroll-behavior: none;
+    }
+    
+    /* ═══ CSS CUSTOM PROPERTIES ═══ */
+    :root {
+      --color-gold: 251, 191, 36;
+      --color-pink: 236, 72, 153;
+      --color-cyan: 34, 211, 238;
+      --color-purple: 168, 85, 247;
+      --color-emerald: 34, 197, 94;
+      --color-red: 248, 113, 113;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.6);
+      --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* Hide scrollbar globally on mobile */
+    * {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    *::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* ═══ IMPROVED FOCUS STATES ═══ */
+    *:focus-visible {
+      outline: 2px solid rgba(var(--color-gold), 0.7);
+      outline-offset: 2px;
+    }
+    
+    button:focus-visible, 
+    select:focus-visible, 
+    input:focus-visible, 
+    textarea:focus-visible {
+      outline: 2px solid rgba(var(--color-gold), 0.8);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(var(--color-gold), 0.15);
+    }
+    
     .kuro-calc {
       position: relative;
-      min-height: 100vh;
       color: #e2e8f0;
     }
     
@@ -193,24 +473,9 @@ const KuroStyles = () => (
       50% { border-color: rgba(251, 191, 36, 0.6); }
     }
     
-    @keyframes shimmerSlide {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    
     @keyframes pulseScale {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.02); }
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-    
-    @keyframes staggerFadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     
     /* Hide scrollbar for nav */
@@ -220,77 +485,49 @@ const KuroStyles = () => (
     
     /* ═══ TAB CONTENT TRANSITIONS ═══ */
     .tab-content {
-      animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    .tab-content > * {
-      animation: staggerFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    @keyframes tabFadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(8px);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0);
+      }
     }
     
-    .tab-content > *:nth-child(1) { animation-delay: 0.02s; }
-    .tab-content > *:nth-child(2) { animation-delay: 0.04s; }
-    .tab-content > *:nth-child(3) { animation-delay: 0.06s; }
-    .tab-content > *:nth-child(4) { animation-delay: 0.08s; }
-    .tab-content > *:nth-child(5) { animation-delay: 0.10s; }
-    .tab-content > *:nth-child(6) { animation-delay: 0.12s; }
-    .tab-content > *:nth-child(7) { animation-delay: 0.14s; }
-    .tab-content > *:nth-child(8) { animation-delay: 0.16s; }
-    
-    /* ═══ MICRO-INTERACTIONS ═══ */
-    .btn-interact {
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Stagger animation for child cards */
+    .tab-content > .kuro-card,
+    .tab-content > div > .kuro-card {
+      animation: cardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
     }
+    .tab-content > .kuro-card:nth-child(1),
+    .tab-content > div > .kuro-card:nth-child(1) { animation-delay: 0.05s; }
+    .tab-content > .kuro-card:nth-child(2),
+    .tab-content > div > .kuro-card:nth-child(2) { animation-delay: 0.1s; }
+    .tab-content > .kuro-card:nth-child(3),
+    .tab-content > div > .kuro-card:nth-child(3) { animation-delay: 0.15s; }
+    .tab-content > .kuro-card:nth-child(4),
+    .tab-content > div > .kuro-card:nth-child(4) { animation-delay: 0.2s; }
     
-    .btn-interact:hover {
-      transform: translateY(-1px);
+    @keyframes cardSlideIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(12px) scale(0.98);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+      }
     }
-    
-    .btn-interact:active {
-      transform: translateY(0) scale(0.98);
-      transition: transform 0.1s ease;
-    }
-    
-    .btn-interact::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.2) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    
-    .btn-interact:active::after {
-      opacity: 1;
-    }
-    
-    /* Card shimmer effect on hover */
-    .card-shimmer {
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .card-shimmer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-      transition: left 0.5s ease;
-      z-index: 10;
-      pointer-events: none;
-    }
-    
-    .card-shimmer:hover::before {
-      left: 100%;
     }
     
     /* Collection card hover lift */
     .collection-card {
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .collection-card:hover {
@@ -319,91 +556,10 @@ const KuroStyles = () => (
       box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 20px rgba(0,0,0,0.4);
     }
     
-    /* ═══ ANIMATED PITY PROGRESS BAR ═══ */
-    .pity-bar {
-      position: relative;
-      height: 6px;
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    
-    .pity-bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .pity-bar-fill::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: shimmerSlide 2s ease-in-out infinite;
-    }
-    
-    .pity-bar-fill.gold {
-      background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
-      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-    }
-    
-    .pity-bar-fill.purple {
-      background: linear-gradient(90deg, #8b5cf6, #a78bfa, #8b5cf6);
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
-    }
-    
-    .pity-bar-fill.cyan {
-      background: linear-gradient(90deg, #06b6d4, #22d3ee, #06b6d4);
-      box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
-    }
-    
-    .pity-bar-fill.red {
-      background: linear-gradient(90deg, #ef4444, #f87171, #ef4444);
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-    }
-    
-    /* Soft pity warning glow */
-    .pity-bar-fill.soft-pity {
-      animation: pulseGlow 1.5s ease-in-out infinite;
-    }
-    
-    @keyframes pulseGlow {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.3); }
-    }
-    
     /* ═══ PREMIUM VISUAL EFFECTS ═══ */
-    .glass-panel {
-      background: rgba(12, 16, 24, 0.6);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-    }
-    
-    .text-glow-gold {
-      text-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.3);
-    }
-    
-    .text-glow-purple {
-      text-shadow: 0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
-    }
-    
-    /* Floating animation for highlights */
-    .float-subtle {
-      animation: float 3s ease-in-out infinite;
-    }
-    
     /* Pulse animation for important elements */
     .pulse-subtle {
       animation: pulseScale 2s ease-in-out infinite;
-    }
-    
-    /* Smooth number transitions */
-    .number-animate {
-      transition: all 0.3s ease;
     }
     
     /* ═══ PITY RING ═══ */
@@ -429,6 +585,7 @@ const KuroStyles = () => (
     .luck-badge {
       position: relative;
       overflow: hidden;
+      padding: 1.5px;
     }
     .luck-badge::before {
       content: '';
@@ -437,9 +594,10 @@ const KuroStyles = () => (
       left: -50%;
       width: 200%;
       height: 200%;
-      background: conic-gradient(from 0deg, transparent, var(--badge-color), transparent, var(--badge-color), transparent);
-      animation: badgeRotate 4s linear infinite;
-      opacity: 0.15;
+      background: conic-gradient(from 0deg, var(--badge-color), transparent 50%, var(--badge-color));
+      animation: badgeRotate 8s linear infinite;
+      opacity: 0.9;
+      filter: blur(3px);
     }
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
@@ -447,14 +605,14 @@ const KuroStyles = () => (
     .luck-badge-inner {
       position: relative;
       z-index: 1;
-      background: rgba(12, 16, 24, 0.9);
+      background: rgba(6, 10, 18, 1);
       border-radius: inherit;
     }
     
     /* ═══ PULL LOG BORDER ═══ */
     .pull-log-row {
       border-left: 3px solid var(--pity-color);
-      transition: all 0.2s ease;
+      transition: background 0.2s ease;
     }
     .pull-log-row:hover {
       background: rgba(255,255,255,0.08) !important;
@@ -473,47 +631,36 @@ const KuroStyles = () => (
     .kuro-card {
       position: relative;
       z-index: 5;
-      background: rgba(12, 16, 24, 0.35);
+      background: rgba(12, 16, 24, 0.55);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       overflow: visible;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       box-shadow: 
         0 4px 24px rgba(0, 0, 0, 0.5),
         0 0 0 1px rgba(255, 255, 255, 0.03),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .kuro-card:hover {
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.15);
       transform: translateY(-2px);
       box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 0 40px rgba(var(--color-gold), 0.03),
         inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
     
-    /* Ambient glow behind card - creates depth */
-    .kuro-card::before {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 16px;
-      background: radial-gradient(
-        ellipse 80% 60% at 50% 0%,
-        rgba(255, 255, 255, 0.05) 0%,
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 60% 40% at 50% 100%,
-        rgba(255, 255, 255, 0.03) 0%,
-        transparent 50%
-      );
-      filter: blur(12px);
-      z-index: -1;
-      opacity: 0.6;
+    /* Interactive card variant */
+    .kuro-card.interactive {
+      cursor: pointer;
+    }
+    .kuro-card.interactive:active {
+      transform: translateY(0) scale(0.98);
+      transition: transform 0.1s ease;
     }
     
     /* Top shimmer line */
@@ -621,10 +768,10 @@ const KuroStyles = () => (
       font-size: 11px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), color var(--transition-fast);
       text-align: center;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-md);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -636,7 +783,7 @@ const KuroStyles = () => (
       inset: 0;
       background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity var(--transition-normal);
       pointer-events: none;
     }
     
@@ -644,7 +791,7 @@ const KuroStyles = () => (
       border-color: rgba(255, 255, 255, 0.2);
       color: #ffffff;
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: var(--shadow-lg);
     }
     
     .kuro-btn:hover::before {
@@ -726,18 +873,29 @@ const KuroStyles = () => (
       color: #ffffff;
       font-size: 14px;
       width: 100%;
-      transition: all 0.25s ease;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
     
+    .kuro-input:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(12, 16, 24, 0.85);
+    }
+    
     .kuro-input:focus {
       outline: none;
-      border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 0.05);
+      border-color: rgba(var(--color-gold), 0.6);
+      box-shadow: 0 0 0 3px rgba(var(--color-gold), 0.1), 0 0 20px rgba(var(--color-gold), 0.08);
+      background: rgba(15, 20, 28, 0.9);
     }
     
     .kuro-input::placeholder {
+      color: #6b7280;
+      transition: color var(--transition-fast);
+    }
+    
+    .kuro-input:focus::placeholder {
       color: #9ca3af;
     }
     
@@ -749,40 +907,7 @@ const KuroStyles = () => (
     }
     
     /* ═══ PITY DISPLAY ═══ */
-    .kuro-pity-ring {
-      position: relative;
-      width: 56px;
-      height: 56px;
-    }
-    
-    .kuro-pity-ring svg {
-      transform: rotate(-90deg);
-    }
-    
-    .kuro-pity-ring .ring-bg {
-      fill: none;
-      stroke: rgba(255, 255, 255, 0.1);
-      stroke-width: 4;
-    }
-    
-    .kuro-pity-ring .ring-progress {
-      fill: none;
-      stroke-width: 4;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.5s ease;
-    }
-    
-    .kuro-pity-value {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-    
+    /* PityRing uses inline SVG styles */
     /* ═══ STAT BOXES - Glassy holographic style ═══ */
     .kuro-stat {
       position: relative;
@@ -792,8 +917,15 @@ const KuroStyles = () => (
       padding: 14px;
       text-align: center;
       overflow: hidden;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    
+    .kuro-stat:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
     
     .kuro-stat::before {
@@ -806,31 +938,25 @@ const KuroStyles = () => (
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     }
     
-    .kuro-stat-label {
-      color: #d1d5db;
-      font-size: 10px;
-      margin-top: 4px;
-    }
-    
     .kuro-stat-gold {
       background: rgba(240, 192, 64, 0.15);
       border-color: rgba(240, 192, 64, 0.5);
+    }
+    .kuro-stat-gold:hover {
+      border-color: rgba(240, 192, 64, 0.7);
+      box-shadow: 0 4px 20px rgba(240, 192, 64, 0.15);
     }
     .kuro-stat-gold::before {
       background: linear-gradient(90deg, transparent, rgba(240, 192, 64, 1), transparent);
     }
     
-    .kuro-stat-pink {
-      background: rgba(236, 72, 153, 0.15);
-      border-color: rgba(236, 72, 153, 0.5);
-    }
-    .kuro-stat-pink::before {
-      background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 1), transparent);
-    }
-    
     .kuro-stat-cyan {
       background: rgba(56, 189, 248, 0.15);
       border-color: rgba(56, 189, 248, 0.5);
+    }
+    .kuro-stat-cyan:hover {
+      border-color: rgba(56, 189, 248, 0.7);
+      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
     }
     .kuro-stat-cyan::before {
       background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 1), transparent);
@@ -840,6 +966,10 @@ const KuroStyles = () => (
       background: rgba(168, 85, 247, 0.15);
       border-color: rgba(168, 85, 247, 0.5);
     }
+    .kuro-stat-purple:hover {
+      border-color: rgba(168, 85, 247, 0.7);
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+    }
     .kuro-stat-purple::before {
       background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 1), transparent);
     }
@@ -847,6 +977,10 @@ const KuroStyles = () => (
     .kuro-stat-emerald {
       background: rgba(34, 197, 94, 0.15);
       border-color: rgba(34, 197, 94, 0.5);
+    }
+    .kuro-stat-emerald:hover {
+      border-color: rgba(34, 197, 94, 0.7);
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
     }
     .kuro-stat-emerald::before {
       background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 1), transparent);
@@ -856,8 +990,25 @@ const KuroStyles = () => (
       background: rgba(248, 113, 113, 0.15);
       border-color: rgba(248, 113, 113, 0.5);
     }
+    .kuro-stat-red:hover {
+      border-color: rgba(248, 113, 113, 0.7);
+      box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
+    }
     .kuro-stat-red::before {
       background: linear-gradient(90deg, transparent, rgba(248, 113, 113, 1), transparent);
+    }
+    
+    /* ═══ STAT PINK (NEW) ═══ */
+    .kuro-stat-pink {
+      background: rgba(236, 72, 153, 0.15);
+      border-color: rgba(236, 72, 153, 0.5);
+    }
+    .kuro-stat-pink:hover {
+      border-color: rgba(236, 72, 153, 0.7);
+      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.15);
+    }
+    .kuro-stat-pink::before {
+      background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 1), transparent);
     }
     
     /* ═══ LABELS - Bright for readability ═══ */
@@ -910,14 +1061,6 @@ const KuroStyles = () => (
       box-shadow: 0 0 12px rgba(240, 192, 64, 0.6);
     }
     
-    .kuro-slider.pink::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #ec4899, #f472b6);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    .kuro-slider.pink::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    
     .kuro-slider.cyan::-webkit-slider-thumb {
       background: linear-gradient(135deg, #0ea5e9, #38bdf8);
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
@@ -926,61 +1069,8 @@ const KuroStyles = () => (
       box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
     }
     
-    .kuro-slider.purple::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #94a3b8, #64748b);
-      box-shadow: 0 0 12px rgba(148, 163, 184, 0.6);
-    }
-    .kuro-slider.purple::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(148, 163, 184, 0.8);
-    }
-    
     /* ═══ PROGRESS BAR ═══ */
-    .kuro-progress {
-      position: relative;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    
-    .kuro-progress-bar {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.4s ease;
-      position: relative;
-    }
-    
-    .kuro-progress-bar.gold {
-      background: linear-gradient(90deg, #b8860b, #f0c040, #ffd700);
-      box-shadow: 0 0 10px rgba(240, 192, 64, 0.5);
-    }
-    
-    .kuro-progress-bar.pink {
-      background: linear-gradient(90deg, #be185d, #ec4899, #f472b6);
-      box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-    }
-    
-    .kuro-progress-bar.cyan {
-      background: linear-gradient(90deg, #0369a1, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-    }
-    
-    .kuro-progress-bar.purple {
-      background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc);
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
-    }
-    
-    .kuro-progress-bar::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: -2px;
-      bottom: -2px;
-      width: 20px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7));
-      border-radius: 3px;
-    }
+    /* Progress bars use inline Tailwind styles */
     
     /* ═══ SOFT PITY ANIMATION ═══ */
     .kuro-soft-pity {
@@ -1009,19 +1099,6 @@ const KuroStyles = () => (
       }
     }
     
-    .kuro-soft-pity-pink {
-      animation: kuroPulsePink 2s ease-in-out infinite;
-    }
-    
-    @keyframes kuroPulsePink {
-      0%, 100% { 
-        text-shadow: 0 0 8px rgba(244, 114, 182, 0.7);
-      }
-      50% { 
-        text-shadow: 0 0 15px rgba(244, 114, 182, 1), 0 0 25px rgba(244, 114, 182, 0.6);
-      }
-    }
-    
     /* ═══ NUMBER STYLING ═══ */
     .kuro-number {
       font-variant-numeric: tabular-nums;
@@ -1034,11 +1111,91 @@ const KuroStyles = () => (
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
       margin: 12px 0;
     }
+    
+    /* ═══ COLLECTION CARD HOVER ═══ */
+    .collection-card {
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    }
+    .collection-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .collection-card:active {
+      transform: translateY(-2px) scale(1.01);
+      transition: transform 0.1s ease;
+    }
+    
+    /* ═══ TOOLTIP IMPROVEMENTS ═══ */
+    [data-tooltip] {
+      position: relative;
+    }
+    [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-4px);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 100;
+    }
+    [data-tooltip]:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-8px);
+    }
+    
+    /* ═══ LOADING SKELETON ═══ */
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.5s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    @keyframes skeletonShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* ═══ EMPTY STATE ═══ */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: #6b7280;
+    }
+    .empty-state-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      opacity: 0.4;
+    }
+    
+    /* ═══ REDUCED MOTION ═══ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   `}</style>
 );
 
-// [SECTION:PITYRING]
 // [SECTION:SERVERS]
+// [SECTION:SERVERS]
+// Each server has its own timezone for daily/weekly resets (04:00 local)
+// Source: https://wuwatracker.com/timeline
 const SERVERS = {
   'Asia': { name: 'Asia', timezone: 'Asia/Shanghai', utcOffset: 8, resetHour: 4 },
   'America': { name: 'America', timezone: 'America/New_York', utcOffset: -5, resetHour: 4 },
@@ -1050,8 +1207,10 @@ const SERVERS = {
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
   version: '3.0', phase: 2,
-  startDate: '2026-01-15T06:00:00Z',
-  endDate: '2026-02-04T05:59:59Z',
+  // Times from wuwatracker.com (Europe UTC+1 converted to UTC)
+  // Banner: Thu, 15 Jan 2026 10:00 - Wed, 04 Feb 2026 11:59 (Europe)
+  startDate: '2026-01-15T09:00:00Z', // Jan 15, 10:00 Europe = 09:00 UTC
+  endDate: '2026-02-04T10:59:00Z',   // Feb 4, 11:59 Europe = 10:59 UTC
   characterBannerImage: '',
   weaponBannerImage: '',
   eventBannerImage: '',
@@ -1059,6 +1218,8 @@ const CURRENT_BANNERS = {
   doubledPawnsImage: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg',
   towerOfAdversityImage: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg',
   illusiveRealmImage: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg',
+  tacticalHologramImage: 'https://i.ibb.co/mCTQX0kB/tactical-hologram-phantom-pain.avif',
+  weeklyBossImage: 'https://i.ibb.co/M5cLkMWf/file-00000000e8b071f480ded273f611ec2e.png',
   standardCharBannerImage: 'https://i.ibb.co/zVf13CMn/Tidal-Chorus.webp',
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
@@ -1542,18 +1703,47 @@ const WEAPON_DATA = {
 };
 
 // [SECTION:EVENTS]
+// All times from wuwatracker.com (Europe UTC+1 reference, converted to UTC)
+// Events that end at 03:59 are server-local (follow daily reset)
+// Events that end at other times are global (same UTC moment)
 const EVENTS = {
-  whimperingWastes: { 
-    name: 'Whimpering Wastes', 
-    subtitle: 'Respawning Waters', 
-    description: 'Combat challenge with token system', 
-    resetType: '~28 days', 
-    color: 'cyan', 
-    currentEnd: '2026-02-02T04:00:00Z',
-    rewards: '800 Astrite',
+  dailyReset: { 
+    name: 'Daily Reset', 
+    subtitle: 'Daily Activities & Tacet Fields', 
+    description: 'Daily activity reset', 
+    resetType: 'Daily 4:00 AM', 
+    color: 'yellow', 
+    dailyReset: true, 
+    rewards: 'Waveplates',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
+    accentColor: 'yellow'
+  },
+  weeklyBoss: {
+    name: 'Weekly Boss',
+    subtitle: 'Echoing Remnants',
+    description: 'Weekly boss rewards reset',
+    resetType: 'Weekly (Monday)',
+    color: 'yellow',
+    weeklyReset: true,
+    rewards: 'Boss Materials',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
+    accentColor: 'yellow',
+    imageUrl: 'https://i.ibb.co/M5cLkMWf/file-00000000e8b071f480ded273f611ec2e.png'
+  },
+  tacticalHologram: {
+    name: 'Tactical Hologram',
+    subtitle: 'Synchronization',
+    description: 'Weekly boss challenge',
+    resetType: 'Version update',
+    color: 'cyan',
+    // Thu, 25 Dec 2025 10:45 - Tue, 03 Feb 2026 03:59 (Europe) → then new cycle
+    // Current ends Feb 3, 03:59 Europe = Feb 3, 02:59 UTC
+    // Next: Tue, 03 Feb 2026 10:45 - Sun, 05 Apr 2026 03:59
+    currentEnd: '2026-02-03T02:59:00Z',
+    rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
+    imageUrl: 'https://i.ibb.co/mCTQX0kB/tactical-hologram-phantom-pain.avif'
   },
   doubledPawns: { 
     name: 'Doubled Pawns Matrix', 
@@ -1561,11 +1751,27 @@ const EVENTS = {
     description: 'High difficulty boss rush', 
     resetType: 'Version update', 
     color: 'pink', 
-    currentEnd: '2026-02-05T04:00:00Z',
+    // Thu, 25 Dec 2025 10:45 - Wed, 04 Feb 2026 03:59 (Europe)
+    // Feb 4, 03:59 Europe = Feb 4, 02:59 UTC
+    currentEnd: '2026-02-04T02:59:00Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
     imageUrl: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg'
+  },
+  whimperingWastes: { 
+    name: 'Whimpering Wastes', 
+    subtitle: 'Respawning Waters', 
+    description: 'Combat challenge with token system', 
+    resetType: '28 days', 
+    color: 'cyan', 
+    // Mon, 19 Jan 2026 04:00 - Mon, 16 Feb 2026 03:59 (Europe)
+    // Feb 16, 03:59 Europe = Feb 16, 02:59 UTC
+    currentEnd: '2026-02-16T02:59:00Z',
+    rewards: '800 Astrite',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
+    accentColor: 'cyan',
+    imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
   towerOfAdversity: { 
     name: 'Tower of Adversity', 
@@ -1573,7 +1779,9 @@ const EVENTS = {
     description: 'Endgame combat challenge', 
     resetType: '28 days', 
     color: 'orange', 
-    currentEnd: '2026-02-02T04:00:00Z',
+    // Mon, 02 Feb 2026 04:00 - Mon, 02 Mar 2026 03:59 (Europe)
+    // Mar 2, 03:59 Europe = Mar 2, 02:59 UTC
+    currentEnd: '2026-03-02T02:59:00Z',
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
@@ -1590,17 +1798,6 @@ const EVENTS = {
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
     imageUrl: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg'
-  },
-  dailyReset: { 
-    name: 'Daily Reset', 
-    subtitle: 'Daily Activities & Tacet Fields', 
-    description: 'Daily activity reset', 
-    resetType: 'Daily 4:00 AM', 
-    color: 'yellow', 
-    dailyReset: true, 
-    rewards: 'Waveplates',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
-    accentColor: 'yellow'
   },
 };
 
@@ -1649,35 +1846,112 @@ const FEATURED_4STAR_RATE = 0.5; // 50% chance for featured 4-star
 
 // [SECTION:TIME]
 const getTimeRemaining = (endDate) => {
-  const total = new Date(endDate) - new Date();
+  const now = Date.now();
+  const end = new Date(endDate).getTime();
+  const total = end - now;
   if (total <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
-  return { days: Math.floor(total / (1000 * 60 * 60 * 24)), hours: Math.floor((total / (1000 * 60 * 60)) % 24), minutes: Math.floor((total / 1000 / 60) % 60), seconds: Math.floor((total / 1000) % 60), expired: false };
+  return { 
+    days: Math.floor(total / (1000 * 60 * 60 * 24)), 
+    hours: Math.floor((total / (1000 * 60 * 60)) % 24), 
+    minutes: Math.floor((total / 1000 / 60) % 60), 
+    seconds: Math.floor((total / 1000) % 60), 
+    expired: false 
+  };
 };
 
+// Events are stored with UTC times based on Europe (UTC+1)
+// For server-specific events (ending at XX:59, following reset times),
+// adjust by timezone difference when viewing in another server
+// Reference: Europe = UTC+1
+const EUROPE_OFFSET = 1;
+
+const getServerAdjustedEnd = (currentEnd, server) => {
+  if (!currentEnd) return currentEnd;
+  const serverOffset = SERVERS[server]?.utcOffset ?? EUROPE_OFFSET;
+  // Calculate offset difference from Europe reference
+  const offsetDiff = serverOffset - EUROPE_OFFSET;
+  // Adjust: if server is ahead of Europe, event ends earlier in absolute UTC
+  const storedMs = new Date(currentEnd).getTime();
+  const adjustedMs = storedMs - (offsetDiff * 3600000);
+  return new Date(adjustedMs).toISOString();
+};
+
+// Auto-advance recurring events past their end date (28-day cycles)
+const getRecurringEventEnd = (currentEnd, resetType, server) => {
+  const adjusted = getServerAdjustedEnd(currentEnd, server);
+  if (!adjusted) return adjusted;
+  const now = Date.now();
+  const end = new Date(adjusted).getTime();
+  if (end > now) return adjusted;
+  // Parse cycle days from resetType like "28 days" or "~28 days"
+  const match = resetType && resetType.match(/(\d+)/);
+  if (!match) return adjusted;
+  const cycleMs = parseInt(match[1]) * 86400000;
+  const cycles = Math.ceil((now - end) / cycleMs);
+  return new Date(end + cycles * cycleMs).toISOString();
+};
+
+// Next daily reset: 04:00 in server's local timezone
 const getNextDailyReset = (server) => {
-  const now = new Date();
-  const serverOffset = SERVERS[server]?.utcOffset || 0;
-  // Reset is at 4:00 AM server time
-  // Convert to UTC: if server is UTC+8, 4AM local = 4-8 = -4 = 20:00 UTC previous day
-  const resetHourUTC = (4 - serverOffset + 24) % 24;
-  const reset = new Date(now);
-  reset.setUTCHours(resetHourUTC, 0, 0, 0);
-  if (reset <= now) reset.setDate(reset.getDate() + 1);
-  return reset.toISOString();
+  const serverOffset = SERVERS[server]?.utcOffset ?? 1; // Default to Europe
+  const now = Date.now();
+  
+  // Get current time in server's local timezone
+  const nowInServerTz = new Date(now + serverOffset * 3600000);
+  const year = nowInServerTz.getUTCFullYear();
+  const month = nowInServerTz.getUTCMonth();
+  const day = nowInServerTz.getUTCDate();
+  const hour = nowInServerTz.getUTCHours();
+  const minute = nowInServerTz.getUTCMinutes();
+  
+  // Today's 04:00 in server local time
+  let reset = Date.UTC(year, month, day, 4, 0, 0, 0);
+  
+  // If already past 04:00 local, next reset is tomorrow
+  const currentMinutes = hour * 60 + minute;
+  if (currentMinutes >= 240) { // 4 * 60 = 240
+    reset += 86400000; // Add 24 hours
+  }
+  
+  // Convert from server local back to UTC
+  const resetUtc = reset - serverOffset * 3600000;
+  return new Date(resetUtc).toISOString();
 };
 
+// Next weekly reset: Monday 04:00 in server's local timezone
 const getNextWeeklyReset = (server) => {
-  const now = new Date();
-  const serverOffset = SERVERS[server]?.utcOffset || 0;
-  const resetHourUTC = (4 - serverOffset + 24) % 24;
-  const reset = new Date(now);
-  const dayOfWeek = reset.getUTCDay();
-  // Monday is day 1, so we need to find next Monday
-  const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : (8 - dayOfWeek);
-  reset.setDate(reset.getDate() + daysUntilMonday);
-  reset.setUTCHours(resetHourUTC, 0, 0, 0);
-  if (reset <= now) reset.setDate(reset.getDate() + 7);
-  return reset.toISOString();
+  const serverOffset = SERVERS[server]?.utcOffset ?? 1; // Default to Europe
+  const now = Date.now();
+  
+  // Get current time in server's local timezone
+  const nowInServerTz = new Date(now + serverOffset * 3600000);
+  const year = nowInServerTz.getUTCFullYear();
+  const month = nowInServerTz.getUTCMonth();
+  const day = nowInServerTz.getUTCDate();
+  const dayOfWeek = nowInServerTz.getUTCDay(); // 0=Sun, 1=Mon
+  const hour = nowInServerTz.getUTCHours();
+  const minute = nowInServerTz.getUTCMinutes();
+  
+  const currentMinutes = hour * 60 + minute;
+  const pastReset = currentMinutes >= 240; // Past 04:00
+  
+  // Calculate days until next Monday
+  let daysToMon;
+  if (dayOfWeek === 1 && !pastReset) {
+    daysToMon = 0; // It's Monday before 04:00
+  } else if (dayOfWeek === 1 && pastReset) {
+    daysToMon = 7; // It's Monday after 04:00
+  } else {
+    // Days until next Monday: (8 - dayOfWeek) % 7, but if Sunday use 1
+    daysToMon = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+  }
+  
+  // Monday 04:00 in server local time
+  const mondayLocal = Date.UTC(year, month, day + daysToMon, 4, 0, 0, 0);
+  
+  // Convert to UTC
+  const mondayUtc = mondayLocal - serverOffset * 3600000;
+  return new Date(mondayUtc).toISOString();
 };
 
 // [SECTION:SIMULATION]
@@ -1765,10 +2039,6 @@ const isStorageAvailable = () => {
 };
 
 const storageAvailable = isStorageAvailable();
-
-const loadState = () => {
-  return initialState;
-};
 
 const loadFromStorage = async () => {
   if (!storageAvailable) return null;
@@ -1957,7 +2227,7 @@ const DETAIL_ELEMENT_COLORS = {
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { border: 'border-orange-500/40', bg: 'bg-orange-500/20', text: 'text-orange-400' },
-  Electro: { border: 'border-violet-500/40', bg: 'bg-violet-500/20', text: 'text-violet-400' },
+  Electro: { border: 'border-purple-500/40', bg: 'bg-purple-500/20', text: 'text-purple-400' },
   Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
   Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
   Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
@@ -1974,41 +2244,23 @@ const EVENT_ACCENT_COLORS = {
 
 // Tab background component - eliminates ~400 lines of duplication across 6 tabs
 const TabBackground = ({ id, glowColor = 'neutral' }) => {
-  const ambientGlow = glowColor === 'gold'
-    ? 'linear-gradient(0deg, rgba(251,191,36,0.1) 0%, rgba(251,191,36,0.04) 30%, transparent 60%)'
-    : 'linear-gradient(0deg, rgba(150,180,205,0.1) 0%, rgba(130,160,185,0.04) 30%, transparent 60%)';
   return (
     <>
-      <div style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none', background:'linear-gradient(180deg, #080c12 0%, #0a0e16 40%, #0c1018 70%, #0e141e 100%)' }} />
-      <div style={{ position:'fixed', bottom:0, left:0, right:0, height:'70%', zIndex:1, pointerEvents:'none', background:'linear-gradient(0deg, rgba(140,175,200,0.22) 0%, rgba(120,160,190,0.12) 25%, rgba(100,140,170,0.05) 50%, transparent 100%)' }} />
-      <div style={{ position:'fixed', bottom:0, left:'-10%', right:'-10%', height:'35%', zIndex:1, pointerEvents:'none', background:'linear-gradient(0deg, rgba(160,190,215,0.18) 0%, rgba(140,175,200,0.08) 40%, transparent 100%)', filter:'blur(20px)' }} />
-      <div style={{ position:'fixed', top:0, left:0, right:0, height:'25%', zIndex:1, pointerEvents:'none', background:'linear-gradient(180deg, rgba(100,130,160,0.03) 0%, transparent 100%)' }} />
-      <div style={{ position:'fixed', inset:0, zIndex:2, pointerEvents:'none', opacity:0.6 }}>
-        <svg style={{width:'100%', height:'100%'}} xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id={`${id}Glow`} x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <pattern id={`${id}Grid`} x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
-              <line x1="25" y1="0" x2="25" y2="50" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-              <line x1="0" y1="25" x2="50" y2="25" stroke="rgba(150,180,200,0.22)" strokeWidth="0.5"/>
-              <circle cx="25" cy="25" r="2.5" fill="rgba(230,242,255,0.75)" filter={`url(#${id}Glow)`}/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill={`url(#${id}Grid)`}/>
-        </svg>
-      </div>
-      <div style={{ position:'fixed', inset:0, zIndex:3, pointerEvents:'none', background: ambientGlow }} />
-      <div style={{ position:'fixed', inset:0, zIndex:4, pointerEvents:'none', background:'linear-gradient(180deg, rgba(6,10,16,0.35) 0%, rgba(6,10,16,0.15) 30%, transparent 50%, transparent 80%, rgba(6,10,16,0.08) 100%), radial-gradient(ellipse 90% 80% at 50% 55%, transparent 50%, rgba(6,10,16,0.35) 100%)' }} />
+      {/* Dark deep blue base */}
+      <div style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none', background:'linear-gradient(180deg, #010204 0%, #020408 30%, #030610 60%, #020408 100%)' }} />
+      {/* Subtle edge vignette */}
+      <div style={{ position:'fixed', inset:0, zIndex:4, pointerEvents:'none', background:'radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(2,3,6,0.5) 100%)' }} />
     </>
   );
 };
 
 // [SECTION:COMPONENTS]
-const Card = ({ children, className = '' }) => <div className={`kuro-card ${className}`} style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}><div className="kuro-card-inner">{children}</div></div>;
-const CardHeader = ({ children, action }) => <div className="kuro-header" style={{position:'relative'}}><h3>{children}</h3>{action && <div style={{position:'relative', zIndex:10}}>{action}</div>}</div>;
-const CardBody = ({ children, className = '' }) => <div className={`kuro-body ${className}`}>{children}</div>;
+const Card = memo(({ children, className = '', style = {} }) => <div className={`kuro-card ${className}`} style={style}><div className="kuro-card-inner">{children}</div></div>);
+Card.displayName = 'Card';
+const CardHeader = memo(({ children, action }) => <div className="kuro-header" style={{position:'relative'}}><h3>{children}</h3>{action && <div style={{position:'relative', zIndex:10}}>{action}</div>}</div>);
+CardHeader.displayName = 'CardHeader';
+const CardBody = memo(({ children, className = '' }) => <div className={`kuro-body ${className}`}>{children}</div>);
+CardBody.displayName = 'CardBody';
 
 // Character Detail Modal
 const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
@@ -2041,8 +2293,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.role}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.weapon}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.role}</span>
             </div>
             <h2 className="text-xl font-bold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -2058,7 +2310,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           
           {/* Skills */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
             </h3>
             <div className="flex flex-wrap gap-1">
@@ -2071,11 +2323,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           {/* Best Weapon & Echoes */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Best Weapon</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best Weapon</div>
               <div className="text-yellow-400 text-xs font-medium">{data.bestWeapon}</div>
             </div>
             <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Best Echoes</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best Echoes</div>
               <div className="text-cyan-400 text-xs font-medium">{data.bestEchoes[0]}</div>
               <div className="text-gray-400 text-[10px]">{data.bestEchoes[1]}</div>
             </div>
@@ -2083,7 +2335,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           
           {/* Ascension Materials */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
             </h3>
             <div className="grid grid-cols-3 gap-2">
@@ -2104,12 +2356,12 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           
           {/* Team Suggestions */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
               <User size={14} className="text-pink-400" /> Team Suggestions
             </h3>
             <div className="space-y-1">
               {data.teams.map((team, i) => (
-                <div key={i} className="text-[11px] text-gray-300 p-2 rounded-lg bg-white/5 border border-white/10">{team}</div>
+                <div key={i} className="text-[10px] text-gray-300 p-2 rounded-lg bg-white/5 border border-white/10">{team}</div>
               ))}
             </div>
           </div>
@@ -2120,16 +2372,16 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
 };
 
 // Weapon Detail Modal
+const WEAPON_RARITY_COLORS = {
+  5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
+  4: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
+  3: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
+};
 const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   const data = WEAPON_DATA[name];
   if (!data) return null;
   
-  const rarityColors = {
-    5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
-    4: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
-    3: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
-  };
-  const colors = rarityColors[data.rarity] || rarityColors[4];
+  const colors = WEAPON_RARITY_COLORS[data.rarity] || WEAPON_RARITY_COLORS[4];
   
   return (
     <div 
@@ -2138,15 +2390,15 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
       onClick={onClose}
     >
       <div 
-        className={`relative w-full max-w-sm max-h-[70vh] overflow-y-auto rounded-2xl border ${colors.border}`}
+        className={`relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border ${colors.border}`}
         style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'scaleIn 0.3s ease-out' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative h-32 overflow-hidden rounded-t-2xl">
+        <div className="relative h-40 overflow-hidden rounded-t-2xl">
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-28 object-contain opacity-90" />
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
@@ -2154,10 +2406,10 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.type}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/20">{data.stat}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.type}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}</span>
             </div>
-            <h2 className="text-lg font-bold text-white">{name}</h2>
+            <h2 className="text-xl font-bold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
             </div>
@@ -2169,13 +2421,13 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           <p className="text-gray-300 text-sm">{data.desc}</p>
           
           <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Passive</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
             <div className={`text-xs ${colors.text}`}>{data.passive}</div>
           </div>
           
           {data.bestFor && data.bestFor.length > 0 && (
             <div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Best For</div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best For</div>
               <div className="flex flex-wrap gap-1">
                 {data.bestFor.map((char, i) => (
                   <span key={i} className="text-[10px] px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
@@ -2189,7 +2441,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   );
 };
 
-const TabButton = ({ active, onClick, children, tabRef }) => {
+const TabButton = memo(({ active, onClick, children, tabRef }) => {
   const childArray = React.Children.toArray(children);
   const icon = childArray.find(child => React.isValidElement(child));
   const text = childArray.find(child => typeof child === 'string')?.trim();
@@ -2220,20 +2472,97 @@ const TabButton = ({ active, onClick, children, tabRef }) => {
       onClick={onClick} 
       className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
     >
-      <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/15 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5'}`}>
+      <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5'}`}>
         {icon}
       </div>
       <span className="relative z-10">{text}</span>
     </button>
   );
-};
+});
+TabButton.displayName = 'TabButton';
 
-const CountdownTimer = ({ endDate, color = 'yellow', compact = false, alwaysShow = false }) => {
+const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alwaysShow = false, onExpire, recalcFn }) => {
+  const [currentEnd, setCurrentEnd] = useState(endDate);
   const [time, setTime] = useState(() => getTimeRemaining(endDate));
+  const expiredRef = useRef(false);
+  const rafRef = useRef(null);
+  const lastUpdateRef = useRef(0);
+  
+  // Update end date when prop changes
   useEffect(() => {
-    const timer = setInterval(() => setTime(getTimeRemaining(endDate)), 1000);
-    return () => clearInterval(timer);
+    setCurrentEnd(endDate);
+    setTime(getTimeRemaining(endDate));
+    expiredRef.current = false;
   }, [endDate]);
+  
+  // Main timer logic using requestAnimationFrame for accuracy
+  useEffect(() => {
+    let isMounted = true;
+    
+    const updateTimer = () => {
+      if (!isMounted) return;
+      
+      const now = Date.now();
+      // Only update state once per second to avoid excessive renders
+      if (now - lastUpdateRef.current >= 1000 || lastUpdateRef.current === 0) {
+        lastUpdateRef.current = now;
+        
+        const t = getTimeRemaining(currentEnd);
+        if (t.expired && recalcFn) {
+          // Auto-rollover for recurring timers (daily/weekly)
+          const newEnd = recalcFn();
+          setCurrentEnd(newEnd);
+          setTime(getTimeRemaining(newEnd));
+          expiredRef.current = false;
+        } else {
+          setTime(t);
+          if (t.expired && !expiredRef.current) {
+            expiredRef.current = true;
+            if (onExpire) setTimeout(onExpire, 500);
+          }
+        }
+      }
+      
+      rafRef.current = requestAnimationFrame(updateTimer);
+    };
+    
+    // Start the animation frame loop
+    rafRef.current = requestAnimationFrame(updateTimer);
+    
+    // Handle visibility change - update immediately when tab becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        lastUpdateRef.current = 0; // Force immediate update
+        const t = getTimeRemaining(currentEnd);
+        if (t.expired && recalcFn) {
+          const newEnd = recalcFn();
+          setCurrentEnd(newEnd);
+          setTime(getTimeRemaining(newEnd));
+          expiredRef.current = false;
+        } else {
+          setTime(t);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Handle page focus (backup for visibility)
+    const handleFocus = () => {
+      lastUpdateRef.current = 0;
+      setTime(getTimeRemaining(currentEnd));
+    };
+    window.addEventListener('focus', handleFocus);
+    
+    // Cleanup
+    return () => {
+      isMounted = false;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [currentEnd, onExpire, recalcFn]);
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
   if (time.expired && !alwaysShow) return <span className="text-red-400 text-xs font-bold">ENDED</span>;
@@ -2263,9 +2592,10 @@ const CountdownTimer = ({ endDate, color = 'yellow', compact = false, alwaysShow
       <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)', borderColor: `${color === 'yellow' ? 'rgba(251,191,36,0.2)' : color === 'pink' ? 'rgba(244,114,182,0.2)' : 'rgba(34,211,238,0.2)'}`}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Sec</div></div>
     </div>
   );
-};
+});
+CountdownTimer.displayName = 'CountdownTimer';
 
-const PityRing = ({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#fbbf24', glowColor = 'rgba(251,191,36,0.4)', label, sublabel }) => {
+const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#fbbf24', glowColor = 'rgba(251,191,36,0.4)', label, sublabel }) => {
   const safeValue = Number(value) || 0;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -2283,9 +2613,205 @@ const PityRing = ({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#f
       {sublabel && <div className="text-gray-500 text-[7px]">{sublabel}</div>}
     </div>
   );
+});
+PityRing.displayName = 'PityRing';
+
+// [SECTION:BACKGROUND]
+// Wave phase functions shared by both components
+const _wf1 = (x, y, t) => x * 0.012 + Math.sin(y * 0.006) * 3.0 + Math.cos(y * 0.003 + x * 0.002) * 1.5 - t * 0.35;
+const _wf2 = (x, y, t) => (x * 0.007 + y * 0.009) + Math.sin(x * 0.004 - y * 0.003) * 2.2 + Math.cos(x * 0.002) * 1.2 - t * 0.25;
+const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0.004 + x * 0.003) * 1.3 - t * 0.2;
+
+// LAYER A: Smooth ambient glow gradient — z-index 1
+const BackgroundGlow = () => {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const buf = document.createElement('canvas');
+    const bctx = buf.getContext('2d');
+    let animId;
+    const SC = 0.08;
+    let w, h, bw, bh;
+    
+    const init = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+      bw = Math.ceil(w * SC);
+      bh = Math.ceil(h * SC);
+      buf.width = bw;
+      buf.height = bh;
+    };
+    init();
+    window.addEventListener('resize', init);
+    
+    let lastFrame = 0;
+    const draw = (t) => {
+      animId = requestAnimationFrame(draw);
+      if (t - lastFrame < 66) return;
+      lastFrame = t;
+      const time = t * 0.001;
+      bctx.fillStyle = 'rgb(2,3,6)';
+      bctx.fillRect(0, 0, bw, bh);
+      
+      const gs = 2;
+      for (let by = 0; by < bh; by += gs) {
+        for (let bx = 0; bx < bw; bx += gs) {
+          const sx = bx / SC;
+          const sy = by / SC;
+          
+          const h1 = Math.sin(_wf1(sx, sy, time));
+          const h2 = Math.sin(_wf2(sx, sy, time));
+          const h3 = Math.sin(_wf3(sx, sy, time));
+          const totalH = h1 * 0.7 + h2 * 0.5 + h3 * 0.4;
+          
+          const d = 10;
+          const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5 + (Math.sin(_wf3(sx+d,sy,time))-h3)*0.4;
+          const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5 + (Math.sin(_wf3(sx,sy+d,time))-h3)*0.4;
+          const tilt = Math.sqrt(slX*slX + slY*slY);
+          
+          const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
+          const peak = Math.max(0, totalH / 1.5) * 0.22;
+          const gI = spec * 0.3 + peak;
+          
+          if (gI > 0.008) {
+            const a = Math.min(gI * 0.7, 0.3);
+            const blend = Math.max(0, Math.min(1, (totalH + 1.6) / 3.2));
+            const rr = Math.round(6 + blend * 25);
+            const gg = Math.round(12 + blend * 40);
+            const bb = Math.round(45 + blend * 70);
+            bctx.fillStyle = `rgba(${rr},${gg},${bb},${a})`;
+            bctx.fillRect(bx, by, gs, gs);
+          }
+        }
+      }
+      
+      ctx.clearRect(0, 0, w, h);
+      ctx.filter = 'blur(20px)';
+      ctx.drawImage(buf, 0, 0, bw, bh, 0, 0, w, h);
+      ctx.filter = 'none';
+    };
+    animId = requestAnimationFrame(draw);
+    
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', init);
+    };
+  }, []);
+  
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1}} />;
 };
 
-const BannerCard = ({ item, type, stats, bannerImage, visualSettings }) => {
+// LAYER B: Triangle wave mask — traveling wavefront specular, z-index 2
+const TriangleMirrorWave = () => {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    
+    const TW = 36;
+    const TH = 31;
+    const HALF = TW / 2;
+    let w, h, cols, rows, seeds;
+    
+    const init = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+      cols = Math.ceil(w / HALF) + 4;
+      rows = Math.ceil(h / TH) + 4;
+      seeds = new Float32Array(cols * rows);
+      for (let i = 0; i < seeds.length; i++) seeds[i] = Math.random() * 6.28;
+    };
+    init();
+    window.addEventListener('resize', init);
+    
+    let lastFrame = 0;
+    const draw = (t) => {
+      animId = requestAnimationFrame(draw);
+      if (t - lastFrame < 66) return;
+      lastFrame = t;
+      ctx.clearRect(0, 0, w, h);
+      const time = t * 0.001;
+      
+      for (let r = -1; r < rows; r++) {
+        for (let c = -1; c < cols; c++) {
+          const isUp = ((c + r) % 2 + 2) % 2 === 0;
+          const cx = c * HALF;
+          const cy = r * TH + (isUp ? TH * 0.33 : TH * 0.66);
+          
+          if (cx < -HALF || cx > w + HALF || cy < -TH || cy > h + TH) continue;
+          
+          const seedIdx = ((r + 1) * cols + (c + 1));
+          const seed = seedIdx >= 0 && seedIdx < seeds.length ? seeds[seedIdx] : 0;
+          
+          // Minimal seed for subtle per-triangle variation
+          const so = seed * 0.05;
+          
+          // Wave heights at this triangle center
+          const v1 = Math.sin(_wf1(cx, cy, time) + so);
+          const v2 = Math.sin(_wf2(cx, cy, time) + so * 0.7);
+          const v3 = Math.sin(_wf3(cx, cy, time) + so * 0.5);
+          const totalH = v1 * 0.7 + v2 * 0.5 + v3 * 0.4;
+          
+          // Slope from finite differences (traveling wavefront detection)
+          const dd = 4;
+          const hR = Math.sin(_wf1(cx+dd,cy,time)+so)*0.7 + Math.sin(_wf2(cx+dd,cy,time)+so*0.7)*0.5 + Math.sin(_wf3(cx+dd,cy,time)+so*0.5)*0.4;
+          const hD = Math.sin(_wf1(cx,cy+dd,time)+so)*0.7 + Math.sin(_wf2(cx,cy+dd,time)+so*0.7)*0.5 + Math.sin(_wf3(cx,cy+dd,time)+so*0.5)*0.4;
+          const slopeX = hR - totalH;
+          const slopeY = hD - totalH;
+          const tilt = Math.sqrt(slopeX * slopeX + slopeY * slopeY);
+          
+          // Specular: flat faces (low tilt) catch light → traveling bright bands
+          const specular = Math.pow(Math.max(0, 1 - tilt * 3.5), 5);
+          // Peak height glow: wave crests glow slightly
+          const peakGlow = Math.max(0, totalH / 2.0) * 0.12;
+          
+          const intensity = specular * 0.45 + peakGlow;
+          if (intensity < 0.015) continue;
+          
+          const x = c * HALF;
+          const y = r * TH;
+          ctx.beginPath();
+          if (isUp) {
+            ctx.moveTo(x - HALF, y + TH);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x + HALF, y + TH);
+          } else {
+            ctx.moveTo(x - HALF, y);
+            ctx.lineTo(x + HALF, y);
+            ctx.lineTo(x, y + TH);
+          }
+          ctx.closePath();
+          
+          const sp = Math.min(specular * 3, 1);
+          const ri = Math.round(60 + sp * 120);
+          const gi = Math.round(85 + sp * 100);
+          const bi = Math.round(150 + sp * 80);
+          const alpha = Math.min(intensity * 0.45, 0.25);
+          ctx.fillStyle = `rgba(${ri},${gi},${bi},${alpha})`;
+          ctx.fill();
+        }
+      }
+    };
+    animId = requestAnimationFrame(draw);
+    
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', init);
+    };
+  }, []);
+  
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2}} />;
+};
+
+const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -2297,7 +2823,7 @@ const BannerCard = ({ item, type, stats, bannerImage, visualSettings }) => {
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '180px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -2317,43 +2843,77 @@ const BannerCard = ({ item, type, stats, bannerImage, visualSettings }) => {
       
       <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-0.5">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`text-[10px] px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>{isChar ? item.element : item.type}</span>
           </div>
-          <h4 className="font-bold text-base text-white">{item.name}</h4>
+          <h4 className="font-bold text-base text-white leading-tight">{item.name}</h4>
           {item.title && <p className="text-gray-200 text-[10px] mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
         <div>
-          <div className="text-gray-200 text-[9px] mb-1">Featured 4★</div>
+          <div className="text-gray-300 text-[8px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
             {item.featured4Stars.map(n => <span key={n} className="text-[9px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
         
         {stats && (
-          <div className="space-y-2 pt-2 border-t border-white/20">
-            <div className="flex items-center justify-around">
-              <PityRing value={stats.pity5} max={80} size={56} strokeWidth={4} color={isChar ? '#fbbf24' : '#f472b6'} glowColor={isChar ? 'rgba(251,191,36,0.4)' : 'rgba(244,114,182,0.4)'} label="5★ Pity" />
-              <PityRing value={stats.pity4} max={10} size={42} strokeWidth={3} color="#a855f7" glowColor="rgba(168,85,247,0.4)" label="4★ Pity" />
-              <div className="text-center">
-                <div className="text-white font-bold text-lg drop-shadow">{stats.totalPulls}</div>
-                <div className="text-gray-300 text-[8px]">Convenes</div>
+          <div className="pt-2.5 mt-1 border-t border-white/15" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', margin: '0 -12px -12px', padding: '10px 12px 12px', borderRadius: '0 0 12px 12px'}}>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 flex items-center gap-3">
+                <div className="text-center">
+                  <div className={`font-bold text-sm ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
+                  <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
+                  <div className="text-gray-300 text-[8px] mt-0.5">4★ Pity</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-white font-bold text-sm">{stats.totalPulls}</div>
+                  <div className="text-gray-300 text-[8px] mt-0.5">Convenes</div>
+                </div>
               </div>
+              {isChar && (
+                <div className={`text-[9px] px-2 py-1 rounded backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/30 text-emerald-400' : 'bg-neutral-800/50 text-gray-400'}`}>
+                  {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
+                </div>
+              )}
             </div>
           </div>
         )}
-        {stats && isChar && <div className={`text-center text-[9px] py-0.5 rounded backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/30 text-emerald-400' : 'bg-neutral-800/50 text-gray-400'}`}>{stats.guaranteed ? '✓ Guaranteed' : '50/50'}</div>}
       </div>
     </div>
   );
-};
+});
+BannerCard.displayName = 'BannerCard';
 
-const EventCard = ({ event, server, bannerImage, visualSettings }) => {
-  const endDate = event.dailyReset ? getNextDailyReset(server) : event.weeklyReset ? getNextWeeklyReset(server) : event.currentEnd;
+const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
+  const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
+  const isRecurring = !isDaily && !isWeekly && event.resetType && /\d+/.test(event.resetType);
+  
+  const endDate = useMemo(() => {
+    if (isDaily) return getNextDailyReset(server);
+    if (isWeekly) return getNextWeeklyReset(server);
+    if (isRecurring) return getRecurringEventEnd(event.currentEnd, event.resetType, server);
+    return getServerAdjustedEnd(event.currentEnd, server);
+  }, [event, server, isDaily, isWeekly, isRecurring, resetTick]);
+  
+  const handleExpire = useCallback(() => {
+    // Auto-refresh on expiry for daily, weekly, and recurring events
+    if (isDaily || isWeekly || isRecurring) setResetTick(t => t + 1);
+  }, [isDaily, isWeekly, isRecurring]);
+  
+  // Instant rollover function for CountdownTimer — avoids "ENDED" flash
+  const recalcFn = useMemo(() => {
+    if (isDaily) return () => getNextDailyReset(server);
+    if (isWeekly) return () => getNextWeeklyReset(server);
+    if (isRecurring) return () => getRecurringEventEnd(event.currentEnd, event.resetType, server);
+    return null;
+  }, [isDaily, isWeekly, isRecurring, server, event]);
   
   const colors = EVENT_ACCENT_COLORS[event.accentColor] || EVENT_ACCENT_COLORS.cyan;
   const imgUrl = bannerImage;
@@ -2365,7 +2925,7 @@ const EventCard = ({ event, server, bannerImage, visualSettings }) => {
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${colors.border}`} style={{ height: '180px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${colors.border}`} style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -2391,7 +2951,7 @@ const EventCard = ({ event, server, bannerImage, visualSettings }) => {
           </div>
           <div className="text-right flex-shrink-0">
             <div className="text-gray-200 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
-            <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly} />
+            <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
           </div>
         </div>
         
@@ -2406,7 +2966,8 @@ const EventCard = ({ event, server, bannerImage, visualSettings }) => {
       </div>
     </div>
   );
-};
+});
+EventCard.displayName = 'EventCard';
 
 const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2">
@@ -2425,7 +2986,7 @@ const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
-const CollectionGridCard = ({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew }) => (
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew }) => (
   <div 
     key={name} 
     className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
@@ -2463,14 +3024,20 @@ const CollectionGridCard = ({ name, count, imgUrl, framing, isSelected, owned, c
     )}
     <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
       {owned ? (
-        <div className={`${countColor} font-bold text-lg`}>{countLabel}</div>
+        <div className={`${countColor} font-bold text-xl`}>{countLabel}</div>
       ) : (
-        <div className="text-gray-600 font-bold text-lg">—</div>
+        <div className="text-gray-500 font-bold text-xl">—</div>
       )}
       <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{name}</div>
     </div>
   </div>
+), (prev, next) => 
+  prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
+  prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
+  prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
+  prev.framing?.zoom === next.framing?.zoom && prev.framing?.x === next.framing?.x && prev.framing?.y === next.framing?.y
 );
+CollectionGridCard.displayName = 'CollectionGridCard';
 
 // Load custom banners from localStorage
 const loadCustomBanners = () => {
@@ -2489,6 +3056,308 @@ const getActiveBanners = () => {
   return custom || CURRENT_BANNERS;
 };
 
+
+// [SECTION:STATIC_DATA] - Static collection data (moved outside component for perf)
+const DEFAULT_COLLECTION_IMAGES = {
+  // 5★ Resonators (by release order)
+  'Jiyan': 'https://i.ibb.co/00C5Sqj/Jiyan-Full-Sprite.webp',
+  'Calcharo': 'https://i.ibb.co/tM11rtrL/Calcharo-Full-Sprite.webp',
+  'Encore': 'https://i.ibb.co/rGZBZ4HV/Encore-Full-Sprite.webp',
+  'Jianxin': 'https://i.ibb.co/ZDxNGkj/Jianxin-Full-Sprite.webp',
+  'Lingyang': 'https://i.ibb.co/gbjK568S/Lingyang-Full-Sprite.webp',
+  'Verina': 'https://i.ibb.co/mV6qxb5h/Verina-Full-Sprite.webp',
+  'Yinlin': 'https://i.ibb.co/S79CF3R3/Yinlin-Full-Sprite.webp',
+  'Changli': 'https://i.ibb.co/mr6BwwP0/Changli-Full-Sprite.webp',
+  'Jinhsi': 'https://i.ibb.co/fG9sf6cc/Jinhsi-Full-Sprite.webp',
+  'Shorekeeper': 'https://i.ibb.co/svHmQWYB/Shorekeeper-Full-Sprite.webp',
+  'Camellya': 'https://i.ibb.co/6Rg494Ld/Camellya-Full-Sprite.webp',
+  'Xiangli Yao': 'https://i.ibb.co/27jds05D/Xiangli-Yao-Full-Sprite.webp',
+  'Zhezhi': 'https://i.ibb.co/0VpsfXkK/Zhezhi-Full-Sprite.webp',
+  'Carlotta': 'https://i.ibb.co/bRBx4Ymx/Carlotta-Full-Sprite.webp',
+  'Roccia': 'https://i.ibb.co/b548Jj2Y/Roccia-Full-Sprite.webp',
+  'Phoebe': 'https://i.ibb.co/6SdsQ7M/Phoebe-Full-Sprite.webp',
+  'Brant': 'https://i.ibb.co/CDg2QgM/Brant-Full-Sprite.webp',
+  'Cantarella': 'https://i.ibb.co/jZs3MWvV/Cantarella-Full-Sprite.webp',
+  'Zani': 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp',
+  'Ciaccona': 'https://i.ibb.co/N6dKs9zy/Ciaccona-Full-Sprite.webp',
+  'Cartethyia': 'https://i.ibb.co/QFR5LVdc/Cartethyia-Full-Sprite.webp',
+  'Lupa': 'https://i.ibb.co/8n4kck2M/Lupa-Full-Sprite.webp',
+  'Augusta': 'https://i.ibb.co/V0TXt2Ty/Augusta-Full-Sprite.webp',
+  'Galbrena': 'https://i.ibb.co/rK0yjSr6/Galbrena-Full-Sprite.webp',
+  'Iuno': 'https://i.ibb.co/5WmnWgtG/Iuno-Full-Sprite.webp',
+  'Luuk Herssen': 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp',
+  'Aemeath': 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp',
+  'Mornye': 'https://i.ibb.co/QvyQ33zv/Mornye-Full-Sprite.webp',
+  'Rover': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
+  'Chisa': 'https://i.ibb.co/x8zB67Vh/Chisa-Full-Sprite.webp',
+  'Phrolova': 'https://i.ibb.co/Nd0HbF4v/Phrolova-Full-Sprite.webp',
+  'Qiuyuan': 'https://i.ibb.co/JRvP5fnx/Qiuyuan-Full-Sprite.webp',
+  'Lynae': 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp',
+  // 4★ Resonators
+  'Aalto': 'https://i.ibb.co/v81v3Hq/Aalto-Full-Sprite.webp',
+  'Baizhi': 'https://i.ibb.co/4Ztm8DCG/Baizhi-Full-Sprite.webp',
+  'Chixia': 'https://i.ibb.co/r2SVVmPv/Chixia-Full-Sprite.webp',
+  'Danjin': 'https://i.ibb.co/CK3XQCpM/Danjin-Full-Sprite.webp',
+  'Yangyang': 'https://i.ibb.co/kV1hBqbv/Yangyang-Full-Sprite.webp',
+  'Sanhua': 'https://i.ibb.co/yc0XTQVB/Sanhua-Full-Sprite.webp',
+  'Taoqi': 'https://i.ibb.co/qM2r22RR/Taoqi-Full-Sprite.webp',
+  'Yuanwu': 'https://i.ibb.co/p6ZQJkcC/Yuanwu-Full-Sprite.webp',
+  'Mortefi': 'https://i.ibb.co/xq8hFgpc/Mortefi-Full-Sprite.webp',
+  'Youhu': 'https://i.ibb.co/Zzc0PMWX/Youhu-Full-Sprite.webp',
+  'Lumi': 'https://i.ibb.co/rRy25xmt/Lumi-Full-Sprite.webp',
+  'Buling': 'https://i.ibb.co/fGZBRCWp/Buling-Full-Sprite.webp',
+  // 5★ Weapons
+  'Verdant Summit': 'https://i.ibb.co/5gjYYrHj/Verdant-Summit.webp',
+  'Emerald of Genesis': 'https://i.ibb.co/HTj8Lp7N/Weapon-Emerald-of-Genesis.webp',
+  'Static Mist': 'https://i.ibb.co/cKVzgTJ4/Weapon-Static-Mist.webp',
+  'Abyss Surges': 'https://i.ibb.co/FLVx6xwt/Abyss-Surges.webp',
+  'Lustrous Razor': 'https://i.ibb.co/mCmkydWk/Weapon-Lustrous-Razor.webp',
+  'Cosmic Ripples': 'https://i.ibb.co/XfGk2sVG/Cosmic-Ripples.webp',
+  'Stringmaster': 'https://i.ibb.co/wNGPxnmH/Stringmaster.webp',
+  'Ages of Harvest': 'https://i.ibb.co/5gGBmzX8/Ages-of-Harvest.webp',
+  'Blazing Brilliance': 'https://i.ibb.co/gLJbgvwg/Blazing-Brilliance.webp',
+  'Rime-Draped Sprouts': 'https://i.ibb.co/NgNshLYy/Rime-Draped-Sprouts.png',
+  "Verity's Handle": 'https://i.ibb.co/k2hFQfx8/Veritys-Handle.webp',
+  'Stellar Symphony': 'https://i.ibb.co/yBB4Kzxs/Stellar-Symphony.webp',
+  'Red Spring': 'https://i.ibb.co/Cp3d2vg2/Red-Spring.webp',
+  'The Last Dance': 'https://i.ibb.co/zhtJWLk0/The-Last-Dance.png',
+  'Tragicomedy': 'https://i.ibb.co/4RRD3mLv/Tragicomedy.png',
+  'Luminous Hymn': 'https://i.ibb.co/prdDZjKg/Luminous-Hymn.png',
+  'Unflickering Valor': 'https://i.ibb.co/PGbr24Xp/Unflickering-Valor.png',
+  'Whispers of Sirens': 'https://i.ibb.co/YT73fDrB/Whispers-of-Sirens.webp',
+  'Blazing Justice': 'https://i.ibb.co/pjbhYHP4/Blazing-Justice.webp',
+  'Woodland Aria': 'https://i.ibb.co/8nXkG8d5/Woodland-Aria.png',
+  "Defier's Thorn": 'https://i.ibb.co/KpG4cbZJ/Defier-s-Thorn.webp',
+  'Wildfire Mark': 'https://i.ibb.co/RGqLJKGK/Wildfire-Mark.webp',
+  'Lethean Elegy': 'https://i.ibb.co/YF3fJtF7/Lethean-Elegy.webp',
+  'Thunderflare Dominion': 'https://i.ibb.co/d062x9ZH/Thunderflare-Dominion.webp',
+  "Moongazer's Sigil": 'https://i.ibb.co/zhF435g4/Moongazers-Sigil.webp',
+  'Lux & Umbra': 'https://i.ibb.co/FqVkK4Tn/Lux-Umbra.webp',
+  'Emerald Sentence': 'https://i.ibb.co/chmx3GgM/Emerald-Sentence.webp',
+  'Kumokiri': 'https://i.ibb.co/VWxG9pSF/Kumokiri.webp',
+  'Spectrum Blaster': 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp',
+  'Starfield Calibrator': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
+  'Everbright Polestar': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp', // TODO: replace with real Everbright Polestar image
+  "Daybreaker's Spine": 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp', // TODO: replace with real Daybreaker's Spine image
+  // 4★ Weapons
+  'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
+  "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
+  "Bloodpact's Pledge": 'https://i.ibb.co/V0WH0NSV/Bloodpacts-Pledge-1.webp',
+  'Waltz in Masquerade': 'https://i.ibb.co/5XXfstH6/Waltz-in-Masquerade.webp',
+  'Legend of Drunken Hero': 'https://i.ibb.co/v65yf4Bd/Legend-of-Drunken-Hero.webp',
+  'Romance in Farewell': 'https://i.ibb.co/BKc9hdKC/Romance-in-Farewell.webp',
+  'Fables of Wisdom': 'https://i.ibb.co/whCyQys6/Fables-of-Wisdom.webp',
+  'Meditations on Mercy': 'https://i.ibb.co/pBBrZM0b/Meditations-on-Mercy.webp',
+  'Call of the Abyss': 'https://i.ibb.co/Z92nYnW/Call-of-the-Abyss.webp',
+  'Somnoire Anchor': 'https://i.ibb.co/N2cJ3qc7/Somnoire-Anchor.webp',
+  'Fusion Accretion': 'https://i.ibb.co/xSMHxtL0/Fusion-Accretion.webp',
+  'Celestial Spiral': 'https://i.ibb.co/ZRT3sr7g/Celestial-Spiral.webp',
+  'Relativistic Jet': 'https://i.ibb.co/nM5rjSNw/Relativistic-Jet.webp',
+  'Endless Collapse': 'https://i.ibb.co/gZtL25jN/Endless-Collapse.webp',
+  'Waning Redshift': 'https://i.ibb.co/27NQSk1n/Waning-Redshif.webp',
+  'Beguiling Melody': 'https://i.ibb.co/wZXxz8MC/Beguiling-Melody.webp',
+  'Boson Astrolabe': 'https://i.ibb.co/RkcX6zQK/Boson-Astrolabe-1.webp',
+  'Pulsation Bracer': 'https://i.ibb.co/k2kVPjmf/Pulsation-Bracer.webp',
+  'Phasic Homogenizer': 'https://i.ibb.co/RpKTNDq1/Phasic-Homogenizer.webp',
+  'Laser Shearer': 'https://i.ibb.co/hFqKgw50/Laser-Shearer.webp',
+  'Radiance Cleaver': 'https://i.ibb.co/WNxbm8DB/Radiance-Cleaver.webp',
+  'Aureate Zenith': 'https://i.ibb.co/0j0M2Bwm/Aureate-Zenith.webp',
+  'Radiant Dawn': 'https://i.ibb.co/RkGdFttY/Radiant-Dawn.webp',
+  'Aether Strike': 'https://i.ibb.co/5XJNVHgT/Aether-Strike.webp',
+  'Solar Flame': 'https://i.ibb.co/YMsf52M/Solar-Flame.webp',
+  'Feather Edge': 'https://i.ibb.co/fzG8JpvG/Feather-Edge.webp',
+  // Swords
+  'Training Sword': 'https://i.ibb.co/23XjFZHD/Training-Sword.webp',
+  'Tyro Sword': 'https://i.ibb.co/Qv4nYxF1/Tyro-Sword.webp',
+  'Guardian Sword': 'https://i.ibb.co/8LSknxRS/Guardian-Sword.webp',
+  'Sword of Voyager': 'https://i.ibb.co/TBCX9fFQ/Sword-of-Voyager.webp',
+  'Originite: Type II': 'https://i.ibb.co/j9M4LLSf/Originite-Type-II.webp',
+  'Sword of Night': 'https://i.ibb.co/csfb39w/Sword-of-Night.webp',
+  'Commando of Conviction': 'https://i.ibb.co/RkTdFgNG/Commando-of-Conviction.webp',
+  'Scale Slasher': 'https://i.ibb.co/Ng7QmthQ/Scale-Slasher.webp',
+  'Sword#18': 'https://i.ibb.co/wrWDmBcp/Sword18.webp',
+  'Lunar Cutter': 'https://i.ibb.co/tpSR66cR/Lunar-Cutter.webp',
+  'Lumingloss': 'https://i.ibb.co/dsJQhndm/Lumingloss.webp',
+  // Rectifiers
+  'Rectifier of Voyager': 'https://i.ibb.co/KjNy5C91/Rectifier-of-Voyager.webp',
+  'Rectifier of Night': 'https://i.ibb.co/ksQ3Zswf/Rectifier-of-Night.webp',
+  'Variation': 'https://i.ibb.co/5WZP5mKD/Variation.webp',
+  'Tyro Rectifier': 'https://i.ibb.co/Df8dXQRf/Tyro-Rectifier.webp',
+  'Training Rectifier': 'https://i.ibb.co/Y7rT1gJw/Training-Rectifier.webp',
+  'Originite: Type V': 'https://i.ibb.co/9H5GNPVw/Originite-Type-V.webp',
+  'Rectifier#25': 'https://i.ibb.co/B9T1f3f/Rectifier25.webp',
+  'Jinzhou Keeper': 'https://i.ibb.co/WvvYvwx0/Jinzhou-Keeper.webp',
+  'Comet Flare': 'https://i.ibb.co/xKTWZWzs/Comet-Flare.webp',
+  'Guardian Rectifier': 'https://i.ibb.co/Wp618BH3/Guardian-Rectifier.webp',
+  'Augment': 'https://i.ibb.co/Mk44Y5W4/Augment.webp',
+  // Broadblades
+  'Broadblade of Night': 'https://i.ibb.co/m5kvbBJH/Broadblade-of-Night.webp',
+  'Discord': 'https://i.ibb.co/p6L36v9V/Discord.webp',
+  // Gauntlets
+  'Tyro Gauntlets': 'https://i.ibb.co/NgZL4WFR/Tyro-Gauntlets.webp',
+  'Training Gauntlets': 'https://i.ibb.co/b50Nnc2w/Training-Gauntlets.webp',
+  'Hollow Mirage': 'https://i.ibb.co/JjP9sjJm/Hollow-Mirage.webp',
+  'Stonard': 'https://i.ibb.co/yn59hz0y/Stonard.webp',
+  'Gauntlets#21': 'https://i.ibb.co/XxFKztMj/Gauntlets21-D.webp',
+  'Amity Accord': 'https://i.ibb.co/tpxP1SM8/Amity-Accord.webp',
+  'Marcato': 'https://i.ibb.co/hFX9MK4t/Marcato.webp',
+  'Gauntlets of Night': 'https://i.ibb.co/dFF1GyP/Gauntlets-of-Night.webp',
+  'Guardian Gauntlets': 'https://i.ibb.co/k2vd2xW0/Guardian-Gauntlets.webp',
+  'Originite: Type III': 'https://i.ibb.co/bg4GXQbS/Originite-Type-III.webp',
+  'Gauntlets of Voyager': 'https://i.ibb.co/tVq4bTZ/Gauntlets-of-Voyager.webp',
+  // Pistols
+  'Pistols#26': 'https://i.ibb.co/FLJ14pcp/Pistols26.webp',
+  'Originite: Type IV': 'https://i.ibb.co/wZ2tjtwj/Originite-Type-IV.webp',
+  'Pistols of Voyager': 'https://i.ibb.co/pjWf99Qb/Pistols-of-Voyager.webp',
+  'Novaburst': 'https://i.ibb.co/NdnmMWcp/Novaburst.webp',
+  'Thunderbolt': 'https://i.ibb.co/99rqCmM0/Thunderbolt.webp',
+  'Undying Flame': 'https://i.ibb.co/XfM9BJVX/Undying-Flame.webp',
+  'Guardian Pistols': 'https://i.ibb.co/m59fPcVF/Guardian-Pistols.webp',
+  'Tyro Pistols': 'https://i.ibb.co/Ldtk0QGN/Tyro-Pistols.webp',
+  'Training Pistols': 'https://i.ibb.co/PsZhn5d0/Training-Pistols.webp',
+  'Pistols of Night': 'https://i.ibb.co/zhf1hxsG/Pistols-of-Night.webp',
+  'Cadenza': 'https://i.ibb.co/bRHfTQh1/Cadenza.webp',
+  // Missing weapons
+  'Originite: Type I': 'https://i.ibb.co/398KxX0f/Weapon-Originite-Type-I.webp',
+  'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
+  'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
+  'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
+};
+
+// Release order for sorting (based on first banner appearance)
+const RELEASE_ORDER = [
+  // 1.0 - Launch (May 2024)
+  'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
+  'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 'Mortefi',
+  // 1.1
+  'Jinhsi', 'Changli', 'Youhu',
+  // 1.2
+  'Zhezhi', 'Xiangli Yao',
+  // 1.3
+  'Shorekeeper', 'Lumi',
+  // 1.4
+  'Camellya',
+  // 2.0
+  'Carlotta', 'Roccia',
+  // 2.1
+  'Phoebe', 'Brant',
+  // 2.2
+  'Cantarella', 'Buling',
+  // 2.3
+  'Zani', 'Ciaccona',
+  // 2.4
+  'Cartethyia', 'Lupa',
+  // 2.5
+  'Phrolova',
+  // 2.6
+  'Augusta', 'Iuno',
+  // 2.7
+  'Galbrena', 'Qiuyuan',
+  // 2.8
+  'Chisa',
+  // 3.0
+  'Lynae', 'Mornye',
+  // 3.1 (unreleased)
+  'Luuk Herssen', 'Aemeath',
+];
+
+// All known character names (for filtering weapons vs characters)
+const ALL_CHARACTERS = new Set([
+  // 5★
+  'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
+  'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
+  'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
+  'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
+  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
+  // 4★
+  'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
+  'Mortefi', 'Youhu', 'Lumi', 'Buling',
+]);
+
+// Complete lists for Collection display (show all, grey out unpossessed)
+const ALL_5STAR_RESONATORS = [
+  'Jiyan', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina', 'Yinlin',
+  'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
+  'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
+  'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
+  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
+];
+
+const ALL_4STAR_RESONATORS = [
+  'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
+  'Mortefi', 'Youhu', 'Lumi', 'Buling',
+];
+
+const ALL_5STAR_WEAPONS = [
+  'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
+  'Stringmaster', 'Ages of Harvest', 'Blazing Brilliance', 'Rime-Draped Sprouts', "Verity's Handle",
+  'Stellar Symphony', 'Red Spring', 'The Last Dance', 'Tragicomedy', 'Luminous Hymn', 
+  'Unflickering Valor', 'Whispers of Sirens', 'Blazing Justice', 'Woodland Aria',
+  "Defier's Thorn", 'Wildfire Mark', 'Lethean Elegy', 'Thunderflare Dominion', "Moongazer's Sigil",
+  'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
+  'Everbright Polestar', "Daybreaker's Spine",
+  'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
+];
+
+const ALL_4STAR_WEAPONS = [
+  'Overture', "Ocean's Gift", "Bloodpact's Pledge", 'Waltz in Masquerade', 'Legend of Drunken Hero',
+  'Romance in Farewell', 'Fables of Wisdom', 'Meditations on Mercy', 'Call of the Abyss',
+  'Somnoire Anchor', 'Fusion Accretion', 'Celestial Spiral', 'Relativistic Jet', 'Endless Collapse',
+  'Waning Redshift', 'Beguiling Melody', 'Lumingloss', 'Lunar Cutter', 'Commando of Conviction',
+  'Scale Slasher', 'Jinzhou Keeper', 'Comet Flare', 'Augment', 'Variation', 'Hollow Mirage',
+  'Stonard', 'Amity Accord', 'Marcato', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Cadenza',
+  'Discord', 'Helios Cleaver', 'Dauntless Evernight',
+  'Autumntrace', 'Solar Flame', 'Feather Edge',
+];
+
+const ALL_3STAR_WEAPONS = [
+  'Training Sword', 'Tyro Sword', 'Guardian Sword', 'Sword of Voyager', 'Originite: Type II',
+  'Sword of Night', 'Sword#18', 'Training Rectifier', 'Tyro Rectifier', 'Guardian Rectifier',
+  'Rectifier of Voyager', 'Rectifier of Night', 'Originite: Type V', 'Rectifier#25',
+  'Training Gauntlets', 'Tyro Gauntlets', 'Guardian Gauntlets', 'Gauntlets of Voyager',
+  'Gauntlets of Night', 'Originite: Type III', 'Gauntlets#21', 'Training Pistols', 'Tyro Pistols',
+  'Guardian Pistols', 'Pistols of Voyager', 'Pistols of Night', 'Originite: Type IV', 'Pistols#26',
+  'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I',
+  'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
+];
+
+// Weapon release order for sorting (based on first banner appearance)
+const WEAPON_RELEASE_ORDER = [
+  // 1.0 - Standard 5★ + Launch
+  'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
+  'Stringmaster',
+  // 1.1
+  'Ages of Harvest', 'Blazing Brilliance',
+  // 1.2
+  'Rime-Draped Sprouts', "Verity's Handle",
+  // 1.3
+  'Stellar Symphony',
+  // 1.4
+  'Red Spring',
+  // 2.0
+  'The Last Dance', 'Tragicomedy',
+  // 2.1
+  'Luminous Hymn', 'Unflickering Valor',
+  // 2.2
+  'Whispers of Sirens',
+  // 2.3
+  'Blazing Justice', 'Woodland Aria',
+  // 2.4
+  "Defier's Thorn", 'Wildfire Mark',
+  // 2.5
+  'Lethean Elegy',
+  // 2.6
+  'Thunderflare Dominion', "Moongazer's Sigil",
+  // 2.7
+  'Lux & Umbra', 'Emerald Sentence',
+  // 2.8
+  'Kumokiri',
+  // 3.0
+  'Spectrum Blaster', 'Starfield Calibrator',
+  // 3.1
+  'Everbright Polestar', "Daybreaker's Spine",
+];
+
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   // Check app lockout first
@@ -2505,25 +3374,8 @@ function WhisperingWishesInner() {
     return false;
   });
   
-  // Show lockout screen
-  if (isLockedOut) {
-    const remaining = Math.max(0, isLockedOut - Date.now());
-    const hours = Math.floor(remaining / (1000 * 60 * 60));
-    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-    return (
-      <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-xl font-bold text-red-400 mb-2">Access Temporarily Restricted</h1>
-          <p className="text-gray-400 text-sm mb-4">Too many failed attempts.</p>
-          <p className="text-gray-500 text-xs">Try again in {hours}h {minutes}m</p>
-        </div>
-      </div>
-    );
-  }
-  
   const toast = useToast();
-  const [state, dispatch] = useReducer(reducer, null, loadState);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -2537,6 +3389,8 @@ function WhisperingWishesInner() {
   const [adminTapCount, setAdminTapCount] = useState(0);
   const adminTapTimerRef = useRef(null);
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
+  // Banner ends at server-specific time (e.g., 11:59 local for each server)
+  const bannerEndDate = useMemo(() => getServerAdjustedEnd(activeBanners.endDate, state.server), [activeBanners.endDate, state.server]);
   const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', or 'visuals'
   const [adminMiniMode, setAdminMiniMode] = useState(false);
   
@@ -2576,23 +3430,14 @@ function WhisperingWishesInner() {
       const saved = localStorage.getItem(VISUAL_SETTINGS_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        setVisualSettings(prev => ({
-          ...prev,
-          fadePosition: parsed.fadePosition ?? prev.fadePosition,
-          fadeIntensity: parsed.fadeIntensity ?? prev.fadeIntensity,
-          pictureOpacity: parsed.pictureOpacity ?? prev.pictureOpacity,
-          standardFadePosition: parsed.standardFadePosition ?? prev.standardFadePosition,
-          standardFadeIntensity: parsed.standardFadeIntensity ?? prev.standardFadeIntensity,
-          standardOpacity: parsed.standardOpacity ?? prev.standardOpacity,
-          shadowFadePosition: parsed.shadowFadePosition ?? prev.shadowFadePosition,
-          shadowFadeIntensity: parsed.shadowFadeIntensity ?? prev.shadowFadeIntensity,
-          shadowOpacity: parsed.shadowOpacity ?? prev.shadowOpacity,
-          collectionFadePosition: parsed.collectionFadePosition ?? prev.collectionFadePosition,
-          collectionFadeIntensity: parsed.collectionFadeIntensity ?? prev.collectionFadeIntensity,
-          collectionOpacity: parsed.collectionOpacity ?? prev.collectionOpacity,
-          collectionFadeDirection: parsed.collectionFadeDirection ?? prev.collectionFadeDirection,
-          collectionZoom: parsed.collectionZoom ?? prev.collectionZoom
-        }));
+        // Merge saved values over defaults - only known keys
+        setVisualSettings(prev => {
+          const merged = { ...prev };
+          for (const key of Object.keys(prev)) {
+            if (parsed[key] !== undefined && parsed[key] !== null) merged[key] = parsed[key];
+          }
+          return merged;
+        });
       }
     } catch {}
   }, []);
@@ -2631,9 +3476,10 @@ function WhisperingWishesInner() {
   };
   
   // Get framing for an image (returns defaults if not set)
-  const getImageFraming = (key) => {
-    return imageFraming[key] || { x: 0, y: 0, zoom: 100 };
-  };
+  const defaultFraming = useMemo(() => ({ x: 0, y: 0, zoom: 100 }), []);
+  const getImageFraming = useCallback((key) => {
+    return imageFraming[key] || defaultFraming;
+  }, [imageFraming, defaultFraming]);
   
   // Update framing for currently editing image
   const updateEditingFraming = (changes) => {
@@ -2670,311 +3516,59 @@ function WhisperingWishesInner() {
   };
   
   // Default character/weapon images (built-in)
-  const DEFAULT_COLLECTION_IMAGES = {
-    // 5★ Resonators (by release order)
-    'Jiyan': 'https://i.ibb.co/00C5Sqj/Jiyan-Full-Sprite.webp',
-    'Calcharo': 'https://i.ibb.co/tM11rtrL/Calcharo-Full-Sprite.webp',
-    'Encore': 'https://i.ibb.co/rGZBZ4HV/Encore-Full-Sprite.webp',
-    'Jianxin': 'https://i.ibb.co/ZDxNGkj/Jianxin-Full-Sprite.webp',
-    'Lingyang': 'https://i.ibb.co/gbjK568S/Lingyang-Full-Sprite.webp',
-    'Verina': 'https://i.ibb.co/mV6qxb5h/Verina-Full-Sprite.webp',
-    'Yinlin': 'https://i.ibb.co/S79CF3R3/Yinlin-Full-Sprite.webp',
-    'Changli': 'https://i.ibb.co/mr6BwwP0/Changli-Full-Sprite.webp',
-    'Jinhsi': 'https://i.ibb.co/fG9sf6cc/Jinhsi-Full-Sprite.webp',
-    'Shorekeeper': 'https://i.ibb.co/svHmQWYB/Shorekeeper-Full-Sprite.webp',
-    'Camellya': 'https://i.ibb.co/6Rg494Ld/Camellya-Full-Sprite.webp',
-    'Xiangli Yao': 'https://i.ibb.co/27jds05D/Xiangli-Yao-Full-Sprite.webp',
-    'Zhezhi': 'https://i.ibb.co/0VpsfXkK/Zhezhi-Full-Sprite.webp',
-    'Carlotta': 'https://i.ibb.co/bRBx4Ymx/Carlotta-Full-Sprite.webp',
-    'Roccia': 'https://i.ibb.co/b548Jj2Y/Roccia-Full-Sprite.webp',
-    'Phoebe': 'https://i.ibb.co/6SdsQ7M/Phoebe-Full-Sprite.webp',
-    'Brant': 'https://i.ibb.co/CDg2QgM/Brant-Full-Sprite.webp',
-    'Cantarella': 'https://i.ibb.co/jZs3MWvV/Cantarella-Full-Sprite.webp',
-    'Zani': 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp',
-    'Ciaccona': 'https://i.ibb.co/N6dKs9zy/Ciaccona-Full-Sprite.webp',
-    'Cartethyia': 'https://i.ibb.co/QFR5LVdc/Cartethyia-Full-Sprite.webp',
-    'Lupa': 'https://i.ibb.co/8n4kck2M/Lupa-Full-Sprite.webp',
-    'Augusta': 'https://i.ibb.co/V0TXt2Ty/Augusta-Full-Sprite.webp',
-    'Galbrena': 'https://i.ibb.co/rK0yjSr6/Galbrena-Full-Sprite.webp',
-    'Iuno': 'https://i.ibb.co/5WmnWgtG/Iuno-Full-Sprite.webp',
-    'Luuk Herssen': 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp',
-    'Aemeath': 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp',
-    'Mornye': 'https://i.ibb.co/QvyQ33zv/Mornye-Full-Sprite.webp',
-    'Rover': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
-    'Chisa': 'https://i.ibb.co/x8zB67Vh/Chisa-Full-Sprite.webp',
-    'Phrolova': 'https://i.ibb.co/Nd0HbF4v/Phrolova-Full-Sprite.webp',
-    'Qiuyuan': 'https://i.ibb.co/JRvP5fnx/Qiuyuan-Full-Sprite.webp',
-    'Lynae': 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp',
-    // 4★ Resonators
-    'Aalto': 'https://i.ibb.co/v81v3Hq/Aalto-Full-Sprite.webp',
-    'Baizhi': 'https://i.ibb.co/4Ztm8DCG/Baizhi-Full-Sprite.webp',
-    'Chixia': 'https://i.ibb.co/r2SVVmPv/Chixia-Full-Sprite.webp',
-    'Danjin': 'https://i.ibb.co/CK3XQCpM/Danjin-Full-Sprite.webp',
-    'Yangyang': 'https://i.ibb.co/kV1hBqbv/Yangyang-Full-Sprite.webp',
-    'Sanhua': 'https://i.ibb.co/yc0XTQVB/Sanhua-Full-Sprite.webp',
-    'Taoqi': 'https://i.ibb.co/qM2r22RR/Taoqi-Full-Sprite.webp',
-    'Yuanwu': 'https://i.ibb.co/p6ZQJkcC/Yuanwu-Full-Sprite.webp',
-    'Mortefi': 'https://i.ibb.co/xq8hFgpc/Mortefi-Full-Sprite.webp',
-    'Youhu': 'https://i.ibb.co/Zzc0PMWX/Youhu-Full-Sprite.webp',
-    'Lumi': 'https://i.ibb.co/rRy25xmt/Lumi-Full-Sprite.webp',
-    'Buling': 'https://i.ibb.co/fGZBRCWp/Buling-Full-Sprite.webp',
-    // 5★ Weapons
-    'Verdant Summit': 'https://i.ibb.co/5gjYYrHj/Verdant-Summit.webp',
-    'Emerald of Genesis': 'https://i.ibb.co/HTj8Lp7N/Weapon-Emerald-of-Genesis.webp',
-    'Static Mist': 'https://i.ibb.co/cKVzgTJ4/Weapon-Static-Mist.webp',
-    'Abyss Surges': 'https://i.ibb.co/FLVx6xwt/Abyss-Surges.webp',
-    'Lustrous Razor': 'https://i.ibb.co/mCmkydWk/Weapon-Lustrous-Razor.webp',
-    'Cosmic Ripples': 'https://i.ibb.co/XfGk2sVG/Cosmic-Ripples.webp',
-    'Stringmaster': 'https://i.ibb.co/wNGPxnmH/Stringmaster.webp',
-    'Ages of Harvest': 'https://i.ibb.co/5gGBmzX8/Ages-of-Harvest.webp',
-    'Blazing Brilliance': 'https://i.ibb.co/gLJbgvwg/Blazing-Brilliance.webp',
-    'Rime-Draped Sprouts': 'https://i.ibb.co/NgNshLYy/Rime-Draped-Sprouts.png',
-    "Verity's Handle": 'https://i.ibb.co/k2hFQfx8/Veritys-Handle.webp',
-    'Stellar Symphony': 'https://i.ibb.co/yBB4Kzxs/Stellar-Symphony.webp',
-    'Red Spring': 'https://i.ibb.co/Cp3d2vg2/Red-Spring.webp',
-    'The Last Dance': 'https://i.ibb.co/zhtJWLk0/The-Last-Dance.png',
-    'Tragicomedy': 'https://i.ibb.co/4RRD3mLv/Tragicomedy.png',
-    'Luminous Hymn': 'https://i.ibb.co/prdDZjKg/Luminous-Hymn.png',
-    'Unflickering Valor': 'https://i.ibb.co/PGbr24Xp/Unflickering-Valor.png',
-    'Whispers of Sirens': 'https://i.ibb.co/YT73fDrB/Whispers-of-Sirens.webp',
-    'Blazing Justice': 'https://i.ibb.co/pjbhYHP4/Blazing-Justice.webp',
-    'Woodland Aria': 'https://i.ibb.co/8nXkG8d5/Woodland-Aria.png',
-    "Defier's Thorn": 'https://i.ibb.co/KpG4cbZJ/Defier-s-Thorn.webp',
-    'Wildfire Mark': 'https://i.ibb.co/RGqLJKGK/Wildfire-Mark.webp',
-    'Lethean Elegy': 'https://i.ibb.co/YF3fJtF7/Lethean-Elegy.webp',
-    'Thunderflare Dominion': 'https://i.ibb.co/d062x9ZH/Thunderflare-Dominion.webp',
-    "Moongazer's Sigil": 'https://i.ibb.co/zhF435g4/Moongazers-Sigil.webp',
-    'Lux & Umbra': 'https://i.ibb.co/FqVkK4Tn/Lux-Umbra.webp',
-    'Emerald Sentence': 'https://i.ibb.co/chmx3GgM/Emerald-Sentence.webp',
-    'Kumokiri': 'https://i.ibb.co/VWxG9pSF/Kumokiri.webp',
-    'Spectrum Blaster': 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp',
-    'Starfield Calibrator': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
-    'Everbright Polestar': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp', // placeholder
-    // 4★ Weapons
-    'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
-    "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
-    "Bloodpact's Pledge": 'https://i.ibb.co/V0WH0NSV/Bloodpacts-Pledge-1.webp',
-    'Waltz in Masquerade': 'https://i.ibb.co/5XXfstH6/Waltz-in-Masquerade.webp',
-    'Legend of Drunken Hero': 'https://i.ibb.co/v65yf4Bd/Legend-of-Drunken-Hero.webp',
-    'Romance in Farewell': 'https://i.ibb.co/BKc9hdKC/Romance-in-Farewell.webp',
-    'Fables of Wisdom': 'https://i.ibb.co/whCyQys6/Fables-of-Wisdom.webp',
-    'Meditations on Mercy': 'https://i.ibb.co/pBBrZM0b/Meditations-on-Mercy.webp',
-    'Call of the Abyss': 'https://i.ibb.co/Z92nYnW/Call-of-the-Abyss.webp',
-    'Somnoire Anchor': 'https://i.ibb.co/N2cJ3qc7/Somnoire-Anchor.webp',
-    'Fusion Accretion': 'https://i.ibb.co/xSMHxtL0/Fusion-Accretion.webp',
-    'Celestial Spiral': 'https://i.ibb.co/ZRT3sr7g/Celestial-Spiral.webp',
-    'Relativistic Jet': 'https://i.ibb.co/nM5rjSNw/Relativistic-Jet.webp',
-    'Endless Collapse': 'https://i.ibb.co/gZtL25jN/Endless-Collapse.webp',
-    'Waning Redshift': 'https://i.ibb.co/27NQSk1n/Waning-Redshif.webp',
-    'Beguiling Melody': 'https://i.ibb.co/wZXxz8MC/Beguiling-Melody.webp',
-    'Boson Astrolabe': 'https://i.ibb.co/RkcX6zQK/Boson-Astrolabe-1.webp',
-    'Pulsation Bracer': 'https://i.ibb.co/k2kVPjmf/Pulsation-Bracer.webp',
-    'Phasic Homogenizer': 'https://i.ibb.co/RpKTNDq1/Phasic-Homogenizer.webp',
-    'Laser Shearer': 'https://i.ibb.co/hFqKgw50/Laser-Shearer.webp',
-    'Radiance Cleaver': 'https://i.ibb.co/WNxbm8DB/Radiance-Cleaver.webp',
-    'Aureate Zenith': 'https://i.ibb.co/0j0M2Bwm/Aureate-Zenith.webp',
-    'Radiant Dawn': 'https://i.ibb.co/RkGdFttY/Radiant-Dawn.webp',
-    'Aether Strike': 'https://i.ibb.co/5XJNVHgT/Aether-Strike.webp',
-    'Solar Flame': 'https://i.ibb.co/YMsf52M/Solar-Flame.webp',
-    'Feather Edge': 'https://i.ibb.co/fzG8JpvG/Feather-Edge.webp',
-    // Swords
-    'Training Sword': 'https://i.ibb.co/23XjFZHD/Training-Sword.webp',
-    'Tyro Sword': 'https://i.ibb.co/Qv4nYxF1/Tyro-Sword.webp',
-    'Guardian Sword': 'https://i.ibb.co/8LSknxRS/Guardian-Sword.webp',
-    'Sword of Voyager': 'https://i.ibb.co/TBCX9fFQ/Sword-of-Voyager.webp',
-    'Originite: Type II': 'https://i.ibb.co/j9M4LLSf/Originite-Type-II.webp',
-    'Sword of Night': 'https://i.ibb.co/csfb39w/Sword-of-Night.webp',
-    'Commando of Conviction': 'https://i.ibb.co/RkTdFgNG/Commando-of-Conviction.webp',
-    'Scale Slasher': 'https://i.ibb.co/Ng7QmthQ/Scale-Slasher.webp',
-    'Sword#18': 'https://i.ibb.co/wrWDmBcp/Sword18.webp',
-    'Lunar Cutter': 'https://i.ibb.co/tpSR66cR/Lunar-Cutter.webp',
-    'Lumingloss': 'https://i.ibb.co/dsJQhndm/Lumingloss.webp',
-    // Rectifiers
-    'Rectifier of Voyager': 'https://i.ibb.co/KjNy5C91/Rectifier-of-Voyager.webp',
-    'Rectifier of Night': 'https://i.ibb.co/ksQ3Zswf/Rectifier-of-Night.webp',
-    'Variation': 'https://i.ibb.co/5WZP5mKD/Variation.webp',
-    'Tyro Rectifier': 'https://i.ibb.co/Df8dXQRf/Tyro-Rectifier.webp',
-    'Training Rectifier': 'https://i.ibb.co/Y7rT1gJw/Training-Rectifier.webp',
-    'Originite: Type V': 'https://i.ibb.co/9H5GNPVw/Originite-Type-V.webp',
-    'Rectifier#25': 'https://i.ibb.co/B9T1f3f/Rectifier25.webp',
-    'Jinzhou Keeper': 'https://i.ibb.co/WvvYvwx0/Jinzhou-Keeper.webp',
-    'Comet Flare': 'https://i.ibb.co/xKTWZWzs/Comet-Flare.webp',
-    'Guardian Rectifier': 'https://i.ibb.co/Wp618BH3/Guardian-Rectifier.webp',
-    'Augment': 'https://i.ibb.co/Mk44Y5W4/Augment.webp',
-    // Broadblades
-    'Broadblade of Night': 'https://i.ibb.co/m5kvbBJH/Broadblade-of-Night.webp',
-    'Discord': 'https://i.ibb.co/p6L36v9V/Discord.webp',
-    // Gauntlets
-    'Tyro Gauntlets': 'https://i.ibb.co/NgZL4WFR/Tyro-Gauntlets.webp',
-    'Training Gauntlets': 'https://i.ibb.co/b50Nnc2w/Training-Gauntlets.webp',
-    'Hollow Mirage': 'https://i.ibb.co/JjP9sjJm/Hollow-Mirage.webp',
-    'Stonard': 'https://i.ibb.co/yn59hz0y/Stonard.webp',
-    'Gauntlets#21': 'https://i.ibb.co/XxFKztMj/Gauntlets21-D.webp',
-    'Amity Accord': 'https://i.ibb.co/tpxP1SM8/Amity-Accord.webp',
-    'Marcato': 'https://i.ibb.co/hFX9MK4t/Marcato.webp',
-    'Gauntlets of Night': 'https://i.ibb.co/dFF1GyP/Gauntlets-of-Night.webp',
-    'Guardian Gauntlets': 'https://i.ibb.co/k2vd2xW0/Guardian-Gauntlets.webp',
-    'Originite: Type III': 'https://i.ibb.co/bg4GXQbS/Originite-Type-III.webp',
-    'Gauntlets of Voyager': 'https://i.ibb.co/tVq4bTZ/Gauntlets-of-Voyager.webp',
-    // Pistols
-    'Pistols#26': 'https://i.ibb.co/FLJ14pcp/Pistols26.webp',
-    'Originite: Type IV': 'https://i.ibb.co/wZ2tjtwj/Originite-Type-IV.webp',
-    'Pistols of Voyager': 'https://i.ibb.co/pjWf99Qb/Pistols-of-Voyager.webp',
-    'Novaburst': 'https://i.ibb.co/NdnmMWcp/Novaburst.webp',
-    'Thunderbolt': 'https://i.ibb.co/99rqCmM0/Thunderbolt.webp',
-    'Undying Flame': 'https://i.ibb.co/XfM9BJVX/Undying-Flame.webp',
-    'Guardian Pistols': 'https://i.ibb.co/m59fPcVF/Guardian-Pistols.webp',
-    'Tyro Pistols': 'https://i.ibb.co/Ldtk0QGN/Tyro-Pistols.webp',
-    'Training Pistols': 'https://i.ibb.co/PsZhn5d0/Training-Pistols.webp',
-    'Pistols of Night': 'https://i.ibb.co/zhf1hxsG/Pistols-of-Night.webp',
-    'Cadenza': 'https://i.ibb.co/bRHfTQh1/Cadenza.webp',
-    // Missing weapons
-    'Originite: Type I': 'https://i.ibb.co/398KxX0f/Weapon-Originite-Type-I.webp',
-    'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
-    'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
-    'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
-  };
-  
-  // Release order for sorting (based on first banner appearance)
-  const RELEASE_ORDER = [
-    // 1.0 - Launch (May 2024)
-    'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
-    'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 'Mortefi',
-    // 1.1
-    'Jinhsi', 'Changli', 'Youhu',
-    // 1.2
-    'Zhezhi', 'Xiangli Yao',
-    // 1.3
-    'Shorekeeper', 'Lumi',
-    // 1.4
-    'Camellya',
-    // 2.0
-    'Carlotta', 'Roccia',
-    // 2.1
-    'Phoebe', 'Brant',
-    // 2.2
-    'Cantarella', 'Buling',
-    // 2.3
-    'Zani', 'Ciaccona',
-    // 2.4
-    'Cartethyia', 'Lupa',
-    // 2.5
-    'Phrolova',
-    // 2.6
-    'Augusta', 'Iuno',
-    // 2.7
-    'Galbrena', 'Qiuyuan',
-    // 2.8
-    'Chisa',
-    // 3.0
-    'Lynae', 'Mornye',
-    // 3.1 (unreleased)
-    'Luuk Herssen', 'Aemeath',
-  ];
-  
-  // All known character names (for filtering weapons vs characters)
-  const ALL_CHARACTERS = new Set([
-    // 5★
-    'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
-    'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
-    'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
-    'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
-    'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
-    // 4★
-    'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
-    'Mortefi', 'Youhu', 'Lumi', 'Buling',
-  ]);
-  
-  // Complete lists for Collection display (show all, grey out unpossessed)
-  const ALL_5STAR_RESONATORS = [
-    'Jiyan', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina', 'Yinlin',
-    'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
-    'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
-    'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
-    'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
-  ];
-  
-  const ALL_4STAR_RESONATORS = [
-    'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
-    'Mortefi', 'Youhu', 'Lumi', 'Buling',
-  ];
-  
-  const ALL_5STAR_WEAPONS = [
-    'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
-    'Stringmaster', 'Ages of Harvest', 'Blazing Brilliance', 'Rime-Draped Sprouts', "Verity's Handle",
-    'Stellar Symphony', 'Red Spring', 'The Last Dance', 'Tragicomedy', 'Luminous Hymn', 
-    'Unflickering Valor', 'Whispers of Sirens', 'Blazing Justice', 'Woodland Aria',
-    "Defier's Thorn", 'Wildfire Mark', 'Lethean Elegy', 'Thunderflare Dominion', "Moongazer's Sigil",
-    'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
-    'Everbright Polestar', "Daybreaker's Spine",
-    'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
-  ];
-  
-  const ALL_4STAR_WEAPONS = [
-    'Overture', "Ocean's Gift", "Bloodpact's Pledge", 'Waltz in Masquerade', 'Legend of Drunken Hero',
-    'Romance in Farewell', 'Fables of Wisdom', 'Meditations on Mercy', 'Call of the Abyss',
-    'Somnoire Anchor', 'Fusion Accretion', 'Celestial Spiral', 'Relativistic Jet', 'Endless Collapse',
-    'Waning Redshift', 'Beguiling Melody', 'Lumingloss', 'Lunar Cutter', 'Commando of Conviction',
-    'Scale Slasher', 'Jinzhou Keeper', 'Comet Flare', 'Augment', 'Variation', 'Hollow Mirage',
-    'Stonard', 'Amity Accord', 'Marcato', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Cadenza',
-    'Discord', 'Helios Cleaver', 'Dauntless Evernight',
-    'Autumntrace', 'Solar Flame', 'Feather Edge',
-  ];
-  
-  const ALL_3STAR_WEAPONS = [
-    'Training Sword', 'Tyro Sword', 'Guardian Sword', 'Sword of Voyager', 'Originite: Type II',
-    'Sword of Night', 'Sword#18', 'Training Rectifier', 'Tyro Rectifier', 'Guardian Rectifier',
-    'Rectifier of Voyager', 'Rectifier of Night', 'Originite: Type V', 'Rectifier#25',
-    'Training Gauntlets', 'Tyro Gauntlets', 'Guardian Gauntlets', 'Gauntlets of Voyager',
-    'Gauntlets of Night', 'Originite: Type III', 'Gauntlets#21', 'Training Pistols', 'Tyro Pistols',
-    'Guardian Pistols', 'Pistols of Voyager', 'Pistols of Night', 'Originite: Type IV', 'Pistols#26',
-    'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I',
-    'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
-  ];
-  
-  // Weapon release order for sorting (based on first banner appearance)
-  const WEAPON_RELEASE_ORDER = [
-    // 1.0 - Standard 5★ + Launch
-    'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
-    'Stringmaster',
-    // 1.1
-    'Ages of Harvest', 'Blazing Brilliance',
-    // 1.2
-    'Rime-Draped Sprouts', "Verity's Handle",
-    // 1.3
-    'Stellar Symphony',
-    // 1.4
-    'Red Spring',
-    // 2.0
-    'The Last Dance', 'Tragicomedy',
-    // 2.1
-    'Luminous Hymn', 'Unflickering Valor',
-    // 2.2
-    'Whispers of Sirens',
-    // 2.3
-    'Blazing Justice', 'Woodland Aria',
-    // 2.4
-    "Defier's Thorn", 'Wildfire Mark',
-    // 2.5
-    'Lethean Elegy',
-    // 2.6
-    'Thunderflare Dominion', "Moongazer's Sigil",
-    // 2.7
-    'Lux & Umbra', 'Emerald Sentence',
-    // 2.8
-    'Kumokiri',
-    // 3.0
-    'Spectrum Blaster', 'Starfield Calibrator',
-    // 3.1
-    'Everbright Polestar', "Daybreaker's Spine",
-  ];
   
   // Collection sort state
   const [collectionSort, setCollectionSort] = useState('copies'); // 'copies' or 'release'
   
-  // Cache-busting for images (refreshes on mount or manual refresh)
-  const [imageCacheBuster, setImageCacheBuster] = useState(() => Date.now());
-  const refreshImages = useCallback(() => setImageCacheBuster(Date.now()), []);
+  // Collection filter states
+  const [collectionSearch, setCollectionSearch] = useState('');
+  const [collectionElementFilter, setCollectionElementFilter] = useState('all'); // 'all', 'Aero', 'Glacio', etc.
+  const [collectionWeaponFilter, setCollectionWeaponFilter] = useState('all'); // 'all', 'Broadblade', 'Sword', etc.
+  const [collectionOwnershipFilter, setCollectionOwnershipFilter] = useState('all'); // 'all', 'owned', 'missing'
+  
+  // Filter function for collection items
+  const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
+    return items.filter(name => {
+      // Search filter
+      if (collectionSearch && !name.toLowerCase().includes(collectionSearch.toLowerCase())) {
+        return false;
+      }
+      
+      // Ownership filter
+      const count = countsObj[name] || 0;
+      if (collectionOwnershipFilter === 'owned' && count === 0) return false;
+      if (collectionOwnershipFilter === 'missing' && count > 0) return false;
+      
+      // Element/Weapon type filter (only for characters with data)
+      if (isCharacter) {
+        const data = CHARACTER_DATA[name];
+        if (data) {
+          if (collectionElementFilter !== 'all' && data.element !== collectionElementFilter) return false;
+          if (collectionWeaponFilter !== 'all' && data.weapon !== collectionWeaponFilter) return false;
+        }
+      } else {
+        const data = WEAPON_DATA[name];
+        if (data && collectionWeaponFilter !== 'all' && data.type !== collectionWeaponFilter) return false;
+      }
+      
+      return true;
+    });
+  }, [collectionSearch, collectionElementFilter, collectionWeaponFilter, collectionOwnershipFilter]);
+  
+  // Clear all filters
+  const clearCollectionFilters = useCallback(() => {
+    setCollectionSearch('');
+    setCollectionElementFilter('all');
+    setCollectionWeaponFilter('all');
+    setCollectionOwnershipFilter('all');
+  }, []);
+  
+  // Check if any filter is active
+  const hasActiveFilters = collectionSearch || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionOwnershipFilter !== 'all';
+  
+  // Cache-busting for images (version-based, only refreshes on manual refresh)
+  const [imageCacheBuster, setImageCacheBuster] = useState('296');
+  const refreshImages = useCallback(() => setImageCacheBuster(String(Date.now())), []);
   
   // Helper to add cache-busting to image URL
   const withCacheBuster = useCallback((url) => {
@@ -2994,7 +3588,7 @@ function WhisperingWishesInner() {
   });
   
   // Merged collection images (custom overrides defaults)
-  const collectionImages = { ...DEFAULT_COLLECTION_IMAGES, ...customCollectionImages };
+  const collectionImages = useMemo(() => ({ ...DEFAULT_COLLECTION_IMAGES, ...customCollectionImages }), [customCollectionImages]);
   
   const saveCollectionImages = (newImages) => {
     setCustomCollectionImages(newImages);
@@ -3065,7 +3659,7 @@ function WhisperingWishesInner() {
   const tabNavRef = useRef(null);
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0 });
   }, []);
   const [trackerCategory, setTrackerCategory] = useState('character');
   const [importPlatform, setImportPlatform] = useState(null);
@@ -3155,7 +3749,64 @@ function WhisperingWishesInner() {
     return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? 90 : 0);
   }, [state.planner.dailyAstrite, state.planner.luniteActive]);
 
+  // Plan tab pre-computed values
+  const planData = useMemo(() => {
+    const currentAstrite = +state.calc.astrite || 0;
+    const bannerEnd = new Date(bannerEndDate);
+    const now = new Date();
+    const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
+    const incomeByEnd = dailyIncome * daysLeft;
+    const totalAstriteByEnd = currentAstrite + incomeByEnd;
+    const convenesByEnd = Math.floor(totalAstriteByEnd / 160) + (
+      state.calc.bannerCategory === 'featured'
+        ? (state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
+        : (+state.calc.lustrous || 0)
+    );
+    const isFeatured = state.calc.bannerCategory === 'featured';
+    const isChar = state.calc.selectedBanner === 'char';
+    const isWeap = state.calc.selectedBanner === 'weap';
+    let goalCopies = 1;
+    let goalBannerLabel = '';
+    if (isFeatured) {
+      if (isChar) { goalCopies = Math.max(1, state.calc.charCopies || 1); goalBannerLabel = 'Featured Resonator'; }
+      else if (isWeap) { goalCopies = Math.max(1, state.calc.weapCopies || 1); goalBannerLabel = 'Featured Weapon'; }
+      else { goalCopies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); goalBannerLabel = 'Featured Both'; }
+    } else {
+      if (isChar) { goalCopies = Math.max(1, state.calc.stdCharCopies || 1); goalBannerLabel = 'Standard Resonator'; }
+      else if (isWeap) { goalCopies = Math.max(1, state.calc.stdWeapCopies || 1); goalBannerLabel = 'Standard Weapon'; }
+      else { goalCopies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); goalBannerLabel = 'Standard Both'; }
+    }
+    const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
+    const targetAstrite = targetPulls * 160;
+    const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
+    const goalDaysNeeded = dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity;
+    const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress };
+  }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
+
+  // Pre-compute all collection data in one pass
   // File import handler
+  // P4: Memoized collection data - avoids recomputing 5x per render
+  const collectionData = useMemo(() => {
+    const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
+    const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+    const countItems = (history, rarity, isChar) => {
+      const items = history.filter(p => p.rarity === rarity && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name)));
+      return items.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
+    };
+    const sortItems = (items, sort, releaseOrder = RELEASE_ORDER) => {
+      const arr = [...items];
+      if (sort === 'copies') { arr.sort((a, b) => b[1] - a[1]); }
+      else { arr.sort((a, b) => { const aIdx = releaseOrder.indexOf(a[0]); const bIdx = releaseOrder.indexOf(b[0]); return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx); }); }
+      return arr;
+    };
+    return {
+      chars5Counts: countItems(charHistory, 5, true), chars4Counts: countItems(charHistory, 4, true),
+      weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
+      weaps3Counts: countItems(weapHistory, 3, false), sortItems
+    };
+  }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history]);
+
   const handleFileImport = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -3167,7 +3818,7 @@ function WhisperingWishesInner() {
         
         // List of known standard 5★ characters (for 50/50 calculation)
         // These are the characters you can lose 50/50 to on featured banner
-        const standard5Stars = ['Verina', 'Jianxin', 'Lingyang', 'Calcharo', 'Encore', 'Rover'];
+        const standard5Stars = ['Verina', 'Jianxin', 'Lingyang', 'Calcharo', 'Encore'];
         
         const convert = (arr, type) => {
           const filtered = arr.filter(p => {
@@ -3253,7 +3904,7 @@ function WhisperingWishesInner() {
 
   // Export data
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: '2.9', state };
+    const data = { timestamp: new Date().toISOString(), version: '2.9.6', state };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -3348,8 +3999,27 @@ function WhisperingWishesInner() {
     }
   }, [adminPassword, storedAdminPass, toast]);
 
+  // Show lockout screen if locked out
+  if (isLockedOut) {
+    const remaining = Math.max(0, isLockedOut - Date.now());
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    return (
+      <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-xl font-bold text-red-400 mb-2">Access Temporarily Restricted</h1>
+          <p className="text-gray-400 text-sm mb-4">Too many failed attempts.</p>
+          <p className="text-gray-500 text-xs">Try again in {hours}h {minutes}m</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="bg-neutral-950">
+      <BackgroundGlow />
+      <TriangleMirrorWave />
       <KuroStyles />
       
       {/* Onboarding Modal */}
@@ -3360,10 +4030,10 @@ function WhisperingWishesInner() {
         <div className="max-w-lg mx-auto px-3">
           <div className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50" />
-                <div className="relative w-9 h-9 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Sparkles size={18} className="text-black" />
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" />
+                <div className="relative w-9 h-9 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <Sparkles size={16} className="text-black" />
                 </div>
               </div>
               <div>
@@ -3372,15 +4042,15 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
                 <Download size={14} />
               </button>
             </div>
           </div>
-          <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1">
             <div className="tab-indicator" />
             <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef}><Sparkles size={16} /> Tracker</TabButton>
             <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef}><Calendar size={16} /> Events</TabButton>
@@ -3393,7 +4063,7 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-3 py-3 space-y-3">
+      <main className="max-w-lg mx-auto px-3 pt-3 pb-4 space-y-3 w-full">
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -3401,27 +4071,25 @@ function WhisperingWishesInner() {
             <TabBackground id="tracker" glowColor="gold" />
 
             {/* Category Tabs */}
-            <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-              <div className="kuro-card-inner">
-                <div className="kuro-body">
-                  <div className="flex gap-2">
-                    {[['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']].map(([key, label, color]) => (
-                      <button key={key} onClick={() => setTrackerCategory(key)} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
-                        {key === 'character' ? <Sparkles size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+            <Card>
+              <CardBody>
+                <div className="flex gap-2">
+                  {[['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']].map(([key, label, color]) => (
+                    <button key={key} onClick={() => setTrackerCategory(key)} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
+                      {key === 'character' ? <Sparkles size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
+                      {label}
+                    </button>
+                  ))}
                 </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
 
             <div className="flex items-center justify-between text-gray-300 text-[10px]" style={{position: 'relative', zIndex: 5}}>
               <span>v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
-              <CountdownTimer endDate={activeBanners.endDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
+              <CountdownTimer endDate={bannerEndDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
             </div>
             
-            {new Date() > new Date(activeBanners.endDate) && (
+            {new Date() > new Date(bannerEndDate) && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center" style={{position: 'relative', zIndex: 5}}>
                 <p className="text-yellow-400 text-xs font-medium">Banner period ended</p>
                 <p className="text-gray-400 text-[10px] mt-1">New banners are now live in-game. App update coming soon!</p>
@@ -3449,13 +4117,14 @@ function WhisperingWishesInner() {
                   const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
                   const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
                   return (
-                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '180px', position: 'relative', zIndex: 5 }}>
+                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
                       {activeBanners.standardCharBannerImage && (
                         <img 
                           src={activeBanners.standardCharBannerImage}
                           alt="Tidal Chorus"
                           className="absolute inset-0 w-full h-full object-cover"
                           style={{ 
+                            zIndex: 1,
                             opacity: stdOpacity,
                             maskImage: stdMask,
                             WebkitMaskImage: stdMask
@@ -3472,18 +4141,26 @@ function WhisperingWishesInner() {
                             <span className="text-gray-200 text-[10px]">Standard Resonator</span>
                           </div>
                           <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
-                          <div className="flex gap-1 flex-wrap">
-                            {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded">{n}</span>)}
+                          <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
+                            {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{n}</span>)}
                           </div>
                         </div>
                         {state.profile.standardChar?.history?.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-white/10">
-                            <div className="flex items-center justify-around">
-                              <PityRing value={state.profile.standardChar.pity5} max={80} size={52} strokeWidth={4} color="#22d3ee" glowColor="rgba(34,211,238,0.4)" label="5★ Pity" />
-                              <PityRing value={state.profile.standardChar.pity4} max={10} size={38} strokeWidth={3} color="#a855f7" glowColor="rgba(168,85,247,0.4)" label="4★ Pity" />
-                              <div className="text-center">
-                                <div className="text-white font-bold text-lg drop-shadow">{state.profile.standardChar.history.length}</div>
-                                <div className="text-gray-300 text-[8px]">Convenes</div>
+                          <div className="pt-2.5 mt-1 border-t border-white/15" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', margin: '0 -12px -12px', padding: '10px 12px 12px', borderRadius: '0 0 12px 12px'}}>
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 flex items-center gap-3">
+                                <div className="text-center">
+                                  <div className="text-cyan-400 font-bold text-sm">{state.profile.standardChar.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
+                                  <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-purple-400 font-bold text-sm">{state.profile.standardChar.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
+                                  <div className="text-gray-300 text-[8px] mt-0.5">4★ Pity</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-sm">{state.profile.standardChar.history.length}</div>
+                                  <div className="text-gray-300 text-[8px] mt-0.5">Convenes</div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -3498,13 +4175,14 @@ function WhisperingWishesInner() {
                   const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
                   const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
                   return (
-                    <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ height: '180px', position: 'relative', zIndex: 5 }}>
+                    <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
                       {activeBanners.standardWeapBannerImage && (
                         <img 
                           src={activeBanners.standardWeapBannerImage}
                           alt="Winter Brume"
                           className="absolute inset-0 w-full h-full object-cover"
                           style={{ 
+                            zIndex: 1,
                             opacity: stdOpacity,
                             maskImage: stdMask,
                             WebkitMaskImage: stdMask
@@ -3521,18 +4199,26 @@ function WhisperingWishesInner() {
                             <span className="text-gray-200 text-[10px]">Standard Weapon</span>
                           </div>
                           <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
-                          <div className="flex gap-1 flex-wrap">
-                            {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded">{w.name}</span>)}
+                          <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
+                            {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{w.name}</span>)}
                           </div>
                         </div>
                         {state.profile.standardWeap?.history?.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-white/10">
-                            <div className="flex items-center justify-around">
-                              <PityRing value={state.profile.standardWeap.pity5} max={80} size={52} strokeWidth={4} color="#c084fc" glowColor="rgba(192,132,252,0.4)" label="5★ Pity" />
-                              <PityRing value={state.profile.standardWeap.pity4} max={10} size={38} strokeWidth={3} color="#a855f7" glowColor="rgba(168,85,247,0.4)" label="4★ Pity" />
-                              <div className="text-center">
-                                <div className="text-white font-bold text-lg drop-shadow">{state.profile.standardWeap.history.length}</div>
-                                <div className="text-gray-300 text-[8px]">Convenes</div>
+                          <div className="pt-2.5 mt-1 border-t border-white/15" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', margin: '0 -12px -12px', padding: '10px 12px 12px', borderRadius: '0 0 12px 12px'}}>
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 flex items-center gap-3">
+                                <div className="text-center">
+                                  <div className="text-purple-400 font-bold text-sm">{state.profile.standardWeap.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
+                                  <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-purple-400 font-bold text-sm">{state.profile.standardWeap.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
+                                  <div className="text-gray-300 text-[8px] mt-0.5">4★ Pity</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-sm">{state.profile.standardWeap.history.length}</div>
+                                  <div className="text-gray-300 text-[8px] mt-0.5">Convenes</div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -3577,7 +4263,7 @@ function WhisperingWishesInner() {
             <TabBackground id="events" />
 
             <div className="flex items-center justify-between" style={{position: 'relative', zIndex: 5}}>
-              <h2 className="text-white font-semibold text-sm">Time-Gated Content</h2>
+              <h2 className="text-white font-bold text-sm">Time-Gated Content</h2>
               <span className="text-gray-300 text-[10px]">Server: {state.server}</span>
             </div>
             <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center justify-between" style={{position: 'relative', zIndex: 5}}>
@@ -3587,10 +4273,12 @@ function WhisperingWishesInner() {
             <div className="space-y-2">
               {Object.entries(EVENTS).map(([key, ev]) => {
                 const eventImageMap = {
+                  tacticalHologram: activeBanners.tacticalHologramImage,
                   whimperingWastes: activeBanners.whimperingWastesImage,
                   doubledPawns: activeBanners.doubledPawnsImage,
                   towerOfAdversity: activeBanners.towerOfAdversityImage,
                   illusiveRealm: activeBanners.illusiveRealmImage,
+                  weeklyBoss: activeBanners.weeklyBossImage,
                   dailyReset: activeBanners.dailyResetImage,
                 };
                 return <EventCard key={key} event={{...ev, key}} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} visualSettings={visualSettings} />;
@@ -3606,15 +4294,9 @@ function WhisperingWishesInner() {
             <TabBackground id="calc" />
             
             {/* Banner Selection */}
-            <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-              <div className="kuro-card-inner">
-                <div className="kuro-header">
-                  <h3>Banner Selection</h3>
-                  <button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-[10px] flex items-center gap-1 hover:text-purple-300 transition-colors">
-                    <BookmarkPlus size={12} />Save
-                  </button>
-                </div>
-                <div className="kuro-body space-y-4">
+            <Card>
+              <CardHeader action={<button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-[10px] flex items-center gap-1 hover:text-purple-300 transition-colors"><BookmarkPlus size={12} />Save</button>}>Banner Selection</CardHeader>
+              <CardBody className="space-y-3">
                   {/* Featured Banners */}
                   <div className="space-y-2">
                     <div className="kuro-label">Featured Convene</div>
@@ -3653,24 +4335,20 @@ function WhisperingWishesInner() {
                       {state.calc.charGuaranteed ? '✓ Guaranteed' : '50/50 Active'}
                     </button>
                   )}
-                </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
 
             {/* Pity Counter */}
-            <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-              <div className="kuro-card-inner">
-                <div className="kuro-header">
-                  <h3>Pity Counter</h3>
-                </div>
-                <div className="kuro-body space-y-4">
+            <Card>
+              <CardHeader>Pity Counter</CardHeader>
+              <CardBody className="space-y-3">
                   {/* Featured Character Pity */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.charPity} max={80} color="gold" softPity={66} />
+                        <PityRing value={state.calc.charPity} max={80} size={56} strokeWidth={4} color="#fbbf24" glowColor="rgba(251,191,36,0.4)" />
                         <div className="flex-1">
-                          <div style={{color: '#fde047'}} className="text-sm font-medium mb-1">Featured Resonator</div>
+                          <div className="text-sm font-medium mb-1 text-yellow-300">Featured Resonator</div>
                           <input type="range" min="0" max="80" value={state.calc.charPity} onChange={e => { const v = +e.target.value; setCalc('charPity', v); }} className="kuro-slider" />
                           {state.calc.charPity >= 66 && <p className="text-[10px] kuro-soft-pity" style={{color: '#fb923c'}}><Sparkles size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
@@ -3681,11 +4359,11 @@ function WhisperingWishesInner() {
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#fde047'}}>5★ Target:</span>
+                          <span className="text-yellow-300">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.charCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('charCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#c4b5fd'}}>4★ Target:</span>
+                          <span className="text-violet-300">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.char4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('char4StarCopies', Math.max(0, Math.min(21, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -3696,9 +4374,9 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.weapPity} max={80} color="pink" softPity={66} />
+                        <PityRing value={state.calc.weapPity} max={80} size={56} strokeWidth={4} color="#f472b6" glowColor="rgba(244,114,182,0.4)" />
                         <div className="flex-1">
-                          <div style={{color: '#f472b6'}} className="text-sm font-medium mb-1">Featured Weapon</div>
+                          <div className="text-sm font-medium mb-1 text-pink-400">Featured Weapon</div>
                           <input type="range" min="0" max="80" value={state.calc.weapPity} onChange={e => setCalc('weapPity', +e.target.value)} className="kuro-slider pink" />
                           {state.calc.weapPity >= 66 && <p className="text-[10px] kuro-soft-pity-pink" style={{color: '#f9a8d4'}}><Swords size={10} className="inline mr-1" style={{color: '#f9a8d4', filter: 'drop-shadow(0 0 4px rgba(244,114,182,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
@@ -3709,11 +4387,11 @@ function WhisperingWishesInner() {
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#f472b6'}}>5★ Target:</span>
+                          <span className="text-pink-400">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.weapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('weapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#c4b5fd'}}>4★ Target:</span>
+                          <span className="text-violet-300">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.weap4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('weap4StarCopies', Math.max(0, Math.min(15, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -3724,9 +4402,9 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.stdCharPity} max={80} color="cyan" softPity={66} />
+                        <PityRing value={state.calc.stdCharPity} max={80} size={56} strokeWidth={4} color="#22d3ee" glowColor="rgba(34,211,238,0.4)" />
                         <div className="flex-1">
-                          <div style={{color: '#7dd3fc'}} className="text-sm font-medium mb-1">Standard Resonator</div>
+                          <div className="text-sm font-medium mb-1 text-sky-300">Standard Resonator</div>
                           <input type="range" min="0" max="80" value={state.calc.stdCharPity} onChange={e => setCalc('stdCharPity', +e.target.value)} className="kuro-slider cyan" />
                           {state.calc.stdCharPity >= 66 && <p className="text-[10px] kuro-soft-pity-cyan" style={{color: '#67e8f9'}}><Star size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
@@ -3737,11 +4415,11 @@ function WhisperingWishesInner() {
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#7dd3fc'}}>5★ Target:</span>
+                          <span className="text-sky-300">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdCharCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdCharCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#c4b5fd'}}>4★ Target:</span>
+                          <span className="text-violet-300">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdChar4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('stdChar4StarCopies', Math.max(0, Math.min(21, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -3752,9 +4430,9 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.stdWeapPity} max={80} color="cyan" softPity={66} />
+                        <PityRing value={state.calc.stdWeapPity} max={80} size={56} strokeWidth={4} color="#22d3ee" glowColor="rgba(34,211,238,0.4)" />
                         <div className="flex-1">
-                          <div style={{color: '#7dd3fc'}} className="text-sm font-medium mb-1">Standard Weapon</div>
+                          <div className="text-sm font-medium mb-1 text-sky-300">Standard Weapon</div>
                           <input type="range" min="0" max="80" value={state.calc.stdWeapPity} onChange={e => setCalc('stdWeapPity', +e.target.value)} className="kuro-slider cyan" />
                           {state.calc.stdWeapPity >= 66 && <p className="text-[10px] kuro-soft-pity-cyan" style={{color: '#67e8f9'}}><Sword size={10} className="inline mr-1 rotate-45" style={{filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
@@ -3765,27 +4443,23 @@ function WhisperingWishesInner() {
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#7dd3fc'}}>5★ Target:</span>
+                          <span className="text-sky-300">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdWeapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdWeapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span style={{color: '#c4b5fd'}}>4★ Target:</span>
+                          <span className="text-violet-300">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdWeap4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('stdWeap4StarCopies', Math.max(0, Math.min(15, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
 
             {/* Resources */}
-            <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-              <div className="kuro-card-inner">
-                <div className="kuro-header">
-                  <h3>Resources</h3>
-                </div>
-                <div className="kuro-body space-y-3">
+            <Card>
+              <CardHeader>Resources</CardHeader>
+              <CardBody className="space-y-3">
                   <div>
                     <label className="kuro-label mb-1.5 block">Astrite</label>
                     <input type="number" value={state.calc.astrite} onChange={e => setCalc('astrite', e.target.value)} className="kuro-input" placeholder="0" />
@@ -3803,7 +4477,7 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-3">
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label style={{color: '#fde047'}} className="text-xs mb-1.5 block font-medium">Radiant Tides</label>
+                          <label className="text-xs mb-1.5 block font-medium text-yellow-300">Radiant Tides</label>
                           <input type="number" value={state.calc.radiant} onChange={e => setCalc('radiant', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
@@ -3814,11 +4488,11 @@ function WhisperingWishesInner() {
                       )}
                       {(state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label style={{color: '#fde047'}} className="text-xs mb-1.5 block font-medium">Forging Tides</label>
+                          <label className="text-xs mb-1.5 block font-medium text-pink-400">Forging Tides</label>
                           <input type="number" value={state.calc.forging} onChange={e => setCalc('forging', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -3829,7 +4503,7 @@ function WhisperingWishesInner() {
                   {/* Standard banner resources */}
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
-                      <label style={{color: '#7dd3fc'}} className="text-xs mb-1.5 block font-medium">Lustrous Tides</label>
+                      <label className="text-xs mb-1.5 block font-medium text-sky-300">Lustrous Tides</label>
                       <input type="number" value={state.calc.lustrous} onChange={e => setCalc('lustrous', e.target.value)} className="kuro-input" placeholder="0" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
@@ -3844,36 +4518,32 @@ function WhisperingWishesInner() {
                     <div className="flex justify-around items-center">
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div style={{color: '#fde047'}} className="kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.radiant || 0)}</div>
+                          <div className="text-yellow-300 kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.radiant || 0)}</div>
                           <div className="text-gray-200 text-[10px]">Resonator Convenes</div>
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div style={{color: '#fde047'}} className="kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.forging || 0)}</div>
+                          <div className="text-yellow-300 kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.forging || 0)}</div>
                           <div className="text-gray-200 text-[10px]">Weapon Convenes</div>
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (
                         <div className="text-center">
-                          <div style={{color: '#7dd3fc'}} className="kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.lustrous || 0)}</div>
+                          <div className="text-sky-300 kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.lustrous || 0)}</div>
                           <div className="text-gray-200 text-[10px]">Standard Convenes</div>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
 
             {/* Results Cards */}
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
-              <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-                <div className="kuro-card-inner">
-                  <div className="kuro-header">
-                    <h3>Featured Resonator Results</h3>
-                  </div>
-                  <div className="kuro-body space-y-3">
+              <Card>
+                <CardHeader>Featured Resonator Results</CardHeader>
+                <CardBody className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-gold">
                         <div className={`text-3xl kuro-number ${parseFloat(charStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(charStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(charStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{charStats.successRate}%</div>
@@ -3885,21 +4555,17 @@ function WhisperingWishesInner() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="kuro-stat kuro-stat-purple"><span style={{color: '#c4b5fd'}} className="kuro-number">~{charStats.fourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div></div>
-                      <div className="kuro-stat kuro-stat-purple"><span style={{color: '#c4b5fd'}} className="kuro-number">~{charStats.featuredFourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">Featured 4★</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{charStats.fourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{charStats.featuredFourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">Featured 4★</div></div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                </CardBody>
+              </Card>
             )}
 
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
-              <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-                <div className="kuro-card-inner">
-                  <div className="kuro-header">
-                    <h3>Featured Weapon Results</h3>
-                  </div>
-                  <div className="kuro-body space-y-3">
+              <Card>
+                <CardHeader>Featured Weapon Results</CardHeader>
+                <CardBody className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-gold">
                         <div className={`text-3xl kuro-number ${parseFloat(weapStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(weapStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(weapStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{weapStats.successRate}%</div>
@@ -3911,21 +4577,17 @@ function WhisperingWishesInner() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="kuro-stat kuro-stat-purple"><span style={{color: '#c4b5fd'}} className="kuro-number">~{weapStats.fourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div></div>
-                      <div className="kuro-stat kuro-stat-purple"><span style={{color: '#c4b5fd'}} className="kuro-number">~{weapStats.featuredFourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">Featured 4★</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{weapStats.fourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{weapStats.featuredFourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">Featured 4★</div></div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                </CardBody>
+              </Card>
             )}
 
             {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
-              <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-                <div className="kuro-card-inner">
-                  <div className="kuro-header">
-                    <h3>Standard Resonator Results</h3>
-                  </div>
-                  <div className="kuro-body space-y-3">
+              <Card>
+                <CardHeader>Standard Resonator Results</CardHeader>
+                <CardBody className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className={`text-3xl kuro-number ${parseFloat(stdCharStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stdCharStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stdCharStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stdCharStats.successRate}%</div>
@@ -3936,19 +4598,15 @@ function WhisperingWishesInner() {
                         <div className="text-gray-200 text-[10px] mt-1">Worst Case Deficit</div>
                       </div>
                     </div>
-                    <div className="kuro-stat kuro-stat-purple text-xs"><span style={{color: '#c4b5fd'}} className="kuro-number">~{stdCharStats.fourStarCount}</span> <span className="text-gray-200">4★ Expected</span></div>
-                  </div>
-                </div>
-              </div>
+                    <div className="kuro-stat kuro-stat-purple text-xs"><span className="text-violet-300 kuro-number">~{stdCharStats.fourStarCount}</span> <span className="text-gray-200">4★ Expected</span></div>
+                </CardBody>
+              </Card>
             )}
 
             {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
-              <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-                <div className="kuro-card-inner">
-                  <div className="kuro-header">
-                    <h3>Standard Weapon Results</h3>
-                  </div>
-                  <div className="kuro-body space-y-3">
+              <Card>
+                <CardHeader>Standard Weapon Results</CardHeader>
+                <CardBody className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className={`text-3xl kuro-number ${parseFloat(stdWeapStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stdWeapStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stdWeapStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stdWeapStats.successRate}%</div>
@@ -3959,27 +4617,23 @@ function WhisperingWishesInner() {
                         <div className="text-gray-200 text-[10px] mt-1">Worst Case Deficit</div>
                       </div>
                     </div>
-                    <div className="kuro-stat kuro-stat-purple text-xs"><span style={{color: '#c4b5fd'}} className="kuro-number">~{stdWeapStats.fourStarCount}</span> <span className="text-gray-200">4★ Expected</span></div>
-                  </div>
-                </div>
-              </div>
+                    <div className="kuro-stat kuro-stat-purple text-xs"><span className="text-violet-300 kuro-number">~{stdWeapStats.fourStarCount}</span> <span className="text-gray-200">4★ Expected</span></div>
+                </CardBody>
+              </Card>
             )}
 
             {/* Combined Analysis */}
             {state.calc.selectedBanner === 'both' && combined && (
-              <div className="kuro-card" style={{backgroundColor: 'rgba(12, 16, 24, 0.28)', backdropFilter: 'blur(8px)'}}>
-                <div className="kuro-card-inner">
-                  <div className="kuro-header">
-                    <h3>Combined Analysis</h3>
-                  </div>
-                  <div className="kuro-body">
+              <Card>
+                <CardHeader>Combined Analysis</CardHeader>
+                <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">
                         <div className="text-2xl kuro-number text-emerald-400">{combined.both}%</div>
                         <div className="text-gray-200 text-[10px] mt-1">Get Both</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gold">
-                        <div style={{color: '#fde047'}} className="text-2xl kuro-number">{combined.atLeastOne}%</div>
+                        <div className="text-yellow-300 text-2xl kuro-number">{combined.atLeastOne}%</div>
                         <div className="text-gray-200 text-[10px] mt-1">At Least One</div>
                       </div>
                     </div>
@@ -3988,9 +4642,11 @@ function WhisperingWishesInner() {
                       <div className="kuro-stat"><span style={{color: state.calc.bannerCategory === 'featured' ? '#fde047' : '#7dd3fc'}} className="kuro-number">{combined.weapOnly}%</span><div className="text-gray-200 mt-0.5">Weap Only</div></div>
                       <div className="kuro-stat"><span className="text-red-400 kuro-number">{combined.neither}%</span><div className="text-gray-200 mt-0.5">Neither</div></div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                    <div className="mt-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded text-center">
+                      <p className="text-yellow-400/80 text-[9px]">⚠ Astrite is shared — probabilities assume separate resources for each banner. Actual odds may be lower if splitting Astrite between both.</p>
+                    </div>
+                </CardBody>
+              </Card>
             )}
           </div>
         )}
@@ -4000,7 +4656,6 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="planner" />
 
-            {/* Daily Income Setup - Clean summary only */}
             <Card>
               <CardHeader>Daily Income</CardHeader>
               <CardBody className="space-y-3">
@@ -4008,8 +4663,6 @@ function WhisperingWishesInner() {
                   <label className="kuro-label">Base Daily Astrite (Commissions, etc.)</label>
                   <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: +e.target.value || 0 })} className="kuro-input w-full" />
                 </div>
-                
-                {/* Active Subscriptions Summary - Read-only display */}
                 {state.planner.luniteActive && (
                   <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -4019,7 +4672,6 @@ function WhisperingWishesInner() {
                     <span className="text-emerald-400 text-xs">+90/day</span>
                   </div>
                 )}
-
                 <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <div className="flex justify-between items-center">
                     <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
@@ -4030,18 +4682,13 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Add Purchases */}
             <Card>
-              <div className="kuro-header cursor-pointer" onClick={() => setShowIncomePanel(!showIncomePanel)}>
-                <h3>Add Purchases</h3>
-                <ChevronDown size={14} className={`text-gray-200 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />
+              <div className="cursor-pointer" onClick={() => setShowIncomePanel(!showIncomePanel)}>
+                <CardHeader action={<ChevronDown size={14} className={`text-gray-200 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
               </div>
               {showIncomePanel && (
-                <CardBody className="space-y-1.5 max-h-80 overflow-y-auto">
-                  {/* Subscriptions */}
+                <CardBody className="space-y-1.5">
                   <div className="kuro-label mb-1">Subscriptions</div>
-                  
-                  {/* Lunite Monthly Toggle */}
                   <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
@@ -4056,8 +4703,6 @@ function WhisperingWishesInner() {
                       <span className="text-emerald-400 text-xs">$4.99/mo</span>
                     </div>
                   </button>
-
-                  {/* Weekly Subscription - One-time purchase */}
                   <button onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: 1600, radiant: 0, lustrous: 0, label: 'Weekly Subscription', price: 9.99 } })} className="kuro-btn w-full text-left">
                     <div className="flex items-center justify-between w-full">
                       <div>
@@ -4067,7 +4712,6 @@ function WhisperingWishesInner() {
                       <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">$9.99</span><Plus size={12} className="text-yellow-400" /></div>
                     </div>
                   </button>
-
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
                     <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
@@ -4079,8 +4723,6 @@ function WhisperingWishesInner() {
                       </div>
                     </button>
                   ))}
-
-                  {/* Direct Top-Ups */}
                   <div className="kuro-label mt-3 mb-1">Direct Top-Ups</div>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
                     <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
@@ -4094,10 +4736,9 @@ function WhisperingWishesInner() {
               )}
             </Card>
 
-            {/* Added Income - Show if any purchases made */}
             {state.planner.addedIncome.length > 0 && (
               <Card>
-                <CardHeader action={<button onClick={() => state.planner.addedIncome.forEach(i => dispatch({ type: 'REMOVE_INCOME', id: i.id }))} className="text-red-400 text-[10px]">Clear All</button>}>Added Purchases</CardHeader>
+                <CardHeader action={<button onClick={() => state.planner.addedIncome.forEach(i => dispatch({ type: 'REMOVE_INCOME', id: i.id }))} className="text-red-400 text-[9px] hover:text-red-300">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-1">
                   {state.planner.addedIncome.map(i => (
                     <div key={i.id} className="flex items-center justify-between p-1.5 bg-white/5 rounded text-xs">
@@ -4118,61 +4759,45 @@ function WhisperingWishesInner() {
               </Card>
             )}
 
-            {/* By Banner End */}
-            {(() => {
-              const bannerEnd = new Date(activeBanners.endDate);
-              const now = new Date();
-              const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
-              if (daysLeft <= 0) return null;
-              const incomeByEnd = dailyIncome * daysLeft;
-              const currentAstrite = +state.calc.astrite || 0;
-              const totalAstrite = currentAstrite + incomeByEnd;
-              const convenesByEnd = Math.floor(totalAstrite / 160) + (+state.calc.radiant || 0);
-              return (
-                <Card>
-                  <CardHeader>By Banner End</CardHeader>
-                  <CardBody>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-300 text-[10px]">v{activeBanners.version} P{activeBanners.phase} ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''}</span>
-                      <CountdownTimer endDate={activeBanners.endDate} compact />
+            {planData.daysLeft > 0 && (
+              <Card>
+                <CardHeader>By Banner End</CardHeader>
+                <CardBody className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300 text-[10px]">v{activeBanners.version} P{activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
+                    <CountdownTimer endDate={bannerEndDate} compact />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="kuro-stat p-2.5 text-center">
+                      <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd}</div>
+                      <div className="text-gray-300 text-[9px]">Total Convenes</div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="p-2.5 text-center rounded-lg border border-yellow-500/20" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)'}}>
-                        <div className="text-yellow-400 kuro-number text-xl">{convenesByEnd}</div>
-                        <div className="text-gray-300 text-[9px]">Total Convenes</div>
-                      </div>
-                      <div className="p-2.5 text-center rounded-lg border border-white/10" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)'}}>
-                        <div className="text-white kuro-number text-xl">{Math.floor(incomeByEnd / 160)}</div>
-                        <div className="text-gray-300 text-[9px]">Earned Convenes</div>
-                      </div>
-                      <div className="p-2.5 text-center rounded-lg border border-white/10" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)'}}>
-                        <div className="text-white kuro-number text-xl">{totalAstrite.toLocaleString()}</div>
-                        <div className="text-gray-300 text-[9px]">Total Astrite</div>
-                      </div>
+                    <div className="kuro-stat p-2.5 text-center">
+                      <div className="text-white kuro-number text-xl">{Math.floor(planData.incomeByEnd / 160)}</div>
+                      <div className="text-gray-300 text-[9px]">Earned Convenes</div>
                     </div>
-                    <div className="text-gray-500 text-[9px] text-center mt-2">Current {currentAstrite.toLocaleString()} + {incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {daysLeft}d)</div>
-                  </CardBody>
-                </Card>
-              );
-            })()}
+                    <div className="kuro-stat p-2.5 text-center">
+                      <div className="text-white kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
+                      <div className="text-gray-300 text-[9px]">Total Astrite</div>
+                    </div>
+                  </div>
+                  <div className="text-gray-500 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+                </CardBody>
+              </Card>
+            )}
 
-            {/* Income Projections */}
             <Card>
               <CardHeader>Income Projections</CardHeader>
               <CardBody>
                 <div className="grid grid-cols-3 gap-2">
-                  {[7, 30, 90].map(days => {
-                    const income = dailyIncome * days;
-                    const convenes = Math.floor(income / 160);
-                    return (
-                      <div key={days} className="kuro-stat p-3 text-center">
-                        <div className="text-gray-200 text-[10px] mb-1">{days} Days</div>
-                        <div className="text-2xl kuro-number text-yellow-400">{convenes}</div>
-                        <div className="text-gray-300 text-[9px]">Convenes</div>
-                        <div className="text-gray-400 text-[9px]">{income.toLocaleString()} Ast</div>
-                      </div>
-                    );
-                  })}
+                  {[7, 30, 90].map(days => (
+                    <div key={days} className="kuro-stat p-3 text-center">
+                      <div className="text-gray-200 text-[10px] mb-1">{days} Days</div>
+                      <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / 160)}</div>
+                      <div className="text-gray-300 text-[9px]">Convenes</div>
+                      <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Ast</div>
+                    </div>
+                  ))}
                 </div>
                 {state.planner.luniteActive && (
                   <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
@@ -4183,11 +4808,9 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Goal Settings - Uses Calculator values for banner/copies */}
             <Card>
               <CardHeader>Goal Progress</CardHeader>
               <CardBody className="space-y-3">
-                {/* Base Convenes and Modifier */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="kuro-label">Base Convenes (per copy)</label>
@@ -4206,77 +4829,41 @@ function WhisperingWishesInner() {
                     </select>
                   </div>
                 </div>
-
-                {/* Goal Progress - Uses Calculator banner/copies */}
-                {(() => {
-                  const currentAstrite = +state.calc.astrite || 0;
-                  const isFeatured = state.calc.bannerCategory === 'featured';
-                  const isChar = state.calc.selectedBanner === 'char';
-                  const isWeap = state.calc.selectedBanner === 'weap';
-                  const isBoth = state.calc.selectedBanner === 'both';
-                  
-                  // Get copies from Calculator - minimum 1
-                  let copies = 1;
-                  let bannerLabel = '';
-                  if (isFeatured) {
-                    if (isChar) { copies = Math.max(1, state.calc.charCopies || 1); bannerLabel = 'Featured Resonator'; }
-                    else if (isWeap) { copies = Math.max(1, state.calc.weapCopies || 1); bannerLabel = 'Featured Weapon'; }
-                    else { copies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); bannerLabel = 'Featured Both'; }
-                  } else {
-                    if (isChar) { copies = Math.max(1, state.calc.stdCharCopies || 1); bannerLabel = 'Standard Resonator'; }
-                    else if (isWeap) { copies = Math.max(1, state.calc.stdWeapCopies || 1); bannerLabel = 'Standard Weapon'; }
-                    else { copies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); bannerLabel = 'Standard Both'; }
-                  }
-                  
-                  const targetPulls = Math.max(1, state.planner.goalPulls * copies * state.planner.goalModifier);
-                  const targetAstrite = targetPulls * 160;
-                  const needed = Math.max(0, targetAstrite - currentAstrite);
-                  const daysNeeded = dailyIncome > 0 ? Math.ceil(needed / dailyIncome) : Infinity;
-                  const progress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
-                  
-                  return (
-                    <>
-                      <div className="p-2 bg-white/5 rounded text-[10px] text-gray-200 text-center">
-                        Using Calculator: <span className={isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{bannerLabel}</span> × <span className="text-gray-100">{copies}</span> copies
-                      </div>
-                      
-                      <div className="p-3 bg-white/5 rounded-lg">
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-200">Target</span>
-                          <span className="text-gray-100 font-bold">{targetPulls} Convenes ({targetAstrite.toLocaleString()} Ast)</span>
-                        </div>
-                        <div className="h-3 bg-neutral-800 rounded-full overflow-hidden">
-                          <div className={`h-full transition-all ${isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${progress}%` }} />
-                        </div>
-                        <div className="flex justify-between text-[10px] mt-1">
-                          <span className="text-gray-300">{Math.floor(currentAstrite / 160)} / {targetPulls} Convenes</span>
-                          <span className="text-gray-100">{progress.toFixed(1)}%</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="p-3 text-center rounded-lg border border-white/15" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)', backdropFilter: 'blur(8px)'}}>
-                          <div className="text-yellow-400 kuro-number text-xl">{needed.toLocaleString()}</div>
-                          <div className="text-gray-200 text-[10px]">Astrite Needed</div>
-                        </div>
-                        <div className="p-3 text-center rounded-lg border border-white/15" style={{backgroundColor: 'rgba(12, 16, 24, 0.5)', backdropFilter: 'blur(8px)'}}>
-                          <div className="text-yellow-400 kuro-number text-xl">{daysNeeded === Infinity ? '∞' : daysNeeded}</div>
-                          <div className="text-gray-200 text-[10px]">Days to Goal</div>
-                        </div>
-                      </div>
-                      {daysNeeded !== Infinity && daysNeeded > 0 && (
-                        <div className="p-2 bg-white/5 rounded text-center">
-                          <span className="text-gray-400 text-[10px]">Estimated: </span>
-                          <span className="text-yellow-400 text-xs font-medium">{new Date(Date.now() + daysNeeded * 86400000).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                <div className="p-2 bg-white/5 rounded text-[10px] text-gray-200 text-center">
+                  Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
+                </div>
+                <div className="p-3 bg-white/5 rounded-lg">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-200">Target</span>
+                    <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Ast)</span>
+                  </div>
+                  <div className="h-3 bg-neutral-800 rounded-full overflow-hidden">
+                    <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
+                  </div>
+                  <div className="flex justify-between text-[10px] mt-1">
+                    <span className="text-gray-300">{Math.floor(planData.currentAstrite / 160)} / {planData.targetPulls} Convenes</span>
+                    <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="kuro-stat p-3 text-center">
+                    <div className="text-yellow-400 kuro-number text-xl">{planData.goalNeeded.toLocaleString()}</div>
+                    <div className="text-gray-200 text-[10px]">Astrite Needed</div>
+                  </div>
+                  <div className="kuro-stat p-3 text-center">
+                    <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded}</div>
+                    <div className="text-gray-200 text-[10px]">Days to Goal</div>
+                  </div>
+                </div>
+                {planData.goalDaysNeeded !== Infinity && planData.goalDaysNeeded > 0 && (
+                  <div className="p-2 bg-white/5 rounded text-center">
+                    <span className="text-gray-400 text-[10px]">Estimated: </span>
+                    <span className="text-yellow-400 text-xs font-medium">{new Date(Date.now() + planData.goalDaysNeeded * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                )}
               </CardBody>
             </Card>
 
-            {/* Bookmarks */}
             {state.bookmarks.length > 0 && (
               <Card>
                 <CardHeader>Saved States</CardHeader>
@@ -4288,8 +4875,8 @@ function WhisperingWishesInner() {
                         <div className="text-gray-300 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} className="px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded text-[10px] hover:bg-cyan-500/30">Load</button>
-                        <button onClick={() => dispatch({ type: 'DELETE_BOOKMARK', id: b.id })} className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-[10px] hover:bg-red-500/30">×</button>
+                        <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30">Load</button>
+                        <button onClick={() => dispatch({ type: 'DELETE_BOOKMARK', id: b.id })} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30">×</button>
                       </div>
                     </div>
                   ))}
@@ -4323,7 +4910,7 @@ function WhisperingWishesInner() {
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
                             <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color}}>{luckRating.tier}</div>
-                            <div className="text-lg font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`}}>{luckRating.rating}</div>
+                            <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 space-y-2">
@@ -4430,14 +5017,14 @@ function WhisperingWishesInner() {
                                 <button 
                                   onClick={() => setChartOffset(Math.max(0, clampedOffset - Math.floor(maxVisible / 2)))}
                                   disabled={!canGoLeft}
-                                  className={`p-1 rounded ${canGoLeft ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-600'}`}
+                                  className={`p-1 rounded ${canGoLeft ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
                                 >
                                   <ChevronDown size={14} className="rotate-90" />
                                 </button>
                                 <button 
                                   onClick={() => setChartOffset(Math.min(maxOffset, clampedOffset + Math.floor(maxVisible / 2)))}
                                   disabled={!canGoRight}
-                                  className={`p-1 rounded ${canGoRight ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-600'}`}
+                                  className={`p-1 rounded ${canGoRight ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
                                 >
                                   <ChevronDown size={14} className="-rotate-90" />
                                 </button>
@@ -4496,40 +5083,52 @@ function WhisperingWishesInner() {
                   <CardHeader>Pity Distribution</CardHeader>
                   <CardBody>
                     {(() => {
-                      const allPulls = [...(state.profile.featured?.history || []), ...(state.profile.weapon?.history || [])];
+                      const allPulls = [...(state.profile.featured?.history || []), ...(state.profile.weapon?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.standardWeap?.history || [])];
                       const fiveStars = allPulls.filter(p => p.rarity === 5 && p.pity > 0);
                       if (fiveStars.length < 2) return <p className="text-gray-500 text-xs text-center py-4">Need more 5★ data</p>;
                       
                       const ranges = [
-                        { range: '1-40', label: 'Early', min: 1, max: 40, color: '34,197,94' },
-                        { range: '41-60', label: 'Normal', min: 41, max: 60, color: '59,130,246' },
-                        { range: '61-70', label: 'Soft Pity', min: 61, max: 70, color: '245,158,11' },
-                        { range: '71-80', label: 'Hard Pity', min: 71, max: 80, color: '239,68,68' },
+                        { range: '1-40', label: 'Early', min: 1, max: 40, color: '#22c55e', glow: 'rgba(34,197,94,0.4)' },
+                        { range: '41-60', label: 'Normal', min: 41, max: 60, color: '#3b82f6', glow: 'rgba(59,130,246,0.4)' },
+                        { range: '61-70', label: 'Soft Pity', min: 61, max: 70, color: '#f59e0b', glow: 'rgba(245,158,11,0.4)' },
+                        { range: '71-80', label: 'Hard Pity', min: 71, max: 80, color: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
                       ];
                       
                       const maxCount = Math.max(...ranges.map(r => fiveStars.filter(p => p.pity >= r.min && p.pity <= r.max).length));
                       
                       return (
                         <div className="space-y-3">
-                          {ranges.map(({range, label, min, max, color}) => {
+                          {ranges.map(({range, label, min, max, color, glow}) => {
                             const count = fiveStars.filter(p => p.pity >= min && p.pity <= max).length;
-                            const pct = maxCount > 0 ? (count / maxCount) * 50 : 0;
+                            const pct = fiveStars.length > 0 ? Math.round((count / fiveStars.length) * 100) : 0;
+                            const barWidth = maxCount > 0 ? (count / maxCount) * 50 : 0;
                             return (
                               <div key={range}>
-                                <div className="flex items-center justify-between mb-1.5">
-                                  <span className="text-gray-300 text-[11px]">{label} <span className="text-gray-500">({range})</span></span>
-                                  <span className="text-gray-300 text-[11px] font-medium">{count}</span>
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full" style={{backgroundColor: color, boxShadow: `0 0 6px ${glow}`}} />
+                                    <span className="text-gray-200 text-[10px] font-medium">{label}</span>
+                                    <span className="text-gray-500 text-[9px]">{range}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold" style={{color}}>{count}</span>
+                                    <span className="text-gray-500 text-[9px]">{pct}%</span>
+                                  </div>
                                 </div>
-                                <div className="h-3 overflow-hidden" style={{background: 'rgba(255,255,255,0.02)', borderRadius: '1px'}}>
-                                  <div className="h-full transition-all" style={{
-                                    width: `${Math.max(pct, count > 0 ? 5 : 0)}%`,
-                                    borderRadius: '1px',
-                                    background: `linear-gradient(90deg, rgba(${color},0.25) 0%, rgba(${color},0.15) 70%, rgba(${color},0.08) 100%)`
+                                <div className="h-4 rounded overflow-hidden" style={{background: 'rgba(255,255,255,0.03)'}}>
+                                  <div className="h-full rounded transition-all duration-500" style={{
+                                    width: `${Math.max(barWidth, count > 0 ? 4 : 0)}%`,
+                                    background: `linear-gradient(90deg, ${color}50, ${color}90)`,
+                                    boxShadow: count > 0 ? `inset 0 1px 0 rgba(255,255,255,0.15), 0 0 8px ${glow}` : 'none'
                                   }} />
                                 </div>
                               </div>
                             );
                           })}
+                          <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                            <span className="text-gray-400 text-[9px]">Total 5★ Pulls</span>
+                            <span className="text-white text-[10px] font-bold">{fiveStars.length}</span>
+                          </div>
                         </div>
                       );
                     })()}
@@ -4565,7 +5164,7 @@ function WhisperingWishesInner() {
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold ${pityTextColor}`}>{p.pity || '?'}</span>
-                                  {p.timestamp && <span className="text-gray-600 text-[9px]">{new Date(p.timestamp).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-500 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );
@@ -4580,18 +5179,24 @@ function WhisperingWishesInner() {
                 <Card>
                   <CardHeader>Total Obtained</CardHeader>
                   <CardBody>
+                    {(() => {
+                      const resHist = [...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.beginner?.history || []).filter(p => p.name && ALL_CHARACTERS.has(p.name))];
+                      const wepHist = [...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || []), ...(state.profile.beginner?.history || []).filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
+                      return (<>
                     <p className="text-gray-400 text-[9px] mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-1.5 mb-3">
-                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{[...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])].filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
-                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{[...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])].filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
+                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{resHist.filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
+                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{resHist.filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-[9px] mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-1.5">
-                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
-                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
-                      <div className="p-1.5 bg-blue-500/10 rounded text-center"><div className="text-blue-400 font-bold text-sm">{[...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])].filter(p => p.rarity === 3).length}</div><div className="text-gray-400 text-[8px]">3★</div></div>
+                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
+                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
+                      <div className="p-1.5 bg-blue-500/10 rounded text-center"><div className="text-blue-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 3).length}</div><div className="text-gray-400 text-[8px]">3★</div></div>
                     </div>
+                      </>);
+                    })()}
                   </CardBody>
                 </Card>
 
@@ -4646,54 +5251,133 @@ function WhisperingWishesInner() {
                 {/* Overall Collection Summary */}
                 {(() => {
                   try {
-                  const allHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || []), ...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || [])];
-                  const ownedChars5 = new Set(allHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)).size;
-                  const ownedChars4 = new Set(allHistory.filter(p => p.rarity === 4 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)).size;
-                  const ownedWeaps5 = new Set(allHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name)).size;
-                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5;
-                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length;
+                  const ownedChars5 = Object.keys(collectionData.chars5Counts).length;
+                  const ownedChars4 = Object.keys(collectionData.chars4Counts).length;
+                  const ownedWeaps5 = Object.keys(collectionData.weaps5Counts).length;
+                  const ownedWeaps4 = Object.keys(collectionData.weaps4Counts).length;
+                  const ownedWeaps3 = Object.keys(collectionData.weaps3Counts).length;
+                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5 + ownedWeaps4 + ownedWeaps3;
+                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length;
                   const pct = totalItems > 0 ? Math.round((totalOwned / totalItems) * 100) : 0;
                   return (
-                    <div className="p-3 rounded-lg border border-white/10" style={{backgroundColor: 'rgba(12, 16, 24, 0.4)', backdropFilter: 'blur(8px)', position: 'relative', zIndex: 5}}>
+                    <div className="p-3 rounded-lg border border-white/10 bg-white/5" style={{position: 'relative', zIndex: 5}}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-white text-xs font-medium">Collection Progress</span>
                         <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
                       </div>
-                      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden mb-2">
+                      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden mb-3">
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-all" style={{width: `${pct}%`}} />
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-center text-[9px]">
-                        <div><span className="text-yellow-400 font-bold">{ownedChars5}</span><span className="text-gray-500">/{ALL_5STAR_RESONATORS.length} 5★ Res</span></div>
-                        <div><span className="text-purple-400 font-bold">{ownedChars4}</span><span className="text-gray-500">/{ALL_4STAR_RESONATORS.length} 4★ Res</span></div>
-                        <div><span className="text-yellow-400 font-bold">{ownedWeaps5}</span><span className="text-gray-500">/{ALL_5STAR_WEAPONS.length} 5★ Weap</span></div>
+                      <div className="grid grid-cols-5 gap-1 text-center text-[8px]">
+                        <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
+                        <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
+                        <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
+                        <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">4★ Wep</div></div>
+                        <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">3★ Wep</div></div>
                       </div>
                     </div>
                   );
                   } catch (e) { return null; }
                 })()}
 
-                {/* Sort Toggle */}
-                <div className="flex justify-end gap-2 mb-2" style={{position: 'relative', zIndex: 10}}>
-                  <button
-                    onClick={refreshImages}
-                    className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 transition-all"
-                    title="Refresh images if they don't load"
-                  >
-                    <RefreshCcw size={10} className="inline mr-1" />Refresh
-                  </button>
-                  <span className="text-gray-500 text-[10px] self-center ml-auto">Sort:</span>
-                  <button
-                    onClick={() => setCollectionSort('copies')}
-                    className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400'}`}
-                  >
-                    Copies
-                  </button>
-                  <button
-                    onClick={() => setCollectionSort('release')}
-                    className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400'}`}
-                  >
-                    Release
-                  </button>
+                {/* Search & Filters */}
+                <div className="space-y-2" style={{position: 'relative', zIndex: 10}}>
+                  {/* Search Input */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={collectionSearch}
+                      onChange={(e) => setCollectionSearch(e.target.value)}
+                      placeholder="Search by name..."
+                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs bg-neutral-800/80 border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                    />
+                    <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    {collectionSearch && (
+                      <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Filter Row */}
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {/* Element Filter */}
+                    <select
+                      value={collectionElementFilter}
+                      onChange={(e) => setCollectionElementFilter(e.target.value)}
+                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                    >
+                      <option value="all">All Elements</option>
+                      <option value="Aero">🌀 Aero</option>
+                      <option value="Glacio">❄️ Glacio</option>
+                      <option value="Electro">⚡ Electro</option>
+                      <option value="Fusion">🔥 Fusion</option>
+                      <option value="Spectro">✨ Spectro</option>
+                      <option value="Havoc">💜 Havoc</option>
+                    </select>
+                    
+                    {/* Weapon Filter */}
+                    <select
+                      value={collectionWeaponFilter}
+                      onChange={(e) => setCollectionWeaponFilter(e.target.value)}
+                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                    >
+                      <option value="all">All Weapons</option>
+                      <option value="Broadblade">Broadblade</option>
+                      <option value="Sword">Sword</option>
+                      <option value="Pistols">Pistols</option>
+                      <option value="Gauntlets">Gauntlets</option>
+                      <option value="Rectifier">Rectifier</option>
+                    </select>
+                    
+                    {/* Ownership Filter */}
+                    <select
+                      value={collectionOwnershipFilter}
+                      onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
+                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                    >
+                      <option value="all">All Items</option>
+                      <option value="owned">✓ Owned</option>
+                      <option value="missing">✗ Missing</option>
+                    </select>
+                    
+                    {/* Clear Filters */}
+                    {hasActiveFilters && (
+                      <button
+                        onClick={clearCollectionFilters}
+                        className="px-2 py-1 rounded text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                      >
+                        Clear
+                      </button>
+                    )}
+                    
+                    <div className="flex-1" />
+                    
+                    {/* Refresh & Sort */}
+                    <button
+                      onClick={refreshImages}
+                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                      title="Refresh images if they don't load"
+                    >
+                      <RefreshCcw size={10} />
+                    </button>
+                    <button
+                      onClick={() => setCollectionSort('copies')}
+                      className={`px-2 py-1 rounded text-[9px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                      title="Sort by copies"
+                    >
+                      #
+                    </button>
+                    <button
+                      onClick={() => setCollectionSort('release')}
+                      className={`px-2 py-1 rounded text-[9px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                      title="Sort by release date"
+                    >
+                      📅
+                    </button>
+                  </div>
                 </div>
 
                 {/* 5★ Resonators */}
@@ -4703,33 +5387,15 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      // Get counts from history
-                      const allHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-                      const chars5 = allHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name));
-                      const charCounts = chars5.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      
-                      // Create list with all 5★ resonators
-                      let allChars = ALL_5STAR_RESONATORS.map(name => [name, charCounts[name] || 0]);
-                      
-                      // Sort
-                      if (collectionSort === 'copies') {
-                        allChars.sort((a, b) => b[1] - a[1]); // Most copies first, then alphabetical
-                      } else {
-                        // Release order - use RELEASE_ORDER, newest first
-                        allChars.sort((a, b) => {
-                          const aIdx = RELEASE_ORDER.indexOf(a[0]);
-                          const bIdx = RELEASE_ORDER.indexOf(b[0]);
-                          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
-                        });
-                      }
-                      
+                      const filteredNames = filterCollectionItems(ALL_5STAR_RESONATORS, collectionData.chars5Counts, true);
+                      const allChars = collectionData.sortItems(filteredNames.map(name => [name, collectionData.chars5Counts[name] || 0]), collectionSort);
                       const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
                       const collOpacity = visualSettings.collectionOpacity / 100;
                       const ownedCount = allChars.filter(([_, c]) => c > 0).length;
-                      
+                      if (allChars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
                       return (
                         <>
-                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allChars.length} owned</div>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allChars.length} shown{hasActiveFilters ? ` (${ALL_5STAR_RESONATORS.length} total)` : ''}</div>
                           <div className="grid grid-cols-3 gap-2">
                             {allChars.map(([name, count]) => {
                               const imgUrl = collectionImages[name];
@@ -4752,30 +5418,15 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      const allHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-                      const chars4 = allHistory.filter(p => p.rarity === 4 && p.name && ALL_CHARACTERS.has(p.name));
-                      const charCounts = chars4.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      
-                      let allChars = ALL_4STAR_RESONATORS.map(name => [name, charCounts[name] || 0]);
-                      
-                      if (collectionSort === 'copies') {
-                        allChars.sort((a, b) => b[1] - a[1]);
-                      } else {
-                        // Release order - newest first (consistent with 5★)
-                        allChars.sort((a, b) => {
-                          const aIdx = RELEASE_ORDER.indexOf(a[0]);
-                          const bIdx = RELEASE_ORDER.indexOf(b[0]);
-                          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
-                        });
-                      }
-                      
+                      const filteredNames = filterCollectionItems(ALL_4STAR_RESONATORS, collectionData.chars4Counts, true);
+                      const allChars = collectionData.sortItems(filteredNames.map(name => [name, collectionData.chars4Counts[name] || 0]), collectionSort);
                       const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
                       const collOpacity = visualSettings.collectionOpacity / 100;
                       const ownedCount = allChars.filter(([_, c]) => c > 0).length;
-                      
+                      if (allChars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
                       return (
                         <>
-                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allChars.length} owned</div>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allChars.length} shown{hasActiveFilters ? ` (${ALL_4STAR_RESONATORS.length} total)` : ''}</div>
                           <div className="grid grid-cols-3 gap-2">
                             {allChars.map(([name, count]) => {
                               const imgUrl = collectionImages[name];
@@ -4798,30 +5449,15 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      const allHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-                      const weaps5 = allHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name));
-                      const weapCounts = weaps5.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      
-                      let allWeaps = ALL_5STAR_WEAPONS.map(name => [name, weapCounts[name] || 0]);
-                      
-                      if (collectionSort === 'copies') {
-                        allWeaps.sort((a, b) => b[1] - a[1]);
-                      } else {
-                        // Release order - newest first (consistent with resonators)
-                        allWeaps.sort((a, b) => {
-                          const aIdx = WEAPON_RELEASE_ORDER.indexOf(a[0]);
-                          const bIdx = WEAPON_RELEASE_ORDER.indexOf(b[0]);
-                          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
-                        });
-                      }
-                      
+                      const filteredNames = filterCollectionItems(ALL_5STAR_WEAPONS, collectionData.weaps5Counts, false);
+                      const allWeaps = collectionData.sortItems(filteredNames.map(name => [name, collectionData.weaps5Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER);
                       const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
                       const collOpacity = visualSettings.collectionOpacity / 100;
                       const ownedCount = allWeaps.filter(([_, c]) => c > 0).length;
-                      
+                      if (allWeaps.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
                       return (
                         <>
-                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} owned</div>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} shown{hasActiveFilters ? ` (${ALL_5STAR_WEAPONS.length} total)` : ''}</div>
                           <div className="grid grid-cols-3 gap-2">
                             {allWeaps.map(([name, count]) => {
                               const imgUrl = collectionImages[name];
@@ -4844,22 +5480,15 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      const allHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-                      const weaps4 = allHistory.filter(p => p.rarity === 4 && p.name && !ALL_CHARACTERS.has(p.name));
-                      const weapCounts = weaps4.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      
-                      let allWeaps = ALL_4STAR_WEAPONS.map(name => [name, weapCounts[name] || 0]);
-                      
-                      // Sort by copies
-                      allWeaps.sort((a, b) => b[1] - a[1]);
-                      
+                      const filteredNames = filterCollectionItems(ALL_4STAR_WEAPONS, collectionData.weaps4Counts, false);
+                      const allWeaps = collectionData.sortItems(filteredNames.map(name => [name, collectionData.weaps4Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER);
                       const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
                       const collOpacity = visualSettings.collectionOpacity / 100;
                       const ownedCount = allWeaps.filter(([_, c]) => c > 0).length;
-                      
+                      if (allWeaps.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
                       return (
                         <>
-                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} owned</div>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} shown{hasActiveFilters ? ` (${ALL_4STAR_WEAPONS.length} total)` : ''}</div>
                           <div className="grid grid-cols-3 gap-2">
                             {allWeaps.map(([name, count]) => {
                               const imgUrl = collectionImages[name];
@@ -4882,22 +5511,15 @@ function WhisperingWishesInner() {
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      const allHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-                      const weaps3 = allHistory.filter(p => p.rarity === 3 && p.name && !ALL_CHARACTERS.has(p.name));
-                      const weapCounts = weaps3.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
-                      
-                      let allWeaps = ALL_3STAR_WEAPONS.map(name => [name, weapCounts[name] || 0]);
-                      
-                      // Sort by copies
-                      allWeaps.sort((a, b) => b[1] - a[1]);
-                      
+                      const filteredNames = filterCollectionItems(ALL_3STAR_WEAPONS, collectionData.weaps3Counts, false);
+                      const allWeaps = collectionData.sortItems(filteredNames.map(name => [name, collectionData.weaps3Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER);
                       const collMask = generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection);
                       const collOpacity = visualSettings.collectionOpacity / 100;
                       const ownedCount = allWeaps.filter(([_, c]) => c > 0).length;
-                      
+                      if (allWeaps.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
                       return (
                         <>
-                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} owned</div>
+                          <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{allWeaps.length} shown{hasActiveFilters ? ` (${ALL_3STAR_WEAPONS.length} total)` : ''}</div>
                           <div className="grid grid-cols-3 gap-2">
                             {allWeaps.map(([name, count]) => {
                               const imgUrl = collectionImages[name];
@@ -4946,7 +5568,7 @@ function WhisperingWishesInner() {
                   ))}
                 </div>
                 {importPlatform === 'pc' && (
-                  <div className="p-3 bg-white/5 border border-white/15 rounded text-[10px] text-gray-200 space-y-2">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded text-[10px] text-gray-200 space-y-2">
                     <p className="text-gray-100 font-medium text-xs">PC</p>
                     
                     <div className="flex items-start gap-2">
@@ -4971,7 +5593,7 @@ function WhisperingWishesInner() {
                   </div>
                 )}
                 {importPlatform === 'android' && (
-                  <div className="p-3 bg-white/5 border border-white/15 rounded text-[10px] text-gray-200 space-y-2">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded text-[10px] text-gray-200 space-y-2">
                     <p className="text-gray-100 font-medium text-xs">Android (11+)</p>
                     
                     <div className="flex items-start gap-2">
@@ -4996,7 +5618,7 @@ function WhisperingWishesInner() {
                   </div>
                 )}
                 {importPlatform === 'ps5' && (
-                  <div className="p-3 bg-white/5 border border-white/15 rounded text-[10px] text-gray-200 space-y-2">
+                  <div className="p-3 bg-white/5 border border-white/10 rounded text-[10px] text-gray-200 space-y-2">
                     <p className="text-gray-100 font-medium text-xs">PS5 (In-Game Browser)</p>
                     
                     <div className="flex items-start gap-2">
@@ -5044,10 +5666,10 @@ function WhisperingWishesInner() {
 
             {state.profile.importedAt && (
               <Card>
-                <CardHeader action={<button onClick={() => { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); }} className="text-red-400 text-[10px]">Clear</button>}>Import Info</CardHeader>
+                <CardHeader action={<button onClick={() => { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); }} className="text-red-400 text-[9px] hover:text-red-300">Clear</button>}>Import Info</CardHeader>
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
-                  <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString()}</span></div>
+                  <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
                   <p className="text-gray-500 text-[9px] mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
@@ -5058,7 +5680,7 @@ function WhisperingWishesInner() {
                 <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
                   <Download size={14} /> Export Backup
                 </button>
-                <button onClick={() => { if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone.')) { dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded text-xs border border-red-500/30">
+                <button onClick={() => { if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone.')) { dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
                   Reset All Data
                 </button>
               </CardBody>
@@ -5070,7 +5692,7 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 <div className="text-center">
                   <h4 className="text-gray-100 font-medium">Whispering Wishes</h4>
-                  <p className="text-gray-500 text-[10px]">Version 2.9.0</p>
+                  <p className="text-gray-500 text-[10px]">Version 2.9.27</p>
                 </div>
                 
                 <div className="text-center">
@@ -5103,11 +5725,21 @@ function WhisperingWishesInner() {
                 </div>
                 
                 <div className="space-y-2 text-[9px] text-gray-500">
+                  <p className="font-medium text-gray-400">Data Sources & Attribution</p>
+                  <p>Banner schedules, event timings, and countdown data are sourced from:</p>
+                  <ul className="list-disc list-inside ml-2 space-y-0.5">
+                    <li><a href="https://wuwatracker.com" className="text-cyan-400 hover:underline">WuWa Tracker</a> - Event timeline & pity tracking</li>
+                    <li><a href="https://wuthering-countdown.gengamer.in" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - Banner countdowns</li>
+                  </ul>
+                  <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
+                </div>
+                
+                <div className="space-y-2 text-[9px] text-gray-500">
                   <p className="font-medium text-gray-400">License</p>
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
                 
-                <p className="text-center text-[8px] text-gray-600 pt-2">© 2026 Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" className="text-gray-500 hover:text-gray-400">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                <p className="text-center text-[8px] text-gray-500 pt-2">© 2026 Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" className="text-gray-500 hover:text-gray-400">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
           </div>
@@ -5117,7 +5749,7 @@ function WhisperingWishesInner() {
 
       {/* Bookmark Modal */}
       {showBookmarkModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-all"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
@@ -5134,7 +5766,7 @@ function WhisperingWishesInner() {
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowExportModal(false)} className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-all"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
@@ -5211,9 +5843,9 @@ function WhisperingWishesInner() {
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto">
             <CardHeader className="flex items-center justify-between">
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
-              <button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="text-gray-400 hover:text-white"><X size={18} /></button>
+              <button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="text-gray-400 hover:text-white"><X size={16} /></button>
             </CardHeader>
-            <CardBody className="space-y-4">
+            <CardBody className="space-y-3">
               {!adminUnlocked ? (
                 <div className="space-y-3">
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
@@ -5242,19 +5874,19 @@ function WhisperingWishesInner() {
                   <div className="flex gap-2 border-b border-white/10 pb-2 flex-wrap">
                     <button
                       onClick={() => setAdminTab('banners')}
-                      className={`px-3 py-1.5 rounded text-xs transition-all ${adminTab === 'banners' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'banners' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
                     >
                       Banners
                     </button>
                     <button
                       onClick={() => setAdminTab('collection')}
-                      className={`px-3 py-1.5 rounded text-xs transition-all ${adminTab === 'collection' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'collection' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
                     >
                       Collection
                     </button>
                     <button
                       onClick={() => setAdminTab('visuals')}
-                      className={`px-3 py-1.5 rounded text-xs transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
                     >
                       Visual Settings
                     </button>
@@ -5540,28 +6172,28 @@ function WhisperingWishesInner() {
                         placeholder="Version (e.g., 3.1)"
                         id="admin-version"
                         defaultValue={activeBanners.version}
-                        className="kuro-input text-xs"
+                        className="kuro-input text-[10px] py-1"
                       />
                       <input
                         type="number"
                         placeholder="Phase"
                         id="admin-phase"
                         defaultValue={activeBanners.phase}
-                        className="kuro-input text-xs"
+                        className="kuro-input text-[10px] py-1"
                       />
                       <input
                         type="datetime-local"
                         placeholder="Start Date"
                         id="admin-start"
                         defaultValue={activeBanners.startDate?.slice(0, 16)}
-                        className="kuro-input text-xs"
+                        className="kuro-input text-[10px] py-1"
                       />
                       <input
                         type="datetime-local"
                         placeholder="End Date"
                         id="admin-end"
                         defaultValue={activeBanners.endDate?.slice(0, 16)}
-                        className="kuro-input text-xs"
+                        className="kuro-input text-[10px] py-1"
                       />
                     </div>
                   </div>
@@ -5796,14 +6428,14 @@ function WhisperingWishesInner() {
           }}
         >
           <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-2.5 flex items-center justify-between">
-            <span className="text-cyan-300 text-[11px] font-bold flex items-center gap-1.5"><Settings size={14} /> Visual Settings</span>
+            <span className="text-cyan-300 text-[10px] font-bold flex items-center gap-1.5"><Settings size={14} /> Visual Settings</span>
             <div className="flex gap-1">
               {/* Corner position buttons */}
               <div className="flex gap-0.5 mr-1">
-                <button onClick={() => saveMiniPanelPosition('top-left')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
-                <button onClick={() => saveMiniPanelPosition('top-right')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
-                <button onClick={() => saveMiniPanelPosition('bottom-left')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
-                <button onClick={() => saveMiniPanelPosition('bottom-right')} className={`w-4 h-4 rounded text-[8px] ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
+                <button onClick={() => saveMiniPanelPosition('top-left')} aria-label="Move to top-left" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
+                <button onClick={() => saveMiniPanelPosition('top-right')} aria-label="Move to top-right" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
+                <button onClick={() => saveMiniPanelPosition('bottom-left')} aria-label="Move to bottom-left" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
+                <button onClick={() => saveMiniPanelPosition('bottom-right')} aria-label="Move to bottom-right" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
               </div>
               <button 
                 onClick={() => setAdminMiniMode(false)} 
@@ -5869,13 +6501,7 @@ function WhisperingWishesInner() {
               <>
             {/* Reset Button */}
             <button 
-              onClick={() => saveVisualSettings({
-                fadePosition: 50, fadeIntensity: 100, pictureOpacity: 100,
-                standardFadePosition: 50, standardFadeIntensity: 100, standardOpacity: 100,
-                shadowFadePosition: 50, shadowFadeIntensity: 100, shadowOpacity: 100,
-                collectionFadePosition: 50, collectionFadeIntensity: 100, collectionOpacity: 100,
-                collectionFadeDirection: 'top', collectionZoom: 120
-              })}
+              onClick={() => saveVisualSettings(defaultVisualSettings)}
               className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
               ↻ Reset All to Defaults
@@ -6019,9 +6645,9 @@ function WhisperingWishesInner() {
       )}
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 px-4 text-center border-t border-white/5" style={{background: 'rgba(8,12,18,0.9)'}}>
-        <p className="text-gray-600 text-[9px]">
-          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.0</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
+      <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
+        <p className="text-gray-500 text-[9px]">
+          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.27</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
@@ -6032,8 +6658,10 @@ function WhisperingWishesInner() {
 // [SECTION:EXPORT]
 export default function WhisperingWishes() {
   return (
-    <ToastProvider>
-      <WhisperingWishesInner />
-    </ToastProvider>
+    <PWAProvider>
+      <ToastProvider>
+        <WhisperingWishesInner />
+      </ToastProvider>
+    </PWAProvider>
   );
 }
