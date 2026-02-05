@@ -3,7 +3,7 @@ import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, 
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.9.27 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v2.9.28 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -1206,11 +1206,11 @@ const SERVERS = {
 
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
-  version: '3.0', phase: 2,
+  version: '3.1', phase: 1,
   // Times from wuwatracker.com (Europe UTC+1 converted to UTC)
-  // Banner: Thu, 15 Jan 2026 10:00 - Wed, 04 Feb 2026 11:59 (Europe)
-  startDate: '2026-01-15T09:00:00Z', // Jan 15, 10:00 Europe = 09:00 UTC
-  endDate: '2026-02-04T10:59:00Z',   // Feb 4, 11:59 Europe = 10:59 UTC
+  // Banner: Thu, 05 Feb 2026 03:00 - Thu, 26 Feb 2026 09:59 (Europe)
+  startDate: '2026-02-05T02:00:00Z', // Feb 5, 03:00 Europe = 02:00 UTC
+  endDate: '2026-02-26T08:59:00Z',   // Feb 26, 09:59 Europe = 08:59 UTC
   characterBannerImage: '',
   weaponBannerImage: '',
   eventBannerImage: '',
@@ -1224,14 +1224,14 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'mornye', name: 'Mornye', title: 'Distant May the Starlights Be', element: 'Fusion', weaponType: 'Broadblade', isNew: true, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], imageUrl: 'https://i.ibb.co/8nY1VYry/Mornye-Banner-Art.png' },
-    { id: 'augusta', name: 'Augusta', title: 'The Eternal Radiance on the Crown', element: 'Electro', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], imageUrl: 'https://i.ibb.co/wFwjx4pT/Augusta-Banner-Art.jpg' },
-    { id: 'iuno', name: 'Iuno', title: "Across Time's Waxes and Wanes", element: 'Aero', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Chixia', 'Sanhua', 'Danjin'], imageUrl: 'https://i.ibb.co/yc7zDHbS/Iuno-Banner-Art.png' },
+    { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
+    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Glacio', weaponType: 'Sword', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
+    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
-    { id: 'starfield', name: 'Starfield Calibrator', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Mornye', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/8nYg7XGW/Starfield-Calibrator-Banner-Art.png' },
-    { id: 'thunderflare', name: 'Thunderflare Dominion', title: 'Absolute Pulsation', type: 'Broadblade', forCharacter: 'Augusta', element: 'Electro', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/hRxH8pdS/Thunderflare-Dominion-Banner-Art.png' },
-    { id: 'moongazer', name: "Moongazer's Sigil", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Iuno', element: 'Aero', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/GfwBK9gB/Moongazer-039-s-Sigil-Banner-Art.jpg' },
+    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
+    { id: 'kumokiri', name: 'Kumokiri', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Chisa', element: 'Glacio', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
+    { id: 'wildfire', name: 'Wildfire Mark', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -1252,6 +1252,8 @@ const CURRENT_BANNERS = {
 
 // [SECTION:HISTORY]
 const BANNER_HISTORY = [
+  // Version 3.1
+  { version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
   // Version 3.0
   { version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04' },
   { version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-24', endDate: '2026-01-15' },
@@ -1302,6 +1304,12 @@ const BANNER_HISTORY = [
 // [SECTION:CHARACTER_DATA]
 const CHARACTER_DATA = {
   // 5★ Resonators
+  'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
+    desc: 'New 5★ Fusion Sword DPS from Roya Frostlands. High damage aerial combos.',
+    skills: ['Blazing Strike', 'Ember Dance', 'Infernal Bloom', 'Starfire Mode'],
+    ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Lanternberry' },
+    bestEchoes: ['Inferno Rider', 'Molten Rift 4pc'], bestWeapon: 'Everbright Polestar',
+    teams: ['Aemeath + Changli + Shorekeeper', 'Aemeath + Mortefi + Verina'] },
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'General of the Midnight Rangers. Powerful burst DPS in Qingloong Mode.',
     skills: ['Lone Lance', 'Windqueller', 'Emerald Storm: Prelude', 'Qingloong Mode'],
@@ -1736,10 +1744,9 @@ const EVENTS = {
     description: 'Weekly boss challenge',
     resetType: 'Version update',
     color: 'cyan',
-    // Thu, 25 Dec 2025 10:45 - Tue, 03 Feb 2026 03:59 (Europe) → then new cycle
-    // Current ends Feb 3, 03:59 Europe = Feb 3, 02:59 UTC
-    // Next: Tue, 03 Feb 2026 10:45 - Sun, 05 Apr 2026 03:59
-    currentEnd: '2026-02-03T02:59:00Z',
+    // Tue, 03 Feb 2026 10:45 - Sun, 05 Apr 2026 03:59 (Europe)
+    // Apr 5, 03:59 Europe = Apr 5, 02:59 UTC
+    currentEnd: '2026-04-05T02:59:00Z',
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
@@ -1751,9 +1758,9 @@ const EVENTS = {
     description: 'High difficulty boss rush', 
     resetType: 'Version update', 
     color: 'pink', 
-    // Thu, 25 Dec 2025 10:45 - Wed, 04 Feb 2026 03:59 (Europe)
-    // Feb 4, 03:59 Europe = Feb 4, 02:59 UTC
-    currentEnd: '2026-02-04T02:59:00Z',
+    // Wed, 11 Feb 2026 21:00 - Thu, 19 Mar 2026 04:00 (Europe)
+    // Mar 19, 04:00 Europe = Mar 19, 03:00 UTC
+    currentEnd: '2026-03-19T03:00:00Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
@@ -5692,7 +5699,7 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 <div className="text-center">
                   <h4 className="text-gray-100 font-medium">Whispering Wishes</h4>
-                  <p className="text-gray-500 text-[10px]">Version 2.9.27</p>
+                  <p className="text-gray-500 text-[10px]">Version 2.9.28</p>
                 </div>
                 
                 <div className="text-center">
@@ -6647,7 +6654,7 @@ function WhisperingWishesInner() {
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[9px]">
-          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.27</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
+          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.28</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
