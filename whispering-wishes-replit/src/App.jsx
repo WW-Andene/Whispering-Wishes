@@ -4533,6 +4533,9 @@ function WhisperingWishesInner() {
         id: userLeaderboardId,
         avgPity: parseFloat(overallStats.avgPity),
         pulls: overallStats.fiveStars || 0,
+        totalPulls: overallStats.totalPulls || 0,
+        won5050: overallStats.won5050 || 0,
+        lost5050: overallStats.lost5050 || 0,
         timestamp: Date.now()
       };
       // Submit to Firebase
@@ -4553,6 +4556,22 @@ function WhisperingWishesInner() {
   useEffect(() => {
     if (showLeaderboard) loadLeaderboard();
   }, [showLeaderboard, loadLeaderboard]);
+
+  // Community stats aggregated from all leaderboard entries
+  const communityStats = useMemo(() => {
+    if (!leaderboardData.length) return null;
+    const entries = leaderboardData;
+    const totalPlayers = entries.length;
+    const avgPityAll = (entries.reduce((s, e) => s + e.avgPity, 0) / totalPlayers).toFixed(1);
+    const totalFiveStars = entries.reduce((s, e) => s + (e.pulls || 0), 0);
+    const totalPullsAll = entries.reduce((s, e) => s + (e.totalPulls || 0), 0);
+    const totalWon = entries.reduce((s, e) => s + (e.won5050 || 0), 0);
+    const totalLost = entries.reduce((s, e) => s + (e.lost5050 || 0), 0);
+    const globalWinRate = (totalWon + totalLost) > 0 ? ((totalWon / (totalWon + totalLost)) * 100).toFixed(1) : null;
+    const luckiest = entries.length > 0 ? entries.reduce((min, e) => e.avgPity < min.avgPity ? e : min) : null;
+    const unluckiest = entries.length > 0 ? entries.reduce((max, e) => e.avgPity > max.avgPity ? e : max) : null;
+    return { totalPlayers, avgPityAll, totalFiveStars, totalPullsAll, totalWon, totalLost, globalWinRate, luckiest, unluckiest };
+  }, [leaderboardData]);
 
   // Trophies/Badges computation
   const trophies = useMemo(() => {
@@ -6334,6 +6353,41 @@ function WhisperingWishesInner() {
                           })
                         )}
                       </div>
+                      {/* Community Stats */}
+                      {communityStats && (
+                        <div className="px-4 py-3 border-t border-white/10 space-y-2">
+                          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                            <BarChart3 size={10} /> Community Stats
+                            <span className="text-gray-600 font-normal">• {communityStats.totalPlayers} players</span>
+                          </p>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            <div className="bg-white/5 rounded-lg p-2 text-center">
+                              <div className="text-yellow-400 font-bold text-xs">{communityStats.avgPityAll}</div>
+                              <div className="text-gray-500 text-[8px]">Global Avg Pity</div>
+                            </div>
+                            <div className="bg-white/5 rounded-lg p-2 text-center">
+                              <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate || '—'}%</div>
+                              <div className="text-gray-500 text-[8px]">50/50 Win Rate</div>
+                            </div>
+                            <div className="bg-white/5 rounded-lg p-2 text-center">
+                              <div className="text-cyan-400 font-bold text-xs">{communityStats.totalFiveStars}</div>
+                              <div className="text-gray-500 text-[8px]">Total 5★</div>
+                            </div>
+                          </div>
+                          {communityStats.totalPullsAll > 0 && (
+                            <div className="flex justify-between text-[9px]">
+                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total pulls tracked</span>
+                              <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
+                            </div>
+                          )}
+                          {communityStats.luckiest && communityStats.unluckiest && communityStats.totalPlayers >= 2 && (
+                            <div className="flex justify-between text-[9px] gap-2">
+                              <span className="text-emerald-500/70">🍀 Luckiest: {communityStats.luckiest.avgPity.toFixed(1)}</span>
+                              <span className="text-red-500/70">💀 Unluckiest: {communityStats.unluckiest.avgPity.toFixed(1)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="p-4 border-t border-white/10 space-y-2">
                         {userLeaderboardId && overallStats?.avgPity && (
                           <>
