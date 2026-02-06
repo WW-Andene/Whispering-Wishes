@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, createContext, useContext, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, Upload, Download, RefreshCcw, Plus, Minus, Check, Target, BarChart3, Zap, BookmarkPlus, X, ChevronDown, LayoutGrid, Archive, Info, CheckCircle, AlertCircle, Settings, Monitor, Smartphone, Gamepad2 } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, Upload, Download, RefreshCcw, Plus, Minus, Check, Target, BarChart3, Zap, BookmarkPlus, X, ChevronDown, LayoutGrid, Archive, Info, CheckCircle, AlertCircle, Settings, Monitor, Smartphone, Gamepad2, Crown, Trophy, Award, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.9.36 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v2.9.5 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
 // ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:PWA]          - PWA manifest, service worker, install prompt
 // [SECTION:TOAST]        - Toast notification system
 // [SECTION:ONBOARDING]   - Onboarding modal
 // [SECTION:LUCK]         - Luck rating calculation
@@ -25,6 +26,7 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:CALCULATIONS] - Pull calculations
 // [SECTION:COMPONENTS]   - Reusable UI components (Card, PityRing, etc.)
 // [SECTION:BACKGROUND]   - BackgroundGlow & TriangleMirrorWave
+// [SECTION:COLLECTION-GRID] - Collection grid card component
 // [SECTION:STATIC_DATA]  - Static collection data (images, release orders)
 // [SECTION:MAINAPP]      - Main app component
 // [SECTION:EXPORT]       - Main export
@@ -32,6 +34,8 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 
 // [SECTION:PWA]
 // PWA Support - Manifest, Service Worker, Install Prompt
+
+const APP_VERSION = '2.9.5';
 
 const PWA_MANIFEST = {
   name: 'Whispering Wishes',
@@ -57,7 +61,7 @@ const PWA_MANIFEST = {
 
 // Service Worker code as string (will be registered as blob)
 const SERVICE_WORKER_CODE = `
-const CACHE_NAME = 'whispering-wishes-v2921';
+const CACHE_NAME = 'whispering-wishes-v295';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache immediately
@@ -171,6 +175,7 @@ const PWAProvider = ({ children }) => {
     
     // Add meta tags for PWA
     const metaTags = [
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover' },
       { name: 'mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
@@ -189,28 +194,33 @@ const PWAProvider = ({ children }) => {
       }
     });
     
-    // Register service worker
+    // Register service worker (blob URLs may fail in some environments)
     if ('serviceWorker' in navigator) {
-      const swBlob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(swBlob);
-      
-      navigator.serviceWorker.register(swUrl, { scope: '/' })
-        .then((registration) => {
-          setSwRegistration(registration);
-          console.log('SW registered:', registration.scope);
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New version available
-                console.log('New version available');
-              }
+      try {
+        const swBlob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+        
+        navigator.serviceWorker.register(swUrl, { scope: '/' })
+          .then((registration) => {
+            setSwRegistration(registration);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available
+                  console.log('New version available');
+                }
+              });
             });
+          })
+          .catch(() => {
+            // Blob URL service workers may not work in all environments — app still functions without SW
           });
-        })
-        .catch((err) => console.log('SW registration failed:', err));
+      } catch (err) {
+        // Service worker not critical — app works fine without it
+      }
     }
     
     return () => {
@@ -219,6 +229,12 @@ const PWAProvider = ({ children }) => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       URL.revokeObjectURL(manifestUrl);
+      // Clean up injected DOM elements
+      if (manifestLink.parentNode) manifestLink.parentNode.removeChild(manifestLink);
+      metaTags.forEach(({ name }) => {
+        const el = document.querySelector(`meta[name="${name}"]`);
+        if (el) el.remove();
+      });
     };
   }, []);
   
@@ -257,7 +273,7 @@ const PWAProvider = ({ children }) => {
             </button>
             <button
               onClick={() => setInstallPrompt(null)}
-              className="p-1 text-black/50 hover:text-black"
+              className="p-1 text-black/50 hover:text-black transition-colors"
             >
               <X size={16} />
             </button>
@@ -276,13 +292,15 @@ const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
   
   const addToast = useCallback((message, type = 'info', duration = 3000) => {
-    const id = Date.now() + Math.random();
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
   }, []);
   
+  const contextValue = useMemo(() => ({ addToast }), [addToast]);
+  
   return (
-    <ToastContext.Provider value={{ addToast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       <div style={{position:'fixed', bottom:'80px', left:'16px', right:'16px', zIndex:9999, display:'flex', flexDirection:'column', gap:'8px', pointerEvents:'none'}}>
         {toasts.map(toast => (
@@ -322,7 +340,7 @@ const OnboardingModal = ({ onComplete }) => {
   
   return (
     <div style={{position:'fixed', inset:0, display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:'16px', background:'rgba(0,0,0,0.9)'}}>
-      <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient}`} style={{ width:'100%', maxWidth:'320px', backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', position: 'relative', zIndex: 5 }}>
+      <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient}`} style={{ width:'100%', maxWidth:'320px', backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
         {/* Decorative gradient circles */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
           <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${s.bg} blur-2xl opacity-40`} />
@@ -330,7 +348,7 @@ const OnboardingModal = ({ onComplete }) => {
         </div>
         
         {/* Skip button - always white */}
-        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
+        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
         
         {/* Content */}
         <div className="relative z-10 p-5 pt-8 text-center">
@@ -352,12 +370,12 @@ const OnboardingModal = ({ onComplete }) => {
         <div className="p-3 flex justify-between items-center" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
           <div className="w-12">
             {step > 0 && (
-              <button onClick={() => setStep(step - 1)} className="text-[9px] px-3 py-1 rounded text-gray-400" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
+              <button onClick={() => setStep(step - 1)} className="text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
             )}
           </div>
           <div>
             {step < steps.length - 1 ? (
-              <button onClick={() => setStep(step + 1)} className="text-[9px] px-3 py-1 rounded text-gray-400" style={{background:'rgba(255,255,255,0.05)'}}>Next</button>
+              <button onClick={() => setStep(step + 1)} className="text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Next</button>
             ) : (
               <button onClick={onComplete} className="text-[9px] px-3 py-1 rounded border border-emerald-500/30 bg-emerald-500/20 text-emerald-400">Get Started</button>
             )}
@@ -388,7 +406,7 @@ const calculateLuckRating = (avgPity) => {
 };
 
 // [SECTION:STYLES]
-const KuroStyles = () => (
+const KuroStyles = ({ oledMode }) => (
   <style>{`
     /* ══════════════════════════════════════════════════════════════════════
        LAHAI-ROI DESIGN LANGUAGE - Black, White, Gold
@@ -396,17 +414,23 @@ const KuroStyles = () => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: #0a0a0a;
+      background: ${oledMode ? '#000000' : '#0a0a0a'};
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none;
     }
     
     /* ═══ CSS CUSTOM PROPERTIES ═══ */
     :root {
       --color-gold: 251, 191, 36;
       --color-pink: 236, 72, 153;
-      --color-cyan: 34, 211, 238;
+      --color-cyan: 56, 189, 248;
       --color-purple: 168, 85, 247;
       --color-emerald: 34, 197, 94;
       --color-red: 248, 113, 113;
@@ -417,15 +441,41 @@ const KuroStyles = () => (
       --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      --bg-card: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
+      --bg-card-inner: ${oledMode ? 'rgba(5, 5, 5, 1)' : 'rgba(6, 10, 18, 1)'};
+      --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
+      --bg-input: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
+      --bg-stat: ${oledMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
     }
     
-    /* Hide scrollbar globally on mobile */
-    * {
+    /* Hide scrollbar on specific horizontal scroll containers */
+    .scrollbar-hide,
+    nav {
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
-    *::-webkit-scrollbar {
+    .scrollbar-hide::-webkit-scrollbar,
+    nav::-webkit-scrollbar {
       display: none;
+    }
+    
+    /* Thin subtle scrollbar for vertical scroll containers */
+    .overflow-y-auto {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .overflow-y-auto::-webkit-scrollbar {
+      width: 3px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+    }
+    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.25);
     }
     
     /* ═══ IMPROVED FOCUS STATES ═══ */
@@ -441,6 +491,18 @@ const KuroStyles = () => (
       outline: 2px solid rgba(var(--color-gold), 0.8);
       outline-offset: 2px;
       box-shadow: 0 0 0 4px rgba(var(--color-gold), 0.15);
+    }
+    
+    /* ═══ TOUCH OPTIMIZATION ═══ */
+    button, select, input, textarea, a, [role="tab"] {
+      touch-action: manipulation;
+    }
+    
+    /* Ensure minimum 44px touch targets for filter selects on touch devices */
+    @media (pointer: coarse) {
+      .kuro-body select {
+        min-height: 44px;
+      }
     }
     
     .kuro-calc {
@@ -523,37 +585,26 @@ const KuroStyles = () => (
         transform: translateY(0) scale(1);
       }
     }
-    }
-    
-    /* Collection card hover lift */
-    .collection-card {
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    
-    .collection-card:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.4);
-    }
-    
-    .collection-card:active {
-      transform: translateY(-2px) scale(1.01);
-    }
     
     /* Glow effect for 5-star items */
     .glow-gold {
       box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0,0,0,0.3);
     }
     
-    .glow-gold:hover {
-      box-shadow: 0 0 30px rgba(251, 191, 36, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+    @media (hover: hover) {
+      .glow-gold:hover {
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+      }
     }
     
     .glow-purple {
       box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 4px 12px rgba(0,0,0,0.3);
     }
     
-    .glow-purple:hover {
-      box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+    @media (hover: hover) {
+      .glow-purple:hover {
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+      }
     }
     
     /* ═══ PREMIUM VISUAL EFFECTS ═══ */
@@ -574,7 +625,7 @@ const KuroStyles = () => (
       filter: drop-shadow(0 0 4px var(--ring-glow));
     }
     .pity-ring-text {
-      font-family: 'Geist Mono', monospace;
+      font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
       font-weight: 700;
       fill: currentColor;
       text-anchor: middle;
@@ -609,13 +660,25 @@ const KuroStyles = () => (
       border-radius: inherit;
     }
     
+    /* ═══ TROPHY BADGE ═══ */
+    @keyframes trophyShine {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    
+    .trophy-badge {
+      animation: trophyShine 3s ease-in-out infinite;
+    }
+    
     /* ═══ PULL LOG BORDER ═══ */
     .pull-log-row {
       border-left: 3px solid var(--pity-color);
       transition: background 0.2s ease;
     }
-    .pull-log-row:hover {
-      background: rgba(255,255,255,0.08) !important;
+    @media (hover: hover) {
+      .pull-log-row:hover {
+        background: rgba(255,255,255,0.08) !important;
+      }
     }
     
     /* ═══ TAB SLIDING INDICATOR ═══ */
@@ -631,7 +694,7 @@ const KuroStyles = () => (
     .kuro-card {
       position: relative;
       z-index: 5;
-      background: rgba(12, 16, 24, 0.55);
+      background: var(--bg-card);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       overflow: visible;
@@ -644,14 +707,16 @@ const KuroStyles = () => (
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    .kuro-card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateY(-2px);
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.06),
-        0 0 40px rgba(var(--color-gold), 0.03),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    @media (hover: hover) {
+      .kuro-card:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 
+          0 8px 32px rgba(0, 0, 0, 0.6),
+          0 0 0 1px rgba(255, 255, 255, 0.06),
+          0 0 40px rgba(var(--color-gold), 0.03),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
     }
     
     /* Interactive card variant */
@@ -697,38 +762,50 @@ const KuroStyles = () => (
     .kuro-card-inner::before {
       content: '';
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 16px;
-      height: 16px;
+      top: 8px;
+      right: 8px;
+      width: 12px;
+      height: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       border-right: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0 6px 0 0;
+      border-radius: 0 4px 0 0;
       z-index: 2;
-      opacity: 0.8;
+      opacity: 0.7;
     }
     
     .kuro-card-inner::after {
       content: '';
       position: absolute;
-      bottom: 10px;
-      left: 10px;
-      width: 16px;
-      height: 16px;
+      bottom: 8px;
+      left: 8px;
+      width: 12px;
+      height: 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       border-left: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 0 0 0 6px;
+      border-radius: 0 0 0 4px;
       z-index: 2;
-      opacity: 0.8;
+      opacity: 0.7;
     }
     
     .kuro-header {
-      padding: 14px 18px;
+      position: relative;
+      padding: 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%, transparent 60%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    
+    .kuro-header-action {
+      position: relative;
+      z-index: 10;
+    }
+    
+    /* Utility class for content layering above backgrounds */
+    .content-layer {
+      position: relative;
+      z-index: 5;
     }
     
     .kuro-header h3 {
@@ -753,17 +830,17 @@ const KuroStyles = () => (
     }
     
     .kuro-body {
-      padding: 18px;
+      padding: 14px;
       color: #e2e8f0;
     }
     
     /* ═══ BUTTONS - Glassy style with bright text ═══ */
     .kuro-btn {
       position: relative;
-      background: rgba(15, 20, 28, 0.85);
+      background: var(--bg-btn);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      padding: 12px;
+      padding: 10px 12px;
       color: #f1f5f9;
       font-size: 11px;
       font-weight: 500;
@@ -787,15 +864,17 @@ const KuroStyles = () => (
       pointer-events: none;
     }
     
-    .kuro-btn:hover {
-      border-color: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-    
-    .kuro-btn:hover::before {
-      opacity: 1;
+    @media (hover: hover) {
+      .kuro-btn:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+      
+      .kuro-btn:hover::before {
+        opacity: 1;
+      }
     }
     
     .kuro-btn:active {
@@ -878,9 +957,11 @@ const KuroStyles = () => (
       -webkit-backdrop-filter: blur(8px);
     }
     
-    .kuro-input:hover {
-      border-color: rgba(255, 255, 255, 0.3);
-      background: rgba(12, 16, 24, 0.85);
+    @media (hover: hover) {
+      .kuro-input:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(12, 16, 24, 0.85);
+      }
     }
     
     .kuro-input:focus {
@@ -911,7 +992,7 @@ const KuroStyles = () => (
     /* ═══ STAT BOXES - Glassy holographic style ═══ */
     .kuro-stat {
       position: relative;
-      background: rgba(12, 16, 22, 0.7);
+      background: var(--bg-stat);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 10px;
       padding: 14px;
@@ -922,10 +1003,12 @@ const KuroStyles = () => (
       transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
     
-    .kuro-stat:hover {
-      transform: translateY(-1px);
-      border-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    @media (hover: hover) {
+      .kuro-stat:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      }
     }
     
     .kuro-stat::before {
@@ -942,10 +1025,6 @@ const KuroStyles = () => (
       background: rgba(240, 192, 64, 0.15);
       border-color: rgba(240, 192, 64, 0.5);
     }
-    .kuro-stat-gold:hover {
-      border-color: rgba(240, 192, 64, 0.7);
-      box-shadow: 0 4px 20px rgba(240, 192, 64, 0.15);
-    }
     .kuro-stat-gold::before {
       background: linear-gradient(90deg, transparent, rgba(240, 192, 64, 1), transparent);
     }
@@ -953,10 +1032,6 @@ const KuroStyles = () => (
     .kuro-stat-cyan {
       background: rgba(56, 189, 248, 0.15);
       border-color: rgba(56, 189, 248, 0.5);
-    }
-    .kuro-stat-cyan:hover {
-      border-color: rgba(56, 189, 248, 0.7);
-      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
     }
     .kuro-stat-cyan::before {
       background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 1), transparent);
@@ -966,10 +1041,6 @@ const KuroStyles = () => (
       background: rgba(168, 85, 247, 0.15);
       border-color: rgba(168, 85, 247, 0.5);
     }
-    .kuro-stat-purple:hover {
-      border-color: rgba(168, 85, 247, 0.7);
-      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
-    }
     .kuro-stat-purple::before {
       background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 1), transparent);
     }
@@ -978,10 +1049,6 @@ const KuroStyles = () => (
       background: rgba(34, 197, 94, 0.15);
       border-color: rgba(34, 197, 94, 0.5);
     }
-    .kuro-stat-emerald:hover {
-      border-color: rgba(34, 197, 94, 0.7);
-      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
-    }
     .kuro-stat-emerald::before {
       background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 1), transparent);
     }
@@ -989,10 +1056,6 @@ const KuroStyles = () => (
     .kuro-stat-red {
       background: rgba(248, 113, 113, 0.15);
       border-color: rgba(248, 113, 113, 0.5);
-    }
-    .kuro-stat-red:hover {
-      border-color: rgba(248, 113, 113, 0.7);
-      box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
     }
     .kuro-stat-red::before {
       background: linear-gradient(90deg, transparent, rgba(248, 113, 113, 1), transparent);
@@ -1003,10 +1066,6 @@ const KuroStyles = () => (
       background: rgba(236, 72, 153, 0.15);
       border-color: rgba(236, 72, 153, 0.5);
     }
-    .kuro-stat-pink:hover {
-      border-color: rgba(236, 72, 153, 0.7);
-      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.15);
-    }
     .kuro-stat-pink::before {
       background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 1), transparent);
     }
@@ -1016,12 +1075,39 @@ const KuroStyles = () => (
       background: rgba(107, 114, 128, 0.15);
       border-color: rgba(107, 114, 128, 0.5);
     }
-    .kuro-stat-gray:hover {
-      border-color: rgba(107, 114, 128, 0.7);
-      box-shadow: 0 4px 20px rgba(107, 114, 128, 0.15);
-    }
     .kuro-stat-gray::before {
       background: linear-gradient(90deg, transparent, rgba(107, 114, 128, 1), transparent);
+    }
+    
+    @media (hover: hover) {
+      .kuro-stat-gold:hover {
+        border-color: rgba(240, 192, 64, 0.7);
+        box-shadow: 0 4px 20px rgba(240, 192, 64, 0.15);
+      }
+      .kuro-stat-cyan:hover {
+        border-color: rgba(56, 189, 248, 0.7);
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15);
+      }
+      .kuro-stat-purple:hover {
+        border-color: rgba(168, 85, 247, 0.7);
+        box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+      }
+      .kuro-stat-emerald:hover {
+        border-color: rgba(34, 197, 94, 0.7);
+        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
+      }
+      .kuro-stat-red:hover {
+        border-color: rgba(248, 113, 113, 0.7);
+        box-shadow: 0 4px 20px rgba(248, 113, 113, 0.15);
+      }
+      .kuro-stat-pink:hover {
+        border-color: rgba(236, 72, 153, 0.7);
+        box-shadow: 0 4px 20px rgba(236, 72, 153, 0.15);
+      }
+      .kuro-stat-gray:hover {
+        border-color: rgba(107, 114, 128, 0.7);
+        box-shadow: 0 4px 20px rgba(107, 114, 128, 0.15);
+      }
     }
     
     /* ═══ LABELS - Bright for readability ═══ */
@@ -1132,6 +1218,7 @@ const KuroStyles = () => (
     
     /* ═══ NUMBER STYLING ═══ */
     .kuro-number {
+      font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
       font-variant-numeric: tabular-nums;
       font-weight: 700;
     }
@@ -1147,9 +1234,11 @@ const KuroStyles = () => (
     .collection-card {
       transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     }
-    .collection-card:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    @media (hover: hover) {
+      .collection-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      }
     }
     .collection-card:active {
       transform: translateY(-2px) scale(1.01);
@@ -1224,15 +1313,40 @@ const KuroStyles = () => (
 );
 
 // [SECTION:SERVERS]
-// [SECTION:SERVERS]
 // Each server has its own timezone for daily/weekly resets (04:00 local)
 // Source: https://wuwatracker.com/timeline
 const SERVERS = {
-  'Asia': { name: 'Asia', timezone: 'Asia/Shanghai', utcOffset: 8, resetHour: 4 },
-  'America': { name: 'America', timezone: 'America/New_York', utcOffset: -5, resetHour: 4 },
-  'Europe': { name: 'Europe', timezone: 'Europe/Paris', utcOffset: 1, resetHour: 4 },
-  'SEA': { name: 'SEA', timezone: 'Asia/Singapore', utcOffset: 8, resetHour: 4 },
-  'HMT': { name: 'HMT', timezone: 'Asia/Hong_Kong', utcOffset: 8, resetHour: 4 },
+  'Asia': { name: 'Asia', timezone: 'Asia/Shanghai', utcOffset: 8, resetHour: 4, hasDST: false },
+  'America': { name: 'America', timezone: 'America/New_York', utcOffset: -5, resetHour: 4, hasDST: true },
+  'Europe': { name: 'Europe', timezone: 'Europe/Paris', utcOffset: 1, resetHour: 4, hasDST: true },
+  'SEA': { name: 'SEA', timezone: 'Asia/Singapore', utcOffset: 8, resetHour: 4, hasDST: false },
+  'HMT': { name: 'HMT', timezone: 'Asia/Hong_Kong', utcOffset: 8, resetHour: 4, hasDST: false },
+};
+
+// Get current UTC offset for a server (DST-aware)
+const getServerOffset = (server) => {
+  const serverData = SERVERS[server];
+  if (!serverData) return 1; // Default to Europe
+  if (!serverData.hasDST) return serverData.utcOffset;
+  
+  // Use Intl API to detect current DST offset
+  try {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', { 
+      timeZone: serverData.timezone, 
+      timeZoneName: 'shortOffset' 
+    });
+    const parts = formatter.formatToParts(now);
+    const tzPart = parts.find(p => p.type === 'timeZoneName');
+    if (tzPart) {
+      // Parse offset like "GMT-4" or "GMT+2"
+      const match = tzPart.value.match(/GMT([+-]\d+)/);
+      if (match) return parseInt(match[1]);
+    }
+  } catch (e) {
+    // Fallback to hardcoded offset if Intl API fails
+  }
+  return serverData.utcOffset;
 };
 
 // [SECTION:BANNERS]
@@ -1256,7 +1370,7 @@ const CURRENT_BANNERS = {
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
     { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
-    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Glacio', weaponType: 'Sword', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
+    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Sword', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
     { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
@@ -1335,12 +1449,6 @@ const BANNER_HISTORY = [
 // [SECTION:CHARACTER_DATA]
 const CHARACTER_DATA = {
   // 5★ Resonators
-  'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'New 5★ Fusion Sword DPS from Roya Frostlands. High damage aerial combos.',
-    skills: ['Blazing Strike', 'Ember Dance', 'Infernal Bloom', 'Starfire Mode'],
-    ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Lanternberry' },
-    bestEchoes: ['Inferno Rider', 'Molten Rift 4pc'], bestWeapon: 'Everbright Polestar',
-    teams: ['Aemeath + Changli + Shorekeeper', 'Aemeath + Mortefi + Verina'] },
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'General of the Midnight Rangers. Powerful burst DPS in Qingloong Mode.',
     skills: ['Lone Lance', 'Windqueller', 'Emerald Storm: Prelude', 'Qingloong Mode'],
@@ -1906,7 +2014,7 @@ const EUROPE_OFFSET = 1;
 
 const getServerAdjustedEnd = (currentEnd, server) => {
   if (!currentEnd) return currentEnd;
-  const serverOffset = SERVERS[server]?.utcOffset ?? EUROPE_OFFSET;
+  const serverOffset = getServerOffset(server);
   // Calculate offset difference from Europe reference
   const offsetDiff = serverOffset - EUROPE_OFFSET;
   // Adjust: if server is ahead of Europe, event ends earlier in absolute UTC
@@ -1932,7 +2040,7 @@ const getRecurringEventEnd = (currentEnd, resetType, server) => {
 
 // Next daily reset: 04:00 in server's local timezone
 const getNextDailyReset = (server) => {
-  const serverOffset = SERVERS[server]?.utcOffset ?? 1; // Default to Europe
+  const serverOffset = getServerOffset(server);
   const now = Date.now();
   
   // Get current time in server's local timezone
@@ -1959,7 +2067,7 @@ const getNextDailyReset = (server) => {
 
 // Next weekly reset: Monday 04:00 in server's local timezone
 const getNextWeeklyReset = (server) => {
-  const serverOffset = SERVERS[server]?.utcOffset ?? 1; // Default to Europe
+  const serverOffset = getServerOffset(server);
   const now = Date.now();
   
   // Get current time in server's local timezone
@@ -2299,7 +2407,7 @@ const isStorageAvailable = () => {
 
 const storageAvailable = isStorageAvailable();
 
-const loadFromStorage = async () => {
+const loadFromStorage = () => {
   if (!storageAvailable) return null;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -2329,12 +2437,18 @@ const loadFromStorage = async () => {
   }
 };
 
-const saveToStorage = async (state) => {
+const saveToStorage = (state) => {
   if (!storageAvailable) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const data = JSON.stringify(state);
+    // Warn if approaching 5MB localStorage limit (~80% = 4MB)
+    if (data.length > 4 * 1024 * 1024) {
+      console.warn('Storage approaching limit:', (data.length / 1024 / 1024).toFixed(1) + 'MB');
+    }
+    localStorage.setItem(STORAGE_KEY, data);
   } catch (e) {
-    console.error('Save failed:', e);
+    // QuotaExceededError — storage is full
+    console.error('Save failed (storage full?):', e);
   }
 };
 
@@ -2486,7 +2600,7 @@ const DETAIL_ELEMENT_COLORS = {
   Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
   Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
   Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
-  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
+  Havoc: { bg: 'bg-rose-500/20', text: 'text-rose-400', border: 'border-rose-500/50' },
   Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
 };
 
@@ -2495,7 +2609,7 @@ const BANNER_GRADIENT_MAP = {
   Electro: { border: 'border-purple-500/40', bg: 'bg-purple-500/20', text: 'text-purple-400' },
   Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
   Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
-  Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
+  Havoc: { border: 'border-rose-500/40', bg: 'bg-rose-500/20', text: 'text-rose-400' },
   Spectro: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
 };
 
@@ -2522,7 +2636,7 @@ const TabBackground = ({ id, glowColor = 'neutral' }) => {
 // [SECTION:COMPONENTS]
 const Card = memo(({ children, className = '', style = {} }) => <div className={`kuro-card ${className}`} style={style}><div className="kuro-card-inner">{children}</div></div>);
 Card.displayName = 'Card';
-const CardHeader = memo(({ children, action }) => <div className="kuro-header" style={{position:'relative'}}><h3>{children}</h3>{action && <div style={{position:'relative', zIndex:10}}>{action}</div>}</div>);
+const CardHeader = memo(({ children, action }) => <div className="kuro-header"><h3>{children}</h3>{action && <div className="kuro-header-action">{action}</div>}</div>);
 CardHeader.displayName = 'CardHeader';
 const CardBody = memo(({ children, className = '' }) => <div className={`kuro-body ${className}`}>{children}</div>);
 CardBody.displayName = 'CardBody';
@@ -2536,8 +2650,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
   
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
       <div 
@@ -2552,7 +2665,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
             <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" style={{ transform: 'translateY(10%)' }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -2586,7 +2699,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           </div>
           
           {/* Best Weapon & Echoes */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div className="p-3 rounded-xl bg-white/5 border border-white/10">
               <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best Weapon</div>
               <div className="text-yellow-400 text-xs font-medium">{data.bestWeapon}</div>
@@ -2650,8 +2763,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
       <div 
@@ -2666,7 +2778,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -2734,7 +2846,10 @@ const TabButton = memo(({ active, onClick, children, tabRef }) => {
   return (
     <button 
       ref={btnRef}
-      onClick={onClick} 
+      onClick={onClick}
+      role="tab"
+      aria-selected={active}
+      aria-label={`${text} tab`}
       className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
     >
       <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5'}`}>
@@ -2830,7 +2945,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   }, [currentEnd, onExpire, recalcFn]);
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
-  if (time.expired && !alwaysShow) return <span className="text-red-400 text-xs font-bold">ENDED</span>;
+  if (time.expired && !alwaysShow) return <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
     // If expired but alwaysShow, show "0h 0m 0s" briefly until next tick updates
     return <span className={`font-mono text-xs ${color === 'yellow' ? 'text-yellow-400' : color === 'pink' ? 'text-pink-400' : color === 'cyan' ? 'text-cyan-400' : color === 'orange' ? 'text-orange-400' : 'text-purple-400'}`}>0h 0m 0s</span>;
@@ -2854,7 +2969,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
       <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
       <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Min</div></div>
       <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)', borderColor: `${color === 'yellow' ? 'rgba(251,191,36,0.2)' : color === 'pink' ? 'rgba(244,114,182,0.2)' : 'rgba(34,211,238,0.2)'}`}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Sec</div></div>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Sec</div></div>
     </div>
   );
 });
@@ -2888,7 +3003,7 @@ const _wf2 = (x, y, t) => (x * 0.007 + y * 0.009) + Math.sin(x * 0.004 - y * 0.0
 const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0.004 + x * 0.003) * 1.3 - t * 0.2;
 
 // LAYER A: Smooth ambient glow gradient — z-index 1
-const BackgroundGlow = () => {
+const BackgroundGlow = ({ oledMode }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -2899,6 +3014,9 @@ const BackgroundGlow = () => {
     let animId;
     const SC = 0.08;
     let w, h, bw, bh;
+    
+    // OLED mode uses darker base color
+    const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,6)';
     
     const init = () => {
       w = window.innerWidth;
@@ -2914,12 +3032,16 @@ const BackgroundGlow = () => {
     window.addEventListener('resize', init);
     
     let lastFrame = 0;
+    let paused = false;
+    const handleVisibility = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', handleVisibility);
+    
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 66) return;
+      if (paused || t - lastFrame < 66) return;
       lastFrame = t;
       const time = t * 0.001;
-      bctx.fillStyle = 'rgb(2,3,6)';
+      bctx.fillStyle = bgColor;
       bctx.fillRect(0, 0, bw, bh);
       
       const gs = 2;
@@ -2964,14 +3086,15 @@ const BackgroundGlow = () => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [oledMode]);
   
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1}} />;
 };
 
 // LAYER B: Triangle wave mask — traveling wavefront specular, z-index 2
-const TriangleMirrorWave = () => {
+const TriangleMirrorWave = ({ oledMode }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -2998,9 +3121,13 @@ const TriangleMirrorWave = () => {
     window.addEventListener('resize', init);
     
     let lastFrame = 0;
+    let paused = false;
+    const handleVisibility = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', handleVisibility);
+    
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 66) return;
+      if (paused || t - lastFrame < 66) return;
       lastFrame = t;
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.001;
@@ -3070,8 +3197,9 @@ const TriangleMirrorWave = () => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [oledMode]);
   
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2}} />;
 };
@@ -3088,7 +3216,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => 
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -3101,7 +3229,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => 
             WebkitMaskImage: maskGradient
           }}
           loading="eager"
-          crossOrigin="anonymous"
+
           onError={(e) => { e.target.style.display = 'none'; }}
         />
       )}
@@ -3129,15 +3257,15 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => 
               <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
                   <div className={`font-bold text-sm ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
-                  <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
+                  <div className="text-gray-400 text-[8px] mt-0.5">5★ Pity</div>
                 </div>
                 <div className="text-center">
                   <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
-                  <div className="text-gray-300 text-[8px] mt-0.5">4★ Pity</div>
+                  <div className="text-gray-400 text-[8px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">
                   <div className="text-white font-bold text-sm">{stats.totalPulls}</div>
-                  <div className="text-gray-300 text-[8px] mt-0.5">Convenes</div>
+                  <div className="text-gray-400 text-[8px] mt-0.5">Convenes</div>
                 </div>
               </div>
               {isChar && (
@@ -3190,7 +3318,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${colors.border}`} style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -3203,7 +3331,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
             WebkitMaskImage: maskGradient
           }}
           loading="eager"
-          crossOrigin="anonymous"
+
           onError={(e) => { e.target.style.display = 'none'; }}
         />
       )}
@@ -3215,7 +3343,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
             <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-gray-200 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+            <div className="text-gray-400 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
             <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
           </div>
         </div>
@@ -3224,7 +3352,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
           <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${colors.bg} ${colors.text} backdrop-blur-sm`}>
             {event.rewards}
           </div>
-          <div className="text-gray-200 text-[9px]">
+          <div className="text-gray-400 text-[9px]">
             {event.resetType}
           </div>
         </div>
@@ -3236,13 +3364,13 @@ EventCard.displayName = 'EventCard';
 
 const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2">
-    <span className="text-gray-300 text-[10px] w-12">{label}</span>
+    <span className="text-gray-400 text-[10px] w-12">{label}</span>
     <div className="flex-1 h-5 bg-neutral-800 rounded overflow-hidden">
       <div className={`h-full ${color === 'cyan' ? 'bg-cyan-500' : color === 'pink' ? 'bg-pink-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-yellow-500'} transition-all flex items-center justify-end pr-1`} style={{ width: `${Math.max(value, 1)}%` }}>
         {value > 10 && <span className="text-[9px] text-black font-bold">{value}%</span>}
       </div>
     </div>
-    {value <= 10 && <span className="text-[10px] text-gray-300 w-10">{value}%</span>}
+    {value <= 10 && <span className="text-[10px] text-gray-400 w-10">{value}%</span>}
   </div>
 );
 
@@ -3402,8 +3530,9 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Kumokiri': 'https://i.ibb.co/VWxG9pSF/Kumokiri.webp',
   'Spectrum Blaster': 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp',
   'Starfield Calibrator': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
-  'Everbright Polestar': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp', // TODO: replace with real Everbright Polestar image
-  "Daybreaker's Spine": 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp', // TODO: replace with real Daybreaker's Spine image
+  // v3.1 weapons - using placeholder until official images available
+  'Everbright Polestar': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
+  "Daybreaker's Spine": 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
@@ -3679,7 +3808,10 @@ function WhisperingWishesInner() {
     collectionFadeIntensity: 100,
     collectionOpacity: 100,
     collectionFadeDirection: 'top',
-    collectionZoom: 120
+    collectionZoom: 120,
+    // Display Settings
+    oledMode: false,
+    swipeNavigation: false
   };
   // Always start with defaults - localStorage can override but we validate each property
   const [visualSettings, setVisualSettings] = useState(() => {
@@ -3876,30 +4008,29 @@ function WhisperingWishesInner() {
   // Load state from persistent storage on mount
   useEffect(() => {
     const rawSaved = storageAvailable ? localStorage.getItem(STORAGE_KEY) : null;
-    loadFromStorage().then(savedState => {
-      if (savedState) {
-        dispatch({ type: 'LOAD_STATE', state: savedState });
-        if (savedState.profile.importedAt) {
-          toast?.addToast?.('Data restored', 'success');
-        }
-        // For existing users: check if they've explicitly dismissed onboarding
-        // Parse raw data to check original settings, not merged with initialState
-        let originalSettings = {};
-        try {
-          const parsed = rawSaved ? JSON.parse(rawSaved) : null;
-          originalSettings = parsed?.settings || {};
-        } catch (e) {}
-        // Only show onboarding if the original saved data had it explicitly true
-        // If settings.showOnboarding is missing/undefined, user is existing - don't show
-        const shouldShow = originalSettings.showOnboarding === true;
-        setShowOnboarding(shouldShow);
-      } else {
-        // First time user only - show onboarding
-        setShowOnboarding(true);
+    const savedState = loadFromStorage();
+    if (savedState) {
+      dispatch({ type: 'LOAD_STATE', state: savedState });
+      if (savedState.profile.importedAt) {
+        toast?.addToast?.('Data restored', 'success');
       }
-      setStorageLoaded(true);
-    });
-  }, []);
+      // For existing users: check if they've explicitly dismissed onboarding
+      // Parse raw data to check original settings, not merged with initialState
+      let originalSettings = {};
+      try {
+        const parsed = rawSaved ? JSON.parse(rawSaved) : null;
+        originalSettings = parsed?.settings || {};
+      } catch (e) {}
+      // Only show onboarding if the original saved data had it explicitly true
+      // If settings.showOnboarding is missing/undefined, user is existing - don't show
+      const shouldShow = originalSettings.showOnboarding === true;
+      setShowOnboarding(shouldShow);
+    } else {
+      // First time user only - show onboarding
+      setShowOnboarding(true);
+    }
+    setStorageLoaded(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — mount-only, toast ref is stable at first render
   
   // Save state to storage whenever it changes
   useEffect(() => {
@@ -3926,14 +4057,83 @@ function WhisperingWishesInner() {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
   }, []);
+  
+  // Swipe navigation between tabs
+  const TAB_ORDER = ['tracker', 'events', 'calculator', 'planner', 'analytics', 'gathering', 'profile'];
+  const swipeRef = useRef({ startX: 0, startY: 0, startTime: 0 });
+  
+  useEffect(() => {
+    if (!visualSettings.swipeNavigation) return;
+    
+    const handleTouchStart = (e) => {
+      swipeRef.current = {
+        startX: e.touches[0].clientX,
+        startY: e.touches[0].clientY,
+        startTime: Date.now()
+      };
+    };
+    
+    const handleTouchEnd = (e) => {
+      const { startX, startY, startTime } = swipeRef.current;
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+      const deltaTime = Date.now() - startTime;
+      
+      // Must be horizontal swipe (more X than Y movement)
+      // Must be fast enough (under 300ms) and long enough (over 50px)
+      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.5;
+      const isFastEnough = deltaTime < 300;
+      const isLongEnough = Math.abs(deltaX) > 50;
+      
+      if (isHorizontalSwipe && isFastEnough && isLongEnough) {
+        const currentIndex = TAB_ORDER.indexOf(activeTab);
+        if (deltaX < 0 && currentIndex < TAB_ORDER.length - 1) {
+          // Swipe left → next tab
+          setActiveTab(TAB_ORDER[currentIndex + 1]);
+        } else if (deltaX > 0 && currentIndex > 0) {
+          // Swipe right → previous tab
+          setActiveTab(TAB_ORDER[currentIndex - 1]);
+        }
+      }
+    };
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [visualSettings.swipeNavigation, activeTab, setActiveTab]);
+  
   const [trackerCategory, setTrackerCategory] = useState('character');
   const [importPlatform, setImportPlatform] = useState(null);
+  const [importMethod, setImportMethod] = useState('file'); // 'file' or 'paste'
+  const [pasteJsonText, setPasteJsonText] = useState('');
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [bookmarkName, setBookmarkName] = useState('');
   const [showIncomePanel, setShowIncomePanel] = useState(false);
   const [chartRange, setChartRange] = useState('monthly');
   const [chartOffset, setChartOffset] = useState(9999);
   const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null });
+  
+  // Anonymous Luck Leaderboard
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [userLeaderboardId] = useState(() => {
+    if (!storageAvailable) return null;
+    try {
+      let id = localStorage.getItem('ww-leaderboard-id');
+      if (!id) {
+        id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        localStorage.setItem('ww-leaderboard-id', id);
+      }
+      return id;
+    } catch { return 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
+  });
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
@@ -4056,6 +4256,169 @@ function WhisperingWishesInner() {
       avgPity 
     };
   }, [state.profile]);
+  
+  // Leaderboard functions
+  const loadLeaderboard = useCallback(async () => {
+    if (!window.storage) return;
+    setLeaderboardLoading(true);
+    try {
+      const result = await window.storage.list('luck:', true);
+      if (result?.keys) {
+        const entries = await Promise.all(
+          result.keys.slice(0, 50).map(async (key) => {
+            try {
+              const data = await window.storage.get(key, true);
+              return data?.value ? JSON.parse(data.value) : null;
+            } catch { return null; }
+          })
+        );
+        const valid = entries.filter(e => e && e.avgPity && e.id);
+        valid.sort((a, b) => a.avgPity - b.avgPity);
+        setLeaderboardData(valid.slice(0, 20));
+      }
+    } catch (e) { console.error('Leaderboard load error:', e); }
+    setLeaderboardLoading(false);
+  }, []);
+  
+  const submitToLeaderboard = useCallback(async () => {
+    if (!window.storage || !userLeaderboardId || !overallStats?.avgPity) return;
+    try {
+      const entry = {
+        id: userLeaderboardId,
+        avgPity: parseFloat(overallStats.avgPity),
+        pulls: overallStats.total5Stars || 0,
+        timestamp: Date.now()
+      };
+      await window.storage.set(`luck:${userLeaderboardId}`, JSON.stringify(entry), true);
+      toast?.addToast?.('Score submitted to leaderboard!', 'success');
+      loadLeaderboard();
+    } catch (e) { 
+      console.error('Submit error:', e);
+      toast?.addToast?.('Failed to submit score', 'error');
+    }
+  }, [userLeaderboardId, overallStats, toast, loadLeaderboard]);
+  
+  useEffect(() => {
+    if (showLeaderboard) loadLeaderboard();
+  }, [showLeaderboard, loadLeaderboard]);
+
+  // Trophies/Badges computation
+  const trophies = useMemo(() => {
+    if (!state.profile.importedAt) return null;
+    
+    const featuredHist = state.profile.featured?.history || [];
+    const weaponHist = state.profile.weapon?.history || [];
+    const stdCharHist = state.profile.standardChar?.history || [];
+    const stdWeapHist = state.profile.standardWeap?.history || [];
+    const allHistory = [...featuredHist, ...weaponHist, ...stdCharHist, ...stdWeapHist];
+    
+    // All 5★ pulls with pity
+    const all5Stars = allHistory.filter(p => p.rarity === 5 && p.pity > 0);
+    const featured5Stars = featuredHist.filter(p => p.rarity === 5);
+    
+    // Early 5★ (under 40 pity)
+    const early5Star = all5Stars.some(p => p.pity <= 40);
+    const earliest5Star = all5Stars.length > 0 ? Math.min(...all5Stars.map(p => p.pity)) : null;
+    
+    // 50/50 streaks
+    let currentWinStreak = 0, currentLossStreak = 0, bestWinStreak = 0, worstLossStreak = 0;
+    featured5Stars.forEach(p => {
+      if (p.won5050 === true) {
+        currentWinStreak++;
+        currentLossStreak = 0;
+        bestWinStreak = Math.max(bestWinStreak, currentWinStreak);
+      } else if (p.won5050 === false) {
+        currentLossStreak++;
+        currentWinStreak = 0;
+        worstLossStreak = Math.max(worstLossStreak, currentLossStreak);
+      }
+      // Guaranteed pulls (won5050 === null) don't affect streaks
+    });
+    
+    // Current streak (most recent)
+    let recentStreak = { type: null, count: 0 };
+    for (let i = featured5Stars.length - 1; i >= 0; i--) {
+      const p = featured5Stars[i];
+      if (p.won5050 === null) continue; // Skip guaranteed
+      if (recentStreak.type === null) {
+        recentStreak.type = p.won5050 ? 'win' : 'loss';
+        recentStreak.count = 1;
+      } else if ((recentStreak.type === 'win' && p.won5050 === true) || (recentStreak.type === 'loss' && p.won5050 === false)) {
+        recentStreak.count++;
+      } else {
+        break;
+      }
+    }
+    
+    // Collection counts
+    const charHistory = [...featuredHist, ...stdCharHist];
+    const weapHistory = [...weaponHist, ...stdWeapHist];
+    const owned5StarChars = new Set(charHistory.filter(p => p.rarity === 5 && p.name).map(p => p.name));
+    const owned4StarChars = new Set(charHistory.filter(p => p.rarity === 4 && p.name).map(p => p.name));
+    const owned5StarWeaps = new Set(weapHistory.filter(p => p.rarity === 5 && p.name).map(p => p.name));
+    const owned4StarWeaps = new Set(weapHistory.filter(p => p.rarity === 4 && p.name).map(p => p.name));
+    const owned3StarWeaps = new Set(weapHistory.filter(p => p.rarity === 3 && p.name).map(p => p.name));
+    
+    const all5ResOwned = ALL_5STAR_RESONATORS.every(name => owned5StarChars.has(name));
+    const all4ResOwned = ALL_4STAR_RESONATORS.every(name => owned4StarChars.has(name));
+    const all5WeapOwned = ALL_5STAR_WEAPONS.every(name => owned5StarWeaps.has(name));
+    const all4WeapOwned = ALL_4STAR_WEAPONS.every(name => owned4StarWeaps.has(name));
+    const all3WeapOwned = ALL_3STAR_WEAPONS.every(name => owned3StarWeaps.has(name));
+    const allCollected = all5ResOwned && all4ResOwned && all5WeapOwned && all4WeapOwned && all3WeapOwned;
+    
+    // Total pulls
+    const totalPulls = allHistory.length;
+    const isWhale = totalPulls >= 1000;
+    const isMegaWhale = totalPulls >= 2000;
+    
+    // Build trophy list
+    const list = [];
+    
+    // Collection trophies
+    if (allCollected) list.push({ id: 'all', name: 'Completionist', desc: 'Collected everything', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    if (all5ResOwned) list.push({ id: '5res', name: 'Resonator Master', desc: 'All 5★ Resonators', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (all4ResOwned) list.push({ id: '4res', name: 'Squad Complete', desc: 'All 4★ Resonators', icon: 'Heart', color: '#a855f7', tier: 'purple' });
+    if (all5WeapOwned) list.push({ id: '5weap', name: 'Arsenal Master', desc: 'All 5★ Weapons', icon: 'Swords', color: '#ec4899', tier: 'gold' });
+    if (all4WeapOwned) list.push({ id: '4weap', name: 'Well Armed', desc: 'All 4★ Weapons', icon: 'Sword', color: '#a855f7', tier: 'purple' });
+    if (all3WeapOwned) list.push({ id: '3weap', name: 'Collector', desc: 'All 3★ Weapons', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
+    
+    // Luck trophies
+    if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Jackpot!', desc: `5★ at pity ${earliest5Star}`, icon: 'Gift', color: '#fbbf24', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Golden Touch', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#fbbf24', tier: 'gold' });
+    else if (earliest5Star && earliest5Star <= 40) list.push({ id: 'early40', name: 'Lucky Pull', desc: `5★ at pity ${earliest5Star}`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+    
+    // 50/50 streak trophies
+    if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Unstoppable', desc: `${bestWinStreak}× 50/50 wins`, icon: 'Flame', color: '#f97316', tier: 'legendary' });
+    else if (bestWinStreak >= 3) list.push({ id: 'win3', name: 'On a Roll', desc: `${bestWinStreak}× 50/50 wins`, icon: 'Target', color: '#22c55e', tier: 'green' });
+    
+    if (worstLossStreak >= 5) list.push({ id: 'loss5', name: 'Cursed', desc: `${worstLossStreak}× 50/50 losses`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    else if (worstLossStreak >= 3) list.push({ id: 'loss3', name: 'Unlucky', desc: `${worstLossStreak}× 50/50 losses`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    
+    // Milestone trophies
+    if (isMegaWhale) list.push({ id: 'mega', name: 'Leviathan', desc: '2000+ Convenes', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (isWhale) list.push({ id: 'whale', name: 'Whale', desc: '1000+ Convenes', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (totalPulls >= 500) list.push({ id: '500', name: 'Dedicated', desc: '500+ Convenes', icon: 'Diamond', color: '#8b5cf6', tier: 'purple' });
+    else if (totalPulls >= 100) list.push({ id: '100', name: 'Getting Started', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
+    
+    // First 5★
+    if (all5Stars.length > 0) list.push({ id: 'first5', name: 'First Star', desc: 'Got your first 5★', icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    
+    return {
+      list,
+      stats: {
+        earliest5Star,
+        bestWinStreak,
+        worstLossStreak,
+        currentStreak: recentStreak,
+        totalPulls,
+        owned5StarChars: owned5StarChars.size,
+        owned4StarChars: owned4StarChars.size,
+        owned5StarWeaps: owned5StarWeaps.size,
+        owned4StarWeaps: owned4StarWeaps.size,
+        owned3StarWeaps: owned3StarWeaps.size,
+      }
+    };
+  }, [state.profile]);
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity), [overallStats]);
@@ -4123,127 +4486,152 @@ function WhisperingWishesInner() {
     };
   }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history]);
 
+  // Shared import processor for both file and paste methods
+  const processImportData = useCallback((jsonString) => {
+    try {
+      const data = JSON.parse(jsonString);
+      if (typeof data !== 'object' || data === null) {
+        throw new Error('Invalid data format — expected a JSON object');
+      }
+      const pulls = data.pulls || data.conveneHistory || data.history || [];
+      if (!Array.isArray(pulls)) {
+        throw new Error('Invalid data — "pulls" must be an array');
+      }
+      if (pulls.length === 0) {
+        throw new Error('No pull data found in import');
+      }
+      
+      // Validate pull entries have minimum required fields
+      const validPulls = pulls.filter(p => {
+        if (typeof p !== 'object' || p === null) return false;
+        const hasType = p.bannerType || p.cardPoolType || p.gachaType;
+        const hasName = p.name || p.resourceName;
+        return hasType && hasName;
+      });
+      
+      if (validPulls.length === 0) {
+        throw new Error('No valid pull entries found — check data format');
+      }
+      
+      // List of known standard 5★ characters (for 50/50 calculation)
+      const standard5Stars = ['Verina', 'Jianxin', 'Lingyang', 'Calcharo', 'Encore'];
+      
+      const convert = (arr, type) => {
+        const filtered = arr.filter(p => {
+          const poolType = p.cardPoolType || p.gachaType;
+          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 1;
+          if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 2;
+          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 5;
+          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 6;
+          if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 7;
+          return false;
+        });
+        
+        filtered.sort((a, b) => new Date(a.time || a.timestamp) - new Date(b.time || b.timestamp));
+        
+        let pityCounter = 0;
+        let lastWasLost = false;
+        
+        return filtered.map((p, i) => {
+          pityCounter++;
+          const rarity = p.rarity || p.qualityLevel || 4;
+          const name = p.name || p.resourceName || '';
+          
+          let won5050 = undefined;
+          let pity = pityCounter;
+          
+          if (rarity === 5) {
+            if (type === 'featured') {
+              const isStandard = standard5Stars.some(s => name.toLowerCase().includes(s.toLowerCase()));
+              if (lastWasLost) {
+                won5050 = null;
+                lastWasLost = false;
+              } else {
+                won5050 = !isStandard;
+                lastWasLost = isStandard;
+              }
+            }
+            pityCounter = 0;
+          }
+          
+          return { 
+            id: p.id || Date.now() + i, 
+            name, 
+            rarity, 
+            pity: rarity === 5 ? pity : 0, 
+            won5050, 
+            timestamp: p.timestamp || p.time,
+            resourceType: p.resourceType || p.type || null
+          };
+        });
+      };
+      
+      let totalImported = 0;
+      ['featured', 'weapon', 'standardChar', 'standardWeap', 'beginner'].forEach(type => {
+        const history = convert(pulls, type);
+        if (history.length) {
+          let currentPity5 = 0;
+          for (let i = history.length - 1; i >= 0; i--) {
+            if (history[i].rarity === 5) break;
+            currentPity5++;
+          }
+          let currentPity4 = 0;
+          for (let i = history.length - 1; i >= 0; i--) {
+            if (history[i].rarity === 4) break;
+            currentPity4++;
+          }
+          const fiveStars = history.filter(p => p.rarity === 5);
+          const lastFive = fiveStars[fiveStars.length - 1];
+          const guaranteed = type === 'featured' && lastFive?.won5050 === false;
+          dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
+          totalImported += history.length;
+        }
+      });
+      
+      const fc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 1).length;
+      const wc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 2).length;
+      const sc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 5).length;
+      const sw = pulls.filter(p => (p.cardPoolType || p.gachaType) === 6).length;
+      const bc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 7).length;
+      const parts = [];
+      if (fc) parts.push(`${fc} char`);
+      if (wc) parts.push(`${wc} weap`);
+      if (sc + sw) parts.push(`${sc + sw} std`);
+      if (bc) parts.push(`${bc} beg`);
+      
+      toast?.addToast?.(`Imported ${totalImported} pulls! (${parts.join(', ')})`, 'success');
+      return true;
+    } catch (err) { 
+      toast?.addToast?.('Import failed: ' + err.message, 'error'); 
+      return false;
+    }
+  }, [toast]);
+
   const handleFileImport = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        const pulls = data.pulls || data.conveneHistory || data.history || [];
-        
-        // List of known standard 5★ characters (for 50/50 calculation)
-        // These are the characters you can lose 50/50 to on featured banner
-        const standard5Stars = ['Verina', 'Jianxin', 'Lingyang', 'Calcharo', 'Encore'];
-        
-        const convert = (arr, type) => {
-          const filtered = arr.filter(p => {
-            const poolType = p.cardPoolType || p.gachaType;
-            // wuwatracker cardPoolType mapping:
-            // 1 = Limited/Featured Character Banner
-            // 2 = Limited/Featured Weapon Banner  
-            // 5 = Standard Character Banner (Lustrous Tide - Resonator)
-            // 6 = Standard Weapon Banner (Lustrous Tide - Weapon)
-            // 7 = Beginner Banner (Beginner's Choice Convene)
-            if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 1;
-            if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 2;
-            if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 5;
-            if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 6;
-            if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 7;
-            return false;
-          });
-          
-          // Sort by timestamp (oldest first) to calculate pity correctly
-          filtered.sort((a, b) => new Date(a.time || a.timestamp) - new Date(b.time || b.timestamp));
-          
-          let pityCounter = 0;
-          let lastWasLost = false; // Track if last 5★ was a loss (for guarantee)
-          
-          return filtered.map((p, i) => {
-            pityCounter++;
-            const rarity = p.rarity || p.qualityLevel || 4;
-            const name = p.name || p.resourceName || '';
-            
-            let won5050 = undefined;
-            let pity = pityCounter;
-            
-            if (rarity === 5) {
-              // For featured banner, check if won or lost 50/50
-              if (type === 'featured') {
-                const isStandard = standard5Stars.some(s => name.toLowerCase().includes(s.toLowerCase()));
-                if (lastWasLost) {
-                  // This was a guaranteed pull
-                  won5050 = null; // Guaranteed, not a 50/50
-                  lastWasLost = false;
-                } else {
-                  // This was a 50/50
-                  won5050 = !isStandard;
-                  lastWasLost = isStandard;
-                }
-              }
-              pityCounter = 0; // Reset pity after 5★
-            }
-            
-            return { 
-              id: p.id || Date.now() + i, 
-              name, 
-              rarity, 
-              pity: rarity === 5 ? pity : 0, 
-              won5050, 
-              timestamp: p.timestamp || p.time,
-              resourceType: p.resourceType || p.type || null
-            };
-          });
-        };
-        
-        let totalImported = 0;
-        ['featured', 'weapon', 'standardChar', 'standardWeap', 'beginner'].forEach(type => {
-          const history = convert(pulls, type);
-          if (history.length) {
-            // Calculate current 5★ pity (pulls since last 5★)
-            let currentPity5 = 0;
-            for (let i = history.length - 1; i >= 0; i--) {
-              if (history[i].rarity === 5) break;
-              currentPity5++;
-            }
-            // Calculate current 4★ pity (pulls since last 4★)
-            // Note: 5★ pulls don't reset 4★ pity, only 4★ pulls do
-            let currentPity4 = 0;
-            for (let i = history.length - 1; i >= 0; i--) {
-              if (history[i].rarity === 4) break; // Only break on 4★, not 5★
-              currentPity4++;
-            }
-            const fiveStars = history.filter(p => p.rarity === 5);
-            const lastFive = fiveStars[fiveStars.length - 1];
-            const guaranteed = type === 'featured' && lastFive?.won5050 === false;
-            dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
-            totalImported += history.length;
-            console.log(`Imported ${type}: ${history.length} pulls, 5★ pity: ${currentPity5}, 4★ pity: ${currentPity4}`);
-          }
-        });
-        
-        // Detailed breakdown
-        const fc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 1).length;
-        const wc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 2).length;
-        const sc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 5).length;
-        const sw = pulls.filter(p => (p.cardPoolType || p.gachaType) === 6).length;
-        const bc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 7).length;
-        const parts = [];
-        if (fc) parts.push(`${fc} char`);
-        if (wc) parts.push(`${wc} weap`);
-        if (sc + sw) parts.push(`${sc + sw} std`);
-        if (bc) parts.push(`${bc} beg`);
-        
-        toast?.addToast?.(`Imported ${totalImported} pulls! (${parts.join(', ')})`, 'success');
-      } catch (err) { toast?.addToast?.('Import failed: ' + err.message, 'error'); }
+      processImportData(ev.target.result);
     };
     reader.readAsText(file);
     e.target.value = '';
-  }, [toast]);
+  }, [processImportData]);
+
+  const handlePasteImport = useCallback(() => {
+    if (!pasteJsonText.trim()) {
+      toast?.addToast?.('Please paste your JSON data first', 'error');
+      return;
+    }
+    const success = processImportData(pasteJsonText);
+    if (success) {
+      setPasteJsonText('');
+    }
+  }, [pasteJsonText, processImportData, toast]);
 
   // Export data
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: '2.9.36', state };
+    const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -4256,7 +4644,7 @@ function WhisperingWishesInner() {
   }, []);
 
   // Secret admin access - tap version 5 times quickly
-  const handleAdminTap = useCallback(() => {
+  const handleAdminTap = useCallback(async () => {
     if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
     const newCount = adminTapCount + 1;
     setAdminTapCount(newCount);
@@ -4278,7 +4666,10 @@ function WhisperingWishesInner() {
         setAdminTapCount(0);
         return;
       }
-      if (password === 'ADN3699@WW_ANDENE') {
+      // Hashed comparison — never store plaintext passwords in source
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+      const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      if (hashHex === 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27feda') {
         setShowAdminPanel(true);
         setAdminUnlocked(true); // Auto-unlock since password was verified
         try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
@@ -4318,25 +4709,32 @@ function WhisperingWishesInner() {
   }, [toast]);
 
 
+  // Hash a password using SHA-256
+  const hashPassword = useCallback(async (password) => {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }, []);
+
   // Verify admin password
-  const verifyAdminPassword = useCallback(() => {
+  const verifyAdminPassword = useCallback(async () => {
     if (!adminPassword || adminPassword.length < 4) {
       toast?.addToast?.('Password must be at least 4 characters', 'error');
       return;
     }
+    const hashedInput = await hashPassword(adminPassword);
     if (!storedAdminPass) {
       if (storageAvailable) {
-        try { localStorage.setItem(ADMIN_PASS_KEY, adminPassword); } catch {}
+        try { localStorage.setItem(ADMIN_PASS_KEY, hashedInput); } catch {}
       }
-      setStoredAdminPass(adminPassword);
+      setStoredAdminPass(hashedInput);
       setAdminUnlocked(true);
       toast?.addToast?.('Admin password set!', 'success');
-    } else if (adminPassword === storedAdminPass) {
+    } else if (hashedInput === storedAdminPass) {
       setAdminUnlocked(true);
     } else {
       toast?.addToast?.('Incorrect password', 'error');
     }
-  }, [adminPassword, storedAdminPass, toast]);
+  }, [adminPassword, storedAdminPass, toast, hashPassword]);
 
   // Show lockout screen if locked out
   if (isLockedOut) {
@@ -4356,17 +4754,17 @@ function WhisperingWishesInner() {
   }
 
   return (
-    <div className="bg-neutral-950">
-      <BackgroundGlow />
-      <TriangleMirrorWave />
-      <KuroStyles />
+    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''}`} style={{ background: visualSettings.oledMode ? '#000' : undefined }}>
+      <BackgroundGlow oledMode={visualSettings.oledMode} />
+      <TriangleMirrorWave oledMode={visualSettings.oledMode} />
+      <KuroStyles oledMode={visualSettings.oledMode} />
       
       {/* Onboarding Modal */}
       {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
       
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10" style={{backgroundColor: 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)'}}>
-        <div className="max-w-lg mx-auto px-3">
+      <header className="sticky top-0 z-50 border-b border-white/10" style={{backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)'}}>
+        <div className="max-w-lg md:max-w-2xl mx-auto px-3">
           <div className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer">
@@ -4381,7 +4779,7 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-2 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               <button onClick={handleExport} aria-label="Export backup" className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
@@ -4402,7 +4800,7 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-3 pt-3 pb-4 space-y-3 w-full">
+      <main className="max-w-lg md:max-w-2xl mx-auto px-3 pt-3 pb-4 space-y-3 w-full">
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -4415,7 +4813,7 @@ function WhisperingWishesInner() {
                 <div className="flex gap-2">
                   {[['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']].map(([key, label, color]) => (
                     <button key={key} onClick={() => setTrackerCategory(key)} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
-                      {key === 'character' ? <Sparkles size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
+                      {key === 'character' ? <Crown size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
                       {label}
                     </button>
                   ))}
@@ -4423,40 +4821,40 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            <div className="flex items-center justify-between text-gray-300 text-[10px]" style={{position: 'relative', zIndex: 5}}>
+            <div className="flex items-center justify-between text-gray-300 text-[10px] content-layer">
               <span>v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
               <CountdownTimer endDate={bannerEndDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
             </div>
             
             {new Date() > new Date(bannerEndDate) && (
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center" style={{position: 'relative', zIndex: 5}}>
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center content-layer">
                 <p className="text-yellow-400 text-xs font-medium">Banner period ended</p>
                 <p className="text-gray-400 text-[10px] mt-1">New banners are now live in-game. App update coming soon!</p>
               </div>
             )}
 
             {trackerCategory === 'character' && (
-              <div className="space-y-2" style={{position: 'relative', zIndex: 5}}>
+              <div className="space-y-2 content-layer">
                 {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} visualSettings={visualSettings} />)}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
-              <div className="space-y-2" style={{position: 'relative', zIndex: 5}}>
+              <div className="space-y-2 content-layer">
                 {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} visualSettings={visualSettings} />)}
               </div>
             )}
 
             {trackerCategory === 'standard' && (
-              <div className="space-y-3" style={{position: 'relative', zIndex: 5}}>
-                <div className="text-gray-300 text-xs uppercase tracking-wider" style={{position: 'relative', zIndex: 5}}>Permanent Banners</div>
+              <div className="space-y-3 content-layer">
+                <div className="text-gray-300 text-xs uppercase tracking-wider content-layer">Permanent Banners</div>
                 
                 {/* Standard Resonator Banner */}
                 {(() => {
                   const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
                   const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
                   return (
-                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
                       {activeBanners.standardCharBannerImage && (
                         <img 
                           src={activeBanners.standardCharBannerImage}
@@ -4469,7 +4867,7 @@ function WhisperingWishesInner() {
                             WebkitMaskImage: stdMask
                           }}
                           loading="eager"
-                          crossOrigin="anonymous"
+                
                           onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
@@ -4479,7 +4877,7 @@ function WhisperingWishesInner() {
                             <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
                             <span className="text-gray-200 text-[10px]">Standard Resonator</span>
                           </div>
-                          <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
+                          <div className="text-gray-300 text-[8px] mb-1 uppercase tracking-wider">Available 5★</div>
                           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
                             {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{n}</span>)}
                           </div>
@@ -4490,15 +4888,15 @@ function WhisperingWishesInner() {
                               <div className="flex-1 flex items-center gap-3">
                                 <div className="text-center">
                                   <div className="text-cyan-400 font-bold text-sm">{state.profile.standardChar.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
-                                  <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
+                                  <div className="text-gray-400 text-[8px] mt-0.5">5★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-purple-400 font-bold text-sm">{state.profile.standardChar.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
-                                  <div className="text-gray-300 text-[8px] mt-0.5">4★ Pity</div>
+                                  <div className="text-gray-400 text-[8px] mt-0.5">4★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-white font-bold text-sm">{state.profile.standardChar.history.length}</div>
-                                  <div className="text-gray-300 text-[8px] mt-0.5">Convenes</div>
+                                  <div className="text-gray-400 text-[8px] mt-0.5">Convenes</div>
                                 </div>
                               </div>
                             </div>
@@ -4514,7 +4912,7 @@ function WhisperingWishesInner() {
                   const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
                   const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
                   return (
-                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
                       {activeBanners.standardWeapBannerImage && (
                         <img 
                           src={activeBanners.standardWeapBannerImage}
@@ -4527,7 +4925,7 @@ function WhisperingWishesInner() {
                             WebkitMaskImage: stdMask
                           }}
                           loading="eager"
-                          crossOrigin="anonymous"
+                
                           onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
@@ -4537,7 +4935,7 @@ function WhisperingWishesInner() {
                             <h3 className="font-bold text-sm text-cyan-400">Winter Brume</h3>
                             <span className="text-gray-200 text-[10px]">Standard Weapon</span>
                           </div>
-                          <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
+                          <div className="text-gray-300 text-[8px] mb-1 uppercase tracking-wider">Available 5★</div>
                           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
                             {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{w.name}</span>)}
                           </div>
@@ -4548,15 +4946,15 @@ function WhisperingWishesInner() {
                               <div className="flex-1 flex items-center gap-3">
                                 <div className="text-center">
                                   <div className="text-cyan-400 font-bold text-sm">{state.profile.standardWeap.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
-                                  <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
+                                  <div className="text-gray-400 text-[8px] mt-0.5">5★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-purple-400 font-bold text-sm">{state.profile.standardWeap.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
-                                  <div className="text-gray-300 text-[8px] mt-0.5">4★ Pity</div>
+                                  <div className="text-gray-400 text-[8px] mt-0.5">4★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-white font-bold text-sm">{state.profile.standardWeap.history.length}</div>
-                                  <div className="text-gray-300 text-[8px] mt-0.5">Convenes</div>
+                                  <div className="text-gray-400 text-[8px] mt-0.5">Convenes</div>
                                 </div>
                               </div>
                             </div>
@@ -4601,11 +4999,22 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="events" />
 
-            <div className="flex items-center justify-between" style={{position: 'relative', zIndex: 5}}>
+            <div className="flex items-center justify-between content-layer">
               <h2 className="text-white font-bold text-sm">Time-Gated Content</h2>
-              <span className="text-gray-300 text-[10px]">Server: {state.server}</span>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    setActiveBanners(getActiveBanners());
+                    toast?.addToast?.('Banner data refreshed!', 'success');
+                  }}
+                  className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+                >
+                  <RefreshCcw size={12} /> Refresh
+                </button>
+                <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
+              </div>
             </div>
-            <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center justify-between" style={{position: 'relative', zIndex: 5}}>
+            <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center justify-between content-layer">
               <span className="text-yellow-400 text-xs font-medium">Total Available Astrite</span>
               <span className="text-yellow-400 font-bold text-sm">{Object.values(EVENTS).reduce((sum, ev) => sum + (parseInt(ev.rewards) || 0), 0).toLocaleString()} Astrite</span>
             </div>
@@ -4623,7 +5032,7 @@ function WhisperingWishesInner() {
                 return <EventCard key={key} event={{...ev, key}} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} visualSettings={visualSettings} />;
               })}
             </div>
-            <p className="text-neutral-500 text-[10px] text-center" style={{position: 'relative', zIndex: 5}}>Reset times based on {state.server} server (UTC{SERVERS[state.server]?.utcOffset >= 0 ? '+' : ''}{SERVERS[state.server]?.utcOffset})</p>
+            <p className="text-gray-500 text-[10px] text-center content-layer">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
           </div>
         )}
 
@@ -4641,7 +5050,7 @@ function WhisperingWishesInner() {
                     <div className="kuro-label">Featured Convene</div>
                     <div className="grid grid-cols-2 gap-2">
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'char'); }} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char' ? 'active-gold' : ''}`}>
-                        <Sparkles size={16} className="mx-auto mb-1.5" />Resonator
+                        <Crown size={16} className="mx-auto mb-1.5" />Resonator
                       </button>
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'weap'); }} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' ? 'active-pink' : ''}`}>
                         <Swords size={16} className="mx-auto mb-1.5" />Weapon
@@ -4702,7 +5111,7 @@ function WhisperingWishesInner() {
                           <input type="text" inputMode="numeric" value={state.calc.charCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('charCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-violet-300">4★ Target:</span>
+                          <span className="text-purple-400">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.char4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('char4StarCopies', Math.max(0, Math.min(21, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -4730,7 +5139,7 @@ function WhisperingWishesInner() {
                           <input type="text" inputMode="numeric" value={state.calc.weapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('weapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-violet-300">4★ Target:</span>
+                          <span className="text-purple-400">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.weap4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('weap4StarCopies', Math.max(0, Math.min(15, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -4758,7 +5167,7 @@ function WhisperingWishesInner() {
                           <input type="text" inputMode="numeric" value={state.calc.stdCharCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdCharCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-violet-300">4★ Target:</span>
+                          <span className="text-purple-400">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdChar4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('stdChar4StarCopies', Math.max(0, Math.min(21, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -4786,7 +5195,7 @@ function WhisperingWishesInner() {
                           <input type="text" inputMode="numeric" value={state.calc.stdWeapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdWeapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-violet-300">4★ Target:</span>
+                          <span className="text-purple-400">4★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdWeap4StarCopies} onChange={e => { const v = parseInt(e.target.value) || 0; setCalc('stdWeap4StarCopies', Math.max(0, Math.min(15, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                       </div>
@@ -4802,7 +5211,7 @@ function WhisperingWishesInner() {
                   <div>
                     <label className="kuro-label">Astrite</label>
                     <input type="number" value={state.calc.astrite} onChange={e => setCalc('astrite', e.target.value)} className="kuro-input" placeholder="0" />
-                    <p className="text-gray-200 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / 160)} Convenes</p>
+                    <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / 160)} Convenes</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[160, 800, 1600, 3200].map(amt => (
                         <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
@@ -4813,14 +5222,14 @@ function WhisperingWishesInner() {
 
                   {/* Featured banner resources */}
                   {state.calc.bannerCategory === 'featured' && (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-xs mb-1.5 block font-medium text-yellow-400">Radiant Tides</label>
                           <input type="number" value={state.calc.radiant} onChange={e => setCalc('radiant', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String((+state.calc.radiant || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String((+state.calc.radiant || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -4831,7 +5240,7 @@ function WhisperingWishesInner() {
                           <input type="number" value={state.calc.forging} onChange={e => setCalc('forging', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -4846,7 +5255,7 @@ function WhisperingWishesInner() {
                       <input type="number" value={state.calc.lustrous} onChange={e => setCalc('lustrous', e.target.value)} className="kuro-input" placeholder="0" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String((+state.calc.lustrous || 0) + amt))} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String((+state.calc.lustrous || 0) + amt))} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
                         ))}
                       </div>
                     </div>
@@ -4861,7 +5270,7 @@ function WhisperingWishesInner() {
                           onClick={() => setCalc('allocPriority', Math.min(100, (state.calc.allocPriority ?? 50) + 10))} 
                           className={`kuro-btn text-xs py-3 ${(state.calc.allocPriority ?? 50) >= 50 ? 'active-gold' : ''}`}
                         >
-                          <Sparkles size={14} className="mx-auto mb-1" />
+                          <Crown size={14} className="mx-auto mb-1" />
                           <div className="font-medium">Resonator</div>
                           <div className="text-xl kuro-number" style={{color: (state.calc.allocPriority ?? 50) >= 50 ? '#fbbf24' : '#6b7280'}}>{state.calc.allocPriority ?? 50}%</div>
                           <div className="text-[9px] text-gray-500 mt-0.5">tap to +10%</div>
@@ -4893,28 +5302,28 @@ function WhisperingWishesInner() {
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-yellow-400 kuro-number text-xl">{charPulls}</div>
-                          <div className="text-gray-200 text-[10px]">Resonator Convenes</div>
+                          <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
                           {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-pink-400 kuro-number text-xl">{weapPulls}</div>
-                          <div className="text-gray-200 text-[10px]">Weapon Convenes</div>
+                          <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
                           {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls}</div>
-                          <div className="text-gray-200 text-[10px]">Resonator Convenes</div>
+                          <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
                           {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls}</div>
-                          <div className="text-gray-200 text-[10px]">Weapon Convenes</div>
+                          <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
                           {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
                         </div>
                       )}
@@ -4931,26 +5340,26 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-gold">
                         <div className={`text-3xl kuro-number ${parseFloat(charStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(charStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(charStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{charStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.charCopies} copies)</div>
+                        <div className="text-gray-400 text-[10px] mt-1">P(≥{state.calc.charCopies} copies)</div>
                       </div>
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className="text-2xl kuro-number text-cyan-400">~{charStats.expectedCopies}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Expected Copies</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-red">
                         <div className="text-xl kuro-number text-red-400">{charStats.missingPulls > 0 ? charStats.missingPulls : '✓'}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">{charStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                        <div className="text-gray-400 text-[10px] mt-1">{charStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gray">
                         <div className="text-xl kuro-number text-gray-400">{charStats.worstCase}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Worst Case</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{charStats.fourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div></div>
-                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{charStats.featuredFourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">Featured 4★</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{charStats.fourStarCount}</span><div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{charStats.featuredFourStarCount}</span><div className="text-gray-400 text-[9px] mt-0.5">Featured 4★</div></div>
                     </div>
                 </CardBody>
               </Card>
@@ -4963,26 +5372,26 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-pink">
                         <div className={`text-3xl kuro-number ${parseFloat(weapStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(weapStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(weapStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{weapStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.weapCopies} copies)</div>
+                        <div className="text-gray-400 text-[10px] mt-1">P(≥{state.calc.weapCopies} copies)</div>
                       </div>
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className="text-2xl kuro-number text-cyan-400">~{weapStats.expectedCopies}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Expected Copies</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-red">
                         <div className="text-xl kuro-number text-red-400">{weapStats.missingPulls > 0 ? weapStats.missingPulls : '✓'}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">{weapStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                        <div className="text-gray-400 text-[10px] mt-1">{weapStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gray">
                         <div className="text-xl kuro-number text-gray-400">{weapStats.worstCase}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Worst Case</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{weapStats.fourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div></div>
-                      <div className="kuro-stat kuro-stat-purple"><span className="text-violet-300 kuro-number">~{weapStats.featuredFourStarCount}</span><div className="text-gray-200 text-[9px] mt-0.5">Featured 4★</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{weapStats.fourStarCount}</span><div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div></div>
+                      <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{weapStats.featuredFourStarCount}</span><div className="text-gray-400 text-[9px] mt-0.5">Featured 4★</div></div>
                     </div>
                 </CardBody>
               </Card>
@@ -4995,26 +5404,26 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className={`text-3xl kuro-number ${parseFloat(stdCharStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stdCharStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stdCharStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stdCharStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.stdCharCopies} copies)</div>
+                        <div className="text-gray-400 text-[10px] mt-1">P(≥{state.calc.stdCharCopies} copies)</div>
                       </div>
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className="text-2xl kuro-number text-cyan-400">~{stdCharStats.expectedCopies}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Expected Copies</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-red">
                         <div className="text-xl kuro-number text-red-400">{stdCharStats.missingPulls > 0 ? stdCharStats.missingPulls : '✓'}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">{stdCharStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                        <div className="text-gray-400 text-[10px] mt-1">{stdCharStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gray">
                         <div className="text-xl kuro-number text-gray-400">{stdCharStats.worstCase}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Worst Case</div>
                       </div>
                     </div>
                     <div className="kuro-stat kuro-stat-purple text-xs">
-                      <span className="text-violet-300 kuro-number">~{stdCharStats.fourStarCount}</span>
-                      <div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div>
+                      <span className="text-purple-400 kuro-number">~{stdCharStats.fourStarCount}</span>
+                      <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
                     </div>
                 </CardBody>
               </Card>
@@ -5027,26 +5436,26 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className={`text-3xl kuro-number ${parseFloat(stdWeapStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stdWeapStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stdWeapStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stdWeapStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.stdWeapCopies} copies)</div>
+                        <div className="text-gray-400 text-[10px] mt-1">P(≥{state.calc.stdWeapCopies} copies)</div>
                       </div>
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className="text-2xl kuro-number text-cyan-400">~{stdWeapStats.expectedCopies}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Expected Copies</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-red">
                         <div className="text-xl kuro-number text-red-400">{stdWeapStats.missingPulls > 0 ? stdWeapStats.missingPulls : '✓'}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">{stdWeapStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                        <div className="text-gray-400 text-[10px] mt-1">{stdWeapStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gray">
                         <div className="text-xl kuro-number text-gray-400">{stdWeapStats.worstCase}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Worst Case</div>
                       </div>
                     </div>
                     <div className="kuro-stat kuro-stat-purple text-xs">
-                      <span className="text-violet-300 kuro-number">~{stdWeapStats.fourStarCount}</span>
-                      <div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div>
+                      <span className="text-purple-400 kuro-number">~{stdWeapStats.fourStarCount}</span>
+                      <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
                     </div>
                 </CardBody>
               </Card>
@@ -5060,25 +5469,25 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">
                         <div className="text-2xl kuro-number text-emerald-400">{combined.both}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Get Both</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Get Both</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gold">
                         <div className="text-yellow-400 text-2xl kuro-number">{combined.atLeastOne}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">At Least One</div>
+                        <div className="text-gray-400 text-[10px] mt-1">At Least One</div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                    <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
                       <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-gold' : 'kuro-stat-cyan'}`}>
                         <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-yellow-400' : 'text-cyan-400'}`}>{combined.charOnly}%</span>
-                        <div className="text-gray-200 mt-0.5">Char Only</div>
+                        <div className="text-gray-400 mt-0.5">Char Only</div>
                       </div>
                       <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-pink' : 'kuro-stat-cyan'}`}>
                         <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-pink-400' : 'text-cyan-400'}`}>{combined.weapOnly}%</span>
-                        <div className="text-gray-200 mt-0.5">Weap Only</div>
+                        <div className="text-gray-400 mt-0.5">Weap Only</div>
                       </div>
                       <div className="kuro-stat kuro-stat-red">
                         <span className="text-red-400 kuro-number">{combined.neither}%</span>
-                        <div className="text-gray-200 mt-0.5">Neither</div>
+                        <div className="text-gray-400 mt-0.5">Neither</div>
                       </div>
                     </div>
                     <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
@@ -5116,14 +5525,14 @@ function WhisperingWishesInner() {
                     <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
                     <span className="text-yellow-400 font-bold">{dailyIncome} Astrite</span>
                   </div>
-                  <div className="text-gray-200 text-[10px] mt-1">≈ {(dailyIncome / 160).toFixed(2)} Convenes/day • {Math.floor(dailyIncome * 30 / 160)} Convenes/month</div>
+                  <div className="text-gray-400 text-[10px] mt-1">≈ {(dailyIncome / 160).toFixed(2)} Convenes/day • {Math.floor(dailyIncome * 30 / 160)} Convenes/month</div>
                 </div>
               </CardBody>
             </Card>
 
             <Card>
               <div className="cursor-pointer" onClick={() => setShowIncomePanel(!showIncomePanel)}>
-                <CardHeader action={<ChevronDown size={14} className={`text-gray-200 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
+                <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
               </div>
               {showIncomePanel && (
                 <CardBody className="space-y-1.5">
@@ -5177,10 +5586,10 @@ function WhisperingWishesInner() {
 
             {state.planner.addedIncome.length > 0 && (
               <Card>
-                <CardHeader action={<button onClick={() => state.planner.addedIncome.forEach(i => dispatch({ type: 'REMOVE_INCOME', id: i.id }))} className="text-red-400 text-[9px] hover:text-red-300">Clear All</button>}>Added Purchases</CardHeader>
-                <CardBody className="space-y-1">
+                <CardHeader action={<button onClick={() => state.planner.addedIncome.forEach(i => dispatch({ type: 'REMOVE_INCOME', id: i.id }))} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear All</button>}>Added Purchases</CardHeader>
+                <CardBody className="space-y-1.5">
                   {state.planner.addedIncome.map(i => (
-                    <div key={i.id} className="flex items-center justify-between p-1.5 bg-white/5 rounded text-xs">
+                    <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
                       <span className="text-gray-200">{i.label}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-yellow-400">+{i.astrite}</span>
@@ -5191,7 +5600,7 @@ function WhisperingWishesInner() {
                     </div>
                   ))}
                   <div className="pt-2 border-t border-white/10 flex justify-between text-xs">
-                    <span className="text-gray-300">Total Spent</span>
+                    <span className="text-gray-400">Total Spent</span>
                     <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + i.price, 0).toFixed(2)}</span>
                   </div>
                 </CardBody>
@@ -5203,21 +5612,21 @@ function WhisperingWishesInner() {
                 <CardHeader>By Banner End</CardHeader>
                 <CardBody className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-[10px]">v{activeBanners.version} P{activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
+                    <span className="text-gray-400 text-[10px]">v{activeBanners.version} P{activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
                     <CountdownTimer endDate={bannerEndDate} compact />
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="kuro-stat p-2.5 text-center">
+                    <div className="kuro-stat p-2 text-center">
                       <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd}</div>
-                      <div className="text-gray-300 text-[9px]">Total Convenes</div>
+                      <div className="text-gray-400 text-[9px]">Total Convenes</div>
                     </div>
-                    <div className="kuro-stat p-2.5 text-center">
+                    <div className="kuro-stat p-2 text-center">
                       <div className="text-white kuro-number text-xl">{Math.floor(planData.incomeByEnd / 160)}</div>
-                      <div className="text-gray-300 text-[9px]">Earned Convenes</div>
+                      <div className="text-gray-400 text-[9px]">Earned Convenes</div>
                     </div>
-                    <div className="kuro-stat p-2.5 text-center">
+                    <div className="kuro-stat p-2 text-center">
                       <div className="text-white kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
-                      <div className="text-gray-300 text-[9px]">Total Astrite</div>
+                      <div className="text-gray-400 text-[9px]">Total Astrite</div>
                     </div>
                   </div>
                   <div className="text-gray-500 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
@@ -5231,10 +5640,10 @@ function WhisperingWishesInner() {
                 <div className="grid grid-cols-3 gap-2">
                   {[7, 30, 90].map(days => (
                     <div key={days} className="kuro-stat p-3 text-center">
-                      <div className="text-gray-200 text-[10px] mb-1">{days} Days</div>
+                      <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
                       <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / 160)}</div>
-                      <div className="text-gray-300 text-[9px]">Convenes</div>
-                      <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Ast</div>
+                      <div className="text-gray-400 text-[9px]">Convenes</div>
+                      <div className="text-gray-500 text-[9px]">{(dailyIncome * days).toLocaleString()} Ast</div>
                     </div>
                   ))}
                 </div>
@@ -5250,7 +5659,7 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader>Goal Progress</CardHeader>
               <CardBody className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="kuro-label">Base Convenes (per copy)</label>
                     <select value={state.planner.goalPulls} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +e.target.value })} className="kuro-input w-full">
@@ -5268,30 +5677,30 @@ function WhisperingWishesInner() {
                     </select>
                   </div>
                 </div>
-                <div className="p-2 bg-white/5 rounded text-[10px] text-gray-200 text-center">
+                <div className="p-2 bg-white/5 rounded text-[10px] text-gray-400 text-center">
                   Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-200">Target</span>
+                    <span className="text-gray-400">Target</span>
                     <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Ast)</span>
                   </div>
                   <div className="h-3 bg-neutral-800 rounded-full overflow-hidden">
                     <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
                   </div>
                   <div className="flex justify-between text-[10px] mt-1">
-                    <span className="text-gray-300">{Math.floor(planData.currentAstrite / 160)} / {planData.targetPulls} Convenes</span>
+                    <span className="text-gray-400">{Math.floor(planData.currentAstrite / 160)} / {planData.targetPulls} Convenes</span>
                     <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="kuro-stat p-3 text-center">
                     <div className="text-yellow-400 kuro-number text-xl">{planData.goalNeeded.toLocaleString()}</div>
-                    <div className="text-gray-200 text-[10px]">Astrite Needed</div>
+                    <div className="text-gray-400 text-[10px]">Astrite Needed</div>
                   </div>
                   <div className="kuro-stat p-3 text-center">
                     <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded}</div>
-                    <div className="text-gray-200 text-[10px]">Days to Goal</div>
+                    <div className="text-gray-400 text-[10px]">Days to Goal</div>
                   </div>
                 </div>
                 {planData.goalDaysNeeded !== Infinity && planData.goalDaysNeeded > 0 && (
@@ -5311,11 +5720,11 @@ function WhisperingWishesInner() {
                     <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
                       <div>
                         <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                        <div className="text-gray-300 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
+                        <div className="text-gray-400 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30">Load</button>
-                        <button onClick={() => dispatch({ type: 'DELETE_BOOKMARK', id: b.id })} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30">×</button>
+                        <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">Load</button>
+                        <button onClick={() => dispatch({ type: 'DELETE_BOOKMARK', id: b.id })} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors">×</button>
                       </div>
                     </div>
                   ))}
@@ -5343,7 +5752,7 @@ function WhisperingWishesInner() {
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
-                    <CardHeader>Luck Rating</CardHeader>
+                    <CardHeader action={<button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors"><TrendingUp size={12} /> Leaderboard</button>}>Luck Rating</CardHeader>
                     <CardBody>
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
@@ -5369,6 +5778,279 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
                 )}
+                
+                {/* Luck Leaderboard Modal */}
+                {showLeaderboard && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
+                      <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-white font-bold text-sm">Luck Leaderboard</h3>
+                          <p className="text-gray-400 text-[10px]">Anonymous rankings by avg pity</p>
+                        </div>
+                        <button onClick={() => setShowLeaderboard(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                        {leaderboardLoading ? (
+                          <div className="text-center py-8">
+                            <div className="text-gray-400 text-sm">Loading...</div>
+                          </div>
+                        ) : leaderboardData.length === 0 ? (
+                          <div className="text-center py-8">
+                            <div className="text-gray-500 text-sm mb-2">No entries yet</div>
+                            <div className="text-gray-600 text-[10px]">Be the first to submit!</div>
+                          </div>
+                        ) : (
+                          leaderboardData.map((entry, i) => {
+                            const isYou = entry.id === userLeaderboardId;
+                            const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
+                            return (
+                              <div 
+                                key={entry.id}
+                                className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
+                              >
+                                <div 
+                                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                  style={{
+                                    background: i < 3 ? `linear-gradient(135deg, ${medalColors[i]}40, ${medalColors[i]}20)` : 'rgba(255,255,255,0.1)',
+                                    color: i < 3 ? medalColors[i] : '#9ca3af',
+                                    border: i < 3 ? `1px solid ${medalColors[i]}50` : '1px solid rgba(255,255,255,0.1)',
+                                    boxShadow: i < 3 ? `0 0 10px ${medalColors[i]}30` : 'none'
+                                  }}
+                                >
+                                  {i + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
+                                      {entry.id}
+                                    </span>
+                                    {isYou && <span className="text-[8px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded">YOU</span>}
+                                  </div>
+                                  <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                    {entry.avgPity.toFixed(1)}
+                                  </div>
+                                  <div className="text-[9px] text-gray-500">avg pity</div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                      <div className="p-4 border-t border-white/10 space-y-2">
+                        {userLeaderboardId && overallStats?.avgPity && (
+                          <>
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{userLeaderboardId}</span></span>
+                              <span className="text-gray-400">Your Avg: <span className="text-white font-bold">{overallStats.avgPity}</span></span>
+                            </div>
+                            <button
+                              onClick={submitToLeaderboard}
+                              className="w-full kuro-btn active-cyan py-2 text-xs font-medium"
+                            >
+                              Submit My Score
+                            </button>
+                            <p className="text-gray-500 text-[9px] text-center">Anonymous • No personal data shared</p>
+                          </>
+                        )}
+                        {!overallStats?.avgPity && (
+                          <p className="text-gray-500 text-[10px] text-center">Import convene history to participate</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Trophies & Achievements */}
+                {trophies && trophies.list.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
+                      <span className="text-gray-500 text-[10px]">{trophies.list.length} earned</span>
+                    </CardHeader>
+                    <CardBody>
+                      <div className="grid grid-cols-3 gap-2">
+                        {trophies.list.map(trophy => {
+                          const IconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, Fish, Diamond, Gamepad2, Star };
+                          const IconComponent = IconMap[trophy.icon] || Star;
+                          return (
+                            <div 
+                              key={trophy.id} 
+                              className="relative p-2.5 rounded-lg text-center transition-all hover:scale-105 cursor-default"
+                              style={{
+                                background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
+                                border: `1px solid ${trophy.color}50`,
+                                boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05`
+                              }}
+                            >
+                              <div 
+                                className="w-9 h-9 mx-auto mb-1.5 rounded-full flex items-center justify-center"
+                                style={{
+                                  background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`,
+                                  boxShadow: `0 0 15px ${trophy.color}40`
+                                }}
+                              >
+                                <IconComponent size={18} style={{ color: trophy.color }} />
+                              </div>
+                              <div className="text-[9px] font-bold text-white truncate">{trophy.name}</div>
+                              <div className="text-[8px] text-gray-400 truncate">{trophy.desc}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Current 50/50 Streak */}
+                      {trophies.stats.currentStreak.type && (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-400 text-[10px]">Current 50/50 Streak</span>
+                            <span className={`text-sm font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {trophies.stats.currentStreak.count}× {trophies.stats.currentStreak.type === 'win' ? '✓ Won' : '✗ Lost'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </CardBody>
+                  </Card>
+                )}
+
+                {/* 5★ Pity Distribution Histogram */}
+                {(() => {
+                  const allHist = [...(state.profile.featured?.history || []), ...(state.profile.weapon?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.standardWeap?.history || [])];
+                  const fiveStars = allHist.filter(p => p.rarity === 5 && p.pity > 0);
+                  if (fiveStars.length < 2) return null;
+                  
+                  // Group pity into buckets of 10
+                  const buckets = {};
+                  fiveStars.forEach(p => {
+                    const bucket = Math.floor((p.pity - 1) / 10) * 10 + 1;
+                    const label = `${bucket}-${bucket + 9}`;
+                    buckets[label] = (buckets[label] || 0) + 1;
+                  });
+                  
+                  // Ensure all buckets from 1-10 to 71-80 exist
+                  const allBuckets = ['1-10', '11-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71-80'];
+                  allBuckets.forEach(b => { if (!buckets[b]) buckets[b] = 0; });
+                  
+                  const maxCount = Math.max(...Object.values(buckets), 1);
+                  const avgPity = (fiveStars.reduce((sum, p) => sum + p.pity, 0) / fiveStars.length).toFixed(1);
+                  
+                  // Color coding
+                  const getBarColor = (label) => {
+                    const start = parseInt(label.split('-')[0]);
+                    if (start <= 20) return '#22c55e'; // Green - very lucky
+                    if (start <= 40) return '#84cc16'; // Lime - lucky
+                    if (start <= 50) return '#fbbf24'; // Yellow - average
+                    if (start <= 60) return '#f97316'; // Orange - unlucky
+                    return '#ef4444'; // Red - soft pity / hard pity
+                  };
+                  
+                  return (
+                    <Card>
+                      <CardHeader>
+                        <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
+                        <span className="text-gray-500 text-[10px]">{fiveStars.length} pulls</span>
+                      </CardHeader>
+                      <CardBody>
+                        {/* Histogram bars - neon glow style */}
+                        <div className="flex items-end gap-1.5 h-24 mb-2">
+                          {allBuckets.map(label => {
+                            const count = buckets[label] || 0;
+                            const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                            const color = getBarColor(label);
+                            return (
+                              <div key={label} className="flex-1 flex flex-col items-center">
+                                <div className="w-full relative" style={{ height: '96px' }}>
+                                  {count > 0 && (
+                                    <div 
+                                      className="absolute left-0 right-0 text-[8px] text-center font-bold"
+                                      style={{ 
+                                        bottom: `${height}%`, 
+                                        marginBottom: '4px',
+                                        color: color,
+                                        textShadow: `0 0 8px ${color}`
+                                      }}
+                                    >
+                                      {count}
+                                    </div>
+                                  )}
+                                  {/* Neon bar - semi-filled with glowing border */}
+                                  <div 
+                                    className="absolute bottom-0 left-1 right-1 rounded-t transition-all"
+                                    style={{ 
+                                      height: `${height}%`, 
+                                      minHeight: count > 0 ? '8px' : '0',
+                                      background: `linear-gradient(to top, ${color}40, ${color}20)`,
+                                      border: count > 0 ? `1px solid ${color}90` : 'none',
+                                      borderBottom: 'none',
+                                      boxShadow: count > 0 ? `0 0 12px ${color}50, inset 0 0 15px ${color}30` : 'none',
+                                    }} 
+                                  />
+                                  {/* Bottom glow line */}
+                                  {count > 0 && (
+                                    <div 
+                                      className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
+                                      style={{ 
+                                        background: color,
+                                        boxShadow: `0 0 8px ${color}, 0 0 16px ${color}80`
+                                      }} 
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* X-axis labels */}
+                        <div className="flex gap-1.5">
+                          {allBuckets.map(label => (
+                            <div key={label} className="flex-1 text-[8px] text-gray-500 text-center">
+                              {label.split('-')[0]}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Stats summary */}
+                        <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{Math.min(...fiveStars.map(p => p.pity))}</div>
+                            <div className="text-gray-500 text-[9px]">Earliest</div>
+                          </div>
+                          <div>
+                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(251,191,36,0.5)' }}>{avgPity}</div>
+                            <div className="text-gray-500 text-[9px]">Average</div>
+                          </div>
+                          <div>
+                            <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)' }}>{Math.max(...fiveStars.map(p => p.pity))}</div>
+                            <div className="text-gray-500 text-[9px]">Latest</div>
+                          </div>
+                        </div>
+                        
+                        {/* Pity zone legend - neon dots */}
+                        <div className="mt-2 flex items-center justify-center gap-3 text-[8px]">
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span> 
+                            <span className="text-gray-400">Lucky</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#fbbf24', boxShadow: '0 0 6px #fbbf24' }}></span> 
+                            <span className="text-gray-400">Average</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#ef4444', boxShadow: '0 0 6px #ef4444' }}></span> 
+                            <span className="text-gray-400">Soft Pity</span>
+                          </span>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  );
+                })()}
 
                 {/* Convenes Chart with Time Range */}
                 <Card>
@@ -5456,14 +6138,14 @@ function WhisperingWishesInner() {
                                 <button 
                                   onClick={() => setChartOffset(Math.max(0, clampedOffset - Math.floor(maxVisible / 2)))}
                                   disabled={!canGoLeft}
-                                  className={`p-1 rounded ${canGoLeft ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
+                                  className={`p-1 rounded transition-colors ${canGoLeft ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
                                 >
                                   <ChevronDown size={14} className="rotate-90" />
                                 </button>
                                 <button 
                                   onClick={() => setChartOffset(Math.min(maxOffset, clampedOffset + Math.floor(maxVisible / 2)))}
                                   disabled={!canGoRight}
-                                  className={`p-1 rounded ${canGoRight ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
+                                  className={`p-1 rounded transition-colors ${canGoRight ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
                                 >
                                   <ChevronDown size={14} className="-rotate-90" />
                                 </button>
@@ -5505,72 +6187,15 @@ function WhisperingWishesInner() {
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-white font-bold">{overallStats.totalPulls}</div><div className="text-gray-400 text-[9px]">Total Pulls</div></div>
-                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls}</div><div className="text-gray-400 text-[9px]">Total Pulls</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-emerald-400 font-bold text-sm">{overallStats.won5050}</div><div className="text-gray-400 text-[9px]">Won 50/50</div></div>
-                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-red-400 font-bold text-sm">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
-                      <div className="p-2 bg-white/5 rounded text-center"><div className="text-white font-bold text-sm">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm">{overallStats.won5050}</div><div className="text-gray-400 text-[9px]">Won 50/50</div></div>
+                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
                     </div>
                     {overallStats.winRate && <div className="text-center text-[10px] text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold">{overallStats.winRate}%</span></div>}
-                  </CardBody>
-                </Card>
-
-                {/* Pity Distribution */}
-                <Card>
-                  <CardHeader>Pity Distribution</CardHeader>
-                  <CardBody>
-                    {(() => {
-                      const allPulls = [...(state.profile.featured?.history || []), ...(state.profile.weapon?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.standardWeap?.history || [])];
-                      const fiveStars = allPulls.filter(p => p.rarity === 5 && p.pity > 0);
-                      if (fiveStars.length < 2) return <p className="text-gray-500 text-xs text-center py-4">Need more 5★ data</p>;
-                      
-                      const ranges = [
-                        { range: '1-40', label: 'Early', min: 1, max: 40, color: '#22c55e', glow: 'rgba(34,197,94,0.4)' },
-                        { range: '41-60', label: 'Normal', min: 41, max: 60, color: '#3b82f6', glow: 'rgba(59,130,246,0.4)' },
-                        { range: '61-70', label: 'Soft Pity', min: 61, max: 70, color: '#f59e0b', glow: 'rgba(245,158,11,0.4)' },
-                        { range: '71-80', label: 'Hard Pity', min: 71, max: 80, color: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
-                      ];
-                      
-                      const maxCount = Math.max(...ranges.map(r => fiveStars.filter(p => p.pity >= r.min && p.pity <= r.max).length));
-                      
-                      return (
-                        <div className="space-y-3">
-                          {ranges.map(({range, label, min, max, color, glow}) => {
-                            const count = fiveStars.filter(p => p.pity >= min && p.pity <= max).length;
-                            const pct = fiveStars.length > 0 ? Math.round((count / fiveStars.length) * 100) : 0;
-                            const barWidth = maxCount > 0 ? (count / maxCount) * 50 : 0;
-                            return (
-                              <div key={range}>
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full" style={{backgroundColor: color, boxShadow: `0 0 6px ${glow}`}} />
-                                    <span className="text-gray-200 text-[10px] font-medium">{label}</span>
-                                    <span className="text-gray-500 text-[9px]">{range}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold" style={{color}}>{count}</span>
-                                    <span className="text-gray-500 text-[9px]">{pct}%</span>
-                                  </div>
-                                </div>
-                                <div className="h-4 rounded overflow-hidden" style={{background: 'rgba(255,255,255,0.03)'}}>
-                                  <div className="h-full rounded transition-all duration-500" style={{
-                                    width: `${Math.max(barWidth, count > 0 ? 4 : 0)}%`,
-                                    background: `linear-gradient(90deg, ${color}50, ${color}90)`,
-                                    boxShadow: count > 0 ? `inset 0 1px 0 rgba(255,255,255,0.15), 0 0 8px ${glow}` : 'none'
-                                  }} />
-                                </div>
-                              </div>
-                            );
-                          })}
-                          <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                            <span className="text-gray-400 text-[9px]">Total 5★ Pulls</span>
-                            <span className="text-white text-[10px] font-bold">{fiveStars.length}</span>
-                          </div>
-                        </div>
-                      );
-                    })()}
                   </CardBody>
                 </Card>
 
@@ -5588,7 +6213,7 @@ function WhisperingWishesInner() {
                       const fiveStars = allPulls.filter(p => p.rarity === 5 && p.name).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
                       if (fiveStars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No 5★ pulls yet</p>;
                       return (
-                        <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
+                        <div className="space-y-1 max-h-60 overflow-y-auto">
                           {fiveStars.map((p, i) => {
                             const pityColor = p.pity <= 40 ? '#34d399' : p.pity <= 60 ? '#60a5fa' : p.pity <= 70 ? '#fbbf24' : '#f87171';
                             const pityTextColor = p.pity <= 40 ? 'text-emerald-400' : p.pity <= 60 ? 'text-blue-400' : p.pity <= 70 ? 'text-yellow-400' : 'text-red-400';
@@ -5623,16 +6248,16 @@ function WhisperingWishesInner() {
                       const wepHist = [...(state.profile.weapon?.history || []), ...(state.profile.standardWeap?.history || []), ...(state.profile.beginner?.history || []).filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
                       return (<>
                     <p className="text-gray-400 text-[9px] mb-1.5">Resonators</p>
-                    <div className="grid grid-cols-2 gap-1.5 mb-3">
-                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{resHist.filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
-                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{resHist.filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{resHist.filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{resHist.filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-[9px] mb-1.5">Weapons</p>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      <div className="p-2 bg-yellow-500/10 rounded text-center"><div className="text-yellow-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
-                      <div className="p-2 bg-purple-500/10 rounded text-center"><div className="text-purple-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
-                      <div className="p-1.5 bg-blue-500/10 rounded text-center"><div className="text-blue-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 3).length}</div><div className="text-gray-400 text-[8px]">3★</div></div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 5).length}</div><div className="text-gray-400 text-[9px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 4).length}</div><div className="text-gray-400 text-[9px]">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm">{wepHist.filter(p => p.rarity === 3).length}</div><div className="text-gray-400 text-[9px]">3★</div></div>
                     </div>
                       </>);
                     })()}
@@ -5699,7 +6324,7 @@ function WhisperingWishesInner() {
                   const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length;
                   const pct = totalItems > 0 ? Math.round((totalOwned / totalItems) * 100) : 0;
                   return (
-                    <div className="p-3 rounded-lg border border-white/10 bg-white/5" style={{position: 'relative', zIndex: 5}}>
+                    <div className="p-3 rounded-lg border border-white/10 bg-white/5 content-layer">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-white text-xs font-medium">Collection Progress</span>
                         <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
@@ -5734,88 +6359,90 @@ function WhisperingWishesInner() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     {collectionSearch && (
-                      <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                      <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
                         <X size={14} />
                       </button>
                     )}
                   </div>
                   
                   {/* Filter Row */}
-                  <div className="flex flex-wrap gap-1.5 items-center">
-                    {/* Element Filter */}
-                    <select
-                      value={collectionElementFilter}
-                      onChange={(e) => setCollectionElementFilter(e.target.value)}
-                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
-                    >
-                      <option value="all">All Elements</option>
-                      <option value="Aero">🌀 Aero</option>
-                      <option value="Glacio">❄️ Glacio</option>
-                      <option value="Electro">⚡ Electro</option>
-                      <option value="Fusion">🔥 Fusion</option>
-                      <option value="Spectro">✨ Spectro</option>
-                      <option value="Havoc">💜 Havoc</option>
-                    </select>
-                    
-                    {/* Weapon Filter */}
-                    <select
-                      value={collectionWeaponFilter}
-                      onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
-                    >
-                      <option value="all">All Weapons</option>
-                      <option value="Broadblade">Broadblade</option>
-                      <option value="Sword">Sword</option>
-                      <option value="Pistols">Pistols</option>
-                      <option value="Gauntlets">Gauntlets</option>
-                      <option value="Rectifier">Rectifier</option>
-                    </select>
-                    
-                    {/* Ownership Filter */}
-                    <select
-                      value={collectionOwnershipFilter}
-                      onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
-                    >
-                      <option value="all">All Items</option>
-                      <option value="owned">✓ Owned</option>
-                      <option value="missing">✗ Missing</option>
-                    </select>
-                    
-                    {/* Clear Filters */}
-                    {hasActiveFilters && (
-                      <button
-                        onClick={clearCollectionFilters}
-                        className="px-2 py-1 rounded text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {/* Element Filter */}
+                      <select
+                        value={collectionElementFilter}
+                        onChange={(e) => setCollectionElementFilter(e.target.value)}
+                        className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                       >
-                        Clear
+                        <option value="all">All Elements</option>
+                        <option value="Aero">Aero</option>
+                        <option value="Glacio">Glacio</option>
+                        <option value="Electro">Electro</option>
+                        <option value="Fusion">Fusion</option>
+                        <option value="Spectro">Spectro</option>
+                        <option value="Havoc">Havoc</option>
+                      </select>
+                      
+                      {/* Weapon Filter */}
+                      <select
+                        value={collectionWeaponFilter}
+                        onChange={(e) => setCollectionWeaponFilter(e.target.value)}
+                        className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                      >
+                        <option value="all">All Weapons</option>
+                        <option value="Broadblade">Broadblade</option>
+                        <option value="Sword">Sword</option>
+                        <option value="Pistols">Pistols</option>
+                        <option value="Gauntlets">Gauntlets</option>
+                        <option value="Rectifier">Rectifier</option>
+                      </select>
+                      
+                      {/* Ownership Filter */}
+                      <select
+                        value={collectionOwnershipFilter}
+                        onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
+                        className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                      >
+                        <option value="all">All Items</option>
+                        <option value="owned">Owned</option>
+                        <option value="missing">Missing</option>
+                      </select>
+                      
+                      {/* Clear Filters */}
+                      {hasActiveFilters && (
+                        <button
+                          onClick={clearCollectionFilters}
+                          className="px-2 py-1 rounded text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Sort Controls */}
+                    <div className="flex gap-1.5 items-center justify-end">
+                      <button
+                        onClick={refreshImages}
+                        className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        title="Refresh images if they don't load"
+                      >
+                        <RefreshCcw size={10} />
                       </button>
-                    )}
-                    
-                    <div className="flex-1" />
-                    
-                    {/* Refresh & Sort */}
-                    <button
-                      onClick={refreshImages}
-                      className="px-2 py-1 rounded text-[9px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
-                      title="Refresh images if they don't load"
-                    >
-                      <RefreshCcw size={10} />
-                    </button>
-                    <button
-                      onClick={() => setCollectionSort('copies')}
-                      className={`px-2 py-1 rounded text-[9px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
-                      title="Sort by copies"
-                    >
-                      #
-                    </button>
-                    <button
-                      onClick={() => setCollectionSort('release')}
-                      className={`px-2 py-1 rounded text-[9px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
-                      title="Sort by release date"
-                    >
-                      📅
-                    </button>
+                      <button
+                        onClick={() => setCollectionSort('copies')}
+                        className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        title="Sort by copies"
+                      >
+                        #
+                      </button>
+                      <button
+                        onClick={() => setCollectionSort('release')}
+                        className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        title="Sort by release date"
+                      >
+                        📅
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -5991,7 +6618,57 @@ function WhisperingWishesInner() {
                     <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
-                <p className="text-gray-300 text-[10px] mt-2 text-center">Reset: 4:00 AM (UTC{SERVERS[state.server]?.utcOffset >= 0 ? '+' : ''}{SERVERS[state.server]?.utcOffset})</p>
+                <p className="text-gray-400 text-[10px] mt-2 text-center">Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+              </CardBody>
+            </Card>
+
+            {/* Display Settings */}
+            <Card>
+              <CardHeader><Settings size={14} className="text-gray-400" /> Display Settings</CardHeader>
+              <CardBody className="space-y-3">
+                {/* OLED Mode Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'bg-neutral-800 text-gray-400'}`}>
+                      <Monitor size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">OLED Mode</div>
+                      <div className="text-gray-400 text-[9px]">True black (#000) for OLED screens</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.oledMode ? 'left-6 bg-black' : 'left-1 bg-gray-400'}`} />
+                  </button>
+                </div>
+                {visualSettings.oledMode && (
+                  <p className="text-emerald-400 text-[9px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
+                )}
+                
+                {/* Swipe Navigation Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'bg-neutral-800 text-gray-400'}`}>
+                      <ChevronDown size={16} className="-rotate-90" />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Swipe Navigation</div>
+                      <div className="text-gray-400 text-[9px]">Swipe left/right to switch tabs</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
+                  </button>
+                </div>
+                {visualSettings.swipeNavigation && (
+                  <p className="text-cyan-400 text-[9px] text-center">✓ Swipe left/right on content area to navigate</p>
+                )}
               </CardBody>
             </Card>
 
@@ -6093,19 +6770,75 @@ function WhisperingWishesInner() {
                     <p className="text-gray-400 text-[9px] pt-1 border-t border-white/10">⚠️ URL valid for ~24 hours only</p>
                   </div>
                 )}
-                <label className="block">
-                  <div className="p-4 border-2 border-dashed border-white/20 rounded-lg text-center cursor-pointer hover:border-yellow-500/50">
-                    <Upload size={20} className="mx-auto mb-1 text-gray-300" />
-                    <p className="text-gray-300 text-[10px]">Upload JSON file</p>
+                
+                {/* Import Method Selector */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => setImportMethod('file')} 
+                    className={`kuro-btn py-2 text-xs ${importMethod === 'file' ? 'active-gold' : ''}`}
+                  >
+                    <Upload size={14} className="inline mr-1.5" />Upload File
+                  </button>
+                  <button 
+                    onClick={() => setImportMethod('paste')} 
+                    className={`kuro-btn py-2 text-xs ${importMethod === 'paste' ? 'active-gold' : ''}`}
+                  >
+                    <svg className="inline w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                    Paste JSON
+                  </button>
+                </div>
+                
+                {/* File Upload Method */}
+                {importMethod === 'file' && (
+                  <label className="block">
+                    <div className="p-4 border-2 border-dashed border-white/20 rounded-lg text-center cursor-pointer hover:border-yellow-500/50 transition-colors">
+                      <Upload size={20} className="mx-auto mb-1 text-gray-300" />
+                      <p className="text-gray-300 text-[10px]">Upload JSON file from wuwatracker</p>
+                    </div>
+                    <input type="file" accept=".json" onChange={handleFileImport} className="hidden" />
+                  </label>
+                )}
+                
+                {/* Paste JSON Method */}
+                {importMethod === 'paste' && (
+                  <div className="space-y-2">
+                    <textarea
+                      value={pasteJsonText}
+                      onChange={(e) => setPasteJsonText(e.target.value)}
+                      placeholder='Paste your wuwatracker JSON here...
+
+Example: {"pulls":[...]}'
+                      className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
+                      spellCheck={false}
+                    />
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={handlePasteImport}
+                        disabled={!pasteJsonText.trim()}
+                        className={`kuro-btn flex-1 py-2 text-xs ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
+                      >
+                        <Check size={14} className="inline mr-1.5" />Import Data
+                      </button>
+                      {pasteJsonText && (
+                        <button 
+                          onClick={() => setPasteJsonText('')}
+                          className="kuro-btn px-3 py-2 text-xs"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-gray-500 text-[9px]">
+                      💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
+                    </p>
                   </div>
-                  <input type="file" accept=".json" onChange={handleFileImport} className="hidden" />
-                </label>
+                )}
               </CardBody>
             </Card>
 
             {state.profile.importedAt && (
               <Card>
-                <CardHeader action={<button onClick={() => { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); }} className="text-red-400 text-[9px] hover:text-red-300">Clear</button>}>Import Info</CardHeader>
+                <CardHeader action={<button onClick={() => { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear</button>}>Import Info</CardHeader>
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
@@ -6130,8 +6863,8 @@ function WhisperingWishesInner() {
               <CardHeader>About</CardHeader>
               <CardBody className="space-y-3">
                 <div className="text-center">
-                  <h4 className="text-gray-100 font-medium">Whispering Wishes</h4>
-                  <p className="text-gray-500 text-[10px]">Version 2.9.36</p>
+                  <h4 className="text-gray-100 font-bold text-sm">Whispering Wishes</h4>
+                  <p className="text-gray-500 text-[10px]">Version {APP_VERSION}</p>
                 </div>
                 
                 <div className="text-center">
@@ -6178,7 +6911,7 @@ function WhisperingWishesInner() {
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
                 
-                <p className="text-center text-[8px] text-gray-500 pt-2">© 2026 Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" className="text-gray-500 hover:text-gray-400">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                <p className="text-center text-[8px] text-gray-500 pt-2">© 2026 Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
           </div>
@@ -6188,9 +6921,9 @@ function WhisperingWishesInner() {
 
       {/* Bookmark Modal */}
       {showBookmarkModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-all"><X size={16} /></button>}>Save Current State</CardHeader>
+            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} placeholder="Enter name..." className="kuro-input w-full" />
               <div className="text-gray-300 text-[10px]">
@@ -6205,9 +6938,9 @@ function WhisperingWishesInner() {
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => setShowExportModal(false)} className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-all"><X size={16} /></button>}>Backup</CardHeader>
+            <CardHeader action={<button onClick={() => setShowExportModal(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
               <textarea 
@@ -6278,11 +7011,11 @@ function WhisperingWishesInner() {
 
       {/* Admin Panel Modal */}
       {showAdminPanel && !adminMiniMode && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 overflow-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-auto">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto">
             <CardHeader className="flex items-center justify-between">
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
-              <button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="text-gray-400 hover:text-white"><X size={16} /></button>
+              <button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>
             </CardHeader>
             <CardBody className="space-y-3">
               {!adminUnlocked ? (
@@ -6878,15 +7611,16 @@ function WhisperingWishesInner() {
               </div>
               <button 
                 onClick={() => setAdminMiniMode(false)} 
-                className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10"
+                className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10 transition-colors"
                 title="Expand"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
               </button>
               <button 
                 onClick={() => { setShowAdminPanel(false); setAdminMiniMode(false); setFramingMode(false); setEditingImage(null); }} 
-                className="text-red-400 hover:text-white p-1 rounded hover:bg-red-500/30 bg-red-500/20"
+                className="text-red-400 hover:text-white p-1 rounded hover:bg-red-500/30 bg-red-500/20 transition-colors"
                 title="Close"
+                aria-label="Close image framing panel"
               >
                 <X size={12} />
               </button>
@@ -7086,7 +7820,7 @@ function WhisperingWishesInner() {
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[9px]">
-          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.36</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
+          <span onClick={handleAdminTap} className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
