@@ -4480,39 +4480,68 @@ function WhisperingWishesInner() {
     };
   }, [state.profile]);
   
-  // Leaderboard functions
+  // Leaderboard functions — Firebase Realtime Database
+  const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
+  const hasClaudeStorage = typeof window !== 'undefined' && !!window.storage;
+  
   const loadLeaderboard = useCallback(async () => {
-    if (!window.storage) return;
     setLeaderboardLoading(true);
     try {
-      const result = await window.storage.list('luck:', true);
-      if (result?.keys) {
-        const entries = await Promise.all(
-          result.keys.slice(0, 50).map(async (key) => {
-            try {
-              const data = await window.storage.get(key, true);
-              return data?.value ? JSON.parse(data.value) : null;
-            } catch { return null; }
-          })
-        );
-        const valid = entries.filter(e => e && e.avgPity && e.id);
-        valid.sort((a, b) => a.avgPity - b.avgPity);
-        setLeaderboardData(valid.slice(0, 20));
+      // Try Firebase first (works on both web and Claude)
+      const res = await fetch(`${FIREBASE_DB}/leaderboard.json`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const entries = Object.values(data).filter(e => e && e.avgPity && e.id);
+          entries.sort((a, b) => a.avgPity - b.avgPity);
+          setLeaderboardData(entries.slice(0, 20));
+        } else {
+          setLeaderboardData([]);
+        }
+      } else {
+        throw new Error('Firebase fetch failed');
       }
-    } catch (e) { console.error('Leaderboard load error:', e); }
+    } catch (e) {
+      console.error('Leaderboard load error:', e);
+      // Fallback to Claude storage if available
+      if (hasClaudeStorage) {
+        try {
+          const result = await window.storage.list('luck:', true);
+          if (result?.keys) {
+            const entries = await Promise.all(
+              result.keys.slice(0, 50).map(async (key) => {
+                try {
+                  const data = await window.storage.get(key, true);
+                  return data?.value ? JSON.parse(data.value) : null;
+                } catch { return null; }
+              })
+            );
+            const valid = entries.filter(e => e && e.avgPity && e.id);
+            valid.sort((a, b) => a.avgPity - b.avgPity);
+            setLeaderboardData(valid.slice(0, 20));
+          }
+        } catch { setLeaderboardData([]); }
+      }
+    }
     setLeaderboardLoading(false);
-  }, []);
+  }, [hasClaudeStorage]);
   
   const submitToLeaderboard = useCallback(async () => {
-    if (!window.storage || !userLeaderboardId || !overallStats?.avgPity) return;
+    if (!userLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
     try {
       const entry = {
         id: userLeaderboardId,
         avgPity: parseFloat(overallStats.avgPity),
-        pulls: overallStats.total5Stars || 0,
+        pulls: overallStats.fiveStars || 0,
         timestamp: Date.now()
       };
-      await window.storage.set(`luck:${userLeaderboardId}`, JSON.stringify(entry), true);
+      // Submit to Firebase
+      const res = await fetch(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error('Firebase submit failed');
       toast?.addToast?.('Score submitted to leaderboard!', 'success');
       loadLeaderboard();
     } catch (e) { 
