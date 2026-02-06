@@ -4007,6 +4007,220 @@ function WhisperingWishesInner() {
     } catch {}
   }, []);
   
+  // Custom app icon for home screen
+  useEffect(() => {
+    try {
+      const size = 180;
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d');
+      const cx = size/2, cy = size/2 - 2;
+      
+      // === Base gradient ===
+      const bg = ctx.createLinearGradient(0, 0, size, size);
+      bg.addColorStop(0, '#0c0820');
+      bg.addColorStop(1, '#12102a');
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(0, 0, size, size, 26); else ctx.rect(0, 0, size, size);
+      ctx.fill();
+      
+      // === Purple light top-left ===
+      const pl = ctx.createRadialGradient(size*0.2, size*0.12, 0, size*0.2, size*0.12, size*0.7);
+      pl.addColorStop(0, 'rgba(140,120,220,0.12)');
+      pl.addColorStop(1, 'rgba(140,120,220,0)');
+      ctx.fillStyle = pl;
+      ctx.fillRect(0, 0, size, size);
+      
+      // === Warm light bottom-right ===
+      const wl = ctx.createRadialGradient(size*0.82, size*0.85, 0, size*0.82, size*0.85, size*0.4);
+      wl.addColorStop(0, 'rgba(251,150,50,0.08)');
+      wl.addColorStop(1, 'rgba(251,150,50,0)');
+      ctx.fillStyle = wl;
+      ctx.fillRect(0, 0, size, size);
+      
+      // === Central golden aura ===
+      const aura = ctx.createRadialGradient(cx, cy, 0, cx, cy, 55);
+      aura.addColorStop(0, 'rgba(251,191,36,0.18)');
+      aura.addColorStop(0.5, 'rgba(251,191,36,0.06)');
+      aura.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = aura;
+      ctx.beginPath(); ctx.arc(cx, cy, 55, 0, Math.PI*2); ctx.fill();
+      
+      // === Energy rings (fading segments) ===
+      [48, 40, 32].forEach((rr, ri) => {
+        ctx.strokeStyle = `rgba(251,200,80,${0.15 - ri*0.04})`;
+        ctx.lineWidth = 0.6;
+        for (let a = 0; a < 360; a += 1) {
+          const angle = a * Math.PI / 180;
+          const fade = (Math.sin(angle * 3 + ri * 1.5) + 1) / 2;
+          const wobble = Math.sin(angle * 5 + ri) * 1;
+          ctx.globalAlpha = 0.2 + 0.6 * fade;
+          ctx.beginPath();
+          ctx.arc(cx + (rr + wobble) * Math.cos(angle), cy + (rr + wobble) * Math.sin(angle), 0.5, 0, Math.PI*2);
+          ctx.fill();
+        }
+      });
+      ctx.globalAlpha = 1;
+      
+      // === Energy rays ===
+      for (let i = 0; i < 32; i++) {
+        const angle = (i * 11.25 + (Math.random()-0.5)*4) * Math.PI / 180;
+        const len = 25 + Math.random() * 30;
+        for (let d = 16; d < 16 + len; d++) {
+          const t = (d - 16) / len;
+          ctx.globalAlpha = 0.08 * Math.sin(t * Math.PI) * (1 - t * 0.5);
+          ctx.fillStyle = '#fbd264';
+          ctx.beginPath();
+          ctx.arc(cx + d * Math.cos(angle), cy + d * Math.sin(angle), 0.5, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+      
+      // === 4-pointed star ===
+      const drawStar4 = (scx, scy, outer, inner, rot, fill) => {
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const angle = (rot + i * 45) * Math.PI / 180;
+          const rr = i % 2 === 0 ? outer : inner;
+          const method = i === 0 ? 'moveTo' : 'lineTo';
+          ctx[method](scx + rr * Math.cos(angle), scy + rr * Math.sin(angle));
+        }
+        ctx.closePath(); ctx.fill();
+      };
+      
+      // Star glow
+      const sg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 35);
+      sg.addColorStop(0, 'rgba(251,191,36,0.25)');
+      sg.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = sg;
+      ctx.beginPath(); ctx.arc(cx, cy, 35, 0, Math.PI*2); ctx.fill();
+      
+      // Main star layers
+      drawStar4(cx, cy, 28, 9.5, -45, 'rgba(220,170,40,0.9)');
+      drawStar4(cx, cy-0.5, 23, 8, -45, 'rgba(251,210,90,0.75)');
+      drawStar4(cx, cy-0.5, 17, 7, -45, 'rgba(255,235,150,0.55)');
+      
+      // Blazing core
+      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 9);
+      core.addColorStop(0, 'rgba(255,250,220,1)');
+      core.addColorStop(0.5, 'rgba(255,235,170,0.7)');
+      core.addColorStop(1, 'rgba(251,200,80,0)');
+      ctx.fillStyle = core;
+      ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI*2); ctx.fill();
+      
+      // Tip diamonds
+      [-45, 45, 135, 225].forEach(deg => {
+        const a = deg * Math.PI / 180;
+        const tx = cx + 28 * Math.cos(a), ty = cy + 28 * Math.sin(a);
+        drawStar4(tx, ty, 2.8, 1, 0, 'rgba(255,235,160,0.7)');
+      });
+      
+      // === Particles ===
+      for (let i = 0; i < 30; i++) {
+        const px = 10 + Math.random() * (size - 20);
+        const py = 10 + Math.random() * (size - 20);
+        const pr = 0.3 + Math.random() * 1.2;
+        ctx.globalAlpha = 0.15 + Math.random() * 0.4;
+        ctx.fillStyle = Math.random() > 0.3 ? '#fbd878' : '#b4a0e0';
+        ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      
+      // === Text ===
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      
+      // "WHISPERING" - spaced, ethereal
+      ctx.font = '500 4.5px system-ui, sans-serif';
+      ctx.letterSpacing = '2px';
+      ctx.fillStyle = 'rgba(180,165,200,0.55)';
+      ctx.fillText('W H I S P E R I N G', cx, cy - 40);
+      
+      // "WISHES" - bold gold with shadow+glow
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      ctx.shadowColor = 'rgba(251,191,36,0.4)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fillText('W I S H E S', cx + 0.7, cy + 40.7);
+      ctx.fillStyle = '#fbd278';
+      ctx.fillText('W I S H E S', cx, cy + 40);
+      ctx.shadowBlur = 0;
+      
+      // Flanking lines
+      for (let side of [-1, 1]) {
+        const sx = cx + side * 38;
+        for (let t = 0; t < 1; t += 0.03) {
+          ctx.globalAlpha = 0.35 * (1 - t) ** 1.5;
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.arc(sx + side * t * 20, cy + 40, 0.4, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+      
+      // === Vignette corners ===
+      const corners = [[0,0],[size,0],[0,size],[size,size]];
+      corners.forEach(([vx, vy]) => {
+        const vg = ctx.createRadialGradient(vx, vy, 0, vx, vy, size*0.5);
+        vg.addColorStop(0, 'rgba(4,2,10,0.2)');
+        vg.addColorStop(1, 'rgba(4,2,10,0)');
+        ctx.fillStyle = vg;
+        ctx.fillRect(0, 0, size, size);
+      });
+      
+      // === Rim light top edge ===
+      const rl = ctx.createLinearGradient(0, 0, 0, 4);
+      rl.addColorStop(0, 'rgba(200,190,255,0.15)');
+      rl.addColorStop(1, 'rgba(200,190,255,0)');
+      ctx.fillStyle = rl;
+      ctx.fillRect(26, 0, size - 52, 4);
+      
+      const dataUrl = c.toDataURL('image/png');
+      
+      // Set favicon
+      let favicon = document.querySelector('link[rel="icon"]');
+      if (!favicon) { favicon = document.createElement('link'); favicon.rel = 'icon'; document.head.appendChild(favicon); }
+      favicon.href = dataUrl;
+      
+      // Set apple-touch-icon
+      let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+      if (!appleIcon) { appleIcon = document.createElement('link'); appleIcon.rel = 'apple-touch-icon'; document.head.appendChild(appleIcon); }
+      appleIcon.href = dataUrl;
+      
+      // Set shortcut icon
+      let shortcut = document.querySelector('link[rel="shortcut icon"]');
+      if (!shortcut) { shortcut = document.createElement('link'); shortcut.rel = 'shortcut icon'; document.head.appendChild(shortcut); }
+      shortcut.href = dataUrl;
+      
+      // Set page title
+      document.title = 'Whispering Wishes';
+      
+      // Dynamic web manifest for Android home screen
+      const manifest = {
+        name: 'Whispering Wishes',
+        short_name: 'WW Wishes',
+        icons: [{ src: dataUrl, sizes: '180x180', type: 'image/png' }],
+        start_url: window.location.href,
+        display: 'standalone',
+        background_color: '#0a0a1a',
+        theme_color: '#0c0820'
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const manifestUrl = URL.createObjectURL(manifestBlob);
+      let manifestLink = document.querySelector('link[rel="manifest"]');
+      if (!manifestLink) { manifestLink = document.createElement('link'); manifestLink.rel = 'manifest'; document.head.appendChild(manifestLink); }
+      manifestLink.href = manifestUrl;
+      
+      // Theme color
+      let themeColor = document.querySelector('meta[name="theme-color"]');
+      if (!themeColor) { themeColor = document.createElement('meta'); themeColor.name = 'theme-color'; document.head.appendChild(themeColor); }
+      themeColor.content = '#0c0820';
+    } catch (e) { console.warn('Icon generation failed:', e); }
+  }, []);
+  
   const saveVisualSettings = (newSettings) => {
     setVisualSettings(newSettings);
     if (!storageAvailable) return;
