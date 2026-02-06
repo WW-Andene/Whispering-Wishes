@@ -3,7 +3,7 @@ import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, 
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.9.28 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v2.9.36 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -1011,6 +1011,19 @@ const KuroStyles = () => (
       background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 1), transparent);
     }
     
+    /* ═══ STAT GRAY ═══ */
+    .kuro-stat-gray {
+      background: rgba(107, 114, 128, 0.15);
+      border-color: rgba(107, 114, 128, 0.5);
+    }
+    .kuro-stat-gray:hover {
+      border-color: rgba(107, 114, 128, 0.7);
+      box-shadow: 0 4px 20px rgba(107, 114, 128, 0.15);
+    }
+    .kuro-stat-gray::before {
+      background: linear-gradient(90deg, transparent, rgba(107, 114, 128, 1), transparent);
+    }
+    
     /* ═══ LABELS - Bright for readability ═══ */
     .kuro-label {
       color: #e2e8f0;
@@ -1019,6 +1032,8 @@ const KuroStyles = () => (
       letter-spacing: 0.08em;
       font-weight: 600;
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      margin-bottom: 6px;
+      display: block;
     }
     
     /* ═══ RANGE SLIDER ═══ */
@@ -1067,6 +1082,22 @@ const KuroStyles = () => (
     }
     .kuro-slider.cyan::-webkit-slider-thumb:hover {
       box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
+    }
+    .kuro-slider.cyan::-moz-range-thumb {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+    
+    .kuro-slider.pink::-webkit-slider-thumb {
+      background: linear-gradient(135deg, #db2777, #ec4899);
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
+    }
+    .kuro-slider.pink::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
+    }
+    .kuro-slider.pink::-moz-range-thumb {
+      background: linear-gradient(135deg, #db2777, #ec4899);
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
     }
     
     /* ═══ PROGRESS BAR ═══ */
@@ -1830,7 +1861,8 @@ const WEAPON_COLORS = {
 };
 
 // [SECTION:CONSTANTS]
-const HARD_PITY = 80, SOFT_PITY_START = 66, AVG_PITY = 62.5;
+// WuWa gacha rates: 0.8% base, soft pity starts at 65, hard pity at 80
+const HARD_PITY = 80, SOFT_PITY_START = 65, AVG_PITY = 62.5;
 
 // Subscription and top-up prices (USD) - Updated January 2026
 const SUBSCRIPTIONS = {
@@ -1962,41 +1994,260 @@ const getNextWeeklyReset = (server) => {
 };
 
 // [SECTION:SIMULATION]
-const simulateGacha = (pulls, pity, guaranteed, type, target) => {
-  const results = Array(target + 1).fill(0);
-  const runs = 10000;
-  for (let s = 0; s < runs; s++) {
-    let p = pity, g = guaranteed, r = pulls, c = 0;
-    while (r > 0 && c < target) {
-      p++; r--;
-      let rate = 0.008;
-      if (p >= SOFT_PITY_START) rate = Math.min(0.008 + (p - SOFT_PITY_START + 1) * 0.055, 1.0);
-      if (p >= HARD_PITY) rate = 1.0;
-      if (Math.random() < rate) {
-        if (type === 'char') {
-          // Character banner: 50/50 system
-          if (g || Math.random() < 0.5) { c++; g = false; } else g = true;
-        } else {
-          // Weapon banner: 100% featured when you get 5★
-          c++;
-        }
-        p = 0;
-      }
-    }
-    results[Math.min(c, target)]++;
-  }
-  return results.map(n => (n / runs) * 100);
+// === GACHA PROBABILITY ENGINE v2.0 ===
+// Hybrid DP (exact) + Monte Carlo (verification/large N) approach
+// Matches known WuWa rates: soft pity 65-79, hard pity 80, base 0.8%
+
+const MAX_PITY = 80;
+const GACHA_EPS = 1e-15;
+
+// Soft pity rate function: 0.8% base, linear increase from pity 65 to 100% at 80
+const getPullRate = (pity) => {
+  if (pity < 65) return 0.008;
+  return Math.min(0.008 + ((pity - 64) / 15.0) * 0.992, 1.0);
 };
 
-const factorial = (n) => {
-  if (n <= 1) return 1;
-  if (n <= 20) {
-    let result = 1;
-    for (let i = 2; i <= n; i++) result *= i;
-    return result;
+// === DYNAMIC PROGRAMMING (EXACT) ===
+// Computes exact probability distribution for getting K copies in N pulls
+// isWeapon: true = weapon banner (100% featured), false = character banner (50/50)
+const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10) => {
+  // DP state: dp[pulls][pity][guar?][copies] = probability
+  // For weapon: no guarantee dimension
+  const dp = Array.from({length: N+1}, () => 
+    Array.from({length: MAX_PITY+1}, () => 
+      isWeapon ? 
+        Array(maxCopies+1).fill(0) :
+        Array.from({length: 2}, () => Array(maxCopies+1).fill(0))
+    )
+  );
+  
+  // Initial state
+  if (isWeapon) {
+    dp[0][startPity][0] = 1.0;
+  } else {
+    dp[0][startPity][startGuar][0] = 1.0;
   }
-  // Stirling's approximation for n > 20 (avoids overflow)
-  return Math.sqrt(2 * Math.PI * n) * Math.pow(n / Math.E, n);
+  
+  // Fill DP table
+  for (let n = 0; n < N; n++) {
+    for (let p = 0; p <= MAX_PITY; p++) {
+      const states = isWeapon ? [null] : [0, 1];
+      for (const g of states) {
+        for (let k = 0; k <= maxCopies; k++) {
+          const prob = isWeapon ? dp[n][p][k] : dp[n][p][g][k];
+          if (prob < GACHA_EPS) continue;
+          
+          const rate = getPullRate(p);
+          const nextPity = Math.min(MAX_PITY, p + 1);
+          
+          // Non-5★ outcome
+          if (isWeapon) {
+            dp[n+1][nextPity][k] += prob * (1 - rate);
+          } else {
+            dp[n+1][nextPity][g][k] += prob * (1 - rate);
+          }
+          
+          // 5★ outcome
+          const pFeatured = isWeapon || g === 1 ? 1.0 : 0.5;
+          if (k + 1 <= maxCopies) {
+            if (isWeapon) {
+              dp[n+1][0][k+1] += prob * rate; // Weapon always featured
+            } else {
+              dp[n+1][0][0][k+1] += prob * rate * pFeatured; // Win: copies++, guar=0
+            }
+          }
+          // Character loss (not featured): guar becomes 1, copies unchanged
+          if (!isWeapon && g === 0) {
+            dp[n+1][0][1][k] += prob * rate * 0.5;
+          }
+        }
+      }
+    }
+  }
+  
+  // Extract final distribution
+  const dist = Array(maxCopies+1).fill(0);
+  for (let p = 0; p <= MAX_PITY; p++) {
+    const states = isWeapon ? [null] : [0, 1];
+    for (const g of states) {
+      for (let k = 0; k <= maxCopies; k++) {
+        dist[k] += isWeapon ? dp[N][p][k] : dp[N][p][g][k];
+      }
+    }
+  }
+  
+  // Normalize
+  const total = dist.reduce((a, b) => a + b, 0);
+  return dist.map(x => total > 0 ? x / total : 0);
+};
+
+// === MONTE CARLO (FAST APPROXIMATION) ===
+// For large N or when DP is too memory-intensive
+const simulateOneRun = (isWeapon, N, startPity, startGuar) => {
+  let pity = startPity, guar = startGuar, copies = 0;
+  for (let i = 0; i < N; i++) {
+    const rate = getPullRate(pity);
+    if (Math.random() < rate) {
+      const featured = isWeapon || guar === 1 || Math.random() < 0.5;
+      if (featured) copies++;
+      guar = featured ? 0 : 1;
+      pity = 0;
+    } else {
+      pity = Math.min(MAX_PITY, pity + 1);
+    }
+  }
+  return copies;
+};
+
+const computeDistMC = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10, trials = 50000) => {
+  const counts = Array(maxCopies + 1).fill(0);
+  for (let t = 0; t < trials; t++) {
+    const k = simulateOneRun(isWeapon, N, startPity, startGuar);
+    counts[Math.min(k, maxCopies)]++;
+  }
+  return counts.map(c => c / trials);
+};
+
+// === HYBRID: Auto-select best method ===
+const computeGachaDist = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10) => {
+  // Use DP for smaller N (more accurate), MC for larger N (faster)
+  if (N <= 500) {
+    return computeDistDP(N, isWeapon, startPity, startGuar, maxCopies);
+  } else {
+    return computeDistMC(N, isWeapon, startPity, startGuar, maxCopies, 100000);
+  }
+};
+
+// === HELPER FUNCTIONS ===
+
+// Get cumulative probability P(copies >= K)
+const getCumulativeProb = (dist, k) => {
+  return dist.slice(k).reduce((a, b) => a + b, 0);
+};
+
+// Compute expected value and standard deviation
+const computeGachaStats = (dist) => {
+  let e = 0, e2 = 0;
+  for (let k = 0; k < dist.length; k++) {
+    e += k * dist[k];
+    e2 += k * k * dist[k];
+  }
+  return { expected: e, stddev: Math.sqrt(e2 - e * e) };
+};
+
+// Expected pulls to reach targetK copies (value iteration)
+const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) => {
+  if (targetK <= 0) return 0;
+  
+  // v[pity][guar][copies] = expected remaining pulls
+  const v = Array.from({length: MAX_PITY + 1}, () =>
+    isWeapon ?
+      Array(targetK).fill(0) :
+      Array.from({length: 2}, () => Array(targetK).fill(0))
+  );
+  
+  // Solve backwards from copies = targetK-1 down to 0
+  for (let c = targetK - 1; c >= 0; c--) {
+    for (let p = MAX_PITY; p >= 0; p--) {
+      const gs = isWeapon ? [null] : [0, 1];
+      for (const g of gs) {
+        const rate = getPullRate(p);
+        const nextPity = Math.min(MAX_PITY, p + 1);
+        const pFeatured = isWeapon || g === 1 ? 1 : 0.5;
+        
+        let expected = 1; // This pull
+        
+        // Non-5★: continue at next pity
+        if (isWeapon) {
+          expected += (1 - rate) * v[nextPity][c];
+        } else {
+          expected += (1 - rate) * v[nextPity][g][c];
+        }
+        
+        // 5★ featured: +1 copy
+        const nextC = c + 1;
+        if (nextC < targetK) {
+          expected += rate * pFeatured * (isWeapon ? v[0][nextC] : v[0][0][nextC]);
+        }
+        // 5★ not featured (char only, g=0): same copies, guar=1
+        if (!isWeapon && g === 0) {
+          expected += rate * 0.5 * v[0][1][c];
+        }
+        
+        if (isWeapon) {
+          v[p][c] = expected;
+        } else {
+          v[p][g][c] = expected;
+        }
+      }
+    }
+  }
+  
+  return isWeapon ? v[startPity][0] : v[startPity][startGuar][0];
+};
+
+// Min pulls N such that P(copies >= targetK | N pulls) >= minProb%
+const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 0) => {
+  let low = Math.max(1, targetK * 40), high = targetK * 200;
+  let ans = high;
+  
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const dist = computeGachaDist(mid, isWeapon, startPity, startGuar, targetK);
+    const pGeK = getCumulativeProb(dist, targetK) * 100;
+    
+    if (pGeK >= minProb) {
+      ans = mid;
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return ans;
+};
+
+// Combined outcomes for pulling on both banners
+const computeCombinedOutcomes = (pChar, pWeap) => {
+  const both = pChar * pWeap;
+  const onlyChar = pChar * (1 - pWeap);
+  const onlyWeap = (1 - pChar) * pWeap;
+  const atLeastOne = both + onlyChar + onlyWeap;
+  const neither = 1 - atLeastOne;
+  return { both, onlyChar, onlyWeap, atLeastOne, neither };
+};
+
+// Recommend astrite allocation for dual goals
+const recommendDualAllocation = (charTarget, weapTarget, charPity = 0, charGuar = 0, weapPity = 0, mode = 'expected') => {
+  if (mode === 'expected') {
+    const eChar = expectedPullsToTarget(false, charTarget, charPity, charGuar);
+    const eWeap = expectedPullsToTarget(true, weapTarget, weapPity);
+    return {
+      totalPulls: Math.ceil(eChar + eWeap),
+      astrite: Math.ceil((eChar + eWeap) * 160),
+      charPulls: Math.ceil(eChar),
+      weapPulls: Math.ceil(eWeap),
+      confidence: '~50%'
+    };
+  } else {
+    const targetProb = mode === 'prob90' ? 90 : 50;
+    const nChar = minPullsForProb(false, charTarget, targetProb, charPity, charGuar);
+    const nWeap = minPullsForProb(true, weapTarget, targetProb, weapPity);
+    return {
+      totalPulls: nChar + nWeap,
+      astrite: (nChar + nWeap) * 160,
+      charPulls: nChar,
+      weapPulls: nWeap,
+      confidence: `~${targetProb}% each`
+    };
+  }
+};
+
+// Legacy compatibility wrapper (returns percentages like old simulateGacha)
+const simulateGacha = (pulls, pity, guaranteed, type, target) => {
+  const isWeapon = type === 'weapon';
+  const startGuar = guaranteed ? 1 : 0;
+  const dist = computeGachaDist(pulls, isWeapon, pity, startGuar, target);
+  return dist.map(p => p * 100);
 };
 
 // [SECTION:STATE]
@@ -2019,6 +2270,7 @@ const initialState = {
     stdWeapPity: 0, stdWeapCopies: 1,
     char4StarCopies: 1, weap4StarCopies: 1, stdChar4StarCopies: 1, stdWeap4StarCopies: 1,
     astrite: '', radiant: '', forging: '', lustrous: '',
+    allocPriority: 50, // 0-100: 0=all weapon, 50=balanced, 100=all char
   },
   planner: {
     dailyAstrite: 60, luniteActive: false,
@@ -2135,25 +2387,25 @@ const reducer = (state, action) => {
 // [SECTION:CALCULATIONS]
 const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   const effective = pulls + pity;
-  // Character: 50/50 means avg ~93.75 pulls per featured (1.5x), guaranteed means avg ~62.5
-  // Weapon: 100% featured rate, avg ~62.5 pulls per 5★
-  const avgForFeatured = isChar ? (guaranteed ? AVG_PITY : AVG_PITY * 1.5) : AVG_PITY;
-  const lambda = effective / avgForFeatured;
+  const isWeapon = !isChar;
+  const startGuar = guaranteed ? 1 : 0;
   
-  const poisson = (n) => {
-    if (lambda <= 0) return 0;
-    // CDF complement: P(X >= n) using Poisson
-    let prob = 0;
-    for (let k = n; k <= Math.max(n + 20, Math.ceil(lambda * 3)); k++) {
-      prob += (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
-    }
-    return Math.min(100, Math.max(0, prob * 100));
-  };
+  // Use exact DP formula for probability distribution
+  const dist = computeGachaDist(pulls, isWeapon, pity, startGuar, Math.max(copies, 7));
+  
+  // P(X >= k) cumulative probabilities
+  const pGe = (k) => getCumulativeProb(dist, k) * 100;
+  
+  // Expected value and standard deviation
+  const stats = computeGachaStats(dist);
+  
+  // Expected pulls to reach target copies
+  const expectedToTarget = expectedPullsToTarget(isWeapon, copies, pity, startGuar);
   
   // Worst case: hard pity every time, always losing 50/50
   const worstCase = HARD_PITY * copies * (isChar && !guaranteed ? 2 : 1);
-  const successRate = effective >= worstCase ? 100 : poisson(copies);
-  const missingPulls = Math.max(0, worstCase - effective);
+  const successRate = pGe(copies);
+  const missingPulls = Math.max(0, Math.ceil(expectedToTarget) - pulls);
   
   // 4-star calculations
   const fourStarCount = Math.floor(effective / HARD_PITY_4STAR);
@@ -2162,17 +2414,23 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   
   return {
     successRate: successRate.toFixed(1),
-    p1: poisson(1).toFixed(1),
-    p2: poisson(2).toFixed(1),
-    p3: poisson(3).toFixed(1),
-    p4: poisson(4).toFixed(1),
-    p5: poisson(5).toFixed(1),
-    p6: poisson(6).toFixed(1),
+    p1: pGe(1).toFixed(1),
+    p2: pGe(2).toFixed(1),
+    p3: pGe(3).toFixed(1),
+    p4: pGe(4).toFixed(1),
+    p5: pGe(5).toFixed(1),
+    p6: pGe(6).toFixed(1),
+    p7: pGe(7).toFixed(1),
     missingPulls,
     missingAstrite: missingPulls * 160,
     fourStarCount,
     featuredFourStarCount,
     pity4,
+    // New stats from DP formula
+    expectedCopies: stats.expected.toFixed(2),
+    stddev: stats.stddev.toFixed(2),
+    expectedPullsToTarget: Math.ceil(expectedToTarget),
+    worstCase,
   };
 };
 
@@ -3679,11 +3937,62 @@ function WhisperingWishesInner() {
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
-  // Calculate pulls for each banner type - Note: Featured does NOT include Lustrous
-  const charPulls = useMemo(() => Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.radiant || 0), [state.calc.astrite, state.calc.radiant]);
-  const weapPulls = useMemo(() => Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.forging || 0), [state.calc.astrite, state.calc.forging]);
-  const stdCharPulls = useMemo(() => Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.lustrous || 0), [state.calc.astrite, state.calc.lustrous]);
-  const stdWeapPulls = useMemo(() => Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.lustrous || 0), [state.calc.astrite, state.calc.lustrous]);
+  // Smart astrite allocation for "Both" mode
+  const astriteAllocation = useMemo(() => {
+    const totalAstrite = +state.calc.astrite || 0;
+    const totalPulls = Math.floor(totalAstrite / 160);
+    const radiant = +state.calc.radiant || 0;
+    const forging = +state.calc.forging || 0;
+    const lustrous = +state.calc.lustrous || 0;
+    
+    if (state.calc.selectedBanner !== 'both') {
+      // Single banner mode - all resources go to that banner
+      return {
+        charAstritePulls: totalPulls,
+        weapAstritePulls: totalPulls,
+        charTotal: totalPulls + radiant,
+        weapTotal: totalPulls + forging,
+        stdCharTotal: totalPulls + lustrous,
+        stdWeapTotal: totalPulls + lustrous,
+        charPercent: 100,
+        weapPercent: 100,
+        stdCharLustrous: lustrous,
+        stdWeapLustrous: lustrous,
+      };
+    }
+    
+    // "Both" mode - split resources based on priority (0-100)
+    // 0 = all weapon, 50 = balanced, 100 = all char
+    const priority = typeof state.calc.allocPriority === 'number' ? state.calc.allocPriority : 50;
+    const charPercent = priority;
+    const weapPercent = 100 - priority;
+    
+    const charAstritePulls = Math.floor(totalPulls * (charPercent / 100));
+    const weapAstritePulls = totalPulls - charAstritePulls;
+    
+    // For standard banners, split lustrous based on priority too
+    const stdCharLustrous = Math.floor(lustrous * (charPercent / 100));
+    const stdWeapLustrous = lustrous - stdCharLustrous;
+    
+    return {
+      charAstritePulls,
+      weapAstritePulls,
+      charTotal: charAstritePulls + radiant,
+      weapTotal: weapAstritePulls + forging,
+      stdCharTotal: charAstritePulls + stdCharLustrous,
+      stdWeapTotal: weapAstritePulls + stdWeapLustrous,
+      charPercent,
+      weapPercent,
+      stdCharLustrous,
+      stdWeapLustrous,
+    };
+  }, [state.calc.astrite, state.calc.radiant, state.calc.forging, state.calc.lustrous, state.calc.selectedBanner, state.calc.allocPriority]);
+
+  // Calculate pulls for each banner type using allocation
+  const charPulls = useMemo(() => astriteAllocation.charTotal, [astriteAllocation]);
+  const weapPulls = useMemo(() => astriteAllocation.weapTotal, [astriteAllocation]);
+  const stdCharPulls = useMemo(() => astriteAllocation.stdCharTotal, [astriteAllocation]);
+  const stdWeapPulls = useMemo(() => astriteAllocation.stdWeapTotal, [astriteAllocation]);
   
   // Calculate stats for each banner type
   const charStats = useMemo(() => calcStats(charPulls, state.calc.charPity, state.calc.charGuaranteed, true, state.calc.charCopies), [charPulls, state.calc.charPity, state.calc.charGuaranteed, state.calc.charCopies]);
@@ -3830,11 +4139,17 @@ function WhisperingWishesInner() {
         const convert = (arr, type) => {
           const filtered = arr.filter(p => {
             const poolType = p.cardPoolType || p.gachaType;
+            // wuwatracker cardPoolType mapping:
+            // 1 = Limited/Featured Character Banner
+            // 2 = Limited/Featured Weapon Banner  
+            // 5 = Standard Character Banner (Lustrous Tide - Resonator)
+            // 6 = Standard Weapon Banner (Lustrous Tide - Weapon)
+            // 7 = Beginner Banner (Beginner's Choice Convene)
             if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 1;
             if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 2;
-            if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 3;
-            if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 4;
-            if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 5 || poolType === 6;
+            if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 5;
+            if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 6;
+            if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 7;
             return false;
           });
           
@@ -3885,14 +4200,17 @@ function WhisperingWishesInner() {
         ['featured', 'weapon', 'standardChar', 'standardWeap', 'beginner'].forEach(type => {
           const history = convert(pulls, type);
           if (history.length) {
+            // Calculate current 5★ pity (pulls since last 5★)
             let currentPity5 = 0;
-            let currentPity4 = 0;
             for (let i = history.length - 1; i >= 0; i--) {
               if (history[i].rarity === 5) break;
               currentPity5++;
             }
+            // Calculate current 4★ pity (pulls since last 4★)
+            // Note: 5★ pulls don't reset 4★ pity, only 4★ pulls do
+            let currentPity4 = 0;
             for (let i = history.length - 1; i >= 0; i--) {
-              if (history[i].rarity >= 4) break;
+              if (history[i].rarity === 4) break; // Only break on 4★, not 5★
               currentPity4++;
             }
             const fiveStars = history.filter(p => p.rarity === 5);
@@ -3900,9 +4218,23 @@ function WhisperingWishesInner() {
             const guaranteed = type === 'featured' && lastFive?.won5050 === false;
             dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
             totalImported += history.length;
+            console.log(`Imported ${type}: ${history.length} pulls, 5★ pity: ${currentPity5}, 4★ pity: ${currentPity4}`);
           }
         });
-        toast?.addToast?.(`Imported ${totalImported} Convenes!`, 'success');
+        
+        // Detailed breakdown
+        const fc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 1).length;
+        const wc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 2).length;
+        const sc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 5).length;
+        const sw = pulls.filter(p => (p.cardPoolType || p.gachaType) === 6).length;
+        const bc = pulls.filter(p => (p.cardPoolType || p.gachaType) === 7).length;
+        const parts = [];
+        if (fc) parts.push(`${fc} char`);
+        if (wc) parts.push(`${wc} weap`);
+        if (sc + sw) parts.push(`${sc + sw} std`);
+        if (bc) parts.push(`${bc} beg`);
+        
+        toast?.addToast?.(`Imported ${totalImported} pulls! (${parts.join(', ')})`, 'success');
       } catch (err) { toast?.addToast?.('Import failed: ' + err.message, 'error'); }
     };
     reader.readAsText(file);
@@ -3911,7 +4243,7 @@ function WhisperingWishesInner() {
 
   // Export data
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: '2.9.6', state };
+    const data = { timestamp: new Date().toISOString(), version: '2.9.36', state };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -4182,7 +4514,7 @@ function WhisperingWishesInner() {
                   const stdMask = generateMaskGradient(visualSettings.standardFadePosition || 50, visualSettings.standardFadeIntensity || 100);
                   const stdOpacity = (visualSettings.standardOpacity || 100) / 100;
                   return (
-                    <div className="relative overflow-hidden rounded-xl border border-purple-500/30" style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
+                    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', position: 'relative', zIndex: 5 }}>
                       {activeBanners.standardWeapBannerImage && (
                         <img 
                           src={activeBanners.standardWeapBannerImage}
@@ -4202,12 +4534,12 @@ function WhisperingWishesInner() {
                       <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                         <div>
                           <div className="flex justify-between items-start mb-1">
-                            <h3 className="font-bold text-sm text-purple-400">Winter Brume</h3>
+                            <h3 className="font-bold text-sm text-cyan-400">Winter Brume</h3>
                             <span className="text-gray-200 text-[10px]">Standard Weapon</span>
                           </div>
                           <div className="text-gray-200 text-[9px] mb-1">Available 5★</div>
                           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-                            {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-purple-400 bg-purple-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{w.name}</span>)}
+                            {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{w.name}</span>)}
                           </div>
                         </div>
                         {state.profile.standardWeap?.history?.length > 0 && (
@@ -4215,7 +4547,7 @@ function WhisperingWishesInner() {
                             <div className="flex items-center gap-3">
                               <div className="flex-1 flex items-center gap-3">
                                 <div className="text-center">
-                                  <div className="text-purple-400 font-bold text-sm">{state.profile.standardWeap.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
+                                  <div className="text-cyan-400 font-bold text-sm">{state.profile.standardWeap.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
                                   <div className="text-gray-300 text-[8px] mt-0.5">5★ Pity</div>
                                 </div>
                                 <div className="text-center">
@@ -4338,8 +4670,8 @@ function WhisperingWishesInner() {
 
                   {/* 50/50 Toggle */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
-                    <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : ''}`}>
-                      {state.calc.charGuaranteed ? '✓ Guaranteed' : '50/50 Active'}
+                    <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
+                      {state.calc.charGuaranteed ? '✓ Guaranteed (100%)' : '⚠ 50/50 Active'}
                     </button>
                   )}
               </CardBody>
@@ -4353,20 +4685,20 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.charPity} max={80} size={56} strokeWidth={4} color="#fbbf24" glowColor="rgba(251,191,36,0.4)" />
+                        <PityRing value={state.calc.charPity} max={80} size={56} strokeWidth={4} color={state.calc.charPity >= 65 ? '#fb923c' : '#fbbf24'} glowColor={state.calc.charPity >= 65 ? 'rgba(251,146,60,0.5)' : 'rgba(251,191,36,0.4)'} />
                         <div className="flex-1">
-                          <div className="text-sm font-medium mb-1 text-yellow-300">Featured Resonator</div>
+                          <div className="text-sm font-medium mb-1 text-yellow-400">Featured Resonator</div>
                           <input type="range" min="0" max="80" value={state.calc.charPity} onChange={e => { const v = +e.target.value; setCalc('charPity', v); }} className="kuro-slider" />
-                          {state.calc.charPity >= 66 && <p className="text-[10px] kuro-soft-pity" style={{color: '#fb923c'}}><Sparkles size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.9))'}} />Soft Pity Zone!</p>}
+                          {state.calc.charPity >= 65 && <p className="text-[10px] kuro-soft-pity" style={{color: '#fb923c'}}><Sparkles size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
                         <div className="text-right">
-                          <span style={{color: state.calc.charPity >= 66 ? '#fb923c' : '#fde047'}} className={`text-2xl kuro-number ${state.calc.charPity >= 66 ? 'kuro-soft-pity' : ''}`}>{state.calc.charPity}</span>
+                          <span style={{color: state.calc.charPity >= 65 ? '#fb923c' : '#fbbf24'}} className={`text-2xl kuro-number ${state.calc.charPity >= 65 ? 'kuro-soft-pity' : ''}`}>{state.calc.charPity}</span>
                           <span className="text-gray-200 text-sm">/80</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-yellow-300">5★ Target:</span>
+                          <span className="text-yellow-400">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.charCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('charCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
@@ -4381,14 +4713,14 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.weapPity} max={80} size={56} strokeWidth={4} color="#f472b6" glowColor="rgba(244,114,182,0.4)" />
+                        <PityRing value={state.calc.weapPity} max={80} size={56} strokeWidth={4} color={state.calc.weapPity >= 65 ? '#ec4899' : '#f9a8d4'} glowColor={state.calc.weapPity >= 65 ? 'rgba(236,72,153,0.5)' : 'rgba(249,168,212,0.4)'} />
                         <div className="flex-1">
                           <div className="text-sm font-medium mb-1 text-pink-400">Featured Weapon</div>
                           <input type="range" min="0" max="80" value={state.calc.weapPity} onChange={e => setCalc('weapPity', +e.target.value)} className="kuro-slider pink" />
-                          {state.calc.weapPity >= 66 && <p className="text-[10px] kuro-soft-pity-pink" style={{color: '#f9a8d4'}}><Swords size={10} className="inline mr-1" style={{color: '#f9a8d4', filter: 'drop-shadow(0 0 4px rgba(244,114,182,0.9))'}} />Soft Pity Zone!</p>}
+                          {state.calc.weapPity >= 65 && <p className="text-[10px] kuro-soft-pity-pink" style={{color: '#ec4899'}}><Swords size={10} className="inline mr-1" style={{color: '#ec4899', filter: 'drop-shadow(0 0 4px rgba(236,72,153,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
                         <div className="text-right">
-                          <span style={{color: state.calc.weapPity >= 66 ? '#f9a8d4' : '#f472b6'}} className={`text-2xl kuro-number ${state.calc.weapPity >= 66 ? 'kuro-soft-pity-pink' : ''}`}>{state.calc.weapPity}</span>
+                          <span style={{color: state.calc.weapPity >= 65 ? '#ec4899' : '#f9a8d4'}} className={`text-2xl kuro-number ${state.calc.weapPity >= 65 ? 'kuro-soft-pity-pink' : ''}`}>{state.calc.weapPity}</span>
                           <span className="text-gray-200 text-sm">/80</span>
                         </div>
                       </div>
@@ -4409,20 +4741,20 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.stdCharPity} max={80} size={56} strokeWidth={4} color="#22d3ee" glowColor="rgba(34,211,238,0.4)" />
+                        <PityRing value={state.calc.stdCharPity} max={80} size={56} strokeWidth={4} color={state.calc.stdCharPity >= 65 ? '#67e8f9' : '#22d3ee'} glowColor={state.calc.stdCharPity >= 65 ? 'rgba(103,232,249,0.5)' : 'rgba(34,211,238,0.4)'} />
                         <div className="flex-1">
-                          <div className="text-sm font-medium mb-1 text-sky-300">Standard Resonator</div>
+                          <div className="text-sm font-medium mb-1 text-cyan-400">Standard Resonator</div>
                           <input type="range" min="0" max="80" value={state.calc.stdCharPity} onChange={e => setCalc('stdCharPity', +e.target.value)} className="kuro-slider cyan" />
-                          {state.calc.stdCharPity >= 66 && <p className="text-[10px] kuro-soft-pity-cyan" style={{color: '#67e8f9'}}><Star size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))'}} />Soft Pity Zone!</p>}
+                          {state.calc.stdCharPity >= 65 && <p className="text-[10px] kuro-soft-pity-cyan" style={{color: '#67e8f9'}}><Star size={10} className="inline mr-1" style={{filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
                         <div className="text-right">
-                          <span style={{color: state.calc.stdCharPity >= 66 ? '#67e8f9' : '#7dd3fc'}} className={`text-2xl kuro-number ${state.calc.stdCharPity >= 66 ? 'kuro-soft-pity-cyan' : ''}`}>{state.calc.stdCharPity}</span>
+                          <span style={{color: state.calc.stdCharPity >= 65 ? '#67e8f9' : '#22d3ee'}} className={`text-2xl kuro-number ${state.calc.stdCharPity >= 65 ? 'kuro-soft-pity-cyan' : ''}`}>{state.calc.stdCharPity}</span>
                           <span className="text-gray-200 text-sm">/80</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-sky-300">5★ Target:</span>
+                          <span className="text-cyan-400">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdCharCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdCharCopies', Math.max(1, Math.min(7, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
@@ -4437,20 +4769,20 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                     <div>
                       <div className="flex items-center gap-4 mb-2">
-                        <PityRing value={state.calc.stdWeapPity} max={80} size={56} strokeWidth={4} color="#22d3ee" glowColor="rgba(34,211,238,0.4)" />
+                        <PityRing value={state.calc.stdWeapPity} max={80} size={56} strokeWidth={4} color={state.calc.stdWeapPity >= 65 ? '#67e8f9' : '#22d3ee'} glowColor={state.calc.stdWeapPity >= 65 ? 'rgba(103,232,249,0.5)' : 'rgba(34,211,238,0.4)'} />
                         <div className="flex-1">
-                          <div className="text-sm font-medium mb-1 text-sky-300">Standard Weapon</div>
+                          <div className="text-sm font-medium mb-1 text-cyan-400">Standard Weapon</div>
                           <input type="range" min="0" max="80" value={state.calc.stdWeapPity} onChange={e => setCalc('stdWeapPity', +e.target.value)} className="kuro-slider cyan" />
-                          {state.calc.stdWeapPity >= 66 && <p className="text-[10px] kuro-soft-pity-cyan" style={{color: '#67e8f9'}}><Sword size={10} className="inline mr-1 rotate-45" style={{filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))'}} />Soft Pity Zone!</p>}
+                          {state.calc.stdWeapPity >= 65 && <p className="text-[10px] kuro-soft-pity-cyan" style={{color: '#67e8f9'}}><Sword size={10} className="inline mr-1 rotate-45" style={{filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))'}} />Soft Pity Zone!</p>}
                         </div>
                         <div className="text-right">
-                          <span style={{color: state.calc.stdWeapPity >= 66 ? '#67e8f9' : '#7dd3fc'}} className={`text-2xl kuro-number ${state.calc.stdWeapPity >= 66 ? 'kuro-soft-pity-cyan' : ''}`}>{state.calc.stdWeapPity}</span>
+                          <span style={{color: state.calc.stdWeapPity >= 65 ? '#67e8f9' : '#22d3ee'}} className={`text-2xl kuro-number ${state.calc.stdWeapPity >= 65 ? 'kuro-soft-pity-cyan' : ''}`}>{state.calc.stdWeapPity}</span>
                           <span className="text-gray-200 text-sm">/80</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-sky-300">5★ Target:</span>
+                          <span className="text-cyan-400">5★ Target:</span>
                           <input type="text" inputMode="numeric" value={state.calc.stdWeapCopies} onChange={e => { const v = parseInt(e.target.value) || 1; setCalc('stdWeapCopies', Math.max(1, Math.min(5, v))); }} className="kuro-input kuro-input-sm" />
                         </div>
                         <div className="flex items-center justify-between">
@@ -4468,7 +4800,7 @@ function WhisperingWishesInner() {
               <CardHeader>Resources</CardHeader>
               <CardBody className="space-y-3">
                   <div>
-                    <label className="kuro-label mb-1.5 block">Astrite</label>
+                    <label className="kuro-label">Astrite</label>
                     <input type="number" value={state.calc.astrite} onChange={e => setCalc('astrite', e.target.value)} className="kuro-input" placeholder="0" />
                     <p className="text-gray-200 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / 160)} Convenes</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
@@ -4484,7 +4816,7 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-3">
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label className="text-xs mb-1.5 block font-medium text-yellow-300">Radiant Tides</label>
+                          <label className="text-xs mb-1.5 block font-medium text-yellow-400">Radiant Tides</label>
                           <input type="number" value={state.calc.radiant} onChange={e => setCalc('radiant', e.target.value)} className="kuro-input" placeholder="0" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
@@ -4510,7 +4842,7 @@ function WhisperingWishesInner() {
                   {/* Standard banner resources */}
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
-                      <label className="text-xs mb-1.5 block font-medium text-sky-300">Lustrous Tides</label>
+                      <label className="text-xs mb-1.5 block font-medium text-cyan-400">Lustrous Tides</label>
                       <input type="number" value={state.calc.lustrous} onChange={e => setCalc('lustrous', e.target.value)} className="kuro-input" placeholder="0" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
@@ -4520,25 +4852,70 @@ function WhisperingWishesInner() {
                     </div>
                   )}
 
+                  {/* Astrite Allocation Priority - only shown in "Both" mode */}
+                  {state.calc.selectedBanner === 'both' && (
+                    <div>
+                      <div className="kuro-label">Astrite Priority</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          onClick={() => setCalc('allocPriority', Math.min(100, (state.calc.allocPriority ?? 50) + 10))} 
+                          className={`kuro-btn text-xs py-3 ${(state.calc.allocPriority ?? 50) >= 50 ? 'active-gold' : ''}`}
+                        >
+                          <Sparkles size={14} className="mx-auto mb-1" />
+                          <div className="font-medium">Resonator</div>
+                          <div className="text-xl kuro-number" style={{color: (state.calc.allocPriority ?? 50) >= 50 ? '#fbbf24' : '#6b7280'}}>{state.calc.allocPriority ?? 50}%</div>
+                          <div className="text-[9px] text-gray-500 mt-0.5">tap to +10%</div>
+                        </button>
+                        <button 
+                          onClick={() => setCalc('allocPriority', Math.max(0, (state.calc.allocPriority ?? 50) - 10))} 
+                          className={`kuro-btn text-xs py-3 ${(state.calc.allocPriority ?? 50) <= 50 ? 'active-pink' : ''}`}
+                        >
+                          <Swords size={14} className="mx-auto mb-1" />
+                          <div className="font-medium">Weapon</div>
+                          <div className="text-xl kuro-number" style={{color: (state.calc.allocPriority ?? 50) <= 50 ? '#f472b6' : '#6b7280'}}>{100 - (state.calc.allocPriority ?? 50)}%</div>
+                          <div className="text-[9px] text-gray-500 mt-0.5">tap to +10%</div>
+                        </button>
+                      </div>
+                      {(state.calc.allocPriority ?? 50) !== 50 && (
+                        <button 
+                          onClick={() => setCalc('allocPriority', 50)} 
+                          className="kuro-btn w-full mt-2 text-xs"
+                        >
+                          <RefreshCcw size={12} className="inline mr-1.5" />Reset to 50/50
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   {/* Total Convenes Display */}
                   <div className="kuro-stat">
                     <div className="flex justify-around items-center">
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-yellow-300 kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.radiant || 0)}</div>
+                          <div className="text-yellow-400 kuro-number text-xl">{charPulls}</div>
                           <div className="text-gray-200 text-[10px]">Resonator Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-yellow-300 kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.forging || 0)}</div>
+                          <div className="text-pink-400 kuro-number text-xl">{weapPulls}</div>
                           <div className="text-gray-200 text-[10px]">Weapon Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
                         </div>
                       )}
-                      {state.calc.bannerCategory === 'standard' && (
+                      {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-sky-300 kuro-number text-xl">{Math.floor((+state.calc.astrite || 0) / 160) + (+state.calc.lustrous || 0)}</div>
-                          <div className="text-gray-200 text-[10px]">Standard Convenes</div>
+                          <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls}</div>
+                          <div className="text-gray-200 text-[10px]">Resonator Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
+                        </div>
+                      )}
+                      {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
+                        <div className="text-center">
+                          <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls}</div>
+                          <div className="text-gray-200 text-[10px]">Weapon Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -4554,11 +4931,21 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-gold">
                         <div className={`text-3xl kuro-number ${parseFloat(charStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(charStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(charStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{charStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Success Rate</div>
+                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.charCopies} copies)</div>
                       </div>
+                      <div className="kuro-stat kuro-stat-cyan">
+                        <div className="text-2xl kuro-number text-cyan-400">~{charStats.expectedCopies}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-red">
-                        <div className="text-2xl kuro-number text-red-400">{charStats.missingPulls}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case Deficit</div>
+                        <div className="text-xl kuro-number text-red-400">{charStats.missingPulls > 0 ? charStats.missingPulls : '✓'}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">{charStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                      </div>
+                      <div className="kuro-stat kuro-stat-gray">
+                        <div className="text-xl kuro-number text-gray-400">{charStats.worstCase}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -4574,13 +4961,23 @@ function WhisperingWishesInner() {
                 <CardHeader>Featured Weapon Results</CardHeader>
                 <CardBody className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="kuro-stat kuro-stat-gold">
+                      <div className="kuro-stat kuro-stat-pink">
                         <div className={`text-3xl kuro-number ${parseFloat(weapStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(weapStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(weapStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{weapStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Success Rate</div>
+                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.weapCopies} copies)</div>
                       </div>
+                      <div className="kuro-stat kuro-stat-cyan">
+                        <div className="text-2xl kuro-number text-cyan-400">~{weapStats.expectedCopies}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-red">
-                        <div className="text-2xl kuro-number text-red-400">{weapStats.missingPulls}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case Deficit</div>
+                        <div className="text-xl kuro-number text-red-400">{weapStats.missingPulls > 0 ? weapStats.missingPulls : '✓'}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">{weapStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                      </div>
+                      <div className="kuro-stat kuro-stat-gray">
+                        <div className="text-xl kuro-number text-gray-400">{weapStats.worstCase}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -4598,14 +4995,27 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className={`text-3xl kuro-number ${parseFloat(stdCharStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stdCharStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stdCharStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stdCharStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Success Rate</div>
+                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.stdCharCopies} copies)</div>
                       </div>
-                      <div className="kuro-stat kuro-stat-red">
-                        <div className="text-2xl kuro-number text-red-400">{stdCharStats.missingPulls}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case Deficit</div>
+                      <div className="kuro-stat kuro-stat-cyan">
+                        <div className="text-2xl kuro-number text-cyan-400">~{stdCharStats.expectedCopies}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
                       </div>
                     </div>
-                    <div className="kuro-stat kuro-stat-purple text-xs"><span className="text-violet-300 kuro-number">~{stdCharStats.fourStarCount}</span> <span className="text-gray-200">4★ Expected</span></div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="kuro-stat kuro-stat-red">
+                        <div className="text-xl kuro-number text-red-400">{stdCharStats.missingPulls > 0 ? stdCharStats.missingPulls : '✓'}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">{stdCharStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                      </div>
+                      <div className="kuro-stat kuro-stat-gray">
+                        <div className="text-xl kuro-number text-gray-400">{stdCharStats.worstCase}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
+                      </div>
+                    </div>
+                    <div className="kuro-stat kuro-stat-purple text-xs">
+                      <span className="text-violet-300 kuro-number">~{stdCharStats.fourStarCount}</span>
+                      <div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div>
+                    </div>
                 </CardBody>
               </Card>
             )}
@@ -4617,14 +5027,27 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="kuro-stat kuro-stat-cyan">
                         <div className={`text-3xl kuro-number ${parseFloat(stdWeapStats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stdWeapStats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stdWeapStats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stdWeapStats.successRate}%</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Success Rate</div>
+                        <div className="text-gray-200 text-[10px] mt-1">P(≥{state.calc.stdWeapCopies} copies)</div>
                       </div>
-                      <div className="kuro-stat kuro-stat-red">
-                        <div className="text-2xl kuro-number text-red-400">{stdWeapStats.missingPulls}</div>
-                        <div className="text-gray-200 text-[10px] mt-1">Worst Case Deficit</div>
+                      <div className="kuro-stat kuro-stat-cyan">
+                        <div className="text-2xl kuro-number text-cyan-400">~{stdWeapStats.expectedCopies}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Expected Copies</div>
                       </div>
                     </div>
-                    <div className="kuro-stat kuro-stat-purple text-xs"><span className="text-violet-300 kuro-number">~{stdWeapStats.fourStarCount}</span> <span className="text-gray-200">4★ Expected</span></div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="kuro-stat kuro-stat-red">
+                        <div className="text-xl kuro-number text-red-400">{stdWeapStats.missingPulls > 0 ? stdWeapStats.missingPulls : '✓'}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">{stdWeapStats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+                      </div>
+                      <div className="kuro-stat kuro-stat-gray">
+                        <div className="text-xl kuro-number text-gray-400">{stdWeapStats.worstCase}</div>
+                        <div className="text-gray-200 text-[10px] mt-1">Worst Case</div>
+                      </div>
+                    </div>
+                    <div className="kuro-stat kuro-stat-purple text-xs">
+                      <span className="text-violet-300 kuro-number">~{stdWeapStats.fourStarCount}</span>
+                      <div className="text-gray-200 text-[9px] mt-0.5">4★ Expected</div>
+                    </div>
                 </CardBody>
               </Card>
             )}
@@ -4640,17 +5063,26 @@ function WhisperingWishesInner() {
                         <div className="text-gray-200 text-[10px] mt-1">Get Both</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gold">
-                        <div className="text-yellow-300 text-2xl kuro-number">{combined.atLeastOne}%</div>
+                        <div className="text-yellow-400 text-2xl kuro-number">{combined.atLeastOne}%</div>
                         <div className="text-gray-200 text-[10px] mt-1">At Least One</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
-                      <div className="kuro-stat"><span style={{color: state.calc.bannerCategory === 'featured' ? '#fde047' : '#7dd3fc'}} className="kuro-number">{combined.charOnly}%</span><div className="text-gray-200 mt-0.5">Char Only</div></div>
-                      <div className="kuro-stat"><span style={{color: state.calc.bannerCategory === 'featured' ? '#fde047' : '#7dd3fc'}} className="kuro-number">{combined.weapOnly}%</span><div className="text-gray-200 mt-0.5">Weap Only</div></div>
-                      <div className="kuro-stat"><span className="text-red-400 kuro-number">{combined.neither}%</span><div className="text-gray-200 mt-0.5">Neither</div></div>
+                      <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-gold' : 'kuro-stat-cyan'}`}>
+                        <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-yellow-400' : 'text-cyan-400'}`}>{combined.charOnly}%</span>
+                        <div className="text-gray-200 mt-0.5">Char Only</div>
+                      </div>
+                      <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-pink' : 'kuro-stat-cyan'}`}>
+                        <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-pink-400' : 'text-cyan-400'}`}>{combined.weapOnly}%</span>
+                        <div className="text-gray-200 mt-0.5">Weap Only</div>
+                      </div>
+                      <div className="kuro-stat kuro-stat-red">
+                        <span className="text-red-400 kuro-number">{combined.neither}%</span>
+                        <div className="text-gray-200 mt-0.5">Neither</div>
+                      </div>
                     </div>
-                    <div className="mt-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded text-center">
-                      <p className="text-yellow-400/80 text-[9px]">⚠ Astrite is shared — probabilities assume separate resources for each banner. Actual odds may be lower if splitting Astrite between both.</p>
+                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
+                      <p className="text-emerald-400/80 text-[9px]">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
                     </div>
                 </CardBody>
               </Card>
@@ -4695,7 +5127,7 @@ function WhisperingWishesInner() {
               </div>
               {showIncomePanel && (
                 <CardBody className="space-y-1.5">
-                  <div className="kuro-label mb-1">Subscriptions</div>
+                  <div className="kuro-label">Subscriptions</div>
                   <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
@@ -4730,7 +5162,7 @@ function WhisperingWishesInner() {
                       </div>
                     </button>
                   ))}
-                  <div className="kuro-label mt-3 mb-1">Direct Top-Ups</div>
+                  <div className="kuro-label mt-3">Direct Top-Ups</div>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
                     <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
@@ -4752,8 +5184,8 @@ function WhisperingWishesInner() {
                       <span className="text-gray-200">{i.label}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-yellow-400">+{i.astrite}</span>
-                        {i.radiant > 0 && <span className="text-cyan-400">+{i.radiant}RT</span>}
-                        {i.lustrous > 0 && <span className="text-purple-400">+{i.lustrous}LT</span>}
+                        {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
+                        {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
                         <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400"><Minus size={12} /></button>
                       </div>
                     </div>
@@ -4822,7 +5254,7 @@ function WhisperingWishesInner() {
                   <div>
                     <label className="kuro-label">Base Convenes (per copy)</label>
                     <select value={state.planner.goalPulls} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +e.target.value })} className="kuro-input w-full">
-                      <option value={80}>80 (Soft Pity)</option>
+                      <option value={80}>80 (Hard Pity)</option>
                       <option value={160}>160 (Guaranteed)</option>
                       <option value={240}>240 (Char + Signature)</option>
                     </select>
@@ -5215,7 +5647,7 @@ function WhisperingWishesInner() {
                       { name: 'Featured Resonator', key: 'featured', color: 'yellow' },
                       { name: 'Featured Weapon', key: 'weapon', color: 'pink' },
                       { name: 'Standard Resonator', key: 'standardChar', color: 'cyan' },
-                      { name: 'Standard Weapon', key: 'standardWeap', color: 'purple' },
+                      { name: 'Standard Weapon', key: 'standardWeap', color: 'cyan' },
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
                       const pity = state.profile[banner.key]?.pity5 || 0;
@@ -5699,7 +6131,7 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 <div className="text-center">
                   <h4 className="text-gray-100 font-medium">Whispering Wishes</h4>
-                  <p className="text-gray-500 text-[10px]">Version 2.9.28</p>
+                  <p className="text-gray-500 text-[10px]">Version 2.9.36</p>
                 </div>
                 
                 <div className="text-center">
@@ -6654,7 +7086,7 @@ function WhisperingWishesInner() {
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[9px]">
-          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.28</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
+          <span onClick={handleAdminTap} className="cursor-pointer select-none">Whispering Wishes v2.9.36</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
