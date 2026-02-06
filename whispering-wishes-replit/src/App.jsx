@@ -2726,6 +2726,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
   if (!data) return null;
   
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
+  const weaponData = WEAPON_DATA[data.bestWeapon];
+  const weaponImg = DEFAULT_COLLECTION_IMAGES[data.bestWeapon];
+  
+  // Parse team strings into character names
+  const parseTeamMembers = (teamStr) => {
+    return teamStr.split('+').map(s => s.trim()).filter(Boolean);
+  };
   
   return (
     <div 
@@ -2765,6 +2772,95 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
           {/* Description */}
           <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>
           
+          {/* BUILD GUIDE SECTION */}
+          <div className="space-y-1">
+            <h3 className="text-white font-bold text-sm flex items-center gap-2">
+              <Target size={14} className={colors.text} /> Build Guide
+            </h3>
+          </div>
+
+          {/* Best Weapon - with image and stats */}
+          <div className={`p-3 rounded-xl border ${colors.border} bg-gradient-to-r ${colors.bg} from-transparent`}>
+            <div className="text-[9px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
+            <div className="flex items-center gap-3">
+              {weaponImg && (
+                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
+                {weaponData && (
+                  <>
+                    <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.stat}</div>
+                    <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">{weaponData.passive}</div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Best Echoes - enhanced */}
+          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="text-[9px] text-gray-500 uppercase tracking-wider mb-2">Recommended Echoes</div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                  <Star size={14} className="text-cyan-400 fill-cyan-400" />
+                </div>
+                <div>
+                  <div className="text-cyan-400 text-xs font-bold">{data.bestEchoes[0]}</div>
+                  <div className="text-gray-500 text-[9px]">Main Echo (3 cost)</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
+                  <LayoutGrid size={14} className="text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-purple-400 text-xs font-bold">{data.bestEchoes[1]}</div>
+                  <div className="text-gray-500 text-[9px]">Echo Set</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Team Suggestions - with avatars */}
+          <div>
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+              <Swords size={14} className="text-pink-400" /> Team Comps
+            </h3>
+            <div className="space-y-2">
+              {data.teams.map((team, i) => {
+                const members = parseTeamMembers(team);
+                const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m]);
+                return (
+                  <div key={i} className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                    {hasImages ? (
+                      <div className="flex items-center gap-2">
+                        {members.map((member, j) => {
+                          const memberImg = DEFAULT_COLLECTION_IMAGES[member];
+                          return (
+                            <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                              {memberImg ? (
+                                <img src={memberImg} alt={member} className="w-10 h-10 rounded-lg object-cover bg-neutral-800 border border-white/10" />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
+                                  <User size={14} className="text-gray-600" />
+                                </div>
+                              )}
+                              <span className="text-[8px] text-gray-400 text-center leading-tight truncate w-full">{member}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-gray-300">{team}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Skills */}
           <div>
             <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
@@ -2774,19 +2870,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
               {data.skills.map((skill, i) => (
                 <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-white/10">{skill}</span>
               ))}
-            </div>
-          </div>
-          
-          {/* Best Weapon & Echoes */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best Weapon</div>
-              <div className="text-yellow-400 text-xs font-medium">{data.bestWeapon}</div>
-            </div>
-            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best Echoes</div>
-              <div className="text-cyan-400 text-xs font-medium">{data.bestEchoes[0]}</div>
-              <div className="text-gray-400 text-[10px]">{data.bestEchoes[1]}</div>
             </div>
           </div>
           
@@ -2808,18 +2891,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
                 <div className="text-[9px] text-gray-500 mb-0.5">Specialty</div>
                 <div className="text-[10px] text-cyan-400">{data.ascension.specialty}</div>
               </div>
-            </div>
-          </div>
-          
-          {/* Team Suggestions */}
-          <div>
-            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
-              <User size={14} className="text-pink-400" /> Team Suggestions
-            </h3>
-            <div className="space-y-1">
-              {data.teams.map((team, i) => (
-                <div key={i} className="text-[10px] text-gray-300 p-2 rounded-lg bg-white/5 border border-white/10">{team}</div>
-              ))}
             </div>
           </div>
         </div>
@@ -4346,6 +4417,8 @@ function WhisperingWishesInner() {
 
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardTab, setLeaderboardTab] = useState('rankings'); // 'rankings' or 'popular'
+  const [communityPulls, setCommunityPulls] = useState(null);
   const [userLeaderboardId] = useState(() => {
     if (!storageAvailable) return null;
     try {
@@ -4538,24 +4611,62 @@ function WhisperingWishesInner() {
         lost5050: overallStats.lost5050 || 0,
         timestamp: Date.now()
       };
-      // Submit to Firebase
+      // Submit leaderboard entry
       const res = await fetch(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entry)
       });
       if (!res.ok) throw new Error('Firebase submit failed');
+      
+      // Submit owned 5★ for community "Most Pulled" ranking
+      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
+      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
+        await fetch(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
+        });
+      }
+      
       toast?.addToast?.('Score submitted to leaderboard!', 'success');
       loadLeaderboard();
     } catch (e) { 
       console.error('Submit error:', e);
       toast?.addToast?.('Failed to submit score', 'error');
     }
-  }, [userLeaderboardId, overallStats, toast, loadLeaderboard]);
+  }, [userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard]);
   
+  const loadCommunityPulls = useCallback(async () => {
+    try {
+      const res = await fetch(`${FIREBASE_DB}/community-pulls.json`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const charCounts = {};
+          const weapCounts = {};
+          const playerCount = Object.keys(data).length;
+          Object.values(data).forEach(entry => {
+            (entry.chars || []).forEach(name => { charCounts[name] = (charCounts[name] || 0) + 1; });
+            (entry.weaps || []).forEach(name => { weapCounts[name] = (weapCounts[name] || 0) + 1; });
+          });
+          const sortedChars = Object.entries(charCounts).sort((a, b) => b[1] - a[1]);
+          const sortedWeaps = Object.entries(weapCounts).sort((a, b) => b[1] - a[1]);
+          setCommunityPulls({ chars: sortedChars, weaps: sortedWeaps, playerCount });
+        }
+      }
+    } catch (e) { console.error('Community pulls load error:', e); }
+  }, []);
+
   useEffect(() => {
-    if (showLeaderboard) loadLeaderboard();
-  }, [showLeaderboard, loadLeaderboard]);
+    if (showLeaderboard) {
+      loadLeaderboard();
+      loadCommunityPulls();
+    }
+  }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
 
   // Community stats aggregated from all leaderboard entries
   const communityStats = useMemo(() => {
@@ -6294,67 +6405,144 @@ function WhisperingWishesInner() {
                 {showLeaderboard && (
                   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                     <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
-                      <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-white font-bold text-sm">Luck Leaderboard</h3>
-                          <p className="text-gray-400 text-[10px]">Anonymous rankings by avg pity</p>
+                      <div className="p-4 pb-2 border-b border-white/10">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h3 className="text-white font-bold text-sm">Community</h3>
+                            <p className="text-gray-400 text-[10px]">Leaderboard & stats</p>
+                          </div>
+                          <button onClick={() => setShowLeaderboard(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
+                            <X size={18} />
+                          </button>
                         </div>
-                        <button onClick={() => setShowLeaderboard(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
-                          <X size={18} />
-                        </button>
+                        <div className="flex gap-1">
+                          <button onClick={() => setLeaderboardTab('rankings')} className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'rankings' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
+                            Rankings
+                          </button>
+                          <button onClick={() => setLeaderboardTab('popular')} className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'popular' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
+                            Most Pulled
+                          </button>
+                        </div>
                       </div>
                       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                        {leaderboardLoading ? (
-                          <div className="text-center py-8">
-                            <div className="text-gray-400 text-sm">Loading...</div>
-                          </div>
-                        ) : leaderboardData.length === 0 ? (
-                          <div className="text-center py-8">
-                            <div className="text-gray-500 text-sm mb-2">No entries yet</div>
-                            <div className="text-gray-500 text-[10px]">Be the first to submit!</div>
-                          </div>
-                        ) : (
-                          leaderboardData.map((entry, i) => {
-                            const isYou = entry.id === userLeaderboardId;
-                            const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
-                            return (
-                              <div 
-                                key={entry.id}
-                                className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
-                              >
-                                <div 
-                                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                                  style={{
-                                    background: i < 3 ? `linear-gradient(135deg, ${medalColors[i]}40, ${medalColors[i]}20)` : 'rgba(255,255,255,0.1)',
-                                    color: i < 3 ? medalColors[i] : '#9ca3af',
-                                    border: i < 3 ? `1px solid ${medalColors[i]}50` : '1px solid rgba(255,255,255,0.1)',
-                                    boxShadow: i < 3 ? `0 0 10px ${medalColors[i]}30` : 'none'
-                                  }}
-                                >
-                                  {i + 1}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
-                                      {entry.id}
-                                    </span>
-                                    {isYou && <span className="text-[8px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded">YOU</span>}
-                                  </div>
-                                  <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
-                                </div>
-                                <div className="text-right flex-shrink-0">
-                                  <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                    {entry.avgPity.toFixed(1)}
-                                  </div>
-                                  <div className="text-[9px] text-gray-500">avg pity</div>
-                                </div>
+                        {leaderboardTab === 'rankings' ? (
+                          <>
+                            {leaderboardLoading ? (
+                              <div className="text-center py-8">
+                                <div className="text-gray-400 text-sm">Loading...</div>
                               </div>
-                            );
-                          })
+                            ) : leaderboardData.length === 0 ? (
+                              <div className="text-center py-8">
+                                <div className="text-gray-500 text-sm mb-2">No entries yet</div>
+                                <div className="text-gray-500 text-[10px]">Be the first to submit!</div>
+                              </div>
+                            ) : (
+                              leaderboardData.map((entry, i) => {
+                                const isYou = entry.id === userLeaderboardId;
+                                const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
+                                return (
+                                  <div 
+                                    key={entry.id}
+                                    className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
+                                  >
+                                    <div 
+                                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                      style={{
+                                        background: i < 3 ? `linear-gradient(135deg, ${medalColors[i]}40, ${medalColors[i]}20)` : 'rgba(255,255,255,0.1)',
+                                        color: i < 3 ? medalColors[i] : '#9ca3af',
+                                        border: i < 3 ? `1px solid ${medalColors[i]}50` : '1px solid rgba(255,255,255,0.1)',
+                                        boxShadow: i < 3 ? `0 0 10px ${medalColors[i]}30` : 'none'
+                                      }}
+                                    >
+                                      {i + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
+                                          {entry.id}
+                                        </span>
+                                        {isYou && <span className="text-[8px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded">YOU</span>}
+                                      </div>
+                                      <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
+                                    </div>
+                                    <div className="text-right flex-shrink-0">
+                                      <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                        {entry.avgPity.toFixed(1)}
+                                      </div>
+                                      <div className="text-[9px] text-gray-500">avg pity</div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {!communityPulls ? (
+                              <div className="text-center py-8">
+                                <div className="text-gray-500 text-sm mb-2">No data yet</div>
+                                <div className="text-gray-500 text-[10px]">Submit your score to contribute!</div>
+                              </div>
+                            ) : (
+                              <>
+                                <p className="text-gray-500 text-[9px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
+                                {communityPulls.chars.length > 0 && (
+                                  <>
+                                    <p className="text-[10px] text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
+                                    {communityPulls.chars.slice(0, 10).map(([name, count], i) => {
+                                      const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
+                                      const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
+                                      const imgUrl = collectionImages[name] || '';
+                                      return (
+                                        <div key={name} className="flex items-center gap-2.5 py-1.5">
+                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? medalColors[i] : '#6b7280'}}>{i + 1}</span>
+                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-xs text-gray-200 truncate">{name}</span>
+                                              <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
+                                            </div>
+                                            <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
+                                              <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? medalColors[i] : '#4b5563'}} />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </>
+                                )}
+                                {communityPulls.weaps.length > 0 && (
+                                  <>
+                                    <p className="text-[10px] text-cyan-400/80 font-semibold uppercase tracking-wider mt-3 mb-1">★ Weapons</p>
+                                    {communityPulls.weaps.slice(0, 10).map(([name, count], i) => {
+                                      const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
+                                      const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
+                                      const imgUrl = collectionImages[name] || '';
+                                      return (
+                                        <div key={name} className="flex items-center gap-2.5 py-1.5">
+                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? medalColors[i] : '#6b7280'}}>{i + 1}</span>
+                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-xs text-gray-200 truncate">{name}</span>
+                                              <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
+                                            </div>
+                                            <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
+                                              <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? medalColors[i] : '#4b5563'}} />
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </>
                         )}
                       </div>
                       {/* Community Stats */}
-                      {communityStats && (
+                      {communityStats && leaderboardTab === 'rankings' && (
                         <div className="px-4 py-3 border-t border-white/10 space-y-2">
                           <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                             <BarChart3 size={10} /> Community Stats
