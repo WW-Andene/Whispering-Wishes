@@ -3,7 +3,7 @@ import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, 
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v2.9.5 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v3.0 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -35,7 +35,10 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:PWA]
 // PWA Support - Manifest, Service Worker, Install Prompt
 
-const APP_VERSION = '2.9.5';
+const APP_VERSION = '3.0';
+
+// Header icon (uploaded app icon)
+const HEADER_ICON = 'data:image/png;base64,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';
 
 // Haptic feedback utility — fails silently on unsupported devices
 const haptic = {
@@ -49,17 +52,14 @@ const haptic = {
 
 const PWA_MANIFEST = {
   name: 'Whispering Wishes',
-  short_name: 'Wishes',
+  short_name: 'Whispering Wishes',
   description: 'Wuthering Waves Convene Companion - Track pulls, plan resources, analyze luck',
   start_url: '/',
   display: 'standalone',
   background_color: '#0a0a0a',
   theme_color: '#fbbf24',
   orientation: 'portrait-primary',
-  icons: [
-    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23fbbf24" width="100" height="100" rx="20"/><text x="50" y="65" font-size="50" text-anchor="middle" fill="%23000">✨</text></svg>', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23fbbf24" width="100" height="100" rx="20"/><text x="50" y="65" font-size="50" text-anchor="middle" fill="%23000">✨</text></svg>', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-  ],
+  icons: [], // Populated dynamically in setupPWA with proper app icon
   categories: ['games', 'utilities'],
   screenshots: [],
   shortcuts: [
@@ -339,7 +339,7 @@ const PWAProvider = ({ children }) => {
             </button>
             <button
               onClick={() => setInstallPrompt(null)}
-              className="p-1 text-black/50 hover:text-black transition-colors"
+              className="p-1 text-black/50 hover:text-black transition-colors" aria-label="Dismiss install prompt"
             >
               <X size={16} />
             </button>
@@ -372,13 +372,11 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <div style={{position:'fixed', bottom:'80px', left:'16px', right:'16px', zIndex:9999, display:'flex', flexDirection:'column', gap:'8px', pointerEvents:'none'}}>
+      <div className="fixed bottom-24 left-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
         {toasts.map(toast => (
-          <div key={toast.id} style={{
-            padding: '12px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px',
-            fontSize: '12px', fontWeight: 500, pointerEvents: 'auto', animation: 'slideUp 0.2s ease-out',
+          <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
+            animation: 'slideUp 0.2s ease-out',
             background: toast.type === 'success' ? 'rgba(16,185,129,0.9)' : toast.type === 'error' ? 'rgba(239,68,68,0.9)' : 'rgba(59,130,246,0.9)',
-            color: 'white', border: '1px solid rgba(255,255,255,0.2)'
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
@@ -511,6 +509,9 @@ const KuroStyles = ({ oledMode }) => (
       --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      /* Z-index scale: bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000) */
+      --text-body: #e2e8f0;
+      --text-heading: #f1f5f9;
       --bg-card: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
       --bg-card-inner: ${oledMode ? 'rgba(5, 5, 5, 1)' : 'rgba(6, 10, 18, 1)'};
       --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
@@ -577,7 +578,7 @@ const KuroStyles = ({ oledMode }) => (
     
     .kuro-calc {
       position: relative;
-      color: #e2e8f0;
+      color: var(--text-body);
     }
     
     @keyframes slideUp {
@@ -610,14 +611,12 @@ const KuroStyles = ({ oledMode }) => (
       50% { transform: scale(1.02); }
     }
     
-    /* Hide scrollbar for nav */
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-    
     /* ═══ TAB CONTENT TRANSITIONS ═══ */
     .tab-content {
       animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-left: -0.75rem;
+      margin-right: -0.75rem;
+      padding: 0.75rem;
     }
     
     @keyframes tabFadeIn {
@@ -879,7 +878,7 @@ const KuroStyles = ({ oledMode }) => (
     }
     
     .kuro-header h3 {
-      color: #f8fafc;
+      color: var(--text-heading);
       font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.03em;
@@ -901,7 +900,7 @@ const KuroStyles = ({ oledMode }) => (
     
     .kuro-body {
       padding: 14px;
-      color: #e2e8f0;
+      color: var(--text-body);
     }
     
     /* ═══ BUTTONS - Glassy style with bright text ═══ */
@@ -911,7 +910,7 @@ const KuroStyles = ({ oledMode }) => (
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 10px 12px;
-      color: #f1f5f9;
+      color: var(--text-heading);
       font-size: 11px;
       font-weight: 500;
       cursor: pointer;
@@ -954,11 +953,11 @@ const KuroStyles = ({ oledMode }) => (
     
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
-      background: rgba(240, 192, 64, 0.15);
-      border-color: rgba(240, 192, 64, 0.7);
+      background: rgba(251, 191, 36, 0.15);
+      border-color: rgba(251, 191, 36, 0.7);
       color: #fef08a;
-      box-shadow: 0 0 25px rgba(240, 192, 64, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(240, 192, 64, 0.08);
-      text-shadow: 0 0 12px rgba(240, 192, 64, 0.6);
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 191, 36, 0.08);
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
       animation: borderGlow 2s ease-in-out infinite;
     }
     
@@ -1092,11 +1091,11 @@ const KuroStyles = ({ oledMode }) => (
     }
     
     .kuro-stat-gold {
-      background: rgba(240, 192, 64, 0.15);
-      border-color: rgba(240, 192, 64, 0.5);
+      background: rgba(251, 191, 36, 0.15);
+      border-color: rgba(251, 191, 36, 0.5);
     }
     .kuro-stat-gold::before {
-      background: linear-gradient(90deg, transparent, rgba(240, 192, 64, 1), transparent);
+      background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 1), transparent);
     }
     
     .kuro-stat-cyan {
@@ -1151,8 +1150,8 @@ const KuroStyles = ({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-stat-gold:hover {
-        border-color: rgba(240, 192, 64, 0.7);
-        box-shadow: 0 4px 20px rgba(240, 192, 64, 0.15);
+        border-color: rgba(251, 191, 36, 0.7);
+        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
       }
       .kuro-stat-cyan:hover {
         border-color: rgba(56, 189, 248, 0.7);
@@ -1182,7 +1181,7 @@ const KuroStyles = ({ oledMode }) => (
     
     /* ═══ LABELS - Bright for readability ═══ */
     .kuro-label {
-      color: #e2e8f0;
+      color: var(--text-body);
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1213,13 +1212,13 @@ const KuroStyles = ({ oledMode }) => (
       background: linear-gradient(135deg, #f0c040, #fbbf24);
       cursor: pointer;
       border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 0 12px rgba(240, 192, 64, 0.6);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
       transition: transform 0.15s, box-shadow 0.15s;
     }
     
     .kuro-slider::-webkit-slider-thumb:hover {
       transform: scale(1.15);
-      box-shadow: 0 0 18px rgba(240, 192, 64, 0.8);
+      box-shadow: 0 0 18px rgba(251, 191, 36, 0.8);
     }
     
     .kuro-slider::-moz-range-thumb {
@@ -1229,7 +1228,7 @@ const KuroStyles = ({ oledMode }) => (
       background: linear-gradient(135deg, #f0c040, #fbbf24);
       cursor: pointer;
       border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 0 12px rgba(240, 192, 64, 0.6);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
     }
     
     .kuro-slider.cyan::-webkit-slider-thumb {
@@ -1440,13 +1439,13 @@ const CURRENT_BANNERS = {
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
     { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
-    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Sword', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
-    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
+    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Danjin', 'Aalto'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
+    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Baizhi', 'Chixia', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
     { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp' },
-    { id: 'kumokiri', name: 'Kumokiri', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Chisa', element: 'Glacio', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
-    { id: 'wildfire', name: 'Wildfire Mark', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
+    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Sword', forCharacter: 'Chisa', element: 'Glacio', isNew: false, featured4Stars: ['Hollow Mirage', 'Jinzhou Keeper', 'Undying Flame'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
+    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Pistols', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Dauntless Evernight', 'Lunar Cutter', 'Thunderbolt'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -1886,6 +1885,9 @@ const WEAPON_DATA = {
   "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
     desc: 'Luuk Herssen signature. Spectro gauntlets with aerial combat enhancement.',
     passive: 'Spectro DMG +12%, Aerial Basic ATK +24%', bestFor: ['Luuk Herssen'] },
+  'Blazing Duet': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
+    desc: 'Galbrena rerun weapon. Fusion broadblade with coordinated attack synergy.',
+    passive: 'Fusion DMG +12%, Coordinated ATK DMG +20%', bestFor: ['Galbrena'] },
   // Standard 5★ Weapons (Lustrous Tide pool - v3.0)
   'Radiance Cleaver': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
     desc: 'Standard 5★ Broadblade. Enhances Heavy Attack damage.',
@@ -2042,11 +2044,12 @@ const WEAPON_COLORS = {
 // [SECTION:CONSTANTS]
 // WuWa gacha rates: 0.8% base, soft pity starts at 65, hard pity at 80
 const HARD_PITY = 80, SOFT_PITY_START = 65, AVG_PITY = 62.5;
+const ASTRITE_PER_PULL = 160;
 
 // Subscription and top-up prices (USD) - Updated January 2026
 const SUBSCRIPTIONS = {
   lunite: { name: 'Lunite Subscription', price: 4.99, astrite: 3000, daily: 90, duration: 30, desc: '300 Lunite + 90 Astrite/day for 30 days' },
-  weekly: { name: 'Weekly Subscription', price: 9.99, astrite: 1600, lunite: 680, duration: 15, desc: '680 Lunite + 1600 Astrite over 15 days (Day 1 + Day 3 + Day 7)' },
+  weekly: { name: 'Weekly Subscription', price: 9.99, astrite: 1600, lunite: 680, duration: 7, desc: '680 Lunite + 1600 Astrite over 7 days (Day 1 + Day 3 + Day 7)' },
   bpInsider: { name: 'Pioneer Podcast - Insider', price: 9.99, astrite: 680, radiant: 5, lustrous: 2, desc: '680 Astrite + 5 Radiant Tides + 2 Lustrous Tides' },
   bpConnoisseur: { name: 'Pioneer Podcast - Connoisseur', price: 19.99, astrite: 680, radiant: 5, lustrous: 5, desc: '680 Astrite + 5 Radiant Tides + 5 Lustrous Tides' },
   directTop60: { name: 'Direct Top-Up (60)', price: 0.99, astrite: 60, desc: '60 Astrite' },
@@ -2402,7 +2405,7 @@ const recommendDualAllocation = (charTarget, weapTarget, charPity = 0, charGuar 
     const eWeap = expectedPullsToTarget(true, weapTarget, weapPity);
     return {
       totalPulls: Math.ceil(eChar + eWeap),
-      astrite: Math.ceil((eChar + eWeap) * 160),
+      astrite: Math.ceil((eChar + eWeap) * ASTRITE_PER_PULL),
       charPulls: Math.ceil(eChar),
       weapPulls: Math.ceil(eWeap),
       confidence: '~50%'
@@ -2413,7 +2416,7 @@ const recommendDualAllocation = (charTarget, weapTarget, charPity = 0, charGuar 
     const nWeap = minPullsForProb(true, weapTarget, targetProb, weapPity);
     return {
       totalPulls: nChar + nWeap,
-      astrite: (nChar + nWeap) * 160,
+      astrite: (nChar + nWeap) * ASTRITE_PER_PULL,
       charPulls: nChar,
       weapPulls: nWeap,
       confidence: `~${targetProb}% each`
@@ -2459,7 +2462,7 @@ const initialState = {
   },
   bookmarks: [],
   eventStatus: {},
-  settings: { showOnboarding: true, autoSyncPity: false, theme: 'default' },
+  settings: { showOnboarding: true },
 };
 
 // Load saved state from persistent storage
@@ -2615,7 +2618,7 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
     p6: pGe(6).toFixed(1),
     p7: pGe(7).toFixed(1),
     missingPulls,
-    missingAstrite: missingPulls * 160,
+    missingAstrite: missingPulls * ASTRITE_PER_PULL,
     fourStarCount,
     featuredFourStarCount,
     pity4,
@@ -2912,7 +2915,7 @@ class TabErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+        <div className="kuro-calc space-y-3 tab-content">
           <div className="kuro-card">
             <div className="kuro-card-inner">
               <div className="kuro-body text-center py-8">
@@ -3087,12 +3090,12 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   
   return (
     <div className="flex items-center gap-1">
-      {time.days > 0 && <><div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{time.days}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Day</div></div><span className={`${textColor} font-bold text-xs opacity-60`}>:</span></>}
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.hours).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Hr</div></div>
+      {time.days > 0 && <><div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{time.days}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Day</div></div><span className={`${textColor} font-bold text-xs opacity-60`}>:</span></>}
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.hours).padStart(2,'0')}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Hr</div></div>
       <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Min</div></div>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2,'0')}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Min</div></div>
       <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[7px] uppercase tracking-wider">Sec</div></div>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Sec</div></div>
     </div>
   );
 });
@@ -3134,7 +3137,7 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.28} fill={color}>{safeValue}</text>
       </svg>
       {label && <div className="text-gray-300 text-[8px] mt-0.5">{label}</div>}
-      {sublabel && <div className="text-gray-500 text-[7px]">{sublabel}</div>}
+      {sublabel && <div className="text-gray-500 text-[8px]">{sublabel}</div>}
     </div>
   );
 });
@@ -3562,7 +3565,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     }}
   >
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wider uppercase" style={{background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase" style={{background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
     )}
     {imgUrl && (
       <img 
@@ -3702,6 +3705,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   // v3.1 weapons - using placeholder until official images available
   'Everbright Polestar': 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp',
   "Daybreaker's Spine": 'https://i.ibb.co/tpn30Lrm/6982b58a79a3b099e1bd0d48i-CAFZ7lo03.webp',
+  'Blazing Duet': '',
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
@@ -3858,7 +3862,7 @@ const ALL_5STAR_WEAPONS = [
   'Unflickering Valor', 'Whispers of Sirens', 'Blazing Justice', 'Woodland Aria',
   "Defier's Thorn", 'Wildfire Mark', 'Lethean Elegy', 'Thunderflare Dominion', "Moongazer's Sigil",
   'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
-  'Everbright Polestar', "Daybreaker's Spine",
+  'Everbright Polestar', "Daybreaker's Spine", 'Blazing Duet',
   'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
 ];
 
@@ -3918,7 +3922,7 @@ const WEAPON_RELEASE_ORDER = [
   // 3.0
   'Spectrum Blaster', 'Starfield Calibrator',
   // 3.1
-  'Everbright Polestar', "Daybreaker's Spine",
+  'Everbright Polestar', "Daybreaker's Spine", 'Blazing Duet',
 ];
 
 // [SECTION:MAINAPP]
@@ -4343,6 +4347,7 @@ function WhisperingWishesInner() {
   // Anonymous Luck Leaderboard
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [selectedTrophy, setSelectedTrophy] = useState(null);
+
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [userLeaderboardId] = useState(() => {
@@ -4362,7 +4367,7 @@ function WhisperingWishesInner() {
   // Smart astrite allocation for "Both" mode
   const astriteAllocation = useMemo(() => {
     const totalAstrite = +state.calc.astrite || 0;
-    const totalPulls = Math.floor(totalAstrite / 160);
+    const totalPulls = Math.floor(totalAstrite / ASTRITE_PER_PULL);
     const radiant = +state.calc.radiant || 0;
     const forging = +state.calc.forging || 0;
     const lustrous = +state.calc.lustrous || 0;
@@ -4470,7 +4475,7 @@ function WhisperingWishesInner() {
     
     return { 
       totalPulls: all.length, 
-      totalAstrite: all.length * 160, 
+      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * Math.floor(ASTRITE_PER_PULL / 2), 
       fiveStars: fives.length, 
       won5050: won, 
       lost5050: lost, 
@@ -4861,7 +4866,7 @@ function WhisperingWishesInner() {
     const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
     const incomeByEnd = dailyIncome * daysLeft;
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
-    const convenesByEnd = Math.floor(totalAstriteByEnd / 160) + (
+    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + (
       state.calc.bannerCategory === 'featured'
         ? (state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
         : (+state.calc.lustrous || 0)
@@ -4881,7 +4886,7 @@ function WhisperingWishesInner() {
       else { goalCopies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); goalBannerLabel = 'Standard Both'; }
     }
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
-    const targetAstrite = targetPulls * 160;
+    const targetAstrite = targetPulls * ASTRITE_PER_PULL;
     const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
     const goalDaysNeeded = dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity;
     const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
@@ -5180,7 +5185,7 @@ function WhisperingWishesInner() {
   }
 
   return (
-    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''}`} style={{ background: visualSettings.oledMode ? '#000' : undefined }}>
+    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''}`}>
       <BackgroundGlow oledMode={visualSettings.oledMode} />
       <TriangleMirrorWave oledMode={visualSettings.oledMode} />
       <KuroStyles oledMode={visualSettings.oledMode} />
@@ -5195,8 +5200,8 @@ function WhisperingWishesInner() {
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" />
-                <div className="relative w-9 h-9 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                  <Sparkles size={16} className="text-black" />
+                <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform">
+                  <img src={HEADER_ICON} alt="WW" className="w-full h-full object-cover" />
                 </div>
               </div>
               <div>
@@ -5231,7 +5236,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
           <TabErrorBoundary tabName="Tracker">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="tracker" glowColor="gold" />
 
             {/* Category Tabs */}
@@ -5425,7 +5430,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && (
           <TabErrorBoundary tabName="Events">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="events" />
 
             <div className="flex items-center justify-between content-layer">
@@ -5490,7 +5495,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && (
           <TabErrorBoundary tabName="Calculator">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="calc" />
             
             {/* Banner Selection */}
@@ -5663,10 +5668,10 @@ function WhisperingWishesInner() {
                   <div>
                     <label className="kuro-label">Astrite</label>
                     <input type="number" value={state.calc.astrite} onChange={e => setCalc('astrite', e.target.value)} className="kuro-input" placeholder="0" />
-                    <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / 160)} Convenes</p>
+                    <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL)} Convenes</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[[160,'1 pull'], [800,'5 pulls'], [1600,'10 pulls'], [3200,'20 pulls']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip}>+{amt}<span className="text-yellow-600 ml-0.5 text-[7px]">({tip.split(' ')[0]})</span></button>
+                      {[[ASTRITE_PER_PULL,'1 pull'], [ASTRITE_PER_PULL*5,'5 pulls'], [ASTRITE_PER_PULL*10,'10 pulls'], [ASTRITE_PER_PULL*20,'20 pulls']].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip}>+{amt}<span className="text-yellow-600 ml-0.5 text-[8px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors">Clear</button>
                     </div>
@@ -5720,7 +5725,7 @@ function WhisperingWishesInner() {
                       <div className="grid grid-cols-2 gap-2">
                         <button 
                           onClick={() => setCalc('allocPriority', Math.min(100, (state.calc.allocPriority ?? 50) + 10))} 
-                          className={`kuro-btn text-xs py-3 ${(state.calc.allocPriority ?? 50) >= 50 ? 'active-gold' : ''}`}
+                          className={`kuro-btn text-xs py-2 ${(state.calc.allocPriority ?? 50) >= 50 ? 'active-gold' : ''}`}
                         >
                           <Crown size={14} className="mx-auto mb-1" />
                           <div className="font-medium">Resonator</div>
@@ -5729,7 +5734,7 @@ function WhisperingWishesInner() {
                         </button>
                         <button 
                           onClick={() => setCalc('allocPriority', Math.max(0, (state.calc.allocPriority ?? 50) - 10))} 
-                          className={`kuro-btn text-xs py-3 ${(state.calc.allocPriority ?? 50) <= 50 ? 'active-pink' : ''}`}
+                          className={`kuro-btn text-xs py-2 ${(state.calc.allocPriority ?? 50) <= 50 ? 'active-pink' : ''}`}
                         >
                           <Swords size={14} className="mx-auto mb-1" />
                           <div className="font-medium">Weapon</div>
@@ -5955,7 +5960,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && (
           <TabErrorBoundary tabName="Planner">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="planner" />
 
             <Card>
@@ -5979,7 +5984,7 @@ function WhisperingWishesInner() {
                     <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
                     <span className="text-yellow-400 font-bold">{dailyIncome} Astrite</span>
                   </div>
-                  <div className="text-gray-400 text-[10px] mt-1">≈ {(dailyIncome / 160).toFixed(2)} Convenes/day • {Math.floor(dailyIncome * 30 / 160)} Convenes/month</div>
+                  <div className="text-gray-400 text-[10px] mt-1">≈ {(dailyIncome / ASTRITE_PER_PULL).toFixed(2)} Convenes/day • {Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)} Convenes/month</div>
                 </div>
               </CardBody>
             </Card>
@@ -5989,7 +5994,7 @@ function WhisperingWishesInner() {
                 <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
               </div>
               {showIncomePanel && (
-                <CardBody className="space-y-1.5">
+                <CardBody className="space-y-2">
                   <div className="kuro-label">Subscriptions</div>
                   <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
                     <div className="flex items-center justify-between w-full">
@@ -6009,7 +6014,7 @@ function WhisperingWishesInner() {
                     <div className="flex items-center justify-between w-full">
                       <div>
                         <div className="text-gray-200 text-xs font-medium">Weekly Subscription</div>
-                        <div className="text-gray-300 text-[10px]">680 Lunite + 1600 Astrite over 15 days</div>
+                        <div className="text-gray-300 text-[10px]">680 Lunite + 1600 Astrite over 7 days</div>
                       </div>
                       <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">$9.99</span><Plus size={12} className="text-yellow-400" /></div>
                     </div>
@@ -6041,7 +6046,7 @@ function WhisperingWishesInner() {
             {state.planner.addedIncome.length > 0 && (
               <Card>
                 <CardHeader action={<button onClick={() => state.planner.addedIncome.forEach(i => dispatch({ type: 'REMOVE_INCOME', id: i.id }))} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear All</button>}>Added Purchases</CardHeader>
-                <CardBody className="space-y-1.5">
+                <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
                     <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
                       <span className="text-gray-200">{i.label}</span>
@@ -6049,7 +6054,7 @@ function WhisperingWishesInner() {
                         <span className="text-yellow-400">+{i.astrite}</span>
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
-                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400"><Minus size={12} /></button>
+                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400" aria-label="Remove purchase"><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -6075,7 +6080,7 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Total Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
-                      <div className="text-white kuro-number text-xl">{Math.floor(planData.incomeByEnd / 160)}</div>
+                      <div className="text-white kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Earned Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
@@ -6095,7 +6100,7 @@ function WhisperingWishesInner() {
                   {[7, 30, 90].map(days => (
                     <div key={days} className="kuro-stat p-3 text-center">
                       <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
-                      <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / 160)}</div>
+                      <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Convenes</div>
                       <div className="text-gray-500 text-[9px]">{(dailyIncome * days).toLocaleString()} Ast</div>
                     </div>
@@ -6139,11 +6144,11 @@ function WhisperingWishesInner() {
                     <span className="text-gray-400">Target</span>
                     <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Ast)</span>
                   </div>
-                  <div className="h-3 bg-neutral-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
                     <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
                   </div>
                   <div className="flex justify-between text-[10px] mt-1">
-                    <span className="text-gray-400">{Math.floor(planData.currentAstrite / 160)} / {planData.targetPulls} Convenes</span>
+                    <span className="text-gray-400">{Math.floor(planData.currentAstrite / ASTRITE_PER_PULL)} / {planData.targetPulls} Convenes</span>
                     <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
                   </div>
                 </div>
@@ -6169,7 +6174,7 @@ function WhisperingWishesInner() {
             {state.bookmarks.length > 0 && (
               <Card>
                 <CardHeader>Saved States</CardHeader>
-                <CardBody className="space-y-1.5">
+                <CardBody className="space-y-2">
                   {state.bookmarks.map(b => (
                     <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
                       <div>
@@ -6192,7 +6197,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && (
           <TabErrorBoundary tabName="Stats">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="stats" />
 
             {!overallStats ? (
@@ -6262,7 +6267,7 @@ function WhisperingWishesInner() {
                         ) : leaderboardData.length === 0 ? (
                           <div className="text-center py-8">
                             <div className="text-gray-500 text-sm mb-2">No entries yet</div>
-                            <div className="text-gray-600 text-[10px]">Be the first to submit!</div>
+                            <div className="text-gray-500 text-[10px]">Be the first to submit!</div>
                           </div>
                         ) : (
                           leaderboardData.map((entry, i) => {
@@ -6374,7 +6379,7 @@ function WhisperingWishesInner() {
                         const Icon = IconMap[t.icon] || Star;
                         return (
                           <div 
-                            className="fixed inset-0 z-[9999] flex items-center justify-center"
+                            className="fixed inset-0 z-[100] flex items-center justify-center"
                             onClick={() => setSelectedTrophy(null)}
                             style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
                           >
@@ -6398,7 +6403,7 @@ function WhisperingWishesInner() {
                               </div>
                               <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
                               <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-[9px] text-gray-600">tap outside to close</div>
+                              <div className="mt-3 text-[9px] text-gray-500">tap outside to close</div>
                             </div>
                           </div>
                         );
@@ -6801,7 +6806,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && (
           <TabErrorBoundary tabName="Collection">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="gathering" />
 
             {!state.profile.importedAt ? (
@@ -6861,7 +6866,7 @@ function WhisperingWishesInner() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     {collectionSearch && (
-                      <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+                      <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
                         <X size={14} />
                       </button>
                     )}
@@ -7111,7 +7116,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-PROFILE] */}
         {activeTab === 'profile' && (
           <TabErrorBoundary tabName="Profile">
-          <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 
             <Card>
@@ -7404,8 +7409,8 @@ Example: {"pulls":[...]}'
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
-                    <li><a href="https://wuwatracker.com" className="text-cyan-400 hover:underline">WuWa Tracker</a> - Event timeline & pity tracking</li>
-                    <li><a href="https://wuthering-countdown.gengamer.in" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - Banner countdowns</li>
+                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - Event timeline & pity tracking</li>
+                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - Banner countdowns</li>
                   </ul>
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>
@@ -7415,7 +7420,7 @@ Example: {"pulls":[...]}'
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
                 
-                <p className="text-center text-[8px] text-gray-500 pt-2">© 2026 Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                <p className="text-center text-[8px] text-gray-500 pt-2">© 2026 Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
           </div>
@@ -7441,7 +7446,8 @@ Example: {"pulls":[...]}'
         </div>
       )}
 
-      {/* Export Modal */}
+      
+            {/* Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <Card className="w-full max-w-sm">
@@ -7661,7 +7667,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.fadePosition}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, fadePosition: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                             />
                           </div>
                           
@@ -7676,7 +7682,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.fadeIntensity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, fadeIntensity: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                             />
                           </div>
                           
@@ -7691,7 +7697,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.pictureOpacity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, pictureOpacity: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                             />
                           </div>
                         </div>
@@ -7712,7 +7718,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.shadowFadePosition}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, shadowFadePosition: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
                             />
                           </div>
                           
@@ -7727,7 +7733,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.shadowFadeIntensity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, shadowFadeIntensity: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
                             />
                           </div>
                           
@@ -7742,7 +7748,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.shadowOpacity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, shadowOpacity: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
                             />
                           </div>
                         </div>
@@ -7785,7 +7791,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.collectionFadePosition}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, collectionFadePosition: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                             />
                           </div>
                           
@@ -7800,7 +7806,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.collectionFadeIntensity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, collectionFadeIntensity: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                             />
                           </div>
                           
@@ -7815,7 +7821,7 @@ Example: {"pulls":[...]}'
                               max="100"
                               value={visualSettings.collectionOpacity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, collectionOpacity: parseInt(e.target.value) })}
-                              className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                             />
                           </div>
                         </div>
@@ -8326,7 +8332,7 @@ Example: {"pulls":[...]}'
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[9px]">
           <span onClick={handleAdminTap} className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
-          <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
+          <a href="mailto:whisperingwishes.app@gmail.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
       </footer>
     </div>
