@@ -37,6 +37,16 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 
 const APP_VERSION = '2.9.5';
 
+// Haptic feedback utility — fails silently on unsupported devices
+const haptic = {
+  light: () => { try { navigator?.vibrate?.(10); } catch {} },
+  medium: () => { try { navigator?.vibrate?.(25); } catch {} },
+  heavy: () => { try { navigator?.vibrate?.(50); } catch {} },
+  success: () => { try { navigator?.vibrate?.([15, 50, 15]); } catch {} },
+  warning: () => { try { navigator?.vibrate?.([30, 30, 30]); } catch {} },
+  error: () => { try { navigator?.vibrate?.([50, 50, 80]); } catch {} },
+};
+
 const PWA_MANIFEST = {
   name: 'Whispering Wishes',
   short_name: 'Wishes',
@@ -61,73 +71,129 @@ const PWA_MANIFEST = {
 
 // Service Worker code as string (will be registered as blob)
 const SERVICE_WORKER_CODE = `
-const CACHE_NAME = 'whispering-wishes-v295';
-const OFFLINE_URL = '/offline.html';
+const APP_CACHE = 'ww-app-v295';
+const IMG_CACHE = 'ww-images-v295';
+const CDN_CACHE = 'ww-cdn-v295';
+const MAX_IMG_ENTRIES = 250;
 
-// Assets to cache immediately
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html'
-];
+// Core app shell to precache
+const PRECACHE = ['/', '/index.html'];
 
-// Install event - cache core assets
+// CDN domains — cache-first (these rarely change)
+const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+
+// Image domains — stale-while-revalidate
+const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co'];
+
+// Install — precache app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => self.skipWaiting())
+    caches.open(APP_CACHE)
+      .then(cache => cache.addAll(PRECACHE))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate event - clean old caches
+// Activate — purge old caches
 self.addEventListener('activate', (event) => {
+  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(names =>
+      Promise.all(names.filter(n => !currentCaches.includes(n)).map(n => caches.delete(n)))
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - network first, fallback to cache
-self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+// Trim image cache to MAX_IMG_ENTRIES (LRU by insertion order)
+async function trimCache(cacheName, maxEntries) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxEntries) {
+    await Promise.all(keys.slice(0, keys.length - maxEntries).map(k => cache.delete(k)));
+  }
+}
+
+// Strategy: Cache-first (for CDN assets)
+async function cacheFirst(request, cacheName) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return new Response('', { status: 503 });
+  }
+}
+
+// Strategy: Stale-while-revalidate (for images)
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
   
-  // Skip chrome-extension and other non-http(s) requests
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) {
+      cache.put(request, response.clone());
+      trimCache(cacheName, MAX_IMG_ENTRIES);
+    }
+    return response;
+  }).catch(() => cached || new Response('', { status: 503 }));
+  
+  return cached || fetchPromise;
+}
+
+// Strategy: Network-first with cache fallback (for app/API)
+async function networkFirst(request, cacheName) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    if (request.mode === 'navigate') {
+      return caches.match('/');
+    }
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+// Fetch router — pick strategy by domain/type
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
   
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Cache successful responses
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Fallback to cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          // Return offline page for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
-          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-        });
-      })
-  );
+  const url = new URL(event.request.url);
+  
+  // CDN assets → cache-first
+  if (CDN_DOMAINS.some(d => url.hostname.includes(d))) {
+    event.respondWith(cacheFirst(event.request, CDN_CACHE));
+    return;
+  }
+  
+  // Images → stale-while-revalidate
+  if (IMG_DOMAINS.some(d => url.hostname.includes(d)) || /\\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)) {
+    event.respondWith(staleWhileRevalidate(event.request, IMG_CACHE));
+    return;
+  }
+  
+  // Everything else → network-first
+  event.respondWith(networkFirst(event.request, APP_CACHE));
 });
 
-// Handle messages from main thread
+// Handle messages
 self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
+  if (event.data === 'skipWaiting') self.skipWaiting();
+  if (event.data === 'clearImageCache') {
+    caches.delete(IMG_CACHE).then(() => {
+      event.source?.postMessage('imageCacheCleared');
+    });
   }
 });
 `;
@@ -295,6 +361,10 @@ const ToastProvider = ({ children }) => {
     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
+    // Haptic feedback per toast type
+    if (type === 'success') haptic.success();
+    else if (type === 'error') haptic.error();
+    else haptic.light();
   }, []);
   
   const contextValue = useMemo(() => ({ addToast }), [addToast]);
@@ -2387,6 +2457,7 @@ const initialState = {
     addedIncome: [],
   },
   bookmarks: [],
+  eventStatus: {},
   settings: { showOnboarding: true, autoSyncPity: false, theme: 'default' },
 };
 
@@ -2430,6 +2501,7 @@ const loadFromStorage = () => {
       planner: { ...initialState.planner, ...parsed.planner },
       settings: { ...initialState.settings, ...parsed.settings },
       bookmarks: parsed.bookmarks || [],
+      eventStatus: parsed.eventStatus || {},
     };
   } catch (e) {
     console.error('Load failed:', e);
@@ -2458,6 +2530,12 @@ const reducer = (state, action) => {
     case 'SET_CALC': return { ...state, calc: { ...state.calc, [action.field]: action.value } };
     case 'SET_PLANNER': return { ...state, planner: { ...state.planner, [action.field]: action.value } };
     case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, [action.field]: action.value } };
+    case 'SET_EVENT_STATUS': {
+      const newStatus = { ...state.eventStatus };
+      if (action.status === null) { delete newStatus[action.eventKey]; } 
+      else { newStatus[action.eventKey] = action.status; }
+      return { ...state, eventStatus: newStatus };
+    }
     case 'ADD_INCOME': return { ...state, planner: { ...state.planner, addedIncome: [...state.planner.addedIncome, action.income] }, calc: { ...state.calc, astrite: String((+state.calc.astrite || 0) + action.income.astrite), radiant: String((+state.calc.radiant || 0) + (action.income.radiant || 0)), lustrous: String((+state.calc.lustrous || 0) + (action.income.lustrous || 0)) } };
     case 'REMOVE_INCOME': {
       const item = state.planner.addedIncome.find(i => i.id === action.id);
@@ -2818,6 +2896,50 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   );
 };
 
+// Error Boundary — catches crashes per tab so one broken tab doesn't kill the app
+class TabErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error(`[${this.props.tabName || 'Tab'}] Crash:`, error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
+          <div className="kuro-card">
+            <div className="kuro-card-inner">
+              <div className="kuro-body text-center py-8">
+                <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
+                <div className="text-white font-bold text-sm mb-1">Something went wrong</div>
+                <p className="text-gray-400 text-xs mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
+                <button 
+                  onClick={() => this.setState({ hasError: false, error: null })}
+                  className="kuro-btn active-cyan text-xs px-4 py-2"
+                >
+                  Try Again
+                </button>
+                {this.state.error && (
+                  <details className="mt-3 text-left">
+                    <summary className="text-gray-500 text-[9px] cursor-pointer">Error details</summary>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[8px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}</pre>
+                  </details>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const TabButton = memo(({ active, onClick, children, tabRef }) => {
   const childArray = React.Children.toArray(children);
   const icon = childArray.find(child => React.isValidElement(child));
@@ -2846,7 +2968,7 @@ const TabButton = memo(({ active, onClick, children, tabRef }) => {
   return (
     <button 
       ref={btnRef}
-      onClick={onClick}
+      onClick={() => { haptic.light(); onClick(); }}
       role="tab"
       aria-selected={active}
       aria-label={`${text} tab`}
@@ -2982,10 +3104,31 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
   const pct = Math.min(safeValue / max, 1);
   const offset = circumference * (1 - pct);
   const isSoftPity = max === 80 && safeValue >= 66;
+  
+  // Soft pity zone: pulls 65-80 shown as a subtle background arc
+  const showSoftZone = max === 80;
+  const softStart = 65 / 80;
+  const softLen = 15 / 80;
+  const softDash = softLen * circumference;
+  const softGap = circumference - softDash;
+  const softOffset = -softStart * circumference;
+  
   return (
     <div className="flex flex-col items-center">
       <svg width={size} height={size} className={isSoftPity ? 'pulse-subtle' : ''}>
         <circle className="pity-ring-track" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} />
+        {showSoftZone && (
+          <circle 
+            cx={size/2} cy={size/2} r={radius} 
+            strokeWidth={strokeWidth} 
+            stroke="rgba(251, 146, 60, 0.2)"
+            fill="none"
+            strokeDasharray={`${softDash} ${softGap}`} 
+            strokeDashoffset={softOffset}
+            transform={`rotate(-90 ${size/2} ${size/2})`}
+            strokeLinecap="round"
+          />
+        )}
         <circle className="pity-ring-fill" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} stroke={color} strokeDasharray={circumference} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{'--ring-glow': glowColor}} />
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.28} fill={color}>{safeValue}</text>
       </svg>
@@ -3282,7 +3425,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => 
 });
 BannerCard.displayName = 'BannerCard';
 
-const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
+const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange }) => {
   const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
@@ -3296,11 +3439,9 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
   }, [event, server, isDaily, isWeekly, isRecurring, resetTick]);
   
   const handleExpire = useCallback(() => {
-    // Auto-refresh on expiry for daily, weekly, and recurring events
     if (isDaily || isWeekly || isRecurring) setResetTick(t => t + 1);
   }, [isDaily, isWeekly, isRecurring]);
   
-  // Instant rollover function for CountdownTimer — avoids "ENDED" flash
   const recalcFn = useMemo(() => {
     if (isDaily) return () => getNextDailyReset(server);
     if (isWeekly) return () => getNextWeeklyReset(server);
@@ -3311,14 +3452,16 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
   const colors = EVENT_ACCENT_COLORS[event.accentColor] || EVENT_ACCENT_COLORS.cyan;
   const imgUrl = bannerImage;
   
-  // Use unified mask generator with shadow (event) settings
   const maskGradient = visualSettings 
     ? generateMaskGradient(visualSettings.shadowFadePosition, visualSettings.shadowFadeIntensity)
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
   
+  const isDone = status === 'done';
+  const isSkipped = status === 'skipped';
+  
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, opacity: isSkipped ? 0.5 : 1 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -3328,18 +3471,24 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
             zIndex: 1,
             opacity: pictureOpacity,
             maskImage: maskGradient,
-            WebkitMaskImage: maskGradient
+            WebkitMaskImage: maskGradient,
+            filter: isSkipped ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
           }}
           loading="eager"
-
           onError={(e) => { e.target.style.display = 'none'; }}
         />
       )}
       
+      {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
+      
       <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${colors.text}`}>{event.name}</h4>
+            <h4 className={`font-bold text-sm ${isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
+              {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
+              {isSkipped && <X size={12} className="inline mr-1 -mt-0.5" />}
+              {event.name}
+            </h4>
             <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
@@ -3349,12 +3498,30 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings }) => {
         </div>
         
         <div className="flex justify-between items-end mt-auto">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${colors.bg} ${colors.text} backdrop-blur-sm`}>
+          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
             {event.rewards}
           </div>
-          <div className="text-gray-400 text-[9px]">
-            {event.resetType}
-          </div>
+          {onStatusChange && (
+            <div className="flex gap-1">
+              {status ? (
+                <button onClick={() => onStatusChange(null)} className="px-2 py-0.5 rounded text-[9px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors">
+                  Undo
+                </button>
+              ) : (
+                <>
+                  <button onClick={() => onStatusChange('done')} className="px-2 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors">
+                    <Check size={10} className="inline -mt-0.5" /> Done
+                  </button>
+                  <button onClick={() => onStatusChange('skipped')} className="px-2 py-0.5 rounded text-[9px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors">
+                    Skip
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          {!onStatusChange && (
+            <div className="text-gray-400 text-[9px]">{event.resetType}</div>
+          )}
         </div>
       </div>
     </div>
@@ -3388,6 +3555,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       if (framingMode) {
         setEditingImage(imageKey);
       } else if (onClickCard) {
+        haptic.light();
         onClickCard();
       }
     }}
@@ -3965,7 +4133,13 @@ function WhisperingWishesInner() {
   
   // Cache-busting for images (version-based, only refreshes on manual refresh)
   const [imageCacheBuster, setImageCacheBuster] = useState('296');
-  const refreshImages = useCallback(() => setImageCacheBuster(String(Date.now())), []);
+  const refreshImages = useCallback(() => {
+    setImageCacheBuster(String(Date.now()));
+    // Also clear SW image cache
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage('clearImageCache');
+    }
+  }, []);
   
   // Helper to add cache-busting to image URL
   const withCacheBuster = useCallback((url) => {
@@ -4091,9 +4265,11 @@ function WhisperingWishesInner() {
         const currentIndex = TAB_ORDER.indexOf(activeTab);
         if (deltaX < 0 && currentIndex < TAB_ORDER.length - 1) {
           // Swipe left → next tab
+          haptic.medium();
           setActiveTab(TAB_ORDER[currentIndex + 1]);
         } else if (deltaX > 0 && currentIndex > 0) {
           // Swipe right → previous tab
+          haptic.medium();
           setActiveTab(TAB_ORDER[currentIndex - 1]);
         }
       }
@@ -4121,6 +4297,7 @@ function WhisperingWishesInner() {
   
   // Anonymous Luck Leaderboard
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [selectedTrophy, setSelectedTrophy] = useState(null);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [userLeaderboardId] = useState(() => {
@@ -4371,37 +4548,240 @@ function WhisperingWishesInner() {
     const isWhale = totalPulls >= 1000;
     const isMegaWhale = totalPulls >= 2000;
     
-    // Build trophy list
+    // Build trophy list — WuWa lore-themed names
     const list = [];
     
-    // Collection trophies
-    if (allCollected) list.push({ id: 'all', name: 'Completionist', desc: 'Collected everything', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    if (all5ResOwned) list.push({ id: '5res', name: 'Resonator Master', desc: 'All 5★ Resonators', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
-    if (all4ResOwned) list.push({ id: '4res', name: 'Squad Complete', desc: 'All 4★ Resonators', icon: 'Heart', color: '#a855f7', tier: 'purple' });
-    if (all5WeapOwned) list.push({ id: '5weap', name: 'Arsenal Master', desc: 'All 5★ Weapons', icon: 'Swords', color: '#ec4899', tier: 'gold' });
-    if (all4WeapOwned) list.push({ id: '4weap', name: 'Well Armed', desc: 'All 4★ Weapons', icon: 'Sword', color: '#a855f7', tier: 'purple' });
-    if (all3WeapOwned) list.push({ id: '3weap', name: 'Collector', desc: 'All 3★ Weapons', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
+    // ═══ COLLECTION TROPHIES ═══
+    if (allCollected) list.push({ id: 'all', name: 'No Life Achievement', desc: 'Every Resonator and Weapon collected. go outside.', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    if (all5ResOwned) list.push({ id: '5res', name: 'Gotta Whale \'Em All', desc: 'All 5★ Resonators unlocked', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (all4ResOwned) list.push({ id: '4res', name: 'Sonata Effect', desc: 'All 4★ Resonators in your roster', icon: 'Heart', color: '#a855f7', tier: 'purple' });
+    if (all5WeapOwned) list.push({ id: '5weap', name: 'Forgemaster', desc: 'All 5★ Weapons acquired', icon: 'Swords', color: '#ec4899', tier: 'gold' });
+    if (all4WeapOwned) list.push({ id: '4weap', name: 'Armory of Jinzhou', desc: 'All 4★ Weapons in your arsenal', icon: 'Sword', color: '#a855f7', tier: 'purple' });
+    if (all3WeapOwned) list.push({ id: '3weap', name: 'Data Bank: Full', desc: 'Every 3★ Weapon catalogued', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
     
-    // Luck trophies
-    if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Jackpot!', desc: `5★ at pity ${earliest5Star}`, icon: 'Gift', color: '#fbbf24', tier: 'legendary' });
-    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Golden Touch', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#fbbf24', tier: 'gold' });
-    else if (earliest5Star && earliest5Star <= 40) list.push({ id: 'early40', name: 'Lucky Pull', desc: `5★ at pity ${earliest5Star}`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+    // ═══ LUCK TROPHIES ═══
+    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first pull. nobody believes you', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Dev Account?', desc: `5★ at pity ${earliest5Star} — go buy a lottery ticket`, icon: 'Gift', color: '#fbbf24', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Disgusting Luck', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#fbbf24', tier: 'gold' });
+    else if (earliest5Star && earliest5Star <= 40) list.push({ id: 'early40', name: 'Echo of Fortune', desc: `5★ at pity ${earliest5Star}`, icon: 'Clover', color: '#22c55e', tier: 'green' });
     
-    // 50/50 streak trophies
-    if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Unstoppable', desc: `${bestWinStreak}× 50/50 wins`, icon: 'Flame', color: '#f97316', tier: 'legendary' });
-    else if (bestWinStreak >= 3) list.push({ id: 'win3', name: 'On a Roll', desc: `${bestWinStreak}× 50/50 wins`, icon: 'Target', color: '#22c55e', tier: 'green' });
+    // Hard pity — the unluckiest possible outcome
+    const hitHardPity = all5Stars.some(p => p.pity >= 80);
+    if (hitHardPity) list.push({ id: 'hard80', name: 'Pity 80 Club', desc: 'Went the full distance. pain.', icon: 'Shield', color: '#6b7280', tier: 'gray' });
     
-    if (worstLossStreak >= 5) list.push({ id: 'loss5', name: 'Cursed', desc: `${worstLossStreak}× 50/50 losses`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
-    else if (worstLossStreak >= 3) list.push({ id: 'loss3', name: 'Unlucky', desc: `${worstLossStreak}× 50/50 losses`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    // Soft pity zone specialist — majority of 5★ came from 65-79
+    const softPityPulls = all5Stars.filter(p => p.pity >= 65 && p.pity < 80);
+    if (softPityPulls.length >= 5) list.push({ id: 'softpro', name: 'Soft Pity Merchant', desc: `${softPityPulls.length} five-stars from soft zone — never early, never late`, icon: 'TrendingUp', color: '#f97316', tier: 'orange' });
     
-    // Milestone trophies
-    if (isMegaWhale) list.push({ id: 'mega', name: 'Leviathan', desc: '2000+ Convenes', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
-    else if (isWhale) list.push({ id: 'whale', name: 'Whale', desc: '1000+ Convenes', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
-    else if (totalPulls >= 500) list.push({ id: '500', name: 'Dedicated', desc: '500+ Convenes', icon: 'Diamond', color: '#8b5cf6', tier: 'purple' });
-    else if (totalPulls >= 100) list.push({ id: '100', name: 'Getting Started', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
+    // Back-to-back — two 5★ within 20 pulls across any banner
+    const hasBackToBack = all5Stars.some(p => p.pity > 0 && p.pity <= 15);
+    const backToBackCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 15).length;
+    if (backToBackCount >= 3) list.push({ id: 'b2b3', name: 'Actual Hack', desc: `${backToBackCount} five-stars within 15 pulls — how`, icon: 'Zap', color: '#a855f7', tier: 'purple' });
+    else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 pulls of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
+    
+    // ═══ 50/50 STREAK TROPHIES ═══
+    if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#fbbf24', tier: 'legendary' });
+    else if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Main Character Energy', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Flame', color: '#f97316', tier: 'orange' });
+    else if (bestWinStreak >= 3) list.push({ id: 'win3', name: 'Casually Winning', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Target', color: '#22c55e', tier: 'green' });
+    
+    if (worstLossStreak >= 7) list.push({ id: 'loss7', name: 'Clinically Cursed', desc: `${worstLossStreak}× 50/50 losses — uninstall tbh`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    else if (worstLossStreak >= 5) list.push({ id: 'loss5', name: 'Kuro Hates You', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    else if (worstLossStreak >= 3) list.push({ id: 'loss3', name: 'Skill Issue (Gacha)', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    
+    // Won first ever 50/50
+    const first5050 = featured5Stars.find(p => p.won5050 === true || p.won5050 === false);
+    if (first5050 && first5050.won5050 === true) list.push({ id: 'first5050', name: 'Beginner\'s Luck', desc: 'Won your very first 50/50', icon: 'Clover', color: '#22c55e', tier: 'green' });
+    
+    // Redemption arc — lost 50/50 then won next one (look for loss→win pattern)
+    let hasRedemption = false;
+    for (let i = 0; i < featured5Stars.length - 1; i++) {
+      if (featured5Stars[i].won5050 === false) {
+        // Next non-guaranteed pull
+        for (let j = i + 1; j < featured5Stars.length; j++) {
+          if (featured5Stars[j].won5050 === null) continue;
+          if (featured5Stars[j].won5050 === true) { hasRedemption = true; }
+          break;
+        }
+      }
+      if (hasRedemption) break;
+    }
+    if (hasRedemption) list.push({ id: 'redeem', name: 'Copium Rewarded', desc: 'Lost 50/50, then won the next — anime protagonist arc', icon: 'Heart', color: '#06b6d4', tier: 'cyan' });
+    
+    // ═══ MILESTONE TROPHIES ═══
+    if (isMegaWhale) list.push({ id: 'mega', name: 'Mortgage Status', desc: '2000+ Convenes — seek financial advice', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (isWhale) list.push({ id: 'whale', name: 'Kuro Employee of the Month', desc: '1000+ Convenes — they know you by name', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (totalPulls >= 500) list.push({ id: '500', name: 'Down the Rabbit Hole', desc: '500+ Convenes — no turning back', icon: 'Diamond', color: '#8b5cf6', tier: 'purple' });
+    else if (totalPulls >= 100) list.push({ id: '100', name: 'First Steps', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
+    
+    // 5★ count milestones
+    const total5Stars = all5Stars.length;
+    if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    else if (total5Stars >= 25) list.push({ id: '25stars', name: 'Stargazer', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#a855f7', tier: 'purple' });
+    else if (total5Stars >= 10) list.push({ id: '10stars', name: 'Rising Star', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
     
     // First 5★
-    if (all5Stars.length > 0) list.push({ id: 'first5', name: 'First Star', desc: 'Got your first 5★', icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    if (total5Stars > 0 && total5Stars < 10) list.push({ id: 'first5', name: 'Awakening', desc: 'Obtained your first 5★', icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    
+    // Banner diversity — pulled on multiple banner types
+    const bannerTypesUsed = [featuredHist, weaponHist, stdCharHist, stdWeapHist].filter(h => h.length > 0).length;
+    if (bannerTypesUsed >= 4) list.push({ id: 'diverse', name: 'Pioneer Podcast', desc: 'Convened on all banner types', icon: 'Trophy', color: '#06b6d4', tier: 'cyan' });
+    
+    // Max sequences — any character pulled 7+ times (S6)
+    const charCounts = {};
+    charHistory.filter(p => p.rarity === 5 && p.name).forEach(p => { charCounts[p.name] = (charCounts[p.name] || 0) + 1; });
+    
+    // Per-character S6 trophies — lore-themed names
+    const s6Trophies = {
+      'Jiyan': { name: 'Dragon Deez Nuts', desc: 'S6 Jiyan — 1.0 loyalty that costs more than rent', color: '#22c55e' },
+      'Calcharo': { name: 'Sentence: S6', desc: 'S6 Calcharo — guilty of whaling in the first degree', color: '#a855f7' },
+      'Encore': { name: 'Woolies World Domination', desc: 'S6 Encore — Cosmos and Cloudy run this account now', color: '#f97316' },
+      'Jianxin': { name: 'Down Bad for Parry', desc: 'S6 Jianxin — "I\'ll take all the 50/50 losses" energy', color: '#22c55e' },
+      'Lingyang': { name: 'You Actually S6\'d HIM?!', desc: 'S6 Lingyang — built different or brain different', color: '#38bdf8' },
+      'Verina': { name: 'Lost 50/50 Seven Times', desc: 'S6 Verina — and every single one was a W', color: '#fbbf24' },
+      'Yinlin': { name: 'Down Catastrophic', desc: 'S6 Yinlin — she pulled your strings and your wallet', color: '#a855f7' },
+      'Jinhsi': { name: 'Simp Magistrate', desc: 'S6 Jinhsi — sold Jinzhou to fund this', color: '#fbbf24' },
+      'Changli': { name: 'Touch Grass? Touch Fire.', desc: 'S6 Changli — your savings went up in flames', color: '#f97316' },
+      'Zhezhi': { name: 'Drawing Bankruptcy', desc: 'S6 Zhezhi — her art costs more than actual art', color: '#38bdf8' },
+      'Xiangli Yao': { name: 'He Did The Math (x7)', desc: 'S6 Xiangli Yao — calculated your savings into Hypercubes', color: '#a855f7' },
+      'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#fbbf24' },
+      'Camellya': { name: 'Dislocated But Worth It', desc: 'S6 Camellya — thumbs broken, damage beautiful', color: '#ec4899' },
+      'Carlotta': { name: 'Wallet? Frozen.', desc: 'S6 Carlotta — bank account colder than her kit', color: '#38bdf8' },
+      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — she\'s a rock. you\'re the clown who S6\'d her', color: '#ec4899' },
+      'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#fbbf24' },
+      'Brant': { name: 'Burned Through Savings', desc: 'S6 Brant — fire DPS, fire wallet', color: '#f97316' },
+      'Cantarella': { name: 'Toxic Relationship', desc: 'S6 Cantarella — she\'s poison and you keep coming back', color: '#ec4899' },
+      'Zani': { name: 'Frazzle Addict', desc: 'S6 Zani — 19 stacks of Frazzle, zero stacks of savings', color: '#fbbf24' },
+      'Ciaccona': { name: 'Wind Main in 2026', desc: 'S6 Ciaccona — bold, delusional, committed', color: '#22c55e' },
+      'Cartethyia': { name: 'Blessed Wallet Drain', desc: 'S6 Cartethyia — the Maiden blessed your poverty', color: '#22c55e' },
+      'Lupa': { name: 'Awoo\'d Too Hard', desc: 'S6 Lupa — the wolf pack ate your bank account', color: '#f97316' },
+      'Phrolova': { name: 'Puppet? You\'re the Puppet.', desc: 'S6 Phrolova — she played you like her dolls', color: '#ec4899' },
+      'Augusta': { name: 'Shocking Bill', desc: 'S6 Augusta — electrifying damage, electrifying debt', color: '#a855f7' },
+      'Iuno': { name: 'Tone Deaf Spending', desc: 'S6 Iuno — the melody was "swipe swipe swipe"', color: '#22c55e' },
+      'Galbrena': { name: 'Bayonetta at Home (S6)', desc: 'S6 Galbrena — Mom said we have Bayonetta at home', color: '#f97316' },
+      'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more pull" seven times', color: '#22c55e' },
+      'Chisa': { name: 'Cut Your Losses (Didn\'t)', desc: 'S6 Chisa — the blade cuts everything except your spending', color: '#ec4899' },
+      'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#fbbf24' },
+      'Mornye': { name: 'Rhythm of Regret', desc: 'S6 Mornye — the beat dropped and so did your balance', color: '#f97316' },
+      'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#fbbf24' },
+      'Aemeath': { name: 'Rode Into Bankruptcy', desc: 'S6 Aemeath — the Exostrider ran over your finances', color: '#f97316' },
+    };
+    
+    // Check each character for S6
+    Object.entries(charCounts).forEach(([name, count]) => {
+      if (count >= 7 && s6Trophies[name]) {
+        const t = s6Trophies[name];
+        list.push({ id: `s6_${name.replace(/\s/g, '')}`, name: t.name, desc: t.desc, icon: 'Crown', color: t.color, tier: 'legendary' });
+      }
+    });
+    
+    // Fallback for any future character not in the map
+    const anyS6 = Object.entries(charCounts).find(([name, c]) => c >= 7 && !s6Trophies[name]);
+    if (anyS6) list.push({ id: 's6_other', name: 'The Shaper', desc: `S6 ${anyS6[0]} — fully Sequenced`, icon: 'Crown', color: '#ec4899', tier: 'legendary' });
+    
+    // "Gathering Wives" mega trophy — ALL 5-star characters at S6
+    const all5StarNames = Object.keys(s6Trophies);
+    const s6Count = all5StarNames.filter(n => (charCounts[n] || 0) >= 7).length;
+    if (s6Count >= all5StarNames.length) {
+      list.push({ id: 's6_all', name: 'Gathering Wives: Complete', desc: 'Every 5★ at S6 — Rover\'s harem is full. seek help.', icon: 'Crown', color: '#ff0000', tier: 'legendary' });
+    } else if (s6Count >= 20) {
+      list.push({ id: 's6_harem20', name: 'Harem Protagonist EX', desc: `${s6Count}/${all5StarNames.length} at S6 — your wallet is in critical condition`, icon: 'Crown', color: '#ff4500', tier: 'legendary' });
+    } else if (s6Count >= 10) {
+      list.push({ id: 's6_harem10', name: 'Gathering Wives', desc: `${s6Count}/${all5StarNames.length} at S6 — Rover didn't stutter`, icon: 'Crown', color: '#ff6347', tier: 'legendary' });
+    } else if (s6Count >= 5) {
+      list.push({ id: 's6_harem5', name: 'Starting a Collection', desc: `${s6Count} at S6 — the harem arc is canon`, icon: 'Crown', color: '#ff8c00', tier: 'epic' });
+    }
+    
+    // Weapon R5 — any 5★ weapon pulled 5+ times
+    const weapCounts = {};
+    weapHistory.filter(p => p.rarity === 5 && p.name).forEach(p => { weapCounts[p.name] = (weapCounts[p.name] || 0) + 1; });
+    const maxedWeap = Object.entries(weapCounts).find(([, c]) => c >= 5);
+    if (maxedWeap) list.push({ id: 'r5', name: 'Weapon Banner Victim', desc: `R5 ${maxedWeap[0]} — financially irresponsible`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
+    
+    // Average pity under 50 with 10+ 5★ (consistently lucky)
+    if (total5Stars >= 10 && overallStats?.avgPity) {
+      const avg = parseFloat(overallStats.avgPity);
+      if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#fbbf24', tier: 'gold' });
+      else if (!isNaN(avg) && avg >= 70) list.push({ id: 'unluckyavg', name: 'Certified Unlucky', desc: `Avg pity ${overallStats.avgPity} — genuinely painful to look at`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    }
+    
+    // ═══ 50/50 LOSS CHARACTER TROPHIES ═══
+    // Standard banner chars you can lose 50/50 to: Calcharo, Encore, Jianxin, Lingyang, Verina
+    const lostTo = featured5Stars.filter(p => p.won5050 === false && p.name);
+    const lostToNames = lostTo.map(p => p.name);
+    const lostCount = (name) => lostToNames.filter(n => n === name).length;
+    
+    // Lingyang — the community's most memed 50/50 loss
+    const lingyangLosses = lostCount('Lingyang');
+    if (lingyangLosses >= 3) list.push({ id: 'tiger3', name: 'Lingyang Main (Involuntary)', desc: `Lost 50/50 to Lingyang ${lingyangLosses}× — he chose you`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    else if (lingyangLosses >= 1) list.push({ id: 'tiger1', name: 'Lingyang\'d', desc: 'Lost 50/50 to Lingyang — welcome to the club', icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
+    
+    // Calcharo — memetic loser of the community
+    const calcharoLosses = lostCount('Calcharo');
+    if (calcharoLosses >= 3) list.push({ id: 'calch3', name: 'Calcharo Stalker Victim', desc: `Lost 50/50 to Calcharo ${calcharoLosses}× — restraining order when`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    else if (calcharoLosses >= 1) list.push({ id: 'calch1', name: 'Sentenced', desc: 'Lost 50/50 to Calcharo — guilty as charged', icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    
+    // Jianxin
+    if (lostCount('Jianxin') >= 1) list.push({ id: 'jianxin', name: 'Parry This Casual', desc: `Lost 50/50 to Jianxin ${lostCount('Jianxin')}×`, icon: 'Shield', color: '#22c55e', tier: 'green' });
+    
+    // Encore
+    if (lostCount('Encore') >= 1) list.push({ id: 'encore', name: 'Woolie\'d', desc: `Lost 50/50 to Encore ${lostCount('Encore')}× — Cosmos sends his regards`, icon: 'Flame', color: '#ec4899', tier: 'pink' });
+    
+    // Verina — the only "good" 50/50 loss
+    if (lostCount('Verina') >= 1) list.push({ id: 'verina', name: 'W in Disguise', desc: `Lost 50/50 to Verina ${lostCount('Verina')}× — best L you ever took`, icon: 'Heart', color: '#22c55e', tier: 'green' });
+    
+    // Lost to all 5 standard characters across all 50/50 losses
+    const stdChars = ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'];
+    const lostToAllStd = stdChars.every(name => lostToNames.includes(name));
+    if (lostToAllStd) list.push({ id: 'allstd', name: 'Gotta Lose \'Em All', desc: 'Lost 50/50 to every standard character — completionist arc', icon: 'Trophy', color: '#a855f7', tier: 'purple' });
+    
+    // Total 50/50 losses
+    const totalLosses = lostTo.length;
+    const totalWins = featured5Stars.filter(p => p.won5050 === true).length;
+    if (totalLosses >= 10) list.push({ id: 'loss10', name: 'Down Bad (Financially)', desc: `${totalLosses} 50/50 losses — at what point do you stop`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    
+    // Win rate trophy
+    const total5050s = totalWins + totalLosses;
+    if (total5050s >= 5) {
+      const winRate = Math.round((totalWins / total5050s) * 100);
+      if (winRate >= 80) list.push({ id: 'highwr', name: 'Account For Sale?', desc: `${winRate}% win rate across ${total5050s} flips — this isn't normal`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+      else if (winRate <= 20) list.push({ id: 'lowwr', name: 'Statistically Bullied', desc: `${winRate}% win rate across ${total5050s} flips — file a complaint`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    }
+    
+    // ═══ META TEAM TROPHIES ═══
+    // Check if player owns all members of a meta team (using their 5★ collection)
+    const owns = (name) => owned5StarChars.has(name);
+    const ownsAll = (...names) => names.every(owns);
+    
+    // T0 Meta Teams
+    if (ownsAll('Phrolova', 'Cantarella')) list.push({ id: 'phrol', name: 'Codependency', desc: 'Phrolova + Cantarella — useless without each other, broken together', icon: 'Heart', color: '#a855f7', tier: 'purple' });
+    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair Meta', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#fbbf24', tier: 'gold' });
+    if (ownsAll('Lynae', 'Mornye')) list.push({ id: 'lynmor', name: 'Pay2Win Unlocked', desc: 'Lynae + Mornye — the game plays itself now', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (ownsAll('Changli') && ownsAll('Brant') && ownsAll('Lupa')) list.push({ id: 'monofusion', name: 'Arsonist Squad', desc: 'Changli + Brant + Lupa — everything burns, including your primos', icon: 'Flame', color: '#f97316', tier: 'orange' });
+    if (ownsAll('Galbrena', 'Qiuyuan', 'Shorekeeper')) list.push({ id: 'fusion', name: 'Bayonetta at Home', desc: 'Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home', icon: 'Flame', color: '#f97316', tier: 'orange' });
+    if (ownsAll('Jiyan') && owned4StarChars.has('Mortefi')) list.push({ id: 'jiyan', name: 'Boomer Comp', desc: 'Jiyan + Mortefi — 1.0 copium that refuses to retire', icon: 'Shield', color: '#22c55e', tier: 'green' });
+    
+    // Own both Shorekeeper and Verina (the two universal supports)
+    if (ownsAll('Shorekeeper', 'Verina')) list.push({ id: 'heals', name: 'Skill Issue Insurance', desc: 'SK + Verina — can\'t die even if you tried', icon: 'Heart', color: '#22c55e', tier: 'green' });
+    
+    // Own 3+ T0 DPS
+    const t0Dps = ['Cartethyia', 'Camellya', 'Carlotta', 'Xiangli Yao', 'Phrolova', 'Iuno', 'Augusta', 'Aemeath'];
+    const ownedT0 = t0Dps.filter(n => owns(n));
+    if (ownedT0.length >= 6) list.push({ id: 't0six', name: 'Tower? Cleared.', desc: `${ownedT0.length} T0 DPS — ToA is your personal playground`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    else if (ownedT0.length >= 3) list.push({ id: 't0three', name: 'Meta Slave', desc: `${ownedT0.length} T0 DPS — tier list told you to pull`, icon: 'Trophy', color: '#a855f7', tier: 'purple' });
+    
+    // ═══ QUIRKY / COMMUNITY TROPHIES ═══
+    // Never lost a 50/50 (with at least 3 wins)
+    if (totalWins >= 3 && totalLosses === 0) list.push({ id: 'noloss', name: 'Literally Never Lost', desc: `${totalWins} 50/50 wins, zero losses — touch grass`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    
+    // Lost first 50/50 (very first was a loss)
+    if (first5050 && first5050.won5050 === false) list.push({ id: 'firstloss', name: 'First Time?', desc: 'First 50/50 was a loss — it only gets worse', icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    
+    // 4★ only — lots of pulls but very few 5★ (bad luck overall)
+    if (totalPulls >= 200 && total5Stars <= 2) list.push({ id: 'dry', name: 'Down Horrendous', desc: `${totalPulls} pulls, ${total5Stars} five-stars — delete the app`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    
+    // Duplicate magnet — same standard char lost to 3+ times
+    const dupMagnet = stdChars.find(name => lostCount(name) >= 3);
+    if (dupMagnet && dupMagnet !== 'Lingyang') list.push({ id: 'dup', name: 'Hostage Situation', desc: `${dupMagnet} S${lostCount(dupMagnet) - 1} from 50/50 losses alone — didn't even want them`, icon: 'Diamond', color: '#6b7280', tier: 'gray' });
     
     return {
       list,
@@ -4418,7 +4798,7 @@ function WhisperingWishesInner() {
         owned3StarWeaps: owned3StarWeaps.size,
       }
     };
-  }, [state.profile]);
+  }, [state.profile, overallStats]);
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity), [overallStats]);
@@ -4646,6 +5026,7 @@ function WhisperingWishesInner() {
   // Secret admin access - tap version 5 times quickly
   const handleAdminTap = useCallback(async () => {
     if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
+    haptic.light();
     const newCount = adminTapCount + 1;
     setAdminTapCount(newCount);
     if (newCount >= 5) {
@@ -4804,6 +5185,7 @@ function WhisperingWishesInner() {
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
+          <TabErrorBoundary tabName="Tracker">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="tracker" glowColor="gold" />
 
@@ -4992,10 +5374,12 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
           </div>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && (
+          <TabErrorBoundary tabName="Events">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="events" />
 
@@ -5014,10 +5398,31 @@ function WhisperingWishesInner() {
                 <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
               </div>
             </div>
-            <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center justify-between content-layer">
-              <span className="text-yellow-400 text-xs font-medium">Total Available Astrite</span>
-              <span className="text-yellow-400 font-bold text-sm">{Object.values(EVENTS).reduce((sum, ev) => sum + (parseInt(ev.rewards) || 0), 0).toLocaleString()} Astrite</span>
-            </div>
+            {(() => {
+              const eventEntries = Object.entries(EVENTS);
+              const totalAstrite = eventEntries.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards) || 0), 0);
+              const doneKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'done');
+              const skippedKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped');
+              const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards) || 0), 0);
+              const remainingAstrite = totalAstrite - earnedAstrite - skippedKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards) || 0), 0);
+              const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
+              return (
+                <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg content-layer">
+                  <div className="flex items-center justify-between">
+                    <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
+                    <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
+                  </div>
+                  {hasProgress && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-400 rounded-full transition-all" style={{ width: `${(earnedAstrite / totalAstrite) * 100}%` }} />
+                      </div>
+                      <span className="text-gray-400 text-[9px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <div className="space-y-2">
               {Object.entries(EVENTS).map(([key, ev]) => {
                 const eventImageMap = {
@@ -5029,15 +5434,17 @@ function WhisperingWishesInner() {
                   weeklyBoss: activeBanners.weeklyBossImage,
                   dailyReset: activeBanners.dailyResetImage,
                 };
-                return <EventCard key={key} event={{...ev, key}} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} visualSettings={visualSettings} />;
+                return <EventCard key={key} event={{...ev, key}} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} visualSettings={visualSettings} status={state.eventStatus[key]} onStatusChange={(s) => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: s })} />;
               })}
             </div>
             <p className="text-gray-500 text-[10px] text-center content-layer">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
           </div>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && (
+          <TabErrorBoundary tabName="Calculator">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="calc" />
             
@@ -5213,8 +5620,8 @@ function WhisperingWishesInner() {
                     <input type="number" value={state.calc.astrite} onChange={e => setCalc('astrite', e.target.value)} className="kuro-input" placeholder="0" />
                     <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / 160)} Convenes</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[160, 800, 1600, 3200].map(amt => (
-                        <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
+                      {[[160,'1 pull'], [800,'5 pulls'], [1600,'10 pulls'], [3200,'20 pulls']].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip}>+{amt}<span className="text-yellow-600 ml-0.5 text-[7px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors">Clear</button>
                     </div>
@@ -5497,10 +5904,12 @@ function WhisperingWishesInner() {
               </Card>
             )}
           </div>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && (
+          <TabErrorBoundary tabName="Planner">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="planner" />
 
@@ -5732,10 +6141,12 @@ function WhisperingWishesInner() {
               </Card>
             )}
           </div>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && (
+          <TabErrorBoundary tabName="Stats">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="stats" />
 
@@ -5773,6 +6184,12 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400 text-[10px]">Avg Pity</span>
                             <span className="text-gray-200 text-xs font-medium">{overallStats.avgPity}</span>
                           </div>
+                          <p className="text-[9px] text-center" style={{color: `${luckRating.color}90`}}>
+                            {luckRating.percentile >= 80 ? `Luckier than ${luckRating.percentile}% of players — incredible!`
+                              : luckRating.percentile >= 60 ? `Luckier than ${luckRating.percentile}% of players — above average!`
+                              : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
+                              : `Unluckier than most — but your luck will turn around`}
+                          </p>
                         </div>
                       </div>
                     </CardBody>
@@ -5870,18 +6287,19 @@ function WhisperingWishesInner() {
                 {trophies && trophies.list.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
+                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies <span className="text-gray-500 font-normal text-[10px]">({trophies.list.length})</span></span>
                       <span className="text-gray-500 text-[10px]">{trophies.list.length} earned</span>
                     </CardHeader>
                     <CardBody>
                       <div className="grid grid-cols-3 gap-2">
                         {trophies.list.map(trophy => {
-                          const IconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, Fish, Diamond, Gamepad2, Star };
+                          const IconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, TrendingUp, Fish, Diamond, Gamepad2, Star, Trophy };
                           const IconComponent = IconMap[trophy.icon] || Star;
                           return (
                             <div 
                               key={trophy.id} 
-                              className="relative p-2.5 rounded-lg text-center transition-all hover:scale-105 cursor-default"
+                              className="relative p-2.5 rounded-lg text-center transition-all active:scale-95 cursor-pointer"
+                              onClick={(e) => { e.stopPropagation(); setSelectedTrophy(trophy.id); }}
                               style={{
                                 background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
                                 border: `1px solid ${trophy.color}50`,
@@ -5898,11 +6316,48 @@ function WhisperingWishesInner() {
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
                               <div className="text-[9px] font-bold text-white truncate">{trophy.name}</div>
-                              <div className="text-[8px] text-gray-400 truncate">{trophy.desc}</div>
                             </div>
                           );
                         })}
                       </div>
+                      
+                      {/* Trophy Description Modal */}
+                      {selectedTrophy && (() => {
+                        const IconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, TrendingUp, Fish, Diamond, Gamepad2, Star, Trophy };
+                        const t = trophies.list.find(tr => tr.id === selectedTrophy);
+                        if (!t) return null;
+                        const Icon = IconMap[t.icon] || Star;
+                        return (
+                          <div 
+                            className="fixed inset-0 z-[9999] flex items-center justify-center"
+                            onClick={() => setSelectedTrophy(null)}
+                            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+                          >
+                            <div 
+                              className="relative mx-6 p-5 rounded-xl text-center max-w-xs w-full"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                background: `linear-gradient(145deg, #1a1a2e, #0d0d1a)`,
+                                border: `1.5px solid ${t.color}60`,
+                                boxShadow: `0 0 40px ${t.color}25, 0 0 80px ${t.color}10, inset 0 0 30px ${t.color}08`
+                              }}
+                            >
+                              <div 
+                                className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center"
+                                style={{
+                                  background: `linear-gradient(135deg, ${t.color}35, ${t.color}15)`,
+                                  boxShadow: `0 0 25px ${t.color}50, 0 0 50px ${t.color}20`
+                                }}
+                              >
+                                <Icon size={28} style={{ color: t.color }} />
+                              </div>
+                              <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
+                              <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
+                              <div className="mt-3 text-[9px] text-gray-600">tap outside to close</div>
+                            </div>
+                          </div>
+                        );
+                      })()}
                       
                       {/* Current 50/50 Streak */}
                       {trophies.stats.currentStreak.type && (
@@ -6295,10 +6750,12 @@ function WhisperingWishesInner() {
               </>
             )}
           </div>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && (
+          <TabErrorBoundary tabName="Collection">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="gathering" />
 
@@ -6603,10 +7060,12 @@ function WhisperingWishesInner() {
               </>
             )}
           </div>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-PROFILE] */}
         {activeTab === 'profile' && (
+          <TabErrorBoundary tabName="Profile">
           <div className="kuro-calc space-y-3 -mx-3 px-3 py-3 tab-content">
             <TabBackground id="profile" />
 
@@ -6852,7 +7311,7 @@ Example: {"pulls":[...]}'
                 <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
                   <Download size={14} /> Export Backup
                 </button>
-                <button onClick={() => { if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone.')) { dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
+                <button onClick={() => { if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone.')) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
                   Reset All Data
                 </button>
               </CardBody>
@@ -6915,6 +7374,7 @@ Example: {"pulls":[...]}'
               </CardBody>
             </Card>
           </div>
+          </TabErrorBoundary>
         )}
 
       </main>
@@ -6930,7 +7390,7 @@ Example: {"pulls":[...]}'
                 <p>Astrite: {state.calc.astrite || 0} • Pity: {state.calc.charPity}/{state.calc.weapPity}</p>
                 <p>Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0}</p>
               </div>
-              <button onClick={() => { dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
+              <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
             </CardBody>
           </Card>
         </div>
