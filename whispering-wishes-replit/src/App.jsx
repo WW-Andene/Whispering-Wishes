@@ -1443,7 +1443,7 @@ const CURRENT_BANNERS = {
     { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Baizhi', 'Chixia', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
-    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp' },
+    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
     { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Sword', forCharacter: 'Chisa', element: 'Glacio', isNew: false, featured4Stars: ['Hollow Mirage', 'Jinzhou Keeper', 'Undying Flame'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
     { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Pistols', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Dauntless Evernight', 'Lunar Cutter', 'Thunderbolt'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
   ],
@@ -1468,7 +1468,7 @@ const CURRENT_BANNERS = {
 const BANNER_HISTORY = [
   // Version 3.1
   { version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
-  { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Blazing Duet'], startDate: '2026-02-26', endDate: '2026-03-18' },
+  { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18' },
   // Version 3.0
   { version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04' },
   { version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-24', endDate: '2026-01-15' },
@@ -1885,9 +1885,6 @@ const WEAPON_DATA = {
   "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
     desc: 'Luuk Herssen signature. Spectro gauntlets with aerial combat enhancement.',
     passive: 'Spectro DMG +12%, Aerial Basic ATK +24%', bestFor: ['Luuk Herssen'] },
-  'Blazing Duet': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
-    desc: 'Galbrena rerun weapon. Fusion broadblade with coordinated attack synergy.',
-    passive: 'Fusion DMG +12%, Coordinated ATK DMG +20%', bestFor: ['Galbrena'] },
   // Standard 5★ Weapons (Lustrous Tide pool - v3.0)
   'Radiance Cleaver': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
     desc: 'Standard 5★ Broadblade. Enhances Heavy Attack damage.',
@@ -3705,7 +3702,6 @@ const DEFAULT_COLLECTION_IMAGES = {
   // v3.1 weapons - using placeholder until official images available
   'Everbright Polestar': 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp',
   "Daybreaker's Spine": 'https://i.ibb.co/tpn30Lrm/6982b58a79a3b099e1bd0d48i-CAFZ7lo03.webp',
-  'Blazing Duet': '',
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
@@ -3862,7 +3858,7 @@ const ALL_5STAR_WEAPONS = [
   'Unflickering Valor', 'Whispers of Sirens', 'Blazing Justice', 'Woodland Aria',
   "Defier's Thorn", 'Wildfire Mark', 'Lethean Elegy', 'Thunderflare Dominion', "Moongazer's Sigil",
   'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
-  'Everbright Polestar', "Daybreaker's Spine", 'Blazing Duet',
+  'Everbright Polestar', "Daybreaker's Spine",
   'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
 ];
 
@@ -3922,7 +3918,7 @@ const WEAPON_RELEASE_ORDER = [
   // 3.0
   'Spectrum Blaster', 'Starfield Calibrator',
   // 3.1
-  'Everbright Polestar', "Daybreaker's Spine", 'Blazing Duet',
+  'Everbright Polestar', "Daybreaker's Spine",
 ];
 
 // [SECTION:MAINAPP]
