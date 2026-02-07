@@ -1872,7 +1872,7 @@ const WEAPON_DATA = {
     desc: 'Brant signature. Aggressive Fusion sword.',
     passive: 'Fusion DMG +12%, ATK speed +10%', bestFor: ['Brant'] },
   'Whispers of Sirens': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG',
-    desc: 'Cantarella signature. Havoc pistols.',
+    desc: 'Cantarella signature. Havoc rectifier.',
     passive: 'Havoc DMG +12%, Off-field +24%', bestFor: ['Cantarella'] },
   'Blazing Justice': { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
     desc: 'Zani signature. Spectro DPS gauntlets with DEF ignore and Frazzle Amp.',
@@ -1911,7 +1911,7 @@ const WEAPON_DATA = {
     desc: 'Mornye signature. Fusion broadblade with DEF scaling and Crit DMG team buff.',
     passive: 'DEF +32%, Concerto +16, team Crit DMG +40% on heal', bestFor: ['Mornye'] },
   'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
-    desc: 'Aemeath signature. Fusion sword with DEF Ignore and Melt RES Ignore.',
+    desc: 'Aemeath signature. Fusion sword with DEF Ignore and Fusion RES Ignore.',
     passive: 'All-Attr DMG +12%, DEF Ignore +32%, Fusion RES Ignore +10%', bestFor: ['Aemeath'] },
   "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate',
     desc: 'Luuk Herssen signature. Spectro gauntlets with aerial combat enhancement.',
@@ -2627,7 +2627,10 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   const expectedToTarget = expectedPullsToTarget(isWeapon, copies, pity, startGuar);
   
   // Worst case: hard pity every time, always losing 50/50 (subtract current pity progress)
-  const worstCase = Math.max(0, HARD_PITY * copies * (isChar && !guaranteed ? 2 : 1) - pity);
+  // Guarantee only applies to the FIRST copy — subsequent copies can still lose 50/50
+  const worstCase = Math.max(0, isChar
+    ? (HARD_PITY * 2 * copies - (guaranteed ? HARD_PITY : 0) - pity)
+    : (HARD_PITY * copies - pity));
   const successRate = pGe(copies);
   const missingPulls = Math.max(0, Math.ceil(expectedToTarget) - pulls);
   
@@ -2710,7 +2713,7 @@ const DETAIL_ELEMENT_COLORS = {
   Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
   Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
   Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
-  Havoc: { bg: 'bg-rose-500/20', text: 'text-rose-400', border: 'border-rose-500/50' },
+  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
   Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
 };
 
@@ -2719,7 +2722,7 @@ const BANNER_GRADIENT_MAP = {
   Electro: { border: 'border-purple-500/40', bg: 'bg-purple-500/20', text: 'text-purple-400' },
   Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
   Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
-  Havoc: { border: 'border-rose-500/40', bg: 'bg-rose-500/20', text: 'text-rose-400' },
+  Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
   Spectro: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
 };
 
@@ -3208,7 +3211,7 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(safeValue / max, 1);
   const offset = circumference * (1 - pct);
-  const isSoftPity = max === 80 && safeValue >= 66;
+  const isSoftPity = max === 80 && safeValue >= 65;
   
   // Soft pity zone: pulls 65-80 shown as a subtle background arc
   const showSoftZone = max === 80;
@@ -5207,7 +5210,7 @@ function WhisperingWishesInner() {
           }
           let currentPity4 = 0;
           for (let i = history.length - 1; i >= 0; i--) {
-            if (history[i].rarity === 4) break;
+            if (history[i].rarity >= 4) break;
             currentPity4++;
           }
           const fiveStars = history.filter(p => p.rarity === 5);
