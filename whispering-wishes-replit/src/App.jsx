@@ -1284,6 +1284,19 @@ const KuroStyles = ({ oledMode }) => (
       }
     }
     
+    .kuro-soft-pity-pink {
+      animation: kuroPulsePink 2s ease-in-out infinite;
+    }
+    
+    @keyframes kuroPulsePink {
+      0%, 100% { 
+        text-shadow: 0 0 8px rgba(236, 72, 153, 0.7);
+      }
+      50% { 
+        text-shadow: 0 0 15px rgba(236, 72, 153, 1), 0 0 25px rgba(236, 72, 153, 0.6);
+      }
+    }
+    
     /* ═══ NUMBER STYLING ═══ */
     .kuro-number {
       font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
@@ -1301,6 +1314,25 @@ const KuroStyles = ({ oledMode }) => (
     /* ═══ COLLECTION CARD HOVER ═══ */
     .collection-card {
       transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    }
+    
+    /* ═══ CUSTOM SCROLLBAR ═══ */
+    .kuro-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .kuro-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .kuro-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .kuro-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+    }
+    .kuro-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.25);
     }
     @media (hover: hover) {
       .collection-card:hover {
@@ -6615,9 +6647,8 @@ function WhisperingWishesInner() {
                 {/* Trophies & Achievements */}
                 {trophies && trophies.list.length > 0 && (
                   <Card>
-                    <CardHeader>
+                    <CardHeader action={<span className="text-gray-500 text-[10px]">{trophies.list.length} earned</span>}>
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies <span className="text-gray-500 font-normal text-[10px]">({trophies.list.length})</span></span>
-                      <span className="text-gray-500 text-[10px]">{trophies.list.length} earned</span>
                     </CardHeader>
                     <CardBody>
                       <div className="grid grid-cols-3 gap-2">
@@ -6736,9 +6767,8 @@ function WhisperingWishesInner() {
                   
                   return (
                     <Card>
-                      <CardHeader>
+                      <CardHeader action={<span className="text-gray-500 text-[10px]">{fiveStars.length} pulls</span>}>
                         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
-                        <span className="text-gray-500 text-[10px]">{fiveStars.length} pulls</span>
                       </CardHeader>
                       <CardBody>
                         {/* Histogram bars - neon glow style */}
@@ -6838,7 +6868,7 @@ function WhisperingWishesInner() {
 
                 {/* Convenes Chart with Time Range */}
                 <Card>
-                  <CardHeader className="flex items-center justify-between">
+                  <CardHeader>
                     <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
                   </CardHeader>
                   <CardBody>
@@ -7428,6 +7458,7 @@ function WhisperingWishesInner() {
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
                     className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
+                    aria-label="Toggle OLED mode"
                   >
                     <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.oledMode ? 'left-6 bg-black' : 'left-1 bg-gray-400'}`} />
                   </button>
@@ -7450,6 +7481,7 @@ function WhisperingWishesInner() {
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
                     className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
+                    aria-label="Toggle swipe navigation"
                   >
                     <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
                   </button>
@@ -7803,9 +7835,8 @@ Example: {"pulls":[...]}'
       {showAdminPanel && !adminMiniMode && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-auto">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto">
-            <CardHeader className="flex items-center justify-between">
+            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
-              <button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>
             </CardHeader>
             <CardBody className="space-y-3">
               {!adminUnlocked ? (
