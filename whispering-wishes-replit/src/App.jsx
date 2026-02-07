@@ -3438,7 +3438,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -3462,7 +3462,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       )}
       
-      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
@@ -3566,7 +3566,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       
       {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
       
-      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
             <h4 className={`font-bold text-sm ${isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
@@ -3582,7 +3582,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           </div>
         </div>
         
-        <div className="flex justify-between items-end mt-auto">
+        <div className="flex justify-between items-end">
           <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
             {event.rewards}
           </div>
@@ -3618,7 +3618,7 @@ const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2">
     <span className="text-gray-400 text-[10px] w-12">{label}</span>
     <div className="flex-1 h-5 bg-neutral-800 rounded overflow-hidden">
-      <div className={`h-full ${color === 'cyan' ? 'bg-cyan-500' : color === 'pink' ? 'bg-pink-500' : color === 'yellow' ? 'bg-yellow-500' : 'bg-yellow-500'} transition-all flex items-center justify-end pr-1`} style={{ width: `${Math.max(value, 1)}%` }}>
+      <div className={`h-full ${color === 'cyan' ? 'bg-cyan-500' : color === 'pink' ? 'bg-pink-500' : 'bg-yellow-500'} transition-all flex items-center justify-end pr-1`} style={{ width: `${Math.max(value, 1)}%` }}>
         {value > 10 && <span className="text-[9px] text-black font-bold">{value}%</span>}
       </div>
     </div>
@@ -5470,7 +5470,7 @@ function WhisperingWishesInner() {
                           onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
-                      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+                      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                         <div>
                           <div className="flex justify-between items-start mb-1">
                             <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
@@ -5528,7 +5528,7 @@ function WhisperingWishesInner() {
                           onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
-                      <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+                      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
                         <div>
                           <div className="flex justify-between items-start mb-1">
                             <h3 className="font-bold text-sm text-cyan-400">Winter Brume</h3>
@@ -6658,7 +6658,7 @@ function WhisperingWishesInner() {
                         const Icon = IconMap[t.icon] || Star;
                         return (
                           <div 
-                            className="fixed inset-0 z-[100] flex items-center justify-center"
+                            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
                             onClick={() => setSelectedTrophy(null)}
                             style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
                           >
