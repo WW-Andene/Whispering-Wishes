@@ -1401,13 +1401,13 @@ const KuroStyles = ({ oledMode }) => (
       opacity: 0.4;
     }
     
-    /* ═══ REDUCED MOTION ═══ */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
+    /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
+    
+    /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
+    .no-animations *, .no-animations *::before, .no-animations *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   `}</style>
 );
@@ -3254,11 +3254,10 @@ const _wf2 = (x, y, t) => (x * 0.007 + y * 0.009) + Math.sin(x * 0.004 - y * 0.0
 const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0.004 + x * 0.003) * 1.3 - t * 0.2;
 
 // LAYER A: Smooth ambient glow gradient — z-index 1
-const BackgroundGlow = ({ oledMode }) => {
+const BackgroundGlow = ({ oledMode, animationsEnabled = true }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
-    // Skip animation if user prefers reduced motion
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+    if (!animationsEnabled) return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -3342,17 +3341,16 @@ const BackgroundGlow = ({ oledMode }) => {
       window.removeEventListener('resize', init);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [oledMode]);
+  }, [oledMode, animationsEnabled]);
   
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1}} />;
 };
 
 // LAYER B: Triangle wave mask — traveling wavefront specular, z-index 2
-const TriangleMirrorWave = ({ oledMode }) => {
+const TriangleMirrorWave = ({ oledMode, animationsEnabled = true }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
-    // Skip animation if user prefers reduced motion
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+    if (!animationsEnabled) return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -3456,7 +3454,7 @@ const TriangleMirrorWave = ({ oledMode }) => {
       window.removeEventListener('resize', init);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [oledMode]);
+  }, [oledMode, animationsEnabled]);
   
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2}} />;
 };
@@ -4099,7 +4097,8 @@ function WhisperingWishesInner() {
     collectionZoom: 120,
     // Display Settings
     oledMode: false,
-    swipeNavigation: false
+    swipeNavigation: false,
+    animationsEnabled: true
   };
   // Always start with defaults - localStorage can override but we validate each property
   const [visualSettings, setVisualSettings] = useState(() => {
@@ -5388,9 +5387,9 @@ function WhisperingWishesInner() {
   }
 
   return (
-    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''}`}>
-      <BackgroundGlow oledMode={visualSettings.oledMode} />
-      <TriangleMirrorWave oledMode={visualSettings.oledMode} />
+    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
+      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
       
       {/* Onboarding Modal */}
@@ -7491,6 +7490,29 @@ function WhisperingWishesInner() {
                 </div>
                 {visualSettings.swipeNavigation && (
                   <p className="text-cyan-400 text-[9px] text-center">✓ Swipe left/right on content area to navigate</p>
+                )}
+                
+                {/* Animations Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'bg-neutral-800 text-gray-400'}`}>
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Animations</div>
+                      <div className="text-gray-400 text-[9px]">Background effects, transitions & glow</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
+                    aria-label="Toggle animations"
+                  >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.animationsEnabled ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
+                  </button>
+                </div>
+                {!visualSettings.animationsEnabled && (
+                  <p className="text-gray-500 text-[9px] text-center">All animations disabled — saves battery & reduces motion</p>
                 )}
               </CardBody>
             </Card>
