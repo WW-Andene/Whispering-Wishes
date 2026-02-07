@@ -231,13 +231,8 @@ const PWAProvider = ({ children }) => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     
-    // Inject manifest
-    const manifestBlob = new Blob([JSON.stringify(PWA_MANIFEST)], { type: 'application/json' });
-    const manifestUrl = URL.createObjectURL(manifestBlob);
-    const manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = manifestUrl;
-    document.head.appendChild(manifestLink);
+    // Manifest is injected by WhisperingWishesInner (with proper icon setup)
+    // Only inject meta tags here
     
     // Add meta tags for PWA
     const metaTags = [
@@ -294,9 +289,7 @@ const PWAProvider = ({ children }) => {
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      URL.revokeObjectURL(manifestUrl);
       // Clean up injected DOM elements
-      if (manifestLink.parentNode) manifestLink.parentNode.removeChild(manifestLink);
       metaTags.forEach(({ name }) => {
         const el = document.querySelector(`meta[name="${name}"]`);
         if (el) el.remove();
@@ -407,7 +400,7 @@ const OnboardingModal = ({ onComplete }) => {
   const s = steps[step];
   
   return (
-    <div style={{position:'fixed', inset:0, display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:'16px', background:'rgba(0,0,0,0.9)'}}>
+    <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-black/90">
       <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient}`} style={{ width:'100%', maxWidth:'320px', backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
         {/* Decorative gradient circles */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
@@ -463,7 +456,14 @@ const calculateLuckRating = (avgPity) => {
   // Calculate percentile based on normal distribution (mean=62.5, std=12)
   // Lower avg pity = better luck = higher percentile
   const zScore = (62.5 - avg) / 12;
-  const percentile = Math.min(99, Math.max(1, Math.round(50 + zScore * 34)));
+  
+  // Abramowitz & Stegun approximation of normal CDF (accurate to ±0.0005)
+  const absZ = Math.abs(zScore);
+  const t = 1 / (1 + 0.2316419 * absZ);
+  const d = 0.3989422804014327; // 1/sqrt(2*PI)
+  const p = d * Math.exp(-absZ * absZ / 2) * (t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))));
+  const cdf = zScore >= 0 ? 1 - p : p;
+  const percentile = Math.min(99, Math.max(1, Math.round(cdf * 100)));
   
   // WuWa-themed rank names
   if (percentile >= 90) return { rating: 'Arbiter', color: '#fbbf24', tier: 'S+', percentile };
@@ -1674,11 +1674,11 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Stone Rose' },
     bestEchoes: ['Corrosaurus', 'Flamewing\u0027s Shadow 3pc + Molten Rift 2pc'], bestWeapon: 'Lux & Umbra',
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Lupa + Brant'] },
-  'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
+  'Qiuyuan': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent. Echo Skill DMG buffer with Crit DMG Amp.',
     skills: ['Frost Edge', 'Winter Slash', 'Blizzard Dance', 'Eternal Winter'],
     ascension: { boss: 'Truth in Lies', common: 'Whisperin Core', specialty: 'Wintry Bell' },
-    bestEchoes: ['Impermanence Heron', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
+    bestEchoes: ['Impermanence Heron', 'Freezing Frost 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
     teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Sub DPS',
     desc: 'Startorch Academy student. Havoc support with DEF shred and Negative Status stacks.',
@@ -1773,10 +1773,10 @@ const CHARACTER_DATA = {
     teams: ['Youhu + Glacio DPS + Sub DPS'] },
   'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
     desc: 'Lollo Logistics navigator. Electro sub-DPS with Res. Skill DMG Amp.',
-    skills: ['Frost Touch', 'Cold Blessing', 'Winter Veil', 'Glacial Embrace'],
+    skills: ['Electro Slash', 'Thundering Voyage', 'Storm Navigator', 'Arc Discharge'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Whisperin Core', specialty: "Loong's Pearl" },
     bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Variation',
-    teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Glacio DPS + Verina'] },
+    teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Electro DPS + Verina'] },
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Spiritchaser Taoist and fortune-teller. Electro healer with DMG Amp buffs.',
     skills: ['Twin Thunders', 'Trigram Combo', 'Lightning Burst', 'Blazing Aura'],
@@ -1863,9 +1863,9 @@ const WEAPON_DATA = {
   "Moongazer's Sigil": { rarity: 5, type: 'Gauntlets', stat: 'Energy Regen',
     desc: 'Iuno signature. Aero support gauntlets.',
     passive: 'Aero DMG +12%, Time skills +24%', bestFor: ['Iuno'] },
-  'Lux & Umbra': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
-    desc: 'Galbrena signature. Spectro broadblade.',
-    passive: 'Spectro DMG +12%, Liberation +24%', bestFor: ['Galbrena'] },
+  'Lux & Umbra': { rarity: 5, type: 'Pistols', stat: 'Crit Rate',
+    desc: 'Galbrena signature. Fusion pistols.',
+    passive: 'Fusion DMG +12%, Liberation +24%', bestFor: ['Galbrena'] },
   'Emerald Sentence': { rarity: 5, type: 'Sword', stat: 'Crit DMG',
     desc: 'Qiuyuan signature. Glacio sword.',
     passive: 'Glacio DMG +12%, Skill +24%', bestFor: ['Qiuyuan'] },
@@ -2542,8 +2542,9 @@ const reducer = (state, action) => {
       return item ? { ...state, planner: { ...state.planner, addedIncome: state.planner.addedIncome.filter(i => i.id !== action.id) }, calc: { ...state.calc, astrite: String(Math.max(0, (+state.calc.astrite || 0) - item.astrite)), radiant: String(Math.max(0, (+state.calc.radiant || 0) - (item.radiant || 0))), lustrous: String(Math.max(0, (+state.calc.lustrous || 0) - (item.lustrous || 0))) } } : state;
     }
     case 'ADD_DAILY_INCOME': {
+      const days = Math.max(0, Math.min(365, Number(action.days) || 0));
       const dailyTotal = (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? 90 : 0);
-      const totalAstrite = dailyTotal * action.days;
+      const totalAstrite = dailyTotal * days;
       return { ...state, calc: { ...state.calc, astrite: String((+state.calc.astrite || 0) + totalAstrite) } };
     }
     // SYNC_PITY removed - calculator is fully independent from history
@@ -2578,7 +2579,6 @@ const reducer = (state, action) => {
 
 // [SECTION:CALCULATIONS]
 const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
-  const effective = pulls + pity;
   const isWeapon = !isChar;
   const startGuar = guaranteed ? 1 : 0;
   
@@ -2594,15 +2594,15 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   // Expected pulls to reach target copies
   const expectedToTarget = expectedPullsToTarget(isWeapon, copies, pity, startGuar);
   
-  // Worst case: hard pity every time, always losing 50/50
-  const worstCase = HARD_PITY * copies * (isChar && !guaranteed ? 2 : 1);
+  // Worst case: hard pity every time, always losing 50/50 (subtract current pity progress)
+  const worstCase = Math.max(0, HARD_PITY * copies * (isChar && !guaranteed ? 2 : 1) - pity);
   const successRate = pGe(copies);
   const missingPulls = Math.max(0, Math.ceil(expectedToTarget) - pulls);
   
-  // 4-star calculations
-  const fourStarCount = Math.floor(effective / HARD_PITY_4STAR);
+  // 4-star calculations (use pulls only — pity is 5★-specific, independent of 4★ counter)
+  const fourStarCount = Math.floor(pulls / HARD_PITY_4STAR);
   const featuredFourStarCount = Math.floor(fourStarCount * FEATURED_4STAR_RATE);
-  const pity4 = effective % HARD_PITY_4STAR;
+  const pity4 = pulls % HARD_PITY_4STAR;
   
   return {
     successRate: successRate.toFixed(1),
@@ -3054,6 +3054,8 @@ const TabButton = memo(({ active, onClick, children, tabRef }) => {
 });
 TabButton.displayName = 'TabButton';
 
+const TIMER_COLOR_MAP = { yellow: 'text-yellow-400', pink: 'text-pink-400', cyan: 'text-cyan-400', orange: 'text-orange-400', purple: 'text-purple-400' };
+
 const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alwaysShow = false, onExpire, recalcFn }) => {
   const [currentEnd, setCurrentEnd] = useState(endDate);
   const [time, setTime] = useState(() => getTimeRemaining(endDate));
@@ -3141,10 +3143,10 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   if (time.expired && !alwaysShow) return <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
     // If expired but alwaysShow, show "0h 0m 0s" briefly until next tick updates
-    return <span className={`font-mono text-xs ${color === 'yellow' ? 'text-yellow-400' : color === 'pink' ? 'text-pink-400' : color === 'cyan' ? 'text-cyan-400' : color === 'orange' ? 'text-orange-400' : 'text-purple-400'}`}>0h 0m 0s</span>;
+    return <span className={`font-mono text-xs ${TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple}`}>0h 0m 0s</span>;
   }
   
-  const textColor = color === 'yellow' ? 'text-yellow-400' : color === 'pink' ? 'text-pink-400' : color === 'cyan' ? 'text-cyan-400' : color === 'orange' ? 'text-orange-400' : 'text-purple-400';
+  const textColor = TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple;
   
   // Unified compact style matching Tracker tab
   if (compact) {
@@ -3220,6 +3222,9 @@ const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0
 const BackgroundGlow = ({ oledMode }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
+    // Skip animation if user prefers reduced motion
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -3311,6 +3316,9 @@ const BackgroundGlow = ({ oledMode }) => {
 const TriangleMirrorWave = ({ oledMode }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
+    // Skip animation if user prefers reduced motion
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -3430,7 +3438,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5 }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -4549,7 +4557,7 @@ function WhisperingWishesInner() {
     
     return { 
       totalPulls: all.length, 
-      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * Math.floor(ASTRITE_PER_PULL / 2), 
+      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * Math.round(ASTRITE_PER_PULL * 0.8), 
       fiveStars: fives.length, 
       won5050: won, 
       lost5050: lost, 
@@ -8601,7 +8609,7 @@ Example: {"pulls":[...]}'
 
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
-        <p className="text-gray-500 text-[9px]">
+        <p className="text-gray-500 text-[10px]">
           <span onClick={handleAdminTap} className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
           <a href="mailto:whisperingwishes.app@gmail.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
         </p>
