@@ -467,10 +467,9 @@ const calculateLuckRating = (avgPity) => {
   
   // WuWa-themed rank names
   if (percentile >= 90) return { rating: 'Arbiter', color: '#fbbf24', tier: 'S+', percentile };
-  if (percentile >= 80) return { rating: 'Sentinel', color: '#a855f7', tier: 'S', percentile };
-  if (percentile >= 60) return { rating: 'Resonator', color: '#3b82f6', tier: 'A', percentile };
-  if (percentile >= 40) return { rating: 'Tacet Discord', color: '#22c55e', tier: 'B', percentile };
-  return { rating: 'Civilian', color: '#6b7280', tier: 'C', percentile };
+  if (percentile >= 70) return { rating: 'Sentinel', color: '#a855f7', tier: 'S', percentile };
+  if (percentile >= 40) return { rating: 'Resonator', color: '#3b82f6', tier: 'A', percentile };
+  return { rating: 'Civilian', color: '#6b7280', tier: 'B', percentile };
 };
 
 // [SECTION:STYLES]
@@ -3419,7 +3418,7 @@ const TriangleMirrorWave = ({ oledMode }) => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2}} />;
 };
 
-const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => {
+const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -3447,6 +3446,12 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings }) => 
 
           onError={(e) => { e.target.style.display = 'none'; }}
         />
+      )}
+      
+      {endDate && (
+        <div className="absolute top-2 right-2 z-20">
+          <CountdownTimer endDate={endDate} color={timerColor || 'yellow'} />
+        </div>
       )}
       
       <div className="relative z-10 p-3 flex flex-col justify-between h-full" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
@@ -5408,9 +5413,8 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            <div className="flex items-center justify-between text-gray-300 text-[10px] content-layer">
+            <div className="flex items-center text-gray-300 text-[10px] content-layer">
               <span>v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
-              <CountdownTimer endDate={bannerEndDate} color={trackerCategory === 'weapon' ? 'pink' : 'yellow'} />
             </div>
             
             {new Date() > new Date(bannerEndDate) && (
@@ -5422,13 +5426,13 @@ function WhisperingWishesInner() {
 
             {trackerCategory === 'character' && (
               <div className="space-y-2 content-layer">
-                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} visualSettings={visualSettings} />)}
+                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} visualSettings={visualSettings} endDate={bannerEndDate} timerColor="yellow" />)}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
               <div className="space-y-2 content-layer">
-                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} visualSettings={visualSettings} />)}
+                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} visualSettings={visualSettings} endDate={bannerEndDate} timerColor="pink" />)}
               </div>
             )}
 
