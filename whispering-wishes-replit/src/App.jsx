@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, createContext, useContext, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, Upload, Download, RefreshCcw, Plus, Minus, Check, Target, BarChart3, Zap, BookmarkPlus, X, ChevronDown, LayoutGrid, Archive, Info, CheckCircle, AlertCircle, Settings, Monitor, Smartphone, Gamepad2, Crown, Trophy, Award, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, Upload, Download, RefreshCcw, Plus, Minus, Check, Target, BarChart3, Zap, BookmarkPlus, X, ChevronDown, LayoutGrid, Archive, Info, CheckCircle, AlertCircle, Settings, Monitor, Smartphone, Gamepad2, Crown, Trophy, Award, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, Lock, Search, ClipboardList } from 'lucide-react';
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.0 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v3.1.0 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -35,7 +35,7 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:PWA]
 // PWA Support - Manifest, Service Worker, Install Prompt
 
-const APP_VERSION = '3.1';
+const APP_VERSION = '3.1.0';
 
 // Header icon (uploaded app icon)
 const HEADER_ICON = 'data:image/png;base64,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';
@@ -59,7 +59,9 @@ const PWA_MANIFEST = {
   background_color: '#0a0a0a',
   theme_color: '#fbbf24',
   orientation: 'portrait-primary',
-  icons: [], // Populated dynamically in setupPWA with proper app icon
+  icons: [
+    { src: HEADER_ICON, sizes: '64x64', type: 'image/png', purpose: 'any' }
+  ], // Also populated dynamically in setupPWA with proper sized icons
   categories: ['games', 'utilities'],
   screenshots: [],
   shortcuts: [
@@ -71,9 +73,9 @@ const PWA_MANIFEST = {
 
 // Service Worker code as string (will be registered as blob)
 const SERVICE_WORKER_CODE = `
-const APP_CACHE = 'ww-app-v295';
-const IMG_CACHE = 'ww-images-v295';
-const CDN_CACHE = 'ww-cdn-v295';
+const APP_CACHE = 'ww-app-v${APP_VERSION}';
+const IMG_CACHE = 'ww-images-v${APP_VERSION}';
+const CDN_CACHE = 'ww-cdn-v${APP_VERSION}';
 const MAX_IMG_ENTRIES = 250;
 
 // Core app shell to precache
@@ -206,8 +208,8 @@ const PWAProvider = ({ children }) => {
   const [swRegistration, setSwRegistration] = useState(null);
   
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Check if already installed (PWA or iOS standalone)
+    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) {
       setIsInstalled(true);
     }
     
@@ -236,7 +238,7 @@ const PWAProvider = ({ children }) => {
     
     // Add meta tags for PWA
     const metaTags = [
-      { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
       { name: 'mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
@@ -251,11 +253,13 @@ const PWAProvider = ({ children }) => {
         const meta = document.createElement('meta');
         meta.name = name;
         meta.content = content;
+        meta.setAttribute('data-ww', 'true');
         document.head.appendChild(meta);
       }
     });
     
-    // Register service worker (blob URLs may fail in some environments)
+    // Register service worker (blob URLs only work in Chromium browsers)
+    // Firefox/Safari require a real SW file — app still functions without SW
     if ('serviceWorker' in navigator) {
       try {
         const swBlob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
@@ -270,17 +274,18 @@ const PWAProvider = ({ children }) => {
               const newWorker = registration.installing;
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New version available
-                  console.log('New version available');
+                  console.log('[WW] New version available');
                 }
               });
             });
           })
-          .catch(() => {
-            // Blob URL service workers may not work in all environments — app still functions without SW
+          .catch((err) => {
+            // Blob URL service workers are not supported in Firefox/Safari
+            console.info('[WW] Service worker not registered (blob URL not supported in this browser). App works fine without it.', err.message);
           });
       } catch (err) {
         // Service worker not critical — app works fine without it
+        console.info('[WW] Service worker setup skipped:', err.message);
       }
     }
     
@@ -289,9 +294,9 @@ const PWAProvider = ({ children }) => {
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      // Clean up injected DOM elements
+      // Clean up only our injected DOM elements
       metaTags.forEach(({ name }) => {
-        const el = document.querySelector(`meta[name="${name}"]`);
+        const el = document.querySelector(`meta[name="${name}"][data-ww="true"]`);
         if (el) el.remove();
       });
     };
@@ -357,6 +362,7 @@ const ToastProvider = ({ children }) => {
     // Haptic feedback per toast type
     if (type === 'success') haptic.success();
     else if (type === 'error') haptic.error();
+    else if (type === 'warning') haptic.warning();
     else haptic.light();
   }, []);
   
@@ -365,14 +371,15 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <div className="fixed bottom-24 left-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed bottom-24 left-3 right-3 z-[9999] flex flex-col gap-2 pointer-events-none">
         {toasts.map(toast => (
           <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
             animation: 'slideUp 0.2s ease-out',
-            background: toast.type === 'success' ? 'rgba(16,185,129,0.9)' : toast.type === 'error' ? 'rgba(239,68,68,0.9)' : 'rgba(59,130,246,0.9)',
+            background: toast.type === 'success' ? 'rgba(16,185,129,0.9)' : toast.type === 'error' ? 'rgba(239,68,68,0.9)' : toast.type === 'warning' ? 'rgba(245,158,11,0.9)' : 'rgba(59,130,246,0.9)',
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
+            {toast.type === 'warning' && <AlertCircle size={16} />}
             {toast.type === 'info' && <Info size={16} />}
             {toast.message}
           </div>
@@ -394,14 +401,14 @@ const OnboardingModal = ({ onComplete }) => {
     { title: "Build Your Collection", icon: <LayoutGrid size={32} />, desc: "Track all your Resonators and weapons.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30', border: 'border-purple-500/30', bg: 'bg-purple-500/20', color: '#a855f7' },
     { title: "Calculate Your Odds", icon: <Calculator size={32} />, desc: "See your chances based on pity and resources.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-emerald-900/30', border: 'border-emerald-500/30', bg: 'bg-emerald-500/20', color: '#34d399' },
     { title: "View Analytics", icon: <BarChart3 size={32} />, desc: "Check your luck rating, charts, and Convene history.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30', border: 'border-pink-500/30', bg: 'bg-pink-500/20', color: '#f472b6' },
-    { title: "You're Ready!", icon: <CheckCircle size={32} />, desc: "Good luck on your Convenes, Rover!", gradient: 'from-neutral-900/30 via-neutral-900/20 to-emerald-900/30', border: 'border-emerald-500/30', bg: 'bg-emerald-500/20', color: '#34d399' }
+    { title: "You're Ready!", icon: <CheckCircle size={32} />, desc: "Good luck on your Convenes, Rover!", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#fbbf24' }
   ];
   
   const s = steps[step];
   
   return (
     <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-black/90">
-      <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient}`} style={{ width:'100%', maxWidth:'320px', backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
+      <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient} w-full max-w-xs`} style={{ backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
         {/* Decorative gradient circles */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none">
           <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${s.bg} blur-2xl opacity-40`} />
@@ -409,7 +416,7 @@ const OnboardingModal = ({ onComplete }) => {
         </div>
         
         {/* Skip button - always white */}
-        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
+        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-[11px] min-h-[44px] min-w-[44px] px-3 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors flex items-center justify-center" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
         
         {/* Content */}
         <div className="relative z-10 p-5 pt-8 text-center">
@@ -431,14 +438,14 @@ const OnboardingModal = ({ onComplete }) => {
         <div className="p-3 flex justify-between items-center" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
           <div className="w-12">
             {step > 0 && (
-              <button onClick={() => setStep(step - 1)} className="text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
+              <button onClick={() => setStep(step - 1)} className="text-[11px] min-h-[44px] px-4 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
             )}
           </div>
           <div>
             {step < steps.length - 1 ? (
-              <button onClick={() => setStep(step + 1)} className="text-[9px] px-3 py-1 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Next</button>
+              <button onClick={() => setStep(step + 1)} className="text-[11px] min-h-[44px] px-4 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Next</button>
             ) : (
-              <button onClick={onComplete} className="text-[9px] px-3 py-1 rounded border border-emerald-500/30 bg-emerald-500/20 text-emerald-400">Get Started</button>
+              <button onClick={onComplete} className="text-[11px] min-h-[44px] px-4 py-2 rounded border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-medium">Get Started</button>
             )}
           </div>
         </div>
@@ -448,28 +455,34 @@ const OnboardingModal = ({ onComplete }) => {
 };
 
 // [SECTION:LUCK]
+// Luck rating: maps average pity to a percentile using a normal distribution.
+// Source assumptions: community-estimated mean ~62.5 pulls per 5★, std dev ~12.
+// If Kuro publishes official rates that differ, these constants should be updated.
+const LUCK_MEAN_PITY = 62.5;
+const LUCK_STD_DEV = 12;
+
 const calculateLuckRating = (avgPity) => {
   if (!avgPity || avgPity === '—') return null;
   const avg = parseFloat(avgPity);
   if (isNaN(avg) || avg <= 0) return null;
   
-  // Calculate percentile based on normal distribution (mean=62.5, std=12)
-  // Lower avg pity = better luck = higher percentile
-  const zScore = (62.5 - avg) / 12;
+  // Inverted: lower avg pity = luckier = higher z-score/percentile
+  const zScore = (LUCK_MEAN_PITY - avg) / LUCK_STD_DEV;
   
   // Abramowitz & Stegun approximation of normal CDF (accurate to ±0.0005)
   const absZ = Math.abs(zScore);
   const t = 1 / (1 + 0.2316419 * absZ);
-  const d = 0.3989422804014327; // 1/sqrt(2*PI)
+  const d = 0.3989422804014327; // 1/√(2π)
   const p = d * Math.exp(-absZ * absZ / 2) * (t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))));
   const cdf = zScore >= 0 ? 1 - p : p;
   const percentile = Math.min(99, Math.max(1, Math.round(cdf * 100)));
   
-  // WuWa-themed rank names
+  // WuWa-themed rank names (5 tiers for better distribution)
   if (percentile >= 90) return { rating: 'Arbiter', color: '#fbbf24', tier: 'S+', percentile };
   if (percentile >= 70) return { rating: 'Sentinel', color: '#a855f7', tier: 'S', percentile };
   if (percentile >= 40) return { rating: 'Resonator', color: '#3b82f6', tier: 'A', percentile };
-  return { rating: 'Civilian', color: '#6b7280', tier: 'B', percentile };
+  if (percentile >= 20) return { rating: 'Drifter', color: '#6b7280', tier: 'B', percentile };
+  return { rating: 'Civilian', color: '#ef4444', tier: 'C', percentile };
 };
 
 // [SECTION:STYLES]
@@ -611,6 +624,8 @@ const KuroStyles = ({ oledMode }) => (
     }
     
     /* ═══ TAB CONTENT TRANSITIONS ═══ */
+    /* NOTE: Negative margins must match parent's horizontal padding (0.75rem / 12px).
+       If parent padding changes, update these values together. */
     .tab-content {
       animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       margin-left: -0.75rem;
@@ -1032,11 +1047,15 @@ const KuroStyles = ({ oledMode }) => (
       }
     }
     
-    .kuro-input:focus {
+    .kuro-input:focus-visible {
       outline: none;
       border-color: rgba(var(--color-gold), 0.6);
       box-shadow: 0 0 0 3px rgba(var(--color-gold), 0.1), 0 0 20px rgba(var(--color-gold), 0.08);
       background: rgba(15, 20, 28, 0.9);
+    }
+    
+    .kuro-input:focus {
+      outline: none;
     }
     
     .kuro-input::placeholder {
@@ -1426,7 +1445,10 @@ const SERVERS = {
 // Get current UTC offset for a server (DST-aware)
 const getServerOffset = (server) => {
   const serverData = SERVERS[server];
-  if (!serverData) return 1; // Default to Europe
+  if (!serverData) {
+    console.warn(`[WW] Unknown server "${server}", defaulting to Europe (UTC+1)`);
+    return 1; // Default to Europe
+  }
   if (!serverData.hasDST) return serverData.utcOffset;
   
   // Use Intl API to detect current DST offset
@@ -1441,7 +1463,7 @@ const getServerOffset = (server) => {
     if (tzPart) {
       // Parse offset like "GMT-4" or "GMT+2"
       const match = tzPart.value.match(/GMT([+-]\d+)/);
-      if (match) return parseInt(match[1]);
+      if (match) return parseInt(match[1], 10);
     }
   } catch (e) {
     // Fallback to hardcoded offset if Intl API fails
@@ -1451,7 +1473,7 @@ const getServerOffset = (server) => {
 
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
-  version: '3.1', phase: 1,
+  version: '3.1', phase: 1, // Game version (not app version)
   // Times from wuwatracker.com (Europe UTC+1 converted to UTC)
   // Banner: Thu, 05 Feb 2026 03:00 - Thu, 26 Feb 2026 09:59 (Europe)
   startDate: '2026-02-05T02:00:00Z', // Feb 5, 03:00 Europe = 02:00 UTC
@@ -1499,7 +1521,7 @@ const CURRENT_BANNERS = {
 const BANNER_HISTORY = [
   // Version 3.1
   { version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
-  { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18' },
+  { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18', predicted: true },
   // Version 3.0
   { version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04' },
   { version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-24', endDate: '2026-01-15' },
@@ -1704,7 +1726,7 @@ const CHARACTER_DATA = {
     desc: 'Black Shores Consultant, the Discord Slayer. Fusion Echo Skill & Heavy ATK hypercarry.',
     skills: ['Light Slash', 'Radiant Barrier', 'Solar Flare', 'Divine Retribution'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Stone Rose' },
-    bestEchoes: ['Corrosaurus', 'Flamewing\u0027s Shadow 3pc + Molten Rift 2pc'], bestWeapon: 'Lux & Umbra',
+    bestEchoes: ['Corrosaurus', "Flamewing's Shadow 3pc + Molten Rift 2pc"], bestWeapon: 'Lux & Umbra',
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Lupa + Brant'] },
   'Qiuyuan': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent. Echo Skill DMG buffer with Crit DMG Amp.',
@@ -1807,7 +1829,7 @@ const CHARACTER_DATA = {
     desc: 'Lollo Logistics navigator. Electro sub-DPS with Res. Skill DMG Amp.',
     skills: ['Electro Slash', 'Thundering Voyage', 'Storm Navigator', 'Arc Discharge'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Whisperin Core', specialty: "Loong's Pearl" },
-    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Variation',
+    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Discord',
     teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Electro DPS + Verina'] },
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Spiritchaser Taoist and fortune-teller. Electro healer with DMG Amp buffs.',
@@ -1815,7 +1837,7 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Topological Confinement', common: 'Polygon Core', specialty: 'Nova' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Stellar Symphony',
     teams: ['Buling + Carlotta + Zhezhi', 'Buling + DPS + Sub DPS'] },
-}
+};
 
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
@@ -2135,7 +2157,7 @@ const getRecurringEventEnd = (currentEnd, resetType, server) => {
   // Parse cycle days from resetType like "28 days" or "~28 days"
   const match = resetType && resetType.match(/(\d+)/);
   if (!match) return adjusted;
-  const cycleMs = parseInt(match[1]) * 86400000;
+  const cycleMs = parseInt(match[1], 10) * 86400000;
   const cycles = Math.ceil((now - end) / cycleMs);
   return new Date(end + cycles * cycleMs).toISOString();
 };
@@ -2221,6 +2243,9 @@ const getPullRate = (pity) => {
 // Computes exact probability distribution for getting K copies in N pulls
 // isWeapon: true = weapon banner (100% featured), false = character banner (50/50)
 const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10) => {
+  // Clamp startPity to valid range
+  const clampedPity = Math.max(0, Math.min(MAX_PITY, startPity));
+  
   // DP state: dp[pulls][pity][guar?][copies] = probability
   // For weapon: no guarantee dimension
   const dp = Array.from({length: N+1}, () => 
@@ -2233,9 +2258,9 @@ const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10
   
   // Initial state
   if (isWeapon) {
-    dp[0][startPity][0] = 1.0;
+    dp[0][clampedPity][0] = 1.0;
   } else {
-    dp[0][startPity][startGuar][0] = 1.0;
+    dp[0][clampedPity][startGuar][0] = 1.0;
   }
   
   // Fill DP table
@@ -2258,7 +2283,7 @@ const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10
           }
           
           // 5★ outcome
-          const pFeatured = isWeapon || g === 1 ? 1.0 : 0.5;
+          const pFeatured = (isWeapon || g === 1) ? 1.0 : 0.5;
           if (k + 1 <= maxCopies) {
             if (isWeapon) {
               dp[n+1][0][k+1] += prob * rate; // Weapon always featured
@@ -2298,7 +2323,7 @@ const simulateOneRun = (isWeapon, N, startPity, startGuar) => {
   for (let i = 0; i < N; i++) {
     const rate = getPullRate(pity);
     if (Math.random() < rate) {
-      const featured = isWeapon || guar === 1 || Math.random() < 0.5;
+      const featured = (isWeapon || guar === 1) ? true : (Math.random() < 0.5);
       if (featured) copies++;
       guar = featured ? 0 : 1;
       pity = 0;
@@ -2363,7 +2388,7 @@ const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) 
       for (const g of gs) {
         const rate = getPullRate(p);
         const nextPity = Math.min(MAX_PITY, p + 1);
-        const pFeatured = isWeapon || g === 1 ? 1 : 0.5;
+        const pFeatured = (isWeapon || g === 1) ? 1 : 0.5;
         
         let expected = 1; // This pull
         
@@ -2403,7 +2428,10 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
   
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
-    const dist = computeGachaDist(mid, isWeapon, startPity, startGuar, targetK);
+    // Use higher MC trials in binary search to reduce stochastic oscillation
+    const dist = mid <= 500
+      ? computeDistDP(mid, isWeapon, startPity, startGuar, targetK)
+      : computeDistMC(mid, isWeapon, startPity, startGuar, targetK, 200000);
     const pGeK = getCumulativeProb(dist, targetK) * 100;
     
     if (pGeK >= minProb) {
@@ -2494,6 +2522,8 @@ const initialState = {
 };
 
 // Load saved state from persistent storage
+// Key kept as v2.2 for backwards compatibility — existing user data loads seamlessly.
+// If schema changes require migration, add a migration function here.
 const STORAGE_KEY = 'whispering-wishes-v2.2';
 
 // Helper to check if localStorage is available (fails in some preview modes)
@@ -2568,10 +2598,52 @@ const reducer = (state, action) => {
       else { newStatus[action.eventKey] = action.status; }
       return { ...state, eventStatus: newStatus };
     }
-    case 'ADD_INCOME': return { ...state, planner: { ...state.planner, addedIncome: [...state.planner.addedIncome, action.income] }, calc: { ...state.calc, astrite: String((+state.calc.astrite || 0) + action.income.astrite), radiant: String((+state.calc.radiant || 0) + (action.income.radiant || 0)), lustrous: String((+state.calc.lustrous || 0) + (action.income.lustrous || 0)) } };
+    case 'ADD_INCOME': {
+      return {
+        ...state,
+        planner: {
+          ...state.planner,
+          addedIncome: [...state.planner.addedIncome, action.income],
+        },
+        calc: {
+          ...state.calc,
+          astrite: String((+state.calc.astrite || 0) + action.income.astrite),
+          radiant: String((+state.calc.radiant || 0) + (action.income.radiant || 0)),
+          lustrous: String((+state.calc.lustrous || 0) + (action.income.lustrous || 0)),
+        },
+      };
+    }
     case 'REMOVE_INCOME': {
       const item = state.planner.addedIncome.find(i => i.id === action.id);
-      return item ? { ...state, planner: { ...state.planner, addedIncome: state.planner.addedIncome.filter(i => i.id !== action.id) }, calc: { ...state.calc, astrite: String(Math.max(0, (+state.calc.astrite || 0) - item.astrite)), radiant: String(Math.max(0, (+state.calc.radiant || 0) - (item.radiant || 0))), lustrous: String(Math.max(0, (+state.calc.lustrous || 0) - (item.lustrous || 0))) } } : state;
+      if (!item) return state;
+      return {
+        ...state,
+        planner: {
+          ...state.planner,
+          addedIncome: state.planner.addedIncome.filter(i => i.id !== action.id),
+        },
+        calc: {
+          ...state.calc,
+          astrite: String(Math.max(0, (+state.calc.astrite || 0) - item.astrite)),
+          radiant: String(Math.max(0, (+state.calc.radiant || 0) - (item.radiant || 0))),
+          lustrous: String(Math.max(0, (+state.calc.lustrous || 0) - (item.lustrous || 0))),
+        },
+      };
+    }
+    case 'CLEAR_ALL_INCOME': {
+      const totalAst = state.planner.addedIncome.reduce((s, i) => s + (i.astrite || 0), 0);
+      const totalRad = state.planner.addedIncome.reduce((s, i) => s + (i.radiant || 0), 0);
+      const totalLus = state.planner.addedIncome.reduce((s, i) => s + (i.lustrous || 0), 0);
+      return {
+        ...state,
+        planner: { ...state.planner, addedIncome: [] },
+        calc: {
+          ...state.calc,
+          astrite: String(Math.max(0, (+state.calc.astrite || 0) - totalAst)),
+          radiant: String(Math.max(0, (+state.calc.radiant || 0) - totalRad)),
+          lustrous: String(Math.max(0, (+state.calc.lustrous || 0) - totalLus)),
+        },
+      };
     }
     case 'ADD_DAILY_INCOME': {
       const days = Math.max(0, Math.min(365, Number(action.days) || 0));
@@ -2597,10 +2669,25 @@ const reducer = (state, action) => {
     }
     case 'SET_UID': return { ...state, profile: { ...state.profile, uid: action.uid } };
     case 'CLEAR_PROFILE': return { ...state, profile: initialState.profile };
-    case 'SAVE_BOOKMARK': return { ...state, bookmarks: [...state.bookmarks, { id: Date.now(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
+    case 'SAVE_BOOKMARK': return { ...state, bookmarks: [...state.bookmarks, { id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`, name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
     case 'LOAD_BOOKMARK': {
       const b = state.bookmarks.find(bm => bm.id === action.id);
-      return b ? { ...state, calc: { ...state.calc, charPity: b.charPity, charGuaranteed: b.charGuaranteed, weapPity: b.weapPity, astrite: b.astrite, radiant: b.radiant, forging: b.forging, lustrous: b.lustrous, charCopies: b.charCopies, weapCopies: b.weapCopies } } : state;
+      if (!b) return state;
+      return {
+        ...state,
+        calc: {
+          ...state.calc,
+          charPity: b.charPity,
+          charGuaranteed: b.charGuaranteed,
+          weapPity: b.weapPity,
+          astrite: b.astrite,
+          radiant: b.radiant,
+          forging: b.forging,
+          lustrous: b.lustrous,
+          charCopies: b.charCopies,
+          weapCopies: b.weapCopies,
+        },
+      };
     }
     case 'DELETE_BOOKMARK': return { ...state, bookmarks: state.bookmarks.filter(b => b.id !== action.id) };
     case 'LOAD_STATE': return { ...action.state };
@@ -2634,7 +2721,8 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   const successRate = pGe(copies);
   const missingPulls = Math.max(0, Math.ceil(expectedToTarget) - pulls);
   
-  // 4-star calculations (use pulls only — pity is 5★-specific, independent of 4★ counter)
+  // 4-star calculations (estimate: assumes hard pity every 10 pulls, ignores actual 4★ pity counter)
+  // This is a floor estimate — actual 4★ count is typically higher due to base rate hits
   const fourStarCount = Math.floor(pulls / HARD_PITY_4STAR);
   const featuredFourStarCount = Math.floor(fourStarCount * FEATURED_4STAR_RATE);
   const pity4 = pulls % HARD_PITY_4STAR;
@@ -2718,12 +2806,12 @@ const DETAIL_ELEMENT_COLORS = {
 };
 
 const BANNER_GRADIENT_MAP = {
-  Fusion: { border: 'border-orange-500/40', bg: 'bg-orange-500/20', text: 'text-orange-400' },
-  Electro: { border: 'border-purple-500/40', bg: 'bg-purple-500/20', text: 'text-purple-400' },
-  Aero: { border: 'border-emerald-500/40', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-  Glacio: { border: 'border-cyan-500/40', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
-  Havoc: { border: 'border-pink-500/40', bg: 'bg-pink-500/20', text: 'text-pink-400' },
-  Spectro: { border: 'border-yellow-500/40', bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+  Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400' },
+  Electro: { borderColor: 'rgba(168,85,247,0.4)', bgColor: 'rgba(168,85,247,0.2)', text: 'text-purple-400' },
+  Aero: { borderColor: 'rgba(16,185,129,0.4)', bgColor: 'rgba(16,185,129,0.2)', text: 'text-emerald-400' },
+  Glacio: { borderColor: 'rgba(6,182,212,0.4)', bgColor: 'rgba(6,182,212,0.2)', text: 'text-cyan-400' },
+  Havoc: { borderColor: 'rgba(236,72,153,0.55)', bgColor: 'rgba(236,72,153,0.25)', text: 'text-pink-400' },
+  Spectro: { borderColor: 'rgba(234,179,8,0.4)', bgColor: 'rgba(234,179,8,0.2)', text: 'text-yellow-400' },
 };
 
 const EVENT_ACCENT_COLORS = {
@@ -2815,7 +2903,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
 
           {/* Best Weapon - with image and stats */}
           <div className={`p-3 rounded-xl border ${colors.border} bg-gradient-to-r ${colors.bg} from-transparent`}>
-            <div className="text-[9px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
               {weaponImg && (
                 <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" />
@@ -2842,7 +2930,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
                 </div>
                 <div>
                   <div className="text-cyan-400 text-xs font-bold">{data.bestEchoes[0]}</div>
-                  <div className="text-gray-500 text-[9px]">Main Echo (3 cost)</div>
+                  <div className="text-gray-500 text-[9px]">Main Echo</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -2867,7 +2955,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
                 const members = parseTeamMembers(team);
                 const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m]);
                 return (
-                  <div key={i} className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                  <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10">
                     {hasImages ? (
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {
@@ -2881,7 +2969,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
                                   <User size={14} className="text-gray-600" />
                                 </div>
                               )}
-                              <span className="text-[8px] text-gray-400 text-center leading-tight truncate w-full">{member}</span>
+                              <span className="text-[10px] text-gray-400 text-center leading-tight truncate w-full">{member}</span>
                             </div>
                           );
                         })}
@@ -2938,6 +3026,8 @@ const WEAPON_RARITY_COLORS = {
   5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
   4: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
   3: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
+  2: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50' },
+  1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
 };
 const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   const data = WEAPON_DATA[name];
@@ -2967,7 +3057,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.type}</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}</span>
             </div>
             <h2 className="text-xl font-bold text-white">{name}</h2>
@@ -3027,6 +3117,7 @@ class TabErrorBoundary extends React.Component {
                 <button 
                   onClick={() => this.setState({ hasError: false, error: null })}
                   className="kuro-btn active-cyan text-xs px-4 py-2"
+                  aria-label={`Retry loading the ${this.props.tabName || 'tab'} tab`}
                 >
                   Try Again
                 </button>
@@ -3077,10 +3168,10 @@ const TabButton = memo(({ active, onClick, children, tabRef }) => {
       onClick={() => { haptic.light(); onClick(); }}
       role="tab"
       aria-selected={active}
-      aria-label={`${text} tab`}
+      aria-label={`${text || 'Navigation'} tab`}
       className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
     >
-      <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5'}`}>
+      <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5'}`}>
         {icon}
       </div>
       <span className="relative z-10">{text}</span>
@@ -3097,6 +3188,10 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   const expiredRef = useRef(false);
   const rafRef = useRef(null);
   const lastUpdateRef = useRef(0);
+  const currentEndRef = useRef(currentEnd);
+  
+  // Keep ref in sync with state
+  useEffect(() => { currentEndRef.current = currentEnd; }, [currentEnd]);
   
   // Update end date when prop changes
   useEffect(() => {
@@ -3117,7 +3212,8 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
       if (now - lastUpdateRef.current >= 1000 || lastUpdateRef.current === 0) {
         lastUpdateRef.current = now;
         
-        const t = getTimeRemaining(currentEnd);
+        const end = currentEndRef.current;
+        const t = getTimeRemaining(end);
         if (t.expired && recalcFn) {
           // Auto-rollover for recurring timers (daily/weekly)
           const newEnd = recalcFn();
@@ -3143,7 +3239,8 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         lastUpdateRef.current = 0; // Force immediate update
-        const t = getTimeRemaining(currentEnd);
+        const end = currentEndRef.current;
+        const t = getTimeRemaining(end);
         if (t.expired && recalcFn) {
           const newEnd = recalcFn();
           setCurrentEnd(newEnd);
@@ -3159,7 +3256,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     // Handle page focus (backup for visibility)
     const handleFocus = () => {
       lastUpdateRef.current = 0;
-      setTime(getTimeRemaining(currentEnd));
+      setTime(getTimeRemaining(currentEndRef.current));
     };
     window.addEventListener('focus', handleFocus);
     
@@ -3172,7 +3269,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [currentEnd, onExpire, recalcFn]);
+  }, [onExpire, recalcFn]);
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
   if (time.expired && !alwaysShow) return <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Ended</span>;
@@ -3192,31 +3289,52 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     );
   }
   
+  const timerBoxStyle = { backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)' };
+  
   return (
     <div className="flex items-center gap-1">
-      {time.days > 0 && <><div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{time.days}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Day</div></div><span className={`${textColor} font-bold text-xs opacity-60`}>:</span></>}
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.hours).padStart(2,'0')}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Hr</div></div>
+      {time.days > 0 && (
+        <>
+          <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={timerBoxStyle}>
+            <div className="text-white font-bold text-sm kuro-number">{time.days}</div>
+            <div className="text-gray-400 text-[9px] uppercase tracking-wider">{time.days === 1 ? 'Day' : 'Days'}</div>
+          </div>
+          <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
+        </>
+      )}
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={timerBoxStyle}>
+        <div className="text-white font-bold text-sm kuro-number">{String(time.hours).padStart(2, '0')}</div>
+        <div className="text-gray-400 text-[9px] uppercase tracking-wider">Hr</div>
+      </div>
       <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2,'0')}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Min</div></div>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={timerBoxStyle}>
+        <div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2, '0')}</div>
+        <div className="text-gray-400 text-[9px] uppercase tracking-wider">Min</div>
+      </div>
       <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={{backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)'}}><div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2,'0')}</div><div className="text-gray-400 text-[8px] uppercase tracking-wider">Sec</div></div>
+      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={timerBoxStyle}>
+        <div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
+        <div className="text-gray-400 text-[9px] uppercase tracking-wider">Sec</div>
+      </div>
     </div>
   );
 });
 CountdownTimer.displayName = 'CountdownTimer';
 
-const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#fbbf24', glowColor = 'rgba(251,191,36,0.4)', label, sublabel }) => {
+const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#fbbf24', glowColor = 'rgba(251,191,36,0.4)', label, sublabel, softPityStart }) => {
   const safeValue = Number(value) || 0;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(safeValue / max, 1);
   const offset = circumference * (1 - pct);
-  const isSoftPity = max === 80 && safeValue >= 65;
   
-  // Soft pity zone: pulls 65-80 shown as a subtle background arc
-  const showSoftZone = max === 80;
-  const softStart = 65 / 80;
-  const softLen = 15 / 80;
+  // Soft pity zone: configurable threshold, defaults to 65 for max=80
+  const softThreshold = softPityStart != null ? softPityStart : (max === 80 ? 65 : null);
+  const showSoftZone = softThreshold != null && softThreshold < max;
+  const isSoftPity = showSoftZone && safeValue >= softThreshold;
+  
+  const softStart = showSoftZone ? softThreshold / max : 0;
+  const softLen = showSoftZone ? (max - softThreshold) / max : 0;
   const softDash = softLen * circumference;
   const softGap = circumference - softDash;
   const softOffset = -softStart * circumference;
@@ -3234,14 +3352,14 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
             strokeDasharray={`${softDash} ${softGap}`} 
             strokeDashoffset={softOffset}
             transform={`rotate(-90 ${size/2} ${size/2})`}
-            strokeLinecap="round"
+            strokeLinecap="butt"
           />
         )}
         <circle className="pity-ring-fill" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} stroke={color} strokeDasharray={circumference} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{'--ring-glow': glowColor}} />
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.28} fill={color}>{safeValue}</text>
       </svg>
-      {label && <div className="text-gray-300 text-[8px] mt-0.5">{label}</div>}
-      {sublabel && <div className="text-gray-500 text-[8px]">{sublabel}</div>}
+      {label && <div className="text-gray-300 text-[9px] mt-0.5">{label}</div>}
+      {sublabel && <div className="text-gray-500 text-[9px]">{sublabel}</div>}
     </div>
   );
 });
@@ -3257,7 +3375,14 @@ const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0
 const BackgroundGlow = ({ oledMode, animationsEnabled = true }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
-    if (!animationsEnabled) return;
+    if (!animationsEnabled) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -3343,14 +3468,21 @@ const BackgroundGlow = ({ oledMode, animationsEnabled = true }) => {
     };
   }, [oledMode, animationsEnabled]);
   
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1}} />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1}} aria-hidden="true" role="presentation" />;
 };
 
 // LAYER B: Triangle wave mask — traveling wavefront specular, z-index 2
 const TriangleMirrorWave = ({ oledMode, animationsEnabled = true }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
-    if (!animationsEnabled) return;
+    if (!animationsEnabled) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -3456,7 +3588,7 @@ const TriangleMirrorWave = ({ oledMode, animationsEnabled = true }) => {
     };
   }, [oledMode, animationsEnabled]);
   
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2}} />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2}} aria-hidden="true" role="presentation" />;
 };
 
 const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
@@ -3471,7 +3603,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${style.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor }}>
       {imgUrl && (
         <img 
           src={imgUrl} 
@@ -3499,34 +3631,35 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
-            <span className={`text-[10px] px-2 py-0.5 rounded ${style.bg} ${style.text} border ${style.border}`}>{isChar ? item.element : item.type}</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded ${style.text} border`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>{isChar ? item.element : item.type}</span>
           </div>
           <h4 className="font-bold text-base text-white leading-tight">{item.name}</h4>
           {item.title && <p className="text-gray-200 text-[10px] mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
-        <div>
-          <div className="text-gray-300 text-[8px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
+        <div className={stats ? 'mb-14' : ''}>
+          <div className="text-gray-300 text-[9px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
             {item.featured4Stars.map(n => <span key={n} className="text-[9px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
-        
-        {stats && (
-          <div className="pt-2.5 mt-1 border-t border-white/15" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', margin: '0 -12px -12px', padding: '10px 12px 12px', borderRadius: '0 0 12px 12px'}}>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 flex items-center gap-3">
+      </div>
+      
+      {stats && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15 rounded-b-xl" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)'}}>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
                   <div className={`font-bold text-sm ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
-                  <div className="text-gray-400 text-[8px] mt-0.5">5★ Pity</div>
+                  <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
                 </div>
                 <div className="text-center">
                   <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
-                  <div className="text-gray-400 text-[8px] mt-0.5">4★ Pity</div>
+                  <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">
                   <div className="text-white font-bold text-sm">{stats.totalPulls}</div>
-                  <div className="text-gray-400 text-[8px] mt-0.5">Convenes</div>
+                  <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
                 </div>
               </div>
               {isChar && (
@@ -3537,7 +3670,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 });
@@ -3547,7 +3679,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
-  const isRecurring = !isDaily && !isWeekly && event.resetType && /\d+/.test(event.resetType);
+  const isRecurring = !isDaily && !isWeekly && event.resetType && /^\d+[dhm]?$/i.test(event.resetType.trim());
   
   const endDate = useMemo(() => {
     if (isDaily) return getNextDailyReset(server);
@@ -3592,7 +3724,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             WebkitMaskImage: maskGradient,
             filter: isSkipped ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
           }}
-          loading="eager"
+          loading="lazy"
           onError={(e) => { e.target.style.display = 'none'; }}
         />
       )}
@@ -3616,7 +3748,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
         </div>
         
         <div className="flex justify-between items-end">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
+          <div className={`inline-block px-2 py-0.5 rounded text-[9px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
             {event.rewards}
           </div>
           {onStatusChange && (
@@ -3627,11 +3759,11 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
                 </button>
               ) : (
                 <>
-                  <button onClick={() => onStatusChange('done')} className="px-2 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors">
+                  <button onClick={() => onStatusChange('done')} className="px-2.5 py-1 rounded text-[9px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] text-center">
                     <Check size={10} className="inline -mt-0.5" /> Done
                   </button>
-                  <button onClick={() => onStatusChange('skipped')} className="px-2 py-0.5 rounded text-[9px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors">
-                    Skip
+                  <button onClick={() => onStatusChange('skipped')} className="px-2.5 py-1 rounded text-[9px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] text-center">
+                    <X size={10} className="inline -mt-0.5" /> Skip
                   </button>
                 </>
               )}
@@ -3647,7 +3779,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
 });
 EventCard.displayName = 'EventCard';
 
-const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
+const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2">
     <span className="text-gray-400 text-[10px] w-12">{label}</span>
     <div className="flex-1 h-5 bg-neutral-800 rounded overflow-hidden">
@@ -3657,7 +3789,8 @@ const ProbabilityBar = ({ label, value, color = 'cyan' }) => (
     </div>
     {value <= 10 && <span className="text-[10px] text-gray-400 w-10">{value}%</span>}
   </div>
-);
+));
+ProbabilityBar.displayName = 'ProbabilityBar';
 
 // Admin banner storage key
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
@@ -3666,7 +3799,6 @@ const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
 const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew }) => (
   <div 
-    key={name} 
     className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
     style={{ height: '140px' }}
     onClick={() => {
@@ -3679,7 +3811,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     }}
   >
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase" style={{background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#000', boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
     )}
     {imgUrl && (
       <img 
@@ -3714,7 +3846,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
-  prev.framing?.zoom === next.framing?.zoom && prev.framing?.x === next.framing?.x && prev.framing?.y === next.framing?.y
+  prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
 );
 CollectionGridCard.displayName = 'CollectionGridCard';
 
@@ -3734,7 +3866,6 @@ const getActiveBanners = () => {
   const custom = loadCustomBanners();
   return custom || CURRENT_BANNERS;
 };
-
 
 // [SECTION:STATIC_DATA] - Static collection data (moved outside component for perf)
 const DEFAULT_COLLECTION_IMAGES = {
@@ -3902,6 +4033,9 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
+  // TODO: Missing images - these weapons exist in collection lists but have no image yet
+  'Autumntrace': '',
+  'Tyro Gauntlets': '',
 };
 
 // Release order for sorting (based on first banner appearance)
@@ -3955,8 +4089,11 @@ const ALL_CHARACTERS = new Set([
 ]);
 
 // Complete lists for Collection display (show all, grey out unpossessed)
+// Standard 5★ characters (Tidal Chorus / 50-50 loss pool) — update when new standard chars are added
+const STANDARD_5STAR_CHARACTERS = new Set(['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina']);
+
 const ALL_5STAR_RESONATORS = [
-  'Jiyan', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina', 'Yinlin',
+  'Rover', 'Jiyan', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina', 'Yinlin',
   'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
   'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
   'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
@@ -4038,6 +4175,12 @@ const WEAPON_RELEASE_ORDER = [
   'Everbright Polestar', "Daybreaker's Spine",
 ];
 
+// Tab navigation order for swipe gestures
+const TAB_ORDER = ['tracker', 'events', 'calculator', 'planner', 'analytics', 'gathering', 'profile'];
+
+// Podium medal colors (gold, silver, bronze) for leaderboard/ranking displays
+const MEDAL_COLORS = ['#fbbf24', '#c0c0c0', '#cd7f32'];
+
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   // Check app lockout first
@@ -4054,12 +4197,31 @@ function WhisperingWishesInner() {
     return false;
   });
   
+  // Live countdown for lockout screen — updates every 60s, auto-clears when expired
+  const [, setLockoutTick] = useState(0);
+  useEffect(() => {
+    if (!isLockedOut) return;
+    const interval = setInterval(() => {
+      if (Date.now() >= isLockedOut) {
+        setIsLockedOut(false);
+        try {
+          localStorage.removeItem('ww-app-lockout');
+          localStorage.removeItem('ww-admin-fails');
+        } catch {}
+      } else {
+        setLockoutTick(t => t + 1);
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [isLockedOut]);
+  
   const toast = useToast();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportData, setExportData] = useState('');
+  const [restoreText, setRestoreText] = useState('');
   const stateRef = useRef(state);
   
   // Admin panel state
@@ -4068,6 +4230,7 @@ function WhisperingWishesInner() {
   const [adminPassword, setAdminPassword] = useState('');
   const [adminTapCount, setAdminTapCount] = useState(0);
   const adminTapTimerRef = useRef(null);
+  const adminTapCountRef = useRef(0);
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
   // Banner ends at server-specific time (e.g., 11:59 local for each server)
   const bannerEndDate = useMemo(() => getServerAdjustedEnd(activeBanners.endDate, state.server), [activeBanners.endDate, state.server]);
@@ -4292,10 +4455,14 @@ function WhisperingWishesInner() {
   }, []);
   
   // Check if any filter is active
-  const hasActiveFilters = collectionSearch || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionOwnershipFilter !== 'all';
+  const hasActiveFilters = useMemo(() => 
+    !!(collectionSearch || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionOwnershipFilter !== 'all'),
+    [collectionSearch, collectionElementFilter, collectionWeaponFilter, collectionOwnershipFilter]
+  );
   
   // Cache-busting for images (version-based, only refreshes on manual refresh)
-  const [imageCacheBuster, setImageCacheBuster] = useState('296');
+  // Initial value is an arbitrary version token; replaced with Date.now() on manual refresh
+  const [imageCacheBuster, setImageCacheBuster] = useState('v3.1.0');
   const refreshImages = useCallback(() => {
     setImageCacheBuster(String(Date.now()));
     // Also clear SW image cache
@@ -4396,8 +4563,9 @@ function WhisperingWishesInner() {
   }, []);
   
   // Swipe navigation between tabs
-  const TAB_ORDER = ['tracker', 'events', 'calculator', 'planner', 'analytics', 'gathering', 'profile'];
   const swipeRef = useRef({ startX: 0, startY: 0, startTime: 0 });
+  const activeTabRef = useRef(activeTab);
+  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
   
   useEffect(() => {
     if (!visualSettings.swipeNavigation) return;
@@ -4425,7 +4593,7 @@ function WhisperingWishesInner() {
       const isLongEnough = Math.abs(deltaX) > 50;
       
       if (isHorizontalSwipe && isFastEnough && isLongEnough) {
-        const currentIndex = TAB_ORDER.indexOf(activeTab);
+        const currentIndex = TAB_ORDER.indexOf(activeTabRef.current);
         if (deltaX < 0 && currentIndex < TAB_ORDER.length - 1) {
           // Swipe left → next tab
           haptic.medium();
@@ -4445,7 +4613,7 @@ function WhisperingWishesInner() {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [visualSettings.swipeNavigation, activeTab, setActiveTab]);
+  }, [visualSettings.swipeNavigation, setActiveTab]);
   
   const [trackerCategory, setTrackerCategory] = useState('character');
   const [importPlatform, setImportPlatform] = useState(null);
@@ -4475,7 +4643,10 @@ function WhisperingWishesInner() {
         localStorage.setItem('ww-leaderboard-id', id);
       }
       return id;
-    } catch { return 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
+    } catch {
+      // Storage failed — generate session-stable ID (won't persist across refreshes)
+      return null;
+    }
   });
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
@@ -4532,10 +4703,7 @@ function WhisperingWishesInner() {
   }, [state.calc.astrite, state.calc.radiant, state.calc.forging, state.calc.lustrous, state.calc.selectedBanner, state.calc.allocPriority]);
 
   // Calculate pulls for each banner type using allocation
-  const charPulls = useMemo(() => astriteAllocation.charTotal, [astriteAllocation]);
-  const weapPulls = useMemo(() => astriteAllocation.weapTotal, [astriteAllocation]);
-  const stdCharPulls = useMemo(() => astriteAllocation.stdCharTotal, [astriteAllocation]);
-  const stdWeapPulls = useMemo(() => astriteAllocation.stdWeapTotal, [astriteAllocation]);
+  const { charTotal: charPulls, weapTotal: weapPulls, stdCharTotal: stdCharPulls, stdWeapTotal: stdWeapPulls } = astriteAllocation;
   
   // Calculate stats for each banner type
   const charStats = useMemo(() => calcStats(charPulls, state.calc.charPity, state.calc.charGuaranteed, true, state.calc.charCopies), [charPulls, state.calc.charPity, state.calc.charGuaranteed, state.calc.charCopies]);
@@ -4591,7 +4759,8 @@ function WhisperingWishesInner() {
     
     return { 
       totalPulls: all.length, 
-      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * Math.round(ASTRITE_PER_PULL * 0.8), 
+      // Beginner banner costs 128 Astrite/pull (80% of standard 160)
+      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * 128, 
       fiveStars: fives.length, 
       won5050: won, 
       lost5050: lost, 
@@ -4715,7 +4884,9 @@ function WhisperingWishesInner() {
     }
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
 
-  // Community stats aggregated from all leaderboard entries
+  // Community stats aggregated from leaderboard entries
+  // Note: leaderboardData is limited to top-20 by avgPity (luckiest players),
+  // so these stats skew favorable and don't represent the full player base
   const communityStats = useMemo(() => {
     if (!leaderboardData.length) return null;
     const entries = leaderboardData;
@@ -4931,14 +5102,15 @@ function WhisperingWishesInner() {
     if (anyS6) list.push({ id: 's6_other', name: 'The Shaper', desc: `S6 ${anyS6[0]} — fully Sequenced`, icon: 'Crown', color: '#ec4899', tier: 'legendary' });
     
     // "Gathering Wives" mega trophy — ALL 5-star characters at S6
-    const all5StarNames = Object.keys(s6Trophies);
-    const s6Count = all5StarNames.filter(n => (charCounts[n] || 0) >= 7).length;
-    if (s6Count >= all5StarNames.length) {
+    // Use ALL_5STAR_RESONATORS as source of truth (s6Trophies may lag behind new characters)
+    const s6Count = ALL_5STAR_RESONATORS.filter(n => (charCounts[n] || 0) >= 7).length;
+    const total5StarCount = ALL_5STAR_RESONATORS.length;
+    if (s6Count >= total5StarCount) {
       list.push({ id: 's6_all', name: 'Gathering Wives: Complete', desc: 'Every 5★ at S6 — Rover\'s harem is full. seek help.', icon: 'Crown', color: '#ff0000', tier: 'legendary' });
     } else if (s6Count >= 20) {
-      list.push({ id: 's6_harem20', name: 'Harem Protagonist EX', desc: `${s6Count}/${all5StarNames.length} at S6 — your wallet is in critical condition`, icon: 'Crown', color: '#ff4500', tier: 'legendary' });
+      list.push({ id: 's6_harem20', name: 'Harem Protagonist EX', desc: `${s6Count}/${total5StarCount} at S6 — your wallet is in critical condition`, icon: 'Crown', color: '#ff4500', tier: 'legendary' });
     } else if (s6Count >= 10) {
-      list.push({ id: 's6_harem10', name: 'Gathering Wives', desc: `${s6Count}/${all5StarNames.length} at S6 — Rover didn't stutter`, icon: 'Crown', color: '#ff6347', tier: 'legendary' });
+      list.push({ id: 's6_harem10', name: 'Gathering Wives', desc: `${s6Count}/${total5StarCount} at S6 — Rover didn't stutter`, icon: 'Crown', color: '#ff6347', tier: 'legendary' });
     } else if (s6Count >= 5) {
       list.push({ id: 's6_harem5', name: 'Starting a Collection', desc: `${s6Count} at S6 — the harem arc is canon`, icon: 'Crown', color: '#ff8c00', tier: 'epic' });
     }
@@ -4982,7 +5154,7 @@ function WhisperingWishesInner() {
     if (lostCount('Verina') >= 1) list.push({ id: 'verina', name: 'W in Disguise', desc: `Lost 50/50 to Verina ${lostCount('Verina')}× — best L you ever took`, icon: 'Heart', color: '#22c55e', tier: 'green' });
     
     // Lost to all 5 standard characters across all 50/50 losses
-    const stdChars = ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'];
+    const stdChars = [...STANDARD_5STAR_CHARACTERS];
     const lostToAllStd = stdChars.every(name => lostToNames.includes(name));
     if (lostToAllStd) list.push({ id: 'allstd', name: 'Gotta Lose \'Em All', desc: 'Lost 50/50 to every standard character — completionist arc', icon: 'Trophy', color: '#a855f7', tier: 'purple' });
     
@@ -5070,7 +5242,9 @@ function WhisperingWishesInner() {
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
     const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + (
       state.calc.bannerCategory === 'featured'
-        ? (state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
+        ? (state.calc.selectedBanner === 'both' 
+            ? (+state.calc.radiant || 0) + (+state.calc.forging || 0)
+            : state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
         : (+state.calc.lustrous || 0)
     );
     const isFeatured = state.calc.bannerCategory === 'featured';
@@ -5145,9 +5319,6 @@ function WhisperingWishesInner() {
         throw new Error('No valid pull entries found — check data format');
       }
       
-      // List of known standard 5★ characters (for 50/50 calculation)
-      const standard5Stars = ['Verina', 'Jianxin', 'Lingyang', 'Calcharo', 'Encore'];
-      
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
           const poolType = p.cardPoolType || p.gachaType;
@@ -5167,14 +5338,14 @@ function WhisperingWishesInner() {
         return filtered.map((p, i) => {
           pityCounter++;
           const rarity = p.rarity || p.qualityLevel || 4;
-          const name = p.name || p.resourceName || '';
+          const name = (p.name || p.resourceName || '').trim();
           
           let won5050 = undefined;
           let pity = pityCounter;
           
           if (rarity === 5) {
             if (type === 'featured') {
-              const isStandard = standard5Stars.some(s => name.toLowerCase().includes(s.toLowerCase()));
+              const isStandard = STANDARD_5STAR_CHARACTERS.has(name);
               if (lastWasLost) {
                 won5050 = null;
                 lastWasLost = false;
@@ -5187,7 +5358,7 @@ function WhisperingWishesInner() {
           }
           
           return { 
-            id: p.id || Date.now() + i, 
+            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`, 
             name, 
             rarity, 
             pity: rarity === 5 ? pity : 0, 
@@ -5237,7 +5408,7 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Import failed: ' + err.message, 'error'); 
       return false;
     }
-  }, [toast]);
+  }, [toast, dispatch]);
 
   const handleFileImport = useCallback((e) => {
     const file = e.target.files?.[0];
@@ -5279,7 +5450,8 @@ function WhisperingWishesInner() {
   const handleAdminTap = useCallback(async () => {
     if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
     haptic.light();
-    const newCount = adminTapCount + 1;
+    adminTapCountRef.current += 1;
+    const newCount = adminTapCountRef.current;
     setAdminTapCount(newCount);
     if (newCount >= 5) {
       // Check failed attempts
@@ -5289,6 +5461,7 @@ function WhisperingWishesInner() {
       } catch {}
       
       if (failedAttempts >= 3) {
+        adminTapCountRef.current = 0;
         setAdminTapCount(0);
         return; // Already locked out
       }
@@ -5296,6 +5469,7 @@ function WhisperingWishesInner() {
       const password = prompt(`Enter admin password (${3 - failedAttempts} attempts remaining):`);
       if (password === null || password === '') {
         // User cancelled or empty - no penalty
+        adminTapCountRef.current = 0;
         setAdminTapCount(0);
         return;
       }
@@ -5319,11 +5493,15 @@ function WhisperingWishesInner() {
           }
         } catch {}
       }
+      adminTapCountRef.current = 0;
       setAdminTapCount(0);
     } else {
-      adminTapTimerRef.current = setTimeout(() => setAdminTapCount(0), 1500);
+      adminTapTimerRef.current = setTimeout(() => {
+        adminTapCountRef.current = 0;
+        setAdminTapCount(0);
+      }, 1500);
     }
-  }, [adminTapCount]);
+  }, []);
 
   // Save custom banners
   const saveCustomBanners = useCallback((banners) => {
@@ -5340,7 +5518,6 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Failed to save banner data', 'error');
     }
   }, [toast]);
-
 
   // Hash a password using SHA-256
   const hashPassword = useCallback(async (password) => {
@@ -5377,7 +5554,7 @@ function WhisperingWishesInner() {
     return (
       <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="text-6xl mb-4">🔒</div>
+          <Lock size={48} className="text-red-400 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-red-400 mb-2">Access Temporarily Restricted</h1>
           <p className="text-gray-400 text-sm mb-4">Too many failed attempts.</p>
           <p className="text-gray-500 text-xs">Try again in {hours}h {minutes}m</p>
@@ -5385,6 +5562,8 @@ function WhisperingWishesInner() {
       </div>
     );
   }
+
+  const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
     <div className={`${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
@@ -5408,14 +5587,14 @@ function WhisperingWishesInner() {
               </div>
               <div>
                 <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-gray-400 text-[9px] tracking-wider uppercase">Wuthering Waves Companion</p>
+                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves Companion</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-2 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-2 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={{backgroundColor: 'rgba(15, 20, 28, 0.9)'}}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
             </div>
@@ -5455,8 +5634,8 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            <div className="flex items-center text-gray-300 text-[10px] content-layer">
-              <span>v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
+            <div className="flex items-center text-[10px] content-layer">
+              <span className="text-gray-400">v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
             </div>
             
             {new Date() > new Date(bannerEndDate) && (
@@ -5468,13 +5647,44 @@ function WhisperingWishesInner() {
 
             {trackerCategory === 'character' && (
               <div className="space-y-2 content-layer">
-                {activeBanners.characters.map(c => <BannerCard key={c.id} item={c} type="character" bannerImage={activeBanners.characterBannerImage} stats={state.profile.featured.history.length ? { pity5: state.profile.featured.pity5, pity4: state.profile.featured.pity4, totalPulls: state.profile.featured.history.length, guaranteed: state.profile.featured.guaranteed } : null} visualSettings={visualSettings} endDate={bannerEndDate} timerColor="yellow" />)}
+                {activeBanners.characters.map(c => (
+                  <BannerCard
+                    key={c.id}
+                    item={c}
+                    type="character"
+                    bannerImage={activeBanners.characterBannerImage}
+                    stats={state.profile.featured.history.length ? {
+                      pity5: state.profile.featured.pity5,
+                      pity4: state.profile.featured.pity4,
+                      totalPulls: state.profile.featured.history.length,
+                      guaranteed: state.profile.featured.guaranteed
+                    } : null}
+                    visualSettings={visualSettings}
+                    endDate={bannerEndDate}
+                    timerColor="yellow"
+                  />
+                ))}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
               <div className="space-y-2 content-layer">
-                {activeBanners.weapons.map(w => <BannerCard key={w.id} item={w} type="weapon" bannerImage={activeBanners.weaponBannerImage} stats={state.profile.weapon.history.length ? { pity5: state.profile.weapon.pity5, pity4: state.profile.weapon.pity4, totalPulls: state.profile.weapon.history.length } : null} visualSettings={visualSettings} endDate={bannerEndDate} timerColor="pink" />)}
+                {activeBanners.weapons.map(w => (
+                  <BannerCard
+                    key={w.id}
+                    item={w}
+                    type="weapon"
+                    bannerImage={activeBanners.weaponBannerImage}
+                    stats={state.profile.weapon.history.length ? {
+                      pity5: state.profile.weapon.pity5,
+                      pity4: state.profile.weapon.pity4,
+                      totalPulls: state.profile.weapon.history.length
+                    } : null}
+                    visualSettings={visualSettings}
+                    endDate={bannerEndDate}
+                    timerColor="pink"
+                  />
+                ))}
               </div>
             )}
 
@@ -5510,26 +5720,26 @@ function WhisperingWishesInner() {
                             <h3 className="font-bold text-sm text-cyan-400">Tidal Chorus</h3>
                             <span className="text-gray-200 text-[10px]">Standard Resonator</span>
                           </div>
-                          <div className="text-gray-300 text-[8px] mb-1 uppercase tracking-wider">Available 5★</div>
+                          <div className="text-gray-300 text-[9px] mb-1 uppercase tracking-wider">Available 5★</div>
                           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
                             {activeBanners.standardCharacters.map(n => <span key={n} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{n}</span>)}
                           </div>
                         </div>
                         {state.profile.standardChar?.history?.length > 0 && (
-                          <div className="pt-2.5 mt-1 border-t border-white/15" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', margin: '0 -12px -12px', padding: '10px 12px 12px', borderRadius: '0 0 12px 12px'}}>
+                          <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/15 rounded-b-xl" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px'}}>
                             <div className="flex items-center gap-3">
                               <div className="flex-1 flex items-center gap-3">
                                 <div className="text-center">
                                   <div className="text-cyan-400 font-bold text-sm">{state.profile.standardChar.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
-                                  <div className="text-gray-400 text-[8px] mt-0.5">5★ Pity</div>
+                                  <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-purple-400 font-bold text-sm">{state.profile.standardChar.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
-                                  <div className="text-gray-400 text-[8px] mt-0.5">4★ Pity</div>
+                                  <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-white font-bold text-sm">{state.profile.standardChar.history.length}</div>
-                                  <div className="text-gray-400 text-[8px] mt-0.5">Convenes</div>
+                                  <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
                                 </div>
                               </div>
                             </div>
@@ -5568,26 +5778,26 @@ function WhisperingWishesInner() {
                             <h3 className="font-bold text-sm text-cyan-400">Winter Brume</h3>
                             <span className="text-gray-200 text-[10px]">Standard Weapon</span>
                           </div>
-                          <div className="text-gray-300 text-[8px] mb-1 uppercase tracking-wider">Available 5★</div>
+                          <div className="text-gray-300 text-[9px] mb-1 uppercase tracking-wider">Available 5★</div>
                           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
                             {activeBanners.standardWeapons.map(w => <span key={w.name} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{w.name}</span>)}
                           </div>
                         </div>
                         {state.profile.standardWeap?.history?.length > 0 && (
-                          <div className="pt-2.5 mt-1 border-t border-white/15" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', margin: '0 -12px -12px', padding: '10px 12px 12px', borderRadius: '0 0 12px 12px'}}>
+                          <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/15 rounded-b-xl" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px'}}>
                             <div className="flex items-center gap-3">
                               <div className="flex-1 flex items-center gap-3">
                                 <div className="text-center">
                                   <div className="text-cyan-400 font-bold text-sm">{state.profile.standardWeap.pity5}<span className="text-gray-500 text-[9px]">/80</span></div>
-                                  <div className="text-gray-400 text-[8px] mt-0.5">5★ Pity</div>
+                                  <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-purple-400 font-bold text-sm">{state.profile.standardWeap.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
-                                  <div className="text-gray-400 text-[8px] mt-0.5">4★ Pity</div>
+                                  <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
                                 </div>
                                 <div className="text-center">
                                   <div className="text-white font-bold text-sm">{state.profile.standardWeap.history.length}</div>
-                                  <div className="text-gray-400 text-[8px] mt-0.5">Convenes</div>
+                                  <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
                                 </div>
                               </div>
                             </div>
@@ -5655,7 +5865,6 @@ function WhisperingWishesInner() {
               const doneKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'done');
               const skippedKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped');
               const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards) || 0), 0);
-              const remainingAstrite = totalAstrite - earnedAstrite - skippedKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards) || 0), 0);
               const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
               return (
                 <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg content-layer">
@@ -5666,7 +5875,7 @@ function WhisperingWishesInner() {
                   {hasProgress && (
                     <div className="mt-1.5 flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full transition-all" style={{ width: `${(earnedAstrite / totalAstrite) * 100}%` }} />
+                        <div className="h-full bg-emerald-400 rounded-full transition-all" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
                       </div>
                       <span className="text-gray-400 text-[9px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
                     </div>
@@ -5675,7 +5884,7 @@ function WhisperingWishesInner() {
               );
             })()}
             <div className="space-y-2">
-              {Object.entries(EVENTS).map(([key, ev]) => {
+              {(() => {
                 const eventImageMap = {
                   tacticalHologram: activeBanners.tacticalHologramImage,
                   whimperingWastes: activeBanners.whimperingWastesImage,
@@ -5685,8 +5894,18 @@ function WhisperingWishesInner() {
                   weeklyBoss: activeBanners.weeklyBossImage,
                   dailyReset: activeBanners.dailyResetImage,
                 };
-                return <EventCard key={key} event={{...ev, key}} server={state.server} bannerImage={eventImageMap[key] || ev.imageUrl} visualSettings={visualSettings} status={state.eventStatus[key]} onStatusChange={(s) => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: s })} />;
-              })}
+                return Object.entries(EVENTS).map(([key, ev]) => (
+                  <EventCard
+                    key={key}
+                    event={{...ev, key}}
+                    server={state.server}
+                    bannerImage={eventImageMap[key] || ev.imageUrl}
+                    visualSettings={visualSettings}
+                    status={state.eventStatus[key]}
+                    onStatusChange={(s) => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: s })}
+                  />
+                ));
+              })()}
             </div>
             <p className="text-gray-500 text-[10px] text-center content-layer">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
           </div>
@@ -5872,7 +6091,7 @@ function WhisperingWishesInner() {
                     <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL)} Convenes</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 pull'], [ASTRITE_PER_PULL*5,'5 pulls'], [ASTRITE_PER_PULL*10,'10 pulls'], [ASTRITE_PER_PULL*20,'20 pulls']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip}>+{amt}<span className="text-yellow-600 ml-0.5 text-[8px]">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('astrite', String((+state.calc.astrite || 0) + amt))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip}>+{amt}<span className="text-yellow-600 ml-0.5 text-[9px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors">Clear</button>
                     </div>
@@ -6211,7 +6430,8 @@ function WhisperingWishesInner() {
                       <span className="text-emerald-400 text-xs">$4.99/mo</span>
                     </div>
                   </button>
-                  <button onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: 1600, radiant: 0, lustrous: 0, label: 'Weekly Subscription', price: 9.99 } })} className="kuro-btn w-full text-left">
+                  {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}
+                  <button onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: 1600, radiant: 0, lustrous: 0, label: 'Weekly Subscription', price: 9.99 } })} className="kuro-btn w-full text-left">
                     <div className="flex items-center justify-between w-full">
                       <div>
                         <div className="text-gray-200 text-xs font-medium">Weekly Subscription</div>
@@ -6221,7 +6441,7 @@ function WhisperingWishesInner() {
                     </div>
                   </button>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div>
                           <div className="text-gray-200 text-xs font-medium">{s.name}</div>
@@ -6233,7 +6453,7 @@ function WhisperingWishesInner() {
                   ))}
                   <div className="kuro-label mt-3">Direct Top-Ups</div>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: Date.now(), astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
                         <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
@@ -6246,7 +6466,7 @@ function WhisperingWishesInner() {
 
             {state.planner.addedIncome.length > 0 && (
               <Card>
-                <CardHeader action={<button onClick={() => state.planner.addedIncome.forEach(i => dispatch({ type: 'REMOVE_INCOME', id: i.id }))} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear All</button>}>Added Purchases</CardHeader>
+                <CardHeader action={<button onClick={() => dispatch({ type: 'CLEAR_ALL_INCOME' })} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
                     <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
@@ -6458,7 +6678,7 @@ function WhisperingWishesInner() {
                             <p className="text-gray-400 text-[10px]">Leaderboard & stats</p>
                           </div>
                           <button onClick={() => setShowLeaderboard(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
-                            <X size={18} />
+                            <X size={16} />
                           </button>
                         </div>
                         <div className="flex gap-1">
@@ -6485,7 +6705,6 @@ function WhisperingWishesInner() {
                             ) : (
                               leaderboardData.map((entry, i) => {
                                 const isYou = entry.id === userLeaderboardId;
-                                const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
                                 return (
                                   <div 
                                     key={entry.id}
@@ -6494,10 +6713,10 @@ function WhisperingWishesInner() {
                                     <div 
                                       className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                                       style={{
-                                        background: i < 3 ? `linear-gradient(135deg, ${medalColors[i]}40, ${medalColors[i]}20)` : 'rgba(255,255,255,0.1)',
-                                        color: i < 3 ? medalColors[i] : '#9ca3af',
-                                        border: i < 3 ? `1px solid ${medalColors[i]}50` : '1px solid rgba(255,255,255,0.1)',
-                                        boxShadow: i < 3 ? `0 0 10px ${medalColors[i]}30` : 'none'
+                                        background: i < 3 ? `linear-gradient(135deg, ${MEDAL_COLORS[i]}40, ${MEDAL_COLORS[i]}20)` : 'rgba(255,255,255,0.1)',
+                                        color: i < 3 ? MEDAL_COLORS[i] : '#9ca3af',
+                                        border: i < 3 ? `1px solid ${MEDAL_COLORS[i]}50` : '1px solid rgba(255,255,255,0.1)',
+                                        boxShadow: i < 3 ? `0 0 10px ${MEDAL_COLORS[i]}30` : 'none'
                                       }}
                                     >
                                       {i + 1}
@@ -6507,7 +6726,7 @@ function WhisperingWishesInner() {
                                         <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
                                           {entry.id}
                                         </span>
-                                        {isYou && <span className="text-[8px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded">YOU</span>}
+                                        {isYou && <span className="text-[9px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded">YOU</span>}
                                       </div>
                                       <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
                                     </div>
@@ -6537,11 +6756,10 @@ function WhisperingWishesInner() {
                                     <p className="text-[10px] text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
                                     {communityPulls.chars.slice(0, 10).map(([name, count], i) => {
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
-                                      const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
                                       const imgUrl = collectionImages[name] || '';
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
-                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? medalColors[i] : '#6b7280'}}>{i + 1}</span>
+                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
                                           {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
@@ -6549,7 +6767,7 @@ function WhisperingWishesInner() {
                                               <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
                                             <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
-                                              <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? medalColors[i] : '#4b5563'}} />
+                                              <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
                                             </div>
                                           </div>
                                         </div>
@@ -6562,11 +6780,10 @@ function WhisperingWishesInner() {
                                     <p className="text-[10px] text-cyan-400/80 font-semibold uppercase tracking-wider mt-3 mb-1">★ Weapons</p>
                                     {communityPulls.weaps.slice(0, 10).map(([name, count], i) => {
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
-                                      const medalColors = ['#fbbf24', '#c0c0c0', '#cd7f32'];
                                       const imgUrl = collectionImages[name] || '';
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
-                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? medalColors[i] : '#6b7280'}}>{i + 1}</span>
+                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
                                           {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
@@ -6574,7 +6791,7 @@ function WhisperingWishesInner() {
                                               <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
                                             <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
-                                              <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? medalColors[i] : '#4b5563'}} />
+                                              <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
                                             </div>
                                           </div>
                                         </div>
@@ -6597,15 +6814,15 @@ function WhisperingWishesInner() {
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-yellow-400 font-bold text-xs">{communityStats.avgPityAll}</div>
-                              <div className="text-gray-500 text-[8px]">Global Avg Pity</div>
+                              <div className="text-gray-500 text-[9px]">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate || '—'}%</div>
-                              <div className="text-gray-500 text-[8px]">50/50 Win Rate</div>
+                              <div className="text-gray-500 text-[9px]">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-cyan-400 font-bold text-xs">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-500 text-[8px]">Total 5★</div>
+                              <div className="text-gray-500 text-[9px]">Total 5★</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
@@ -6616,8 +6833,8 @@ function WhisperingWishesInner() {
                           )}
                           {communityStats.luckiest && communityStats.unluckiest && communityStats.totalPlayers >= 2 && (
                             <div className="flex justify-between text-[9px] gap-2">
-                              <span className="text-emerald-500/70">🍀 Luckiest: {communityStats.luckiest.avgPity.toFixed(1)}</span>
-                              <span className="text-red-500/70">💀 Unluckiest: {communityStats.unluckiest.avgPity.toFixed(1)}</span>
+                              <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={10} /> Luckiest: {communityStats.luckiest.avgPity.toFixed(1)}</span>
+                              <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={10} /> Unluckiest: {communityStats.unluckiest.avgPity.toFixed(1)}</span>
                             </div>
                           )}
                         </div>
@@ -6653,10 +6870,12 @@ function WhisperingWishesInner() {
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies <span className="text-gray-500 font-normal text-[10px]">({trophies.list.length})</span></span>
                     </CardHeader>
                     <CardBody>
+                      {(() => {
+                      const TrophyIconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, TrendingUp, Fish, Diamond, Gamepad2, Star, Trophy };
+                      return (<>
                       <div className="grid grid-cols-3 gap-2">
                         {trophies.list.map(trophy => {
-                          const IconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, TrendingUp, Fish, Diamond, Gamepad2, Star, Trophy };
-                          const IconComponent = IconMap[trophy.icon] || Star;
+                          const IconComponent = TrophyIconMap[trophy.icon] || Star;
                           return (
                             <div 
                               key={trophy.id} 
@@ -6685,10 +6904,9 @@ function WhisperingWishesInner() {
                       
                       {/* Trophy Description Modal */}
                       {selectedTrophy && (() => {
-                        const IconMap = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, TrendingUp, Fish, Diamond, Gamepad2, Star, Trophy };
                         const t = trophies.list.find(tr => tr.id === selectedTrophy);
                         if (!t) return null;
-                        const Icon = IconMap[t.icon] || Star;
+                        const Icon = TrophyIconMap[t.icon] || Star;
                         return (
                           <div 
                             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
@@ -6704,6 +6922,9 @@ function WhisperingWishesInner() {
                                 boxShadow: `0 0 40px ${t.color}25, 0 0 80px ${t.color}10, inset 0 0 30px ${t.color}08`
                               }}
                             >
+                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label="Close trophy">
+                                <X size={14} />
+                              </button>
                               <div 
                                 className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center"
                                 style={{
@@ -6715,7 +6936,7 @@ function WhisperingWishesInner() {
                               </div>
                               <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
                               <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-[9px] text-gray-500">tap outside to close</div>
+                              <div className="mt-3 text-[9px] text-gray-500">tap outside or ✕ to close</div>
                             </div>
                           </div>
                         );
@@ -6732,6 +6953,7 @@ function WhisperingWishesInner() {
                           </div>
                         </div>
                       )}
+                      </>); })()}
                     </CardBody>
                   </Card>
                 )}
@@ -6784,7 +7006,7 @@ function WhisperingWishesInner() {
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {count > 0 && (
                                     <div 
-                                      className="absolute left-0 right-0 text-[8px] text-center font-bold"
+                                      className="absolute left-0 right-0 text-[9px] text-center font-bold"
                                       style={{ 
                                         bottom: `${height}%`, 
                                         marginBottom: '4px',
@@ -6826,7 +7048,7 @@ function WhisperingWishesInner() {
                         {/* X-axis labels */}
                         <div className="flex gap-1.5">
                           {allBuckets.map(label => (
-                            <div key={label} className="flex-1 text-[8px] text-gray-500 text-center">
+                            <div key={label} className="flex-1 text-[9px] text-gray-500 text-center">
                               {label.split('-')[0]}
                             </div>
                           ))}
@@ -6849,7 +7071,7 @@ function WhisperingWishesInner() {
                         </div>
                         
                         {/* Pity zone legend - neon dots */}
-                        <div className="mt-2 flex items-center justify-center gap-3 text-[8px]">
+                        <div className="mt-2 flex items-center justify-center gap-3 text-[9px]">
                           <span className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span> 
                             <span className="text-gray-400">Lucky</span>
@@ -6869,6 +7091,7 @@ function WhisperingWishesInner() {
                 })()}
 
                 {/* Convenes Chart with Time Range */}
+                {/* TODO: Extract chart logic into a dedicated ChartCard component to avoid IIFE re-computation on every render */}
                 <Card>
                   <CardHeader>
                     <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
@@ -6887,9 +7110,11 @@ function WhisperingWishesInner() {
                             if (range === 'daily') {
                               key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
                             } else if (range === 'weekly') {
-                              const startOfYear = new Date(date.getFullYear(), 0, 1);
-                              const weekNum = Math.ceil(((date - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
-                              key = `${date.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+                              // ISO-like Monday-based week: avoids week 0/54 edge cases
+                              const jan4 = new Date(date.getFullYear(), 0, 4);
+                              const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 1)) / 86400000);
+                              const weekNum = Math.ceil((dayOfYear + jan4.getDay()) / 7);
+                              key = `${date.getFullYear()}-W${String(Math.max(1, weekNum)).padStart(2,'0')}`;
                             } else if (range === 'monthly') {
                               key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
                             } else {
@@ -7038,9 +7263,9 @@ function WhisperingWishesInner() {
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
-                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-[8px] font-bold flex-shrink-0">W</span>}
-                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-[8px] font-bold flex-shrink-0">L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-500 text-[8px] flex-shrink-0">G</span>}
+                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-[9px] font-bold flex-shrink-0">W</span>}
+                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-[9px] font-bold flex-shrink-0">L</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-500 text-[9px] flex-shrink-0">G</span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold ${pityTextColor}`}>{p.pity || '?'}</span>
@@ -7092,10 +7317,11 @@ function WhisperingWishesInner() {
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
                       const pity = state.profile[banner.key]?.pity5 || 0;
+                      const colorHex = { yellow: '#fbbf24', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
                       return (
                         <div key={banner.name} className="p-2 bg-white/5 rounded">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs font-medium" style={{color: banner.color === 'yellow' ? '#fbbf24' : banner.color === 'pink' ? '#f472b6' : banner.color === 'cyan' ? '#22d3ee' : '#a78bfa'}}>{banner.name}</span>
+                            <span className="text-xs font-medium" style={{color: colorHex}}>{banner.name}</span>
                             <span className="text-gray-400 text-[10px]">{hist.length} Convenes</span>
                           </div>
                           <div className="flex gap-2 text-[9px]">
@@ -7150,7 +7376,7 @@ function WhisperingWishesInner() {
                       <div className="h-2 bg-neutral-800 rounded-full overflow-hidden mb-3">
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-all" style={{width: `${pct}%`}} />
                       </div>
-                      <div className="grid grid-cols-5 gap-1 text-center text-[8px]">
+                      <div className="grid grid-cols-5 gap-1 text-center text-[9px]">
                         <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
                         <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
@@ -7173,9 +7399,7 @@ function WhisperingWishesInner() {
                       placeholder="Search by name..."
                       className="w-full px-3 py-2 pl-8 rounded-lg text-xs bg-neutral-800/80 border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
                     />
-                    <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                     {collectionSearch && (
                       <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
                         <X size={14} />
@@ -7258,7 +7482,7 @@ function WhisperingWishesInner() {
                         className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by release date"
                       >
-                        📅
+                        <Calendar size={10} />
                       </button>
                     </div>
                   </div>
@@ -7285,7 +7509,17 @@ function WhisperingWishesInner() {
                               const imgUrl = collectionImages[name];
                               const imageKey = `collection-${name}`;
                               return (
-                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30" countLabel={`S${count - 1}`} countColor="text-yellow-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={CHARACTER_DATA[name] ? () => setDetailModal({ show: true, type: 'character', name, imageUrl: imgUrl }) : null} isNew={activeBanners.characters?.some(c => c.name === name && c.isNew)} />
+                                <CollectionGridCard
+                                  key={name} name={name} count={count}
+                                  imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
+                                  isSelected={framingMode && editingImage === imageKey}
+                                  owned={count > 0} collMask={collMask} collOpacity={collOpacity}
+                                  glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
+                                  countLabel={count > 0 ? `S${count - 1}` : ''} countColor="text-yellow-400"
+                                  framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
+                                  onClickCard={CHARACTER_DATA[name] ? () => setDetailModal({ show: true, type: 'character', name, imageUrl: imgUrl }) : null}
+                                  isNew={activeBanners.characters?.some(c => c.name === name && c.isNew)}
+                                />
                               );
                             })}
                           </div>
@@ -7316,7 +7550,17 @@ function WhisperingWishesInner() {
                               const imgUrl = collectionImages[name];
                               const imageKey = `collection-${name}`;
                               return (
-                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30" countLabel={`S${count - 1}`} countColor="text-purple-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={CHARACTER_DATA[name] ? () => setDetailModal({ show: true, type: 'character', name, imageUrl: imgUrl }) : null} />
+                                <CollectionGridCard
+                                  key={name} name={name} count={count}
+                                  imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
+                                  isSelected={framingMode && editingImage === imageKey}
+                                  owned={count > 0} collMask={collMask} collOpacity={collOpacity}
+                                  glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
+                                  countLabel={count > 0 ? `S${count - 1}` : ''} countColor="text-purple-400"
+                                  framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
+                                  onClickCard={CHARACTER_DATA[name] ? () => setDetailModal({ show: true, type: 'character', name, imageUrl: imgUrl }) : null}
+                                  isNew={activeBanners.characters?.some(c => c.name === name && c.isNew)}
+                                />
                               );
                             })}
                           </div>
@@ -7347,7 +7591,17 @@ function WhisperingWishesInner() {
                               const imgUrl = collectionImages[name];
                               const imageKey = `collection-${name}`;
                               return (
-                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30" countLabel={`R${count}`} countColor="text-yellow-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={WEAPON_DATA[name] ? () => setDetailModal({ show: true, type: 'weapon', name, imageUrl: imgUrl }) : null} isNew={activeBanners.weapons?.some(w => w.name === name && w.isNew)} />
+                                <CollectionGridCard
+                                  key={name} name={name} count={count}
+                                  imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
+                                  isSelected={framingMode && editingImage === imageKey}
+                                  owned={count > 0} collMask={collMask} collOpacity={collOpacity}
+                                  glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
+                                  countLabel={count > 0 ? `R${count}` : ''} countColor="text-yellow-400"
+                                  framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
+                                  onClickCard={WEAPON_DATA[name] ? () => setDetailModal({ show: true, type: 'weapon', name, imageUrl: imgUrl }) : null}
+                                  isNew={activeBanners.weapons?.some(w => w.name === name && w.isNew)}
+                                />
                               );
                             })}
                           </div>
@@ -7378,7 +7632,17 @@ function WhisperingWishesInner() {
                               const imgUrl = collectionImages[name];
                               const imageKey = `collection-${name}`;
                               return (
-                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30" countLabel={`R${count}`} countColor="text-purple-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={WEAPON_DATA[name] ? () => setDetailModal({ show: true, type: 'weapon', name, imageUrl: imgUrl }) : null} />
+                                <CollectionGridCard
+                                  key={name} name={name} count={count}
+                                  imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
+                                  isSelected={framingMode && editingImage === imageKey}
+                                  owned={count > 0} collMask={collMask} collOpacity={collOpacity}
+                                  glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
+                                  countLabel={count > 0 ? `R${count}` : ''} countColor="text-purple-400"
+                                  framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
+                                  onClickCard={WEAPON_DATA[name] ? () => setDetailModal({ show: true, type: 'weapon', name, imageUrl: imgUrl }) : null}
+                                  isNew={activeBanners.weapons?.some(w => w.name === name && w.isNew)}
+                                />
                               );
                             })}
                           </div>
@@ -7409,7 +7673,16 @@ function WhisperingWishesInner() {
                               const imgUrl = collectionImages[name];
                               const imageKey = `collection-${name}`;
                               return (
-                                <CollectionGridCard key={name} name={name} count={count} imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)} isSelected={framingMode && editingImage === imageKey} owned={count > 0} collMask={collMask} collOpacity={collOpacity} glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30" countLabel={`R${count}`} countColor="text-blue-400" framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey} onClickCard={null} />
+                                <CollectionGridCard
+                                  key={name} name={name} count={count}
+                                  imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
+                                  isSelected={framingMode && editingImage === imageKey}
+                                  owned={count > 0} collMask={collMask} collOpacity={collOpacity}
+                                  glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30"
+                                  countLabel={count > 0 ? `R${count}` : ''} countColor="text-blue-400"
+                                  framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
+                                  onClickCard={null}
+                                />
                               );
                             })}
                           </div>
@@ -7512,7 +7785,10 @@ function WhisperingWishesInner() {
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
-                  <p className="text-gray-500 text-[9px] text-center">All animations disabled — saves battery & reduces motion</p>
+                  <p className="text-gray-500 text-[9px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
+                )}
+                {visualSettings.animationsEnabled && (
+                  <p className="text-purple-400 text-[9px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
                 )}
               </CardBody>
             </Card>
@@ -7520,7 +7796,7 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader>Import Convene History</CardHeader>
               <CardBody className="space-y-3">
-                <p className="text-gray-300 text-[10px]">Import from wuwatracker, wuwapal, or other trackers.</p>
+                <p className="text-gray-300 text-[10px]">Import your Convene history from wuwatracker or compatible trackers.</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
                     <button key={k} onClick={() => setImportPlatform(k)} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
@@ -7628,7 +7904,7 @@ function WhisperingWishesInner() {
                     onClick={() => setImportMethod('paste')} 
                     className={`kuro-btn py-2 text-xs ${importMethod === 'paste' ? 'active-gold' : ''}`}
                   >
-                    <svg className="inline w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                    <ClipboardList size={14} className="inline mr-1.5" />
                     Paste JSON
                   </button>
                 </div>
@@ -7683,7 +7959,7 @@ Example: {"pulls":[...]}'
 
             {state.profile.importedAt && (
               <Card>
-                <CardHeader action={<button onClick={() => { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear</button>}>Import Info</CardHeader>
+                <CardHeader action={<button onClick={() => { if (window.confirm('Clear all imported Convene history? This cannot be undone.')) { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); } }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear</button>}>Import Info</CardHeader>
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
@@ -7767,13 +8043,13 @@ Example: {"pulls":[...]}'
 
       {/* Bookmark Modal */}
       {showBookmarkModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} placeholder="Enter name..." className="kuro-input w-full" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={30} className="kuro-input w-full" />
               <div className="text-gray-300 text-[10px]">
-                <p>Astrite: {state.calc.astrite || 0} • Pity: {state.calc.charPity}/{state.calc.weapPity}</p>
+                <p>Astrite: {state.calc.astrite || 0} • Char Pity: {state.calc.charPity} • Weap Pity: {state.calc.weapPity}</p>
                 <p>Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0}</p>
               </div>
               <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
@@ -7782,18 +8058,18 @@ Example: {"pulls":[...]}'
         </div>
       )}
 
-      
-            {/* Export Modal */}
+      {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }}>
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => setShowExportModal(false)} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
+            <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
               <textarea 
                 value={exportData} 
                 readOnly 
                 className="kuro-input w-full h-24 text-[9px] font-mono"
+                id="export-textarea"
                 onClick={e => e.target.select()}
               />
               <button 
@@ -7802,8 +8078,8 @@ Example: {"pulls":[...]}'
                     await navigator.clipboard.writeText(exportData);
                     toast?.addToast?.('Copied to clipboard!', 'success');
                   } catch {
-                    const textarea = document.querySelector('textarea');
-                    textarea?.select();
+                    const el = document.getElementById('export-textarea');
+                    el?.select();
                     document.execCommand('copy');
                     toast?.addToast?.('Copied to clipboard!', 'success');
                   }
@@ -7813,19 +8089,26 @@ Example: {"pulls":[...]}'
                 Copy to Clipboard
               </button>
               
-              <div className="kuro-divider" />
+              <div className="relative my-1">
+                <div className="kuro-divider" />
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[9px] text-gray-500 uppercase tracking-wider">Restore</span>
+              </div>
               
-              <p className="text-gray-400 text-[10px]">Or paste backup data to restore:</p>
+              <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
               <textarea 
+                value={restoreText}
+                onChange={(e) => setRestoreText(e.target.value)}
                 placeholder="Paste backup JSON here..."
                 className="kuro-input w-full h-20 text-[9px] font-mono"
-                id="import-textarea"
               />
               <button 
                 onClick={() => {
+                  if (!restoreText.trim()) {
+                    toast?.addToast?.('Please paste backup data first', 'error');
+                    return;
+                  }
                   try {
-                    const textarea = document.getElementById('import-textarea');
-                    const data = JSON.parse(textarea.value);
+                    const data = JSON.parse(restoreText);
                     if (data.state) {
                       const restoredState = {
                         ...initialState,
@@ -7839,6 +8122,7 @@ Example: {"pulls":[...]}'
                       };
                       dispatch({ type: 'LOAD_STATE', state: restoredState });
                       toast?.addToast?.(`Backup restored! (v${data.version || 'unknown'})`, 'success');
+                      setRestoreText('');
                       setShowExportModal(false);
                     } else {
                       toast?.addToast?.('Invalid backup format', 'error');
@@ -7847,7 +8131,8 @@ Example: {"pulls":[...]}'
                     toast?.addToast?.('Invalid JSON data', 'error');
                   }
                 }} 
-                className="kuro-btn w-full"
+                disabled={!restoreText.trim()}
+                className={`kuro-btn w-full ${restoreText.trim() ? '' : 'opacity-50'}`}
               >
                 Restore Backup
               </button>
@@ -7858,7 +8143,7 @@ Example: {"pulls":[...]}'
 
       {/* Admin Panel Modal */}
       {showAdminPanel && !adminMiniMode && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto">
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
@@ -7975,7 +8260,7 @@ Example: {"pulls":[...]}'
                       
                       <div className="flex gap-2">
                         <button
-                          onClick={() => saveCollectionImages({})}
+                          onClick={() => { if (window.confirm('Clear all custom image overrides?')) saveCollectionImages({}); }}
                           className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
                         >
                           Clear Custom Overrides
@@ -8033,6 +8318,57 @@ Example: {"pulls":[...]}'
                               value={visualSettings.pictureOpacity}
                               onChange={(e) => saveVisualSettings({ ...visualSettings, pictureOpacity: parseInt(e.target.value) })}
                               className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-3">
+                        <h3 className="text-emerald-400 text-sm font-medium mb-3">Standard Banner Settings</h3>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Position</span>
+                              <span className="text-emerald-400">{visualSettings.standardFadePosition}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.standardFadePosition || 50}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, standardFadePosition: parseInt(e.target.value) })}
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Fade Intensity</span>
+                              <span className="text-emerald-400">{visualSettings.standardFadeIntensity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.standardFadeIntensity || 100}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, standardFadeIntensity: parseInt(e.target.value) })}
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-gray-300">Picture Opacity</span>
+                              <span className="text-emerald-400">{visualSettings.standardOpacity}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={visualSettings.standardOpacity || 100}
+                              onChange={(e) => saveVisualSettings({ ...visualSettings, standardOpacity: parseInt(e.target.value) })}
+                              className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                             />
                           </div>
                         </div>
@@ -8170,7 +8506,7 @@ Example: {"pulls":[...]}'
                           🗗 Mini Window
                         </button>
                         <button
-                          onClick={() => saveVisualSettings(defaultVisualSettings)}
+                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
                           className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
                         >
                           Reset to Defaults
@@ -8181,8 +8517,8 @@ Example: {"pulls":[...]}'
 
                   {/* Banners Tab */}
                   {adminTab === 'banners' && (
-                  <>
-                  <div className="space-y-2">
+                    <>
+                    <div className="space-y-2">
                     <h3 className="text-white text-sm font-medium">Quick Banner Update</h3>
                     <div className="grid grid-cols-2 gap-2">
                       <input
@@ -8407,6 +8743,7 @@ Example: {"pulls":[...]}'
                           saveCustomBanners(newBanners);
                           setShowAdminPanel(false);
                           setAdminUnlocked(false);
+                          setAdminPassword('');
                         } catch (e) {
                           toast?.addToast?.('Invalid data: ' + e.message, 'error');
                         }
@@ -8417,6 +8754,7 @@ Example: {"pulls":[...]}'
                     </button>
                     <button
                       onClick={() => {
+                        if (!window.confirm('Reset to default banners? Custom banner data will be lost.')) return;
                         if (storageAvailable) {
                           try { localStorage.removeItem(ADMIN_BANNER_KEY); } catch {}
                         }
@@ -8428,7 +8766,7 @@ Example: {"pulls":[...]}'
                       Reset
                     </button>
                   </div>
-                </>
+                    </>
                   )}
                 </>
               )}
@@ -8440,7 +8778,7 @@ Example: {"pulls":[...]}'
       {/* Admin Mini Window */}
       {showAdminPanel && adminMiniMode && adminUnlocked && (
         <div 
-          className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/98 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
+          className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
           style={{ 
             boxShadow: '0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3)'
           }}
@@ -8459,6 +8797,7 @@ Example: {"pulls":[...]}'
                 onClick={() => setAdminMiniMode(false)} 
                 className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10 transition-colors"
                 title="Expand"
+                aria-label="Expand to full panel"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
               </button>
@@ -8666,8 +9005,7 @@ Example: {"pulls":[...]}'
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
-          <span onClick={handleAdminTap} className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • 
-          <a href="mailto:whisperingwishes.app@gmail.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-yellow-400 transition-colors ml-1">Contact</a>
+          <span onClick={handleAdminTap} className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>
       </footer>
     </div>
