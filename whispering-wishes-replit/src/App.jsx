@@ -1470,13 +1470,13 @@ const CURRENT_BANNERS = {
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
     { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
-    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Danjin', 'Aalto'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
-    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Baizhi', 'Chixia', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
+    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Sanhua', 'Danjin', 'Aalto'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
+    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Baizhi', 'Chixia', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
     { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
-    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Sword', forCharacter: 'Chisa', element: 'Glacio', isNew: false, featured4Stars: ['Hollow Mirage', 'Jinzhou Keeper', 'Undying Flame'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
-    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Pistols', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Dauntless Evernight', 'Lunar Cutter', 'Thunderbolt'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
+    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Broadblade', forCharacter: 'Chisa', element: 'Havoc', isNew: false, featured4Stars: ['Hollow Mirage', 'Jinzhou Keeper', 'Undying Flame'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
+    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Broadblade', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Dauntless Evernight', 'Lunar Cutter', 'Thunderbolt'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -1871,7 +1871,7 @@ const WEAPON_DATA = {
   'Unflickering Valor': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
     desc: 'Brant signature. Aggressive Fusion sword.',
     passive: 'Fusion DMG +12%, ATK speed +10%', bestFor: ['Brant'] },
-  'Whispers of Sirens': { rarity: 5, type: 'Pistols', stat: 'Crit DMG',
+  'Whispers of Sirens': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG',
     desc: 'Cantarella signature. Havoc pistols.',
     passive: 'Havoc DMG +12%, Off-field +24%', bestFor: ['Cantarella'] },
   'Blazing Justice': { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
@@ -1885,7 +1885,7 @@ const WEAPON_DATA = {
     passive: 'HP +24%, DEF Ignore +16% on Aero Eroded targets', bestFor: ['Cartethyia'] },
   'Wildfire Mark': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG',
     desc: 'Lupa signature. Fusion broadblade with Liberation DMG boost and team buff.',
-    passive: 'ATK +12%, Res. Liberation DMG +44%, team DMG +24%', bestFor: ['Lupa'] },
+    passive: 'ATK +12%, Res. Liberation DMG +24%, team Fusion DMG +24%', bestFor: ['Lupa'] },
   'Lethean Elegy': { rarity: 5, type: 'Rectifier', stat: 'ATK%',
     desc: 'Phrolova signature. Havoc support.',
     passive: 'Havoc DMG +12%, Team buff +20%', bestFor: ['Phrolova'] },
@@ -1910,12 +1910,12 @@ const WEAPON_DATA = {
   'Starfield Calibrator': { rarity: 5, type: 'Broadblade', stat: 'Energy Regen',
     desc: 'Mornye signature. Fusion broadblade with DEF scaling and Crit DMG team buff.',
     passive: 'DEF +32%, Concerto +16, team Crit DMG +40% on heal', bestFor: ['Mornye'] },
-  'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit DMG',
+  'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
     desc: 'Aemeath signature. Fusion sword with DEF Ignore and Melt RES Ignore.',
-    passive: 'DEF Ignore +32%, Melt RES Ignore +10%, Res. Liberation DMG boost', bestFor: ['Aemeath'] },
-  "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG',
+    passive: 'All-Attr DMG +12%, DEF Ignore +32%, Fusion RES Ignore +10%', bestFor: ['Aemeath'] },
+  "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate',
     desc: 'Luuk Herssen signature. Spectro gauntlets with aerial combat enhancement.',
-    passive: 'Spectro DMG +12%, Aerial Basic ATK +24%', bestFor: ['Luuk Herssen'] },
+    passive: 'ATK +12%, Basic ATK DMG Amp +20%, Spectro DMG +20%, DEF Ignore +10%', bestFor: ['Luuk Herssen'] },
   // Standard 5★ Weapons (Lustrous Tide pool - v3.0)
   'Radiance Cleaver': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate',
     desc: 'Standard 5★ Broadblade. Enhances Heavy Attack damage.',
@@ -3937,7 +3937,7 @@ const RELEASE_ORDER = [
   // 3.0
   'Lynae', 'Mornye',
   // 3.1 (unreleased)
-  'Luuk Herssen', 'Aemeath',
+  'Aemeath', 'Luuk Herssen',
 ];
 
 // All known character names (for filtering weapons vs characters)
