@@ -4736,6 +4736,7 @@ function WhisperingWishesInner() {
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]); // last ~30 data points
   const [presenceError, setPresenceError] = useState(null);
+  const [adminPlayerList, setAdminPlayerList] = useState(null); // full player data for admin only
   const presenceSessionId = useRef('s_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36));
   
   // P6-FIX: Controlled admin banner form state — replaces all document.getElementById calls (HIGH-17/18)
@@ -5633,6 +5634,35 @@ function WhisperingWishesInner() {
     } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
   }, [getFirebaseAuth]);
 
+  // Admin-only: fetch full player list with unmasked UIDs from leaderboard
+  const fetchAdminPlayerList = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const authParam = authToken ? `?auth=${authToken}` : '';
+      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const players = Object.entries(data).map(([key, e]) => ({
+            firebaseKey: key,
+            id: e.id || key,
+            uid: e.uid || null,
+            avgPity: e.avgPity,
+            totalPulls: e.totalPulls ?? 0,
+            fiveStars: e.pulls ?? 0,
+            won5050: e.won5050 ?? 0,
+            lost5050: e.lost5050 ?? 0,
+            timestamp: e.timestamp || 0,
+          }));
+          players.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); // most recent first
+          setAdminPlayerList(players);
+        } else {
+          setAdminPlayerList([]);
+        }
+      }
+    } catch (e) { console.error('Admin player list fetch error:', e); }
+  }, [getFirebaseAuth]);
+
   // Start heartbeat on mount, clean up on unmount
   useEffect(() => {
     sendPresenceHeartbeat(); // immediate first ping
@@ -5645,14 +5675,18 @@ function WhisperingWishesInner() {
     };
   }, [sendPresenceHeartbeat, removePresence]);
 
-  // Fetch active count when admin Players tab is open, refresh every 30s
+  // Fetch active count + player list when admin Players tab is open, refresh every 30s
   useEffect(() => {
     if (adminTab === 'players' && adminUnlocked && showAdminPanel) {
       fetchActivePlayersCount();
-      const interval = setInterval(fetchActivePlayersCount, 30000);
+      fetchAdminPlayerList();
+      const interval = setInterval(() => {
+        fetchActivePlayersCount();
+        fetchAdminPlayerList();
+      }, 30000);
       return () => clearInterval(interval);
     }
-  }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount]);
+  }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount, fetchAdminPlayerList]);
 
   // Community stats aggregated from leaderboard entries
   // Note: leaderboardData is limited to top-20 by avgPity (luckiest players),
@@ -8829,11 +8863,49 @@ Example: {"pulls":[...]}'
                       
                       {/* Refresh Button */}
                       <button 
-                        onClick={fetchActivePlayersCount}
+                        onClick={() => { fetchActivePlayersCount(); fetchAdminPlayerList(); }}
                         className="kuro-btn w-full py-2 text-xs active-emerald"
                       >
                         <RefreshCcw size={12} className="inline mr-1.5" />Refresh Now
                       </button>
+                      
+                      {/* Admin Player List — full UIDs visible only here */}
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Registered Players</div>
+                          <div className="text-gray-500 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
+                        </div>
+                        {!adminPlayerList ? (
+                          <p className="text-gray-500 text-xs text-center py-4">Loading...</p>
+                        ) : adminPlayerList.length === 0 ? (
+                          <p className="text-gray-500 text-xs text-center py-4">No players yet</p>
+                        ) : (
+                          <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
+                            {adminPlayerList.map((p, i) => (
+                              <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded bg-white/5 hover:bg-white/10 transition-colors">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-500 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
+                                    <span className="text-white text-[11px] font-mono font-medium truncate">{p.uid || p.id}</span>
+                                    {p.uid && p.id !== p.uid && (
+                                      <span className="text-gray-600 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-3 ml-6 mt-0.5">
+                                    <span className="text-gray-500 text-[9px]">Avg: <span className="text-yellow-400">{p.avgPity}</span></span>
+                                    <span className="text-gray-500 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
+                                    <span className="text-gray-500 text-[9px]">Pulls: <span className="text-gray-300">{p.totalPulls}</span></span>
+                                    <span className="text-gray-500 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
+                                  </div>
+                                </div>
+                                <div className="text-gray-600 text-[8px] text-right flex-shrink-0 ml-2">
+                                  {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       
                       {/* Privacy Notice */}
                       <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-500 space-y-1">
