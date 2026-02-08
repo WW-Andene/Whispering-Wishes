@@ -8832,9 +8832,12 @@ Example: {"pulls":[...]}'
                           {activePlayersCount !== null ? activePlayersCount : '—'}
                         </div>
                         <div className="text-gray-400 text-xs mt-1">
-                          {activePlayersCount === 1 ? 'Active Player' : 'Active Players'}
+                          {activePlayersCount === 1 ? 'Open Session' : 'Open Sessions'}
                         </div>
-                        <div className="text-gray-600 text-[9px] mt-0.5">
+                        <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">
+                          Anyone browsing the app — includes visitors who haven't imported data or submitted to the leaderboard
+                        </div>
+                        <div className="text-gray-600 text-[9px] mt-1">
                           Updates every 30s • Heartbeat: 60s • Timeout: 2min
                         </div>
                       </div>
@@ -8910,8 +8913,8 @@ Example: {"pulls":[...]}'
                       {/* Privacy Notice */}
                       <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-500 space-y-1">
                         <div className="text-gray-400 font-medium">🔒 Privacy</div>
-                        <p>Each open tab sends an anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data of any kind is stored.</p>
-                        <p>Sessions auto-expire after 2 minutes of inactivity. Stale entries are cleaned up automatically.</p>
+                        <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
+                        <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
                       </div>
                       
                       {/* Error Display */}
