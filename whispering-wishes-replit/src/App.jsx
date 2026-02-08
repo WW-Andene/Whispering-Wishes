@@ -4729,8 +4729,14 @@ function WhisperingWishesInner() {
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
   // Banner ends at server-specific time (e.g., 11:59 local for each server)
   const bannerEndDate = useMemo(() => getServerAdjustedEnd(activeBanners.endDate, state.server), [activeBanners.endDate, state.server]);
-  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', or 'visuals'
+  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', 'visuals', or 'players'
   const [adminMiniMode, setAdminMiniMode] = useState(false);
+  
+  // Anonymous presence tracking — no personal data, just a timestamp per ephemeral session
+  const [activePlayersCount, setActivePlayersCount] = useState(null);
+  const [activePlayersHistory, setActivePlayersHistory] = useState([]); // last ~30 data points
+  const [presenceError, setPresenceError] = useState(null);
+  const presenceSessionId = useRef('s_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36));
   
   // P6-FIX: Controlled admin banner form state — replaces all document.getElementById calls (HIGH-17/18)
   const buildBannerForm = useCallback((banners) => ({
@@ -5562,6 +5568,91 @@ function WhisperingWishesInner() {
       loadCommunityPulls();
     }
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
+
+  // Anonymous presence system — writes only a timestamp (no personal data) to track active users
+  const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
+  const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
+  
+  const sendPresenceHeartbeat = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const authParam = authToken ? `?auth=${authToken}` : '';
+      const res = await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ t: Date.now() }) // only a timestamp — zero personal data
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        setPresenceError(`Heartbeat write failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
+      } else {
+        setPresenceError(null);
+      }
+    } catch (e) { setPresenceError(`Heartbeat error: ${e.message}`); }
+  }, [getFirebaseAuth]);
+
+  const removePresence = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const authParam = authToken ? `?auth=${authToken}` : '';
+      await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
+    } catch { /* best-effort */ }
+  }, [getFirebaseAuth]);
+
+  const fetchActivePlayersCount = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const authParam = authToken ? `?auth=${authToken}` : '';
+      const res = await fetch(`${FIREBASE_DB}/presence.json${authParam}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const now = Date.now();
+          const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
+          // Clean up stale sessions from Firebase (older than TTL)
+          const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
+          for (const [key] of staleSessions.slice(0, 20)) { // batch limit
+            try { await fetch(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
+          }
+          const count = activeSessions.length;
+          setActivePlayersCount(count);
+          setPresenceError(null);
+          setActivePlayersHistory(prev => {
+            const next = [...prev, { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), count }];
+            return next.slice(-30); // keep last 30 data points
+          });
+        } else {
+          // No presence data exists yet — node may not have been created
+          setActivePlayersCount(0);
+          setPresenceError('No presence data in Firebase. Check that heartbeat writes are succeeding.');
+        }
+      } else {
+        const errText = await res.text().catch(() => '');
+        setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
+      }
+    } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
+  }, [getFirebaseAuth]);
+
+  // Start heartbeat on mount, clean up on unmount
+  useEffect(() => {
+    sendPresenceHeartbeat(); // immediate first ping
+    const interval = setInterval(sendPresenceHeartbeat, PRESENCE_INTERVAL_MS);
+    // Note: on page close, the 2-min TTL handles cleanup naturally
+    // (sendBeacon can't do DELETE, and beforeunload handlers are unreliable)
+    return () => {
+      clearInterval(interval);
+      removePresence(); // works for SPA unmount / hot reload
+    };
+  }, [sendPresenceHeartbeat, removePresence]);
+
+  // Fetch active count when admin Players tab is open, refresh every 30s
+  useEffect(() => {
+    if (adminTab === 'players' && adminUnlocked && showAdminPanel) {
+      fetchActivePlayersCount();
+      const interval = setInterval(fetchActivePlayersCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount]);
 
   // Community stats aggregated from leaderboard entries
   // Note: leaderboardData is limited to top-20 by avgPity (luckiest players),
@@ -8570,6 +8661,12 @@ Example: {"pulls":[...]}'
                     >
                       Visual Settings
                     </button>
+                    <button
+                      onClick={() => setAdminTab('players')}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                    >
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players
+                    </button>
                   </div>
 
                   {/* Collection Tab */}
@@ -8686,6 +8783,82 @@ Example: {"pulls":[...]}'
                           Reset to Defaults
                         </button>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Players Tab — Anonymous real-time presence */}
+                  {adminTab === 'players' && (
+                    <div className="space-y-4">
+                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
+                          <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Live</span>
+                        </div>
+                        <div className="text-5xl font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 20px rgba(52,211,153,0.4)' }}>
+                          {activePlayersCount !== null ? activePlayersCount : '—'}
+                        </div>
+                        <div className="text-gray-400 text-xs mt-1">
+                          {activePlayersCount === 1 ? 'Active Player' : 'Active Players'}
+                        </div>
+                        <div className="text-gray-600 text-[9px] mt-0.5">
+                          Updates every 30s • Heartbeat: 60s • Timeout: 2min
+                        </div>
+                      </div>
+                      
+                      {/* Activity Chart */}
+                      {activePlayersHistory.length > 1 && (
+                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                          <div className="text-gray-400 text-[10px] font-medium mb-2 uppercase tracking-wider">Session Activity</div>
+                          <div className="h-24">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={activePlayersHistory}>
+                                <defs>
+                                  <linearGradient id="presenceGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+                                  </linearGradient>
+                                </defs>
+                                <XAxis dataKey="time" tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                                <YAxis tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
+                                <Area type="monotone" dataKey="count" stroke="#34d399" strokeWidth={2} fill="url(#presenceGrad)" />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Refresh Button */}
+                      <button 
+                        onClick={fetchActivePlayersCount}
+                        className="kuro-btn w-full py-2 text-xs active-emerald"
+                      >
+                        <RefreshCcw size={12} className="inline mr-1.5" />Refresh Now
+                      </button>
+                      
+                      {/* Privacy Notice */}
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-500 space-y-1">
+                        <div className="text-gray-400 font-medium">🔒 Privacy</div>
+                        <p>Each open tab sends an anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data of any kind is stored.</p>
+                        <p>Sessions auto-expire after 2 minutes of inactivity. Stale entries are cleaned up automatically.</p>
+                      </div>
+                      
+                      {/* Error Display */}
+                      {presenceError && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-[10px] text-red-400 space-y-1.5">
+                          <div className="font-medium">⚠ Presence Error</div>
+                          <p>{presenceError}</p>
+                          <div className="text-red-400/70 text-[9px] space-y-0.5">
+                            <p className="font-medium">Fix: Add this Firebase rule:</p>
+                            <pre className="bg-black/30 rounded p-2 text-[9px] overflow-x-auto font-mono whitespace-pre">
+{`"presence": {
+  ".read": true,
+  ".write": true
+}`}
+                            </pre>
+                            <p>Firebase Console → Realtime Database → Rules</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
