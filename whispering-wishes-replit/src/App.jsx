@@ -2606,6 +2606,8 @@ const initialState = {
   server: 'Asia',
   profile: {
     uid: '', importedAt: null,
+    username: '', // User-set display name
+    profilePic: '', // Character name for profile pic (from collection) or '' for default icon
     featured: { history: [], pity5: 0, pity4: 0, guaranteed: false },
     weapon: { history: [], pity5: 0, pity4: 0 },
     standardChar: { history: [], pity5: 0, pity4: 0 },
@@ -2798,7 +2800,9 @@ const reducer = (state, action) => {
       return { ...state, profile: newProfile };
     }
     case 'SET_UID': return { ...state, profile: { ...state.profile, uid: action.uid } };
-    case 'CLEAR_PROFILE': return { ...state, profile: initialState.profile };
+    case 'SET_USERNAME': return { ...state, profile: { ...state.profile, username: action.value } };
+    case 'SET_PROFILE_PIC': return { ...state, profile: { ...state.profile, profilePic: action.value } };
+    case 'CLEAR_PROFILE': return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
     case 'SAVE_BOOKMARK': return { ...state, bookmarks: [...state.bookmarks, { id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`, name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
     case 'LOAD_BOOKMARK': {
       const b = state.bookmarks.find(bm => bm.id === action.id);
@@ -3992,10 +3996,10 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew }) => (
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic }) => (
   <div 
-    className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
-    style={{ height: '140px' }}
+    className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : isProfilePic ? ownedBg : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
+    style={{ height: '140px', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     onClick={() => {
       if (framingMode) {
         setEditingImage(imageKey);
@@ -4007,6 +4011,18 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {isNew && (
       <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+    )}
+    {/* Profile pic setter — top-right corner */}
+    {owned && !framingMode && onSetProfilePic && (
+      <button
+        className={`absolute z-20 rounded flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
+        style={{ top: '6px', right: '6px', width: '24px', height: '24px', ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
+        title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
+        aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
+      >
+        <Crown size={12} />
+      </button>
     )}
     {imgUrl && (
       <img 
@@ -4042,6 +4058,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
+  prev.isProfilePic === next.isProfilePic &&
   prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
 );
 CollectionGridCard.displayName = 'CollectionGridCard';
@@ -4147,7 +4164,7 @@ const VISUAL_SLIDER_CONFIGS = [
 ];
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic }) => {
   if (items.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
   const ownedCount = items.filter(([_, c]) => c > 0).length;
   return (
@@ -4171,6 +4188,8 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
               onClickCard={dataLookup[name] ? () => setDetailModal({ show: true, type: dataType, name, imageUrl: imgUrl }) : null}
               isNew={isNew}
+              isProfilePic={profilePic === name}
+              onSetProfilePic={onSetProfilePic}
             />
           );
         })}
@@ -5151,6 +5170,8 @@ function WhisperingWishesInner() {
   const [isDragOver, setIsDragOver] = useState(false); // P8-FIX: MED — drag-and-drop state
   const [pasteJsonText, setPasteJsonText] = useState('');
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
+  const [showIdCard, setShowIdCard] = useState(false);
+  const [idCardFormat, setIdCardFormat] = useState('landscape'); // 'landscape' (16:9) or 'portrait' (9:16)
   const [bookmarkName, setBookmarkName] = useState('');
   const [showIncomePanel, setShowIncomePanel] = useState(false);
   const [chartRange, setChartRange] = useState('monthly');
@@ -6030,6 +6051,410 @@ function WhisperingWishesInner() {
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity), [overallStats]);
+
+  // Owned 5★ character names for profile pic picker
+  const ownedCharNames = useMemo(() => {
+    const charHistory = [...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])];
+    return [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+  }, [state.profile.featured?.history, state.profile.standardChar?.history]);
+
+  const handleSetProfilePic = useCallback((name) => {
+    if (state.profile.profilePic === name) {
+      dispatch({ type: 'SET_PROFILE_PIC', value: '' });
+      toast?.addToast?.('Profile picture removed', 'info');
+    } else {
+      dispatch({ type: 'SET_PROFILE_PIC', value: name });
+      toast?.addToast?.(`Profile picture set to ${name}`, 'success');
+    }
+  }, [state.profile.profilePic, toast]);
+
+  // ID Card canvas download — supports landscape (16:9) and portrait (9:16)
+  const downloadIdCard = useCallback(async (format) => {
+    const isPortrait = (format || idCardFormat) === 'portrait';
+    const canvas = document.createElement('canvas');
+    const W = isPortrait ? 720 : 1280;
+    const H = isPortrait ? 1280 : 720;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const rr = (x,y,w,h,r) => { ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath(); };
+
+    // Data
+    const picName = state.profile.profilePic;
+    const picUrl = picName ? (collectionImages[picName] || '') : '';
+    let pImg = null;
+    if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{pImg.onload=r;pImg.onerror=j;pImg.src=picUrl;setTimeout(j,3000);}); } catch { pImg = null; } }
+    let appIco = null;
+    try { appIco = new Image(); await new Promise((r,j)=>{appIco.onload=r;appIco.onerror=j;appIco.src=HEADER_ICON;setTimeout(j,2000);}); } catch { appIco = null; }
+
+    const uname = state.profile.username || 'Resonator';
+    const uid = state.profile.uid || '--';
+    const svr = state.server;
+    const lr = luckRating;
+    const tList = trophies?.list || [];
+    const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString() : null;
+    const _ch = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[])];
+    const _wh = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[])];
+    const _cu = (h,r,ic) => new Set(h.filter(p=>p.rarity===r&&p.name&&(ic?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
+    const c5=_cu(_ch,5,true), c4=_cu(_ch,4,true), w5=_cu(_wh,5,false), w4=_cu(_wh,4,false), w3=_cu(_wh,3,false);
+    const newestRes = [...new Set(_ch.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
+    const _fs = [..._ch,..._wh].filter(p=>p.rarity===5&&p.pity>0);
+    const hB = {}; _fs.forEach(p=>{if(p.pity>80){hB['81+']=(hB['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;hB[`${b}-${b+9}`]=(hB[`${b}-${b+9}`]??0)+1;}});
+    const hL = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(hB['81+'])hL.push('81+'); hL.forEach(b=>{if(!hB[b])hB[b]=0;});
+    const hS = _fs.length>=2?{max:Math.max(...Object.values(hB),1),avg:(_fs.reduce((s,p)=>s+p.pity,0)/_fs.length).toFixed(1),lo:Math.min(..._fs.map(p=>p.pity)),hi:Math.max(..._fs.map(p=>p.pity))}:null;
+    const sts = [
+      {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#fbbf24'},
+      {l:'Total Pulls',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
+      {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
+      {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
+      {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
+      {l:'Lost',v:String(overallStats?.lost5050??'--'),c:'#f87171'},
+    ];
+
+    // ═══ DRAWING PRIMITIVES ═══
+    // Outer card — .kuro-card
+    const drawShell = (x,y,w,h) => {
+      ctx.fillStyle='rgba(12,16,24,0.8)';rr(x,y,w,h,16);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;rr(x,y,w,h,16);ctx.stroke();
+      // inset top light
+      const il=ctx.createLinearGradient(x,y,x,y+2);il.addColorStop(0,'rgba(255,255,255,0.05)');il.addColorStop(1,'transparent');
+      ctx.fillStyle=il;ctx.fillRect(x+16,y+1,w-32,1);
+      // shimmer
+      const sh=ctx.createLinearGradient(x,0,x+w,0);
+      sh.addColorStop(0,'transparent');sh.addColorStop(0.2,'rgba(255,255,255,0.3)');sh.addColorStop(0.5,'rgba(255,255,255,0.5)');sh.addColorStop(0.8,'rgba(255,255,255,0.3)');sh.addColorStop(1,'transparent');
+      ctx.fillStyle=sh;ctx.fillRect(x+16,y,w-32,1);
+      // corners
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x+w-8-12,y+8);ctx.lineTo(x+w-8,y+8);ctx.lineTo(x+w-8,y+8+12);ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.08)';
+      ctx.beginPath();ctx.moveTo(x+8+12,y+h-8);ctx.lineTo(x+8,y+h-8);ctx.lineTo(x+8,y+h-8-12);ctx.stroke();
+    };
+
+    // Header
+    const drawHeader = (x,y,w) => {
+      const hH=36;
+      const hg=ctx.createLinearGradient(x,y,x+w,y);
+      hg.addColorStop(0,'rgba(255,255,255,0.02)');hg.addColorStop(0.4,'transparent');hg.addColorStop(0.6,'transparent');hg.addColorStop(1,'rgba(255,255,255,0.02)');
+      ctx.fillStyle=hg;ctx.fillRect(x,y,w,hH);
+      ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+hH);ctx.lineTo(x+w,y+hH);ctx.stroke();
+      const gb=ctx.createLinearGradient(0,y+10,0,y+10+16);gb.addColorStop(0,'rgba(251,191,36,0.9)');gb.addColorStop(1,'rgba(251,191,36,0.4)');
+      ctx.fillStyle=gb;rr(x+12,y+10,3,16,1.5);ctx.fill();
+      ctx.shadowColor='rgba(251,191,36,0.3)';ctx.shadowBlur=8;rr(x+12,y+10,3,16,1.5);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
+      ctx.fillStyle='#f1f5f9';ctx.font='600 11px sans-serif';ctx.fillText('RESONATOR ID',x+22,y+23);
+      ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-12,y+23);ctx.textAlign='left';
+      return hH;
+    };
+
+    // Section panel with gold bar label
+    const drawPanel = (x,y,w,h,label) => {
+      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,10);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;rr(x,y,w,h,10);ctx.stroke();
+      const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.12)');ps.addColorStop(0.5,'rgba(255,255,255,0.2)');ps.addColorStop(0.7,'rgba(255,255,255,0.12)');ps.addColorStop(1,'transparent');
+      ctx.fillStyle=ps;ctx.fillRect(x+8,y,w-16,1);
+      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x+w-6-8,y+4);ctx.lineTo(x+w-6,y+4);ctx.lineTo(x+w-6,y+4+8);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+6+8,y+h-4);ctx.lineTo(x+6,y+h-4);ctx.lineTo(x+6,y+h-4-8);ctx.stroke();
+      if(label){
+        const gb2=ctx.createLinearGradient(0,y+8,0,y+8+12);gb2.addColorStop(0,'rgba(251,191,36,0.8)');gb2.addColorStop(1,'rgba(251,191,36,0.3)');
+        ctx.fillStyle=gb2;rr(x+10,y+8,2.5,12,1);ctx.fill();
+        ctx.fillStyle='#e2e8f0';ctx.font='600 10px sans-serif';ctx.fillText(label,x+18,y+18);
+        return 26;
+      }
+      return 6;
+    };
+
+    // .kuro-stat cell
+    const drawStat = (x,y,w,h,val,lab,col,fs) => {
+      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,w,h,8);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
+      const ss=ctx.createLinearGradient(x,0,x+w,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.35)');ss.addColorStop(1,'transparent');
+      ctx.fillStyle=ss;ctx.fillRect(x+4,y,w-8,1);
+      const f=fs||16;
+      ctx.fillStyle=col;ctx.font=`bold ${f}px monospace`;ctx.textAlign='center';ctx.fillText(val,x+w/2,y+h*0.48);
+      ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(7,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
+    };
+
+    // Resonator tag — .kuro-btn style with visible border
+    const drawTag = (x,y,w,h,text) => {
+      ctx.fillStyle='rgba(15,20,28,0.85)';rr(x,y,w,h,8);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
+      ctx.fillStyle='#e2e8f0';ctx.font='11px sans-serif';ctx.textAlign='center';
+      const ml=Math.floor(w/6.5);ctx.fillText(text.length>ml?text.slice(0,ml-1)+'..':text,x+w/2,y+h/2+4);ctx.textAlign='left';
+    };
+
+    // Trophy card — individual bordered card with name + full description
+    const drawTrophy = (x,y,w,h,t) => {
+      const tc=t.color||'#9ca3af';
+      // bg: gradient like app
+      const bg2=ctx.createLinearGradient(x,y,x+w,y+h);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,w,h,8);ctx.fill();
+      ctx.strokeStyle=tc+'55';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
+      // glow
+      ctx.shadowColor=tc+'20';ctx.shadowBlur=8;rr(x,y,w,h,8);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
+      // Name bold
+      ctx.fillStyle='#ffffff';ctx.font='bold 10px sans-serif';
+      const nameText = t.name.length > Math.floor(w/5.5) ? t.name.slice(0, Math.floor(w/5.5)-1)+'..' : t.name;
+      ctx.fillText(nameText,x+8,y+14);
+      // Desc - wrapped in trophy color
+      ctx.fillStyle=tc+'bb';ctx.font='9px sans-serif';
+      const desc=t.desc||'';const words=desc.split(' ');let line='';let ly=y+27;const maxW=w-16;
+      for(const word of words){const test=line+(line?' ':'')+word;if(ctx.measureText(test).width>maxW&&line){if(ly>y+h-6)break;ctx.fillText(line,x+8,ly);ly+=11;line=word;}else line=test;}
+      if(line&&ly<=y+h-4)ctx.fillText(line,x+8,ly);
+    };
+
+    // Hero profile image — large, with gradient fade
+    const drawHero = (x,y,w,h) => {
+      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,10);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;rr(x,y,w,h,10);ctx.stroke();
+      if(pImg){
+        ctx.save();rr(x+1,y+1,w-2,h-2,9);ctx.clip();
+        const ratio=pImg.width/pImg.height;const cw=ratio>1?h*ratio:w;const ch=ratio>1?h:w/ratio;
+        ctx.drawImage(pImg,(pImg.width-pImg.width*(w/cw))/2,(pImg.height-pImg.height*(h/ch))/2,pImg.width*(w/cw),pImg.height*(h/ch),x+1,y+1,w-2,h-2);
+        ctx.restore();
+        // Bottom gradient fade
+        const fade=ctx.createLinearGradient(0,y+h-60,0,y+h);
+        fade.addColorStop(0,'rgba(8,12,18,0)');fade.addColorStop(1,'rgba(8,12,18,0.9)');
+        ctx.fillStyle=fade;ctx.fillRect(x+1,y+h-60,w-2,59);
+      } else if(appIco){
+        const sz=Math.min(w,h)*0.3;ctx.globalAlpha=0.08;ctx.drawImage(appIco,x+(w-sz)/2,y+(h-sz)/2,sz,sz);ctx.globalAlpha=1;
+      }
+      // Character name at bottom
+      if(picName){ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(picName,x+w/2,y+h-6);ctx.textAlign='left';}
+    };
+
+    // Luck bar
+    const drawLuck = (x,y,w) => {
+      if(!lr)return 0;
+      rr(x,y,w,8,4);ctx.fillStyle='rgba(10,14,22,0.8)';ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;rr(x,y,w,8,4);ctx.stroke();
+      const fw=Math.max(4,Math.min(lr.percentile||50,100)/100*w);
+      ctx.save();rr(x,y,w,8,4);ctx.clip();
+      const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#fbbf24');g.addColorStop(1,'#34d399');
+      ctx.fillStyle=g;rr(x,y,fw,8,4);ctx.fill();ctx.restore();
+      // Tier badge
+      ctx.fillStyle='rgba(10,14,22,0.85)';rr(x+w+6,y-3,70,14,4);ctx.fill();
+      ctx.strokeStyle=(lr.color||'#fbbf24')+'60';ctx.lineWidth=1;rr(x+w+6,y-3,70,14,4);ctx.stroke();
+      ctx.fillStyle=lr.color||'#fbbf24';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+41,y+7);ctx.textAlign='left';
+      return 18;
+    };
+
+    // Stats grid 3x2
+    const drawStats = (sx,sy,gw,ch2,fs) => {
+      const g2=5,cols=3,cw2=(gw-(cols-1)*g2)/cols;
+      sts.forEach((s,i)=>{const col=i%cols,row=Math.floor(i/cols);drawStat(sx+col*(cw2+g2),sy+row*(ch2+g2),cw2,ch2,s.v,s.l,s.c,fs);});
+      return (ch2+g2)*2-g2;
+    };
+
+    // Resonator tags grid
+    const drawResTags = (rx,ry,mw,cols,max) => {
+      const ch2=newestRes.slice(0,max);if(!ch2.length)return 0;
+      const g2=5,th=28,tw=(mw-(cols-1)*g2)/cols;
+      ch2.forEach((n,i)=>{drawTag(rx+(i%cols)*(tw+g2),ry+Math.floor(i/cols)*(th+g2),tw,th,n);});
+      const rows=Math.ceil(ch2.length/cols);let h2=rows*(th+g2)-g2;
+      if(newestRes.length>max){ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.fillText('+'+String(newestRes.length-max)+' more',rx,ry+h2+12);h2+=14;}
+      return h2;
+    };
+
+    // Collection row
+    const drawColl = (cx2,cy2,cw2) => {
+      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#fbbf24'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#fbbf24'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
+      const g2=4,iw=(cw2-4*g2)/5;
+      items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,32,it.o+'/'+it.t,it.l,it.c,11);});
+      return 32;
+    };
+
+    // Mini histogram
+    const drawHisto = (hx,hy,hw,hh) => {
+      if(!hS||!hL.length)return;
+      const bg2=2,bw2=(hw-(hL.length-1)*bg2)/hL.length,area=hh-14;
+      hL.forEach((lab,i)=>{
+        const cnt=hB[lab]||0,bh=hS.max>0?Math.max(2,(cnt/hS.max)*area):2;
+        const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
+        const bucket=parseInt(lab)||0;
+        const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
+        ctx.fillStyle=bc;ctx.globalAlpha=0.7;rr(bx2,by2,bw2,bh,2);ctx.fill();
+        ctx.strokeStyle=bc;ctx.globalAlpha=0.3;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,2);ctx.stroke();ctx.globalAlpha=1;
+        if(cnt>0){ctx.fillStyle=bc;ctx.font='bold 7px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-2);ctx.textAlign='left';}
+        ctx.fillStyle='#4b5563';ctx.font='6px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+9);ctx.textAlign='left';
+      });
+    };
+
+    // Footer
+    const drawFooter = (x,y,w) => {
+      ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
+      ctx.fillStyle='#4b5563';ctx.font='9px monospace';ctx.fillText('Generated '+new Date().toLocaleDateString(),x,y+12);
+      ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w,y+12);ctx.textAlign='left';
+    };
+
+    // ═══ RENDER ═══
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,W,H);
+    const bgG=ctx.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.4,W*0.5);
+    bgG.addColorStop(0,'rgba(251,191,36,0.008)');bgG.addColorStop(1,'transparent');
+    ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
+
+    const M=12,ox=M,oy=M,ow=W-M*2,oh=H-M*2;
+    drawShell(ox,oy,ow,oh);
+    const hH=drawHeader(ox+1,oy+1,ow-2);
+    const P=10,bx=ox+P,bw=ow-P*2;
+    const footH=20;
+    let Y=oy+1+hH+P;
+    const bottomY=oy+oh-footH-P;
+
+    if(!isPortrait){
+      // ═══ LANDSCAPE 1280x720 — content-adaptive ═══
+      const gap=6;
+      const leftW=Math.floor(bw*0.3);
+      const rightX=bx+leftW+gap;
+      const rightW=bw-leftW-gap;
+      const contentH=bottomY-Y;
+
+      // Hero image takes most of left column
+      const heroH=Math.floor(contentH*0.55);
+      drawHero(bx,Y,leftW,heroH);
+
+      // Identity below hero — fills rest of left
+      const idY=Y+heroH+gap;
+      const idH=contentH-heroH-gap;
+      const idOff=drawPanel(bx,idY,leftW,idH,'Profile');
+      ctx.fillStyle='#f1f5f9';ctx.font='bold 18px sans-serif';ctx.fillText(uname,bx+10,idY+idOff+14);
+      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('UID',bx+10,idY+idOff+30);
+      ctx.fillStyle='#e2e8f0';ctx.font='11px monospace';ctx.fillText(uid,bx+32,idY+idOff+30);
+      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('Server',bx+10,idY+idOff+44);
+      ctx.fillStyle='#fbbf24';ctx.font='11px monospace';ctx.fillText(svr,bx+48,idY+idOff+44);
+      if(lr)drawLuck(bx+10,idY+idOff+58,leftW-90);
+      const metaY=idY+idOff+(lr?78:60);
+      ctx.fillStyle='#6b7280';ctx.font='8px sans-serif';
+      if(tList.length>0)ctx.fillText(tList.length+' Trophies',bx+10,metaY);
+      if(impDate)ctx.fillText('Since '+impDate,bx+10+(tList.length>0?60:0),metaY);
+      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+10+(tList.length>0?60:0)+(impDate?80:0),metaY);
+
+      // ── Right column: content-adaptive heights ──
+      const statCellH=28,panelPad=26;
+      const statsContentH=panelPad+(statCellH+5)*2-5+4;
+      const statsW=Math.floor((rightW-gap)*0.5);
+      const collW=rightW-statsW-gap;
+      const r1H=Math.max(statsContentH,panelPad+32+50+4); // collection cells + histogram
+
+      const resTagH=28,resTagGap=5,resCols=5;
+      const resMax=Math.min(newestRes.length,20);
+      const resRows=Math.ceil(Math.max(resMax,1)/resCols);
+      const resContentH=panelPad+resRows*(resTagH+resTagGap)-resTagGap+4+(newestRes.length>resMax?14:0);
+
+      const trophyY_start=Y+r1H+gap+resContentH+gap;
+      const r3H=bottomY-trophyY_start;
+
+      // Draw Row 1: Stats + Collection
+      const sp1o=drawPanel(rightX,Y,statsW,r1H,'Convene Stats');
+      drawStats(rightX+6,Y+sp1o,statsW-12,statCellH,13);
+      const cp1o=drawPanel(rightX+statsW+gap,Y,collW,r1H,'Collection');
+      drawColl(rightX+statsW+gap+6,Y+cp1o,collW-12);
+      const hiY=Y+cp1o+36;
+      if(hS)drawHisto(rightX+statsW+gap+6,hiY,collW-12,r1H-cp1o-36-4);
+      if(hS){ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+hS.lo+' | Avg '+hS.avg+' | Hi '+hS.hi,rightX+statsW+gap+collW-8,Y+r1H-3);ctx.textAlign='left';}
+
+      // Draw Row 2: Resonators — sized to content
+      const r2Y=Y+r1H+gap;
+      const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
+      drawResTags(rightX+6,r2Y+rp1o,rightW-12,resCols,resMax);
+
+      // Draw Row 3: Trophies — fills remaining
+      const r3Y=r2Y+resContentH+gap;
+      if(tList.length>0&&r3H>40){
+        const tp1o=drawPanel(rightX,r3Y,rightW,r3H,'Trophies ('+tList.length+')');
+        const tCols=3,tGap=5;const tw=(rightW-12-(tCols-1)*tGap)/tCols;
+        const maxTrophyRows=Math.floor((r3H-tp1o-4)/(50+tGap));
+        const maxT=Math.min(tList.length,maxTrophyRows*tCols);
+        const showT=tList.slice(0,maxT);
+        const tH=Math.min(50,Math.floor((r3H-tp1o-4-(Math.ceil(showT.length/tCols)-1)*tGap)/Math.ceil(showT.length/tCols)));
+        showT.forEach((t,i)=>{drawTrophy(rightX+6+(i%tCols)*(tw+tGap),r3Y+tp1o+Math.floor(i/tCols)*(tH+tGap),tw,tH,t);});
+        if(tList.length>maxT){ctx.fillStyle='#4b5563';ctx.font='8px sans-serif';ctx.fillText('+'+String(tList.length-maxT)+' more',rightX+6,r3Y+r3H-5);}
+      }
+
+      drawFooter(bx,bottomY,bw);
+
+    } else {
+      // ═══ PORTRAIT 720x1280 — content-adaptive ═══
+      const gap=6;
+      const contentH=bottomY-Y;
+
+      // ── Top: Hero + Identity side by side ──
+      const heroW=Math.floor(bw*0.4);
+      const heroH=Math.floor(contentH*0.24);
+      drawHero(bx,Y,heroW,heroH);
+
+      const ix=bx+heroW+gap,iw=bw-heroW-gap;
+      const idOff=drawPanel(ix,Y,iw,heroH,'Profile');
+      ctx.fillStyle='#f1f5f9';ctx.font='bold 20px sans-serif';ctx.fillText(uname,ix+10,Y+idOff+14);
+      const uidLY=Y+idOff+32;
+      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('UID',ix+10,uidLY);
+      ctx.fillStyle='#e2e8f0';ctx.font='11px monospace';ctx.fillText(uid,ix+32,uidLY);
+      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('Server',ix+10,uidLY+16);
+      ctx.fillStyle='#fbbf24';ctx.font='11px monospace';ctx.fillText(svr,ix+48,uidLY+16);
+      if(lr)drawLuck(ix+10,uidLY+34,iw-90);
+      const metaY2=uidLY+(lr?56:38);
+      ctx.fillStyle='#6b7280';ctx.font='8px sans-serif';
+      if(tList.length>0)ctx.fillText(tList.length+' Trophies',ix+10,metaY2);
+      if(impDate)ctx.fillText('Since '+impDate,ix+10+(tList.length>0?60:0),metaY2);
+      if(overallStats?.totalAstrite){
+        ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',ix+10,metaY2+12);
+      }
+
+      Y+=heroH+gap;
+
+      // Pre-calculate content heights for adaptive layout
+      const pStatCellH=34,pPad=26;
+      const pStatsH=pPad+(pStatCellH+5)*2-5+4;
+      const pCollH=pPad+32+4;
+      const pHistoH=96;
+      const pResTagH=28,pResTagGap=5,pResCols=4;
+      const pResMax=Math.min(newestRes.length,24);
+      const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
+      const pResContentH=pPad+pResRows*(pResTagH+pResTagGap)-pResTagGap+4+(newestRes.length>pResMax?14:0);
+
+      const fixedH=pStatsH+gap+pCollH+gap+pHistoH+gap+pResContentH+gap;
+      const pTrophyH=bottomY-Y-fixedH;
+
+      // ── Stats — sized to content ──
+      const sp2o=drawPanel(bx,Y,bw,pStatsH,'Convene Stats');
+      drawStats(bx+6,Y+sp2o,bw-12,pStatCellH,15);
+      Y+=pStatsH+gap;
+
+      // ── Collection — sized to content ──
+      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
+      drawColl(bx+6,Y+cp2o,bw-12);
+      Y+=pCollH+gap;
+
+      // ── Histogram — sized to content ──
+      const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
+      if(hS){drawHisto(bx+6,Y+hp2o,bw-12,pHistoH-hp2o-8);
+        ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+hS.lo+' | Avg '+hS.avg+' | High '+hS.hi,bx+bw-8,Y+pHistoH-3);ctx.textAlign='left';}
+      Y+=pHistoH+gap;
+
+      // ── Resonators — sized to content ──
+      const rp2o=drawPanel(bx,Y,bw,pResContentH,'Resonators ('+newestRes.length+')');
+      drawResTags(bx+6,Y+rp2o,bw-12,pResCols,pResMax);
+      Y+=pResContentH+gap;
+
+      // ── Trophies — fills ALL remaining space ──
+      if(tList.length>0&&pTrophyH>40){
+        const tp2o=drawPanel(bx,Y,bw,pTrophyH,'Trophies ('+tList.length+')');
+        const tCols=2,tGap=5;const tw=(bw-12-(tCols-1)*tGap)/tCols;
+        const maxTRows=Math.floor((pTrophyH-tp2o-4)/(50+tGap));
+        const maxT=Math.min(tList.length,maxTRows*tCols);
+        const showT2=tList.slice(0,maxT);
+        const tH2=Math.min(50,Math.floor((pTrophyH-tp2o-4-(Math.ceil(showT2.length/tCols)-1)*tGap)/Math.ceil(showT2.length/tCols)));
+        showT2.forEach((t,i)=>{drawTrophy(bx+6+(i%tCols)*(tw+tGap),Y+tp2o+Math.floor(i/tCols)*(tH2+tGap),tw,tH2,t);});
+        if(tList.length>maxT){ctx.fillStyle='#4b5563';ctx.font='8px sans-serif';ctx.fillText('+'+String(tList.length-maxT)+' more',bx+6,Y+pTrophyH-5);}
+      }
+
+      drawFooter(bx,bottomY,bw);
+    }
+
+    canvas.toBlob(blob=>{
+      if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
+      a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
+      a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
+    },'image/png');
+  }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies]);
 
   // Daily income calculation
   const dailyIncome = useMemo(() => {
@@ -8144,6 +8569,7 @@ function WhisperingWishesInner() {
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                     />
                   </CardBody>
                 </Card>
@@ -8164,6 +8590,7 @@ function WhisperingWishesInner() {
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                     />
                   </CardBody>
                 </Card>
@@ -8184,6 +8611,7 @@ function WhisperingWishesInner() {
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                     />
                   </CardBody>
                 </Card>
@@ -8204,6 +8632,7 @@ function WhisperingWishesInner() {
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                     />
                   </CardBody>
                 </Card>
@@ -8224,6 +8653,7 @@ function WhisperingWishesInner() {
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={{}} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                     />
                   </CardBody>
                 </Card>
@@ -8250,6 +8680,58 @@ function WhisperingWishesInner() {
                   ))}
                 </div>
                 <p className="text-gray-400 text-[10px] mt-2 text-center">Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+              </CardBody>
+            </Card>
+
+            {/* Resonator Profile */}
+            <Card>
+              <CardHeader><User size={14} className="text-cyan-400" /> Resonator Profile</CardHeader>
+              <CardBody className="space-y-3">
+                {/* Username */}
+                <div>
+                  <label className="text-gray-400 text-[10px] block mb-1">Display Name</label>
+                  <input
+                    type="text"
+                    value={state.profile.username}
+                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, 24) })}
+                    placeholder="Enter your name..."
+                    maxLength={24}
+                    className="kuro-input w-full"
+                  />
+                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/24</p>
+                </div>
+
+                {/* Profile Picture — current selection */}
+                <div>
+                  <label className="text-gray-400 text-[10px] block mb-1.5">Profile Picture</label>
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                      {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (
+                        <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
+                      <p className="text-gray-500 text-[9px] mt-0.5">Tap the <Crown size={9} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      {state.profile.profilePic && (
+                        <button
+                          onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
+                          className="text-red-400/70 text-[9px] hover:text-red-400 mt-0.5"
+                        >Reset to default</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* View ID Card Button */}
+                <button
+                  onClick={() => setShowIdCard(true)}
+                  className="kuro-btn w-full py-2.5 text-xs active-gold flex items-center justify-center gap-2"
+                >
+                  <Award size={14} /> View Resonator ID Card
+                </button>
               </CardBody>
             </Card>
 
@@ -8638,6 +9120,147 @@ Example: {"pulls":[...]}'
               </button>
             </CardBody>
           </Card>
+        </div>
+      )}
+
+      {/* Resonator ID Card Modal */}
+      {showIdCard && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
+          <div className="w-full max-w-md">
+            {/* The Card */}
+            <div className="kuro-card" style={{ overflow: 'hidden' }}>
+              <div className="kuro-card-inner">
+                {/* Header */}
+                <div className="kuro-header">
+                  <span className="text-gray-100 font-bold text-xs flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
+                  <span className="text-gray-500 text-[10px]">Whispering Wishes</span>
+                </div>
+                
+                {/* Main content */}
+                <div className="kuro-body">
+                  {/* Top: Info left, Picture right */}
+                  <div className="flex gap-4">
+                    {/* Left: Name + details */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-white font-bold text-lg truncate leading-tight">{state.profile.username || 'Resonator'}</h3>
+                      <div className="mt-2 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 text-[10px] w-10 flex-shrink-0">UID</span>
+                          <span className="text-gray-200 text-xs font-mono">{state.profile.uid || '—'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 text-[10px] w-10 flex-shrink-0">Server</span>
+                          <span className="text-yellow-400 text-xs font-mono">{state.server}</span>
+                        </div>
+                      </div>
+                      {/* Luck rating */}
+                      {luckRating && (
+                        <div className="mt-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
+                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #fbbf24, #34d399)' }} />
+                            </div>
+                            <span className="text-[10px] font-mono flex-shrink-0" style={{ color: luckRating.color || '#fbbf24' }}>{luckRating.tier} {luckRating.rating}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Right: 1:1 Profile Picture — glass style */}
+                    <div className="flex-shrink-0 flex flex-col items-center">
+                      <div className="rounded-xl overflow-hidden" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                        {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (
+                          <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="object-cover" style={{ width: '120px', height: '120px' }} />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
+                            <img src={HEADER_ICON} alt="Default" className="w-14 h-14 object-contain opacity-70" />
+                          </div>
+                        )}
+                      </div>
+                      {state.profile.profilePic && (
+                        <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '8px', width: '120px' }}>{state.profile.profilePic}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-3 gap-1.5 mt-4">
+                    {[
+                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24' },
+                      { label: 'Total Pulls', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb' },
+                      { label: '5★ Pulled', value: overallStats?.fiveStars ?? '—', color: '#a78bfa' },
+                      { label: '50/50 Win Rate', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e' },
+                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#22c55e' },
+                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171' },
+                    ].map((s, i) => (
+                      <div key={i} className="rounded-lg px-2 py-2 text-center" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div className="font-bold font-mono text-sm" style={{ color: s.color }}>{s.value}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '8px' }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Owned Resonators */}
+                  {ownedCharNames.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
+                      <div className="flex flex-wrap gap-1">
+                        {ownedCharNames.slice(0, 16).map(name => (
+                          <span key={name} className="px-1.5 py-0.5 rounded text-gray-300" style={{ fontSize: '8px', background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.06)' }}>{name}</span>
+                        ))}
+                        {ownedCharNames.length > 16 && (
+                          <span className="px-1.5 py-0.5 text-gray-500" style={{ fontSize: '8px' }}>+{ownedCharNames.length - 16} more</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Footer line */}
+                  <div className="flex items-center justify-between mt-3 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span className="text-gray-600 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
+                    <span className="text-gray-600" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Format toggle + action buttons */}
+            <div className="flex gap-2 mt-3">
+              {/* Format toggle */}
+              <div className="flex rounded-xl overflow-hidden" style={{ background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <button
+                  onClick={() => setIdCardFormat('landscape')}
+                  className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
+                  style={idCardFormat === 'landscape' ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+                  title="Landscape 16:9"
+                >
+                  <Monitor size={12} /> 16:9
+                </button>
+                <button
+                  onClick={() => setIdCardFormat('portrait')}
+                  className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
+                  style={idCardFormat === 'portrait' ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' } : { color: '#6b7280' }}
+                  title="Portrait 9:16"
+                >
+                  <Smartphone size={12} /> 9:16
+                </button>
+              </div>
+              {/* Download */}
+              <button
+                onClick={() => downloadIdCard(idCardFormat)}
+                className="kuro-btn flex-1 py-2.5 text-xs active-gold flex items-center justify-center gap-2"
+              >
+                <Download size={14} /> Download {idCardFormat === 'portrait' ? '9:16' : '16:9'}
+              </button>
+              {/* Close */}
+              <button
+                onClick={() => setShowIdCard(false)}
+                className="kuro-btn px-4 py-2.5 text-xs"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
