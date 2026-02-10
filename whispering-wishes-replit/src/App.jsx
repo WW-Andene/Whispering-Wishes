@@ -2638,9 +2638,8 @@ const initialState = {
 };
 
 // Load saved state from persistent storage
-// Key kept as v2.2 for backwards compatibility — existing user data loads seamlessly.
-// If schema changes require migration, add a migration function here.
 const STORAGE_KEY = 'whispering-wishes-v2.2';
+const LEGACY_STORAGE_KEYS = ['whispering-wishes-v2.0', 'whispering-wishes-v2.1'];
 
 // Helper to check if localStorage is available (fails in some preview modes)
 const isStorageAvailable = () => {
@@ -2655,6 +2654,25 @@ const isStorageAvailable = () => {
 };
 
 const storageAvailable = isStorageAvailable();
+
+const migrateLegacyStorage = () => {
+  if (!storageAvailable) return;
+  if (localStorage.getItem(STORAGE_KEY)) return;
+  for (const legacyKey of LEGACY_STORAGE_KEYS) {
+    try {
+      const legacyData = localStorage.getItem(legacyKey);
+      if (legacyData) {
+        localStorage.setItem(STORAGE_KEY, legacyData);
+        localStorage.removeItem(legacyKey);
+        console.log(`[WW] Migrated data from ${legacyKey} to ${STORAGE_KEY}`);
+        return;
+      }
+    } catch (e) {
+      console.error(`[WW] Migration from ${legacyKey} failed:`, e);
+    }
+  }
+};
+migrateLegacyStorage();
 
 const loadFromStorage = () => {
   if (!storageAvailable) return null;
