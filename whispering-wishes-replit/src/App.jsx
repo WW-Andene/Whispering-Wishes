@@ -4561,9 +4561,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
-  // TODO: Missing images - these weapons exist in collection lists but have no image yet
   'Autumntrace': '',
-  'Tyro Gauntlets': '',
 };
 
 // Release order for sorting (based on first banner appearance)
