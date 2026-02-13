@@ -3,7 +3,7 @@ import { Sparkles, Swords, Sword, Star, Calculator, User, Calendar, TrendingUp, 
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.1.0 - Wuthering Waves Convene Companion
+// WHISPERING WISHES v3.2.2 - Wuthering Waves Convene Companion
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // [SECTION INDEX] - Use: grep -n "SECTION:" filename.jsx
@@ -35,7 +35,7 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:PWA]
 // PWA Support - Manifest, Service Worker, Install Prompt
 
-const APP_VERSION = '3.1.2'; // P8: Fix cardPoolType mapping, name normalization, rarity coercion, beginner collection
+const APP_VERSION = '3.2.2';
 const MAX_IMPORT_SIZE_MB = 5; // P7-FIX: Import file size limit constant (7E)
 
 // Header icon (uploaded app icon)
@@ -5117,7 +5117,7 @@ function WhisperingWishesInner() {
   
   // Cache-busting for images (version-based, only refreshes on manual refresh)
   // Initial value is an arbitrary version token; replaced with Date.now() on manual refresh
-  const [imageCacheBuster, setImageCacheBuster] = useState('v3.1.0');
+  const [imageCacheBuster, setImageCacheBuster] = useState('v3.2.2');
   const refreshImages = useCallback(() => {
     setImageCacheBuster(String(Date.now()));
     // Also clear SW image cache
