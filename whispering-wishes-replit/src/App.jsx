@@ -35,7 +35,7 @@ import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChar
 // [SECTION:PWA]
 // PWA Support - Manifest, Service Worker, Install Prompt
 
-const APP_VERSION = '3.1.1'; // P7: MEDIUM/LOW issues & final polish
+const APP_VERSION = '3.1.2'; // P8: Fix cardPoolType mapping, name normalization, rarity coercion, beginner collection
 const MAX_IMPORT_SIZE_MB = 5; // P7-FIX: Import file size limit constant (7E)
 
 // Header icon (uploaded app icon)
@@ -1366,6 +1366,7 @@ const KuroStyles = ({ oledMode }) => (
     /* ═══ COLLECTION CARD HOVER ═══ */
     .collection-card {
       transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
     }
     
     /* ═══ CUSTOM SCROLLBAR ═══ */
@@ -1540,14 +1541,14 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Yangyang', 'Taoqi'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
-    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Sanhua', 'Danjin', 'Aalto'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
-    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Baizhi', 'Chixia', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
+    { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
+    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
+    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
-    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Waning Redshift', 'Celestial Spiral'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
-    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Broadblade', forCharacter: 'Chisa', element: 'Havoc', isNew: false, featured4Stars: ['Hollow Mirage', 'Jinzhou Keeper', 'Undying Flame'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
-    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Broadblade', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Dauntless Evernight', 'Lunar Cutter', 'Thunderbolt'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
+    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Celestial Spiral', 'Waning Redshift', 'Discord'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
+    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Broadblade', forCharacter: 'Chisa', element: 'Havoc', isNew: false, featured4Stars: ['Celestial Spiral', 'Waning Redshift', 'Discord'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
+    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Broadblade', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Celestial Spiral', 'Waning Redshift', 'Discord'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -1569,8 +1570,8 @@ const CURRENT_BANNERS = {
 // [SECTION:HISTORY]
 const BANNER_HISTORY = [
   // Version 3.1
-  { version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
   { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18', predicted: true },
+  { version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
   // Version 3.0
   { version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04' },
   { version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-24', endDate: '2026-01-15' },
@@ -1752,13 +1753,13 @@ const CHARACTER_DATA = {
     skills: ['Wolflame', 'Wolfaith', 'Dance With the Wolf', 'Pack Hunt'],
     ascension: { boss: 'Unfading Glory', common: 'Howler Core', specialty: 'Bloodleaf Viburnum' },
     bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 4pc'], bestWeapon: 'Wildfire Mark',
-    teams: ['Lupa + Brant + Changli', 'Lupa + Galbrena + Qiuyuan'] },
+    teams: ['Lupa + Brant + Changli', 'Lupa + Aemeath + Mornye'] },
   'Phrolova': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Main DPS',
     desc: 'Fractsidus Overseer and former violinist. Havoc DPS with off-field Hecate summon.',
     skills: ['Void Touch', 'Dark Blessing', 'Chaos Rift', 'Hecate'],
     ascension: { boss: 'Truth in Lies', common: 'Polygon Core', specialty: 'Afterlife' },
     bestEchoes: ['Nightmare: Hecate', 'Dream of the Lost 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Lethean Elegy',
-    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Roccia'] },
+    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont. Electro DPS with time-stop and innate shielding.',
     skills: ['Thunder Cleave', 'Storm Surge', 'Divine Judgment', 'Crown of Wills'],
@@ -1776,7 +1777,7 @@ const CHARACTER_DATA = {
     skills: ['Light Slash', 'Radiant Barrier', 'Solar Flare', 'Divine Retribution'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Stone Rose' },
     bestEchoes: ['Corrosaurus', "Flamewing's Shadow 3pc + Molten Rift 2pc"], bestWeapon: 'Lux & Umbra',
-    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Lupa + Brant'] },
+    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Lupa + Mornye'] },
   'Qiuyuan': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent. Echo Skill DMG buffer with Crit DMG Amp.',
     skills: ['Frost Edge', 'Winter Slash', 'Blizzard Dance', 'Eternal Winter'],
@@ -1788,7 +1789,7 @@ const CHARACTER_DATA = {
     skills: ['Unseen Snare', 'Eye of Unraveling', 'Moment of Nihility', 'Chainsaw Mode'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
     bestEchoes: ['Threnodian: Leviathan', 'Thread of Severed Fate 3pc + Sun-Sinking Eclipse 2pc'], bestWeapon: 'Kumokiri',
-    teams: ['Chisa + Cartethyia + Ciaccona', 'Chisa + Zani + Phoebe'] },
+    teams: ['Chisa + Cartethyia + Ciaccona', 'Chisa + Aemeath + Lynae'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Startorch Academy student and ex-mercenary. Tune Break DMG buffer for Off-Tune teams.',
     skills: ['Light Shot', 'Radiant Bullet', 'Stellar Barrage', 'Supernova'],
@@ -1808,11 +1809,11 @@ const CHARACTER_DATA = {
     bestEchoes: ['Twin Nova: Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
     teams: ['Luuk Herssen + Lynae + Mornye', 'Luuk Herssen + Sanhua + Verina'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Digital ghost. Dual combat mode Fusion DPS with Tune Rupture and Fusion Burst.',
-    skills: ['Mech Transform', 'Tune Rupture Mode', 'Fusion Burst Mode', 'Resonance Liberation'],
+    desc: 'Digital ghost from Startorch Academy. Dual-system Fusion DPS with Tune Rupture and Fusion Burst modes.',
+    skills: ['Mech Transform', 'Seraphic Duet', 'Heavenfall Edict', 'Heavenfall Edict: Finale'],
     ascension: { boss: 'Rage Tacet Core', common: 'Tidal Residuum', specialty: 'Pecok Flower' },
-    bestEchoes: ['Trailblazing Star echo', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
-    teams: ['Aemeath + Changli + Shorekeeper', 'Aemeath + Lynae + Mornye'] },
+    bestEchoes: ['Sigillum', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
+    teams: ['Aemeath + Lynae + Mornye', 'Aemeath + Lupa + Mornye'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker. Aero off-field applicator.',
@@ -1875,17 +1876,17 @@ const CHARACTER_DATA = {
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Marcato',
     teams: ['Youhu + Glacio DPS + Sub DPS'] },
   'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
-    desc: 'Lollo Logistics navigator. Electro sub-DPS with Res. Skill DMG Amp.',
+    desc: 'Lollo Logistics navigator. Electro sub-DPS with Res. Skill DMG Amp via Outro.',
     skills: ['Electro Slash', 'Thundering Voyage', 'Storm Navigator', 'Arc Discharge'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Whisperin Core', specialty: "Loong's Pearl" },
     bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 4pc'], bestWeapon: 'Discord',
-    teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Electro DPS + Verina'] },
+    teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Any Res. Skill DPS + Healer'] },
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Spiritchaser Taoist and fortune-teller. Electro healer with DMG Amp buffs.',
-    skills: ['Twin Thunders', 'Trigram Combo', 'Lightning Burst', 'Blazing Aura'],
-    ascension: { boss: 'Topological Confinement', common: 'Polygon Core', specialty: 'Nova' },
-    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 4pc'], bestWeapon: 'Stellar Symphony',
-    teams: ['Buling + Carlotta + Zhezhi', 'Buling + DPS + Sub DPS'] },
+    desc: 'Taoist of Mengzhou. Black Shores Consultant, feng shui master. Universal support with Electro Flare and Res. Skill DMG buff.',
+    skills: ['Trigram Attacks', 'Thundershock Wave', 'Flashing Thunder Seal', 'Yin-Yang Balance'],
+    ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Variation',
+    teams: ['Buling + Carlotta + Zhezhi', 'Buling + Any DPS + Sub DPS'] },
 };
 
 // [SECTION:WEAPON_DATA]
@@ -2638,8 +2639,9 @@ const initialState = {
 };
 
 // Load saved state from persistent storage
+// Key kept as v2.2 for backwards compatibility — existing user data loads seamlessly.
+// If schema changes require migration, add a migration function here.
 const STORAGE_KEY = 'whispering-wishes-v2.2';
-const LEGACY_STORAGE_KEYS = ['whispering-wishes-v2.0', 'whispering-wishes-v2.1'];
 
 // Helper to check if localStorage is available (fails in some preview modes)
 const isStorageAvailable = () => {
@@ -2654,25 +2656,6 @@ const isStorageAvailable = () => {
 };
 
 const storageAvailable = isStorageAvailable();
-
-const migrateLegacyStorage = () => {
-  if (!storageAvailable) return;
-  if (localStorage.getItem(STORAGE_KEY)) return;
-  for (const legacyKey of LEGACY_STORAGE_KEYS) {
-    try {
-      const legacyData = localStorage.getItem(legacyKey);
-      if (legacyData) {
-        localStorage.setItem(STORAGE_KEY, legacyData);
-        localStorage.removeItem(legacyKey);
-        console.log(`[WW] Migrated data from ${legacyKey} to ${STORAGE_KEY}`);
-        return;
-      }
-    } catch (e) {
-      console.error(`[WW] Migration from ${legacyKey} failed:`, e);
-    }
-  }
-};
-migrateLegacyStorage();
 
 const loadFromStorage = () => {
   if (!storageAvailable) return null;
@@ -2998,7 +2981,7 @@ const CardBody = memo(({ children, className = '', style }) => <div className={`
 CardBody.displayName = 'CardBody';
 
 // Character Detail Modal
-const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming }) => {
   const data = CHARACTER_DATA[name];
   if (!data) return null;
   
@@ -3007,6 +2990,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const weaponData = WEAPON_DATA[data.bestWeapon];
   const weaponImg = DEFAULT_COLLECTION_IMAGES[data.bestWeapon];
+  
+  // Info framing: use info-specific framing, falling back to collection framing offset
+  const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
   
   // Parse team strings into character names
   const parseTeamMembers = (teamStr) => {
@@ -3028,10 +3014,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
         onClick={e => e.stopPropagation()}
       >
         {/* Header with image */}
-        <div className="relative h-40 overflow-hidden rounded-t-2xl">
+        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }}>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" style={{ transform: 'translateY(10%)' }} />
+            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" style={{ 
+              transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+              transformOrigin: 'right bottom'
+            }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
@@ -3121,10 +3110,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl }) => {
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {
                           const memberImg = DEFAULT_COLLECTION_IMAGES[member];
+                          const mf = getImageFraming ? getImageFraming(`collection-${member}`) : { x: 0, y: 0, zoom: 100 };
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
-                                <img src={memberImg} alt={member} className="w-10 h-10 rounded-lg object-cover bg-neutral-800 border border-white/10" />
+                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10" style={{ contain: 'paint', position: 'relative' }}>
+                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
                                   <User size={14} className="text-gray-600" />
@@ -4017,7 +4009,7 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic }) => (
   <div 
     className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : isProfilePic ? ownedBg : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
-    style={{ height: '140px', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
+    style={{ height: '140px', contain: 'paint', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     onClick={() => {
       if (framingMode) {
         setEditingImage(imageKey);
@@ -4027,21 +4019,6 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       }
     }}
   >
-    {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
-    )}
-    {/* Profile pic setter — top-right corner */}
-    {owned && !framingMode && onSetProfilePic && (
-      <button
-        className={`absolute z-20 rounded flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
-        style={{ top: '6px', right: '6px', width: '24px', height: '24px', ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
-        onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
-        title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
-        aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
-      >
-        <Crown size={12} />
-      </button>
-    )}
     {imgUrl && (
       <img 
         src={imgUrl} 
@@ -4057,6 +4034,21 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         }}
         onError={(e) => { e.target.style.display = 'none'; }}
       />
+    )}
+    {isNew && (
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+    )}
+    {/* Profile pic setter — top-right corner */}
+    {owned && !framingMode && onSetProfilePic && (
+      <button
+        className={`absolute z-20 rounded flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
+        style={{ top: '6px', right: '6px', width: '24px', height: '24px', ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
+        title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
+        aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
+      >
+        <Crown size={12} />
+      </button>
     )}
     {isSelected && (
       <div className="absolute top-1 right-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
@@ -4204,7 +4196,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               glowClass={glowClass} ownedBg={ownedBg} ownedBorder={ownedBorder}
               countLabel={count > 0 ? `${countPrefix}${countPrefix === 'S' ? count - 1 : count}` : ''} countColor={countColor}
               framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
-              onClickCard={dataLookup[name] ? () => setDetailModal({ show: true, type: dataType, name, imageUrl: imgUrl }) : null}
+              onClickCard={dataLookup[name] ? () => setDetailModal({ show: true, type: dataType, name, imageUrl: imgUrl, framing: getImageFraming(imageKey) }) : null}
               isNew={isNew}
               isProfilePic={profilePic === name}
               onSetProfilePic={onSetProfilePic}
@@ -4579,7 +4571,9 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
+  // TODO: Missing images - these weapons exist in collection lists but have no image yet
   'Autumntrace': '',
+  'Tyro Gauntlets': '',
 };
 
 // Release order for sorting (based on first banner appearance)
@@ -4600,7 +4594,7 @@ const RELEASE_ORDER = [
   // 2.1
   'Phoebe', 'Brant',
   // 2.2
-  'Cantarella', 'Buling',
+  'Cantarella',
   // 2.3
   'Zani', 'Ciaccona',
   // 2.4
@@ -4612,7 +4606,7 @@ const RELEASE_ORDER = [
   // 2.7
   'Galbrena', 'Qiuyuan',
   // 2.8
-  'Chisa',
+  'Chisa', 'Buling',
   // 3.0
   'Lynae', 'Mornye',
   // 3.1 (unreleased)
@@ -4932,11 +4926,106 @@ function WhisperingWishesInner() {
     }
   };
   
-  // Get framing for an image (returns defaults if not set)
+  // Get framing for an image (returns user override → hardcoded default → base default)
   const defaultFraming = useMemo(() => ({ x: 0, y: 0, zoom: 100 }), []);
+  const DEFAULT_IMAGE_FRAMING = useMemo(() => ({
+    // Collection framing
+    'collection-Jiyan': { x: 8, y: -26, zoom: 250 },
+    'collection-Calcharo': { x: -2, y: -26, zoom: 220 },
+    'collection-Encore': { x: -2, y: -20, zoom: 150 },
+    'collection-Jianxin': { x: 2, y: -24, zoom: 210 },
+    'collection-Lingyang': { x: -2, y: -18, zoom: 150 },
+    'collection-Verina': { x: 0, y: -14, zoom: 250 },
+    'collection-Yinlin': { x: 2, y: -26, zoom: 210 },
+    'collection-Changli': { x: 6, y: -26, zoom: 210 },
+    'collection-Jinhsi': { x: 2, y: -28, zoom: 190 },
+    'collection-Shorekeeper': { x: 12, y: -22, zoom: 210 },
+    'collection-Camellya': { x: 0, y: -28, zoom: 190 },
+    'collection-Xiangli Yao': { x: -4, y: -16, zoom: 300 },
+    'collection-Zhezhi': { x: -2, y: -14, zoom: 230 },
+    'collection-Carlotta': { x: 2, y: -28, zoom: 210 },
+    'collection-Roccia': { x: 8, y: -4, zoom: 210 },
+    'collection-Phoebe': { x: 10, y: -26, zoom: 190 },
+    'collection-Brant': { x: -2, y: -26, zoom: 250 },
+    'collection-Cantarella': { x: -2, y: -20, zoom: 230 },
+    'collection-Zani': { x: 4, y: -26, zoom: 210 },
+    'collection-Ciaccona': { x: 10, y: -24, zoom: 230 },
+    'collection-Cartethyia': { x: -4, y: -26, zoom: 210 },
+    'collection-Lupa': { x: 0, y: -12, zoom: 210 },
+    'collection-Augusta': { x: 4, y: -30, zoom: 250 },
+    'collection-Galbrena': { x: 12, y: -24, zoom: 230 },
+    'collection-Iuno': { x: -4, y: -22, zoom: 190 },
+    'collection-Luuk Herssen': { x: 2, y: -2, zoom: 110 },
+    'collection-Aemeath': { x: -12, y: -20, zoom: 190 },
+    'collection-Mornye': { x: 2, y: -20, zoom: 170 },
+    'collection-Rover': { x: 24, y: -24, zoom: 230 },
+    'collection-Chisa': { x: -4, y: -24, zoom: 210 },
+    'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
+    'collection-Qiuyuan': { x: -6, y: -26, zoom: 210 },
+    'collection-Lynae': { x: -12, y: -26, zoom: 190 },
+    'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
+    // 4★ Resonators
+    'collection-Aalto': { x: 4, y: -24, zoom: 210 },
+    'collection-Baizhi': { x: -2, y: -12, zoom: 250 },
+    'collection-Chixia': { x: -4, y: -26, zoom: 190 },
+    'collection-Danjin': { x: -4, y: -24, zoom: 190 },
+    'collection-Yangyang': { x: -4, y: -16, zoom: 250 },
+    'collection-Sanhua': { x: 12, y: -26, zoom: 190 },
+    'collection-Taoqi': { x: 4, y: -26, zoom: 190 },
+    'collection-Yuanwu': { x: 2, y: -24, zoom: 210 },
+    'collection-Mortefi': { x: 0, y: -28, zoom: 210 },
+    'collection-Youhu': { x: 0, y: -22, zoom: 150 },
+    'collection-Lumi': { x: 0, y: -24, zoom: 170 },
+    'collection-Buling': { x: 0, y: -22, zoom: 170 },
+    // Info panel framing
+    'info-Encore': { x: -8, y: -50, zoom: 170 },
+    'info-Lingyang': { x: -14, y: -50, zoom: 170 },
+    'info-Calcharo': { x: -24, y: -68, zoom: 250 },
+    'info-Aemeath': { x: -26, y: -60, zoom: 230 },
+    'info-Lynae': { x: -14, y: -62, zoom: 210 },
+    'info-Chisa': { x: -30, y: -66, zoom: 230 },
+    'info-Iuno': { x: -18, y: -56, zoom: 190 },
+    'info-Augusta': { x: -12, y: -64, zoom: 250 },
+    'info-Ciaccona': { x: 0, y: -60, zoom: 250 },
+    'info-Zani': { x: -8, y: -64, zoom: 250 },
+    'info-Cantarella': { x: -22, y: -58, zoom: 270 },
+    'info-Phoebe': { x: 8, y: -56, zoom: 210 },
+    'info-Verina': { x: -24, y: -50, zoom: 230 },
+    'info-Xiangli Yao': { x: -36, y: -58, zoom: 300 },
+    'info-Jiyan': { x: -18, y: -68, zoom: 270 },
+    'info-Yinlin': { x: 0, y: -60, zoom: 230 },
+    'info-Jinhsi': { x: -6, y: -62, zoom: 210 },
+    'info-Shorekeeper': { x: 8, y: -58, zoom: 250 },
+    'info-Camellya': { x: -4, y: -64, zoom: 230 },
+    'info-Changli': { x: -4, y: -62, zoom: 230 },
+    'info-Zhezhi': { x: -22, y: -52, zoom: 270 },
+    'info-Carlotta': { x: -10, y: -60, zoom: 210 },
+    'info-Roccia': { x: -4, y: -42, zoom: 250 },
+    'info-Brant': { x: -20, y: -64, zoom: 290 },
+    'info-Cartethyia': { x: -10, y: -64, zoom: 230 },
+    'info-Lupa': { x: -20, y: -52, zoom: 250 },
+    'info-Phrolova': { x: -8, y: -66, zoom: 230 },
+    'info-Galbrena': { x: 4, y: -62, zoom: 270 },
+    'info-Qiuyuan': { x: -20, y: -64, zoom: 250 },
+    'info-Mornye': { x: 0, y: -52, zoom: 190 },
+    'info-Luuk Herssen': { x: 0, y: -24, zoom: 120 },
+    'info-Jianxin': { x: -2, y: -58, zoom: 230 },
+    'info-Taoqi': { x: -8, y: -60, zoom: 210 },
+    'info-Baizhi': { x: -20, y: -48, zoom: 270 },
+    'info-Aalto': { x: 2, y: -62, zoom: 250 },
+    'info-Lumi': { x: 8, y: -60, zoom: 200 },
+    'info-Mortefi': { x: -16, y: -66, zoom: 250 },
+    'info-Yangyang': { x: -32, y: -56, zoom: 250 },
+    'info-Chixia': { x: -8, y: -64, zoom: 230 },
+    'info-Youhu': { x: 2, y: -58, zoom: 190 },
+    'info-Yuanwu': { x: -12, y: -66, zoom: 270 },
+    'info-Danjin': { x: -14, y: -64, zoom: 250 },
+    'info-Sanhua': { x: 6, y: -68, zoom: 250 },
+    'info-Buling': { x: 0, y: -64, zoom: 230 },
+  }), []);
   const getImageFraming = useCallback((key) => {
-    return imageFraming[key] || defaultFraming;
-  }, [imageFraming, defaultFraming]);
+    return imageFraming[key] || DEFAULT_IMAGE_FRAMING[key] || defaultFraming;
+  }, [imageFraming, DEFAULT_IMAGE_FRAMING, defaultFraming]);
   
   // Update framing for currently editing image
   const updateEditingFraming = (changes) => {
@@ -5192,7 +5281,7 @@ function WhisperingWishesInner() {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
   const [chartRange, setChartRange] = useState('monthly');
   const [chartOffset, setChartOffset] = useState(9999);
-  const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null });
+  const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null, framing: null });
   
   // Anonymous Luck Leaderboard
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -5792,8 +5881,9 @@ function WhisperingWishesInner() {
     }
     
     // Collection counts
-    const charHistory = [...featuredHist, ...stdCharHist];
-    const weapHistory = [...weaponHist, ...stdWeapHist];
+    const beginnerHistTr = state.profile.beginner?.history || [];
+    const charHistory = [...featuredHist, ...stdCharHist, ...beginnerHistTr.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
+    const weapHistory = [...weaponHist, ...stdWeapHist, ...beginnerHistTr.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
     const owned5StarChars = new Set(charHistory.filter(p => p.rarity === 5 && p.name).map(p => p.name));
     const owned4StarChars = new Set(charHistory.filter(p => p.rarity === 4 && p.name).map(p => p.name));
     const owned5StarWeaps = new Set(weapHistory.filter(p => p.rarity === 5 && p.name).map(p => p.name));
@@ -6070,9 +6160,9 @@ function WhisperingWishesInner() {
 
   // Owned 5★ character names for profile pic picker
   const ownedCharNames = useMemo(() => {
-    const charHistory = [...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || [])];
+    const charHistory = [...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.beginner?.history || []).filter(p => p.name && ALL_CHARACTERS.has(p.name))];
     return [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-  }, [state.profile.featured?.history, state.profile.standardChar?.history]);
+  }, [state.profile.featured?.history, state.profile.standardChar?.history, state.profile.beginner?.history]);
 
   const handleSetProfilePic = useCallback((name) => {
     if (state.profile.profilePic === name) {
@@ -6108,8 +6198,9 @@ function WhisperingWishesInner() {
     const lr = luckRating;
     const tList = trophies?.list || [];
     const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString() : null;
-    const _ch = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[])];
-    const _wh = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[])];
+    const _bh = state.profile.beginner?.history||[];
+    const _ch = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),..._bh.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+    const _wh = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),..._bh.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
     const _cu = (h,r,ic) => new Set(h.filter(p=>p.rarity===r&&p.name&&(ic?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
     const c5=_cu(_ch,5,true), c4=_cu(_ch,4,true), w5=_cu(_wh,5,false), w4=_cu(_wh,4,false), w3=_cu(_wh,3,false);
     const newestRes = [...new Set(_ch.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
@@ -6518,16 +6609,26 @@ function WhisperingWishesInner() {
   // File import handler
   // P4: Memoized collection data - avoids recomputing 5x per render
   const collectionData = useMemo(() => {
-    const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-    const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+    const beginnerHist = state.profile.beginner?.history || [];
+    const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || []), ...beginnerHist.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
+    const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || []), ...beginnerHist.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
     const countItems = (history, rarity, isChar) => {
       const items = history.filter(p => p.rarity === rarity && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name)));
       return items.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
     };
     const sortItems = (items, sort, releaseOrder = RELEASE_ORDER) => {
       const arr = [...items];
-      if (sort === 'copies') { arr.sort((a, b) => b[1] - a[1]); }
-      else { arr.sort((a, b) => { const aIdx = releaseOrder.indexOf(a[0]); const bIdx = releaseOrder.indexOf(b[0]); return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx); }); }
+      if (sort === 'copies') {
+        arr.sort((a, b) => {
+          if (b[1] !== a[1]) return b[1] - a[1]; // owned count descending
+          // Tiebreaker: release order newest→oldest
+          const aIdx = releaseOrder.indexOf(a[0]);
+          const bIdx = releaseOrder.indexOf(b[0]);
+          return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx);
+        });
+      } else {
+        arr.sort((a, b) => { const aIdx = releaseOrder.indexOf(a[0]); const bIdx = releaseOrder.indexOf(b[0]); return (bIdx === -1 ? -1 : bIdx) - (aIdx === -1 ? -1 : aIdx); });
+      }
       return arr;
     };
     return {
@@ -6535,7 +6636,7 @@ function WhisperingWishesInner() {
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
       weaps3Counts: countItems(weapHistory, 3, false), sortItems
     };
-  }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history]);
+  }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
 
   // P4-FIX: Hoisted collection mask gradient — eliminates 5 identical recomputations in collection grids
   const collectionMaskData = useMemo(() => ({
@@ -6607,6 +6708,13 @@ function WhisperingWishesInner() {
   }, [state.profile]);
 
   // Shared import processor for both file and paste methods
+  // Name normalization: maps game API / tracker names to internal names used in this app
+  const IMPORT_NAME_ALIASES = useMemo(() => ({
+    'The Shorekeeper': 'Shorekeeper',
+    'Rover (Spectro)': 'Rover', 'Rover (Havoc)': 'Rover', 'Rover (Aero)': 'Rover',
+    'Rover-Spectro': 'Rover', 'Rover-Havoc': 'Rover', 'Rover-Aero': 'Rover',
+  }), []);
+
   const processImportData = useCallback((jsonString) => {
     try {
       const data = JSON.parse(jsonString);
@@ -6646,9 +6754,9 @@ function WhisperingWishesInner() {
           const poolType = p.cardPoolType ?? p.gachaType;
           if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 1;
           if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 2;
-          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 5;
-          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 6;
-          if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 7;
+          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 3;
+          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 4;
+          if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 5 || poolType === 6 || poolType === 7;
           return false;
         });
         
@@ -6659,8 +6767,9 @@ function WhisperingWishesInner() {
         
         return filtered.map((p, i) => {
           pityCounter++;
-          const rarity = p.rarity ?? p.qualityLevel ?? 4;
-          const name = (p.name || p.resourceName || '').trim();
+          const rarity = Number(p.rarity ?? p.qualityLevel) || 4;
+          const rawName = (p.name || p.resourceName || '').trim();
+          const name = IMPORT_NAME_ALIASES[rawName] || rawName;
           
           let won5050 = undefined;
           let pity = pityCounter;
@@ -6724,9 +6833,9 @@ function WhisperingWishesInner() {
       
       const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
       const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
-      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 5).length;
-      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 6).length;
-      const bc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 7).length;
+      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
+      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
+      const bc = pulls.filter(p => [5, 6, 7].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
       if (fc) parts.push(`${fc} char`);
       if (wc) parts.push(`${wc} weap`);
@@ -6739,7 +6848,7 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Import failed: ' + err.message, 'error'); 
       return false;
     }
-  }, [toast, dispatch]);
+  }, [toast, dispatch, IMPORT_NAME_ALIASES]);
 
   const handleFileImport = useCallback((e) => {
     const file = e.target.files?.[0];
@@ -8721,10 +8830,11 @@ function WhisperingWishesInner() {
                 <div>
                   <label className="text-gray-400 text-[10px] block mb-1.5">Profile Picture</label>
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-                      {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (
-                        <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-cover" />
-                      ) : (
+                    <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
+                      {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                        const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                      })() : (
                         <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" />
                       )}
                     </div>
@@ -9184,10 +9294,11 @@ Example: {"pulls":[...]}'
                     
                     {/* Right: 1:1 Profile Picture — glass style */}
                     <div className="flex-shrink-0 flex flex-col items-center">
-                      <div className="rounded-xl overflow-hidden" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-                        {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (
-                          <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="object-cover" style={{ width: '120px', height: '120px' }} />
-                        ) : (
+                      <div className="rounded-xl" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
+                        {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                          const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                          return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="object-contain" style={{ width: '120px', height: '120px', transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                        })() : (
                           <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
                             <img src={HEADER_ICON} alt="Default" className="w-14 h-14 object-contain opacity-70" />
                           </div>
@@ -9912,6 +10023,57 @@ Example: {"pulls":[...]}'
                 <div className="text-gray-400 text-[10px]">Go to Collection tab and tap an image to frame it</div>
               </div>
             )}
+
+            {/* Info Panel Framing — appears when a character detail modal is open */}
+            {framingMode && detailModal.show && detailModal.type === 'character' && (() => {
+              const infoKey = `info-${detailModal.name}`;
+              const infoF = getImageFraming(infoKey);
+              return (
+                <div className="p-2 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                  <div className="text-orange-400 text-[9px] font-medium mb-2 truncate">
+                    Info Panel: {detailModal.name}
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 mb-2">
+                    <div />
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image up">▲</button>
+                    <div />
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image left">◀</button>
+                    <button onClick={() => saveImageFraming(infoKey, { x: 0, y: 0, zoom: 100 })} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-[8px]" aria-label="Reset info framing">Reset</button>
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image right">▶</button>
+                    <div />
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image down">▼</button>
+                    <div />
+                  </div>
+                  <div className="flex gap-1 justify-center items-center">
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.max(100, infoF.zoom - 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Zoom out">−</button>
+                    <span className="px-2 py-1 text-white text-xs min-w-[50px] text-center">{infoF.zoom}%</span>
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.min(300, infoF.zoom + 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Zoom in">+</button>
+                  </div>
+                  <div className="text-center text-gray-500 text-[8px] mt-2">Adjusts the character info panel header image</div>
+                </div>
+              );
+            })()}
+            
+            {/* Export Framing Data button — visible when framing mode is active */}
+            {framingMode && Object.keys(imageFraming).length > 0 && (
+              <button
+                onClick={() => {
+                  const json = JSON.stringify(imageFraming);
+                  if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(json).then(
+                      () => toast?.addToast?.('Framing data copied to clipboard!', 'success'),
+                      () => { window.prompt('Copy this framing data:', json); }
+                    );
+                  } else {
+                    window.prompt('Copy this framing data:', json);
+                  }
+                }}
+                className="w-full py-2 rounded text-[10px] font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
+              >
+                <ClipboardList size={10} className="inline mr-1" />
+                Export Framing Data ({Object.keys(imageFraming).length} images)
+              </button>
+            )}
             
             {!framingMode && (
               <>
@@ -9943,7 +10105,10 @@ Example: {"pulls":[...]}'
         <CharacterDetailModal 
           name={detailModal.name} 
           imageUrl={detailModal.imageUrl}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })} 
+          framing={detailModal.framing}
+          infoFraming={getImageFraming(`info-${detailModal.name}`)}
+          getImageFraming={getImageFraming}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })} 
         />
       )}
       {detailModal.show && detailModal.type === 'weapon' && (
