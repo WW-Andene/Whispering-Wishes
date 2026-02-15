@@ -2546,7 +2546,7 @@ function WhisperingWishesInner() {
               </div>
               <div>
                 <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves Companion</p>
+                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
