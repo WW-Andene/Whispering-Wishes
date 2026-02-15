@@ -550,7 +550,14 @@ function WhisperingWishesInner() {
     if (!storageAvailable) return {};
     try {
       const saved = localStorage.getItem(COLLECTION_IMAGES_KEY);
-      return saved ? JSON.parse(saved) : {};
+      if (!saved) return {};
+      const raw = JSON.parse(saved);
+      // Validate URLs: only allow HTTPS to prevent data: URI injection from tampered localStorage
+      const safe = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (typeof v === 'string' && /^https:\/\//i.test(v)) safe[k] = v;
+      }
+      return safe;
     } catch { return {}; }
   });
   
@@ -707,8 +714,14 @@ function WhisperingWishesInner() {
         }
         el = el.parentElement;
       }
+      // Exclude swipes starting near screen edges to avoid conflicting with OS back/forward gestures
+      const touchX = e.touches[0].clientX;
+      if (touchX < 20 || touchX > window.innerWidth - 20) {
+        swipeRef.current = { startX: 0, startY: 0, startTime: 0, ignore: true };
+        return;
+      }
       swipeRef.current = {
-        startX: e.touches[0].clientX,
+        startX: touchX,
         startY: e.touches[0].clientY,
         startTime: Date.now(),
         ignore: false
@@ -2623,7 +2636,14 @@ function WhisperingWishesInner() {
             {/* Category Tabs */}
             <Card>
               <CardBody>
-                <div className="flex gap-2" role="tablist" aria-label="Banner category">
+                <div className="flex gap-2" role="tablist" aria-label="Banner category" onKeyDown={(e) => {
+                    const keys = TRACKER_CATEGORIES.map(c => c[0]);
+                    const idx = keys.indexOf(trackerCategory);
+                    let next;
+                    if (e.key === 'ArrowRight') { e.preventDefault(); next = keys[(idx + 1) % keys.length]; }
+                    else if (e.key === 'ArrowLeft') { e.preventDefault(); next = keys[(idx - 1 + keys.length) % keys.length]; }
+                    if (next) { setTrackerCategory(next); const el = e.currentTarget; setTimeout(() => el.children[keys.indexOf(next)]?.focus(), FOCUS_DELAY_MS); }
+                  }}>
                   {TRACKER_CATEGORIES.map(([key, label, color]) => (
                     <button key={key} onClick={() => setTrackerCategory(key)} role="tab" aria-selected={trackerCategory === key} tabIndex={trackerCategory === key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
                       {key === 'character' ? <Crown size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
@@ -4786,24 +4806,25 @@ Example: {"pulls":[...]}'
                     );
                     if (!confirmed) return;
                     
+                    // P10-FIX: Sanitize all nested objects to prevent prototype pollution (matches loadFromStorage pattern)
+                    const safeParsed = sanitizeStateObj(s);
                     const restoredState = {
                       ...initialState,
-                      ...sanitizeImportedState(s), // P10-FIX: Sanitize imported keys (Step 6 audit)
-                      server: s.server || initialState.server,
-                      // P9-FIX: Deep merge profile sub-objects so missing fields get defaults (Step 4 audit)
-                      profile: { 
-                        ...initialState.profile, 
-                        ...s.profile,
-                        featured: { ...initialState.profile.featured, ...(s.profile?.featured || {}) },
-                        weapon: { ...initialState.profile.weapon, ...(s.profile?.weapon || {}) },
-                        standardChar: { ...initialState.profile.standardChar, ...(s.profile?.standardChar || {}) },
-                        standardWeap: { ...initialState.profile.standardWeap, ...(s.profile?.standardWeap || {}) },
-                        beginner: { ...initialState.profile.beginner, ...(s.profile?.beginner || {}) },
+                      ...sanitizeImportedState(safeParsed),
+                      server: safeParsed.server || initialState.server,
+                      profile: {
+                        ...initialState.profile,
+                        ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
+                        featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
+                        weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
+                        standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
+                        standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
+                        beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
                       },
-                      calc: { ...initialState.calc, ...s.calc },
-                      planner: { ...initialState.planner, ...s.planner },
-                      settings: { ...initialState.settings, ...s.settings },
-                      bookmarks: Array.isArray(s.bookmarks) ? s.bookmarks : [],
+                      calc: { ...initialState.calc, ...safeParsed.calc },
+                      planner: { ...initialState.planner, ...safeParsed.planner },
+                      settings: { ...initialState.settings, ...safeParsed.settings },
+                      bookmarks: Array.isArray(safeParsed.bookmarks) ? safeParsed.bookmarks : [],
                     };
                     dispatch({ type: 'LOAD_STATE', state: restoredState });
                     toast?.addToast?.(`Backup restored! (v${backupVersion})`, 'success');
@@ -5069,7 +5090,7 @@ Example: {"pulls":[...]}'
                                         const val = e.target.value.trim();
                                         const newCustom = { ...customCollectionImages };
                                         if (val) {
-                                          if (val.length > 5 && !/^https?:\/\//i.test(val)) return; // P7-FIX: URL validation (7B) — only enforce once user types a real URL
+                                          if (val.length > 5 && !/^https:\/\//i.test(val)) return; // Enforce HTTPS-only URLs
                                           newCustom[name] = val;
                                         } else {
                                           delete newCustom[name];

@@ -464,7 +464,7 @@ class AppErrorBoundary extends React.Component {
             {this.state.error && (
               <details style={{ marginTop: 16, textAlign: 'left' }}>
                 <summary style={{ color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>Error details</summary>
-                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{this.state.error.message}{'\n'}{this.state.error.stack}</pre>
+                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{this.state.error.message}</pre>
               </details>
             )}
           </div>
@@ -1210,7 +1210,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {owned && !framingMode && onSetProfilePic && (
       <button
         className={`absolute z-20 rounded flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
-        style={{ top: '6px', right: '6px', width: '24px', height: '24px', ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        style={{ top: '2px', right: '2px', width: '32px', height: '32px', ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
         onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
         title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
         aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
