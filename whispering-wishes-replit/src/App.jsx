@@ -964,7 +964,10 @@ function WhisperingWishesInner() {
     }
   }, []);
   
+  const leaderboardLoadingRef = useRef(false);
   const loadLeaderboard = useCallback(async () => {
+    if (leaderboardLoadingRef.current) return; // prevent concurrent loads
+    leaderboardLoadingRef.current = true;
     setLeaderboardLoading(true);
     try {
       // P8-FIX: CRIT-4 — Authenticate before reading
@@ -981,8 +984,9 @@ function WhisperingWishesInner() {
             // Primary key: game UID if available
             // Secondary key: stats fingerprint (avgPity + totalPulls + pulls) to catch old entries without uid
             const uidKey = e.uid || null;
-            const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}`;
-            const key = uidKey || statsKey; // Group by UID first; if no UID, group by identical stats
+            // Include id in stats key to reduce false collisions between different players with identical stats
+            const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
+            const key = uidKey || statsKey; // Group by UID first; if no UID, group by identical stats+id
             const existing = deduped.get(key);
             if (!existing || 
                 (e.uid && !existing.uid) || // prefer entry with uid
@@ -1022,6 +1026,7 @@ function WhisperingWishesInner() {
       }
     }
     setLeaderboardLoading(false);
+    leaderboardLoadingRef.current = false;
   }, [hasClaudeStorage, getFirebaseAuth]);
   
   const submittingRef = useRef(false);
@@ -2246,12 +2251,13 @@ function WhisperingWishesInner() {
         
         return filtered.map((p, i) => {
           pityCounter++;
-          const rarity = Number(p.rarity ?? p.qualityLevel) || 4;
+          const rawRarity = parseInt(p.rarity ?? p.qualityLevel, 10);
+          const rarity = (rawRarity >= 3 && rawRarity <= 5) ? rawRarity : 4; // validate range
           const rawName = (p.name || p.resourceName || '').trim();
           const name = IMPORT_NAME_ALIASES[rawName] || rawName;
-          
+
           let won5050 = undefined;
-          let pity = pityCounter;
+          let pity = Math.min(pityCounter, HARD_PITY); // clamp to valid range
           
           if (rarity === 5) {
             if (type === 'featured') {
@@ -2276,13 +2282,18 @@ function WhisperingWishesInner() {
             pityCounter = 0;
           }
           
-          return { 
-            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`, 
-            name, 
-            rarity, 
-            pity: rarity === 5 ? pity : 0, 
-            won5050, 
-            timestamp: p.timestamp || p.time,
+          // Ensure timestamp is always a valid ISO string
+          const rawTs = p.timestamp || p.time;
+          const tsMs = rawTs ? new Date(rawTs).getTime() : NaN;
+          const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
+
+          return {
+            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`,
+            name,
+            rarity,
+            pity: rarity === 5 ? pity : 0,
+            won5050,
+            timestamp: safeTimestamp,
             resourceType: p.resourceType || p.type || null
           };
         });
