@@ -99,6 +99,44 @@ import {
   MEDAL_COLORS
 } from './AppCore';
 
+// ── Module-level constants (hoisted from render body) ──────────────────────
+const DEBOUNCE_MS = 300;
+const FOCUS_DELAY_MS = 50;
+const CALC_DEFER_MS = 150;
+const MAX_ADMIN_ATTEMPTS = 5;
+const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const ADMIN_TAP_TIMEOUT_MS = 1500;
+const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
+const MAX_USERNAME_LENGTH = 24;
+const MAX_BOOKMARK_NAME_LENGTH = 30;
+const LEADERBOARD_DISPLAY_LIMIT = 20;
+const MIN_ZOOM = 100;
+const MAX_ZOOM = 300;
+const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
+const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes';
+const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
+const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
+const DEFAULT_VISUAL_SETTINGS = {
+  fadePosition: 50,
+  fadeIntensity: 100,
+  pictureOpacity: 100,
+  standardFadePosition: 50,
+  standardFadeIntensity: 100,
+  standardOpacity: 100,
+  shadowFadePosition: 50,
+  shadowFadeIntensity: 100,
+  shadowOpacity: 100,
+  collectionFadePosition: 50,
+  collectionFadeIntensity: 100,
+  collectionOpacity: 100,
+  collectionFadeDirection: 'top',
+  collectionZoom: 120,
+  oledMode: false,
+  swipeNavigation: false,
+  animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
+};
+const TRACKER_CATEGORIES = [['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']];
+
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   // Check admin-only lockout (5-min cooldown after 5 failed attempts — does NOT lock the app)
@@ -169,36 +207,11 @@ function WhisperingWishesInner() {
   const updateBannerForm = useCallback((field, value) => setBannerForm(prev => ({ ...prev, [field]: value })), []);
   
   // Banner visual settings - v3 forces fresh defaults
-  const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
-  const defaultVisualSettings = {
-    // Featured Banner Cards
-    fadePosition: 50,
-    fadeIntensity: 100,
-    pictureOpacity: 100,
-    // Standard Banner Cards
-    standardFadePosition: 50,
-    standardFadeIntensity: 100,
-    standardOpacity: 100,
-    // Event Cards
-    shadowFadePosition: 50,
-    shadowFadeIntensity: 100,
-    shadowOpacity: 100,
-    // Collection Cards (vertical fade)
-    collectionFadePosition: 50,
-    collectionFadeIntensity: 100,
-    collectionOpacity: 100,
-    collectionFadeDirection: 'top',
-    collectionZoom: 120,
-    // Display Settings
-    oledMode: false,
-    swipeNavigation: false,
-    animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
-  };
   // Always start with defaults - localStorage can override but we validate each property
   const [visualSettings, setVisualSettings] = useState(() => {
     // Return defaults - don't load from localStorage on initial load
     // This ensures fresh users always get correct defaults
-    return { ...defaultVisualSettings };
+    return { ...DEFAULT_VISUAL_SETTINGS };
   });
   
   // Load from localStorage after mount (so SSR/preview gets defaults)
@@ -275,11 +288,18 @@ function WhisperingWishesInner() {
     if (visualSettingsTimerRef.current) clearTimeout(visualSettingsTimerRef.current);
     visualSettingsTimerRef.current = setTimeout(() => {
       try { localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(newSettings)); } catch {}
-    }, 300);
+    }, DEBOUNCE_MS);
   }, [storageAvailable]);
-  
+
+  // Cleanup debounce timers and admin tap timer on unmount
+  useEffect(() => {
+    return () => {
+      if (visualSettingsTimerRef.current) clearTimeout(visualSettingsTimerRef.current);
+      if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
+    };
+  }, []);
+
   // Image framing state - stores position/zoom for each image by key
-  const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
   const [framingMode, setFramingMode] = useState(false);
@@ -414,7 +434,7 @@ function WhisperingWishesInner() {
     // Clamp values - larger range for better control
     newFraming.x = Math.max(-100, Math.min(100, newFraming.x));
     newFraming.y = Math.max(-100, Math.min(100, newFraming.y));
-    newFraming.zoom = Math.max(100, Math.min(300, newFraming.zoom));
+    newFraming.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newFraming.zoom));
     saveImageFraming(editingImage, newFraming);
   };
   
@@ -532,9 +552,12 @@ function WhisperingWishesInner() {
     clearTimeout(saveCollectionImagesDebounced.current);
     saveCollectionImagesDebounced.current = setTimeout(() => { // P7-FIX: Debounce localStorage writes (7B)
       try { localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(newImages)); } catch {}
-    }, 300)
+    }, DEBOUNCE_MS)
   };
-  
+  useEffect(() => {
+    return () => { if (saveCollectionImagesDebounced.current) clearTimeout(saveCollectionImagesDebounced.current); };
+  }, []);
+
   // Admin password — only the app owner can access admin (hash defined at module level)
   
   // Keep ref updated
@@ -557,7 +580,7 @@ function WhisperingWishesInner() {
       try {
         const parsed = rawSaved ? JSON.parse(rawSaved) : null;
         originalSettings = parsed?.settings || {};
-      } catch (e) {}
+      } catch (e) { console.warn('Failed to parse saved settings:', e); }
       // Only show onboarding if the original saved data had it explicitly true
       // If settings.showOnboarding is missing/undefined, user is existing - don't show
       const shouldShow = originalSettings.showOnboarding === true;
@@ -755,7 +778,9 @@ function WhisperingWishesInner() {
 
   // P8-FIX: Use in-game UID as primary leaderboard key so same player on web + Android = one entry
   // Falls back to random ID only if no import has been done yet
-  const effectiveLeaderboardId = state.profile.uid || userLeaderboardId;
+  // Sanitize UIDs for Firebase path safety — only allow alphanumeric, hyphens, underscores
+  const sanitizeFirebaseKey = useCallback((key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key, []);
+  const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
@@ -770,7 +795,7 @@ function WhisperingWishesInner() {
         const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
         if (focusable) focusable.focus();
       }
-    }, 50);
+    }, FOCUS_DELAY_MS);
     return () => clearTimeout(timer);
   }, [anyModalOpen]);
 
@@ -780,7 +805,7 @@ function WhisperingWishesInner() {
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
     if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current);
-    calcDeferTimerRef.current = setTimeout(() => setDeferredCalc(state.calc), 150);
+    calcDeferTimerRef.current = setTimeout(() => setDeferredCalc(state.calc), CALC_DEFER_MS);
     return () => { if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current); };
   }, [state.calc]);
 
@@ -858,11 +883,11 @@ function WhisperingWishesInner() {
     
     let charProb, weapProb;
     if (deferredCalc.bannerCategory === 'featured') {
-      charProb = parseFloat(charStats.successRate) / 100;
-      weapProb = parseFloat(weapStats.successRate) / 100;
+      charProb = (parseFloat(charStats.successRate) || 0) / 100;
+      weapProb = (parseFloat(weapStats.successRate) || 0) / 100;
     } else {
-      charProb = parseFloat(stdCharStats.successRate) / 100;
-      weapProb = parseFloat(stdWeapStats.successRate) / 100;
+      charProb = (parseFloat(stdCharStats.successRate) || 0) / 100;
+      weapProb = (parseFloat(stdWeapStats.successRate) || 0) / 100;
     }
     
     return {
@@ -910,9 +935,7 @@ function WhisperingWishesInner() {
     };
   }, [state.profile]);
   
-  // Leaderboard functions — Firebase Realtime Database
-  const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
-  const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes'; // P8-FIX: CRIT-4 — Firebase project API key for anonymous auth
+  // Leaderboard functions — Firebase Realtime Database (constants at module level)
   const hasClaudeStorage = typeof window !== 'undefined' && !!window.storage;
   
   // P8-FIX: CRIT-4 — Firebase Anonymous Auth token management
@@ -969,7 +992,7 @@ function WhisperingWishesInner() {
           });
           const entries = [...deduped.values()];
           entries.sort((a, b) => a.avgPity - b.avgPity);
-          setLeaderboardData(entries.slice(0, 20));
+          setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
         } else {
           setLeaderboardData([]);
         }
@@ -1001,8 +1024,10 @@ function WhisperingWishesInner() {
     setLeaderboardLoading(false);
   }, [hasClaudeStorage, getFirebaseAuth]);
   
+  const submittingRef = useRef(false);
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
+    if (submittingRef.current) return; // prevent double-submit
     
     // Require explicit consent before first submission
     if (!leaderboardConsented) {
@@ -1020,6 +1045,7 @@ function WhisperingWishesInner() {
       try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
     }
     
+    submittingRef.current = true;
     try {
       const entry = {
         id: effectiveLeaderboardId,
@@ -1048,11 +1074,12 @@ function WhisperingWishesInner() {
       const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-        await fetch(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
+        const pullsRes = await fetch(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
         });
+        if (!pullsRes.ok) console.warn('Community-pulls PUT failed:', pullsRes.status);
       }
       
       toast?.addToast?.('Score submitted to leaderboard!', 'success');
@@ -1104,9 +1131,11 @@ function WhisperingWishesInner() {
       }
       
       loadLeaderboard();
-    } catch (e) { 
+    } catch (e) {
       console.error('Submit error:', e);
       toast?.addToast?.('Failed to submit score', 'error');
+    } finally {
+      submittingRef.current = false;
     }
   }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, leaderboardConsented, getFirebaseAuth]);
   
@@ -1138,6 +1167,8 @@ function WhisperingWishesInner() {
       loadLeaderboard();
       loadCommunityPulls();
     }
+    // Note: AbortController not added here because loadLeaderboard/loadCommunityPulls
+    // set state only on success paths and are guarded by showLeaderboard gate
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
 
   // Anonymous presence system — writes only a timestamp (no personal data) to track active users
@@ -2296,7 +2327,7 @@ function WhisperingWishesInner() {
       if (storageAvailable) {
         try {
           const currentSize = (localStorage.getItem(STORAGE_KEY) || '').length;
-          if (currentSize > 3.5 * 1024 * 1024) {
+          if (currentSize > STORAGE_WARNING_THRESHOLD) {
             toast?.addToast?.(`Storage at ${(currentSize / 1024 / 1024).toFixed(1)}MB of ~5MB. Consider exporting a backup.`, 'warning');
           }
         } catch {}
@@ -2322,9 +2353,12 @@ function WhisperingWishesInner() {
     reader.onload = (ev) => {
       processImportData(ev.target.result);
     };
+    reader.onerror = () => {
+      toast?.addToast?.('Failed to read file', 'error');
+    };
     reader.readAsText(file);
     e.target.value = '';
-  }, [processImportData]);
+  }, [processImportData, toast]);
 
   // P8-FIX: MED — Drag-and-drop handler for file upload area
   const handleFileDrop = useCallback((e) => {
@@ -2405,7 +2439,7 @@ function WhisperingWishesInner() {
       adminTapTimerRef.current = setTimeout(() => {
         adminTapCountRef.current = 0;
         setAdminTapCount(0);
-      }, 1500);
+      }, ADMIN_TAP_TIMEOUT_MS);
     }
   }, [toast]);
 
@@ -2427,8 +2461,13 @@ function WhisperingWishesInner() {
 
   // Hash a password using SHA-256
   const hashPassword = useCallback(async (password) => {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    try {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle unavailable (requires HTTPS):', e);
+      return null;
+    }
   }, []);
 
   // Verify admin password (with failed attempt tracking → 5-min admin-only cooldown)
@@ -2449,6 +2488,10 @@ function WhisperingWishesInner() {
     } catch {}
     
     const hashedInput = await hashPassword(adminPassword);
+    if (!hashedInput) {
+      toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
+      return;
+    }
     if (hashedInput === ADMIN_HASH) {
       setAdminUnlocked(true);
       setBannerForm(buildBannerForm(activeBanners));
@@ -2458,15 +2501,15 @@ function WhisperingWishesInner() {
       try {
         const fails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1; // P10-FIX: Radix was passed to getItem instead of parseInt (Step 6 audit)
         localStorage.setItem('ww-admin-fails', fails.toString());
-        if (fails >= 5) {
-          const lockoutTime = Date.now() + (5 * 60 * 1000); // 5 minutes
+        if (fails >= MAX_ADMIN_ATTEMPTS) {
+          const lockoutTime = Date.now() + ADMIN_LOCKOUT_MS;
           localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
           setAdminLockedUntil(lockoutTime);
           setShowAdminPanel(false);
           setAdminPassword('');
           toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
         } else {
-          toast?.addToast?.(`Incorrect password (${5 - fails} attempts remaining)`, 'error');
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - fails} attempts remaining)`, 'error');
         }
       } catch {
         toast?.addToast?.('Incorrect password', 'error');
@@ -2546,7 +2589,7 @@ function WhisperingWishesInner() {
             <Card>
               <CardBody>
                 <div className="flex gap-2" role="tablist" aria-label="Banner category">
-                  {[['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']].map(([key, label, color]) => (
+                  {TRACKER_CATEGORIES.map(([key, label, color]) => (
                     <button key={key} onClick={() => setTrackerCategory(key)} role="tab" aria-selected={trackerCategory === key} tabIndex={trackerCategory === key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
                       {key === 'character' ? <Crown size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
                       {label}
@@ -3055,7 +3098,7 @@ function WhisperingWishesInner() {
             </Card>
 
             <Card>
-              <div className="cursor-pointer" onClick={() => setShowIncomePanel(!showIncomePanel)}>
+              <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
                 <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
               </div>
               {showIncomePanel && (
@@ -3409,7 +3452,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -3433,7 +3476,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -3619,7 +3662,7 @@ function WhisperingWishesInner() {
                   
                   // Color coding
                   const getBarColor = (label) => {
-                    const start = parseInt(label.split('-', 10)[0]);
+                    const start = parseInt(label.split('-')[0], 10);
                     if (start <= 20) return '#22c55e'; // Green - very lucky
                     if (start <= 40) return '#84cc16'; // Lime - lucky
                     if (start <= 50) return '#fbbf24'; // Yellow - average
@@ -4121,6 +4164,7 @@ function WhisperingWishesInner() {
                         onClick={refreshImages}
                         className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
                         title="Refresh images if they don't load"
+                        aria-label="Refresh images"
                       >
                         <RefreshCcw size={10} />
                       </button>
@@ -4128,6 +4172,8 @@ function WhisperingWishesInner() {
                         onClick={() => setCollectionSort('copies')}
                         className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by copies"
+                        aria-label="Sort by copies"
+                        aria-pressed={collectionSort === 'copies'}
                       >
                         #
                       </button>
@@ -4135,6 +4181,8 @@ function WhisperingWishesInner() {
                         onClick={() => setCollectionSort('release')}
                         className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by release date"
+                        aria-label="Sort by release date"
+                        aria-pressed={collectionSort === 'release'}
                       >
                         <Calendar size={10} />
                       </button>
@@ -4278,16 +4326,17 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 {/* Username */}
                 <div>
-                  <label className="text-gray-400 text-[10px] block mb-1">Display Name</label>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-1">Display Name</label>
                   <input
+                    id="profile-display-name"
                     type="text"
                     value={state.profile.username}
-                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, 24) })}
+                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
                     placeholder="Enter your name..."
-                    maxLength={24}
+                    maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />
-                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/24</p>
+                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -4469,6 +4518,7 @@ function WhisperingWishesInner() {
 Example: {"pulls":[...]}'
                       className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
                       spellCheck={false}
+                      aria-label="Paste import JSON data"
                     />
                     <div className="flex gap-2">
                       <button 
@@ -4587,7 +4637,7 @@ Example: {"pulls":[...]}'
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={30} className="kuro-input w-full" aria-label="Bookmark name" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
                 <p>Astrite: {state.calc.astrite || 0} • Char Pity: {state.calc.charPity} • Weap Pity: {state.calc.weapPity}</p>
                 <p>Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0}</p>
@@ -4605,11 +4655,12 @@ Example: {"pulls":[...]}'
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
-              <textarea 
-                value={exportData} 
-                readOnly 
+              <textarea
+                value={exportData}
+                readOnly
                 className="kuro-input w-full h-24 text-[9px] font-mono"
                 onClick={e => e.target.select()}
+                aria-label="Export backup data"
               />
               <button 
                 onClick={async () => {
@@ -4638,11 +4689,12 @@ Example: {"pulls":[...]}'
               </div>
               
               <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
-              <textarea 
+              <textarea
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
                 placeholder="Paste backup JSON here..."
                 className="kuro-input w-full h-20 text-[9px] font-mono"
+                aria-label="Paste backup data to restore"
               />
               <button 
                 onClick={() => {
@@ -5047,7 +5099,7 @@ Example: {"pulls":[...]}'
                           🗗 Mini Window
                         </button>
                         <button
-                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
+                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
                           className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
                         >
                           Reset to Defaults
@@ -5221,6 +5273,7 @@ Example: {"pulls":[...]}'
                       value={bannerForm.charsJson}
                       onChange={(e) => updateBannerForm('charsJson', e.target.value)}
                       placeholder="Paste characters array JSON"
+                      aria-label="Featured resonators JSON"
                     />
                   </div>
 
@@ -5231,6 +5284,7 @@ Example: {"pulls":[...]}'
                       value={bannerForm.weapsJson}
                       onChange={(e) => updateBannerForm('weapsJson', e.target.value)}
                       placeholder="Paste weapons array JSON"
+                      aria-label="Featured weapons JSON"
                     />
                   </div>
 
@@ -5246,6 +5300,7 @@ Example: {"pulls":[...]}'
                             value={bannerForm.charImages[i] ?? ''}
                             onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${c.name} image URL`}
                           />
                         </div>
                       ))}
@@ -5264,6 +5319,7 @@ Example: {"pulls":[...]}'
                             value={bannerForm.weapImages[i] ?? ''}
                             onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${w.name} image URL`}
                           />
                         </div>
                       ))}
@@ -5281,6 +5337,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.standardCharImg}
                           onChange={(e) => updateBannerForm('standardCharImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tidal Chorus banner image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5291,6 +5348,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.standardWeapImg}
                           onChange={(e) => updateBannerForm('standardWeapImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Winter Brume banner image URL"
                         />
                       </div>
                     </div>
@@ -5307,6 +5365,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.wwImg}
                           onChange={(e) => updateBannerForm('wwImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Whimpering Wastes image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5317,6 +5376,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.dpImg}
                           onChange={(e) => updateBannerForm('dpImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Doubled Pawns image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5327,6 +5387,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.toaImg}
                           onChange={(e) => updateBannerForm('toaImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tower of Adversity image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5337,6 +5398,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.irImg}
                           onChange={(e) => updateBannerForm('irImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Illusive Realm image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5347,6 +5409,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.drImg}
                           onChange={(e) => updateBannerForm('drImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Daily Reset image URL"
                         />
                       </div>
                     </div>
@@ -5581,7 +5644,7 @@ Example: {"pulls":[...]}'
               <>
             {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
             <button 
-              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
+              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
               className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
               ↻ Reset All to Defaults
