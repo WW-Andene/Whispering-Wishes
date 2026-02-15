@@ -796,20 +796,12 @@ function WhisperingWishesInner() {
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
-  // P2-FIX: Deferred calc state — sliders update UI instantly (state.calc),
-  // A11y: Focus trap for inline modals — auto-focus first focusable element on open
-  const anyModalOpen = showBookmarkModal || showExportModal || showAdminPanel || showLeaderboard || selectedTrophy;
-  useEffect(() => {
-    if (!anyModalOpen) return;
-    const timer = setTimeout(() => {
-      const modal = document.querySelector('[role="dialog"]');
-      if (modal) {
-        const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (focusable) focusable.focus();
-      }
-    }, FOCUS_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [anyModalOpen]);
+  // 6.1 fix: Focus trapping for inline modals — Tab wraps within modal, auto-focus first element, restore on close
+  const leaderboardTrapRef = useFocusTrap(showLeaderboard);
+  const bookmarkTrapRef = useFocusTrap(showBookmarkModal);
+  const exportTrapRef = useFocusTrap(showExportModal);
+  const idCardTrapRef = useFocusTrap(showIdCard);
+  const adminTrapRef = useFocusTrap(showAdminPanel && !adminMiniMode);
 
   // but heavy DP computation only fires 150ms after the last slider tick.
   // Prevents ~7MB array allocation × 60Hz during slider drag.
@@ -3387,7 +3379,7 @@ function WhisperingWishesInner() {
                 
                 {/* Luck Leaderboard Modal */}
                 {showLeaderboard && (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
+                  <div ref={leaderboardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-busy={leaderboardLoading} aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
                     <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
                       <div className="p-4 pb-2 border-b border-white/10">
                         <div className="flex items-center justify-between mb-3">
@@ -4661,7 +4653,7 @@ Example: {"pulls":[...]}'
 
       {/* Bookmark Modal */}
       {showBookmarkModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
+        <div ref={bookmarkTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
@@ -4678,7 +4670,7 @@ Example: {"pulls":[...]}'
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
+        <div ref={exportTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
@@ -4815,7 +4807,7 @@ Example: {"pulls":[...]}'
 
       {/* Resonator ID Card Modal */}
       {showIdCard && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
+        <div ref={idCardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
           <div className="w-full max-w-md">
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
@@ -4957,7 +4949,7 @@ Example: {"pulls":[...]}'
 
       {/* Admin Panel Modal */}
       {showAdminPanel && !adminMiniMode && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
+        <div ref={adminTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
           <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
