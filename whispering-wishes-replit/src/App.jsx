@@ -961,9 +961,9 @@ function WhisperingWishesInner() {
       won5050: won, 
       lost5050: lost, 
       winRate: (won + lost) > 0 ? ((won / (won + lost)) * 100).toFixed(1) : null, 
-      avgPity 
+      avgPity
     };
-  }, [state.profile]);
+  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
   
   // Leaderboard functions — Firebase Realtime Database (constants at module level)
   const hasClaudeStorage = typeof window !== 'undefined' && !!window.storage;
@@ -2215,7 +2215,7 @@ function WhisperingWishesInner() {
     } : null;
     
     return { allHist, fiveStars, pullLogFiveStars, totalObtained, histogramBuckets, allBucketLabels, histogramStats };
-  }, [state.profile]);
+  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
 
   // Shared import processor for both file and paste methods
   // Name normalization: maps game API / tracker names to internal names used in this app
@@ -2587,7 +2587,7 @@ function WhisperingWishesInner() {
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
                 <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform">
-                  <img src={HEADER_ICON} alt="WW" className="w-full h-full object-cover" />
+                  <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
               </div>
               <div>

@@ -78,7 +78,11 @@ async function staleWhileRevalidate(request, cacheName) {
       trimCache(cacheName, MAX_IMG_ENTRIES);
     }
     return response;
-  }).catch(() => cached || new Response('', { status: 503 }));
+  }).catch(() => {
+    // Return cached version if available; otherwise let browser handle the error natively
+    if (cached) return cached;
+    return new Response('', { status: 503, statusText: 'Service Unavailable' });
+  });
   
   return cached || fetchPromise;
 }
