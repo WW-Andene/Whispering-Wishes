@@ -1580,8 +1580,7 @@ const getActiveBanners = () => {
 };
 
 export {
-  TROPHY_ICON_MAP, generateMaskGradient, generateVerticalMaskGradient,
-  DETAIL_ELEMENT_COLORS, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS,
+  TROPHY_ICON_MAP, generateVerticalMaskGradient,
   TabBackground, Card, CardHeader, CardBody,
   CharacterDetailModal, WeaponDetailModal,
   TabButton, PityRing, CountdownTimer,
@@ -1589,9 +1588,9 @@ export {
   BackgroundGlow, TriangleMirrorWave,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
-  CollectionGridCard, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
+  VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
   CollectionGridSection, PityCounterInput, CalcResultsCard,
   StandardBannerSection, ImportGuide,
-  loadCustomBanners, getActiveBanners,
+  getActiveBanners,
   hideOnError,
 };

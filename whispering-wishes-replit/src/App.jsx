@@ -118,6 +118,8 @@ const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 const MAX_USERNAME_LENGTH = 24;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
 const LEADERBOARD_DISPLAY_LIMIT = 20;
+const ADMIN_SALT = 'whispering-wishes-v3-admin';
+const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
 const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
@@ -816,7 +818,7 @@ function WhisperingWishesInner() {
   // P8-FIX: Use in-game UID as primary leaderboard key so same player on web + Android = one entry
   // Falls back to random ID only if no import has been done yet
   // Sanitize UIDs for Firebase path safety — only allow alphanumeric, hyphens, underscores
-  const sanitizeFirebaseKey = useCallback((key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key, []);
+  const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
   const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
@@ -967,7 +969,7 @@ function WhisperingWishesInner() {
   }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
   
   // Leaderboard functions — Firebase Realtime Database (constants at module level)
-  const hasClaudeStorage = typeof window !== 'undefined' && !!window.storage;
+  const hasReplitStorage = typeof window !== 'undefined' && !!window.storage;
   
   // P8-FIX: CRIT-4 — Firebase Anonymous Auth token management
   const firebaseAuthRef = useRef({ idToken: null, expiresAt: 0 });
@@ -1037,7 +1039,7 @@ function WhisperingWishesInner() {
     } catch (e) {
       console.error('Leaderboard load error:', e);
       // Fallback to Claude storage if available
-      if (hasClaudeStorage) {
+      if (hasReplitStorage) {
         try {
           const result = await window.storage.list('luck:', true);
           if (result?.keys) {
@@ -1058,7 +1060,7 @@ function WhisperingWishesInner() {
     }
     setLeaderboardLoading(false);
     leaderboardLoadingRef.current = false;
-  }, [hasClaudeStorage, getFirebaseAuth]);
+  }, [hasReplitStorage, getFirebaseAuth]);
   
   const submittingRef = useRef(false);
   const submitToLeaderboard = useCallback(async () => {
@@ -2043,7 +2045,7 @@ function WhisperingWishesInner() {
 
       // ── Histogram — sized to content ──
       const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
-      if(hS){drawHisto(bx+6,Y+hp2o,bw-12,pHistoH-hp2o-8);
+      if(histSummary){drawHisto(bx+6,Y+hp2o,bw-12,pHistoH-hp2o-8);
         ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-8,Y+pHistoH-3);ctx.textAlign='left';}
       Y+=pHistoH+gap;
 
@@ -2504,7 +2506,6 @@ function WhisperingWishesInner() {
   // Hash a password using SHA-256 (5.1 fix: salted variant added to harden against rainbow tables)
   // Note: admin panel is client-side only (controls local banner customization, not server resources).
   // For true security, admin auth should move to a backend service with proper KDF (PBKDF2/Argon2).
-  const ADMIN_SALT = 'whispering-wishes-v3-admin';
   const hashPassword = useCallback(async (password, salt = '') => {
     try {
       const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
@@ -4655,7 +4656,7 @@ Example: {"pulls":[...]}'
                 <div className="space-y-2 text-[9px] text-gray-500">
                   <p className="font-medium text-gray-400">Disclaimer</p>
                   <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
-                  <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{new Date().getFullYear()}. All rights reserved.</p>
+                  <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{currentYear}. All rights reserved.</p>
                 </div>
                 
                 <div className="space-y-2 text-[9px] text-gray-500">
@@ -4685,7 +4686,7 @@ Example: {"pulls":[...]}'
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
                 
-                <p className="text-center text-[8px] text-gray-500 pt-2">© {new Date().getFullYear()} Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                <p className="text-center text-[8px] text-gray-500 pt-2">© {currentYear} Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
           </div>

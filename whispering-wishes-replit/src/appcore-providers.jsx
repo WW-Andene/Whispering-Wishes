@@ -3,7 +3,7 @@
 // PWA infrastructure, toast system, a11y hooks, onboarding, KuroStyles.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
 import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { APP_VERSION, haptic, generateUniqueId } from './appcore-data.js';
 
