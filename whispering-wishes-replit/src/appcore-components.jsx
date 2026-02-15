@@ -4,16 +4,19 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Upload, Download, Check, Target, Zap, X, LayoutGrid, Info, CheckCircle, AlertCircle, Settings, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, Search } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, Info, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
-  DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, ELEMENT_COLORS, haptic,
+  DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
   getNextDailyReset, getNextWeeklyReset, storageAvailable,
 } from './appcore-engine.js';
 import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
+
+// P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
+const hideOnError = (e) => { e.target.style.display = 'none'; };
 
 // UNIFIED MASK GENERATORS & SHARED COLOR MAPS (deduplicated from v2.6)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -147,7 +150,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }}>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={(e) => { e.target.style.display = 'none'; }} style={{
+            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
               transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'right bottom'
             }} />
@@ -186,7 +189,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
               {weaponImg && (
-                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" onError={(e) => { e.target.style.display = 'none'; }} />
+                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" onError={hideOnError} />
               )}
               <div className="flex-1 min-w-0">
                 <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
@@ -245,7 +248,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10" style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
@@ -338,7 +341,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         <div className="relative h-40 overflow-hidden rounded-t-2xl">
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={(e) => { e.target.style.display = 'none'; }} />
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
@@ -626,7 +629,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   // Unified compact style matching Tracker tab
   if (compact) {
     return (
-      <span className={`${textColor} font-mono text-xs font-medium`}>
+      <span className={`${textColor} font-mono text-xs font-medium`} role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
         {time.days > 0 && `${time.days}d `}{String(time.hours).padStart(2, '0')}h {String(time.minutes).padStart(2, '0')}m {String(time.seconds).padStart(2, '0')}s
       </span>
     );
@@ -976,7 +979,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           }}
           loading="eager"
 
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={hideOnError}
         />
       )}
       
@@ -986,7 +989,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       )}
       
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
@@ -1005,7 +1008,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
       </div>
       
       {stats && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15 rounded-b-xl" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)'}}>
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15 rounded-b-xl" style={BANNER_CARD_OVERLAY_STYLE}>
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
@@ -1084,13 +1087,13 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             filter: isSkipped ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
           }}
           loading="lazy"
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={hideOnError}
         />
       )}
       
       {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
       
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
             <h4 className={`font-bold text-sm ${isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
@@ -1197,7 +1200,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           maskImage: collMask, 
           WebkitMaskImage: collMask
         }}
-        onError={(e) => { e.target.style.display = 'none'; }}
+        onError={hideOnError}
       />
     )}
     {isNew && (
@@ -1457,10 +1460,10 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 1, opacity: stdOpacity, maskImage: stdMask, WebkitMaskImage: stdMask }}
           loading="eager"
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={hideOnError}
         />
       )}
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex justify-between items-start mb-1">
             <h3 className="font-bold text-sm text-cyan-400">{title}</h3>
@@ -1590,4 +1593,5 @@ export {
   CollectionGridSection, PityCounterInput, CalcResultsCard,
   StandardBannerSection, ImportGuide,
   loadCustomBanners, getActiveBanners,
+  hideOnError,
 };

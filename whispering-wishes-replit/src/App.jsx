@@ -96,7 +96,8 @@ import {
   AppErrorBoundary,
   TabErrorBoundary,
   TAB_ORDER,
-  MEDAL_COLORS
+  MEDAL_COLORS,
+  hideOnError,
 } from './AppCore';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
@@ -813,6 +814,7 @@ function WhisperingWishesInner() {
   const exportTrapRef = useFocusTrap(showExportModal);
   const idCardTrapRef = useFocusTrap(showIdCard);
   const adminTrapRef = useFocusTrap(showAdminPanel && !adminMiniMode);
+  const trophyTrapRef = useFocusTrap(!!selectedTrophy);
 
   // but heavy DP computation only fires 150ms after the last slider tick.
   // Prevents ~7MB array allocation × 60Hz during slider drag.
@@ -1693,16 +1695,16 @@ function WhisperingWishesInner() {
     const lr = luckRating;
     const tList = trophies?.list || [];
     const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString() : null;
-    const _bh = state.profile.beginner?.history||[];
-    const _ch = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),..._bh.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
-    const _wh = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),..._bh.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
-    const _cu = (h,r,ic) => new Set(h.filter(p=>p.rarity===r&&p.name&&(ic?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
-    const c5=_cu(_ch,5,true), c4=_cu(_ch,4,true), w5=_cu(_wh,5,false), w4=_cu(_wh,4,false), w3=_cu(_wh,3,false);
-    const newestRes = [...new Set(_ch.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
-    const _fs = [..._ch,..._wh].filter(p=>p.rarity===5&&p.pity>0);
-    const hB = {}; _fs.forEach(p=>{if(p.pity>80){hB['81+']=(hB['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;hB[`${b}-${b+9}`]=(hB[`${b}-${b+9}`]??0)+1;}});
-    const hL = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(hB['81+'])hL.push('81+'); hL.forEach(b=>{if(!hB[b])hB[b]=0;});
-    const hS = _fs.length>=2?{max:Math.max(...Object.values(hB),1),avg:(_fs.reduce((s,p)=>s+p.pity,0)/_fs.length).toFixed(1),lo:Math.min(..._fs.map(p=>p.pity)),hi:Math.max(..._fs.map(p=>p.pity))}:null;
+    const beginnerHist = state.profile.beginner?.history||[];
+    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
+    const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
+    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false);
+    const newestRes = [...new Set(charHist.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
+    const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
+    const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
+    const histLabels = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(histBuckets['81+'])histLabels.push('81+'); histLabels.forEach(b=>{if(!histBuckets[b])histBuckets[b]=0;});
+    const histSummary = fiveStarPulls.length>=2?{max:Math.max(...Object.values(histBuckets),1),avg:(fiveStarPulls.reduce((s,p)=>s+p.pity,0)/fiveStarPulls.length).toFixed(1),lo:Math.min(...fiveStarPulls.map(p=>p.pity)),hi:Math.max(...fiveStarPulls.map(p=>p.pity))}:null;
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#fbbf24'},
       {l:'Total Pulls',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
@@ -1866,10 +1868,10 @@ function WhisperingWishesInner() {
 
     // Mini histogram
     const drawHisto = (hx,hy,hw,hh) => {
-      if(!hS||!hL.length)return;
-      const bg2=2,bw2=(hw-(hL.length-1)*bg2)/hL.length,area=hh-14;
-      hL.forEach((lab,i)=>{
-        const cnt=hB[lab]||0,bh=hS.max>0?Math.max(2,(cnt/hS.max)*area):2;
+      if(!histSummary||!histLabels.length)return;
+      const bg2=2,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-14;
+      histLabels.forEach((lab,i)=>{
+        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(2,(cnt/histSummary.max)*area):2;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
         const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
@@ -1950,8 +1952,8 @@ function WhisperingWishesInner() {
       const cp1o=drawPanel(rightX+statsW+gap,Y,collW,r1H,'Collection');
       drawColl(rightX+statsW+gap+6,Y+cp1o,collW-12);
       const hiY=Y+cp1o+36;
-      if(hS)drawHisto(rightX+statsW+gap+6,hiY,collW-12,r1H-cp1o-36-4);
-      if(hS){ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+hS.lo+' | Avg '+hS.avg+' | Hi '+hS.hi,rightX+statsW+gap+collW-8,Y+r1H-3);ctx.textAlign='left';}
+      if(histSummary)drawHisto(rightX+statsW+gap+6,hiY,collW-12,r1H-cp1o-36-4);
+      if(histSummary){ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,rightX+statsW+gap+collW-8,Y+r1H-3);ctx.textAlign='left';}
 
       // Draw Row 2: Resonators — sized to content
       const r2Y=Y+r1H+gap;
@@ -2028,7 +2030,7 @@ function WhisperingWishesInner() {
       // ── Histogram — sized to content ──
       const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
       if(hS){drawHisto(bx+6,Y+hp2o,bw-12,pHistoH-hp2o-8);
-        ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+hS.lo+' | Avg '+hS.avg+' | High '+hS.hi,bx+bw-8,Y+pHistoH-3);ctx.textAlign='left';}
+        ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-8,Y+pHistoH-3);ctx.textAlign='left';}
       Y+=pHistoH+gap;
 
       // ── Resonators — sized to content ──
@@ -2592,8 +2594,10 @@ function WhisperingWishesInner() {
           <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
               const tabs = ['tracker','events','calculator','planner','analytics','gathering','profile'];
               const idx = tabs.indexOf(activeTab);
-              if (e.key === 'ArrowRight') { e.preventDefault(); setActiveTab(tabs[(idx + 1) % tabs.length]); }
-              else if (e.key === 'ArrowLeft') { e.preventDefault(); setActiveTab(tabs[(idx - 1 + tabs.length) % tabs.length]); }
+              let newTab;
+              if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
+              else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
+              if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), FOCUS_DELAY_MS); }
             }}>
             <div className="tab-indicator" />
             <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker"><Sparkles size={16} /> Tracker</TabButton>
@@ -3038,7 +3042,8 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Results Cards */}
+            {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
+            <div aria-live="polite" aria-atomic="false">
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
               <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}
@@ -3054,6 +3059,7 @@ function WhisperingWishesInner() {
             {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
               <CalcResultsCard title="Standard Weapon Results" stats={stdWeapStats} accentStatClass="kuro-stat-cyan" copies={state.calc.stdWeapCopies} isFeatured={false} />
             )}
+            </div>
 
             {/* Combined Analysis */}
             {state.calc.selectedBanner === 'both' && combined && (
@@ -3483,7 +3489,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -3507,7 +3513,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -3631,7 +3637,8 @@ function WhisperingWishesInner() {
                         if (!t) return null;
                         const Icon = TROPHY_ICON_MAP[t.icon] || Star;
                         return (
-                          <div 
+                          <div
+                            ref={trophyTrapRef}
                             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
                             onClick={() => setSelectedTrophy(null)}
                             onKeyDown={(e) => { if (e.key === 'Escape') setSelectedTrophy(null); }}
@@ -4377,9 +4384,9 @@ function WhisperingWishesInner() {
                     <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
                       })() : (
-                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" />
+                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" onError={hideOnError} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -5076,7 +5083,7 @@ Example: {"pulls":[...]}'
                                         src={displayUrl} 
                                         alt={name}
                                         className="w-8 h-8 object-cover rounded border border-purple-500/30"
-                                        onError={(e) => e.target.style.display = 'none'}
+                                        onError={hideOnError}
                                       />
                                     )}
                                   </div>

@@ -739,7 +739,7 @@ const ELEMENT_COLORS = {
 
 // [SECTION:CONSTANTS]
 // WuWa gacha rates: 0.8% base, soft pity starts at 65, hard pity at 80
-const HARD_PITY = 80, SOFT_PITY_START = 65; // AVG_PITY removed — P8-FIX: was unused dead code
+const HARD_PITY = 80, SOFT_PITY_START = 65; // AVG_PITY (5-star) removed — P8-FIX: was unused dead code
 const LUNITE_DAILY_ASTRITE = 90; // P7-FIX: Extract magic number (7E)
 const ASTRITE_PER_PULL = 160;
 
