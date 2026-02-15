@@ -630,40 +630,45 @@ function WhisperingWishesInner() {
   
   // P12-FIX: Cross-tab synchronization — reload state when another tab writes to localStorage (Step 14 audit — MEDIUM-10b)
   // Without this, two tabs open simultaneously would silently overwrite each other's changes (last-write-wins).
+  // Debounced (3.7 fix) to prevent rapid dispatches when another tab saves frequently.
   useEffect(() => {
     if (!storageAvailable) return;
+    let debounceTimer = null;
     const handleStorageChange = (e) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
-      try {
-        const externalState = JSON.parse(e.newValue);
-        const safeParsed = sanitizeStateObj(externalState);
-        const merged = {
-          ...initialState,
-          ...sanitizeImportedState(safeParsed),
-          server: safeParsed.server || initialState.server,
-          profile: {
-            ...initialState.profile,
-            ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
-            featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
-            weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
-            standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
-            standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
-            beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
-          },
-          calc: { ...initialState.calc }, // Always start calculator fresh
-          planner: { ...initialState.planner, ...safeParsed.planner },
-          settings: { ...initialState.settings, ...safeParsed.settings },
-          bookmarks: safeParsed.bookmarks || [],
-          eventStatus: safeParsed.eventStatus || {},
-        };
-        dispatch({ type: 'LOAD_STATE', state: merged });
-        toast?.addToast?.('Data synced from another tab', 'info');
-      } catch (err) {
-        console.warn('Cross-tab sync failed:', err);
-      }
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        try {
+          const externalState = JSON.parse(e.newValue);
+          const safeParsed = sanitizeStateObj(externalState);
+          const merged = {
+            ...initialState,
+            ...sanitizeImportedState(safeParsed),
+            server: safeParsed.server || initialState.server,
+            profile: {
+              ...initialState.profile,
+              ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
+              featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
+              weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
+              standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
+              standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
+              beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
+            },
+            calc: { ...initialState.calc }, // Always start calculator fresh
+            planner: { ...initialState.planner, ...safeParsed.planner },
+            settings: { ...initialState.settings, ...safeParsed.settings },
+            bookmarks: safeParsed.bookmarks || [],
+            eventStatus: safeParsed.eventStatus || {},
+          };
+          dispatch({ type: 'LOAD_STATE', state: merged });
+          toast?.addToast?.('Data synced from another tab', 'info');
+        } catch (err) {
+          console.warn('Cross-tab sync failed:', err);
+        }
+      }, DEBOUNCE_MS);
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => { clearTimeout(debounceTimer); window.removeEventListener('storage', handleStorageChange); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps — stable refs
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
@@ -1216,9 +1221,9 @@ function WhisperingWishesInner() {
         if (data) {
           const now = Date.now();
           const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
-          // Clean up stale sessions from Firebase (older than TTL)
+          // Clean up stale sessions from Firebase (older than TTL) — batch limit 50 (3.15 fix)
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
-          for (const [key] of staleSessions.slice(0, 20)) { // batch limit
+          for (const [key] of staleSessions.slice(0, 50)) {
             try { await fetch(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;

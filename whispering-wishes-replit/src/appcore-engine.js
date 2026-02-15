@@ -530,6 +530,9 @@ const reducer = (state, action) => {
       return { ...state, eventStatus: newStatus };
     }
     case 'ADD_INCOME': {
+      const incAst = Math.floor(+action.income.astrite || 0);
+      const incRad = Math.floor(+action.income.radiant || 0);
+      const incLus = Math.floor(+action.income.lustrous || 0);
       return {
         ...state,
         planner: {
@@ -538,9 +541,9 @@ const reducer = (state, action) => {
         },
         calc: {
           ...state.calc,
-          astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + action.income.astrite)), // P12-FIX: Cap at MAX_ASTRITE (Step 14 — MEDIUM-10e)
-          radiant: String((+state.calc.radiant || 0) + (action.income.radiant || 0)),
-          lustrous: String((+state.calc.lustrous || 0) + (action.income.lustrous || 0)),
+          astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + incAst)),
+          radiant: String((+state.calc.radiant || 0) + incRad),
+          lustrous: String((+state.calc.lustrous || 0) + incLus),
         },
       };
     }
