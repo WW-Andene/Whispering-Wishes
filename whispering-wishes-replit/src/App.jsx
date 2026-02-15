@@ -771,7 +771,14 @@ function WhisperingWishesInner() {
     try {
       let id = localStorage.getItem('ww-leaderboard-id');
       if (!id) {
-        id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        // 5.2 fix: CSPRNG for leaderboard ID (Math.random is predictable)
+        try {
+          const arr = new Uint8Array(4);
+          crypto.getRandomValues(arr);
+          id = 'WW' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        } catch {
+          id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
         localStorage.setItem('ww-leaderboard-id', id);
       }
       return id;
@@ -2475,10 +2482,13 @@ function WhisperingWishesInner() {
     }
   }, [toast]);
 
-  // Hash a password using SHA-256
-  const hashPassword = useCallback(async (password) => {
+  // Hash a password using SHA-256 (5.1 fix: salted variant added to harden against rainbow tables)
+  // Note: admin panel is client-side only (controls local banner customization, not server resources).
+  // For true security, admin auth should move to a backend service with proper KDF (PBKDF2/Argon2).
+  const ADMIN_SALT = 'whispering-wishes-v3-admin';
+  const hashPassword = useCallback(async (password, salt = '') => {
     try {
-      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
       return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     } catch (e) {
       console.error('crypto.subtle unavailable (requires HTTPS):', e);
@@ -2503,12 +2513,14 @@ function WhisperingWishesInner() {
       }
     } catch {}
     
-    const hashedInput = await hashPassword(adminPassword);
-    if (!hashedInput) {
+    // 5.1 fix: try salted hash first, fall back to legacy unsalted for backward compat
+    const saltedHash = await hashPassword(adminPassword, ADMIN_SALT);
+    const legacyHash = await hashPassword(adminPassword);
+    if (!saltedHash && !legacyHash) {
       toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
       return;
     }
-    if (hashedInput === ADMIN_HASH) {
+    if (saltedHash === ADMIN_HASH || legacyHash === ADMIN_HASH) {
       setAdminUnlocked(true);
       setBannerForm(buildBannerForm(activeBanners));
       try { localStorage.setItem('ww-admin-fails', '0'); } catch {}

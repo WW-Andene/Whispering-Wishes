@@ -28,7 +28,14 @@ const generateUniqueId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     try { return crypto.randomUUID(); } catch {}
   }
-  return `${Date.now()}-${++__uniqueIdCounter}-${Math.random().toString(36).slice(2)}`;
+  // 5.3 fix: CSPRNG fallback (crypto.getRandomValues is older/wider than randomUUID)
+  try {
+    const arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    return `${Date.now()}-${++__uniqueIdCounter}-${Array.from(arr, b => b.toString(36)).join('')}`;
+  } catch {
+    return `${Date.now()}-${++__uniqueIdCounter}-${Math.random().toString(36).slice(2)}`;
+  }
 };
 
 // [SECTION:LUCK]
