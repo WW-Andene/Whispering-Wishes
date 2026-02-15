@@ -28,7 +28,14 @@ const generateUniqueId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     try { return crypto.randomUUID(); } catch {}
   }
-  return `${Date.now()}-${++__uniqueIdCounter}-${Math.random().toString(36).slice(2)}`;
+  // 5.3 fix: CSPRNG fallback (crypto.getRandomValues is older/wider than randomUUID)
+  try {
+    const arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    return `${Date.now()}-${++__uniqueIdCounter}-${Array.from(arr, b => b.toString(36)).join('')}`;
+  } catch {
+    return `${Date.now()}-${++__uniqueIdCounter}-${Math.random().toString(36).slice(2)}`;
+  }
 };
 
 // [SECTION:LUCK]
@@ -928,8 +935,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': 'https://i.ibb.co/bMYZxLtK/Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': 'https://i.ibb.co/Kj719h8m/Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
-  // TODO: Missing images - these weapons exist in collection lists but have no image yet
-  'Autumntrace': '',
+  'Autumntrace': 'https://wuwa.gg/images/Items/T_IconWeapon21010074_UI.png', // 4.1 fix: temp source — migrate to ibb.co when available
 };
 
 // Release order for sorting (based on first banner appearance)

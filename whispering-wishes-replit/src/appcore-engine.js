@@ -92,10 +92,14 @@ const getNextDailyReset = (server) => {
     reset += 86400000; // Add 24 hours
   }
   
-  // P9-FIX: Use offset at the reset time for conversion, not current offset (MEDIUM-5c)
-  // This handles DST transitions between now and the next reset
-  const resetOffsetAtTarget = getServerOffset(server, reset - serverOffset * 3600000);
-  const resetUtc = reset - resetOffsetAtTarget * 3600000;
+  // Iterative DST correction: initial estimate may use wrong offset near DST transition
+  let resetOffsetAtTarget = getServerOffset(server, reset - serverOffset * 3600000);
+  let resetUtc = reset - resetOffsetAtTarget * 3600000;
+  // Second pass: verify offset at the corrected UTC (handles DST boundary ±1h)
+  const verifiedOffset = getServerOffset(server, resetUtc);
+  if (verifiedOffset !== resetOffsetAtTarget) {
+    resetUtc = reset - verifiedOffset * 3600000;
+  }
   return new Date(resetUtc).toISOString();
 };
 
@@ -130,9 +134,13 @@ const getNextWeeklyReset = (server) => {
   // Monday 04:00 in server local time
   const mondayLocal = Date.UTC(year, month, day + daysToMon, 4, 0, 0, 0);
   
-  // P9-FIX: Use offset at the reset time for conversion, not current offset (MEDIUM-5c)
-  const resetOffsetAtTarget = getServerOffset(server, mondayLocal - serverOffset * 3600000);
-  const mondayUtc = mondayLocal - resetOffsetAtTarget * 3600000;
+  // Iterative DST correction: verify offset at the estimated UTC time
+  let resetOffsetAtTarget = getServerOffset(server, mondayLocal - serverOffset * 3600000);
+  let mondayUtc = mondayLocal - resetOffsetAtTarget * 3600000;
+  const verifiedOffset = getServerOffset(server, mondayUtc);
+  if (verifiedOffset !== resetOffsetAtTarget) {
+    mondayUtc = mondayLocal - verifiedOffset * 3600000;
+  }
   return new Date(mondayUtc).toISOString();
 };
 
@@ -291,6 +299,8 @@ const computeGachaStats = (dist) => {
 };
 
 // Expected pulls to reach targetK copies (value iteration)
+// Note: startGuar is only used for character banners (50/50 system).
+// Weapon banners are always 100% featured — startGuar is accepted but ignored.
 const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) => {
   if (targetK <= 0) return 0;
   const clampedPity = Math.max(0, Math.min(MAX_PITY, startPity));
@@ -349,7 +359,7 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
   // Lower bound must be 1, not targetK*40, to handle high starting pity correctly
   let low = 1, high = Math.min(targetK * 200, 5000); // P12-FIX: Cap at 5000 to prevent extreme MC (Step 14 — MEDIUM-10e)
   let ans = high;
-  
+
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     // Use higher MC trials in binary search to reduce stochastic oscillation
@@ -357,12 +367,24 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
       ? computeDistDP(mid, isWeapon, startPity, startGuar, targetK)
       : computeDistMC(mid, isWeapon, startPity, startGuar, targetK, 200000);
     const pGeK = getCumulativeProb(dist, targetK) * 100;
-    
+
     if (pGeK >= minProb) {
       ans = mid;
       high = mid - 1;
     } else {
       low = mid + 1;
+    }
+  }
+  // MC verification: stochastic noise can make binary search converge ±1-2 off.
+  // Walk down from ans to find the true minimum where P >= minProb.
+  if (ans > DP_MAX_PULLS && ans > 1) {
+    for (let check = ans - 2; check <= ans + 2; check++) {
+      if (check < 1) continue;
+      const vDist = computeDistMC(check, isWeapon, startPity, startGuar, targetK, 200000);
+      if (getCumulativeProb(vDist, targetK) * 100 >= minProb) {
+        ans = Math.min(ans, check);
+        break;
+      }
     }
   }
   return ans;
@@ -508,6 +530,9 @@ const reducer = (state, action) => {
       return { ...state, eventStatus: newStatus };
     }
     case 'ADD_INCOME': {
+      const incAst = Math.floor(+action.income.astrite || 0);
+      const incRad = Math.floor(+action.income.radiant || 0);
+      const incLus = Math.floor(+action.income.lustrous || 0);
       return {
         ...state,
         planner: {
@@ -516,9 +541,9 @@ const reducer = (state, action) => {
         },
         calc: {
           ...state.calc,
-          astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + action.income.astrite)), // P12-FIX: Cap at MAX_ASTRITE (Step 14 — MEDIUM-10e)
-          radiant: String((+state.calc.radiant || 0) + (action.income.radiant || 0)),
-          lustrous: String((+state.calc.lustrous || 0) + (action.income.lustrous || 0)),
+          astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + incAst)),
+          radiant: String((+state.calc.radiant || 0) + incRad),
+          lustrous: String((+state.calc.lustrous || 0) + incLus),
         },
       };
     }

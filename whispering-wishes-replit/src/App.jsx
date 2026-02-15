@@ -99,6 +99,51 @@ import {
   MEDAL_COLORS
 } from './AppCore';
 
+// ── Module-level constants (hoisted from render body) ──────────────────────
+// 8.1 fix: Fetch wrapper with AbortController timeout — fails fast on network loss
+const FETCH_TIMEOUT_MS = 10000;
+const fetchWithTimeout = (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+};
+const DEBOUNCE_MS = 300;
+const FOCUS_DELAY_MS = 50;
+const CALC_DEFER_MS = 150;
+const MAX_ADMIN_ATTEMPTS = 5;
+const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const ADMIN_TAP_TIMEOUT_MS = 1500;
+const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
+const MAX_USERNAME_LENGTH = 24;
+const MAX_BOOKMARK_NAME_LENGTH = 30;
+const LEADERBOARD_DISPLAY_LIMIT = 20;
+const MIN_ZOOM = 100;
+const MAX_ZOOM = 300;
+const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
+const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes';
+const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
+const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
+const DEFAULT_VISUAL_SETTINGS = {
+  fadePosition: 50,
+  fadeIntensity: 100,
+  pictureOpacity: 100,
+  standardFadePosition: 50,
+  standardFadeIntensity: 100,
+  standardOpacity: 100,
+  shadowFadePosition: 50,
+  shadowFadeIntensity: 100,
+  shadowOpacity: 100,
+  collectionFadePosition: 50,
+  collectionFadeIntensity: 100,
+  collectionOpacity: 100,
+  collectionFadeDirection: 'top',
+  collectionZoom: 120,
+  oledMode: false,
+  swipeNavigation: false,
+  animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
+};
+const TRACKER_CATEGORIES = [['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']];
+
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   // Check admin-only lockout (5-min cooldown after 5 failed attempts — does NOT lock the app)
@@ -169,36 +214,11 @@ function WhisperingWishesInner() {
   const updateBannerForm = useCallback((field, value) => setBannerForm(prev => ({ ...prev, [field]: value })), []);
   
   // Banner visual settings - v3 forces fresh defaults
-  const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
-  const defaultVisualSettings = {
-    // Featured Banner Cards
-    fadePosition: 50,
-    fadeIntensity: 100,
-    pictureOpacity: 100,
-    // Standard Banner Cards
-    standardFadePosition: 50,
-    standardFadeIntensity: 100,
-    standardOpacity: 100,
-    // Event Cards
-    shadowFadePosition: 50,
-    shadowFadeIntensity: 100,
-    shadowOpacity: 100,
-    // Collection Cards (vertical fade)
-    collectionFadePosition: 50,
-    collectionFadeIntensity: 100,
-    collectionOpacity: 100,
-    collectionFadeDirection: 'top',
-    collectionZoom: 120,
-    // Display Settings
-    oledMode: false,
-    swipeNavigation: false,
-    animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
-  };
   // Always start with defaults - localStorage can override but we validate each property
   const [visualSettings, setVisualSettings] = useState(() => {
     // Return defaults - don't load from localStorage on initial load
     // This ensures fresh users always get correct defaults
-    return { ...defaultVisualSettings };
+    return { ...DEFAULT_VISUAL_SETTINGS };
   });
   
   // Load from localStorage after mount (so SSR/preview gets defaults)
@@ -247,8 +267,12 @@ function WhisperingWishesInner() {
       const manifest = {
         name: 'Whispering Wishes',
         short_name: 'Whispering Wishes',
-        icons: [{ src: darkBgIcon, sizes: '180x180', type: 'image/png' }],
-        start_url: window.location.href,
+        icons: [
+          { src: darkBgIcon, sizes: '180x180', type: 'image/png' },
+          { src: darkBgIcon, sizes: '192x192', type: 'image/png' },
+          { src: darkBgIcon, sizes: '512x512', type: 'image/png' }
+        ],
+        start_url: '/',
         display: 'standalone',
         background_color: '#0a0a1a',
         theme_color: '#0c0820'
@@ -275,11 +299,18 @@ function WhisperingWishesInner() {
     if (visualSettingsTimerRef.current) clearTimeout(visualSettingsTimerRef.current);
     visualSettingsTimerRef.current = setTimeout(() => {
       try { localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(newSettings)); } catch {}
-    }, 300);
+    }, DEBOUNCE_MS);
   }, [storageAvailable]);
-  
+
+  // Cleanup debounce timers and admin tap timer on unmount
+  useEffect(() => {
+    return () => {
+      if (visualSettingsTimerRef.current) clearTimeout(visualSettingsTimerRef.current);
+      if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
+    };
+  }, []);
+
   // Image framing state - stores position/zoom for each image by key
-  const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
   const [framingMode, setFramingMode] = useState(false);
@@ -414,7 +445,7 @@ function WhisperingWishesInner() {
     // Clamp values - larger range for better control
     newFraming.x = Math.max(-100, Math.min(100, newFraming.x));
     newFraming.y = Math.max(-100, Math.min(100, newFraming.y));
-    newFraming.zoom = Math.max(100, Math.min(300, newFraming.zoom));
+    newFraming.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newFraming.zoom));
     saveImageFraming(editingImage, newFraming);
   };
   
@@ -532,9 +563,12 @@ function WhisperingWishesInner() {
     clearTimeout(saveCollectionImagesDebounced.current);
     saveCollectionImagesDebounced.current = setTimeout(() => { // P7-FIX: Debounce localStorage writes (7B)
       try { localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(newImages)); } catch {}
-    }, 300)
+    }, DEBOUNCE_MS)
   };
-  
+  useEffect(() => {
+    return () => { if (saveCollectionImagesDebounced.current) clearTimeout(saveCollectionImagesDebounced.current); };
+  }, []);
+
   // Admin password — only the app owner can access admin (hash defined at module level)
   
   // Keep ref updated
@@ -557,7 +591,7 @@ function WhisperingWishesInner() {
       try {
         const parsed = rawSaved ? JSON.parse(rawSaved) : null;
         originalSettings = parsed?.settings || {};
-      } catch (e) {}
+      } catch (e) { console.warn('Failed to parse saved settings:', e); }
       // Only show onboarding if the original saved data had it explicitly true
       // If settings.showOnboarding is missing/undefined, user is existing - don't show
       const shouldShow = originalSettings.showOnboarding === true;
@@ -607,40 +641,45 @@ function WhisperingWishesInner() {
   
   // P12-FIX: Cross-tab synchronization — reload state when another tab writes to localStorage (Step 14 audit — MEDIUM-10b)
   // Without this, two tabs open simultaneously would silently overwrite each other's changes (last-write-wins).
+  // Debounced (3.7 fix) to prevent rapid dispatches when another tab saves frequently.
   useEffect(() => {
     if (!storageAvailable) return;
+    let debounceTimer = null;
     const handleStorageChange = (e) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
-      try {
-        const externalState = JSON.parse(e.newValue);
-        const safeParsed = sanitizeStateObj(externalState);
-        const merged = {
-          ...initialState,
-          ...sanitizeImportedState(safeParsed),
-          server: safeParsed.server || initialState.server,
-          profile: {
-            ...initialState.profile,
-            ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
-            featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
-            weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
-            standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
-            standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
-            beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
-          },
-          calc: { ...initialState.calc }, // Always start calculator fresh
-          planner: { ...initialState.planner, ...safeParsed.planner },
-          settings: { ...initialState.settings, ...safeParsed.settings },
-          bookmarks: safeParsed.bookmarks || [],
-          eventStatus: safeParsed.eventStatus || {},
-        };
-        dispatch({ type: 'LOAD_STATE', state: merged });
-        toast?.addToast?.('Data synced from another tab', 'info');
-      } catch (err) {
-        console.warn('Cross-tab sync failed:', err);
-      }
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        try {
+          const externalState = JSON.parse(e.newValue);
+          const safeParsed = sanitizeStateObj(externalState);
+          const merged = {
+            ...initialState,
+            ...sanitizeImportedState(safeParsed),
+            server: safeParsed.server || initialState.server,
+            profile: {
+              ...initialState.profile,
+              ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
+              featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
+              weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
+              standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
+              standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
+              beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
+            },
+            calc: { ...initialState.calc }, // Always start calculator fresh
+            planner: { ...initialState.planner, ...safeParsed.planner },
+            settings: { ...initialState.settings, ...safeParsed.settings },
+            bookmarks: safeParsed.bookmarks || [],
+            eventStatus: safeParsed.eventStatus || {},
+          };
+          dispatch({ type: 'LOAD_STATE', state: merged });
+          toast?.addToast?.('Data synced from another tab', 'info');
+        } catch (err) {
+          console.warn('Cross-tab sync failed:', err);
+        }
+      }, DEBOUNCE_MS);
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    return () => { clearTimeout(debounceTimer); window.removeEventListener('storage', handleStorageChange); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps — stable refs
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
@@ -743,7 +782,14 @@ function WhisperingWishesInner() {
     try {
       let id = localStorage.getItem('ww-leaderboard-id');
       if (!id) {
-        id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        // 5.2 fix: CSPRNG for leaderboard ID (Math.random is predictable)
+        try {
+          const arr = new Uint8Array(4);
+          crypto.getRandomValues(arr);
+          id = 'WW' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        } catch {
+          id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
         localStorage.setItem('ww-leaderboard-id', id);
       }
       return id;
@@ -755,24 +801,18 @@ function WhisperingWishesInner() {
 
   // P8-FIX: Use in-game UID as primary leaderboard key so same player on web + Android = one entry
   // Falls back to random ID only if no import has been done yet
-  const effectiveLeaderboardId = state.profile.uid || userLeaderboardId;
+  // Sanitize UIDs for Firebase path safety — only allow alphanumeric, hyphens, underscores
+  const sanitizeFirebaseKey = useCallback((key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key, []);
+  const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
-  // P2-FIX: Deferred calc state — sliders update UI instantly (state.calc),
-  // A11y: Focus trap for inline modals — auto-focus first focusable element on open
-  const anyModalOpen = showBookmarkModal || showExportModal || showAdminPanel || showLeaderboard || selectedTrophy;
-  useEffect(() => {
-    if (!anyModalOpen) return;
-    const timer = setTimeout(() => {
-      const modal = document.querySelector('[role="dialog"]');
-      if (modal) {
-        const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (focusable) focusable.focus();
-      }
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [anyModalOpen]);
+  // 6.1 fix: Focus trapping for inline modals — Tab wraps within modal, auto-focus first element, restore on close
+  const leaderboardTrapRef = useFocusTrap(showLeaderboard);
+  const bookmarkTrapRef = useFocusTrap(showBookmarkModal);
+  const exportTrapRef = useFocusTrap(showExportModal);
+  const idCardTrapRef = useFocusTrap(showIdCard);
+  const adminTrapRef = useFocusTrap(showAdminPanel && !adminMiniMode);
 
   // but heavy DP computation only fires 150ms after the last slider tick.
   // Prevents ~7MB array allocation × 60Hz during slider drag.
@@ -780,7 +820,7 @@ function WhisperingWishesInner() {
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
     if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current);
-    calcDeferTimerRef.current = setTimeout(() => setDeferredCalc(state.calc), 150);
+    calcDeferTimerRef.current = setTimeout(() => setDeferredCalc(state.calc), CALC_DEFER_MS);
     return () => { if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current); };
   }, [state.calc]);
 
@@ -858,11 +898,11 @@ function WhisperingWishesInner() {
     
     let charProb, weapProb;
     if (deferredCalc.bannerCategory === 'featured') {
-      charProb = parseFloat(charStats.successRate) / 100;
-      weapProb = parseFloat(weapStats.successRate) / 100;
+      charProb = (parseFloat(charStats.successRate) || 0) / 100;
+      weapProb = (parseFloat(weapStats.successRate) || 0) / 100;
     } else {
-      charProb = parseFloat(stdCharStats.successRate) / 100;
-      weapProb = parseFloat(stdWeapStats.successRate) / 100;
+      charProb = (parseFloat(stdCharStats.successRate) || 0) / 100;
+      weapProb = (parseFloat(stdWeapStats.successRate) || 0) / 100;
     }
     
     return {
@@ -910,9 +950,7 @@ function WhisperingWishesInner() {
     };
   }, [state.profile]);
   
-  // Leaderboard functions — Firebase Realtime Database
-  const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
-  const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes'; // P8-FIX: CRIT-4 — Firebase project API key for anonymous auth
+  // Leaderboard functions — Firebase Realtime Database (constants at module level)
   const hasClaudeStorage = typeof window !== 'undefined' && !!window.storage;
   
   // P8-FIX: CRIT-4 — Firebase Anonymous Auth token management
@@ -923,7 +961,7 @@ function WhisperingWishesInner() {
       return firebaseAuthRef.current.idToken;
     }
     try {
-      const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
+      const res = await fetchWithTimeout(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ returnSecureToken: true })
@@ -941,13 +979,16 @@ function WhisperingWishesInner() {
     }
   }, []);
   
+  const leaderboardLoadingRef = useRef(false);
   const loadLeaderboard = useCallback(async () => {
+    if (leaderboardLoadingRef.current) return; // prevent concurrent loads
+    leaderboardLoadingRef.current = true;
     setLeaderboardLoading(true);
     try {
       // P8-FIX: CRIT-4 — Authenticate before reading
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -958,8 +999,9 @@ function WhisperingWishesInner() {
             // Primary key: game UID if available
             // Secondary key: stats fingerprint (avgPity + totalPulls + pulls) to catch old entries without uid
             const uidKey = e.uid || null;
-            const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}`;
-            const key = uidKey || statsKey; // Group by UID first; if no UID, group by identical stats
+            // Include id in stats key to reduce false collisions between different players with identical stats
+            const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
+            const key = uidKey || statsKey; // Group by UID first; if no UID, group by identical stats+id
             const existing = deduped.get(key);
             if (!existing || 
                 (e.uid && !existing.uid) || // prefer entry with uid
@@ -969,7 +1011,7 @@ function WhisperingWishesInner() {
           });
           const entries = [...deduped.values()];
           entries.sort((a, b) => a.avgPity - b.avgPity);
-          setLeaderboardData(entries.slice(0, 20));
+          setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
         } else {
           setLeaderboardData([]);
         }
@@ -999,10 +1041,13 @@ function WhisperingWishesInner() {
       }
     }
     setLeaderboardLoading(false);
+    leaderboardLoadingRef.current = false;
   }, [hasClaudeStorage, getFirebaseAuth]);
   
+  const submittingRef = useRef(false);
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
+    if (submittingRef.current) return; // prevent double-submit
     
     // Require explicit consent before first submission
     if (!leaderboardConsented) {
@@ -1020,6 +1065,7 @@ function WhisperingWishesInner() {
       try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
     }
     
+    submittingRef.current = true;
     try {
       const entry = {
         id: effectiveLeaderboardId,
@@ -1035,7 +1081,7 @@ function WhisperingWishesInner() {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
       // P8-FIX: Use effectiveLeaderboardId as Firebase key — same UID across devices overwrites instead of duplicating
-      const res = await fetch(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entry)
@@ -1048,11 +1094,12 @@ function WhisperingWishesInner() {
       const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-        await fetch(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
+        const pullsRes = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
         });
+        if (!pullsRes.ok) console.warn('Community-pulls PUT failed:', pullsRes.status);
       }
       
       toast?.addToast?.('Score submitted to leaderboard!', 'success');
@@ -1061,14 +1108,14 @@ function WhisperingWishesInner() {
       // Step 1: Delete this device's old random-ID entry if we switched to UID
       if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
         try {
-          await fetch(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-          await fetch(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
+          await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
+          await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
         } catch { /* best-effort cleanup */ }
       }
       // Step 2: Fetch raw leaderboard and find other stale entries with matching stats from other devices' old random IDs
       if (state.profile.uid) {
         try {
-          const rawRes = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+          const rawRes = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
           if (rawRes.ok) {
             const rawData = await rawRes.json();
             if (rawData) {
@@ -1091,12 +1138,12 @@ function WhisperingWishesInner() {
                 .map(([key]) => key);
               for (const key of staleKeys) {
                 try {
-                  await fetch(`${FIREBASE_DB}/leaderboard/${key}.json${authParam}`, { method: 'DELETE' });
-                  await fetch(`${FIREBASE_DB}/community-pulls/${key}.json${authParam}`, { method: 'DELETE' });
+                  await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${key}.json${authParam}`, { method: 'DELETE' });
+                  await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${key}.json${authParam}`, { method: 'DELETE' });
                 } catch { /* best-effort */ }
               }
               if (staleKeys.length > 0) {
-                console.log(`Cleaned up ${staleKeys.length} stale leaderboard entries for UID ${state.profile.uid}`);
+                console.debug(`Cleaned up ${staleKeys.length} stale leaderboard entries for UID ${state.profile.uid}`);
               }
             }
           }
@@ -1104,9 +1151,11 @@ function WhisperingWishesInner() {
       }
       
       loadLeaderboard();
-    } catch (e) { 
+    } catch (e) {
       console.error('Submit error:', e);
       toast?.addToast?.('Failed to submit score', 'error');
+    } finally {
+      submittingRef.current = false;
     }
   }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, leaderboardConsented, getFirebaseAuth]);
   
@@ -1114,7 +1163,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/community-pulls.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1138,6 +1187,8 @@ function WhisperingWishesInner() {
       loadLeaderboard();
       loadCommunityPulls();
     }
+    // Note: AbortController not added here because loadLeaderboard/loadCommunityPulls
+    // set state only on success paths and are guarded by showLeaderboard gate
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
 
   // Anonymous presence system — writes only a timestamp (no personal data) to track active users
@@ -1148,7 +1199,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ t: Date.now() }) // only a timestamp — zero personal data
@@ -1166,7 +1217,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
+      await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
     } catch { /* best-effort */ }
   }, [getFirebaseAuth]);
 
@@ -1174,16 +1225,16 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/presence.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/presence.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
           const now = Date.now();
           const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
-          // Clean up stale sessions from Firebase (older than TTL)
+          // Clean up stale sessions from Firebase (older than TTL) — batch limit 50 (3.15 fix)
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
-          for (const [key] of staleSessions.slice(0, 20)) { // batch limit
-            try { await fetch(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
+          for (const [key] of staleSessions.slice(0, 50)) {
+            try { await fetchWithTimeout(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;
           setActivePlayersCount(count);
@@ -1209,7 +1260,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -2215,12 +2266,13 @@ function WhisperingWishesInner() {
         
         return filtered.map((p, i) => {
           pityCounter++;
-          const rarity = Number(p.rarity ?? p.qualityLevel) || 4;
+          const rawRarity = parseInt(p.rarity ?? p.qualityLevel, 10);
+          const rarity = (rawRarity >= 3 && rawRarity <= 5) ? rawRarity : 4; // validate range
           const rawName = (p.name || p.resourceName || '').trim();
           const name = IMPORT_NAME_ALIASES[rawName] || rawName;
-          
+
           let won5050 = undefined;
-          let pity = pityCounter;
+          let pity = Math.min(pityCounter, HARD_PITY); // clamp to valid range
           
           if (rarity === 5) {
             if (type === 'featured') {
@@ -2245,13 +2297,18 @@ function WhisperingWishesInner() {
             pityCounter = 0;
           }
           
-          return { 
-            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`, 
-            name, 
-            rarity, 
-            pity: rarity === 5 ? pity : 0, 
-            won5050, 
-            timestamp: p.timestamp || p.time,
+          // Ensure timestamp is always a valid ISO string
+          const rawTs = p.timestamp || p.time;
+          const tsMs = rawTs ? new Date(rawTs).getTime() : NaN;
+          const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
+
+          return {
+            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`,
+            name,
+            rarity,
+            pity: rarity === 5 ? pity : 0,
+            won5050,
+            timestamp: safeTimestamp,
             resourceType: p.resourceType || p.type || null
           };
         });
@@ -2296,7 +2353,7 @@ function WhisperingWishesInner() {
       if (storageAvailable) {
         try {
           const currentSize = (localStorage.getItem(STORAGE_KEY) || '').length;
-          if (currentSize > 3.5 * 1024 * 1024) {
+          if (currentSize > STORAGE_WARNING_THRESHOLD) {
             toast?.addToast?.(`Storage at ${(currentSize / 1024 / 1024).toFixed(1)}MB of ~5MB. Consider exporting a backup.`, 'warning');
           }
         } catch {}
@@ -2322,9 +2379,12 @@ function WhisperingWishesInner() {
     reader.onload = (ev) => {
       processImportData(ev.target.result);
     };
+    reader.onerror = () => {
+      toast?.addToast?.('Failed to read file', 'error');
+    };
     reader.readAsText(file);
     e.target.value = '';
-  }, [processImportData]);
+  }, [processImportData, toast]);
 
   // P8-FIX: MED — Drag-and-drop handler for file upload area
   const handleFileDrop = useCallback((e) => {
@@ -2405,7 +2465,7 @@ function WhisperingWishesInner() {
       adminTapTimerRef.current = setTimeout(() => {
         adminTapCountRef.current = 0;
         setAdminTapCount(0);
-      }, 1500);
+      }, ADMIN_TAP_TIMEOUT_MS);
     }
   }, [toast]);
 
@@ -2425,10 +2485,18 @@ function WhisperingWishesInner() {
     }
   }, [toast]);
 
-  // Hash a password using SHA-256
-  const hashPassword = useCallback(async (password) => {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  // Hash a password using SHA-256 (5.1 fix: salted variant added to harden against rainbow tables)
+  // Note: admin panel is client-side only (controls local banner customization, not server resources).
+  // For true security, admin auth should move to a backend service with proper KDF (PBKDF2/Argon2).
+  const ADMIN_SALT = 'whispering-wishes-v3-admin';
+  const hashPassword = useCallback(async (password, salt = '') => {
+    try {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle unavailable (requires HTTPS):', e);
+      return null;
+    }
   }, []);
 
   // Verify admin password (with failed attempt tracking → 5-min admin-only cooldown)
@@ -2448,8 +2516,14 @@ function WhisperingWishesInner() {
       }
     } catch {}
     
-    const hashedInput = await hashPassword(adminPassword);
-    if (hashedInput === ADMIN_HASH) {
+    // 5.1 fix: try salted hash first, fall back to legacy unsalted for backward compat
+    const saltedHash = await hashPassword(adminPassword, ADMIN_SALT);
+    const legacyHash = await hashPassword(adminPassword);
+    if (!saltedHash && !legacyHash) {
+      toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
+      return;
+    }
+    if (saltedHash === ADMIN_HASH || legacyHash === ADMIN_HASH) {
       setAdminUnlocked(true);
       setBannerForm(buildBannerForm(activeBanners));
       try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
@@ -2458,15 +2532,15 @@ function WhisperingWishesInner() {
       try {
         const fails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1; // P10-FIX: Radix was passed to getItem instead of parseInt (Step 6 audit)
         localStorage.setItem('ww-admin-fails', fails.toString());
-        if (fails >= 5) {
-          const lockoutTime = Date.now() + (5 * 60 * 1000); // 5 minutes
+        if (fails >= MAX_ADMIN_ATTEMPTS) {
+          const lockoutTime = Date.now() + ADMIN_LOCKOUT_MS;
           localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
           setAdminLockedUntil(lockoutTime);
           setShowAdminPanel(false);
           setAdminPassword('');
           toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
         } else {
-          toast?.addToast?.(`Incorrect password (${5 - fails} attempts remaining)`, 'error');
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - fails} attempts remaining)`, 'error');
         }
       } catch {
         toast?.addToast?.('Incorrect password', 'error');
@@ -2503,7 +2577,7 @@ function WhisperingWishesInner() {
               </div>
               <div>
                 <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves Companion</p>
+                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
@@ -2546,7 +2620,7 @@ function WhisperingWishesInner() {
             <Card>
               <CardBody>
                 <div className="flex gap-2" role="tablist" aria-label="Banner category">
-                  {[['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']].map(([key, label, color]) => (
+                  {TRACKER_CATEGORIES.map(([key, label, color]) => (
                     <button key={key} onClick={() => setTrackerCategory(key)} role="tab" aria-selected={trackerCategory === key} tabIndex={trackerCategory === key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
                       {key === 'character' ? <Crown size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
                       {label}
@@ -3055,7 +3129,7 @@ function WhisperingWishesInner() {
             </Card>
 
             <Card>
-              <div className="cursor-pointer" onClick={() => setShowIncomePanel(!showIncomePanel)}>
+              <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
                 <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
               </div>
               {showIncomePanel && (
@@ -3316,7 +3390,7 @@ function WhisperingWishesInner() {
                 
                 {/* Luck Leaderboard Modal */}
                 {showLeaderboard && (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
+                  <div ref={leaderboardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-busy={leaderboardLoading} aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
                     <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
                       <div className="p-4 pb-2 border-b border-white/10">
                         <div className="flex items-center justify-between mb-3">
@@ -3409,7 +3483,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -3433,7 +3507,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -3619,7 +3693,7 @@ function WhisperingWishesInner() {
                   
                   // Color coding
                   const getBarColor = (label) => {
-                    const start = parseInt(label.split('-', 10)[0]);
+                    const start = parseInt(label.split('-')[0], 10);
                     if (start <= 20) return '#22c55e'; // Green - very lucky
                     if (start <= 40) return '#84cc16'; // Lime - lucky
                     if (start <= 50) return '#fbbf24'; // Yellow - average
@@ -3908,7 +3982,7 @@ function WhisperingWishesInner() {
                             const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#fbbf24' : p.pity <= 60 ? '#f97316' : '#ef4444';
                             const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-lime-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
-                              <div key={p.id || `pull-${p.name}-${p.pity}-${i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
@@ -4121,6 +4195,7 @@ function WhisperingWishesInner() {
                         onClick={refreshImages}
                         className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
                         title="Refresh images if they don't load"
+                        aria-label="Refresh images"
                       >
                         <RefreshCcw size={10} />
                       </button>
@@ -4128,6 +4203,8 @@ function WhisperingWishesInner() {
                         onClick={() => setCollectionSort('copies')}
                         className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by copies"
+                        aria-label="Sort by copies"
+                        aria-pressed={collectionSort === 'copies'}
                       >
                         #
                       </button>
@@ -4135,6 +4212,8 @@ function WhisperingWishesInner() {
                         onClick={() => setCollectionSort('release')}
                         className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by release date"
+                        aria-label="Sort by release date"
+                        aria-pressed={collectionSort === 'release'}
                       >
                         <Calendar size={10} />
                       </button>
@@ -4278,16 +4357,17 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 {/* Username */}
                 <div>
-                  <label className="text-gray-400 text-[10px] block mb-1">Display Name</label>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-1">Display Name</label>
                   <input
+                    id="profile-display-name"
                     type="text"
                     value={state.profile.username}
-                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, 24) })}
+                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
                     placeholder="Enter your name..."
-                    maxLength={24}
+                    maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />
-                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/24</p>
+                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -4469,6 +4549,7 @@ function WhisperingWishesInner() {
 Example: {"pulls":[...]}'
                       className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
                       spellCheck={false}
+                      aria-label="Paste import JSON data"
                     />
                     <div className="flex gap-2">
                       <button 
@@ -4583,11 +4664,11 @@ Example: {"pulls":[...]}'
 
       {/* Bookmark Modal */}
       {showBookmarkModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
+        <div ref={bookmarkTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={30} className="kuro-input w-full" aria-label="Bookmark name" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
                 <p>Astrite: {state.calc.astrite || 0} • Char Pity: {state.calc.charPity} • Weap Pity: {state.calc.weapPity}</p>
                 <p>Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0}</p>
@@ -4600,16 +4681,17 @@ Example: {"pulls":[...]}'
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
+        <div ref={exportTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
-              <textarea 
-                value={exportData} 
-                readOnly 
+              <textarea
+                value={exportData}
+                readOnly
                 className="kuro-input w-full h-24 text-[9px] font-mono"
                 onClick={e => e.target.select()}
+                aria-label="Export backup data"
               />
               <button 
                 onClick={async () => {
@@ -4638,11 +4720,12 @@ Example: {"pulls":[...]}'
               </div>
               
               <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
-              <textarea 
+              <textarea
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
                 placeholder="Paste backup JSON here..."
                 className="kuro-input w-full h-20 text-[9px] font-mono"
+                aria-label="Paste backup data to restore"
               />
               <button 
                 onClick={() => {
@@ -4735,7 +4818,7 @@ Example: {"pulls":[...]}'
 
       {/* Resonator ID Card Modal */}
       {showIdCard && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
+        <div ref={idCardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
           <div className="w-full max-w-md">
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
@@ -4877,7 +4960,7 @@ Example: {"pulls":[...]}'
 
       {/* Admin Panel Modal */}
       {showAdminPanel && !adminMiniMode && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
+        <div ref={adminTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
           <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
@@ -5047,7 +5130,7 @@ Example: {"pulls":[...]}'
                           🗗 Mini Window
                         </button>
                         <button
-                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
+                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
                           className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
                         >
                           Reset to Defaults
@@ -5221,6 +5304,7 @@ Example: {"pulls":[...]}'
                       value={bannerForm.charsJson}
                       onChange={(e) => updateBannerForm('charsJson', e.target.value)}
                       placeholder="Paste characters array JSON"
+                      aria-label="Featured resonators JSON"
                     />
                   </div>
 
@@ -5231,6 +5315,7 @@ Example: {"pulls":[...]}'
                       value={bannerForm.weapsJson}
                       onChange={(e) => updateBannerForm('weapsJson', e.target.value)}
                       placeholder="Paste weapons array JSON"
+                      aria-label="Featured weapons JSON"
                     />
                   </div>
 
@@ -5246,6 +5331,7 @@ Example: {"pulls":[...]}'
                             value={bannerForm.charImages[i] ?? ''}
                             onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${c.name} image URL`}
                           />
                         </div>
                       ))}
@@ -5264,6 +5350,7 @@ Example: {"pulls":[...]}'
                             value={bannerForm.weapImages[i] ?? ''}
                             onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${w.name} image URL`}
                           />
                         </div>
                       ))}
@@ -5281,6 +5368,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.standardCharImg}
                           onChange={(e) => updateBannerForm('standardCharImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tidal Chorus banner image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5291,6 +5379,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.standardWeapImg}
                           onChange={(e) => updateBannerForm('standardWeapImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Winter Brume banner image URL"
                         />
                       </div>
                     </div>
@@ -5307,6 +5396,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.wwImg}
                           onChange={(e) => updateBannerForm('wwImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Whimpering Wastes image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5317,6 +5407,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.dpImg}
                           onChange={(e) => updateBannerForm('dpImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Doubled Pawns image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5327,6 +5418,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.toaImg}
                           onChange={(e) => updateBannerForm('toaImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tower of Adversity image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5337,6 +5429,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.irImg}
                           onChange={(e) => updateBannerForm('irImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Illusive Realm image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5347,6 +5440,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.drImg}
                           onChange={(e) => updateBannerForm('drImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Daily Reset image URL"
                         />
                       </div>
                     </div>
@@ -5581,7 +5675,7 @@ Example: {"pulls":[...]}'
               <>
             {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
             <button 
-              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
+              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
               className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
               ↻ Reset All to Defaults
