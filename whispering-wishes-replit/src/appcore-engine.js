@@ -162,71 +162,55 @@ const getPullRate = (pity) => {
 
 // === DYNAMIC PROGRAMMING (EXACT) ===
 // Computes exact probability distribution for getting K copies in N pulls
-// isWeapon: true = weapon banner (100% featured), false = character banner (50/50)
+// isWeapon: parameter kept for API compatibility but both banners use 50/50 model (Finding 1.1)
 const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10) => {
   // Clamp startPity to valid range
   const clampedPity = Math.max(0, Math.min(MAX_PITY, startPity));
   
-  // DP state: dp[pulls][pity][guar?][copies] = probability
-  // For weapon: no guarantee dimension
-  const dp = Array.from({length: N+1}, () => 
-    Array.from({length: MAX_PITY+1}, () => 
-      isWeapon ? 
-        Array(maxCopies+1).fill(0) :
-        Array.from({length: 2}, () => Array(maxCopies+1).fill(0))
+  // DP state: dp[pulls][pity][guar][copies] = probability
+  // Both character and weapon banners use 50/50 model (Finding 1.1)
+  const dp = Array.from({length: N+1}, () =>
+    Array.from({length: MAX_PITY+1}, () =>
+      Array.from({length: 2}, () => Array(maxCopies+1).fill(0))
     )
   );
-  
+
   // Initial state
-  if (isWeapon) {
-    dp[0][clampedPity][0] = 1.0;
-  } else {
-    dp[0][clampedPity][startGuar][0] = 1.0;
-  }
-  
+  dp[0][clampedPity][startGuar][0] = 1.0;
+
   // Fill DP table
   for (let n = 0; n < N; n++) {
     for (let p = 0; p <= MAX_PITY; p++) {
-      const states = isWeapon ? [null] : [0, 1];
-      for (const g of states) {
+      for (const g of [0, 1]) {
         for (let k = 0; k <= maxCopies; k++) {
-          const prob = isWeapon ? dp[n][p][k] : dp[n][p][g][k];
+          const prob = dp[n][p][g][k];
           if (prob < GACHA_EPS) continue;
-          
+
           const rate = getPullRate(p);
           const nextPity = Math.min(MAX_PITY, p + 1);
-          
+
           // Non-5★ outcome
-          if (isWeapon) {
-            dp[n+1][nextPity][k] += prob * (1 - rate);
-          } else {
-            dp[n+1][nextPity][g][k] += prob * (1 - rate);
-          }
-          
+          dp[n+1][nextPity][g][k] += prob * (1 - rate);
+
           // 5★ outcome
-          const pFeatured = (isWeapon || g === 1) ? 1.0 : 0.5;
+          const pFeatured = g === 1 ? 1.0 : 0.5;
           const nextK = Math.min(k + 1, maxCopies); // Absorb overflow into maxCopies bucket
-          if (isWeapon) {
-            dp[n+1][0][nextK] += prob * rate; // Weapon always featured
-          } else {
-            dp[n+1][0][0][nextK] += prob * rate * pFeatured; // Win: copies++, guar=0
-          }
-          // Character loss (not featured): guar becomes 1, copies unchanged
-          if (!isWeapon && g === 0) {
+          dp[n+1][0][0][nextK] += prob * rate * pFeatured; // Win: copies++, guar=0
+          // Loss (not featured): guar becomes 1, copies unchanged
+          if (g === 0) {
             dp[n+1][0][1][k] += prob * rate * 0.5;
           }
         }
       }
     }
   }
-  
+
   // Extract final distribution
   const dist = Array(maxCopies+1).fill(0);
   for (let p = 0; p <= MAX_PITY; p++) {
-    const states = isWeapon ? [null] : [0, 1];
-    for (const g of states) {
+    for (const g of [0, 1]) {
       for (let k = 0; k <= maxCopies; k++) {
-        dist[k] += isWeapon ? dp[N][p][k] : dp[N][p][g][k];
+        dist[k] += dp[N][p][g][k];
       }
     }
   }
@@ -238,12 +222,13 @@ const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10
 
 // === MONTE CARLO (FAST APPROXIMATION) ===
 // For large N or when DP is too memory-intensive
+// isWeapon: kept for API compatibility but both banners use 50/50 model (Finding 1.1)
 const simulateOneRun = (isWeapon, N, startPity, startGuar) => {
   let pity = startPity, guar = startGuar, copies = 0;
   for (let i = 0; i < N; i++) {
     const rate = getPullRate(pity);
     if (Math.random() < rate) {
-      const featured = (isWeapon || guar === 1) ? true : (Math.random() < 0.5);
+      const featured = (guar === 1) ? true : (Math.random() < 0.5);
       if (featured) copies++;
       guar = featured ? 0 : 1;
       pity = 0;
@@ -299,59 +284,48 @@ const computeGachaStats = (dist) => {
 };
 
 // Expected pulls to reach targetK copies (value iteration)
-// Note: startGuar is only used for character banners (50/50 system).
-// Weapon banners are always 100% featured — startGuar is accepted but ignored.
+// isWeapon: kept for API compatibility but both banners use 50/50 model (Finding 1.1)
 const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) => {
   if (targetK <= 0) return 0;
   const clampedPity = Math.max(0, Math.min(MAX_PITY, startPity));
-  
+
   // v[pity][guar][copies] = expected remaining pulls
+  // Both character and weapon banners use 50/50 model (Finding 1.1)
   const v = Array.from({length: MAX_PITY + 1}, () =>
-    isWeapon ?
-      Array(targetK).fill(0) :
-      Array.from({length: 2}, () => Array(targetK).fill(0))
+    Array.from({length: 2}, () => Array(targetK).fill(0))
   );
-  
+
   // Solve backwards from copies = targetK-1 down to 0
   for (let c = targetK - 1; c >= 0; c--) {
-    // FIX: g loop OUTSIDE p loop — v[*][1][c] must be fully computed before any v[*][0][c]
+    // g loop OUTSIDE p loop — v[*][1][c] must be fully computed before any v[*][0][c]
     // because v[p][0][c] depends on v[0][1][c] (the cost of losing 50/50 and restarting with guarantee)
-    const gs = isWeapon ? [null] : [1, 0];
-    for (const g of gs) {
+    for (const g of [1, 0]) {
       for (let p = MAX_PITY; p >= 0; p--) {
         const rate = getPullRate(p);
         const nextPity = Math.min(MAX_PITY, p + 1);
-        const pFeatured = (isWeapon || g === 1) ? 1 : 0.5;
-        
+        const pFeatured = g === 1 ? 1 : 0.5;
+
         let expected = 1; // This pull
-        
+
         // Non-5★: continue at next pity
-        if (isWeapon) {
-          expected += (1 - rate) * v[nextPity][c];
-        } else {
-          expected += (1 - rate) * v[nextPity][g][c];
-        }
-        
+        expected += (1 - rate) * v[nextPity][g][c];
+
         // 5★ featured: +1 copy
         const nextC = c + 1;
         if (nextC < targetK) {
-          expected += rate * pFeatured * (isWeapon ? v[0][nextC] : v[0][0][nextC]);
+          expected += rate * pFeatured * v[0][0][nextC];
         }
-        // 5★ not featured (char only, g=0): same copies, guar=1
-        if (!isWeapon && g === 0) {
+        // 5★ not featured (g=0): same copies, guar=1
+        if (g === 0) {
           expected += rate * 0.5 * v[0][1][c];
         }
-        
-        if (isWeapon) {
-          v[p][c] = expected;
-        } else {
-          v[p][g][c] = expected;
-        }
+
+        v[p][g][c] = expected;
       }
     }
   }
-  
-  return isWeapon ? v[clampedPity][0] : v[clampedPity][startGuar][0];
+
+  return v[clampedPity][startGuar][0];
 };
 
 // Min pulls N such that P(copies >= targetK | N pulls) >= minProb%
@@ -407,7 +381,7 @@ const initialState = {
     bannerCategory: 'featured',
     selectedBanner: 'char',
     charPity: 0, charGuaranteed: false, charGuaranteedManual: false, charCopies: 1,
-    weapPity: 0, weapCopies: 1,
+    weapPity: 0, weapGuaranteed: false, weapCopies: 1,
     stdCharPity: 0, stdCharCopies: 1,
     stdWeapPity: 0, stdWeapCopies: 1,
     char4StarCopies: 1, weap4StarCopies: 1, stdChar4StarCopies: 1, stdWeap4StarCopies: 1,
@@ -698,9 +672,9 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   
   // Worst case: hard pity every time, always losing 50/50 (subtract current pity progress)
   // Guarantee only applies to the FIRST copy — subsequent copies can still lose 50/50
-  const worstCase = Math.max(0, isChar
-    ? (HARD_PITY * 2 * safeCopies - (guaranteed ? HARD_PITY : 0) - safePity)
-    : (HARD_PITY * safeCopies - safePity));
+  // Both character and weapon banners have 50/50 in WuWa (Finding 1.1)
+  const worstCase = Math.max(0,
+    HARD_PITY * 2 * safeCopies - (guaranteed ? HARD_PITY : 0) - safePity);
   const successRate = pGe(safeCopies);
   const missingPulls = Math.max(0, Math.ceil(expectedToTarget) - safePulls);
   

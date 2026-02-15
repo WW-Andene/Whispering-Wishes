@@ -903,7 +903,8 @@ function WhisperingWishesInner() {
   // Calculate stats for each banner type
   // P2-FIX: Uses deferredCalc so DP arrays aren't allocated 60×/sec during slider drag
   const charStats = useMemo(() => calcStats(charPulls, deferredCalc.charPity, deferredCalc.charGuaranteed, true, deferredCalc.charCopies), [charPulls, deferredCalc.charPity, deferredCalc.charGuaranteed, deferredCalc.charCopies]);
-  const weapStats = useMemo(() => calcStats(weapPulls, deferredCalc.weapPity, false, false, deferredCalc.weapCopies), [weapPulls, deferredCalc.weapPity, deferredCalc.weapCopies]);
+  // P1-FIX: Weapon banner has 50/50 like character banner (Finding 1.1 — CRITICAL)
+  const weapStats = useMemo(() => calcStats(weapPulls, deferredCalc.weapPity, deferredCalc.weapGuaranteed, true, deferredCalc.weapCopies), [weapPulls, deferredCalc.weapPity, deferredCalc.weapGuaranteed, deferredCalc.weapCopies]);
   const stdCharStats = useMemo(() => calcStats(stdCharPulls, deferredCalc.stdCharPity, false, false, deferredCalc.stdCharCopies), [stdCharPulls, deferredCalc.stdCharPity, deferredCalc.stdCharCopies]);
   const stdWeapStats = useMemo(() => calcStats(stdWeapPulls, deferredCalc.stdWeapPity, false, false, deferredCalc.stdWeapCopies), [stdWeapPulls, deferredCalc.stdWeapPity, deferredCalc.stdWeapCopies]);
 
@@ -2878,10 +2879,15 @@ function WhisperingWishesInner() {
                     </button>
                   </div>
 
-                  {/* 50/50 Toggle */}
+                  {/* 50/50 Toggles — both character and weapon banners have 50/50 (Finding 1.1) */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
-                    <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} aria-pressed={state.calc.charGuaranteed} aria-label={state.calc.charGuaranteed ? 'Guaranteed next 5-star: on' : '50/50 active: off'} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
-                      {state.calc.charGuaranteed ? '✓ Guaranteed (100%)' : '⚠ 50/50 Active'}
+                    <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} aria-pressed={state.calc.charGuaranteed} aria-label={state.calc.charGuaranteed ? 'Resonator guaranteed next 5-star: on' : 'Resonator 50/50 active: off'} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
+                      {state.calc.charGuaranteed ? '✓ Resonator Guaranteed' : '⚠ Resonator 50/50'}
+                    </button>
+                  )}
+                  {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
+                    <button onClick={() => setCalc('weapGuaranteed', !state.calc.weapGuaranteed)} aria-pressed={state.calc.weapGuaranteed} aria-label={state.calc.weapGuaranteed ? 'Weapon guaranteed next 5-star: on' : 'Weapon 50/50 active: off'} className={`kuro-btn w-full ${state.calc.weapGuaranteed ? 'active-emerald' : 'active-pink'}`}>
+                      {state.calc.weapGuaranteed ? '✓ Weapon Guaranteed' : '⚠ Weapon 50/50'}
                     </button>
                   )}
               </CardBody>
