@@ -5,28 +5,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
 import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle } from 'lucide-react';
-import { APP_VERSION, HEADER_ICON, haptic, generateUniqueId } from './appcore-data.js';
-
-const PWA_MANIFEST = {
-  name: 'Whispering Wishes',
-  short_name: 'Whispering Wishes',
-  description: 'Wuthering Waves Convene Companion - Track pulls, plan resources, analyze luck',
-  start_url: '/',
-  display: 'standalone',
-  background_color: '#0a0a0a',
-  theme_color: '#fbbf24',
-  orientation: 'portrait-primary',
-  icons: [
-    { src: HEADER_ICON, sizes: '64x64', type: 'image/png', purpose: 'any' }
-  ], // Also populated dynamically in setupPWA with proper sized icons
-  categories: ['games', 'utilities'],
-  screenshots: [],
-  shortcuts: [
-    { name: 'Tracker', url: '/?tab=tracker', description: 'View pity tracker' },
-    { name: 'Calculator', url: '/?tab=calculator', description: 'Calculate probabilities' },
-    { name: 'Collection', url: '/?tab=gathering', description: 'View your collection' }
-  ]
-};
+import { APP_VERSION, haptic, generateUniqueId } from './appcore-data.js';
 
 // Service Worker code as string (will be registered as blob)
 const SERVICE_WORKER_CODE = `

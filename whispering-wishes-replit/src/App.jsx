@@ -100,6 +100,13 @@ import {
 } from './AppCore';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
+// 8.1 fix: Fetch wrapper with AbortController timeout — fails fast on network loss
+const FETCH_TIMEOUT_MS = 10000;
+const fetchWithTimeout = (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+};
 const DEBOUNCE_MS = 300;
 const FOCUS_DELAY_MS = 50;
 const CALC_DEFER_MS = 150;
@@ -260,8 +267,12 @@ function WhisperingWishesInner() {
       const manifest = {
         name: 'Whispering Wishes',
         short_name: 'Whispering Wishes',
-        icons: [{ src: darkBgIcon, sizes: '180x180', type: 'image/png' }],
-        start_url: window.location.href,
+        icons: [
+          { src: darkBgIcon, sizes: '180x180', type: 'image/png' },
+          { src: darkBgIcon, sizes: '192x192', type: 'image/png' },
+          { src: darkBgIcon, sizes: '512x512', type: 'image/png' }
+        ],
+        start_url: '/',
         display: 'standalone',
         background_color: '#0a0a1a',
         theme_color: '#0c0820'
@@ -950,7 +961,7 @@ function WhisperingWishesInner() {
       return firebaseAuthRef.current.idToken;
     }
     try {
-      const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
+      const res = await fetchWithTimeout(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ returnSecureToken: true })
@@ -977,7 +988,7 @@ function WhisperingWishesInner() {
       // P8-FIX: CRIT-4 — Authenticate before reading
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1070,7 +1081,7 @@ function WhisperingWishesInner() {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
       // P8-FIX: Use effectiveLeaderboardId as Firebase key — same UID across devices overwrites instead of duplicating
-      const res = await fetch(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entry)
@@ -1083,7 +1094,7 @@ function WhisperingWishesInner() {
       const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-        const pullsRes = await fetch(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
+        const pullsRes = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
@@ -1097,14 +1108,14 @@ function WhisperingWishesInner() {
       // Step 1: Delete this device's old random-ID entry if we switched to UID
       if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
         try {
-          await fetch(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-          await fetch(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
+          await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
+          await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
         } catch { /* best-effort cleanup */ }
       }
       // Step 2: Fetch raw leaderboard and find other stale entries with matching stats from other devices' old random IDs
       if (state.profile.uid) {
         try {
-          const rawRes = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+          const rawRes = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
           if (rawRes.ok) {
             const rawData = await rawRes.json();
             if (rawData) {
@@ -1127,12 +1138,12 @@ function WhisperingWishesInner() {
                 .map(([key]) => key);
               for (const key of staleKeys) {
                 try {
-                  await fetch(`${FIREBASE_DB}/leaderboard/${key}.json${authParam}`, { method: 'DELETE' });
-                  await fetch(`${FIREBASE_DB}/community-pulls/${key}.json${authParam}`, { method: 'DELETE' });
+                  await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${key}.json${authParam}`, { method: 'DELETE' });
+                  await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${key}.json${authParam}`, { method: 'DELETE' });
                 } catch { /* best-effort */ }
               }
               if (staleKeys.length > 0) {
-                console.log(`Cleaned up ${staleKeys.length} stale leaderboard entries for UID ${state.profile.uid}`);
+                console.debug(`Cleaned up ${staleKeys.length} stale leaderboard entries for UID ${state.profile.uid}`);
               }
             }
           }
@@ -1152,7 +1163,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/community-pulls.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1188,7 +1199,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ t: Date.now() }) // only a timestamp — zero personal data
@@ -1206,7 +1217,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
+      await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
     } catch { /* best-effort */ }
   }, [getFirebaseAuth]);
 
@@ -1214,7 +1225,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/presence.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/presence.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1223,7 +1234,7 @@ function WhisperingWishesInner() {
           // Clean up stale sessions from Firebase (older than TTL) — batch limit 50 (3.15 fix)
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
           for (const [key] of staleSessions.slice(0, 50)) {
-            try { await fetch(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
+            try { await fetchWithTimeout(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;
           setActivePlayersCount(count);
@@ -1249,7 +1260,7 @@ function WhisperingWishesInner() {
     try {
       const authToken = await getFirebaseAuth();
       const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -3971,7 +3982,7 @@ function WhisperingWishesInner() {
                             const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#fbbf24' : p.pity <= 60 ? '#f97316' : '#ef4444';
                             const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-lime-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
-                              <div key={p.id || `pull-${p.name}-${p.pity}-${i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>

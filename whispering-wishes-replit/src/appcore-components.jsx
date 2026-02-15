@@ -147,7 +147,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }}>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" style={{ 
+            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={(e) => { e.target.style.display = 'none'; }} style={{
               transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'right bottom'
             }} />
@@ -186,7 +186,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
               {weaponImg && (
-                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" />
+                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" onError={(e) => { e.target.style.display = 'none'; }} />
               )}
               <div className="flex-1 min-w-0">
                 <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
@@ -245,7 +245,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10" style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
@@ -338,7 +338,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         <div className="relative h-40 overflow-hidden rounded-t-2xl">
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" />
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={(e) => { e.target.style.display = 'none'; }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
@@ -741,7 +741,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
     const bctx = buf.getContext('2d');
     if (!bctx) return;
     let animId;
-    const SC = 0.08;
+    const BLUR_SCALE = 0.08; // Canvas downscale factor for blur buffer
     let w, h, bw, bh;
     
     // OLED mode uses darker base color
@@ -752,8 +752,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-      bw = Math.ceil(w * SC);
-      bh = Math.ceil(h * SC);
+      bw = Math.ceil(w * BLUR_SCALE);
+      bh = Math.ceil(h * BLUR_SCALE);
       buf.width = bw;
       buf.height = bh;
     };
@@ -776,8 +776,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
       const gs = 2;
       for (let by = 0; by < bh; by += gs) {
         for (let bx = 0; bx < bw; bx += gs) {
-          const sx = bx / SC;
-          const sy = by / SC;
+          const sx = bx / BLUR_SCALE;
+          const sy = by / BLUR_SCALE;
           
           const h1 = Math.sin(_wf1(sx, sy, time));
           const h2 = Math.sin(_wf2(sx, sy, time));
