@@ -1254,50 +1254,6 @@ const KuroStyles = memo(({ oledMode }) => (
       border: none;
     }
     
-    .kuro-slider.cyan::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-    }
-    .kuro-slider.cyan::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
-    }
-    .kuro-slider.cyan::-moz-range-thumb {
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
-    }
-    /* P12-FIX: Firefox cyan slider hover (Step 12 audit — MEDIUM-12k) */
-    .kuro-slider.cyan::-moz-range-thumb:hover {
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
-    }
-    .kuro-slider.cyan::-moz-range-track {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-      height: 6px;
-      border: none;
-    }
-    
-    .kuro-slider.pink::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #db2777, #ec4899);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    .kuro-slider.pink::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    .kuro-slider.pink::-moz-range-thumb {
-      background: linear-gradient(135deg, #db2777, #ec4899);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    /* P12-FIX: Firefox pink slider hover (Step 12 audit — MEDIUM-12k) */
-    .kuro-slider.pink::-moz-range-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    .kuro-slider.pink::-moz-range-track {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-      height: 6px;
-      border: none;
-    }
-    
     /* ═══ PROGRESS BAR ═══ */
     /* Progress bars use inline Tailwind styles */
     
@@ -1390,64 +1346,6 @@ const KuroStyles = memo(({ oledMode }) => (
     .collection-card:active {
       transform: translateY(-2px) scale(1.01);
       transition: transform 0.1s ease;
-    }
-    
-    /* ═══ TOOLTIP IMPROVEMENTS ═══ */
-    [data-tooltip] {
-      position: relative;
-    }
-    [data-tooltip]::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-4px);
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 100;
-    }
-    [data-tooltip]:hover::after,
-    [data-tooltip]:focus::after,
-    [data-tooltip]:focus-visible::after {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-8px);
-    }
-    
-    /* ═══ LOADING SKELETON ═══ */
-    .skeleton {
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.05) 100%
-      );
-      background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s ease-in-out infinite;
-      border-radius: 6px;
-    }
-    @keyframes skeletonShimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    /* ═══ EMPTY STATE ═══ */
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: #9ca3af;
-    }
-    .empty-state-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 12px;
-      opacity: 0.4;
     }
     
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
