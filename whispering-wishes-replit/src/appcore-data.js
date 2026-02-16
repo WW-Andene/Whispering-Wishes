@@ -1162,55 +1162,55 @@ const FORGERY_MAT_TIERS = {
 // Resonator Lv 1→90 ascension costs (all 6 phases)
 const RESONATOR_ASCENSION_COSTS = {
   boss: 46,
-  commonT3: 4, commonT4: 12,
+  commonT3: 12, commonT4: 4,
   specialty: 60,
   shell: 170000,
 };
 
-// Resonator EXP to Lv 90 (expressed as Premium Resonance Potion equivalent)
+// Resonator EXP to Lv 90 — total 2,438,000 EXP
 const RESONATOR_EXP_COSTS = {
-  'Basic Resonance Potion': 2,
-  'Medium Resonance Potion': 12,
-  'Advanced Resonance Potion': 28,
-  'Premium Resonance Potion': 427,
+  'Basic Resonance Potion': 0,
+  'Medium Resonance Potion': 0,
+  'Advanced Resonance Potion': 0,
+  'Premium Resonance Potion': 122,
 };
 
-// All skills to Lv 10 (5 skills × Lv 1→10 each; Normal ATK + Skill + Liberation + Forte + Intro)
+// All Forte nodes maxed (5 skills + inherent skills + stat bonuses)
 const SKILL_UPGRADE_COSTS = {
-  forgeryT3: 10, forgeryT4: 20,
-  commonT3: 10, commonT4: 20,
-  weeklyDrop: 25,
+  forgeryT3: 55, forgeryT4: 67,
+  commonT3: 40, commonT4: 57,
+  weeklyDrop: 26,
   shell: 2030000,
 };
 
 // 5★ Weapon Lv 1→90 ascension costs (all 6 phases)
 const WEAPON_ASCENSION_COSTS_5 = {
-  forgeryT3: 4, forgeryT4: 12,
-  commonT3: 4, commonT4: 12,
-  shell: 120000,
+  forgeryT3: 6, forgeryT4: 20,
+  commonT3: 10, commonT4: 12,
+  shell: 330000,
 };
 
 // 4★ Weapon Lv 1→90 ascension costs
 const WEAPON_ASCENSION_COSTS_4 = {
-  forgeryT3: 4, forgeryT4: 8,
-  commonT3: 4, commonT4: 8,
-  shell: 80000,
+  forgeryT3: 5, forgeryT4: 17,
+  commonT3: 9, commonT4: 11,
+  shell: 264000,
 };
 
-// Weapon EXP to Lv 90 5★ (expressed as Premium Energy Core equivalent)
+// Weapon EXP to Lv 90 5★ — total 2,692,400 EXP
 const WEAPON_EXP_COSTS_5 = {
-  'Basic Energy Core': 2,
-  'Medium Energy Core': 10,
-  'Advanced Energy Core': 20,
-  'Premium Energy Core': 303,
+  'Basic Energy Core': 0,
+  'Medium Energy Core': 0,
+  'Advanced Energy Core': 0,
+  'Premium Energy Core': 135,
 };
 
-// Weapon EXP to Lv 90 4★
+// Weapon EXP to Lv 90 4★ — total 2,289,200 EXP
 const WEAPON_EXP_COSTS_4 = {
-  'Basic Energy Core': 2,
-  'Medium Energy Core': 8,
-  'Advanced Energy Core': 15,
-  'Premium Energy Core': 202,
+  'Basic Energy Core': 0,
+  'Medium Energy Core': 0,
+  'Advanced Energy Core': 0,
+  'Premium Energy Core': 115,
 };
 
 // Release order for sorting (based on first banner appearance)

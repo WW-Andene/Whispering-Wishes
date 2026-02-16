@@ -339,7 +339,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
-              {Object.entries(RESONATOR_EXP_COSTS).map(([mat, qty]) => (
+              {Object.entries(RESONATOR_EXP_COSTS).filter(([, qty]) => qty > 0).map(([mat, qty]) => (
                 <MaterialItem key={mat} name={mat} qty={qty} />
               ))}
             </div>
@@ -452,7 +452,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
-              {Object.entries(data.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4).map(([mat, qty]) => (
+              {Object.entries(data.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4).filter(([, qty]) => qty > 0).map(([mat, qty]) => (
                 <MaterialItem key={mat} name={mat} qty={qty} />
               ))}
             </div>
