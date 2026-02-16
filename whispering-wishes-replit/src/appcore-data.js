@@ -451,8 +451,8 @@ const CHARACTER_DATA = {
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Digital ghost from Startorch Academy. Dual-system Fusion DPS with Tune Rupture and Fusion Burst modes.',
     skills: ['Mech Transform', 'Seraphic Duet', 'Heavenfall Edict', 'Heavenfall Edict: Finale'],
-    ascension: { boss: 'Rage Tacet Core', common: 'Tidal Residuum', specialty: 'Pecok Flower' },
-    skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Residue' },
+    ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Moss Amber' },
+    skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Polarizer' },
     bestEchoes: ['Sigillum', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
     teams: ['Aemeath + Lynae + Mornye', 'Aemeath + Lupa + Mornye'] },
   // 4★ Resonators
@@ -668,7 +668,7 @@ const WEAPON_DATA = {
   'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit Rate',
     desc: 'Aemeath signature. Fusion sword with DEF Ignore and Fusion RES Ignore.',
     passive: 'All-Attr DMG +12%, DEF Ignore +32%, Fusion RES Ignore +10%', bestFor: ['Aemeath'],
-    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Tidal Residuum' } },
+    ascensionMaterials: { forgery: 'Polarizer', common: 'Exoswarm Core' } },
   "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate',
     desc: 'Luuk Herssen signature. Spectro gauntlets with aerial combat enhancement.',
     passive: 'ATK +12%, Basic ATK DMG Amp +20%, Spectro DMG +20%, DEF Ignore +10%', bestFor: ['Luuk Herssen'],
@@ -1059,6 +1059,7 @@ const MATERIAL_IMAGES = {
   'Wintry Bell': 'https://i.ibb.co/FpDwxqW/Item-Wintry-Bell.webp',
   'Arithmetic Shell': 'https://i.ibb.co/7x2b0KH1/Item-Arithmetic-Shell.webp',
   'Afterlife': 'https://i.ibb.co/Kp3YWmGF/Afterlife.webp',
+  'Moss Amber': 'https://i.ibb.co/7tNWkRfj/1771262854560.png',
   // === Skill Upgrade — Weekly Boss Drops ===
   'Monument Bell': 'https://i.ibb.co/S4194zWY/Item-Monument-Bell.webp',
   'Unending Destruction': 'https://i.ibb.co/gFghm5L6/Item-Unending-Destruction.webp',
@@ -1133,6 +1134,9 @@ const MATERIAL_IMAGES = {
   'Presto Helix': 'https://i.ibb.co/pgMdH2f/Item-Presto-Helix.webp',
   'Cadence Leaf': 'https://i.ibb.co/35qhTRg8/Item-Cadence-Leaf.webp',
   'Cadence Blossom': 'https://i.ibb.co/MxztnSJ9/Item-Cadence-Blossom.webp',
+  // Polarizer family
+  'Polywing Polarizer': 'https://wuwatracker.com/api/item-icons/file/polywing-polarizer.webp',
+  'Layered Wing Polarizer': 'https://wuwatracker.com/api/item-icons/file/layered-wing-polarizer.webp',
 };
 
 // [SECTION:COMMON_MAT_TIERS] — Maps common material family name → [tier3, tier4] display names
@@ -1156,6 +1160,7 @@ const FORGERY_MAT_TIERS = {
   'Combustor': ['Remnant Combustor', 'Reverb Combustor'],
   'Mask': ['Mask of Distortion', 'Mask of Insanity'],
   'Waveworn Residue': ['Waveworn Residue 235', 'Waveworn Residue 239'],
+  'Polarizer': ['Polywing Polarizer', 'Layered Wing Polarizer'],
 };
 
 // [SECTION:MATERIAL_COSTS] — Total materials to max level
