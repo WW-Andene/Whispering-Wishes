@@ -2148,8 +2148,11 @@ function WhisperingWishesInner() {
       }
       return arr;
     };
+    // Rover is a free starter character — always count as obtained (minimum 1 copy)
+    const chars5 = countItems(charHistory, 5, true);
+    if (!chars5['Rover']) chars5['Rover'] = 1;
     return {
-      chars5Counts: countItems(charHistory, 5, true), chars4Counts: countItems(charHistory, 4, true),
+      chars5Counts: chars5, chars4Counts: countItems(charHistory, 4, true),
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
       weaps3Counts: countItems(weapHistory, 3, false), sortItems
     };
@@ -2602,10 +2605,10 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-2 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[36px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
             </div>
@@ -4175,7 +4178,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionElementFilter}
                         onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2 py-1.5 rounded text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
                         aria-label="Filter by element"
                       >
                         <option value="all">All Elements</option>
@@ -4186,12 +4189,12 @@ function WhisperingWishesInner() {
                         <option value="Spectro">Spectro</option>
                         <option value="Havoc">Havoc</option>
                       </select>
-                      
+
                       {/* Weapon Filter */}
                       <select
                         value={collectionWeaponFilter}
                         onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2 py-1.5 rounded text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
                         aria-label="Filter by weapon type"
                       >
                         <option value="all">All Weapons</option>
@@ -4201,12 +4204,12 @@ function WhisperingWishesInner() {
                         <option value="Gauntlets">Gauntlets</option>
                         <option value="Rectifier">Rectifier</option>
                       </select>
-                      
+
                       {/* Ownership Filter */}
                       <select
                         value={collectionOwnershipFilter}
                         onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2 py-1.5 rounded text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
                         aria-label="Filter by ownership"
                       >
                         <option value="all">All Items</option>
@@ -4218,7 +4221,7 @@ function WhisperingWishesInner() {
                       {hasActiveFilters && (
                         <button
                           onClick={clearCollectionFilters}
-                          className="px-2 py-1 rounded text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                          className="px-2 py-1 rounded-lg text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
                         >
                           Clear
                         </button>
@@ -4229,7 +4232,7 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        className="px-2 py-1 rounded-lg text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
                         title="Refresh images if they don't load"
                         aria-label="Refresh images"
                       >
@@ -4237,7 +4240,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by copies"
                         aria-label="Sort by copies"
                         aria-pressed={collectionSort === 'copies'}
@@ -4246,7 +4249,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
                         title="Sort by release date"
                         aria-label="Sort by release date"
                         aria-pressed={collectionSort === 'release'}
@@ -4458,12 +4461,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
+                    className={`relative w-9 h-5 rounded-lg transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
                     aria-label="Toggle OLED mode"
                   >
-                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${visualSettings.oledMode ? 'left-5 bg-black' : 'left-0.5 bg-gray-400'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-md transition-all ${visualSettings.oledMode ? 'left-5 bg-black' : 'left-0.5 bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
@@ -4483,12 +4486,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
+                    className={`relative w-9 h-5 rounded-lg transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label="Toggle swipe navigation"
                   >
-                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-5 bg-white' : 'left-0.5 bg-gray-400'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-md transition-all ${visualSettings.swipeNavigation ? 'left-5 bg-white' : 'left-0.5 bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
@@ -4508,12 +4511,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
+                    className={`relative w-9 h-5 rounded-lg transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled}
                     aria-label="Toggle animations"
                   >
-                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${visualSettings.animationsEnabled ? 'left-5 bg-white' : 'left-0.5 bg-gray-400'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-md transition-all ${visualSettings.animationsEnabled ? 'left-5 bg-white' : 'left-0.5 bg-gray-400'}`} />
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
