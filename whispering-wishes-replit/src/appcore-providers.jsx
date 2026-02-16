@@ -563,7 +563,7 @@ const KuroStyles = memo(({ oledMode }) => (
         min-height: 44px;
       }
       /* P10-FIX: Ensure all standalone buttons meet minimum 36px touch target on touch devices (Step 10 audit — MEDIUM-5b) */
-      .kuro-body button:not(.kuro-btn):not([role="tab"]) {
+      .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn) {
         min-height: 36px;
       }
     }
