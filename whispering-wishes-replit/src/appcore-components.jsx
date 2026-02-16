@@ -236,13 +236,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="space-y-2">
               {data.teams.map((team, i) => {
                 const members = parseTeamMembers(team);
-                const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m]);
+                const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m] || (m.includes('Rover') && DEFAULT_COLLECTION_IMAGES['Rover']));
                 return (
                   <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10">
                     {hasImages ? (
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {
-                          const memberImg = DEFAULT_COLLECTION_IMAGES[member];
+                          const memberImg = DEFAULT_COLLECTION_IMAGES[member] || (member.includes('Rover') ? DEFAULT_COLLECTION_IMAGES['Rover'] : null);
                           const mf = getImageFraming ? getImageFraming(`collection-${member}`) : { x: 0, y: 0, zoom: 100 };
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
