@@ -8,6 +8,9 @@ import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X,
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
+  MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
+  RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
+  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
@@ -17,6 +20,20 @@ import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 const hideOnError = (e) => { e.target.style.display = 'none'; };
+
+// Material item display helper — shows [icon] name ×qty
+const MaterialItem = ({ name, qty }) => {
+  const img = MATERIAL_IMAGES[name];
+  return (
+    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-white/10 min-w-0">
+      {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
+      <div className="min-w-0 flex-1">
+        <div className="text-[9px] text-gray-300 truncate leading-tight">{name}</div>
+        {qty != null && qty > 0 && <div className="text-[9px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
+      </div>
+    </div>
+  );
+};
 
 // UNIFIED MASK GENERATORS & SHARED COLOR MAPS (deduplicated from v2.6)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -281,24 +298,50 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
           
-          {/* Ascension Materials */}
+          {/* Ascension Materials (Lv 1→90) */}
           <div>
             <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
             </h3>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className="text-[9px] text-gray-500 mb-0.5">Boss</div>
-                <div className="text-[10px] text-orange-400">{data.ascension.boss}</div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <MaterialItem name={data.ascension.boss} qty={RESONATOR_ASCENSION_COSTS.boss} />
+              <MaterialItem name={data.ascension.specialty} qty={RESONATOR_ASCENSION_COSTS.specialty} />
+              {COMMON_MAT_TIERS[data.ascension.common] && <>
+                <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
+                <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
+              </>}
+            </div>
+          </div>
+
+          {/* Skill Upgrade Materials (all skills to Lv 10) */}
+          {data.skillMaterials && (
+            <div>
+              <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+                <Zap size={14} className="text-purple-400" /> Skill Materials
+              </h3>
+              <div className="grid grid-cols-2 gap-1.5">
+                <MaterialItem name={data.skillMaterials.weeklyDrop} qty={SKILL_UPGRADE_COSTS.weeklyDrop} />
+                {FORGERY_MAT_TIERS[data.skillMaterials.forgery] && <>
+                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][0]} qty={SKILL_UPGRADE_COSTS.forgeryT3} />
+                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][1]} qty={SKILL_UPGRADE_COSTS.forgeryT4} />
+                </>}
+                {COMMON_MAT_TIERS[data.ascension.common] && <>
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={SKILL_UPGRADE_COSTS.commonT3} />
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={SKILL_UPGRADE_COSTS.commonT4} />
+                </>}
               </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className="text-[9px] text-gray-500 mb-0.5">Common</div>
-                <div className="text-[10px] text-purple-400">{data.ascension.common}</div>
-              </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className="text-[9px] text-gray-500 mb-0.5">Specialty</div>
-                <div className="text-[10px] text-cyan-400">{data.ascension.specialty}</div>
-              </div>
+            </div>
+          )}
+
+          {/* EXP Materials */}
+          <div>
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+            </h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(RESONATOR_EXP_COSTS).map(([mat, qty]) => (
+                <MaterialItem key={mat} name={mat} qty={qty} />
+              ))}
             </div>
           </div>
         </div>
@@ -378,6 +421,42 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               </div>
             </div>
           )}
+
+          {/* Ascension Materials */}
+          {data.ascensionMaterials && (() => {
+            const costs = data.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
+            const forgeryTiers = FORGERY_MAT_TIERS[data.ascensionMaterials.forgery];
+            const commonTiers = COMMON_MAT_TIERS[data.ascensionMaterials.common];
+            return (
+              <div>
+                <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+                  <Swords size={14} className="text-orange-400" /> Ascension Materials
+                </h3>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {forgeryTiers && <>
+                    <MaterialItem name={forgeryTiers[0]} qty={costs.forgeryT3} />
+                    <MaterialItem name={forgeryTiers[1]} qty={costs.forgeryT4} />
+                  </>}
+                  {commonTiers && <>
+                    <MaterialItem name={commonTiers[0]} qty={costs.commonT3} />
+                    <MaterialItem name={commonTiers[1]} qty={costs.commonT4} />
+                  </>}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* EXP Materials */}
+          <div>
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+            </h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(data.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4).map(([mat, qty]) => (
+                <MaterialItem key={mat} name={mat} qty={qty} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
