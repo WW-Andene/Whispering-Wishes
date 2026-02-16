@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
 import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle } from 'lucide-react';
-import { APP_VERSION, haptic, generateUniqueId } from './appcore-data.js';
+import { APP_VERSION, haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 
 // Service Worker code as string (will be registered as blob)
 const SERVICE_WORKER_CODE = `
@@ -263,7 +263,9 @@ const PWAProvider = ({ children }) => {
       {installPrompt && !isInstalled && (
         <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-yellow-500/90 to-amber-500/90 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center text-xl">✨</div>
+            <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
+              <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+            </div>
             <div className="flex-1">
               <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
               <div className="text-black/70 text-xs">Add to home screen for the best experience</div>
