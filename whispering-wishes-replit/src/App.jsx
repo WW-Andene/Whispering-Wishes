@@ -3221,7 +3221,7 @@ function WhisperingWishesInner() {
                         <span className="text-yellow-400">+{i.astrite}</span>
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
-                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -3627,10 +3627,12 @@ function WhisperingWishesInner() {
                         {trophies.list.map(trophy => {
                           const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                           return (
-                            <div 
-                              key={trophy.id} 
+                            <div
+                              key={trophy.id}
                               className="relative p-2.5 rounded-lg text-center transition-all active:scale-95 cursor-pointer"
+                              role="button" tabIndex={0} aria-label={`Trophy: ${trophy.name}`}
                               onClick={(e) => { e.stopPropagation(); setSelectedTrophy(trophy.id); }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTrophy(trophy.id); } }}
                               style={{
                                 background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
                                 border: `1px solid ${trophy.color}50`,

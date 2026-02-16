@@ -1229,7 +1229,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       ) : (
         <div className="text-gray-500 font-bold text-xl">—</div>
       )}
-      <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{name}</div>
+      <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
     </div>
   </div>
 ), (prev, next) => 

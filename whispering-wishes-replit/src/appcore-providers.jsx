@@ -255,7 +255,7 @@ const PWAProvider = ({ children }) => {
       {children}
       {/* Offline indicator */}
       {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
+        <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
           ⚡ You're offline - Some features may be limited
         </div>
       )}
