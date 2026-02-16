@@ -4407,9 +4407,9 @@ function WhisperingWishesInner() {
                     <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
+                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} />;
                       })() : (
-                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" onError={hideOnError} />
+                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -5103,10 +5103,11 @@ Example: {"pulls":[...]}'
                                       className={`kuro-input flex-1 text-[10px] py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
                                     />
                                     {displayUrl && (
-                                      <img 
-                                        src={displayUrl} 
+                                      <img
+                                        src={displayUrl}
                                         alt={name}
                                         className="w-8 h-8 object-cover rounded border border-purple-500/30"
+                                        loading="lazy"
                                         onError={hideOnError}
                                       />
                                     )}
