@@ -11,7 +11,7 @@ import {
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
-  getNextDailyReset, getNextWeeklyReset, storageAvailable,
+  getNextDailyReset, getNextWeeklyReset, storageAvailable, sanitizeStateObj,
 } from './appcore-engine.js';
 import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
 
@@ -1562,7 +1562,7 @@ const loadCustomBanners = () => {
   try {
     const saved = localStorage.getItem(ADMIN_BANNER_KEY);
     if (!saved) return null;
-    const parsed = JSON.parse(saved);
+    const parsed = sanitizeStateObj(JSON.parse(saved));
     // P10-FIX: Validate loaded banner structure (Step 6 audit)
     if (typeof parsed !== 'object' || parsed === null || !Array.isArray(parsed.characters) || !Array.isArray(parsed.weapons)) {
       return null;

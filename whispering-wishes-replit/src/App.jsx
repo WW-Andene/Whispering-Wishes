@@ -324,7 +324,7 @@ function WhisperingWishesInner() {
     if (!storageAvailable) return;
     try {
       const saved = localStorage.getItem(IMAGE_FRAMING_KEY);
-      if (saved) setImageFraming(JSON.parse(saved));
+      if (saved) setImageFraming(sanitizeStateObj(JSON.parse(saved)));
       const pos = localStorage.getItem('ww-mini-panel-pos');
       if (pos) setMiniPanelPosition(pos);
     } catch {}
