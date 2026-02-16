@@ -224,6 +224,12 @@ const BANNER_HISTORY = [
 // [SECTION:CHARACTER_DATA]
 const CHARACTER_DATA = {
   // 5★ Resonators
+  'Rover': { rarity: 5, element: 'Spectro', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'The protagonist with multiple Resonance forms (Spectro, Havoc, Aero).',
+    skills: ['Vibration Manifestation', 'Resonating Spin', 'Echoing Orchestration', 'Solaris Caelum'],
+    ascension: { boss: 'Mysterious Echo Core', common: 'Whisperin Core', specialty: 'Iris' },
+    bestEchoes: ['Mourning Aix', 'Eternal Radiance 5pc'], bestWeapon: 'Emerald of Genesis',
+    teams: ['Phoebe + Spectro Rover + Verina', 'Ciaccona + Cartethyia + Aero Rover'] },
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'General of the Midnight Rangers. Powerful burst DPS in Qingloong Mode.',
     skills: ['Lone Lance', 'Windqueller', 'Emerald Storm: Prelude', 'Qingloong Mode'],
