@@ -4461,13 +4461,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
-                    className={`relative w-10 h-[18px] transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
-                    style={{ borderRadius: '4px' }}
+                    className={`relative w-9 h-[14px] rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
                     aria-label="Toggle OLED mode"
                   >
-                    <div className={`absolute top-[3px] w-3 h-3 transition-all ${visualSettings.oledMode ? 'left-[23px] bg-black' : 'left-[3px] bg-gray-400'}`} style={{ borderRadius: '2px' }} />
+                    <div className={`absolute top-[2px] w-[10px] h-[10px] rounded-full transition-all ${visualSettings.oledMode ? 'left-[22px] bg-black' : 'left-[2px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
@@ -4487,13 +4486,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
-                    className={`relative w-10 h-[18px] transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
-                    style={{ borderRadius: '4px' }}
+                    className={`relative w-9 h-[14px] rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label="Toggle swipe navigation"
                   >
-                    <div className={`absolute top-[3px] w-3 h-3 transition-all ${visualSettings.swipeNavigation ? 'left-[23px] bg-white' : 'left-[3px] bg-gray-400'}`} style={{ borderRadius: '2px' }} />
+                    <div className={`absolute top-[2px] w-[10px] h-[10px] rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-[22px] bg-white' : 'left-[2px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
@@ -4513,13 +4511,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
-                    className={`relative w-10 h-[18px] transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
-                    style={{ borderRadius: '4px' }}
+                    className={`relative w-9 h-[14px] rounded-full transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled}
                     aria-label="Toggle animations"
                   >
-                    <div className={`absolute top-[3px] w-3 h-3 transition-all ${visualSettings.animationsEnabled ? 'left-[23px] bg-white' : 'left-[3px] bg-gray-400'}`} style={{ borderRadius: '2px' }} />
+                    <div className={`absolute top-[2px] w-[10px] h-[10px] rounded-full transition-all ${visualSettings.animationsEnabled ? 'left-[22px] bg-white' : 'left-[2px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
