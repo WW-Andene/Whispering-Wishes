@@ -1322,16 +1322,9 @@ const KuroStyles = memo(({ oledMode }) => (
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    /* P11-FIX: Respect OS-level reduced motion preference immediately (before JS hydrates).
-       The JS check (animationsEnabled) handles canvas; this handles CSS animations. (Step 7 audit — MEDIUM-3g) */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
+    /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
+       when prefers-reduced-motion: reduce) which adds .no-animations class above.
+       No separate @media rule needed — it was overriding the app toggle with !important. */
     /* Screen reader only utility */
     .sr-only {
       position: absolute;

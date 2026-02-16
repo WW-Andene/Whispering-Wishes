@@ -2605,7 +2605,7 @@ function WhisperingWishesInner() {
               <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-2 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
             </div>
@@ -3226,7 +3226,7 @@ function WhisperingWishesInner() {
                         <span className="text-yellow-400">+{i.astrite}</span>
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
-                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -3431,7 +3431,7 @@ function WhisperingWishesInner() {
                             <h3 className="text-white font-bold text-sm">Community</h3>
                             <p className="text-gray-400 text-[10px]">Leaderboard & stats</p>
                           </div>
-                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
+                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
                             <X size={16} />
                           </button>
                         </div>
@@ -3685,7 +3685,7 @@ function WhisperingWishesInner() {
                                 boxShadow: `0 0 40px ${t.color}25, 0 0 80px ${t.color}10, inset 0 0 30px ${t.color}08`
                               }}
                             >
-                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label="Close trophy">
+                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label="Close trophy">
                                 <X size={14} />
                               </button>
                               <div 
@@ -4458,12 +4458,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
                     aria-label="Toggle OLED mode"
                   >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.oledMode ? 'left-6 bg-black' : 'left-1 bg-gray-400'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${visualSettings.oledMode ? 'left-5 bg-black' : 'left-0.5 bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
@@ -4483,12 +4483,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label="Toggle swipe navigation"
                   >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-5 bg-white' : 'left-0.5 bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
@@ -4508,12 +4508,12 @@ function WhisperingWishesInner() {
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled}
                     aria-label="Toggle animations"
                   >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.animationsEnabled ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${visualSettings.animationsEnabled ? 'left-5 bg-white' : 'left-0.5 bg-gray-400'}`} />
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
@@ -4702,7 +4702,7 @@ Example: {"pulls":[...]}'
       {showBookmarkModal && (
         <div ref={bookmarkTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
+            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
@@ -4719,7 +4719,7 @@ Example: {"pulls":[...]}'
       {showExportModal && (
         <div ref={exportTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
+            <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
               <textarea
@@ -5000,7 +5000,7 @@ Example: {"pulls":[...]}'
         <div ref={adminTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
           <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
-            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
+            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
             </CardHeader>
             <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
