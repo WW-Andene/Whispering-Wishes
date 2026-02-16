@@ -212,7 +212,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
                 {weaponData && (
                   <>
-                    <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.stat}</div>
+                    <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.baseAtk ? `${weaponData.baseAtk} Base ATK` : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
                     <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">{weaponData.passive}</div>
                   </>
                 )}
@@ -393,7 +393,8 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}</span>
+              {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.baseAtk} Base ATK</span>}
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
             </div>
             <h2 className="text-xl font-bold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
