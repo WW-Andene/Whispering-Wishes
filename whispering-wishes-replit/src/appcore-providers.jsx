@@ -577,17 +577,7 @@ const KuroStyles = memo(({ oledMode }) => (
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
+
     @keyframes scaleIn {
       from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
@@ -987,14 +977,6 @@ const KuroStyles = memo(({ oledMode }) => (
       color: #86efac;
       box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(34, 197, 94, 0.08);
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
-    }
-    
-    .kuro-btn.active-orange {
-      background: rgba(251, 146, 60, 0.15);
-      border-color: rgba(251, 146, 60, 0.7);
-      color: #fed7aa;
-      box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 146, 60, 0.08);
-      text-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
     }
     
     /* Red for 50/50 */

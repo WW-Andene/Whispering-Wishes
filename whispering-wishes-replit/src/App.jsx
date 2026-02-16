@@ -1709,7 +1709,7 @@ function WhisperingWishesInner() {
     const svr = state.server;
     const lr = luckRating;
     const tList = trophies?.list || [];
-    const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString() : null;
+    const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
     const beginnerHist = state.profile.beginner?.history||[];
     const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
     const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
@@ -2745,7 +2745,7 @@ function WhisperingWishesInner() {
                     <div key={`bh-${b.version}-${b.phase}`} className="p-2 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-white text-xs font-medium">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-500 text-[9px]">{b.startDate}</span>
+                        <span className="text-gray-500 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {b.characters.map(c => (
@@ -3414,6 +3414,7 @@ function WhisperingWishesInner() {
                               : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
+                          <p className="text-[8px] text-gray-600 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>
@@ -3893,11 +3894,11 @@ function WhisperingWishesInner() {
                       const formatLabel = (key, range) => {
                         if (range === 'daily') {
                           const d = new Date(key + 'T12:00:00'); // Avoid UTC midnight → local day shift
-                          return `${d.getDate()}/${d.getMonth()+1}`;
+                          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         } else if (range === 'weekly') {
                           return key.split('-')[1];
                         } else if (range === 'monthly') {
-                          return new Date(key + '-15T12:00:00').toLocaleString('default', { month: 'short' }); // Mid-month avoids day shift
+                          return new Date(key + '-15T12:00:00').toLocaleDateString('en-US', { month: 'short' }); // Mid-month avoids day shift
                         } else {
                           return key;
                         }
@@ -3991,7 +3992,7 @@ function WhisperingWishesInner() {
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls}</div><div className="text-gray-400 text-[9px]">Total Pulls</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Pulls</div></div>
                       <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">

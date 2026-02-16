@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, Info, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
@@ -1442,6 +1442,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
           <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
         </div>
       )}
+      <p className="text-[8px] text-gray-600 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. Exact DP formula.</p>
     </CardBody>
   </Card>
 ));

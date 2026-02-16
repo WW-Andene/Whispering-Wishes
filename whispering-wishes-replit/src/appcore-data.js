@@ -734,15 +734,6 @@ const EVENTS = {
 // COLORS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const ELEMENT_COLORS = {
-  Fusion: { bg: 'rgba(249,115,22,0.2)', border: 'rgb(249,115,22)', text: 'rgb(251,146,60)' },
-  Electro: { bg: 'rgba(139,92,246,0.2)', border: 'rgb(139,92,246)', text: 'rgb(167,139,250)' },
-  Aero: { bg: 'rgba(16,185,129,0.2)', border: 'rgb(16,185,129)', text: 'rgb(52,211,153)' },
-  Glacio: { bg: 'rgba(6,182,212,0.2)', border: 'rgb(6,182,212)', text: 'rgb(34,211,238)' },
-  Havoc: { bg: 'rgba(236,72,153,0.2)', border: 'rgb(236,72,153)', text: 'rgb(244,114,182)' },
-  Spectro: { bg: 'rgba(234,179,8,0.2)', border: 'rgb(234,179,8)', text: 'rgb(250,204,21)' },
-};
-
 // [SECTION:CONSTANTS]
 // WuWa gacha rates: 0.8% base, soft pity starts at 65, hard pity at 80
 const HARD_PITY = 80, SOFT_PITY_START = 65; // AVG_PITY (5-star) removed — P8-FIX: was unused dead code
@@ -772,7 +763,6 @@ const MAX_CALC_PULLS = 2000;
 
 // 4-star pity constants
 const HARD_PITY_4STAR = 10; // Guaranteed 4★ every 10 pulls
-const AVG_PITY_4STAR = 8.5; // Average pulls per 4★
 const FEATURED_4STAR_RATE = 0.5; // 50% chance for featured 4-star
 
 // [SECTION:STATIC_DATA] - Static collection data (moved outside component for perf)
