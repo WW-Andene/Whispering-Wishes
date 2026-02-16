@@ -1210,12 +1210,12 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {owned && !framingMode && onSetProfilePic && (
       <button
         className={`profile-pic-btn absolute z-20 flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
-        style={{ top: '4px', right: '4px', width: '18px', height: '18px', minHeight: '18px', borderRadius: '5px', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        style={{ top: '4px', right: '4px', width: '22px', height: '22px', minHeight: '22px', borderRadius: '6px', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
         onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
         title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
         aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
       >
-        <Crown size={10} />
+        <Crown size={12} />
       </button>
     )}
     {isSelected && (
