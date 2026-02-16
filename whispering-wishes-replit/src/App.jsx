@@ -3008,20 +3008,20 @@ function WhisperingWishesInner() {
                       <div className="kuro-label">Astrite Priority{state.calc.bannerCategory === 'standard' ? ' (Standard)' : ''}</div>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
-                          <Swords size={12} style={{ color: currentPriority <= 50 ? '#f472b6' : '#6b7280' }} />
-                          <span className="text-xs font-medium" style={{ color: currentPriority <= 50 ? '#f472b6' : '#6b7280' }}>Weapon {100 - currentPriority}%</span>
+                          <Crown size={12} style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }} />
+                          <span className="text-xs font-medium" style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }}>Resonator {currentPriority}%</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-medium" style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }}>Resonator {currentPriority}%</span>
-                          <Crown size={12} style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }} />
+                          <span className="text-xs font-medium" style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }}>Weapon {100 - currentPriority}%</span>
+                          <Swords size={12} style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }} />
                         </div>
                       </div>
-                      <input 
-                        type="range" min="0" max="100" step="10" value={currentPriority} 
-                        onChange={e => setCalc(priorityKey, +e.target.value)} 
-                        className="kuro-slider w-full" 
+                      <input
+                        type="range" min="0" max="100" step="10" value={currentPriority}
+                        onChange={e => setCalc(priorityKey, +e.target.value)}
+                        className="kuro-slider priority-slider w-full"
                         aria-label={`Astrite allocation: ${currentPriority}% Resonator, ${100 - currentPriority}% Weapon`}
-                        style={{ background: `linear-gradient(to right, #f472b6 0%, #f472b6 ${100 - currentPriority}%, #444 ${100 - currentPriority}%, #444 ${currentPriority}%, #fbbf24 ${currentPriority}%, #fbbf24 100%)` }}
+                        style={{ background: `linear-gradient(to right, #fbbf24 0%, #fbbf24 ${currentPriority}%, #ec4899 ${currentPriority}%, #ec4899 100%)` }}
                       />
                       {currentPriority !== 50 && (
                         <button 

@@ -1220,6 +1220,22 @@ const KuroStyles = memo(({ oledMode }) => (
       border: none;
     }
     
+    /* ═══ PRIORITY SLIDER THUMB (neutral so it stands out against both gold & pink track) ═══ */
+    .priority-slider::-webkit-slider-thumb {
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .priority-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 1px 6px rgba(0,0,0,0.3);
+    }
+    .priority-slider::-moz-range-thumb {
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .priority-slider::-moz-range-thumb:hover {
+      box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 1px 6px rgba(0,0,0,0.3);
+    }
+
     /* ═══ PROGRESS BAR ═══ */
     /* Progress bars use inline Tailwind styles */
     
