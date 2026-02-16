@@ -2956,10 +2956,10 @@ function WhisperingWishesInner() {
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-xs mb-1.5 block font-medium text-yellow-400">Radiant Tides</label>
-                          <input type="number" min="0" value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, +e.target.value || 0))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
+                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String((+state.calc.radiant || 0) + amt))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -2967,10 +2967,10 @@ function WhisperingWishesInner() {
                       {(state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-xs mb-1.5 block font-medium text-pink-400">Forging Tides</label>
-                          <input type="number" min="0" value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, +e.target.value || 0))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
+                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -2982,10 +2982,10 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
                       <label className="text-xs mb-1.5 block font-medium text-cyan-400">Lustrous Tides</label>
-                      <input type="number" min="0" value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, +e.target.value || 0))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
+                      <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String((+state.calc.lustrous || 0) + amt))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
                         ))}
                       </div>
                     </div>
@@ -3401,7 +3401,7 @@ function WhisperingWishesInner() {
                           </div>
                           <div className="flex items-baseline justify-between">
                             <span className="text-gray-400 text-[10px]">Avg Pity</span>
-                            <span className="text-gray-200 text-xs font-medium">{overallStats.avgPity}</span>
+                            <span className="text-gray-200 text-xs font-medium">{overallStats?.avgPity}</span>
                           </div>
                           <p className="text-[9px] text-center" style={{color: `${luckRating.color}90`}}>
                             {luckRating.percentile >= 80 ? `Luckier than ${luckRating.percentile}% of players — incredible!`
