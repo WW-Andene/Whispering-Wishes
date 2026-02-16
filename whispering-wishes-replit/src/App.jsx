@@ -2068,11 +2068,16 @@ function WhisperingWishesInner() {
       drawFooter(bx,bottomY,bw);
     }
 
-    canvas.toBlob(blob=>{
-      if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
-      a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
-      a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
-    },'image/png');
+    try {
+      canvas.toBlob(blob=>{
+        if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
+        a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
+      },'image/png');
+    } catch (e) {
+      console.error('ID card export failed (possible CORS tainted canvas):', e);
+      toast?.addToast?.('Failed to save ID card — try a different profile image', 'error');
+    }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies]);
 
   // Daily income calculation

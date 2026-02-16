@@ -552,8 +552,9 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ TOUCH OPTIMIZATION ═══ */
-    button, select, input, textarea, a, [role="tab"] {
+    button, select, input, textarea, a, [role="tab"], [role="button"] {
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     
     /* Ensure minimum 44px touch targets for filter selects on touch devices */
