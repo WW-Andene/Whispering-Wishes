@@ -1673,7 +1673,7 @@ function WhisperingWishesInner() {
   // Owned 5★ character names for profile pic picker
   const ownedCharNames = useMemo(() => {
     const charHistory = [...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.beginner?.history || []).filter(p => p.name && ALL_CHARACTERS.has(p.name))];
-    return [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+    return [...new Set(charHistory.filter(p => (p.rarity === 5 || p.rarity === 4) && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
   }, [state.profile.featured?.history, state.profile.standardChar?.history, state.profile.beginner?.history]);
 
   const handleSetProfilePic = useCallback((name) => {
@@ -1685,6 +1685,8 @@ function WhisperingWishesInner() {
       toast?.addToast?.(`Profile picture set to ${name}`, 'success');
     }
   }, [state.profile.profilePic, toast]);
+
+  const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
   // ID Card canvas download — supports landscape (16:9) and portrait (9:16)
   const downloadIdCard = useCallback(async (format) => {
@@ -1707,7 +1709,7 @@ function WhisperingWishesInner() {
     // Preload resonator portrait images
     const resImgs = {};
     const charHist0 = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
-    const preloadNames = [...new Set(charHist0.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse().slice(0, 24);
+    const preloadNames = [...new Set(charHist0.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse().slice(0, 24);
     await Promise.all(preloadNames.map(name => {
       const url = collectionImages[name];
       if (!url) return Promise.resolve();
@@ -1722,14 +1724,14 @@ function WhisperingWishesInner() {
     const uid = state.profile.uid || '--';
     const svr = state.server;
     const lr = luckRating;
-    const tList = trophies?.list || [];
+    const tList = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
     const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
     const beginnerHist = state.profile.beginner?.history||[];
     const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
     const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
     const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
     const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false);
-    const newestRes = [...new Set(charHist.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
+    const newestRes = [...new Set(charHist.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
     const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
     const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
     const histLabels = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(histBuckets['81+'])histLabels.push('81+'); histLabels.forEach(b=>{if(!histBuckets[b])histBuckets[b]=0;});
@@ -1806,48 +1808,56 @@ function WhisperingWishesInner() {
       ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(7,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
     };
 
-    // Resonator portrait — character image thumbnail with name
-    const drawResPortrait = (x,y,cellW,name,img) => {
-      const imgH=cellW;
-      ctx.fillStyle='rgba(10,14,22,0.9)';rr(x,y,cellW,imgH,6);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;rr(x,y,cellW,imgH,6);ctx.stroke();
+    // Resonator portrait — collection-panel style: tall card with image + gradient name overlay
+    const drawResPortrait = (x,y,cellW,cellH,name,img) => {
+      ctx.fillStyle='rgba(10,14,22,0.9)';rr(x,y,cellW,cellH,6);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;rr(x,y,cellW,cellH,6);ctx.stroke();
       if(img){
-        ctx.save();rr(x+1,y+1,cellW-2,imgH-2,5);ctx.clip();
+        ctx.save();rr(x+1,y+1,cellW-2,cellH-2,5);ctx.clip();
         const f=getImageFraming('collection-'+name);
         const sc=f.zoom/100;
-        const dw=cellW*sc,dh=imgH*sc;
+        const dw=cellW*sc,dh=cellH*sc;
         const dx=x+(cellW-dw)/2-(f.x/100)*cellW*sc;
-        const dy=y+(imgH-dh)/2-(f.y/100)*imgH*sc;
+        const dy=y+(cellH-dh)/2-(f.y/100)*cellH*sc;
         ctx.drawImage(img,dx,dy,dw,dh);
         ctx.restore();
+        // Bottom gradient overlay
+        const fade=ctx.createLinearGradient(0,y+cellH-22,0,y+cellH);
+        fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(1,'rgba(0,0,0,0.85)');
+        ctx.save();rr(x+1,y+1,cellW-2,cellH-2,5);ctx.clip();
+        ctx.fillStyle=fade;ctx.fillRect(x+1,y+cellH-22,cellW-2,21);
+        ctx.restore();
       } else {
-        ctx.fillStyle='#4b5563';ctx.font=Math.max(10,Math.round(cellW*0.25))+'px sans-serif';
-        ctx.textAlign='center';ctx.fillText(name[0],x+cellW/2,y+imgH/2+4);ctx.textAlign='left';
+        ctx.fillStyle='#4b5563';ctx.font=Math.max(10,Math.round(cellW*0.3))+'px sans-serif';
+        ctx.textAlign='center';ctx.fillText(name[0],x+cellW/2,y+cellH/2+4);ctx.textAlign='left';
       }
-      // Name below
-      ctx.fillStyle='#9ca3af';ctx.font='8px sans-serif';ctx.textAlign='center';
-      const ml=Math.floor(cellW/4.5);
-      ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+imgH+10);ctx.textAlign='left';
+      // Name inside card at bottom
+      ctx.fillStyle='#e5e7eb';ctx.font='7px sans-serif';ctx.textAlign='center';
+      const ml=Math.floor(cellW/4);
+      ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+cellH-3);ctx.textAlign='left';
     };
 
-    // Trophy card — individual bordered card with name + full description
-    const drawTrophy = (x,y,w,h,t) => {
+    // Trophy card — square icon style matching stat tab
+    const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
       // bg: gradient like app
-      const bg2=ctx.createLinearGradient(x,y,x+w,y+h);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
-      ctx.fillStyle=bg2;rr(x,y,w,h,8);ctx.fill();
-      ctx.strokeStyle=tc+'55';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,size,size,8);ctx.fill();
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,8);ctx.stroke();
       // glow
-      ctx.shadowColor=tc+'20';ctx.shadowBlur=8;rr(x,y,w,h,8);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
-      // Name bold
-      ctx.fillStyle='#ffffff';ctx.font='bold 10px sans-serif';
-      const nameText = t.name.length > Math.floor(w/5.5) ? t.name.slice(0, Math.floor(w/5.5)-1)+'..' : t.name;
-      ctx.fillText(nameText,x+8,y+14);
-      // Desc - wrapped in trophy color
-      ctx.fillStyle=tc+'bb';ctx.font='9px sans-serif';
-      const desc=t.desc||'';const words=desc.split(' ');let line='';let ly=y+27;const maxW=w-16;
-      for(const word of words){const test=line+(line?' ':'')+word;if(ctx.measureText(test).width>maxW&&line){if(ly>y+h-6)break;ctx.fillText(line,x+8,ly);ly+=11;line=word;}else line=test;}
-      if(line&&ly<=y+h-4)ctx.fillText(line,x+8,ly);
+      ctx.shadowColor=tc+'15';ctx.shadowBlur=10;rr(x,y,size,size,8);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
+      // Circle icon background
+      const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
+      const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'30');cg.addColorStop(1,tc+'10');
+      ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
+      // Icon symbol
+      ctx.fillStyle=tc;ctx.font=`bold ${Math.floor(circR)}px sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx2,cy2);ctx.textBaseline='alphabetic';
+      // Name at bottom
+      ctx.fillStyle='#ffffff';ctx.font=`bold ${Math.max(7,Math.floor(size*0.12))}px sans-serif`;
+      const maxChars=Math.floor(size/5.5);
+      const nameText=t.name.length>maxChars?t.name.slice(0,maxChars-1)+'..':t.name;
+      ctx.fillText(nameText,cx2,y+size*0.78);ctx.textAlign='left';
     };
 
     // Hero profile image — large, with collection-style framing and gradient fade
@@ -1898,11 +1908,11 @@ function WhisperingWishesInner() {
       return (ch2+g2)*2-g2;
     };
 
-    // Resonator portraits grid
+    // Resonator portraits grid — collection-panel style (tall cards)
     const drawResTags = (rx,ry,mw,cols,max) => {
       const ch2=newestRes.slice(0,max);if(!ch2.length)return 0;
-      const g2=6,cellW=Math.min(60,(mw-(cols-1)*g2)/cols),cellH=cellW+14;
-      ch2.forEach((n,i)=>{drawResPortrait(rx+(i%cols)*(cellW+g2),ry+Math.floor(i/cols)*(cellH+g2),cellW,n,resImgs[n]);});
+      const g2=4,cellW=Math.min(55,(mw-(cols-1)*g2)/cols),cellH=Math.round(cellW*1.6);
+      ch2.forEach((n,i)=>{drawResPortrait(rx+(i%cols)*(cellW+g2),ry+Math.floor(i/cols)*(cellH+g2),cellW,cellH,n,resImgs[n]);});
       const rows=Math.ceil(ch2.length/cols);let h2=rows*(cellH+g2)-g2;
       if(newestRes.length>max){ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.fillText('+'+String(newestRes.length-max)+' more',rx,ry+h2+12);h2+=14;}
       return h2;
@@ -1956,16 +1966,16 @@ function WhisperingWishesInner() {
     if(!isPortrait){
       // ═══ LANDSCAPE 1280x720 — content-adaptive ═══
       const gap=6;
-      const leftW=Math.floor(bw*0.3);
+      const leftW=Math.floor(bw*0.32);
       const rightX=bx+leftW+gap;
       const rightW=bw-leftW-gap;
       const contentH=bottomY-Y;
 
-      // Hero image takes most of left column
-      const heroH=Math.floor(contentH*0.55);
+      // Hero image takes top of left column
+      const heroH=Math.floor(contentH*0.42);
       drawHero(bx,Y,leftW,heroH);
 
-      // Identity below hero — fills rest of left
+      // Profile + Stats below hero — fills rest of left
       const idY=Y+heroH+gap;
       const idH=contentH-heroH-gap;
       const idOff=drawPanel(bx,idY,leftW,idH,'Profile');
@@ -1980,48 +1990,44 @@ function WhisperingWishesInner() {
       if(tList.length>0)ctx.fillText(tList.length+' Trophies',bx+10,metaY);
       if(impDate)ctx.fillText('Since '+impDate,bx+10+(tList.length>0?60:0),metaY);
       if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+10+(tList.length>0?60:0)+(impDate?80:0),metaY);
+      // Convene Stats inside profile panel
+      const statCellH=24,statStartY=metaY+14;
+      drawStats(bx+6,statStartY,leftW-12,statCellH,11);
 
       // ── Right column: content-adaptive heights ──
-      const statCellH=28,panelPad=26;
-      const statsContentH=panelPad+(statCellH+5)*2-5+4;
-      const statsW=Math.floor((rightW-gap)*0.5);
-      const collW=rightW-statsW-gap;
-      const r1H=Math.max(statsContentH,panelPad+32+50+4); // collection cells + histogram
+      const panelPad=26;
+      const histoW=Math.floor((rightW-gap)*0.55);
+      const collW=rightW-histoW-gap;
+      const r1H=panelPad+32+50+4; // histogram + collection cells
 
-      const resCols=10,resGap2=6;
+      const resCols=10,resGap2=4;
       const resMax=Math.min(newestRes.length,20);
-      const resCellW=Math.min(60,(rightW-12-(resCols-1)*resGap2)/resCols),resCellH=resCellW+14;
+      const resCellW=Math.min(55,(rightW-12-(resCols-1)*resGap2)/resCols),resCellH=Math.round(resCellW*1.6);
       const resRows=Math.ceil(Math.max(resMax,1)/resCols);
       const resContentH=panelPad+resRows*(resCellH+resGap2)-resGap2+4+(newestRes.length>resMax?14:0);
 
       const trophyY_start=Y+r1H+gap+resContentH+gap;
       const r3H=bottomY-trophyY_start;
 
-      // Draw Row 1: Stats + Collection
-      const sp1o=drawPanel(rightX,Y,statsW,r1H,'Convene Stats');
-      drawStats(rightX+6,Y+sp1o,statsW-12,statCellH,13);
-      const cp1o=drawPanel(rightX+statsW+gap,Y,collW,r1H,'Collection');
-      drawColl(rightX+statsW+gap+6,Y+cp1o,collW-12);
-      const hiY=Y+cp1o+36;
-      if(histSummary)drawHisto(rightX+statsW+gap+6,hiY,collW-12,r1H-cp1o-36-4);
-      if(histSummary){ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,rightX+statsW+gap+collW-8,Y+r1H-3);ctx.textAlign='left';}
+      // Draw Row 1: Pity Distribution + Collection (stats moved to left column)
+      const hp1o=drawPanel(rightX,Y,histoW,r1H,'Pity Distribution');
+      if(histSummary)drawHisto(rightX+6,Y+hp1o,histoW-12,r1H-hp1o-16);
+      if(histSummary){ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,rightX+histoW-8,Y+r1H-3);ctx.textAlign='left';}
+      const cp1o=drawPanel(rightX+histoW+gap,Y,collW,r1H,'Collection');
+      drawColl(rightX+histoW+gap+6,Y+cp1o,collW-12);
 
       // Draw Row 2: Resonators — sized to content
       const r2Y=Y+r1H+gap;
       const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
       drawResTags(rightX+6,r2Y+rp1o,rightW-12,10,resMax);
 
-      // Draw Row 3: Trophies — fills remaining
+      // Draw Row 3: Trophies — fills remaining, square icon style
       const r3Y=r2Y+resContentH+gap;
       if(tList.length>0&&r3H>40){
         const tp1o=drawPanel(rightX,r3Y,rightW,r3H,'Trophies ('+tList.length+')');
-        const tCols=3,tGap=5;const tw=(rightW-12-(tCols-1)*tGap)/tCols;
-        const maxTrophyRows=Math.floor((r3H-tp1o-4)/(50+tGap));
-        const maxT=Math.min(tList.length,maxTrophyRows*tCols);
-        const showT=tList.slice(0,maxT);
-        const tH=Math.min(50,Math.floor((r3H-tp1o-4-(Math.ceil(showT.length/tCols)-1)*tGap)/Math.ceil(showT.length/tCols)));
-        showT.forEach((t,i)=>{drawTrophy(rightX+6+(i%tCols)*(tw+tGap),r3Y+tp1o+Math.floor(i/tCols)*(tH+tGap),tw,tH,t);});
-        if(tList.length>maxT){ctx.fillStyle='#4b5563';ctx.font='8px sans-serif';ctx.fillText('+'+String(tList.length-maxT)+' more',rightX+6,r3Y+r3H-5);}
+        const tCols=5,tGap=5;
+        const tSize=Math.min(Math.floor((rightW-12-(tCols-1)*tGap)/tCols),r3H-tp1o-4);
+        tList.forEach((t,i)=>{drawTrophy(rightX+6+i*(tSize+tGap),r3Y+tp1o,tSize,t);});
       }
 
       drawFooter(bx,bottomY,bw);
@@ -2060,9 +2066,9 @@ function WhisperingWishesInner() {
       const pStatsH=pPad+(pStatCellH+5)*2-5+4;
       const pCollH=pPad+32+4;
       const pHistoH=96;
-      const pResCols=8,pResGap2=6;
+      const pResCols=8,pResGap2=4;
       const pResMax=Math.min(newestRes.length,24);
-      const pResCellW=Math.min(60,(bw-12-(pResCols-1)*pResGap2)/pResCols),pResCellH=pResCellW+14;
+      const pResCellW=Math.min(55,(bw-12-(pResCols-1)*pResGap2)/pResCols),pResCellH=Math.round(pResCellW*1.6);
       const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
       const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+4+(newestRes.length>pResMax?14:0);
 
@@ -2074,32 +2080,28 @@ function WhisperingWishesInner() {
       drawStats(bx+6,Y+sp2o,bw-12,pStatCellH,15);
       Y+=pStatsH+gap;
 
-      // ── Collection — sized to content ──
-      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
-      drawColl(bx+6,Y+cp2o,bw-12);
-      Y+=pCollH+gap;
-
-      // ── Histogram — sized to content ──
+      // ── Pity Distribution — sized to content (swapped with collection) ──
       const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
       if(histSummary){drawHisto(bx+6,Y+hp2o,bw-12,pHistoH-hp2o-8);
         ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-8,Y+pHistoH-3);ctx.textAlign='left';}
       Y+=pHistoH+gap;
+
+      // ── Collection — sized to content (swapped with histogram) ──
+      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
+      drawColl(bx+6,Y+cp2o,bw-12);
+      Y+=pCollH+gap;
 
       // ── Resonators — sized to content ──
       const rp2o=drawPanel(bx,Y,bw,pResContentH,'Resonators ('+newestRes.length+')');
       drawResTags(bx+6,Y+rp2o,bw-12,8,pResMax);
       Y+=pResContentH+gap;
 
-      // ── Trophies — fills ALL remaining space ──
+      // ── Trophies — fills ALL remaining space, square icon style ──
       if(tList.length>0&&pTrophyH>40){
         const tp2o=drawPanel(bx,Y,bw,pTrophyH,'Trophies ('+tList.length+')');
-        const tCols=2,tGap=5;const tw=(bw-12-(tCols-1)*tGap)/tCols;
-        const maxTRows=Math.floor((pTrophyH-tp2o-4)/(50+tGap));
-        const maxT=Math.min(tList.length,maxTRows*tCols);
-        const showT2=tList.slice(0,maxT);
-        const tH2=Math.min(50,Math.floor((pTrophyH-tp2o-4-(Math.ceil(showT2.length/tCols)-1)*tGap)/Math.ceil(showT2.length/tCols)));
-        showT2.forEach((t,i)=>{drawTrophy(bx+6+(i%tCols)*(tw+tGap),Y+tp2o+Math.floor(i/tCols)*(tH2+tGap),tw,tH2,t);});
-        if(tList.length>maxT){ctx.fillStyle='#4b5563';ctx.font='8px sans-serif';ctx.fillText('+'+String(tList.length-maxT)+' more',bx+6,Y+pTrophyH-5);}
+        const tCols=5,tGap=5;
+        const tSize=Math.min(Math.floor((bw-12-(tCols-1)*tGap)/tCols),pTrophyH-tp2o-4);
+        tList.forEach((t,i)=>{drawTrophy(bx+6+i*(tSize+tGap),Y+tp2o,tSize,t);});
       }
 
       drawFooter(bx,bottomY,bw);
@@ -4980,22 +4982,24 @@ Example: {"pulls":[...]}'
                           const imgUrl = collectionImages[name];
                           const f = getImageFraming(`collection-${name}`);
                           return (
-                            <div key={name} className="flex flex-col items-center" style={{ width: '40px' }}>
-                              <div className="relative rounded-lg overflow-hidden" style={{ width: '40px', height: '40px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', contain: 'paint' }}>
+                            <div key={name} style={{ width: '48px' }}>
+                              <div className="relative rounded-lg overflow-hidden" style={{ width: '48px', height: '76px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', contain: 'paint' }}>
                                 {imgUrl ? (
                                   <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-gray-500" style={{ fontSize: '10px' }}>{name[0]}</span>
+                                    <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
                                   </div>
                                 )}
+                                <div className="absolute bottom-0 left-0 right-0 p-1 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none">
+                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px' }}>{name}</span>
+                                </div>
                               </div>
-                              <span className="text-gray-400 text-center truncate w-full mt-0.5" style={{ fontSize: '7px' }}>{name}</span>
                             </div>
                           );
                         })}
                         {ownedCharNames.length > 16 && (
-                          <div className="flex flex-col items-center justify-center" style={{ width: '40px', height: '40px' }}>
+                          <div className="flex items-center justify-center" style={{ width: '48px', height: '76px' }}>
                             <span className="text-gray-500" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
                           </div>
                         )}
@@ -5003,6 +5007,36 @@ Example: {"pulls":[...]}'
                     </div>
                   )}
                   
+                  {/* Trophies — top 5 rarest */}
+                  {(() => {
+                    const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
+                    if (!sorted.length) return null;
+                    return (
+                      <div className="mt-3">
+                        <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Trophies ({sorted.length})</p>
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {sorted.map(trophy => {
+                            const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
+                            return (
+                              <div key={trophy.id} className="p-2 rounded-lg text-center"
+                                style={{
+                                  background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
+                                  border: `1px solid ${trophy.color}50`,
+                                  boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05`
+                                }}>
+                                <div className="w-7 h-7 mx-auto mb-1 rounded-full flex items-center justify-center"
+                                  style={{ background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                  <IconComponent size={14} style={{ color: trophy.color }} />
+                                </div>
+                                <div className="text-[7px] font-bold text-white truncate">{trophy.name}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Footer line */}
                   <div className="flex items-center justify-between mt-3 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                     <span className="text-gray-600 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
