@@ -1745,6 +1745,20 @@ function WhisperingWishesInner() {
       {l:'Lost',v:String(overallStats?.lost5050??'--'),c:'#f87171'},
     ];
 
+    // Per-banner breakdown data
+    const featHist = state.profile.featured?.history||[];
+    const weapBannerHist = state.profile.weapon?.history||[];
+    const stdCHist = state.profile.standardChar?.history||[];
+    const stdWHist = state.profile.standardWeap?.history||[];
+    const bgnHist = state.profile.beginner?.history||[];
+    const bannerStats = [
+      {l:'Featured',v:String(featHist.length),c:'#fbbf24',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Weapon',v:String(weapBannerHist.length),c:'#c084fc',s:weapBannerHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Std. Char',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Std. Weap',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Beginner',v:String(bgnHist.length),c:'#34d399',s:bgnHist.filter(p=>p.rarity===5).length+' ★5'},
+    ];
+
     // ═══ DRAWING PRIMITIVES ═══
     // Outer card — .kuro-card
     const drawShell = (x,y,w,h) => {
@@ -1848,10 +1862,15 @@ function WhisperingWishesInner() {
       // Icon symbol
       ctx.fillStyle=tc;ctx.font=`bold ${Math.floor(circR)}px sans-serif`;
       ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx2,cy2);ctx.textBaseline='alphabetic';
-      // Name at bottom
-      ctx.fillStyle='#ffffff';ctx.font=`bold ${Math.max(7,Math.floor(size*0.12))}px sans-serif`;
-      const maxChars=Math.floor(size/5.5);
-      const nameText=t.name.length>maxChars?t.name.slice(0,maxChars-1)+'..':t.name;
+      // Name at bottom — properly truncated to fit width
+      const nameFontSize=Math.max(9,Math.floor(size*0.11));
+      ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
+      const maxW=size-12;
+      let nameText=t.name;
+      if(ctx.measureText(nameText).width>maxW){
+        while(nameText.length>1&&ctx.measureText(nameText+'..').width>maxW)nameText=nameText.slice(0,-1);
+        nameText=nameText+'..';
+      }
       ctx.fillText(nameText,cx2,y+size*0.78);ctx.textAlign='left';
     };
 
@@ -1933,6 +1952,30 @@ function WhisperingWishesInner() {
       });
     };
 
+    // Banner Breakdown — per-banner pull count + 5★ count row
+    const drawBannerRow = (bx2,by2,bw2,bh2) => {
+      const g2=6,iw=(bw2-4*g2)/5;
+      bannerStats.forEach((bs,i)=>{
+        const sx=bx2+i*(iw+g2);
+        // stat cell background
+        ctx.fillStyle='rgba(10,14,22,0.8)';rr(sx,by2,iw,bh2,12);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;rr(sx,by2,iw,bh2,12);ctx.stroke();
+        const ss=ctx.createLinearGradient(sx,0,sx+iw,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.35)');ss.addColorStop(1,'transparent');
+        ctx.fillStyle=ss;ctx.fillRect(sx+6,by2,iw-12,1.5);
+        // Pull count (main value)
+        ctx.fillStyle=bs.c;ctx.font='bold 20px monospace';ctx.textAlign='center';
+        ctx.fillText(bs.v,sx+iw/2,by2+bh2*0.35);
+        // 5★ sub-value
+        ctx.fillStyle='#9ca3af';ctx.font='11px sans-serif';
+        ctx.fillText(bs.s,sx+iw/2,by2+bh2*0.58);
+        // Label
+        ctx.fillStyle='#6b7280';ctx.font='10px sans-serif';
+        ctx.fillText(bs.l,sx+iw/2,by2+bh2*0.8);
+        ctx.textAlign='left';
+      });
+      return bh2;
+    };
+
     // Footer
     const drawFooter = (x,y,w) => {
       ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
@@ -1977,12 +2020,14 @@ function WhisperingWishesInner() {
       ctx.fillStyle='#fbbf24';ctx.font='16px monospace';ctx.fillText(svr,bx+72,idY+idOff+66);
       if(lr)drawLuck(bx+15,idY+idOff+87,leftW-135);
       const metaY=idY+idOff+(lr?117:90);
-      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
-      if(tList.length>0)ctx.fillText(tList.length+' Trophies',bx+15,metaY);
-      if(impDate)ctx.fillText('Since '+impDate,bx+15+(tList.length>0?90:0),metaY);
-      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+15+(tList.length>0?90:0)+(impDate?120:0),metaY);
+      ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';
+      let metaLine1='';
+      if(tList.length>0)metaLine1+=tList.length+' Trophies';
+      if(impDate)metaLine1+=(metaLine1?' · ':'')+impDate;
+      if(metaLine1)ctx.fillText(metaLine1,bx+15,metaY);
+      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+15,metaY+16);
       // Convene Stats inside profile panel
-      const statCellH=36,statStartY=metaY+21;
+      const statCellH=36,statStartY=metaY+(overallStats?.totalAstrite?36:21);
       drawStats(bx+9,statStartY,leftW-18,statCellH,16);
       // Pity Distribution below stats inside profile panel
       const histoY=statStartY+(statCellH+8)*2-8+15;
@@ -1994,18 +2039,18 @@ function WhisperingWishesInner() {
         ctx.fillStyle='#4b5563';ctx.font='10px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,bx+leftW-12,idY+idH-6);ctx.textAlign='left';
       }
 
-      // ── Right column: Collection → Resonators → Trophies ──
+      // ── Right column: Collection → Resonators → Trophies → Banner Breakdown ──
       const panelPad=39;
       const collH=panelPad+48+6;
+      const trophyCellSize=120; // fixed trophy card size
+      const trophyPanelH=panelPad+trophyCellSize+6;
+      const bannerH=panelPad+72+6; // banner breakdown panel height
 
       const resCols=10,resGap2=6;
       const resMax=Math.min(newestRes.length,20);
       const resCellW=(rightW-18-(resCols-1)*resGap2)/resCols,resCellH=Math.round(resCellW*1.6);
       const resRows=Math.ceil(Math.max(resMax,1)/resCols);
       const resContentH=panelPad+resRows*(resCellH+resGap2)-resGap2+6+(newestRes.length>resMax?21:0);
-
-      const trophyY_start=Y+collH+gap+resContentH+gap;
-      const r3H=bottomY-trophyY_start;
 
       // Draw Row 1: Collection (full width)
       const cp1o=drawPanel(rightX,Y,rightW,collH,'Collection');
@@ -2016,13 +2061,23 @@ function WhisperingWishesInner() {
       const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
       drawResTags(rightX+9,r2Y+rp1o,rightW-18,10,resMax);
 
-      // Draw Row 3: Trophies — fills remaining, square icon style
+      // Draw Row 3: Trophies — fixed height, centered
       const r3Y=r2Y+resContentH+gap;
-      if(tList.length>0&&r3H>60){
-        const tp1o=drawPanel(rightX,r3Y,rightW,r3H,'Trophies ('+tList.length+')');
+      if(tList.length>0){
+        const tp1o=drawPanel(rightX,r3Y,rightW,trophyPanelH,'Trophies ('+tList.length+')');
         const tCols=5,tGap=8;
-        const tSize=Math.min(Math.floor((rightW-18-(tCols-1)*tGap)/tCols),r3H-tp1o-6);
-        tList.forEach((t,i)=>{drawTrophy(rightX+9+i*(tSize+tGap),r3Y+tp1o,tSize,t);});
+        const tSize=Math.min(trophyCellSize,Math.floor((rightW-18-(tCols-1)*tGap)/tCols));
+        const tTotalW=tSize*tCols+tGap*(tCols-1);
+        const tOffX=(rightW-18-tTotalW)/2;
+        tList.forEach((t,i)=>{drawTrophy(rightX+9+tOffX+i*(tSize+tGap),r3Y+tp1o,tSize,t);});
+      }
+
+      // Draw Row 4: Banner Breakdown — fills remaining
+      const r4Y=r3Y+(tList.length>0?trophyPanelH:0)+gap;
+      const r4H=bottomY-r4Y;
+      if(r4H>60){
+        const bp1o=drawPanel(rightX,r4Y,rightW,r4H,'Convene Breakdown');
+        drawBannerRow(rightX+9,r4Y+bp1o,rightW-18,r4H-bp1o-6);
       }
 
       drawFooter(bx,bottomY,bw);
@@ -2050,12 +2105,12 @@ function WhisperingWishesInner() {
       ctx.fillStyle='#fbbf24';ctx.font='16px monospace';ctx.fillText(svr,ix+72,uidLY+24);
       if(lr)drawLuck(ix+15,uidLY+51,iw-135);
       const metaY2=uidLY+(lr?84:57);
-      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
-      if(tList.length>0)ctx.fillText(tList.length+' Trophies',ix+15,metaY2);
-      if(impDate)ctx.fillText('Since '+impDate,ix+15+(tList.length>0?90:0),metaY2);
-      if(overallStats?.totalAstrite){
-        ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',ix+15,metaY2+18);
-      }
+      ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';
+      let metaLine='';
+      if(tList.length>0)metaLine+=tList.length+' Trophies';
+      if(impDate)metaLine+=(metaLine?' · ':'')+impDate;
+      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString()+' Astrite';
+      if(metaLine)ctx.fillText(metaLine,ix+15,metaY2);
       // Convene Stats inside profile panel
       const pStatY=metaY2+30;
       drawStats(ix+9,pStatY,iw-18,pStatCellH,22);
@@ -2070,9 +2125,9 @@ function WhisperingWishesInner() {
       const pResCellW=(bw-18-(pResCols-1)*pResGap2)/pResCols,pResCellH=Math.round(pResCellW*1.6);
       const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
       const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+6+(newestRes.length>pResMax?21:0);
-
-      const fixedH=pHistoH+gap+pCollH+gap+pResContentH+gap;
-      const pTrophyH=bottomY-Y-fixedH;
+      const pTrophySize=140; // fixed trophy card size for portrait
+      const pTrophyPanelH=pPad+pTrophySize+6;
+      const pBannerH=pPad+80+6; // banner breakdown
 
       // ── Pity Distribution ──
       const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
@@ -2090,17 +2145,22 @@ function WhisperingWishesInner() {
       drawResTags(bx+9,Y+rp2o,bw-18,8,pResMax);
       Y+=pResContentH+gap;
 
-      // ── Trophies — fills remaining space, square icon style ──
-      if(tList.length>0&&pTrophyH>60){
-        const tp2o=drawPanel(bx,Y,bw,pTrophyH,'Trophies ('+tList.length+')');
+      // ── Trophies — fixed height, centered ──
+      if(tList.length>0){
+        const tp2o=drawPanel(bx,Y,bw,pTrophyPanelH,'Trophies ('+tList.length+')');
         const tCols=5,tGap=8;
-        const tSizeW=Math.floor((bw-18-(tCols-1)*tGap)/tCols);
-        const tSizeH=pTrophyH-tp2o-6;
-        const tSize=Math.min(tSizeW,tSizeH);
+        const tSize=Math.min(pTrophySize,Math.floor((bw-18-(tCols-1)*tGap)/tCols));
         const tTotalW=tSize*tCols+tGap*(tCols-1);
         const tOffX=(bw-18-tTotalW)/2;
-        const tOffY=(tSizeH-tSize)/2;
-        tList.forEach((t,i)=>{drawTrophy(bx+9+tOffX+i*(tSize+tGap),Y+tp2o+tOffY,tSize,t);});
+        tList.forEach((t,i)=>{drawTrophy(bx+9+tOffX+i*(tSize+tGap),Y+tp2o,tSize,t);});
+        Y+=pTrophyPanelH+gap;
+      }
+
+      // ── Banner Breakdown — fills remaining ──
+      const pRemaining=bottomY-Y;
+      if(pRemaining>60){
+        const bp2o=drawPanel(bx,Y,bw,pRemaining,'Convene Breakdown');
+        drawBannerRow(bx+9,Y+bp2o,bw-18,pRemaining-bp2o-6);
       }
 
       drawFooter(bx,bottomY,bw);
