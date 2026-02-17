@@ -1704,6 +1704,20 @@ function WhisperingWishesInner() {
     let appIco = null;
     try { appIco = new Image(); await new Promise((r,j)=>{appIco.onload=r;appIco.onerror=j;appIco.src=HEADER_ICON;setTimeout(j,2000);}); } catch { appIco = null; }
 
+    // Preload resonator portrait images
+    const resImgs = {};
+    const charHist0 = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+    const preloadNames = [...new Set(charHist0.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse().slice(0, 24);
+    await Promise.all(preloadNames.map(name => {
+      const url = collectionImages[name];
+      if (!url) return Promise.resolve();
+      return new Promise(resolve => {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        img.onload = () => { resImgs[name] = img; resolve(); };
+        img.onerror = resolve; img.src = url; setTimeout(resolve, 3000);
+      });
+    }));
+
     const uname = state.profile.username || 'Resonator';
     const uid = state.profile.uid || '--';
     const svr = state.server;
@@ -1792,12 +1806,28 @@ function WhisperingWishesInner() {
       ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(7,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
     };
 
-    // Resonator tag — .kuro-btn style with visible border
-    const drawTag = (x,y,w,h,text) => {
-      ctx.fillStyle='rgba(15,20,28,0.85)';rr(x,y,w,h,8);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
-      ctx.fillStyle='#e2e8f0';ctx.font='11px sans-serif';ctx.textAlign='center';
-      const ml=Math.floor(w/6.5);ctx.fillText(text.length>ml?text.slice(0,ml-1)+'..':text,x+w/2,y+h/2+4);ctx.textAlign='left';
+    // Resonator portrait — character image thumbnail with name
+    const drawResPortrait = (x,y,cellW,name,img) => {
+      const imgH=cellW;
+      ctx.fillStyle='rgba(10,14,22,0.9)';rr(x,y,cellW,imgH,6);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;rr(x,y,cellW,imgH,6);ctx.stroke();
+      if(img){
+        ctx.save();rr(x+1,y+1,cellW-2,imgH-2,5);ctx.clip();
+        const f=getImageFraming('collection-'+name);
+        const sc=f.zoom/100;
+        const dw=cellW*sc,dh=imgH*sc;
+        const dx=x+(cellW-dw)/2-(f.x/100)*cellW*sc;
+        const dy=y+(imgH-dh)/2-(f.y/100)*imgH*sc;
+        ctx.drawImage(img,dx,dy,dw,dh);
+        ctx.restore();
+      } else {
+        ctx.fillStyle='#4b5563';ctx.font=Math.max(10,Math.round(cellW*0.25))+'px sans-serif';
+        ctx.textAlign='center';ctx.fillText(name[0],x+cellW/2,y+imgH/2+4);ctx.textAlign='left';
+      }
+      // Name below
+      ctx.fillStyle='#9ca3af';ctx.font='8px sans-serif';ctx.textAlign='center';
+      const ml=Math.floor(cellW/4.5);
+      ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+imgH+10);ctx.textAlign='left';
     };
 
     // Trophy card — individual bordered card with name + full description
@@ -1820,14 +1850,19 @@ function WhisperingWishesInner() {
       if(line&&ly<=y+h-4)ctx.fillText(line,x+8,ly);
     };
 
-    // Hero profile image — large, with gradient fade
+    // Hero profile image — large, with collection-style framing and gradient fade
     const drawHero = (x,y,w,h) => {
       ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,10);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;rr(x,y,w,h,10);ctx.stroke();
       if(pImg){
         ctx.save();rr(x+1,y+1,w-2,h-2,9);ctx.clip();
-        const ratio=pImg.width/pImg.height;const cw=ratio>1?h*ratio:w;const ch=ratio>1?h:w/ratio;
-        ctx.drawImage(pImg,(pImg.width-pImg.width*(w/cw))/2,(pImg.height-pImg.height*(h/ch))/2,pImg.width*(w/cw),pImg.height*(h/ch),x+1,y+1,w-2,h-2);
+        // Use collection-style framing (same as React DOM)
+        const f=picName?getImageFraming('collection-'+picName):{zoom:100,x:0,y:0};
+        const sc=f.zoom/100;
+        const dw=w*sc,dh=h*sc;
+        const dx=x+(w-dw)/2-(f.x/100)*w*sc;
+        const dy=y+(h-dh)/2-(f.y/100)*h*sc;
+        ctx.drawImage(pImg,dx,dy,dw,dh);
         ctx.restore();
         // Bottom gradient fade
         const fade=ctx.createLinearGradient(0,y+h-60,0,y+h);
@@ -1863,12 +1898,12 @@ function WhisperingWishesInner() {
       return (ch2+g2)*2-g2;
     };
 
-    // Resonator tags grid
+    // Resonator portraits grid
     const drawResTags = (rx,ry,mw,cols,max) => {
       const ch2=newestRes.slice(0,max);if(!ch2.length)return 0;
-      const g2=5,th=28,tw=(mw-(cols-1)*g2)/cols;
-      ch2.forEach((n,i)=>{drawTag(rx+(i%cols)*(tw+g2),ry+Math.floor(i/cols)*(th+g2),tw,th,n);});
-      const rows=Math.ceil(ch2.length/cols);let h2=rows*(th+g2)-g2;
+      const g2=6,cellW=Math.min(60,(mw-(cols-1)*g2)/cols),cellH=cellW+14;
+      ch2.forEach((n,i)=>{drawResPortrait(rx+(i%cols)*(cellW+g2),ry+Math.floor(i/cols)*(cellH+g2),cellW,n,resImgs[n]);});
+      const rows=Math.ceil(ch2.length/cols);let h2=rows*(cellH+g2)-g2;
       if(newestRes.length>max){ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.fillText('+'+String(newestRes.length-max)+' more',rx,ry+h2+12);h2+=14;}
       return h2;
     };
@@ -1953,10 +1988,11 @@ function WhisperingWishesInner() {
       const collW=rightW-statsW-gap;
       const r1H=Math.max(statsContentH,panelPad+32+50+4); // collection cells + histogram
 
-      const resTagH=28,resTagGap=5,resCols=5;
+      const resCols=10,resGap2=6;
       const resMax=Math.min(newestRes.length,20);
+      const resCellW=Math.min(60,(rightW-12-(resCols-1)*resGap2)/resCols),resCellH=resCellW+14;
       const resRows=Math.ceil(Math.max(resMax,1)/resCols);
-      const resContentH=panelPad+resRows*(resTagH+resTagGap)-resTagGap+4+(newestRes.length>resMax?14:0);
+      const resContentH=panelPad+resRows*(resCellH+resGap2)-resGap2+4+(newestRes.length>resMax?14:0);
 
       const trophyY_start=Y+r1H+gap+resContentH+gap;
       const r3H=bottomY-trophyY_start;
@@ -1973,7 +2009,7 @@ function WhisperingWishesInner() {
       // Draw Row 2: Resonators — sized to content
       const r2Y=Y+r1H+gap;
       const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
-      drawResTags(rightX+6,r2Y+rp1o,rightW-12,resCols,resMax);
+      drawResTags(rightX+6,r2Y+rp1o,rightW-12,10,resMax);
 
       // Draw Row 3: Trophies — fills remaining
       const r3Y=r2Y+resContentH+gap;
@@ -2024,10 +2060,11 @@ function WhisperingWishesInner() {
       const pStatsH=pPad+(pStatCellH+5)*2-5+4;
       const pCollH=pPad+32+4;
       const pHistoH=96;
-      const pResTagH=28,pResTagGap=5,pResCols=4;
+      const pResCols=8,pResGap2=6;
       const pResMax=Math.min(newestRes.length,24);
+      const pResCellW=Math.min(60,(bw-12-(pResCols-1)*pResGap2)/pResCols),pResCellH=pResCellW+14;
       const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
-      const pResContentH=pPad+pResRows*(pResTagH+pResTagGap)-pResTagGap+4+(newestRes.length>pResMax?14:0);
+      const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+4+(newestRes.length>pResMax?14:0);
 
       const fixedH=pStatsH+gap+pCollH+gap+pHistoH+gap+pResContentH+gap;
       const pTrophyH=bottomY-Y-fixedH;
@@ -2050,7 +2087,7 @@ function WhisperingWishesInner() {
 
       // ── Resonators — sized to content ──
       const rp2o=drawPanel(bx,Y,bw,pResContentH,'Resonators ('+newestRes.length+')');
-      drawResTags(bx+6,Y+rp2o,bw-12,pResCols,pResMax);
+      drawResTags(bx+6,Y+rp2o,bw-12,8,pResMax);
       Y+=pResContentH+gap;
 
       // ── Trophies — fills ALL remaining space ──
@@ -4901,10 +4938,10 @@ Example: {"pulls":[...]}'
                     
                     {/* Right: 1:1 Profile Picture — glass style */}
                     <div className="flex-shrink-0 flex flex-col items-center">
-                      <div className="rounded-xl" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
+                      <div className="relative rounded-xl overflow-hidden" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
                         {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                           const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                          return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="object-contain" style={{ width: '120px', height: '120px', transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                          return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
                         })() : (
                           <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
                             <img src={HEADER_ICON} alt="Default" className="w-14 h-14 object-contain opacity-70" />
@@ -4938,12 +4975,29 @@ Example: {"pulls":[...]}'
                   {ownedCharNames.length > 0 && (
                     <div className="mt-3">
                       <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
-                      <div className="flex flex-wrap gap-1">
-                        {ownedCharNames.slice(0, 16).map(name => (
-                          <span key={name} className="px-1.5 py-0.5 rounded text-gray-300" style={{ fontSize: '8px', background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.06)' }}>{name}</span>
-                        ))}
+                      <div className="flex flex-wrap gap-1.5">
+                        {ownedCharNames.slice(0, 16).map(name => {
+                          const imgUrl = collectionImages[name];
+                          const f = getImageFraming(`collection-${name}`);
+                          return (
+                            <div key={name} className="flex flex-col items-center" style={{ width: '40px' }}>
+                              <div className="relative rounded-lg overflow-hidden" style={{ width: '40px', height: '40px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', contain: 'paint' }}>
+                                {imgUrl ? (
+                                  <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-gray-500" style={{ fontSize: '10px' }}>{name[0]}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-gray-400 text-center truncate w-full mt-0.5" style={{ fontSize: '7px' }}>{name}</span>
+                            </div>
+                          );
+                        })}
                         {ownedCharNames.length > 16 && (
-                          <span className="px-1.5 py-0.5 text-gray-500" style={{ fontSize: '8px' }}>+{ownedCharNames.length - 16} more</span>
+                          <div className="flex flex-col items-center justify-center" style={{ width: '40px', height: '40px' }}>
+                            <span className="text-gray-500" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
+                          </div>
                         )}
                       </div>
                     </div>
