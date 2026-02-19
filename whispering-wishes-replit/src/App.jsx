@@ -1437,7 +1437,7 @@ function WhisperingWishesInner() {
     
     // Soft pity zone specialist — majority of 5★ came from 65-79
     const softPityPulls = all5Stars.filter(p => p.pity >= 65 && p.pity < 80);
-    if (softPityPulls.length >= 10) list.push({ id: 'softpro2', name: 'Soft Pity Resident', desc: `${softPityPulls.length} five-stars from soft zone — you live here now`, icon: 'TrendingUp', color: '#ec4899', tier: 'pink' });
+    if (softPityPulls.length >= 10) list.push({ id: 'softpro2', name: 'Soft Pity Landlord', desc: `${softPityPulls.length} five-stars from soft zone — you own property here`, icon: 'TrendingUp', color: '#ec4899', tier: 'pink' });
     else if (softPityPulls.length >= 5) list.push({ id: 'softpro', name: 'Soft Pity Merchant', desc: `${softPityPulls.length} five-stars from soft zone — never early, never late`, icon: 'TrendingUp', color: '#f97316', tier: 'orange' });
     
     // Back-to-back — two 5★ within 20 pulls across any banner
@@ -1447,16 +1447,16 @@ function WhisperingWishesInner() {
     else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 pulls of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 STREAK TROPHIES ═══
-    if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Gacha God', desc: `${bestWinStreak}× 50/50 wins — the chosen one`, icon: 'Crown', color: '#ff0000', tier: 'legendary' });
+    if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Rover\'s Blessing', desc: `${bestWinStreak}× 50/50 wins — the Sentinel chose you`, icon: 'Crown', color: '#ff0000', tier: 'legendary' });
     else if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#fbbf24', tier: 'legendary' });
     else if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Main Character Energy', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Flame', color: '#f97316', tier: 'orange' });
-    else if (bestWinStreak >= 4) list.push({ id: 'win4', name: 'Hot Streak', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Flame', color: '#22c55e', tier: 'green' });
+    else if (bestWinStreak >= 4) list.push({ id: 'win4', name: 'Resonance Chain', desc: `${bestWinStreak}× 50/50 wins in a row — keep the chain going`, icon: 'Flame', color: '#22c55e', tier: 'green' });
     else if (bestWinStreak >= 3) list.push({ id: 'win3', name: 'Casually Winning', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Target', color: '#22c55e', tier: 'green' });
 
-    if (worstLossStreak >= 10) list.push({ id: 'loss10s', name: 'Cursed Bloodline', desc: `${worstLossStreak}× 50/50 losses — it's generational at this point`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    if (worstLossStreak >= 10) list.push({ id: 'loss10s', name: 'Lament Never Ended', desc: `${worstLossStreak}× 50/50 losses — the catastrophe hit your account`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
     else if (worstLossStreak >= 7) list.push({ id: 'loss7', name: 'Clinically Cursed', desc: `${worstLossStreak}× 50/50 losses — uninstall tbh`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
     else if (worstLossStreak >= 5) list.push({ id: 'loss5', name: 'Kuro Hates You', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
-    else if (worstLossStreak >= 4) list.push({ id: 'loss4', name: 'Cold Streak', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    else if (worstLossStreak >= 4) list.push({ id: 'loss4', name: 'Waveworn', desc: `${worstLossStreak}× 50/50 losses in a row — eroded by RNG`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
     else if (worstLossStreak >= 3) list.push({ id: 'loss3', name: 'Skill Issue (Gacha)', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
     
     // Won first ever 50/50
@@ -1480,24 +1480,24 @@ function WhisperingWishesInner() {
     
     // ═══ MILESTONE TROPHIES ═══
     if (isMegaWhale) list.push({ id: 'mega', name: 'Mortgage Status', desc: '2000+ Convenes — seek financial advice', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
-    else if (totalPulls >= 1500) list.push({ id: '1500', name: 'Salary Donation', desc: '1500+ Convenes — Kuro sends you a Christmas card', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (totalPulls >= 1500) list.push({ id: '1500', name: 'Astrite Overdose', desc: '1500+ Convenes — Kuro sends you a Christmas card', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
     else if (isWhale) list.push({ id: 'whale', name: 'Kuro Employee of the Month', desc: '1000+ Convenes — they know you by name', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
-    else if (totalPulls >= 750) list.push({ id: '750', name: 'No Refunds', desc: '750+ Convenes — you\'re in too deep', icon: 'Fish', color: '#8b5cf6', tier: 'purple' });
+    else if (totalPulls >= 750) list.push({ id: '750', name: 'Terminal Stage', desc: '750+ Convenes — the Lament hit your wallet', icon: 'Fish', color: '#8b5cf6', tier: 'purple' });
     else if (totalPulls >= 500) list.push({ id: '500', name: 'Down the Rabbit Hole', desc: '500+ Convenes — no turning back', icon: 'Diamond', color: '#8b5cf6', tier: 'purple' });
-    else if (totalPulls >= 300) list.push({ id: '300', name: 'Point of No Return', desc: '300+ Convenes — the gacha has you now', icon: 'Diamond', color: '#3b82f6', tier: 'blue' });
-    else if (totalPulls >= 200) list.push({ id: '200', name: 'Getting Invested', desc: '200+ Convenes — emotionally and financially', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
+    else if (totalPulls >= 300) list.push({ id: '300', name: 'Sunk Cost Fallacy', desc: '300+ Convenes — too deep to quit, too broke to continue', icon: 'Diamond', color: '#3b82f6', tier: 'blue' });
+    else if (totalPulls >= 200) list.push({ id: '200', name: 'Rover\'s Allowance: Gone', desc: '200+ Convenes — emotionally and financially invested', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
     else if (totalPulls >= 100) list.push({ id: '100', name: 'First Steps', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
     
     // 5★ count milestones
     const total5Stars = all5Stars.length;
-    if (total5Stars >= 100) list.push({ id: '100stars', name: 'Five-Star Factory', desc: `${total5Stars} five-stars obtained — you ARE the banner`, icon: 'Star', color: '#ff0000', tier: 'legendary' });
-    else if (total5Stars >= 75) list.push({ id: '75stars', name: 'Star Hoarder', desc: `${total5Stars} five-stars obtained — where do you put them all`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    if (total5Stars >= 100) list.push({ id: '100stars', name: 'Convene Printer Goes Brr', desc: `${total5Stars} five-stars obtained — you ARE the banner`, icon: 'Star', color: '#ff0000', tier: 'legendary' });
+    else if (total5Stars >= 75) list.push({ id: '75stars', name: 'Resonance Overload', desc: `${total5Stars} five-stars obtained — Sonata Effect: maxed`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
     else if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
-    else if (total5Stars >= 35) list.push({ id: '35stars', name: 'Galaxy Brain', desc: `${total5Stars} five-stars obtained — quantity over quality`, icon: 'Star', color: '#a855f7', tier: 'purple' });
+    else if (total5Stars >= 35) list.push({ id: '35stars', name: 'Tacet Discord Hoarder', desc: `${total5Stars} five-stars obtained — your roster IS the Tacet Discord`, icon: 'Star', color: '#a855f7', tier: 'purple' });
     else if (total5Stars >= 25) list.push({ id: '25stars', name: 'Stargazer', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#a855f7', tier: 'purple' });
-    else if (total5Stars >= 15) list.push({ id: '15stars', name: 'Constellation Mapper', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
+    else if (total5Stars >= 15) list.push({ id: '15stars', name: 'Sequence Node: Farming', desc: `${total5Stars} five-stars obtained — the grind is real`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
     else if (total5Stars >= 10) list.push({ id: '10stars', name: 'Rising Star', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
-    else if (total5Stars >= 5) list.push({ id: '5stars', name: 'Lucky Five', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#22c55e', tier: 'green' });
+    else if (total5Stars >= 5) list.push({ id: '5stars', name: 'First Expedition', desc: `${total5Stars} five-stars obtained — your team is forming`, icon: 'Star', color: '#22c55e', tier: 'green' });
 
     // First 5★
     if (total5Stars > 0 && total5Stars < 5) list.push({ id: 'first5', name: 'Awakening', desc: 'Obtained your first 5★', icon: 'Star', color: '#fbbf24', tier: 'gold' });
@@ -1505,24 +1505,24 @@ function WhisperingWishesInner() {
     // Banner diversity — pulled on multiple banner types
     const bannerTypesUsed = [featuredHist, weaponHist, stdCharHist, stdWeapHist].filter(h => h.length > 0).length;
     if (bannerTypesUsed >= 4) list.push({ id: 'diverse', name: 'Pioneer Podcast', desc: 'Convened on all banner types', icon: 'Trophy', color: '#06b6d4', tier: 'cyan' });
-    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Exploring Options', desc: 'Pulled on 3 different banner types', icon: 'Trophy', color: '#3b82f6', tier: 'blue' });
+    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Pioneer Intern', desc: 'Pulled on 3 different banner types — almost a real Pioneer', icon: 'Trophy', color: '#3b82f6', tier: 'blue' });
 
     // ═══ CHARACTER OWNERSHIP PROGRESSION ═══
     const owned5Count = owned5StarChars.size;
-    if (owned5Count >= 30) list.push({ id: 'own30', name: 'Living Pokedex', desc: `${owned5Count} unique 5★ Resonators — Rover collected them all`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    else if (owned5Count >= 25) list.push({ id: 'own25', name: 'Walking Wiki', desc: `${owned5Count} unique 5★ Resonators — you ARE the tier list`, icon: 'Crown', color: '#fbbf24', tier: 'gold' });
-    else if (owned5Count >= 20) list.push({ id: 'own20', name: 'Overcrowded Dorm', desc: `${owned5Count} unique 5★ Resonators — where do they all sleep`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
-    else if (owned5Count >= 15) list.push({ id: 'own15', name: 'Squad Goals', desc: `${owned5Count} unique 5★ Resonators`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
-    else if (owned5Count >= 10) list.push({ id: 'own10', name: 'Growing Roster', desc: `${owned5Count} unique 5★ Resonators`, icon: 'Sparkles', color: '#3b82f6', tier: 'blue' });
-    else if (owned5Count >= 5) list.push({ id: 'own5', name: 'Starting Lineup', desc: `${owned5Count} unique 5★ Resonators`, icon: 'Sparkles', color: '#22c55e', tier: 'green' });
+    if (owned5Count >= 30) list.push({ id: 'own30', name: 'Huanglong\'s Census', desc: `${owned5Count} unique 5★ Resonators — Rover collected them all`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    else if (owned5Count >= 25) list.push({ id: 'own25', name: 'Sonata Library: Full', desc: `${owned5Count} unique 5★ Resonators — you ARE the tier list`, icon: 'Crown', color: '#fbbf24', tier: 'gold' });
+    else if (owned5Count >= 20) list.push({ id: 'own20', name: 'Jinzhou Housing Crisis', desc: `${owned5Count} unique 5★ Resonators — where do they all sleep`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
+    else if (owned5Count >= 15) list.push({ id: 'own15', name: 'Forte Circuit Overload', desc: `${owned5Count} unique 5★ Resonators — too many builds to farm`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
+    else if (owned5Count >= 10) list.push({ id: 'own10', name: 'Union Level: Whale', desc: `${owned5Count} unique 5★ Resonators — the roster is stacked`, icon: 'Sparkles', color: '#3b82f6', tier: 'blue' });
+    else if (owned5Count >= 5) list.push({ id: 'own5', name: 'First Expedition Team', desc: `${owned5Count} unique 5★ Resonators — your party is forming`, icon: 'Sparkles', color: '#22c55e', tier: 'green' });
 
     // ═══ WEAPON OWNERSHIP PROGRESSION ═══
     const owned5WeapCount = owned5StarWeaps.size;
-    if (owned5WeapCount >= 20) list.push({ id: 'weap20', name: 'Weapons Hoarder', desc: `${owned5WeapCount} unique 5★ Weapons — open a museum`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
-    else if (owned5WeapCount >= 15) list.push({ id: 'weap15', name: 'Walking Armory', desc: `${owned5WeapCount} unique 5★ Weapons`, icon: 'Swords', color: '#a855f7', tier: 'purple' });
-    else if (owned5WeapCount >= 10) list.push({ id: 'weap10', name: 'Blademaster', desc: `${owned5WeapCount} unique 5★ Weapons`, icon: 'Swords', color: '#3b82f6', tier: 'blue' });
-    else if (owned5WeapCount >= 5) list.push({ id: 'weap5', name: 'Arsenal Growing', desc: `${owned5WeapCount} unique 5★ Weapons`, icon: 'Sword', color: '#22c55e', tier: 'green' });
-    else if (owned5WeapCount >= 3) list.push({ id: 'weap3', name: 'Branching Out', desc: `${owned5WeapCount} unique 5★ Weapons`, icon: 'Sword', color: '#22c55e', tier: 'green' });
+    if (owned5WeapCount >= 20) list.push({ id: 'weap20', name: 'Forgery Domain Resident', desc: `${owned5WeapCount} unique 5★ Weapons — open a museum in Jinzhou`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    else if (owned5WeapCount >= 15) list.push({ id: 'weap15', name: 'Sonance Casket: Stuffed', desc: `${owned5WeapCount} unique 5★ Weapons — inventory management simulator`, icon: 'Swords', color: '#a855f7', tier: 'purple' });
+    else if (owned5WeapCount >= 10) list.push({ id: 'weap10', name: 'Pioneer\'s Arsenal', desc: `${owned5WeapCount} unique 5★ Weapons — a blade for every occasion`, icon: 'Swords', color: '#3b82f6', tier: 'blue' });
+    else if (owned5WeapCount >= 5) list.push({ id: 'weap5', name: 'Tacet Field Sweep', desc: `${owned5WeapCount} unique 5★ Weapons — the field has been cleared`, icon: 'Sword', color: '#22c55e', tier: 'green' });
+    else if (owned5WeapCount >= 3) list.push({ id: 'weap3', name: 'First Forgery Run', desc: `${owned5WeapCount} unique 5★ Weapons — your collection begins`, icon: 'Sword', color: '#22c55e', tier: 'green' });
 
     // Max sequences — any character pulled 7+ times (S6)
     const charCounts = {};
@@ -1596,46 +1596,46 @@ function WhisperingWishesInner() {
     const r5Weapons = Object.entries(weapCounts).filter(([, c]) => c >= 5);
     const r3Weapons = Object.entries(weapCounts).filter(([, c]) => c >= 3);
     const maxedWeap = r5Weapons[0];
-    if (r5Weapons.length >= 3) list.push({ id: 'r5three', name: 'Weapon Whale Supreme', desc: `${r5Weapons.length} R5 weapons — your armory costs more than a car`, icon: 'Swords', color: '#ff0000', tier: 'legendary' });
-    else if (r5Weapons.length >= 2) list.push({ id: 'r5two', name: 'Double Down', desc: `${r5Weapons.length} R5 weapons — one wasn't enough apparently`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
+    if (r5Weapons.length >= 3) list.push({ id: 'r5three', name: 'Forge of Impermanence', desc: `${r5Weapons.length} R5 weapons — your armory costs more than a car`, icon: 'Swords', color: '#ff0000', tier: 'legendary' });
+    else if (r5Weapons.length >= 2) list.push({ id: 'r5two', name: 'Tuner Diff', desc: `${r5Weapons.length} R5 weapons — one wasn't enough apparently`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
     else if (maxedWeap) list.push({ id: 'r5', name: 'Weapon Banner Victim', desc: `R5 ${maxedWeap[0]} — financially irresponsible`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
-    else if (r3Weapons.length >= 1) list.push({ id: 'r3', name: 'Weapon Investor', desc: `R3+ ${r3Weapons[0][0]} — halfway to regret`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
+    else if (r3Weapons.length >= 1) list.push({ id: 'r3', name: 'Halfway to Copium', desc: `R3+ ${r3Weapons[0][0]} — too invested to stop, too broke to finish`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
 
     // Weapon banner pull volume
     const weapBannerPulls = weaponHist.length;
-    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Signature Weapon Addict', desc: `${weapBannerPulls} weapon banner pulls — this is a lifestyle`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
-    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Weapon Banner Enjoyer', desc: `${weapBannerPulls} weapon banner pulls`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner pulls — this is a lifestyle choice`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner pulls — "it's a DPS increase bro"`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
 
     // More weapon pulls than character pulls
     if (weapBannerPulls > 0 && featuredHist.length > 0 && weapBannerPulls > featuredHist.length) {
-      list.push({ id: 'weapsimp', name: 'Weapon Over Waifu', desc: 'More weapon pulls than character pulls — priorities', icon: 'Sword', color: '#f97316', tier: 'orange' });
+      list.push({ id: 'weapsimp', name: 'BiS or Bust', desc: 'More weapon pulls than character pulls — priorities moment', icon: 'Sword', color: '#f97316', tier: 'orange' });
     }
 
     // Never pulled on weapon banner
-    if (weapBannerPulls === 0 && totalPulls >= 100) list.push({ id: 'noweap', name: 'Who Needs Weapons', desc: 'Zero weapon banner pulls — characters only thank you', icon: 'Shield', color: '#22c55e', tier: 'green' });
+    if (weapBannerPulls === 0 && totalPulls >= 100) list.push({ id: 'noweap', name: 'Fists Only Challenge', desc: 'Zero weapon banner pulls — who needs signatures anyway', icon: 'Shield', color: '#22c55e', tier: 'green' });
     
     // Average pity under 50 with 10+ 5★ (consistently lucky)
     if (total5Stars >= 10 && overallStats?.avgPity) {
       const avg = parseFloat(overallStats.avgPity);
-      if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Cheating?', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — this has to be edited`, icon: 'Clover', color: '#ff0000', tier: 'legendary' });
+      if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Edited Convene Log', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — has to be fake right??`, icon: 'Clover', color: '#ff0000', tier: 'legendary' });
       else if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#fbbf24', tier: 'gold' });
       else if (!isNaN(avg) && avg >= 70) list.push({ id: 'unluckyavg', name: 'Certified Unlucky', desc: `Avg pity ${overallStats.avgPity} — genuinely painful to look at`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
-      else if (!isNaN(avg) && avg >= 60) list.push({ id: 'unluckyavg2', name: 'Late Bloomer', desc: `Avg pity ${overallStats.avgPity} — always fashionably late`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
+      else if (!isNaN(avg) && avg >= 60) list.push({ id: 'unluckyavg2', name: 'Soft Pity Squatter', desc: `Avg pity ${overallStats.avgPity} — you live in the soft zone rent-free`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
     }
 
     // Never got early pity — all 5★ at pity 50+ (with 5+ pulls)
     const allLatePity = total5Stars >= 5 && all5Stars.every(p => p.pity >= 50);
-    if (allLatePity) list.push({ id: 'neverearly', name: 'Pity Counter Devotee', desc: 'Never once got a 5★ before pity 50 — the counter owns you', icon: 'Shield', color: '#6b7280', tier: 'gray' });
+    if (allLatePity) list.push({ id: 'neverearly', name: 'Waveplate Syndrome', desc: 'Never once got a 5★ before pity 50 — always waiting, never winning', icon: 'Shield', color: '#6b7280', tier: 'gray' });
 
     // Multiple hard pity hits
     const hardPityCount = all5Stars.filter(p => p.pity >= HARD_PITY).length;
-    if (hardPityCount >= 5) list.push({ id: 'hard5', name: 'Pain Incarnate', desc: `Hit hard pity ${hardPityCount}× — at this point it\'s a talent`, icon: 'Shield', color: '#ef4444', tier: 'red' });
-    else if (hardPityCount >= 3) list.push({ id: 'hard3', name: 'Regular at Pity 80', desc: `Hit hard pity ${hardPityCount}× — frequent flyer card when`, icon: 'Shield', color: '#6b7280', tier: 'gray' });
+    if (hardPityCount >= 5) list.push({ id: 'hard5', name: 'Tacet Mark: Permanent', desc: `Hit hard pity ${hardPityCount}× — the Lament scarred your account`, icon: 'Shield', color: '#ef4444', tier: 'red' });
+    else if (hardPityCount >= 3) list.push({ id: 'hard3', name: 'Frequent Flyer: Pity 80', desc: `Hit hard pity ${hardPityCount}× — loyalty card when Kuro`, icon: 'Shield', color: '#6b7280', tier: 'gray' });
 
     // Got a 5★ at very low pity multiple times
     const veryEarlyCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 10).length;
-    if (veryEarlyCount >= 5) list.push({ id: 'early5x', name: 'Silver Spoon', desc: `${veryEarlyCount} five-stars within first 10 pity — born lucky`, icon: 'Clover', color: '#fbbf24', tier: 'legendary' });
-    else if (veryEarlyCount >= 3) list.push({ id: 'early3x', name: 'RNG Magnet', desc: `${veryEarlyCount} five-stars within first 10 pity`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+    if (veryEarlyCount >= 5) list.push({ id: 'early5x', name: 'Rover\'s Plot Armor', desc: `${veryEarlyCount} five-stars within first 10 pity — protagonist luck is real`, icon: 'Clover', color: '#fbbf24', tier: 'legendary' });
+    else if (veryEarlyCount >= 3) list.push({ id: 'early3x', name: 'Resonance Beacon', desc: `${veryEarlyCount} five-stars within first 10 pity — they come to you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 LOSS CHARACTER TROPHIES ═══
     // Standard banner chars you can lose 50/50 to: Calcharo, Encore, Jianxin, Lingyang, Verina
@@ -1677,16 +1677,16 @@ function WhisperingWishesInner() {
     if (total5050s >= 5) {
       const winRate = Math.round((totalWins / total5050s) * 100);
       if (winRate >= 80) list.push({ id: 'highwr', name: 'Account For Sale?', desc: `${winRate}% win rate across ${total5050s} flips — this isn't normal`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-      else if (winRate >= 65) list.push({ id: 'goodwr', name: 'Fortune\'s Favorite', desc: `${winRate}% win rate across ${total5050s} flips — the game likes you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+      else if (winRate >= 65) list.push({ id: 'goodwr', name: 'Jinzhou\'s Luckiest', desc: `${winRate}% win rate across ${total5050s} flips — the Magistrate blesses you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
       else if (winRate <= 20) list.push({ id: 'lowwr', name: 'Statistically Bullied', desc: `${winRate}% win rate across ${total5050s} flips — file a complaint`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
-      else if (winRate <= 35) list.push({ id: 'badwr', name: 'Rigged (Negative)', desc: `${winRate}% win rate across ${total5050s} flips — sus`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
+      else if (winRate <= 35) list.push({ id: 'badwr', name: 'Tacet Field: Account', desc: `${winRate}% win rate across ${total5050s} flips — corrupted beyond repair`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
       // Perfectly balanced — exactly 50% ±2%
-      if (total5050s >= 10 && winRate >= 48 && winRate <= 52) list.push({ id: 'balanced', name: 'Perfectly Balanced', desc: `${winRate}% win rate across ${total5050s} flips — as all things should be`, icon: 'Target', color: '#06b6d4', tier: 'cyan' });
+      if (total5050s >= 10 && winRate >= 48 && winRate <= 52) list.push({ id: 'balanced', name: '50/50 at 50/50', desc: `${winRate}% win rate across ${total5050s} flips — mathematically perfect copium`, icon: 'Target', color: '#06b6d4', tier: 'cyan' });
     }
 
     // 50/50 win total milestones
-    if (totalWins >= 20) list.push({ id: 'wins20', name: 'Golden Child', desc: `${totalWins} 50/50 wins — RNG loves you specifically`, icon: 'Crown', color: '#fbbf24', tier: 'gold' });
-    else if (totalWins >= 10) list.push({ id: 'wins10', name: 'On a Roll', desc: `${totalWins} 50/50 wins total`, icon: 'Target', color: '#22c55e', tier: 'green' });
+    if (totalWins >= 20) list.push({ id: 'wins20', name: 'Shorekeeper\'s Chosen', desc: `${totalWins} 50/50 wins — she protects your account too`, icon: 'Crown', color: '#fbbf24', tier: 'gold' });
+    else if (totalWins >= 10) list.push({ id: 'wins10', name: 'Sonance Cascade', desc: `${totalWins} 50/50 wins total — the echoes answer`, icon: 'Target', color: '#22c55e', tier: 'green' });
 
     // Against All Odds — won 50/50 immediately after 3+ consecutive losses
     let hasAgainstOdds = false;
@@ -1696,7 +1696,7 @@ function WhisperingWishesInner() {
       if (p.won5050 === false) lossRunCount++;
       else { if (lossRunCount >= 3) { hasAgainstOdds = true; break; } lossRunCount = 0; }
     }
-    if (hasAgainstOdds) list.push({ id: 'odds', name: 'Against All Odds', desc: 'Won 50/50 after 3+ consecutive losses — anime comeback', icon: 'Flame', color: '#f97316', tier: 'orange' });
+    if (hasAgainstOdds) list.push({ id: 'odds', name: 'Plot Armor Activated', desc: 'Won 50/50 after 3+ consecutive losses — anime comeback arc', icon: 'Flame', color: '#f97316', tier: 'orange' });
     
     // ═══ META TEAM TROPHIES ═══
     // Check if player owns all members of a meta team (using their 5★ collection)
@@ -1715,11 +1715,11 @@ function WhisperingWishesInner() {
     if (ownsAll('Shorekeeper', 'Verina')) list.push({ id: 'heals', name: 'Skill Issue Insurance', desc: 'SK + Verina — can\'t die even if you tried', icon: 'Heart', color: '#22c55e', tier: 'green' });
 
     // Jinhsi + Changli (Jinzhou power couple)
-    if (ownsAll('Jinhsi', 'Changli')) list.push({ id: 'jinzhou', name: 'Jinzhou Power Couple', desc: 'Jinhsi + Changli — the Magistrate and her bodyguard', icon: 'Flame', color: '#f97316', tier: 'orange' });
+    if (ownsAll('Jinhsi', 'Changli')) list.push({ id: 'jinzhou', name: 'Magistrate\'s Flame', desc: 'Jinhsi + Changli — Jinzhou\'s power duo', icon: 'Flame', color: '#f97316', tier: 'orange' });
     // Carlotta + Roccia (Rinascita duo)
-    if (ownsAll('Carlotta', 'Roccia')) list.push({ id: 'rinascita', name: 'Rinascita VIP', desc: 'Carlotta + Roccia — Rinascita\'s finest', icon: 'Diamond', color: '#38bdf8', tier: 'blue' });
+    if (ownsAll('Carlotta', 'Roccia')) list.push({ id: 'rinascita', name: 'Rinascita Familia', desc: 'Carlotta + Roccia — the ice queen and her ride', icon: 'Diamond', color: '#38bdf8', tier: 'blue' });
     // Own all standard 5★ characters
-    if (stdChars.length > 0 && [...stdChars].every(n => owns(n))) list.push({ id: 'stdall', name: 'Standard Collector', desc: 'All standard 5★ Resonators — the ones nobody asked for', icon: 'Trophy', color: '#a855f7', tier: 'purple' });
+    if (stdChars.length > 0 && [...stdChars].every(n => owns(n))) list.push({ id: 'stdall', name: 'Losers Club', desc: 'All standard 5★ Resonators — the "thanks for the 50/50 loss" squad', icon: 'Trophy', color: '#a855f7', tier: 'purple' });
     
     // Own 3+ T0 DPS
     const t0Dps = ['Cartethyia', 'Camellya', 'Carlotta', 'Xiangli Yao', 'Phrolova', 'Iuno', 'Augusta', 'Aemeath'];
@@ -1743,7 +1743,7 @@ function WhisperingWishesInner() {
 
     // ═══ MORE QUIRKY / SITUATIONAL TROPHIES ═══
     // Only own 1 unique 5★ character
-    if (owned5StarChars.size === 1 && totalPulls >= 50) list.push({ id: 'onetrick', name: 'One-Trick', desc: `Only ${[...owned5StarChars][0]} — loyalty or poverty?`, icon: 'Target', color: '#f97316', tier: 'orange' });
+    if (owned5StarChars.size === 1 && totalPulls >= 50) list.push({ id: 'onetrick', name: 'Solo Resonator', desc: `Only ${[...owned5StarChars][0]} — loyalty or poverty?`, icon: 'Target', color: '#f97316', tier: 'orange' });
 
     // Pulled 5★ character and their signature weapon
     const sigPairs = [
@@ -1758,18 +1758,18 @@ function WhisperingWishesInner() {
       ['Mornye', 'Starfield Calibrator'], ['Luuk Herssen', 'Everbright Polestar'], ['Aemeath', "Daybreaker's Spine"],
     ];
     const sigCount = sigPairs.filter(([char, weap]) => owned5StarChars.has(char) && owned5StarWeaps.has(weap)).length;
-    if (sigCount >= 10) list.push({ id: 'sig10', name: 'Fully Equipped', desc: `${sigCount} characters with their signature weapon — peak optimization`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
-    else if (sigCount >= 5) list.push({ id: 'sig5', name: 'Matching Set', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
-    else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Geared Up', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
-    else if (sigCount >= 1) list.push({ id: 'sig1', name: 'First BiS', desc: 'Pulled a character and their signature weapon', icon: 'Sword', color: '#22c55e', tier: 'green' });
+    if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    else if (sigCount >= 5) list.push({ id: 'sig5', name: 'Forte Synergy', desc: `${sigCount} characters with their signature weapon — built different`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
+    else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Echo Equipped', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+    else if (sigCount >= 1) list.push({ id: 'sig1', name: 'Signature Acquired', desc: 'Pulled a character and their signature weapon — BiS secured', icon: 'Sword', color: '#22c55e', tier: 'green' });
 
     // Speedrun — won 50/50 at low pity (<25)
     const speedrun5050 = featured5Stars.find(p => p.won5050 === true && p.pity > 0 && p.pity <= 20);
-    if (speedrun5050) list.push({ id: 'speed', name: 'Speedrun Any%', desc: `Won 50/50 at pity ${speedrun5050.pity} — frame-perfect luck`, icon: 'Zap', color: '#22c55e', tier: 'green' });
+    if (speedrun5050) list.push({ id: 'speed', name: 'Early Pity Any%', desc: `Won 50/50 at pity ${speedrun5050.pity} — frame-perfect gacha luck`, icon: 'Zap', color: '#22c55e', tier: 'green' });
 
     // Max Sequence on a standard character from 50/50 losses alone
     const stdS6FromLosses = [...stdChars].find(name => lostCount(name) >= 7);
-    if (stdS6FromLosses) list.push({ id: 'stdS6', name: 'S6\'d By Accident', desc: `S6 ${stdS6FromLosses} entirely from 50/50 losses — didn't even pull for them`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    if (stdS6FromLosses) list.push({ id: 'stdS6', name: 'Accidental S6: Coping', desc: `S6 ${stdS6FromLosses} entirely from 50/50 losses — didn't even pull for them`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
 
     // Guaranteed streak — multiple 5★ in a row that were all guaranteed (lost 50/50 every time)
     let guaranteedStreak = 0, maxGuaranteedStreak = 0;
@@ -1778,10 +1778,10 @@ function WhisperingWishesInner() {
       else { maxGuaranteedStreak = Math.max(maxGuaranteedStreak, guaranteedStreak); guaranteedStreak = 0; }
     }
     maxGuaranteedStreak = Math.max(maxGuaranteedStreak, guaranteedStreak);
-    if (maxGuaranteedStreak >= 3) list.push({ id: 'guar3', name: 'Safety Net Enjoyer', desc: `${maxGuaranteedStreak} guaranteed 5★ in a row — never won a 50/50 between them`, icon: 'Shield', color: '#f97316', tier: 'orange' });
+    if (maxGuaranteedStreak >= 3) list.push({ id: 'guar3', name: 'Guarantee Gang', desc: `${maxGuaranteedStreak} guaranteed 5★ in a row — never won a 50/50 between them`, icon: 'Shield', color: '#f97316', tier: 'orange' });
 
     // F2P indicator — less than 200 pulls total but has 5+ five-stars (efficient)
-    if (totalPulls > 0 && totalPulls <= 200 && total5Stars >= 5) list.push({ id: 'efficient', name: 'F2P God', desc: `${total5Stars} five-stars in only ${totalPulls} pulls — maximum efficiency`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+    if (totalPulls > 0 && totalPulls <= 200 && total5Stars >= 5) list.push({ id: 'efficient', name: 'F2P BTW', desc: `${total5Stars} five-stars in only ${totalPulls} pulls — maximum Astrite efficiency`, icon: 'Clover', color: '#22c55e', tier: 'green' });
 
     // Biggest gap — over 150 pulls between 5★ at any point
     let maxDryStreak = 0;
@@ -1790,8 +1790,8 @@ function WhisperingWishesInner() {
       currentDry++;
       if (p.rarity === 5) { maxDryStreak = Math.max(maxDryStreak, currentDry); currentDry = 0; }
     }
-    if (maxDryStreak >= 150) list.push({ id: 'dry150', name: 'The Drought', desc: `${maxDryStreak} pulls between 5★ — desert arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
-    else if (maxDryStreak >= 130) list.push({ id: 'dry130', name: 'Dry Spell', desc: `${maxDryStreak} pulls between 5★`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
+    if (maxDryStreak >= 150) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} pulls between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
+    else if (maxDryStreak >= 130) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} pulls between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
 
     return {
       list,
