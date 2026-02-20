@@ -2036,32 +2036,56 @@ function WhisperingWishesInner() {
       ctx.restore();
     };
 
-    // Trophy card — exact match to Stats tab CSS values
+    // Trophy card — two-pass rendering to match CSS box-shadow behavior
+    // CSS box-shadow renders as a halo AROUND the element; canvas shadow renders BEHIND
+    // the fill, getting occluded. Fix: draw glow pass first, then gradient pass on top.
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
-      // Background: linear-gradient(135deg, ${color}18, ${color}08)
-      // BoxShadow outer: 0 0 20px ${color}15
-      ctx.save();ctx.shadowColor=tc+'15';ctx.shadowBlur=20;
-      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
-      ctx.fillStyle=bg2;rr(x,y,size,size,8);ctx.fill();
+      // Scale glow proportionally (Stats tab: ~20px blur on ~80px card = 25%)
+      const glowScale=size/80;
+
+      // Pass 1: Outer glow halo (CSS: boxShadow: 0 0 20px ${color}15)
+      // Draw a low-opacity fill to trigger visible shadow around card
+      ctx.save();
+      ctx.shadowColor=tc+'35';
+      ctx.shadowBlur=Math.round(20*glowScale);
+      ctx.fillStyle=tc+'06';
+      rr(x,y,size,size,8);ctx.fill();
       ctx.restore();
-      // Inset glow: inset 0 0 20px ${color}05 — extremely subtle
-      ctx.save();ctx.globalAlpha=0.02;ctx.fillStyle=tc;rr(x+3,y+3,size-6,size-6,6);ctx.fill();ctx.globalAlpha=1;ctx.restore();
-      // Border: 1px solid ${color}50 (rounded-lg = 8px)
+
+      // Pass 2: Background gradient (CSS: linear-gradient(135deg, ${color}18, ${color}08))
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);
+      bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,size,size,8);ctx.fill();
+
+      // Inset glow (CSS: inset 0 0 20px ${color}05) — radial gradient from center
+      const ig=ctx.createRadialGradient(x+size/2,y+size/2,0,x+size/2,y+size/2,size*0.7);
+      ig.addColorStop(0,tc+'08');ig.addColorStop(1,'transparent');
+      ctx.fillStyle=ig;rr(x,y,size,size,8);ctx.fill();
+
+      // Border (CSS: 1px solid ${color}50)
       ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,8);ctx.stroke();
-      // Circle: 36px fixed in Stats tab → scale proportionally for canvas
-      // Stats tab: ~36px circle in ~80px card = 45% ratio
+
+      // Circle — same two-pass approach
       const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
-      // Circle bg: linear-gradient(135deg, ${color}30, ${color}10)
-      // Circle shadow: 0 0 15px ${color}40
-      ctx.save();ctx.shadowColor=tc+'40';ctx.shadowBlur=15;
+
+      // Circle glow pass (CSS: boxShadow: 0 0 15px ${color}40)
+      ctx.save();
+      ctx.shadowColor=tc+'60';
+      ctx.shadowBlur=Math.round(15*glowScale);
+      ctx.fillStyle=tc+'04';
+      ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+
+      // Circle gradient pass (CSS: linear-gradient(135deg, ${color}30, ${color}10))
       const cg=ctx.createLinearGradient(cx2-circR*0.7,cy2-circR*0.7,cx2+circR*0.7,cy2+circR*0.7);
       cg.addColorStop(0,tc+'30');cg.addColorStop(1,tc+'10');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
-      ctx.restore();
-      // Icon — drawn with canvas paths
+
+      // Icon
       drawIconPath(cx2,cy2,circR,t.icon,tc);
-      // Name: text-[9px] → 10px (+10%)
+
+      // Name (CSS: text-[9px] → 10px at +10%)
       const nameFontSize=Math.max(10,Math.floor(size*0.12));
       ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
       const maxW=size-14;
