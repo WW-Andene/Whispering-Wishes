@@ -9,9 +9,27 @@
 ===========================================================
 
 
+--- COLLECTION ---
+
+all             | No Life Achievement            | Every Resonator and Weapon collected. go outside.
+5res            | Gotta Whale 'Em All            | All 5★ Resonators unlocked
+4res            | Sonata Effect                  | All 4★ Resonators in your roster
+5weap           | Forgemaster                    | All 5★ Weapons acquired
+4weap           | Armory of Jinzhou              | All 4★ Weapons in your arsenal
+3weap           | Data Bank: Full                | Every 3★ Weapon catalogued
+
+
+--- LUCK / EARLY PULLS ---
+
+pity1           | Pity 1. Screenshot or Fake.    | 5★ on the first pull. nobody believes you
+early10         | Dev Account?                   | 5★ at pity 10 — go buy a lottery ticket
+early20         | Disgusting Luck                | 5★ at pity 20
+early40         | Echo of Fortune                | 5★ at pity 40
+
+
 --- PITY & HARD PITY ---
 
-hard80          | Pity 80 Club                  | Went the full distance. pain.
+hard80          | Pity 80 Club                   | Went the full distance. pain.
 hard5           | Tacet Mark: Permanent          | Hit hard pity 5× — the Lament scarred your account
 hard3           | Frequent Flyer: Pity 80        | Hit hard pity 3× — loyalty card when Kuro
 neverearly      | Waveplate Syndrome             | Never once got a 5★ before pity 50 — always waiting, never winning
@@ -23,7 +41,6 @@ dry130          | Tacet Drought                  | 130 pulls between 5★ — si
 
 softpro2        | Soft Pity Landlord             | 10 five-stars from soft zone — you own property here
 softpro         | Soft Pity Merchant             | 5 five-stars from soft zone — never early, never late
-unluckyavg2     | Soft Pity Squatter             | Avg pity 60 — you live in the soft zone rent-free
 
 
 --- BACK TO BACK / EARLY ---
@@ -161,8 +178,8 @@ s6_other        | The Shaper                     | S6 [char name] — fully Sequ
 
 r5three         | Forge of Impermanence          | 3 R5 weapons — your armory costs more than a car
 r5two           | Tuner Diff                     | 2 R5 weapons — one wasn't enough apparently
-r5              | Weapon Banner Victim           | R5 Verdant Summit — financially irresponsible
-r3              | Halfway to Copium              | R3+ Verdant Summit — too invested to stop, too broke to finish
+r5              | Weapon Banner Victim           | R5 [weapon name] — financially irresponsible
+r3              | Halfway to Copium              | R3+ [weapon name] — too invested to stop, too broke to finish
 
 
 --- WEAPON BANNER VOLUME ---
@@ -207,8 +224,8 @@ jianxin         | Parry This Casual              | Lost 50/50 to Jianxin 1×
 encore          | Woolie'd                       | Lost 50/50 to Encore 1× — Cosmos sends his regards
 verina          | W in Disguise                  | Lost 50/50 to Verina 1× — best L you ever took
 allstd          | Gotta Lose 'Em All             | Lost 50/50 to every standard character — completionist arc
-dup             | Hostage Situation              | Calcharo S2 from 50/50 losses alone — didn't even want them
-stdS6           | Accidental S6: Coping          | S6 Calcharo entirely from 50/50 losses — didn't even pull for them
+dup             | Hostage Situation              | [char] S[seq] from 50/50 losses alone — didn't even want them
+stdS6           | Accidental S6: Coping          | S6 [char] entirely from 50/50 losses — didn't even pull for them
 
 
 --- SIGNATURE WEAPON COMBOS ---
@@ -237,11 +254,13 @@ stdall          | Losers Club                    | All standard 5★ Resonators 
 
 t0six           | Tower? Cleared.                | 6 T0 DPS — ToA is your personal playground
 t0three         | Meta Slave                     | 3 T0 DPS — tier list told you to pull
-onetrick        | Solo Resonator                 | Only Jinhsi — loyalty or poverty?
+onetrick        | Solo Resonator                 | Only [char] — loyalty or poverty?
 dry             | Down Horrendous                | 200 pulls, 2 five-stars — delete the app
 efficient       | F2P BTW                        | 5 five-stars in only 200 pulls — maximum Astrite efficiency
 
 
 ===========================================================
-  TOTAL: 104 unique trophy definitions + 33 per-character S6
+  TOTAL: 114 unique trophy definitions + 33 per-character S6
+
+  [char] / [weapon] / [seq] = player's actual value at runtime
 ===========================================================
