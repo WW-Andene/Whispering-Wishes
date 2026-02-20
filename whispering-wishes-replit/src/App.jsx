@@ -2006,45 +2006,59 @@ function WhisperingWishesInner() {
       ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+cellH-5);ctx.textAlign='left';
     };
 
-    // Trophy icon Unicode mapping (matches TROPHY_ICON_MAP Lucide icons)
-    const TROPHY_UNICODE={Crown:'\u265A',Sparkles:'\u2726',Heart:'\u2665',Swords:'\u2694',Sword:'\u2020',Shield:'\u2660',Gift:'\u2740',Zap:'\u26A1',Clover:'\u2618',Flame:'\u2739',Target:'\u25CE',AlertCircle:'\u26A0',TrendingDown:'\u2193',TrendingUp:'\u2191',Fish:'\u2248',Diamond:'\u25C6',Gamepad2:'\u2B23',Star:'\u2605',Trophy:'\u2655'};
+    // Draw icon using canvas path primitives — guaranteed to render (no font/Unicode dependency)
+    const drawIconPath = (icx,icy,r,iconName,color) => {
+      ctx.save();ctx.fillStyle=color;ctx.strokeStyle=color;
+      ctx.lineWidth=Math.max(1.5,r*0.15);ctx.lineCap='round';ctx.lineJoin='round';
+      const s=r*0.65;
+      switch(iconName){
+        case 'Crown':{ctx.beginPath();ctx.moveTo(icx-s,icy+s*0.5);ctx.lineTo(icx-s*0.9,icy-s*0.3);ctx.lineTo(icx-s*0.4,icy+s*0.05);ctx.lineTo(icx,icy-s*0.6);ctx.lineTo(icx+s*0.4,icy+s*0.05);ctx.lineTo(icx+s*0.9,icy-s*0.3);ctx.lineTo(icx+s,icy+s*0.5);ctx.closePath();ctx.fill();break;}
+        case 'Sparkles':{ctx.beginPath();for(let i=0;i<8;i++){const a=(i*Math.PI/4)-Math.PI/2,rd=i%2===0?s:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+        case 'Heart':{const ht=s*0.9;ctx.beginPath();ctx.moveTo(icx,icy+ht*0.55);ctx.bezierCurveTo(icx-ht*1.1,icy-ht*0.2,icx-ht*0.5,icy-ht*0.9,icx,icy-ht*0.3);ctx.bezierCurveTo(icx+ht*0.5,icy-ht*0.9,icx+ht*1.1,icy-ht*0.2,icx,icy+ht*0.55);ctx.fill();break;}
+        case 'Swords':{ctx.lineWidth=r*0.18;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy-s*0.7);ctx.lineTo(icx+s*0.7,icy+s*0.7);ctx.moveTo(icx+s*0.7,icy-s*0.7);ctx.lineTo(icx-s*0.7,icy+s*0.7);ctx.stroke();break;}
+        case 'Sword':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx,icy-s*0.8);ctx.lineTo(icx,icy+s*0.6);ctx.moveTo(icx-s*0.35,icy-s*0.1);ctx.lineTo(icx+s*0.35,icy-s*0.1);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy+s*0.7,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'Shield':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.75);ctx.lineTo(icx+s*0.7,icy-s*0.35);ctx.lineTo(icx+s*0.55,icy+s*0.25);ctx.quadraticCurveTo(icx,icy+s*0.85,icx,icy+s*0.85);ctx.quadraticCurveTo(icx,icy+s*0.85,icx-s*0.55,icy+s*0.25);ctx.lineTo(icx-s*0.7,icy-s*0.35);ctx.closePath();ctx.fill();break;}
+        case 'Gift':{ctx.fillStyle=color;rr(icx-s*0.55,icy-s*0.15,s*1.1,s*0.8,2);ctx.fill();rr(icx-s*0.65,icy-s*0.45,s*1.3,s*0.35,2);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.4)';ctx.fillRect(icx-s*0.06,icy-s*0.45,s*0.12,s*1.25);ctx.fillRect(icx-s*0.65,icy-s*0.35,s*1.3,s*0.1);break;}
+        case 'Zap':{ctx.beginPath();ctx.moveTo(icx+s*0.15,icy-s*0.8);ctx.lineTo(icx-s*0.3,icy+s*0.05);ctx.lineTo(icx+s*0.05,icy+s*0.05);ctx.lineTo(icx-s*0.15,icy+s*0.8);ctx.lineTo(icx+s*0.3,icy-s*0.05);ctx.lineTo(icx-s*0.05,icy-s*0.05);ctx.closePath();ctx.fill();break;}
+        case 'Clover':{const cr=s*0.28;ctx.beginPath();ctx.arc(icx,icy-cr,cr,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx-cr*0.87,icy+cr*0.5,cr,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx+cr*0.87,icy+cr*0.5,cr,0,Math.PI*2);ctx.fill();ctx.lineWidth=r*0.1;ctx.beginPath();ctx.moveTo(icx,icy+cr*0.4);ctx.lineTo(icx,icy+s*0.8);ctx.stroke();break;}
+        case 'Flame':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.8);ctx.bezierCurveTo(icx+s*0.6,icy-s*0.3,icx+s*0.5,icy+s*0.4,icx,icy+s*0.7);ctx.bezierCurveTo(icx-s*0.5,icy+s*0.4,icx-s*0.6,icy-s*0.3,icx,icy-s*0.8);ctx.fill();break;}
+        case 'Target':{ctx.lineWidth=r*0.12;ctx.beginPath();ctx.arc(icx,icy,s*0.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy,s*0.4,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'AlertCircle':{ctx.lineWidth=r*0.12;ctx.beginPath();ctx.arc(icx,icy,s*0.7,0,Math.PI*2);ctx.stroke();ctx.fillRect(icx-s*0.07,icy-s*0.35,s*0.14,s*0.4);ctx.beginPath();ctx.arc(icx,icy+s*0.32,s*0.08,0,Math.PI*2);ctx.fill();break;}
+        case 'TrendingUp':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy+s*0.35);ctx.lineTo(icx-s*0.1,icy-s*0.15);ctx.lineTo(icx+s*0.2,icy+s*0.1);ctx.lineTo(icx+s*0.7,icy-s*0.4);ctx.stroke();ctx.beginPath();ctx.moveTo(icx+s*0.3,icy-s*0.4);ctx.lineTo(icx+s*0.7,icy-s*0.4);ctx.lineTo(icx+s*0.7,icy);ctx.stroke();break;}
+        case 'TrendingDown':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy-s*0.35);ctx.lineTo(icx-s*0.1,icy+s*0.15);ctx.lineTo(icx+s*0.2,icy-s*0.1);ctx.lineTo(icx+s*0.7,icy+s*0.4);ctx.stroke();ctx.beginPath();ctx.moveTo(icx+s*0.3,icy+s*0.4);ctx.lineTo(icx+s*0.7,icy+s*0.4);ctx.lineTo(icx+s*0.7,icy);ctx.stroke();break;}
+        case 'Fish':{ctx.beginPath();ctx.moveTo(icx+s*0.6,icy);ctx.quadraticCurveTo(icx,icy-s*0.5,icx-s*0.45,icy);ctx.quadraticCurveTo(icx,icy+s*0.5,icx+s*0.6,icy);ctx.fill();ctx.beginPath();ctx.moveTo(icx-s*0.45,icy);ctx.lineTo(icx-s*0.75,icy-s*0.3);ctx.lineTo(icx-s*0.75,icy+s*0.3);ctx.closePath();ctx.fill();break;}
+        case 'Diamond':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.7);ctx.lineTo(icx+s*0.5,icy);ctx.lineTo(icx,icy+s*0.7);ctx.lineTo(icx-s*0.5,icy);ctx.closePath();ctx.fill();break;}
+        case 'Gamepad2':{rr(icx-s*0.6,icy-s*0.25,s*1.2,s*0.5,s*0.15);ctx.fill();ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.arc(icx-s*0.28,icy,s*0.12,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx+s*0.28,icy,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'Star':{ctx.beginPath();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,rd=i%2===0?s*0.75:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+        case 'Trophy':{ctx.beginPath();ctx.moveTo(icx-s*0.45,icy-s*0.5);ctx.lineTo(icx+s*0.45,icy-s*0.5);ctx.lineTo(icx+s*0.3,icy+s*0.1);ctx.quadraticCurveTo(icx,icy+s*0.35,icx-s*0.3,icy+s*0.1);ctx.closePath();ctx.fill();ctx.fillRect(icx-s*0.07,icy+s*0.1,s*0.14,s*0.25);rr(icx-s*0.25,icy+s*0.35,s*0.5,s*0.12,2);ctx.fill();break;}
+        default:{ctx.beginPath();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,rd=i%2===0?s*0.75:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+      }
+      ctx.restore();
+    };
 
-    // Trophy card — glassmorphism with unique icons, strong glow
+    // Trophy card — glassmorphism with path-drawn icons (no Unicode/font dependency)
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
       // Background gradient
       const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'22');bg2.addColorStop(1,tc+'08');
       ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
-      // Border with strong colored glow (double pass)
-      ctx.save();
-      ctx.shadowColor=tc;ctx.shadowBlur=20;
-      ctx.strokeStyle=tc+'60';ctx.lineWidth=1.5;rr(x,y,size,size,12);ctx.stroke();
-      ctx.shadowBlur=10;rr(x,y,size,size,12);ctx.stroke();
-      ctx.restore();
+      // Outer glow border — wider, transparent
+      ctx.strokeStyle=tc+'25';ctx.lineWidth=3;rr(x-1,y-1,size+2,size+2,13);ctx.stroke();
+      // Inner border — colored
+      ctx.strokeStyle=tc+'55';ctx.lineWidth=1.5;rr(x,y,size,size,12);ctx.stroke();
       // Top shimmer line
       const ts=ctx.createLinearGradient(x,0,x+size,0);ts.addColorStop(0,'transparent');ts.addColorStop(0.3,tc+'40');ts.addColorStop(0.5,tc+'80');ts.addColorStop(0.7,tc+'40');ts.addColorStop(1,'transparent');
       ctx.fillStyle=ts;ctx.fillRect(x+8,y,size-16,2);
-      // Circle icon background with strong glow
+      // Circle icon background
       const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
-      ctx.save();
-      ctx.shadowColor=tc;ctx.shadowBlur=18;
       const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'50');cg.addColorStop(1,tc+'15');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
-      ctx.restore();
       // Circle border
-      ctx.strokeStyle=tc+'35';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();
-      // Icon — use mapped Unicode symbol per trophy type
-      const ico=TROPHY_UNICODE[t.icon]||'\u2605';
-      ctx.save();
-      ctx.shadowColor=tc;ctx.shadowBlur=8;
-      ctx.fillStyle=tc;ctx.font=`${Math.floor(circR*1.1)}px sans-serif`;
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ico,cx2,cy2);
-      ctx.restore();
-      ctx.textBaseline='alphabetic';
+      ctx.strokeStyle=tc+'45';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();
+      // Icon — drawn with canvas paths (guaranteed to render)
+      drawIconPath(cx2,cy2,circR,t.icon,tc);
       // Name at bottom
       const nameFontSize=Math.max(10,Math.floor(size*0.12));
-      ctx.save();
-      ctx.shadowColor='rgba(0,0,0,0.7)';ctx.shadowBlur=4;
       ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
       const maxW=size-14;
       let nameText=t.name;
@@ -2053,7 +2067,6 @@ function WhisperingWishesInner() {
         nameText=nameText+'..';
       }
       ctx.textAlign='center';ctx.fillText(nameText,cx2,y+size*0.78);
-      ctx.restore();
       ctx.textAlign='left';
     };
 
@@ -2124,29 +2137,30 @@ function WhisperingWishesInner() {
       return 48;
     };
 
-    // Mini histogram — glassmorphism style with strong glow
+    // Mini histogram — glassmorphism style (no shadow dependency, solid fills)
     const drawHisto = (hx,hy,hw,hh) => {
       if(!histSummary||!histLabels.length)return;
-      const bg2=4,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
+      const bg2=3,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
       histLabels.forEach((lab,i)=>{
         const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
         const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
-        // Bar fill with vertical gradient (lighter top → color bottom)
-        ctx.save();
-        const barG=ctx.createLinearGradient(0,by2,0,by2+bh);barG.addColorStop(0,bc);barG.addColorStop(1,bc+'bb');
-        ctx.fillStyle=barG;ctx.globalAlpha=0.8;rr(bx2,by2,bw2,bh,4);ctx.fill();
-        // Strong glow (double pass)
-        ctx.shadowColor=bc;ctx.shadowBlur=14;ctx.globalAlpha=0.5;rr(bx2,by2,bw2,bh,4);ctx.fill();
-        ctx.restore();
-        // Top highlight (inset shimmer)
-        const bs=ctx.createLinearGradient(bx2,0,bx2+bw2,0);bs.addColorStop(0,'transparent');bs.addColorStop(0.5,'rgba(255,255,255,0.35)');bs.addColorStop(1,'transparent');
-        ctx.fillStyle=bs;ctx.fillRect(bx2+2,by2,bw2-4,2);
+        // Outer glow — larger transparent fill behind bar
+        ctx.fillStyle=bc+'30';rr(bx2-2,by2-2,bw2+4,bh+4,5);ctx.fill();
+        // Main bar — solid color, full opacity
+        ctx.fillStyle=bc;rr(bx2,by2,bw2,bh,3);ctx.fill();
+        // Inner highlight — top half lighter
+        const inner=ctx.createLinearGradient(0,by2,0,by2+bh*0.6);inner.addColorStop(0,'rgba(255,255,255,0.3)');inner.addColorStop(1,'transparent');
+        ctx.fillStyle=inner;rr(bx2+1,by2+1,bw2-2,Math.max(1,bh-2),3);ctx.fill();
+        // Top shimmer
+        const sh=ctx.createLinearGradient(bx2,0,bx2+bw2,0);sh.addColorStop(0,'transparent');sh.addColorStop(0.5,'rgba(255,255,255,0.5)');sh.addColorStop(1,'transparent');
+        ctx.fillStyle=sh;ctx.fillRect(bx2+1,by2,bw2-2,Math.min(3,bh));
         // Border
-        ctx.strokeStyle=bc;ctx.globalAlpha=0.5;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,4);ctx.stroke();ctx.globalAlpha=1;
-        // Count label with strong glow
-        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=10;ctx.fillStyle=bc;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.restore();ctx.textAlign='left';}
+        ctx.strokeStyle=bc;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,3);ctx.stroke();
+        // Count label — solid color
+        if(cnt>0){ctx.fillStyle=bc;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.textAlign='left';}
+        // Bottom label
         ctx.fillStyle='#6b7280';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+15);ctx.textAlign='left';
       });
     };
