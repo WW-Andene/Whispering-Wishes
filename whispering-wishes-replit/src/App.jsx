@@ -2039,20 +2039,20 @@ function WhisperingWishesInner() {
     // Trophy card — matching Stats tab style (linear gradients, single border, glow)
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
-      // Background gradient (matches linear-gradient(135deg, ${color}18, ${color}08))
+      // Background gradient with outer glow (shadow applied on actual fill)
+      ctx.save();ctx.shadowColor=tc+'15';ctx.shadowBlur=20;
       const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
       ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
-      // Outer glow (matches boxShadow: 0 0 20px ${color}15)
-      ctx.save();ctx.shadowColor=tc+'15';ctx.shadowBlur=20;ctx.fillStyle='transparent';rr(x,y,size,size,12);ctx.fill();ctx.restore();
+      ctx.restore();
       // Single border (matches 1px solid ${color}50)
       ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
-      // Circle icon background — linear gradient 135deg (matches Stats tab)
+      // Circle icon background with glow (shadow applied on actual circle fill)
       const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
+      ctx.save();ctx.shadowColor=tc+'40';ctx.shadowBlur=15;
       const cg=ctx.createLinearGradient(cx2-circR*0.7,cy2-circR*0.7,cx2+circR*0.7,cy2+circR*0.7);
       cg.addColorStop(0,tc+'30');cg.addColorStop(1,tc+'10');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
-      // Circle glow (matches boxShadow: 0 0 15px ${color}40)
-      ctx.save();ctx.shadowColor=tc+'40';ctx.shadowBlur=15;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();ctx.restore();
+      ctx.restore();
       // Icon — drawn with canvas paths (guaranteed to render)
       drawIconPath(cx2,cy2,circR,t.icon,tc);
       // Name at bottom
@@ -2136,6 +2136,16 @@ function WhisperingWishesInner() {
     };
 
     // Mini histogram — neon glow style matching Stats tab
+    // Helper: draw bar path with only top corners rounded (flat bottom, like CSS rounded-t)
+    const barPath = (bx,by,bw,bh2,r) => {
+      ctx.beginPath();
+      ctx.moveTo(bx+r,by);ctx.lineTo(bx+bw-r,by);
+      ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+r);
+      ctx.lineTo(bx+bw,by+bh2);ctx.lineTo(bx,by+bh2);
+      ctx.lineTo(bx,by+r);
+      ctx.quadraticCurveTo(bx,by,bx+r,by);
+      ctx.closePath();
+    };
     const drawHisto = (hx,hy,hw,hh) => {
       if(!histSummary||!histLabels.length)return;
       const bg2=3,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
@@ -2144,18 +2154,24 @@ function WhisperingWishesInner() {
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
         const bc=bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#fbbf24':bucket<=60?'#f97316':'#ef4444';
-        // Outer glow (matches boxShadow: 0 0 12px ${color}50)
-        ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;ctx.fillStyle=bc+'10';rr(bx2,by2,bw2,bh,3);ctx.fill();ctx.restore();
-        // Semi-transparent gradient fill (matches linear-gradient(to top, ${color}40, ${color}20))
+        // Semi-transparent gradient fill with outer glow (single fill, no stacking)
+        ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;
         const barGrad=ctx.createLinearGradient(0,by2+bh,0,by2);
         barGrad.addColorStop(0,bc+'40');barGrad.addColorStop(1,bc+'20');
-        ctx.fillStyle=barGrad;rr(bx2,by2,bw2,bh,3);ctx.fill();
-        // Inset glow approximation (matches inset 0 0 15px ${color}30)
-        ctx.fillStyle=bc+'20';rr(bx2+3,by2+3,bw2-6,Math.max(1,bh-6),2);ctx.fill();
-        // Border (matches 1px solid ${color}90)
-        ctx.strokeStyle=bc+'90';ctx.lineWidth=1;rr(bx2,by2,bw2,bh,3);ctx.stroke();
-        // Bottom glow line (matches 2px bar with boxShadow glow)
-        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;ctx.fillRect(bx2+3,by2+bh-2,bw2-6,2);ctx.restore();}
+        ctx.fillStyle=barGrad;barPath(bx2,by2,bw2,bh,3);ctx.fill();
+        ctx.restore();
+        // Border — top and sides only, no bottom (matches borderBottom: 'none')
+        ctx.strokeStyle=bc+'90';ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(bx2,by2+bh);ctx.lineTo(bx2,by2+3);
+        ctx.quadraticCurveTo(bx2,by2,bx2+3,by2);
+        ctx.lineTo(bx2+bw2-3,by2);
+        ctx.quadraticCurveTo(bx2+bw2,by2,bx2+bw2,by2+3);
+        ctx.lineTo(bx2+bw2,by2+bh);
+        ctx.stroke();
+        // Bottom glow line — full bar width (matches Stats tab bottom glow)
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;
+        ctx.fillRect(bx2,by2+bh-2,bw2,2);ctx.restore();}
         // Count label with glow (matches textShadow: 0 0 8px ${color})
         if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.textAlign='left';ctx.restore();}
         // Bottom label
