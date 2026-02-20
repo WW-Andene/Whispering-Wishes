@@ -126,6 +126,7 @@ const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
 const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes';
 const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
 const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
+const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const DEFAULT_VISUAL_SETTINGS = {
   fadePosition: 50,
   fadeIntensity: 100,
@@ -185,8 +186,12 @@ function WhisperingWishesInner() {
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
   // Banner ends at server-specific time (e.g., 11:59 local for each server)
   const bannerEndDate = useMemo(() => getServerAdjustedEnd(activeBanners.endDate, state.server), [activeBanners.endDate, state.server]);
-  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', 'visuals', or 'players'
+  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', 'visuals', 'trophies', or 'players'
   const [adminMiniMode, setAdminMiniMode] = useState(false);
+  const [trophyOverrides, setTrophyOverrides] = useState(() => {
+    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+  const [trophyJsonInput, setTrophyJsonInput] = useState('');
   
   // Anonymous presence tracking — no personal data, just a timestamp per ephemeral session
   const [activePlayersCount, setActivePlayersCount] = useState(null);
@@ -1793,8 +1798,15 @@ function WhisperingWishesInner() {
     if (maxDryStreak >= 150) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} pulls between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
     else if (maxDryStreak >= 130) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} pulls between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
 
+    // Apply admin trophy name/desc overrides
+    const finalList = list.map(t => {
+      const ov = trophyOverrides[t.id];
+      if (!ov) return t;
+      return { ...t, ...(ov.name && { name: ov.name }), ...(ov.desc && { desc: ov.desc }) };
+    });
+
     return {
-      list,
+      list: finalList,
       stats: {
         earliest5Star,
         bestWinStreak,
@@ -1808,7 +1820,7 @@ function WhisperingWishesInner() {
         owned3StarWeaps: owned3StarWeaps.size,
       }
     };
-  }, [state.profile, overallStats]);
+  }, [state.profile, overallStats, trophyOverrides]);
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity, overallStats?.fiveStars), [overallStats]);
@@ -5345,6 +5357,12 @@ Example: {"pulls":[...]}'
                       Visual Settings
                     </button>
                     <button
+                      onClick={() => setAdminTab('trophies')}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                    >
+                      Trophies
+                    </button>
+                    <button
                       onClick={() => setAdminTab('players')}
                       className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
                     >
@@ -5584,6 +5602,105 @@ Example: {"pulls":[...]}'
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Trophies Tab */}
+                  {adminTab === 'trophies' && (
+                    <div className="space-y-4">
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
+                        <h3 className="text-amber-400 text-sm font-medium mb-2">Trophy Name Editor</h3>
+                        <p className="text-gray-400 text-[10px] mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
+
+                        {/* Current trophies list — read-only reference */}
+                        <div className="mb-3">
+                          <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Current Trophies ({trophies?.list?.length || 0})</div>
+                          <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-white/10 p-2 space-y-0.5">
+                            {(trophies?.list || []).map(t => (
+                              <div key={t.id} className="flex items-center gap-2 py-0.5">
+                                <span className="text-[9px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
+                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                                <span className={`text-[10px] flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
+                                <span className="text-[8px] text-gray-600 flex-shrink-0">{t.name.length}ch</span>
+                              </div>
+                            ))}
+                            {(!trophies?.list || trophies.list.length === 0) && (
+                              <p className="text-gray-500 text-xs text-center py-4">Import Convene data first to see trophies</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Export current as JSON */}
+                        <button
+                          onClick={() => {
+                            const data = {};
+                            (trophies?.list || []).forEach(t => { data[t.id] = { name: t.name, desc: t.desc }; });
+                            navigator.clipboard?.writeText(JSON.stringify(data, null, 2));
+                            toast?.addToast?.('Trophy data copied to clipboard', 'success');
+                          }}
+                          className="w-full mb-3 px-3 py-1.5 bg-white/5 border border-white/10 text-gray-300 rounded text-[10px] hover:bg-white/10 transition-colors"
+                        >
+                          Export Current Trophies as JSON
+                        </button>
+
+                        {/* JSON import textarea */}
+                        <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Import Overrides (JSON)</div>
+                        <textarea
+                          className="kuro-input w-full h-40 text-[9px] font-mono"
+                          value={trophyJsonInput}
+                          onChange={(e) => setTrophyJsonInput(e.target.value)}
+                          placeholder={'{\n  "pity1": { "name": "New Name Here", "desc": "New description" },\n  "win7": { "name": "Another Name" }\n}'}
+                          aria-label="Trophy overrides JSON input"
+                        />
+                        <p className="text-gray-500 text-[9px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              try {
+                                const parsed = JSON.parse(trophyJsonInput);
+                                if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Must be a JSON object');
+                                const cleaned = {};
+                                let count = 0;
+                                for (const [id, val] of Object.entries(parsed)) {
+                                  if (typeof val !== 'object' || !val) continue;
+                                  const entry = {};
+                                  if (val.name && typeof val.name === 'string') entry.name = val.name.trim();
+                                  if (val.desc && typeof val.desc === 'string') entry.desc = val.desc.trim();
+                                  if (Object.keys(entry).length > 0) { cleaned[id] = entry; count++; }
+                                }
+                                setTrophyOverrides(cleaned);
+                                try { localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(cleaned)); } catch {}
+                                toast?.addToast?.(`Applied ${count} trophy override${count !== 1 ? 's' : ''}`, 'success');
+                              } catch (e) {
+                                toast?.addToast?.('Invalid JSON: ' + e.message, 'error');
+                              }
+                            }}
+                            className="kuro-btn flex-1 text-xs"
+                          >
+                            Apply Overrides
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (!window.confirm('Clear all trophy name overrides?')) return;
+                              setTrophyOverrides({});
+                              setTrophyJsonInput('');
+                              try { localStorage.removeItem(TROPHY_OVERRIDES_KEY); } catch {}
+                              toast?.addToast?.('Trophy overrides cleared', 'success');
+                            }}
+                            className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+
+                        {/* Active overrides count */}
+                        {Object.keys(trophyOverrides).length > 0 && (
+                          <div className="mt-3 bg-amber-500/10 border border-amber-500/20 rounded p-2 text-[10px] text-amber-400">
+                            {Object.keys(trophyOverrides).length} active override{Object.keys(trophyOverrides).length !== 1 ? 's' : ''}: {Object.keys(trophyOverrides).join(', ')}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
