@@ -5204,6 +5204,52 @@ Example: {"pulls":[...]}'
                     </div>
                   </div>
 
+                  {/* ═══ PITY DISTRIBUTION PANEL ═══ */}
+                  {(() => {
+                    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+                    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
+                    const fsp = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
+                    if(fsp.length < 2) return null;
+                    const bk = {};
+                    fsp.forEach(p => { if(p.pity>80){bk['81+']=(bk['81+']||0)+1;} else {const b=Math.floor((p.pity-1)/10)*10+1;bk[`${b}-${b+9}`]=(bk[`${b}-${b+9}`]||0)+1;} });
+                    const labs = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`);
+                    if(bk['81+'])labs.push('81+');
+                    labs.forEach(b=>{if(!bk[b])bk[b]=0;});
+                    const mx = Math.max(...Object.values(bk),1);
+                    const avg = (fsp.reduce((s,p)=>s+p.pity,0)/fsp.length).toFixed(1);
+                    const lo = Math.min(...fsp.map(p=>p.pity));
+                    const hi = Math.max(...fsp.map(p=>p.pity));
+                    return (
+                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.35), transparent)' }} />
+                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
+                        </div>
+                        <div className="flex items-end gap-0.5" style={{ height: '70px' }}>
+                          {labs.map((lab, i) => {
+                            const cnt = bk[lab]||0;
+                            const h = mx > 0 ? Math.max(3, (cnt/mx)*52) : 3;
+                            const bucket = parseInt(lab)||81;
+                            const color = bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
+                            return (
+                              <div key={i} className="flex flex-col items-center flex-1 min-w-0">
+                                {cnt > 0 && <span className="font-bold font-mono mb-0.5" style={{ fontSize: '8px', color, textShadow: `0 0 6px ${color}40` }}>{cnt}</span>}
+                                <div className="w-full rounded-sm" style={{ height: `${h}px`, background: color, opacity: 0.7, boxShadow: `0 0 6px ${color}30` }} />
+                                <span className="text-gray-500 mt-0.5" style={{ fontSize: '7px' }}>{lab.split('-')[0]}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="text-right mt-1">
+                          <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* ═══ RESONATORS PANEL ═══ */}
                   {ownedCharNames.length > 0 && (
                     <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
@@ -5262,18 +5308,12 @@ Example: {"pulls":[...]}'
                           {sorted.map(trophy => {
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
-                              <div key={trophy.id} className="relative p-2 rounded-lg text-center overflow-hidden"
-                                style={{
-                                  background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
-                                  border: `1px solid ${trophy.color}40`,
-                                  boxShadow: `0 0 15px ${trophy.color}10, inset 0 0 15px ${trophy.color}05`
-                                }}>
+                              <div key={trophy.id} className="relative rounded-lg text-center overflow-hidden" style={{ padding: '10px 4px 8px', aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}40`, boxShadow: `0 0 20px ${trophy.color}12, inset 0 0 20px ${trophy.color}06` }}>
                                 <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${trophy.color}60, transparent)` }} />
-                                <div className="w-7 h-7 mx-auto mb-1 rounded-full flex items-center justify-center"
-                                  style={{ background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 12px ${trophy.color}35` }}>
-                                  <IconComponent size={14} style={{ color: trophy.color, filter: `drop-shadow(0 0 4px ${trophy.color})` }} />
+                                <div className="rounded-full flex items-center justify-center mb-1.5" style={{ width: '28px', height: '28px', background: `radial-gradient(circle, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                  <IconComponent size={15} style={{ color: trophy.color, filter: `drop-shadow(0 0 4px ${trophy.color})` }} />
                                 </div>
-                                <div className="text-[7px] font-bold text-white truncate" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{trophy.name}</div>
+                                <div className="text-[7px] font-bold text-white truncate w-full px-1" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{trophy.name}</div>
                               </div>
                             );
                           })}
