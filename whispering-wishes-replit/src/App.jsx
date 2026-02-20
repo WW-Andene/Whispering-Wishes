@@ -2006,32 +2006,46 @@ function WhisperingWishesInner() {
       ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+cellH-5);ctx.textAlign='left';
     };
 
-    // Trophy card — square icon style matching stat tab
+    // Trophy card — glassmorphism style with shimmer + glow
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
-      // bg: gradient like app
-      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
-      ctx.fillStyle=bg2;rr(x,y,size,size,8);ctx.fill();
-      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,8);ctx.stroke();
-      // glow
-      ctx.shadowColor=tc+'15';ctx.shadowBlur=10;rr(x,y,size,size,8);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
-      // Circle icon background
-      const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
-      const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'30');cg.addColorStop(1,tc+'10');
+      // Background gradient
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'20');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,size,size,10);ctx.fill();
+      // Border with glow
+      ctx.shadowColor=tc;ctx.shadowBlur=12;
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1.5;rr(x,y,size,size,10);ctx.stroke();
+      ctx.shadowBlur=0;ctx.shadowColor='transparent';
+      // Inner glow
+      ctx.fillStyle=tc+'06';rr(x,y,size,size,10);ctx.fill();
+      // Top shimmer line
+      const ts=ctx.createLinearGradient(x,0,x+size,0);ts.addColorStop(0,'transparent');ts.addColorStop(0.5,tc+'70');ts.addColorStop(1,'transparent');
+      ctx.fillStyle=ts;ctx.fillRect(x+6,y,size-12,1.5);
+      // Circle icon background — larger with stronger glow
+      const circR=size*0.2;const cx2=x+size/2,cy2=y+size*0.38;
+      ctx.shadowColor=tc;ctx.shadowBlur=15;
+      const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'40');cg.addColorStop(1,tc+'10');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
-      // Icon symbol
-      ctx.fillStyle=tc;ctx.font=`bold ${Math.floor(circR)}px sans-serif`;
+      ctx.shadowBlur=0;ctx.shadowColor='transparent';
+      // Circle border
+      ctx.strokeStyle=tc+'30';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();
+      // Icon symbol with glow
+      ctx.shadowColor=tc;ctx.shadowBlur=6;
+      ctx.fillStyle=tc;ctx.font=`bold ${Math.floor(circR*1.1)}px sans-serif`;
       ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx2,cy2);ctx.textBaseline='alphabetic';
+      ctx.shadowBlur=0;ctx.shadowColor='transparent';
       // Name at bottom — properly truncated to fit width
-      const nameFontSize=Math.max(9,Math.floor(size*0.11));
+      const nameFontSize=Math.max(10,Math.floor(size*0.12));
       ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
-      const maxW=size-12;
+      ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=3;
+      const maxW=size-14;
       let nameText=t.name;
       if(ctx.measureText(nameText).width>maxW){
         while(nameText.length>1&&ctx.measureText(nameText+'..').width>maxW)nameText=nameText.slice(0,-1);
         nameText=nameText+'..';
       }
       ctx.fillText(nameText,cx2,y+size*0.78);ctx.textAlign='left';
+      ctx.shadowBlur=0;ctx.shadowColor='transparent';
     };
 
     // Hero profile image — large, with collection-style framing and gradient fade
@@ -2101,19 +2115,27 @@ function WhisperingWishesInner() {
       return 48;
     };
 
-    // Mini histogram
+    // Mini histogram — glassmorphism style
     const drawHisto = (hx,hy,hw,hh) => {
       if(!histSummary||!histLabels.length)return;
-      const bg2=3,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-21;
+      const bg2=4,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
       histLabels.forEach((lab,i)=>{
-        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(3,(cnt/histSummary.max)*area):3;
+        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(4,(cnt/histSummary.max)*area):4;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
         const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
-        ctx.fillStyle=bc;ctx.globalAlpha=0.7;rr(bx2,by2,bw2,bh,3);ctx.fill();
-        ctx.strokeStyle=bc;ctx.globalAlpha=0.3;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,3);ctx.stroke();ctx.globalAlpha=1;
-        if(cnt>0){ctx.fillStyle=bc;ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-3);ctx.textAlign='left';}
-        ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+14);ctx.textAlign='left';
+        // Bar with glow
+        ctx.shadowColor=bc;ctx.shadowBlur=8;
+        ctx.fillStyle=bc;ctx.globalAlpha=0.75;rr(bx2,by2,bw2,bh,4);ctx.fill();
+        ctx.shadowBlur=0;ctx.shadowColor='transparent';
+        // Top shimmer on bar
+        const bs=ctx.createLinearGradient(bx2,0,bx2+bw2,0);bs.addColorStop(0,'transparent');bs.addColorStop(0.5,'rgba(255,255,255,0.25)');bs.addColorStop(1,'transparent');
+        ctx.fillStyle=bs;ctx.fillRect(bx2+2,by2,bw2-4,1.5);
+        // Border
+        ctx.strokeStyle=bc;ctx.globalAlpha=0.4;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,4);ctx.stroke();ctx.globalAlpha=1;
+        // Count label with glow
+        if(cnt>0){ctx.shadowColor=bc;ctx.shadowBlur=6;ctx.fillStyle=bc;ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-4);ctx.shadowBlur=0;ctx.shadowColor='transparent';ctx.textAlign='left';}
+        ctx.fillStyle='#6b7280';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+15);ctx.textAlign='left';
       });
     };
 
@@ -5206,8 +5228,9 @@ Example: {"pulls":[...]}'
 
                   {/* ═══ PITY DISTRIBUTION PANEL ═══ */}
                   {(() => {
-                    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
-                    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
+                    const bgnHist = state.profile.beginner?.history||[];
+                    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...bgnHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+                    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...bgnHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
                     const fsp = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
                     if(fsp.length < 2) return null;
                     const bk = {};
@@ -5228,23 +5251,23 @@ Example: {"pulls":[...]}'
                           <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
                         </div>
-                        <div className="flex items-end gap-0.5" style={{ height: '70px' }}>
+                        <div className="flex items-end" style={{ height: '75px', gap: '3px' }}>
                           {labs.map((lab, i) => {
                             const cnt = bk[lab]||0;
-                            const h = mx > 0 ? Math.max(3, (cnt/mx)*52) : 3;
+                            const barH = mx > 0 ? Math.max(4, Math.round((cnt/mx)*50)) : 4;
                             const bucket = parseInt(lab)||81;
                             const color = bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
                             return (
-                              <div key={i} className="flex flex-col items-center flex-1 min-w-0">
-                                {cnt > 0 && <span className="font-bold font-mono mb-0.5" style={{ fontSize: '8px', color, textShadow: `0 0 6px ${color}40` }}>{cnt}</span>}
-                                <div className="w-full rounded-sm" style={{ height: `${h}px`, background: color, opacity: 0.7, boxShadow: `0 0 6px ${color}30` }} />
-                                <span className="text-gray-500 mt-0.5" style={{ fontSize: '7px' }}>{lab.split('-')[0]}</span>
+                              <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                {cnt > 0 && <span className="font-bold font-mono" style={{ fontSize: '8px', color, textShadow: `0 0 6px ${color}60`, marginBottom: '2px', lineHeight: 1 }}>{cnt}</span>}
+                                <div style={{ width: '100%', height: `${barH}px`, borderRadius: '3px', background: color, opacity: 0.75, boxShadow: `0 0 8px ${color}40, inset 0 1px 0 rgba(255,255,255,0.2)` }} />
+                                <span style={{ fontSize: '7px', color: '#6b7280', marginTop: '2px', lineHeight: 1 }}>{lab.split('-')[0]}</span>
                               </div>
                             );
                           })}
                         </div>
-                        <div className="text-right mt-1">
-                          <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
+                        <div style={{ textAlign: 'right', marginTop: '4px' }}>
+                          <span className="font-mono" style={{ fontSize: '8px', color: '#6b7280' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
                         </div>
                       </div>
                     );
