@@ -2006,46 +2006,55 @@ function WhisperingWishesInner() {
       ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+cellH-5);ctx.textAlign='left';
     };
 
-    // Trophy card — glassmorphism style with shimmer + glow
+    // Trophy icon Unicode mapping (matches TROPHY_ICON_MAP Lucide icons)
+    const TROPHY_UNICODE={Crown:'\u265A',Sparkles:'\u2726',Heart:'\u2665',Swords:'\u2694',Sword:'\u2020',Shield:'\u2660',Gift:'\u2740',Zap:'\u26A1',Clover:'\u2618',Flame:'\u2739',Target:'\u25CE',AlertCircle:'\u26A0',TrendingDown:'\u2193',TrendingUp:'\u2191',Fish:'\u2248',Diamond:'\u25C6',Gamepad2:'\u2B23',Star:'\u2605',Trophy:'\u2655'};
+
+    // Trophy card — glassmorphism with unique icons, strong glow
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
       // Background gradient
-      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'20');bg2.addColorStop(1,tc+'08');
-      ctx.fillStyle=bg2;rr(x,y,size,size,10);ctx.fill();
-      // Border with glow
-      ctx.shadowColor=tc;ctx.shadowBlur=12;
-      ctx.strokeStyle=tc+'50';ctx.lineWidth=1.5;rr(x,y,size,size,10);ctx.stroke();
-      ctx.shadowBlur=0;ctx.shadowColor='transparent';
-      // Inner glow
-      ctx.fillStyle=tc+'06';rr(x,y,size,size,10);ctx.fill();
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'22');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
+      // Border with strong colored glow (double pass)
+      ctx.save();
+      ctx.shadowColor=tc;ctx.shadowBlur=20;
+      ctx.strokeStyle=tc+'60';ctx.lineWidth=1.5;rr(x,y,size,size,12);ctx.stroke();
+      ctx.shadowBlur=10;rr(x,y,size,size,12);ctx.stroke();
+      ctx.restore();
       // Top shimmer line
-      const ts=ctx.createLinearGradient(x,0,x+size,0);ts.addColorStop(0,'transparent');ts.addColorStop(0.5,tc+'70');ts.addColorStop(1,'transparent');
-      ctx.fillStyle=ts;ctx.fillRect(x+6,y,size-12,1.5);
-      // Circle icon background — larger with stronger glow
-      const circR=size*0.2;const cx2=x+size/2,cy2=y+size*0.38;
-      ctx.shadowColor=tc;ctx.shadowBlur=15;
-      const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'40');cg.addColorStop(1,tc+'10');
+      const ts=ctx.createLinearGradient(x,0,x+size,0);ts.addColorStop(0,'transparent');ts.addColorStop(0.3,tc+'40');ts.addColorStop(0.5,tc+'80');ts.addColorStop(0.7,tc+'40');ts.addColorStop(1,'transparent');
+      ctx.fillStyle=ts;ctx.fillRect(x+8,y,size-16,2);
+      // Circle icon background with strong glow
+      const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
+      ctx.save();
+      ctx.shadowColor=tc;ctx.shadowBlur=18;
+      const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'50');cg.addColorStop(1,tc+'15');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
-      ctx.shadowBlur=0;ctx.shadowColor='transparent';
+      ctx.restore();
       // Circle border
-      ctx.strokeStyle=tc+'30';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();
-      // Icon symbol with glow
-      ctx.shadowColor=tc;ctx.shadowBlur=6;
-      ctx.fillStyle=tc;ctx.font=`bold ${Math.floor(circR*1.1)}px sans-serif`;
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',cx2,cy2);ctx.textBaseline='alphabetic';
-      ctx.shadowBlur=0;ctx.shadowColor='transparent';
-      // Name at bottom — properly truncated to fit width
+      ctx.strokeStyle=tc+'35';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();
+      // Icon — use mapped Unicode symbol per trophy type
+      const ico=TROPHY_UNICODE[t.icon]||'\u2605';
+      ctx.save();
+      ctx.shadowColor=tc;ctx.shadowBlur=8;
+      ctx.fillStyle=tc;ctx.font=`${Math.floor(circR*1.1)}px sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ico,cx2,cy2);
+      ctx.restore();
+      ctx.textBaseline='alphabetic';
+      // Name at bottom
       const nameFontSize=Math.max(10,Math.floor(size*0.12));
+      ctx.save();
+      ctx.shadowColor='rgba(0,0,0,0.7)';ctx.shadowBlur=4;
       ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
-      ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=3;
       const maxW=size-14;
       let nameText=t.name;
       if(ctx.measureText(nameText).width>maxW){
         while(nameText.length>1&&ctx.measureText(nameText+'..').width>maxW)nameText=nameText.slice(0,-1);
         nameText=nameText+'..';
       }
-      ctx.fillText(nameText,cx2,y+size*0.78);ctx.textAlign='left';
-      ctx.shadowBlur=0;ctx.shadowColor='transparent';
+      ctx.textAlign='center';ctx.fillText(nameText,cx2,y+size*0.78);
+      ctx.restore();
+      ctx.textAlign='left';
     };
 
     // Hero profile image — large, with collection-style framing and gradient fade
@@ -2115,26 +2124,29 @@ function WhisperingWishesInner() {
       return 48;
     };
 
-    // Mini histogram — glassmorphism style
+    // Mini histogram — glassmorphism style with strong glow
     const drawHisto = (hx,hy,hw,hh) => {
       if(!histSummary||!histLabels.length)return;
       const bg2=4,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
       histLabels.forEach((lab,i)=>{
-        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(4,(cnt/histSummary.max)*area):4;
+        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
         const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
-        // Bar with glow
-        ctx.shadowColor=bc;ctx.shadowBlur=8;
-        ctx.fillStyle=bc;ctx.globalAlpha=0.75;rr(bx2,by2,bw2,bh,4);ctx.fill();
-        ctx.shadowBlur=0;ctx.shadowColor='transparent';
-        // Top shimmer on bar
-        const bs=ctx.createLinearGradient(bx2,0,bx2+bw2,0);bs.addColorStop(0,'transparent');bs.addColorStop(0.5,'rgba(255,255,255,0.25)');bs.addColorStop(1,'transparent');
-        ctx.fillStyle=bs;ctx.fillRect(bx2+2,by2,bw2-4,1.5);
+        // Bar fill with vertical gradient (lighter top → color bottom)
+        ctx.save();
+        const barG=ctx.createLinearGradient(0,by2,0,by2+bh);barG.addColorStop(0,bc);barG.addColorStop(1,bc+'bb');
+        ctx.fillStyle=barG;ctx.globalAlpha=0.8;rr(bx2,by2,bw2,bh,4);ctx.fill();
+        // Strong glow (double pass)
+        ctx.shadowColor=bc;ctx.shadowBlur=14;ctx.globalAlpha=0.5;rr(bx2,by2,bw2,bh,4);ctx.fill();
+        ctx.restore();
+        // Top highlight (inset shimmer)
+        const bs=ctx.createLinearGradient(bx2,0,bx2+bw2,0);bs.addColorStop(0,'transparent');bs.addColorStop(0.5,'rgba(255,255,255,0.35)');bs.addColorStop(1,'transparent');
+        ctx.fillStyle=bs;ctx.fillRect(bx2+2,by2,bw2-4,2);
         // Border
-        ctx.strokeStyle=bc;ctx.globalAlpha=0.4;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,4);ctx.stroke();ctx.globalAlpha=1;
-        // Count label with glow
-        if(cnt>0){ctx.shadowColor=bc;ctx.shadowBlur=6;ctx.fillStyle=bc;ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-4);ctx.shadowBlur=0;ctx.shadowColor='transparent';ctx.textAlign='left';}
+        ctx.strokeStyle=bc;ctx.globalAlpha=0.5;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,4);ctx.stroke();ctx.globalAlpha=1;
+        // Count label with strong glow
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=10;ctx.fillStyle=bc;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.restore();ctx.textAlign='left';}
         ctx.fillStyle='#6b7280';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+15);ctx.textAlign='left';
       });
     };
