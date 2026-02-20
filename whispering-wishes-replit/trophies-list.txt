@@ -154,7 +154,7 @@ s6_other        | The Shaper                     | S6 [char name] — fully Sequ
   s6_Shorekeeper      | She Protecc (x7)                | S6 Shorekeeper — your team cannot die. ever.
   s6_Camellya         | Dislocated But Worth It         | S6 Camellya — thumbs broken, damage beautiful
   s6_Carlotta         | Wallet? Frozen.                 | S6 Carlotta — bank account colder than her kit
-  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — the real clown is whoever S6'd her
+  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — Mamma mia...who's the clown now?
   s6_Phoebe           | Feebi Chupi Supremacy           | S6 Phoebe — max power cheek pinch unlocked
   s6_Brant            | Burned Through Savings          | S6 Brant — fire DPS, fire wallet
   s6_Cantarella       | Toxic Relationship              | S6 Cantarella — she's poison and you keep coming back
