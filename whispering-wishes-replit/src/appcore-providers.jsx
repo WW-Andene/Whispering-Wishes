@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
-import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { APP_VERSION, haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 
 // Service Worker code as string (will be registered as blob)
@@ -313,7 +313,8 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <div className="fixed bottom-24 left-3 right-3 z-[9999] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
+      {/* AUDIT-FIX M27: z-[9998] to avoid collision with mini visual settings panel at z-[9999] */}
+      <div className="fixed bottom-24 left-3 right-3 z-[9998] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
         {toasts.map(toast => (
           <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
             animation: 'slideUp 0.2s ease-out',
@@ -321,7 +322,8 @@ const ToastProvider = ({ children }) => {
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
-            {toast.type === 'warning' && <AlertCircle size={16} />}
+            {/* AUDIT-FIX N7: Use AlertTriangle for warnings to distinguish from errors */}
+            {toast.type === 'warning' && <AlertTriangle size={16} />}
             {toast.type === 'info' && <Info size={16} />}
             {toast.message}
           </div>
@@ -573,6 +575,8 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-calc {
       position: relative;
       color: var(--text-body);
+      /* AUDIT-FIX M23: Explicit body font-family fallback */
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
     
     @keyframes slideUp {
@@ -935,6 +939,13 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-btn:active {
       transform: translateY(0) scale(0.97);
       transition: transform 0.1s ease;
+    }
+
+    /* AUDIT-FIX M30: Disabled button state */
+    .kuro-btn:disabled, .kuro-btn[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
     }
     
     /* Active states with glassy glow */

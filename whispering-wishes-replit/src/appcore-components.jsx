@@ -19,7 +19,8 @@ import {
 import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
-const hideOnError = (e) => { e.target.style.display = 'none'; };
+// AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
+const hideOnError = (e) => { e.target.style.visibility = 'hidden'; };
 
 // Material item display helper — shows [icon] name ×qty
 const MaterialItem = ({ name, qty }) => {
@@ -269,7 +270,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
-                                  <User size={14} className="text-gray-600" />
+                                  {/* AUDIT-FIX H12: gray-600 fails WCAG AA contrast on dark bg */}
+                                  <User size={14} className="text-gray-500" />
                                 </div>
                               )}
                               <span className="text-[10px] text-gray-400 text-center leading-tight truncate w-full">{member}</span>
@@ -1522,7 +1524,8 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
           <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
         </div>
       )}
-      <p className="text-[9px] text-gray-500 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. Exact DP formula.</p>
+      {/* AUDIT-FIX M33: Accurate method label — DP is exact for ≤500 pulls, MC simulation for larger values */}
+      <p className="text-[9px] text-gray-500 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
     </CardBody>
   </Card>
 ));

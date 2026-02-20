@@ -318,6 +318,15 @@ function WhisperingWishesInner() {
     };
   }, []);
 
+  // AUDIT-FIX L10: Listen for runtime prefers-reduced-motion changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e) => { saveVisualSettings({ ...visualSettings, animationsEnabled: !e.matches }); };
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [visualSettings, saveVisualSettings]);
+
   // Image framing state - stores position/zoom for each image by key
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
@@ -1165,7 +1174,7 @@ function WhisperingWishesInner() {
                 } catch { /* best-effort */ }
               }
               if (staleKeys.length > 0) {
-                console.debug(`Cleaned up ${staleKeys.length} stale leaderboard entries for UID ${state.profile.uid}`);
+                // AUDIT-FIX L1: Remove debug logging in production
               }
             }
           }
@@ -1857,9 +1866,10 @@ function WhisperingWishesInner() {
     const picName = state.profile.profilePic;
     const picUrl = picName ? (collectionImages[picName] || '') : '';
     let pImg = null;
-    if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{pImg.onload=r;pImg.onerror=j;pImg.src=picUrl;setTimeout(j,3000);}); } catch { pImg = null; } }
+    // AUDIT-FIX H1: Clear timeouts to prevent leaks on image preload
+    if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{const t=setTimeout(j,3000);pImg.onload=()=>{clearTimeout(t);r();};pImg.onerror=()=>{clearTimeout(t);j();};pImg.src=picUrl;}); } catch { pImg = null; } }
     let appIco = null;
-    try { appIco = new Image(); await new Promise((r,j)=>{appIco.onload=r;appIco.onerror=j;appIco.src=HEADER_ICON;setTimeout(j,2000);}); } catch { appIco = null; }
+    try { appIco = new Image(); await new Promise((r,j)=>{const t=setTimeout(j,2000);appIco.onload=()=>{clearTimeout(t);r();};appIco.onerror=()=>{clearTimeout(t);j();};appIco.src=HEADER_ICON;}); } catch { appIco = null; }
 
     // Preload resonator portrait images
     const resImgs = {};
@@ -1870,8 +1880,10 @@ function WhisperingWishesInner() {
       if (!url) return Promise.resolve();
       return new Promise(resolve => {
         const img = new Image(); img.crossOrigin = 'anonymous';
-        img.onload = () => { resImgs[name] = img; resolve(); };
-        img.onerror = resolve; img.src = url; setTimeout(resolve, 3000);
+        // AUDIT-FIX H1: Clear timeout on load/error to prevent leaks
+        const t = setTimeout(resolve, 3000);
+        img.onload = () => { clearTimeout(t); resImgs[name] = img; resolve(); };
+        img.onerror = () => { clearTimeout(t); resolve(); }; img.src = url;
       });
     }));
 
@@ -2868,7 +2880,9 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
       return;
     }
-    if (saltedHash === ADMIN_HASH || legacyHash === ADMIN_HASH) {
+    // AUDIT-FIX H2: Constant-time comparison to prevent timing attacks on admin hash
+    const safeCompare = (a, b) => { if (!a || !b || a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; };
+    if (safeCompare(saltedHash, ADMIN_HASH) || safeCompare(legacyHash, ADMIN_HASH)) {
       setAdminUnlocked(true);
       setBannerForm(buildBannerForm(activeBanners));
       try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
@@ -3272,10 +3286,11 @@ function WhisperingWishesInner() {
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Astrite amount" />
                     <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL)} Convenes{Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL) > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS})</span> : ''}</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[[ASTRITE_PER_PULL,'1 pull'], [ASTRITE_PER_PULL*5,'5 pulls'], [ASTRITE_PER_PULL*10,'10 pulls'], [ASTRITE_PER_PULL*20,'20 pulls']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt} astrite (${tip})`}>+{amt}<span className="text-yellow-600 ml-0.5 text-[9px]">({tip.split(' ')[0]})</span></button>
+                      {/* AUDIT-FIX M32+L20: Use "Convene(s)" consistently, capitalize Astrite */}
+                      {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt} Astrite (${tip})`}>+{amt}<span className="text-yellow-600 ml-0.5 text-[9px]">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear astrite">Clear</button>
+                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
                     </div>
                   </div>
 
@@ -3506,7 +3521,8 @@ function WhisperingWishesInner() {
                     </div>
                   </button>
                   {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}
-                  <button onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } })} className="kuro-btn w-full text-left">
+                  {/* AUDIT-FIX L22: Toast feedback for purchases */}
+                  <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
                     <div className="flex items-center justify-between w-full">
                       <div>
                         <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
@@ -3516,7 +3532,7 @@ function WhisperingWishesInner() {
                     </div>
                   </button>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div>
                           <div className="text-gray-200 text-xs font-medium">{s.name}</div>
@@ -3528,7 +3544,7 @@ function WhisperingWishesInner() {
                   ))}
                   <div className="kuro-label mt-3">Direct Top-Ups</div>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
                         <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
@@ -3541,7 +3557,8 @@ function WhisperingWishesInner() {
 
             {state.planner.addedIncome.length > 0 && (
               <Card>
-                <CardHeader action={<button onClick={() => dispatch({ type: 'CLEAR_ALL_INCOME' })} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
+                {/* AUDIT-FIX H6: Confirm before clearing all purchases */}
+                <CardHeader action={<button onClick={() => { if (window.confirm('Remove all added purchases?')) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
                     <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
@@ -3667,25 +3684,27 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {state.bookmarks.length > 0 && (
-              <Card>
-                <CardHeader>Saved States</CardHeader>
-                <CardBody className="space-y-2">
-                  {state.bookmarks.map(b => (
-                    <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                      <div>
-                        <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                        <div className="text-gray-400 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
-                      </div>
-                      <div className="flex gap-1">
-                        <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[36px]">Load</button>
-                        <button onClick={() => dispatch({ type: 'DELETE_BOOKMARK', id: b.id })} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[36px]">×</button>
-                      </div>
+            {/* AUDIT-FIX M21: Always show Saved States card with empty state message */}
+            <Card>
+              <CardHeader>Saved States</CardHeader>
+              <CardBody className="space-y-2">
+                {state.bookmarks.length === 0 ? (
+                  <p className="text-gray-500 text-xs text-center py-3">No saved states yet. Use "Save Current State" in the Calculator to bookmark your setup.</p>
+                ) : state.bookmarks.map(b => (
+                  <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                    <div>
+                      <div className="text-gray-200 text-xs font-medium">{b.name}</div>
+                      <div className="text-gray-400 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
                     </div>
-                  ))}
-                </CardBody>
-              </Card>
-            )}
+                    <div className="flex gap-1">
+                      <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[36px]">Load</button>
+                      {/* AUDIT-FIX H6: Confirm before deleting bookmark */}
+                      <button onClick={() => { if (window.confirm(`Delete bookmark "${b.name}"?`)) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[36px]">×</button>
+                    </div>
+                  </div>
+                ))}
+              </CardBody>
+            </Card>
           </div>
           </TabErrorBoundary>
           </div>
@@ -3738,7 +3757,8 @@ function WhisperingWishesInner() {
                               : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
-                          <p className="text-[8px] text-gray-600 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
+                          {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
+                          <p className="text-[8px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>
@@ -3889,7 +3909,7 @@ function WhisperingWishesInner() {
                         <div className="px-4 py-3 border-t border-white/10 space-y-2">
                           <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                             <BarChart3 size={10} /> Community Stats
-                            <span className="text-gray-600 font-normal">• {communityStats.totalPlayers} players</span>
+                            <span className="text-gray-500 font-normal">• {communityStats.totalPlayers} players</span>
                           </p>
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
@@ -3923,7 +3943,7 @@ function WhisperingWishesInner() {
                         {effectiveLeaderboardId && overallStats?.avgPity && (
                           <>
                             <div className="flex items-center justify-between text-[10px]">
-                              <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-600 ml-1">(UID)</span>}</span>
+                              <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-500 ml-1">(UID)</span>}</span>
                               <span className="text-gray-400">Your Avg: <span className="text-white font-bold">{overallStats.avgPity}</span></span>
                             </div>
                             <button
@@ -4063,7 +4083,8 @@ function WhisperingWishesInner() {
                   
                   return (
                     <Card>
-                      <CardHeader action={<span className="text-gray-500 text-[10px]">{fiveStars.length} pulls</span>}>
+                      {/* AUDIT-FIX M32: Use "Convenes" consistently */}
+                      <CardHeader action={<span className="text-gray-500 text-[10px]">{fiveStars.length} Convenes</span>}>
                         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
                       </CardHeader>
                       <CardBody>
@@ -4727,7 +4748,8 @@ function WhisperingWishesInner() {
                     maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />
-                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
+                  {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
+                  <p className="text-gray-500 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -5226,7 +5248,8 @@ Example: {"pulls":[...]}'
                           <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
                           {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                             const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                            {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
+                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
                           })() : (
                             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
                               <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
@@ -5408,8 +5431,8 @@ Example: {"pulls":[...]}'
                   {/* ═══ FOOTER ═══ */}
                   <div className="relative flex items-center justify-between pt-1.5">
                     <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
-                    <span className="text-gray-600 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
-                    <span className="text-gray-600" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
+                    <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
+                    <span className="text-gray-500" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
                   </div>
                 </div>
               </div>
@@ -5661,7 +5684,7 @@ Example: {"pulls":[...]}'
                         <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">
                           Anyone browsing the app — includes visitors who haven't imported data or submitted to the leaderboard
                         </div>
-                        <div className="text-gray-600 text-[9px] mt-1">
+                        <div className="text-gray-500 text-[9px] mt-1">
                           Updates every 30s • Heartbeat: 60s • Timeout: 2min
                         </div>
                       </div>
@@ -5715,7 +5738,7 @@ Example: {"pulls":[...]}'
                                     <span className="text-gray-500 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
                                     <span className="text-white text-[11px] font-mono font-medium truncate">{p.uid || p.id}</span>
                                     {p.uid && p.id !== p.uid && (
-                                      <span className="text-gray-600 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
+                                      <span className="text-gray-500 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-3 ml-6 mt-0.5">
@@ -5725,7 +5748,7 @@ Example: {"pulls":[...]}'
                                     <span className="text-gray-500 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                                   </div>
                                 </div>
-                                <div className="text-gray-600 text-[8px] text-right flex-shrink-0 ml-2">
+                                <div className="text-gray-500 text-[8px] text-right flex-shrink-0 ml-2">
                                   {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
                                 </div>
                               </div>
@@ -5777,7 +5800,7 @@ Example: {"pulls":[...]}'
                                 <span className="text-[9px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
                                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
                                 <span className={`text-[10px] flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
-                                <span className="text-[8px] text-gray-600 flex-shrink-0">{t.name.length}ch</span>
+                                <span className="text-[8px] text-gray-500 flex-shrink-0">{t.name.length}ch</span>
                               </div>
                             ))}
                             {(!trophies?.list || trophies.list.length === 0) && (
