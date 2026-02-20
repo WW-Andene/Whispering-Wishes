@@ -2041,19 +2041,22 @@ function WhisperingWishesInner() {
       const tc=t.color||'#9ca3af';
       // Dark fill base
       ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,size,size,12);ctx.fill();
-      // Colored gradient overlay (diagonal, trophy color tint)
+      // Colored gradient overlay (stronger tint so color is clearly visible)
       const bg2=ctx.createLinearGradient(x,y,x+size,y+size);
-      bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
+      bg2.addColorStop(0,tc+'30');bg2.addColorStop(1,tc+'12');
       ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
       // Colored border
       ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
-      // Colored shimmer top line (trophy color instead of white)
+      // Colored shimmer top line
       const ss=ctx.createLinearGradient(x,0,x+size,0);
       ss.addColorStop(0,'transparent');ss.addColorStop(0.5,tc+'60');ss.addColorStop(1,'transparent');
       ctx.fillStyle=ss;ctx.fillRect(x+6,y,size-12,1.5);
-      // Icon — directly centered, NO inner circle
-      const iconR=size*0.25;
+      // Icon — centered, with colored glow for premium look
+      const iconR=size*0.28;
+      ctx.save();
+      ctx.shadowColor=tc;ctx.shadowBlur=Math.max(12,size*0.1);
       drawIconPath(x+size/2,y+size*0.38,iconR,t.icon,tc);
+      ctx.restore();
       // Name — white bold, centered
       const nameFontSize=Math.max(10,Math.floor(size*0.12));
       ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
