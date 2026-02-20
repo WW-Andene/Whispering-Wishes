@@ -5125,7 +5125,7 @@ Example: {"pulls":[...]}'
                 {/* Main content */}
                 <div className="kuro-body">
                   {/* Top: Info left, Picture right */}
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     {/* Left: Name + details */}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-white font-bold text-lg truncate leading-tight">{state.profile.username || 'Resonator'}</h3>
@@ -5171,7 +5171,9 @@ Example: {"pulls":[...]}'
                   </div>
                   
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-1.5 mt-4">
+                  <div className="mt-4 p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Pull Stats</p>
+                    <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24' },
                       { label: 'Total Pulls', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb' },
@@ -5185,12 +5187,13 @@ Example: {"pulls":[...]}'
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: '8px' }}>{s.label}</div>
                       </div>
                     ))}
+                    </div>
                   </div>
-                  
+
                   {/* Owned Resonators */}
                   {ownedCharNames.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
+                    <div className="mt-3 p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
                       <div className="flex flex-wrap gap-1.5">
                         {ownedCharNames.slice(0, 16).map(name => {
                           const imgUrl = collectionImages[name];
@@ -5226,15 +5229,14 @@ Example: {"pulls":[...]}'
                     const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
                     if (!sorted.length) return null;
                     return (
-                      <div className="mt-3">
-                        <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Trophies ({sorted.length})</p>
-                        <div className="flex flex-wrap justify-center gap-1.5">
+                      <div className="mt-3 p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Trophies ({sorted.length})</p>
+                        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
                           {sorted.map(trophy => {
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
                               <div key={trophy.id} className="p-2 rounded-lg text-center"
                                 style={{
-                                  width: 'calc(20% - 5px)',
                                   background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
                                   border: `1px solid ${trophy.color}50`,
                                   boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05`
