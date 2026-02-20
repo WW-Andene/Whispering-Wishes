@@ -1982,9 +1982,14 @@ function WhisperingWishesInner() {
         ctx.save();rr(x+1,y+1,cellW-2,cellH-2,8);ctx.clip();
         const f=getImageFraming('collection-'+name);
         const sc=f.zoom/100;
-        const dw=cellW*sc,dh=cellH*sc;
-        const dx=x+(cellW-dw)/2-(f.x/100)*cellW*sc;
-        const dy=y+(cellH-dh)/2-(f.y/100)*cellH*sc;
+        // Preserve aspect ratio (object-contain): fit image inside cell
+        const imgAR=img.naturalWidth/img.naturalHeight;
+        const cellAR=cellW/cellH;
+        let bw2,bh2;
+        if(imgAR>cellAR){bw2=cellW;bh2=cellW/imgAR;}else{bh2=cellH;bw2=cellH*imgAR;}
+        const dw=bw2*sc,dh=bh2*sc;
+        const dx=x+(cellW-dw)/2-(f.x/100)*bw2*sc;
+        const dy=y+(cellH-dh)/2-(f.y/100)*bh2*sc;
         ctx.drawImage(img,dx,dy,dw,dh);
         ctx.restore();
         const fade=ctx.createLinearGradient(0,y+cellH-33,0,y+cellH);
@@ -2037,9 +2042,14 @@ function WhisperingWishesInner() {
         ctx.save();rr(x+2,y+2,w-4,h-4,14);ctx.clip();
         const f=picName?getImageFraming('collection-'+picName):{zoom:100,x:0,y:0};
         const sc=f.zoom/100;
-        const dw=w*sc,dh=h*sc;
-        const dx=x+(w-dw)/2-(f.x/100)*w*sc;
-        const dy=y+(h-dh)/2-(f.y/100)*h*sc;
+        // Preserve aspect ratio (object-contain)
+        const imgAR=pImg.naturalWidth/pImg.naturalHeight;
+        const cellAR=w/h;
+        let bw2,bh2;
+        if(imgAR>cellAR){bw2=w;bh2=w/imgAR;}else{bh2=h;bw2=h*imgAR;}
+        const dw=bw2*sc,dh=bh2*sc;
+        const dx=x+(w-dw)/2-(f.x/100)*bw2*sc;
+        const dy=y+(h-dh)/2-(f.y/100)*bh2*sc;
         ctx.drawImage(pImg,dx,dy,dw,dh);
         ctx.restore();
         const fade=ctx.createLinearGradient(0,y+h-90,0,y+h);
@@ -5106,18 +5116,18 @@ Example: {"pulls":[...]}'
       {/* Resonator ID Card Modal */}
       {showIdCard && (
         <div ref={idCardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             {/* The Card */}
-            <div className="kuro-card" style={{ overflow: 'hidden' }}>
-              <div className="kuro-card-inner">
+            <div className="kuro-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '100%' }}>
+              <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {/* Header */}
-                <div className="kuro-header">
+                <div className="kuro-header" style={{ flexShrink: 0 }}>
                   <span className="text-gray-100 font-bold text-xs flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
                   <span className="text-gray-500 text-[10px]">Whispering Wishes</span>
                 </div>
-                
-                {/* Main content */}
-                <div className="kuro-body">
+
+                {/* Main content — scrollable */}
+                <div className="kuro-body" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
                   {/* Top: Info left, Picture right */}
                   <div className="flex gap-4 pb-3 mb-1 rounded-lg" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     {/* Left: Name + details */}
@@ -5258,7 +5268,7 @@ Example: {"pulls":[...]}'
             </div>
             
             {/* Format toggle + action buttons */}
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3" style={{ flexShrink: 0 }}>
               {/* Format toggle */}
               <div className="flex rounded-xl overflow-hidden" style={{ background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <button
