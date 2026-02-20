@@ -5128,84 +5128,100 @@ Example: {"pulls":[...]}'
                 </div>
 
                 {/* Main content */}
-                <div className="kuro-body">
-                  {/* Top: Info left, Picture right */}
-                  <div className="flex gap-4 pb-3 mb-1 rounded-lg" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {/* Left: Name + details */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-bold text-lg truncate leading-tight">{state.profile.username || 'Resonator'}</h3>
-                      <div className="mt-2 space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 text-[10px] w-10 flex-shrink-0">UID</span>
-                          <span className="text-gray-200 text-xs font-mono">{state.profile.uid || '—'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 text-[10px] w-10 flex-shrink-0">Server</span>
-                          <span className="text-yellow-400 text-xs font-mono">{state.server}</span>
-                        </div>
-                      </div>
-                      {/* Luck rating */}
-                      {luckRating && (
-                        <div className="mt-3">
+                <div className="kuro-body" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                  {/* ═══ PROFILE PANEL ═══ */}
+                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '12px' }}>
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="flex gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-bold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
-                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #fbbf24, #34d399)' }} />
-                            </div>
-                            <span className="text-[10px] font-mono flex-shrink-0" style={{ color: luckRating.color || '#fbbf24' }}>{luckRating.tier} {luckRating.rating}</span>
+                            <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
+                            <span className="text-gray-200 text-xs font-mono">{state.profile.uid || '—'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
+                            <span className="text-xs font-mono" style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251,191,36,0.3)' }}>{state.server}</span>
                           </div>
                         </div>
-                      )}
-                    </div>
-                    
-                    {/* Right: 1:1 Profile Picture — glass style */}
-                    <div className="flex-shrink-0 flex flex-col items-center">
-                      <div className="relative rounded-xl overflow-hidden" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
-                        {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
-                          const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                          return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
-                        })() : (
-                          <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
-                            <img src={HEADER_ICON} alt="Default" className="w-14 h-14 object-contain opacity-70" />
+                        {luckRating && (
+                          <div className="mt-2.5 flex items-center gap-2">
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #fbbf24, #34d399)', boxShadow: '0 0 6px rgba(251,191,36,0.4)' }} />
+                            </div>
+                            <span className="text-[9px] font-mono font-bold flex-shrink-0 px-1.5 py-0.5 rounded" style={{ color: luckRating.color || '#fbbf24', background: `${luckRating.color || '#fbbf24'}15`, border: `1px solid ${luckRating.color || '#fbbf24'}30`, textShadow: `0 0 8px ${luckRating.color || '#fbbf24'}60` }}>{luckRating.tier} {luckRating.rating}</span>
                           </div>
                         )}
                       </div>
-                      {state.profile.profilePic && (
-                        <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '8px', width: '120px' }}>{state.profile.profilePic}</p>
-                      )}
+                      <div className="flex-shrink-0 flex flex-col items-center">
+                        <div className="relative rounded-xl overflow-hidden" style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(251,191,36,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
+                          <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
+                          {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                            const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                          })() : (
+                            <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
+                              <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
+                            </div>
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }} />
+                        </div>
+                        {state.profile.profilePic && (
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '7px', width: '110px' }}>{state.profile.profilePic}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Stats Grid */}
-                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Pull Stats</p>
+
+                  {/* ═══ CONVENE STATS PANEL ═══ */}
+                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.4), transparent)' }} />
+                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="flex items-center gap-2 mb-2">
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
+                    </div>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24' },
-                      { label: 'Total Pulls', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb' },
-                      { label: '5★ Pulled', value: overallStats?.fiveStars ?? '—', color: '#a78bfa' },
-                      { label: '50/50 Win Rate', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e' },
-                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#22c55e' },
-                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171' },
+                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24', bg: 'rgba(251,191,36,0.1)', bc: 'rgba(251,191,36,0.3)' },
+                      { label: 'Total Pulls', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
+                      { label: '5★ Pulled', value: overallStats?.fiveStars ?? '—', color: '#a78bfa', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
+                      { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
+                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
+                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },
                     ].map((s, i) => (
-                      <div key={i} className="rounded-lg px-2 py-2 text-center" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div className="font-bold font-mono text-sm" style={{ color: s.color }}>{s.value}</div>
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '8px' }}>{s.label}</div>
+                      <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
+                        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
+                        <div className="font-bold font-mono text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30` }}>{s.value}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '7px', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
                     </div>
                   </div>
 
-                  {/* Owned Resonators */}
+                  {/* ═══ RESONATORS PANEL ═══ */}
                   {ownedCharNames.length > 0 && (
-                    <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                      <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
+                    <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                      <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent)' }} />
+                      <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                      <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                      <div className="flex items-center gap-2 mb-2">
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                        <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
+                      </div>
                       <div className="flex flex-wrap gap-1.5">
                         {ownedCharNames.slice(0, 16).map(name => {
                           const imgUrl = collectionImages[name];
                           const f = getImageFraming(`collection-${name}`);
                           return (
-                            <div key={name} style={{ width: '48px' }}>
-                              <div className="relative rounded-lg overflow-hidden" style={{ width: '48px', height: '76px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', contain: 'paint' }}>
+                            <div key={name} style={{ width: '46px' }}>
+                              <div className="relative rounded-lg overflow-hidden" style={{ width: '46px', height: '72px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
+                                <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
                                 {imgUrl ? (
                                   <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
                                 ) : (
@@ -5213,44 +5229,51 @@ Example: {"pulls":[...]}'
                                     <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
                                   </div>
                                 )}
-                                <div className="absolute bottom-0 left-0 right-0 p-1 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none">
-                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px' }}>{name}</span>
+                                <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))' }}>
+                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
                                 </div>
                               </div>
                             </div>
                           );
                         })}
                         {ownedCharNames.length > 16 && (
-                          <div className="flex items-center justify-center" style={{ width: '48px', height: '76px' }}>
-                            <span className="text-gray-500" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
+                          <div className="flex items-center justify-center rounded-lg" style={{ width: '46px', height: '72px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <span className="text-gray-500 font-mono" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
                           </div>
                         )}
                       </div>
                     </div>
                   )}
-                  
-                  {/* Trophies — top 5 rarest */}
+
+                  {/* ═══ TROPHIES PANEL ═══ */}
                   {(() => {
                     const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
                     if (!sorted.length) return null;
                     return (
-                      <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                        <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Trophies ({sorted.length})</p>
+                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
+                        </div>
                         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
                           {sorted.map(trophy => {
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
-                              <div key={trophy.id} className="p-2 rounded-lg text-center"
+                              <div key={trophy.id} className="relative p-2 rounded-lg text-center overflow-hidden"
                                 style={{
                                   background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
-                                  border: `1px solid ${trophy.color}50`,
-                                  boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05`
+                                  border: `1px solid ${trophy.color}40`,
+                                  boxShadow: `0 0 15px ${trophy.color}10, inset 0 0 15px ${trophy.color}05`
                                 }}>
+                                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${trophy.color}60, transparent)` }} />
                                 <div className="w-7 h-7 mx-auto mb-1 rounded-full flex items-center justify-center"
-                                  style={{ background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
-                                  <IconComponent size={14} style={{ color: trophy.color }} />
+                                  style={{ background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 12px ${trophy.color}35` }}>
+                                  <IconComponent size={14} style={{ color: trophy.color, filter: `drop-shadow(0 0 4px ${trophy.color})` }} />
                                 </div>
-                                <div className="text-[7px] font-bold text-white truncate">{trophy.name}</div>
+                                <div className="text-[7px] font-bold text-white truncate" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{trophy.name}</div>
                               </div>
                             );
                           })}
@@ -5259,8 +5282,9 @@ Example: {"pulls":[...]}'
                     );
                   })()}
 
-                  {/* Footer line */}
-                  <div className="flex items-center justify-between mt-3 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  {/* ═══ FOOTER ═══ */}
+                  <div className="relative flex items-center justify-between pt-1.5">
+                    <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
                     <span className="text-gray-600 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
                     <span className="text-gray-600" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
                   </div>
