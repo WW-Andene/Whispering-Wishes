@@ -154,7 +154,7 @@ s6_other        | The Shaper                     | S6 [char name] — fully Sequ
   s6_Shorekeeper      | She Protecc (x7)                | S6 Shorekeeper — your team cannot die. ever.
   s6_Camellya         | Dislocated But Worth It         | S6 Camellya — thumbs broken, damage beautiful
   s6_Carlotta         | Wallet? Frozen.                 | S6 Carlotta — bank account colder than her kit
-  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — rock solid damage, rock bottom savings
+  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — the most expensive taxi in Rinascita
   s6_Phoebe           | Feebi Chupi Supremacy           | S6 Phoebe — max power cheek pinch unlocked
   s6_Brant            | Burned Through Savings          | S6 Brant — fire DPS, fire wallet
   s6_Cantarella       | Toxic Relationship              | S6 Cantarella — she's poison and you keep coming back
@@ -239,7 +239,7 @@ sig1            | Signature Acquired             | Pulled a character and their 
 --- TEAM COMP TROPHIES ---
 
 phrol           | Codependency                   | Phrolova + Cantarella — useless without each other, broken together
-zaphi           | Wheelchair Gaming              | Phoebe + Zani — 19 Frazzle stacks, zero skill required
+zaphi           | Wheelchair                     | Phoebe + Zani — 19 Frazzle stacks, zero skill required
 lynmor          | Pay2Win Unlocked               | Lynae + Mornye — the game plays itself now
 monofusion      | Arsonist Squad                 | Changli + Brant + Lupa — everything burns, including your primos
 fusion          | Bayonetta at Home              | Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home
