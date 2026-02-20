@@ -2039,9 +2039,13 @@ function WhisperingWishesInner() {
     // Trophy card — flat dark cell style with trophy color accents
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
-      // Dark fill (same as drawStat)
+      // Dark fill base
       ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,size,size,12);ctx.fill();
-      // Colored border (trophy color, like banner row values use banner color)
+      // Colored gradient overlay (diagonal, trophy color tint)
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);
+      bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
+      // Colored border
       ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
       // Colored shimmer top line (trophy color instead of white)
       const ss=ctx.createLinearGradient(x,0,x+size,0);
