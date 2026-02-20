@@ -1549,7 +1549,7 @@ function WhisperingWishesInner() {
       'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#fbbf24' },
       'Camellya': { name: 'Dislocated But Worth It', desc: 'S6 Camellya — thumbs broken, damage beautiful', color: '#ec4899' },
       'Carlotta': { name: 'Wallet? Frozen.', desc: 'S6 Carlotta — bank account colder than her kit', color: '#38bdf8' },
-      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — she\'s a rock. you\'re the clown who S6\'d her', color: '#ec4899' },
+      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — rock solid damage, rock bottom savings', color: '#ec4899' },
       'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#fbbf24' },
       'Brant': { name: 'Burned Through Savings', desc: 'S6 Brant — fire DPS, fire wallet', color: '#f97316' },
       'Cantarella': { name: 'Toxic Relationship', desc: 'S6 Cantarella — she\'s poison and you keep coming back', color: '#ec4899' },
@@ -1560,7 +1560,7 @@ function WhisperingWishesInner() {
       'Phrolova': { name: 'Puppet? You\'re the Puppet.', desc: 'S6 Phrolova — she played you like her dolls', color: '#ec4899' },
       'Augusta': { name: 'Shocking Bill', desc: 'S6 Augusta — electrifying damage, electrifying debt', color: '#a855f7' },
       'Iuno': { name: 'Tone Deaf Spending', desc: 'S6 Iuno — the melody was "swipe swipe swipe"', color: '#22c55e' },
-      'Galbrena': { name: 'Bayonetta at Home (S6)', desc: 'S6 Galbrena — Mom said we have Bayonetta at home', color: '#f97316' },
+      'Galbrena': { name: 'Witch Time: Maxed', desc: 'S6 Galbrena — she IS Bayonetta now', color: '#f97316' },
       'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more pull" seven times', color: '#22c55e' },
       'Chisa': { name: 'Cut Your Losses (Didn\'t)', desc: 'S6 Chisa — the blade cuts everything except your spending', color: '#ec4899' },
       'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#fbbf24' },
@@ -1625,17 +1625,17 @@ function WhisperingWishesInner() {
       if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Edited Convene Log', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — has to be fake right??`, icon: 'Clover', color: '#ff0000', tier: 'legendary' });
       else if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#fbbf24', tier: 'gold' });
       else if (!isNaN(avg) && avg >= 70) list.push({ id: 'unluckyavg', name: 'Certified Unlucky', desc: `Avg pity ${overallStats.avgPity} — genuinely painful to look at`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
-      else if (!isNaN(avg) && avg >= 60) list.push({ id: 'unluckyavg2', name: 'Soft Pity Squatter', desc: `Avg pity ${overallStats.avgPity} — you live in the soft zone rent-free`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
+      else if (!isNaN(avg) && avg >= 65) list.push({ id: 'unluckyavg2', name: 'Soft Pity Squatter', desc: `Avg pity ${overallStats.avgPity} — you live in the soft zone rent-free`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
     }
 
     // Never got early pity — all 5★ at pity 50+ (with 5+ pulls)
-    const allLatePity = total5Stars >= 5 && all5Stars.every(p => p.pity >= 50);
-    if (allLatePity) list.push({ id: 'neverearly', name: 'Waveplate Syndrome', desc: 'Never once got a 5★ before pity 50 — always waiting, never winning', icon: 'Shield', color: '#6b7280', tier: 'gray' });
+    const allLatePity = total5Stars >= 5 && all5Stars.every(p => p.pity >= 65);
+    if (allLatePity) list.push({ id: 'neverearly', name: 'Waveplate Syndrome', desc: 'Never once got a 5★ before soft pity — always waiting, never winning', icon: 'Shield', color: '#6b7280', tier: 'gray' });
 
     // Multiple hard pity hits
     const hardPityCount = all5Stars.filter(p => p.pity >= HARD_PITY).length;
     if (hardPityCount >= 5) list.push({ id: 'hard5', name: 'Tacet Mark: Permanent', desc: `Hit hard pity ${hardPityCount}× — the Lament scarred your account`, icon: 'Shield', color: '#ef4444', tier: 'red' });
-    else if (hardPityCount >= 3) list.push({ id: 'hard3', name: 'Frequent Flyer: Pity 80', desc: `Hit hard pity ${hardPityCount}× — loyalty card when Kuro`, icon: 'Shield', color: '#6b7280', tier: 'gray' });
+    else if (hardPityCount >= 3) list.push({ id: 'hard3', name: 'Frequent Flyer: Pity 80', desc: `Hit hard pity ${hardPityCount}× — you know the road to 80 by heart`, icon: 'Shield', color: '#6b7280', tier: 'gray' });
 
     // Got a 5★ at very low pity multiple times
     const veryEarlyCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 10).length;
@@ -1710,7 +1710,7 @@ function WhisperingWishesInner() {
     
     // T0 Meta Teams
     if (ownsAll('Phrolova', 'Cantarella')) list.push({ id: 'phrol', name: 'Codependency', desc: 'Phrolova + Cantarella — useless without each other, broken together', icon: 'Heart', color: '#a855f7', tier: 'purple' });
-    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair Meta', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#fbbf24', tier: 'gold' });
+    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair Gaming', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#fbbf24', tier: 'gold' });
     if (ownsAll('Lynae', 'Mornye')) list.push({ id: 'lynmor', name: 'Pay2Win Unlocked', desc: 'Lynae + Mornye — the game plays itself now', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
     if (ownsAll('Changli') && ownsAll('Brant') && ownsAll('Lupa')) list.push({ id: 'monofusion', name: 'Arsonist Squad', desc: 'Changli + Brant + Lupa — everything burns, including your primos', icon: 'Flame', color: '#f97316', tier: 'orange' });
     if (ownsAll('Galbrena', 'Qiuyuan', 'Shorekeeper')) list.push({ id: 'fusion', name: 'Bayonetta at Home', desc: 'Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home', icon: 'Flame', color: '#f97316', tier: 'orange' });
@@ -1795,8 +1795,8 @@ function WhisperingWishesInner() {
       currentDry++;
       if (p.rarity === 5) { maxDryStreak = Math.max(maxDryStreak, currentDry); currentDry = 0; }
     }
-    if (maxDryStreak >= 150) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} pulls between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
-    else if (maxDryStreak >= 130) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} pulls between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
+    if (maxDryStreak >= 160) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} pulls between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
+    else if (maxDryStreak >= 145) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} pulls between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
 
     // Apply admin trophy name/desc overrides
     const finalList = list.map(t => {

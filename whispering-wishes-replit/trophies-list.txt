@@ -31,10 +31,10 @@ early40         | Echo of Fortune                | 5★ at pity 40
 
 hard80          | Pity 80 Club                   | Went the full distance. pain.
 hard5           | Tacet Mark: Permanent          | Hit hard pity 5× — the Lament scarred your account
-hard3           | Frequent Flyer: Pity 80        | Hit hard pity 3× — loyalty card when Kuro
-neverearly      | Waveplate Syndrome             | Never once got a 5★ before pity 50 — always waiting, never winning
-dry150          | Huanglong's Desert             | 150 pulls between 5★ — the wasteland arc
-dry130          | Tacet Drought                  | 130 pulls between 5★ — silence from the banner
+hard3           | Frequent Flyer: Pity 80        | Hit hard pity 3× — you know the road to 80 by heart
+neverearly      | Waveplate Syndrome             | Never once got a 5★ before soft pity — always waiting, never winning
+dry150          | Huanglong's Desert             | 160 pulls between 5★ — the wasteland arc
+dry130          | Tacet Drought                  | 145 pulls between 5★ — silence from the banner
 
 
 --- SOFT PITY ---
@@ -154,7 +154,7 @@ s6_other        | The Shaper                     | S6 [char name] — fully Sequ
   s6_Shorekeeper      | She Protecc (x7)                | S6 Shorekeeper — your team cannot die. ever.
   s6_Camellya         | Dislocated But Worth It         | S6 Camellya — thumbs broken, damage beautiful
   s6_Carlotta         | Wallet? Frozen.                 | S6 Carlotta — bank account colder than her kit
-  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — she's a rock. you're the clown who S6'd her
+  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — rock solid damage, rock bottom savings
   s6_Phoebe           | Feebi Chupi Supremacy           | S6 Phoebe — max power cheek pinch unlocked
   s6_Brant            | Burned Through Savings          | S6 Brant — fire DPS, fire wallet
   s6_Cantarella       | Toxic Relationship              | S6 Cantarella — she's poison and you keep coming back
@@ -165,7 +165,7 @@ s6_other        | The Shaper                     | S6 [char name] — fully Sequ
   s6_Phrolova         | Puppet? You're the Puppet.      | S6 Phrolova — she played you like her dolls
   s6_Augusta          | Shocking Bill                   | S6 Augusta — electrifying damage, electrifying debt
   s6_Iuno             | Tone Deaf Spending              | S6 Iuno — the melody was "swipe swipe swipe"
-  s6_Galbrena         | Bayonetta at Home (S6)          | S6 Galbrena — Mom said we have Bayonetta at home
+  s6_Galbrena         | Witch Time: Maxed               | S6 Galbrena — she IS Bayonetta now
   s6_Qiuyuan          | Echo Chamber                    | S6 Qiuyuan — he echoed "one more pull" seven times
   s6_Chisa            | Cut Your Losses (Didn't)        | S6 Chisa — the blade cuts everything except your spending
   s6_Lynae            | Lynae Impact                    | S6 Lynae — just rename the game already
@@ -195,7 +195,7 @@ noweap          | Fists Only Challenge           | Zero weapon banner pulls — 
 luckyavg2       | Edited Convene Log             | Avg pity 35 across 10 five-stars — has to be fake right??
 luckyavg        | Illegal Luck                   | Avg pity 45 across 10 five-stars — report this account
 unluckyavg      | Certified Unlucky              | Avg pity 70 — genuinely painful to look at
-unluckyavg2     | Soft Pity Squatter             | Avg pity 60 — you live in the soft zone rent-free
+unluckyavg2     | Soft Pity Squatter             | Avg pity 65 — you live in the soft zone rent-free
 
 
 --- WIN RATE ---
@@ -239,7 +239,7 @@ sig1            | Signature Acquired             | Pulled a character and their 
 --- TEAM COMP TROPHIES ---
 
 phrol           | Codependency                   | Phrolova + Cantarella — useless without each other, broken together
-zaphi           | Wheelchair Meta                | Phoebe + Zani — 19 Frazzle stacks, zero skill required
+zaphi           | Wheelchair Gaming              | Phoebe + Zani — 19 Frazzle stacks, zero skill required
 lynmor          | Pay2Win Unlocked               | Lynae + Mornye — the game plays itself now
 monofusion      | Arsonist Squad                 | Changli + Brant + Lupa — everything burns, including your primos
 fusion          | Bayonetta at Home              | Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home
