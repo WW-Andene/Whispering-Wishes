@@ -5115,19 +5115,20 @@ Example: {"pulls":[...]}'
 
       {/* Resonator ID Card Modal */}
       {showIdCard && (
-        <div ref={idCardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
-          <div className="w-full max-w-md" style={{ maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+        <div ref={idCardTrapRef} className="fixed inset-0 z-[100] overflow-y-auto p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
+          <div className="min-h-full flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }}>
+          <div className="w-full max-w-md">
             {/* The Card */}
-            <div className="kuro-card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '100%' }}>
-              <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="kuro-card" style={{ overflow: 'hidden' }}>
+              <div className="kuro-card-inner">
                 {/* Header */}
-                <div className="kuro-header" style={{ flexShrink: 0 }}>
+                <div className="kuro-header">
                   <span className="text-gray-100 font-bold text-xs flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
                   <span className="text-gray-500 text-[10px]">Whispering Wishes</span>
                 </div>
 
-                {/* Main content — scrollable */}
-                <div className="kuro-body" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+                {/* Main content */}
+                <div className="kuro-body">
                   {/* Top: Info left, Picture right */}
                   <div className="flex gap-4 pb-3 mb-1 rounded-lg" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     {/* Left: Name + details */}
@@ -5268,7 +5269,7 @@ Example: {"pulls":[...]}'
             </div>
             
             {/* Format toggle + action buttons */}
-            <div className="flex gap-2 mt-3" style={{ flexShrink: 0 }}>
+            <div className="flex gap-2 mt-3">
               {/* Format toggle */}
               <div className="flex rounded-xl overflow-hidden" style={{ background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <button
@@ -5303,6 +5304,7 @@ Example: {"pulls":[...]}'
                 <X size={14} />
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}
