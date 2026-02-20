@@ -1,0 +1,224 @@
+===========================================================
+  WHISPERING WISHES — ALL TROPHIES (from source code)
+===========================================================
+  Format:  ID | Name | Description
+
+  Mark any trophy with * next to the name to indicate
+  you want it renamed. Edit the name/desc as you wish,
+  then give me the modified file or a JSON back.
+===========================================================
+
+
+--- PITY & HARD PITY ---
+
+hard80          | Pity 80 Club                  | Went the full distance. pain.
+hard5           | Tacet Mark: Permanent          | Hit hard pity {count}× — the Lament scarred your account
+hard3           | Frequent Flyer: Pity 80        | Hit hard pity {count}× — loyalty card when Kuro
+neverearly      | Waveplate Syndrome             | Never once got a 5★ before pity 50 — always waiting, never winning
+dry150          | Huanglong's Desert             | {max} pulls between 5★ — the wasteland arc
+dry130          | Tacet Drought                  | {max} pulls between 5★ — silence from the banner
+
+
+--- SOFT PITY ---
+
+softpro2        | Soft Pity Landlord             | {count} five-stars from soft zone — you own property here
+softpro         | Soft Pity Merchant             | {count} five-stars from soft zone — never early, never late
+unluckyavg2     | Soft Pity Squatter             | Avg pity {avg} — you live in the soft zone rent-free
+
+
+--- BACK TO BACK / EARLY ---
+
+b2b3            | Actual Hack                    | {count} five-stars within 15 pulls — how
+b2b             | Back to Back                   | 5★ within 15 pulls of the last — flexing is permitted
+early5x         | Rover's Plot Armor             | {count} five-stars within first 10 pity — protagonist luck is real
+early3x         | Resonance Beacon               | {count} five-stars within first 10 pity — they come to you
+speed           | Early Pity Any%                | Won 50/50 at pity {pity} — frame-perfect gacha luck
+
+
+--- 50/50 WIN STREAKS ---
+
+win10           | Rover's Blessing               | {streak}× 50/50 wins — the Sentinel chose you
+win7            | Rigged (Positive)              | {streak}× 50/50 wins — actual witchcraft
+win5            | Main Character Energy           | {streak}× 50/50 wins in a row
+win4            | Resonance Chain                 | {streak}× 50/50 wins in a row — keep the chain going
+win3            | Casually Winning                | {streak}× 50/50 wins in a row
+noloss          | Literally Never Lost            | {wins} 50/50 wins, zero losses — touch grass
+
+
+--- 50/50 LOSS STREAKS ---
+
+loss10s         | Lament Never Ended             | {streak}× 50/50 losses — the catastrophe hit your account
+loss7           | Clinically Cursed              | {streak}× 50/50 losses — uninstall tbh
+loss5           | Kuro Hates You                 | {streak}× 50/50 losses in a row
+loss4           | Waveworn                       | {streak}× 50/50 losses in a row — eroded by RNG
+loss3           | Skill Issue (Gacha)            | {streak}× 50/50 losses in a row
+guar3           | Guarantee Gang                 | {count} guaranteed 5★ in a row — never won a 50/50 between them
+
+
+--- 50/50 FIRSTS ---
+
+first5050       | Beginner's Luck                | Won your very first 50/50
+firstloss       | First Time?                    | First 50/50 was a loss — it only gets worse
+redeem          | Copium Rewarded                | Lost 50/50, then won the next — anime protagonist arc
+odds            | Plot Armor Activated           | Won 50/50 after 3+ consecutive losses — anime comeback arc
+
+
+--- TOTAL PULLS ---
+
+mega            | Mortgage Status                | 2000+ Convenes — seek financial advice
+1500            | Astrite Overdose               | 1500+ Convenes — Kuro sends you a Christmas card
+whale           | Kuro Employee of the Month     | 1000+ Convenes — they know you by name
+750             | Terminal Stage                  | 750+ Convenes — the Lament hit your wallet
+500             | Down the Rabbit Hole           | 500+ Convenes — no turning back
+300             | Sunk Cost Fallacy              | 300+ Convenes — too deep to quit, too broke to continue
+200             | Rover's Allowance: Gone        | 200+ Convenes — emotionally and financially invested
+100             | First Steps                    | 100+ Convenes
+
+
+--- FIVE-STAR COUNT ---
+
+100stars        | Convene Printer Goes Brr       | {count} five-stars obtained — you ARE the banner
+75stars         | Resonance Overload             | {count} five-stars obtained — Sonata Effect: maxed
+50stars         | Addicted                       | {count} five-stars obtained — this is a problem
+35stars         | Tacet Discord Hoarder          | {count} five-stars obtained — your roster IS the Tacet Discord
+25stars         | Stargazer                      | {count} five-stars obtained
+15stars         | Sequence Node: Farming         | {count} five-stars obtained — the grind is real
+10stars         | Rising Star                    | {count} five-stars obtained
+5stars          | First Expedition               | {count} five-stars obtained — your team is forming
+first5          | Awakening                      | Obtained your first 5★
+
+
+--- BANNER DIVERSITY ---
+
+diverse         | Pioneer Podcast                | Convened on all banner types
+diverse3        | Pioneer Intern                 | Pulled on 3 different banner types — almost a real Pioneer
+
+
+--- UNIQUE 5★ RESONATORS OWNED ---
+
+own30           | Huanglong's Census             | {count} unique 5★ Resonators — Rover collected them all
+own25           | Sonata Library: Full           | {count} unique 5★ Resonators — you ARE the tier list
+own20           | Jinzhou Housing Crisis         | {count} unique 5★ Resonators — where do they all sleep
+own15           | Forte Circuit Overload         | {count} unique 5★ Resonators — too many builds to farm
+own10           | Union Level: Whale             | {count} unique 5★ Resonators — the roster is stacked
+own5            | First Expedition Team          | {count} unique 5★ Resonators — your party is forming
+
+
+--- UNIQUE 5★ WEAPONS OWNED ---
+
+weap20          | Forgery Domain Resident        | {count} unique 5★ Weapons — open a museum in Jinzhou
+weap15          | Sonance Casket: Stuffed        | {count} unique 5★ Weapons — inventory management simulator
+weap10          | Pioneer's Arsenal              | {count} unique 5★ Weapons — a blade for every occasion
+weap5           | Tacet Field Sweep              | {count} unique 5★ Weapons — the field has been cleared
+weap3           | First Forgery Run              | {count} unique 5★ Weapons — your collection begins
+
+
+--- S6 (MAX SEQUENCE) TROPHIES ---
+
+s6_all          | Gathering Wives: Complete      | Every 5★ at S6 — Rover's harem is full. seek help.
+s6_harem20      | Harem Protagonist EX           | {count}/{total} at S6 — your wallet is in critical condition
+s6_harem10      | Gathering Wives                | {count}/{total} at S6 — Rover didn't stutter
+s6_harem5       | Starting a Collection          | {count} at S6 — the harem arc is canon
+s6_other        | The Shaper                     | S6 {name} — fully Sequenced
+
+  (Per-character S6 trophies — dynamic IDs like s6_Jinhsi, s6_Changli, etc.)
+  These come from a map of 33 characters, each with a custom name/desc.
+  They only appear if you actually have that character at S6.
+
+
+--- R5 (MAX REFINEMENT) WEAPONS ---
+
+r5three         | Forge of Impermanence          | {count} R5 weapons — your armory costs more than a car
+r5two           | Tuner Diff                     | {count} R5 weapons — one wasn't enough apparently
+r5              | Weapon Banner Victim           | R5 {weapon} — financially irresponsible
+r3              | Halfway to Copium              | R3+ {weapon} — too invested to stop, too broke to finish
+
+
+--- WEAPON BANNER VOLUME ---
+
+weapvol5        | Weapon Banner Prisoner         | {pulls} weapon banner pulls — this is a lifestyle choice
+weapvol2        | Signature Cope                 | {pulls} weapon banner pulls — "it's a DPS increase bro"
+weapsimp        | BiS or Bust                    | More weapon pulls than character pulls — priorities moment
+noweap          | Fists Only Challenge           | Zero weapon banner pulls — who needs signatures anyway
+
+
+--- AVERAGE PITY ---
+
+luckyavg2       | Edited Convene Log             | Avg pity {avg} across {count} five-stars — has to be fake right??
+luckyavg        | Illegal Luck                   | Avg pity {avg} across {count} five-stars — report this account
+unluckyavg      | Certified Unlucky              | Avg pity {avg} — genuinely painful to look at
+
+
+--- WIN RATE ---
+
+highwr          | Account For Sale?              | {rate}% win rate across {flips} flips — this isn't normal
+goodwr          | Jinzhou's Luckiest             | {rate}% win rate across {flips} flips — the Magistrate blesses you
+balanced        | 50/50 at 50/50                 | {rate}% win rate across {flips} flips — mathematically perfect copium
+lowwr           | Statistically Bullied          | {rate}% win rate across {flips} flips — file a complaint
+badwr           | Tacet Field: Account           | {rate}% win rate across {flips} flips — corrupted beyond repair
+
+
+--- TOTAL WINS / LOSSES ---
+
+wins20          | Shorekeeper's Chosen           | {wins} 50/50 wins — she protects your account too
+wins10          | Sonance Cascade                | {wins} 50/50 wins total — the echoes answer
+loss10          | Down Bad (Financially)         | {losses} 50/50 losses — at what point do you stop
+
+
+--- SPECIFIC CHARACTER LOSS TROPHIES ---
+
+tiger3          | Lingyang Main (Involuntary)    | Lost 50/50 to Lingyang {count}× — he chose you
+tiger1          | Lingyang'd                     | Lost 50/50 to Lingyang — welcome to the club
+calch3          | Calcharo Stalker Victim        | Lost 50/50 to Calcharo {count}× — restraining order when
+calch1          | Sentenced                      | Lost 50/50 to Calcharo — guilty as charged
+jianxin         | Parry This Casual              | Lost 50/50 to Jianxin {count}×
+encore          | Woolie'd                       | Lost 50/50 to Encore {count}× — Cosmos sends his regards
+verina          | W in Disguise                  | Lost 50/50 to Verina {count}× — best L you ever took
+allstd          | Gotta Lose 'Em All             | Lost 50/50 to every standard character — completionist arc
+dup             | Hostage Situation              | {char} S{seq} from 50/50 losses alone — didn't even want them
+stdS6           | Accidental S6: Coping          | S6 {char} entirely from 50/50 losses — didn't even pull for them
+
+
+--- SIGNATURE WEAPON COMBOS ---
+
+sig10           | Tuning Complete                | {count} characters with their signature — peak Forte optimization
+sig5            | Forte Synergy                  | {count} characters with their signature weapon — built different
+sig3            | Echo Equipped                  | {count} characters with their signature weapon
+sig1            | Signature Acquired             | Pulled a character and their signature weapon — BiS secured
+
+
+--- TEAM COMP TROPHIES ---
+
+phrol           | Codependency                   | Phrolova + Cantarella — useless without each other, broken together
+zaphi           | Wheelchair Meta                | Phoebe + Zani — 19 Frazzle stacks, zero skill required
+lynmor          | Pay2Win Unlocked               | Lynae + Mornye — the game plays itself now
+monofusion      | Arsonist Squad                 | Changli + Brant + Lupa — everything burns, including your primos
+fusion          | Bayonetta at Home              | Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home
+jiyan           | Boomer Comp                    | Jiyan + Mortefi — 1.0 copium that refuses to retire
+heals           | Skill Issue Insurance          | SK + Verina — can't die even if you tried
+jinzhou         | Magistrate's Flame             | Jinhsi + Changli — Jinzhou's power duo
+rinascita       | Rinascita Familia              | Carlotta + Roccia — the ice queen and her ride
+stdall          | Losers Club                    | All standard 5★ Resonators — the "thanks for the 50/50 loss" squad
+
+
+--- META / MISC ---
+
+t0six           | Tower? Cleared.                | {count} T0 DPS — ToA is your personal playground
+t0three         | Meta Slave                     | {count} T0 DPS — tier list told you to pull
+onetrick        | Solo Resonator                 | Only {char} — loyalty or poverty?
+dry             | Down Horrendous                | {pulls} pulls, {count} five-stars — delete the app
+efficient       | F2P BTW                        | {count} five-stars in only {pulls} pulls — maximum Astrite efficiency
+
+
+===========================================================
+  TOTAL: ~104 unique trophy definitions
+  (+ 33 per-character S6 trophies from the dynamic map)
+
+  To rename, edit the Name and/or Description columns
+  above, then give me the modified file or a JSON like:
+
+  {
+    "trophy_id": { "name": "New Name", "desc": "New Desc" },
+    "another_id": { "name": "Changed Name" }
+  }
+===========================================================
