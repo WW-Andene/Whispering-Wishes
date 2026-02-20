@@ -1549,7 +1549,7 @@ function WhisperingWishesInner() {
       'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#fbbf24' },
       'Camellya': { name: 'Dislocated But Worth It', desc: 'S6 Camellya — thumbs broken, damage beautiful', color: '#ec4899' },
       'Carlotta': { name: 'Wallet? Frozen.', desc: 'S6 Carlotta — bank account colder than her kit', color: '#38bdf8' },
-      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — the most expensive taxi in Rinascita', color: '#ec4899' },
+      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — she carries the team, not the damage', color: '#ec4899' },
       'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#fbbf24' },
       'Brant': { name: 'Burned Through Savings', desc: 'S6 Brant — fire DPS, fire wallet', color: '#f97316' },
       'Cantarella': { name: 'Toxic Relationship', desc: 'S6 Cantarella — she\'s poison and you keep coming back', color: '#ec4899' },
