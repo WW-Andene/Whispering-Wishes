@@ -2036,16 +2036,16 @@ function WhisperingWishesInner() {
       ctx.restore();
     };
 
-    // Trophy card — flat dark cell style matching drawStat/drawBannerRow
+    // Trophy card — flat dark cell style with trophy color accents
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
       // Dark fill (same as drawStat)
       ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,size,size,12);ctx.fill();
-      // White border (same as drawStat)
-      ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
-      // Shimmer top line (same as drawStat)
+      // Colored border (trophy color, like banner row values use banner color)
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
+      // Colored shimmer top line (trophy color instead of white)
       const ss=ctx.createLinearGradient(x,0,x+size,0);
-      ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
+      ss.addColorStop(0,'transparent');ss.addColorStop(0.5,tc+'60');ss.addColorStop(1,'transparent');
       ctx.fillStyle=ss;ctx.fillRect(x+6,y,size-12,1.5);
       // Icon — directly centered, NO inner circle
       const iconR=size*0.25;
