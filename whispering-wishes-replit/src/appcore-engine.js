@@ -452,7 +452,9 @@ const sanitizeStateObj = (obj) => {
   const clean = {};
   for (const key of Object.keys(obj)) {
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    clean[key] = obj[key];
+    // P14-FIX: Recurse into nested objects for defense-in-depth prototype pollution protection
+    const val = obj[key];
+    clean[key] = (typeof val === 'object' && val !== null && !Array.isArray(val)) ? sanitizeStateObj(val) : val;
   }
   return clean;
 };

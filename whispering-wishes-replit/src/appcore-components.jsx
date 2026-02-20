@@ -1464,7 +1464,7 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
       <PityRing value={pity} max={80} size={56} strokeWidth={4} color={pity >= 65 ? softColor : color} glowColor={pity >= 65 ? softGlow : `${color}66`} />
       <div className="flex-1">
         <div className="text-sm font-medium mb-1" style={{ color }}>{label}</div>
-        <input type="range" min="0" max="80" value={pity} onChange={e => onPityChange(+e.target.value)} className={`kuro-slider ${sliderClass}`} aria-label={`${ariaPrefix} pity`} />
+        <input type="range" min="0" max="79" value={pity} onChange={e => onPityChange(+e.target.value)} className={`kuro-slider ${sliderClass}`} aria-label={`${ariaPrefix} pity`} />
         {pity >= 65 && <p className={`text-[10px] ${softPityClass}`} style={{ color: softColor }}><SoftPityIcon size={10} className="inline mr-1" style={{ color: softColor, filter: `drop-shadow(0 0 4px ${softColor})` }} />Soft Pity Zone!</p>}
       </div>
       <div className="text-right">
@@ -1522,7 +1522,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
           <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
         </div>
       )}
-      <p className="text-[8px] text-gray-600 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. Exact DP formula.</p>
+      <p className="text-[9px] text-gray-500 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. Exact DP formula.</p>
     </CardBody>
   </Card>
 ));
