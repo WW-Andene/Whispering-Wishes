@@ -2197,7 +2197,8 @@ function WhisperingWishesInner() {
       // ── Right column: Collection → Resonators → Trophies → Banner Breakdown ──
       const panelPad=39;
       const collH=panelPad+48+6;
-      const trophyCellSize=120; // fixed trophy card size
+      const trophyCols=Math.max(tList.length,1),trophyGap=8;
+      const trophyCellSize=Math.min(160,Math.floor((rightW-18-(trophyCols-1)*trophyGap)/trophyCols));
       const trophyPanelH=panelPad+trophyCellSize+6;
       const bannerH=panelPad+72+6; // banner breakdown panel height
 
@@ -2220,11 +2221,7 @@ function WhisperingWishesInner() {
       const r3Y=r2Y+resContentH+gap;
       if(tList.length>0){
         const tp1o=drawPanel(rightX,r3Y,rightW,trophyPanelH,'Trophies ('+tList.length+')');
-        const tCols=5,tGap=8;
-        const tSize=Math.min(trophyCellSize,Math.floor((rightW-18-(tCols-1)*tGap)/tCols));
-        const tTotalW=tSize*tCols+tGap*(tCols-1);
-        const tOffX=(rightW-18-tTotalW)/2;
-        tList.forEach((t,i)=>{drawTrophy(rightX+9+tOffX+i*(tSize+tGap),r3Y+tp1o,tSize,t);});
+        tList.forEach((t,i)=>{drawTrophy(rightX+9+i*(trophyCellSize+trophyGap),r3Y+tp1o,trophyCellSize,t);});
       }
 
       // Draw Row 4: Banner Breakdown — fills remaining
@@ -2280,7 +2277,8 @@ function WhisperingWishesInner() {
       const pResCellW=(bw-18-(pResCols-1)*pResGap2)/pResCols,pResCellH=Math.round(pResCellW*1.6);
       const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
       const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+6+(newestRes.length>pResMax?21:0);
-      const pTrophySize=140; // fixed trophy card size for portrait
+      const pTrophyCols=Math.max(tList.length,1),pTrophyGap=8;
+      const pTrophySize=Math.min(200,Math.floor((bw-18-(pTrophyCols-1)*pTrophyGap)/pTrophyCols));
       const pTrophyPanelH=pPad+pTrophySize+6;
       const pBannerH=pPad+80+6; // banner breakdown
 
@@ -2303,11 +2301,7 @@ function WhisperingWishesInner() {
       // ── Trophies — fixed height, centered ──
       if(tList.length>0){
         const tp2o=drawPanel(bx,Y,bw,pTrophyPanelH,'Trophies ('+tList.length+')');
-        const tCols=5,tGap=8;
-        const tSize=Math.min(pTrophySize,Math.floor((bw-18-(tCols-1)*tGap)/tCols));
-        const tTotalW=tSize*tCols+tGap*(tCols-1);
-        const tOffX=(bw-18-tTotalW)/2;
-        tList.forEach((t,i)=>{drawTrophy(bx+9+tOffX+i*(tSize+tGap),Y+tp2o,tSize,t);});
+        tList.forEach((t,i)=>{drawTrophy(bx+9+i*(pTrophySize+pTrophyGap),Y+tp2o,pTrophySize,t);});
         Y+=pTrophyPanelH+gap;
       }
 
@@ -5125,7 +5119,7 @@ Example: {"pulls":[...]}'
                 {/* Main content */}
                 <div className="kuro-body">
                   {/* Top: Info left, Picture right */}
-                  <div className="flex gap-4 p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="flex gap-4 pb-3 mb-1 rounded-lg" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     {/* Left: Name + details */}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-white font-bold text-lg truncate leading-tight">{state.profile.username || 'Resonator'}</h3>
@@ -5171,7 +5165,7 @@ Example: {"pulls":[...]}'
                   </div>
                   
                   {/* Stats Grid */}
-                  <div className="mt-4 p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Pull Stats</p>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
@@ -5192,7 +5186,7 @@ Example: {"pulls":[...]}'
 
                   {/* Owned Resonators */}
                   {ownedCharNames.length > 0 && (
-                    <div className="mt-3 p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                       <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
                       <div className="flex flex-wrap gap-1.5">
                         {ownedCharNames.slice(0, 16).map(name => {
@@ -5229,7 +5223,7 @@ Example: {"pulls":[...]}'
                     const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
                     if (!sorted.length) return null;
                     return (
-                      <div className="mt-3 p-2.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                         <p className="text-gray-500 mb-1.5" style={{ fontSize: '9px' }}>Trophies ({sorted.length})</p>
                         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
                           {sorted.map(trophy => {
