@@ -47,4 +47,5 @@ export {
   CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
   PityCounterInput, CalcResultsCard, StandardBannerSection,
   ImportGuide, getActiveBanners,
+  hideOnError,
 } from './appcore-components.jsx';

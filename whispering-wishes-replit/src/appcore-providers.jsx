@@ -3,30 +3,9 @@
 // PWA infrastructure, toast system, a11y hooks, onboarding, KuroStyles.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
 import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle } from 'lucide-react';
-import { APP_VERSION, HEADER_ICON, haptic, generateUniqueId } from './appcore-data.js';
-
-const PWA_MANIFEST = {
-  name: 'Whispering Wishes',
-  short_name: 'Whispering Wishes',
-  description: 'Wuthering Waves Convene Companion - Track pulls, plan resources, analyze luck',
-  start_url: '/',
-  display: 'standalone',
-  background_color: '#0a0a0a',
-  theme_color: '#fbbf24',
-  orientation: 'portrait-primary',
-  icons: [
-    { src: HEADER_ICON, sizes: '64x64', type: 'image/png', purpose: 'any' }
-  ], // Also populated dynamically in setupPWA with proper sized icons
-  categories: ['games', 'utilities'],
-  screenshots: [],
-  shortcuts: [
-    { name: 'Tracker', url: '/?tab=tracker', description: 'View pity tracker' },
-    { name: 'Calculator', url: '/?tab=calculator', description: 'Calculate probabilities' },
-    { name: 'Collection', url: '/?tab=gathering', description: 'View your collection' }
-  ]
-};
+import { APP_VERSION, haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 
 // Service Worker code as string (will be registered as blob)
 const SERVICE_WORKER_CODE = `
@@ -99,7 +78,11 @@ async function staleWhileRevalidate(request, cacheName) {
       trimCache(cacheName, MAX_IMG_ENTRIES);
     }
     return response;
-  }).catch(() => cached || new Response('', { status: 503 }));
+  }).catch(() => {
+    // Return cached version if available; otherwise let browser handle the error natively
+    if (cached) return cached;
+    return new Response('', { status: 503, statusText: 'Service Unavailable' });
+  });
   
   return cached || fetchPromise;
 }
@@ -272,7 +255,7 @@ const PWAProvider = ({ children }) => {
       {children}
       {/* Offline indicator */}
       {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
+        <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
           ⚡ You're offline - Some features may be limited
         </div>
       )}
@@ -280,7 +263,9 @@ const PWAProvider = ({ children }) => {
       {installPrompt && !isInstalled && (
         <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-yellow-500/90 to-amber-500/90 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center text-xl">✨</div>
+            <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
+              <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+            </div>
             <div className="flex-1">
               <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
               <div className="text-black/70 text-xs">Add to home screen for the best experience</div>
@@ -569,8 +554,9 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ TOUCH OPTIMIZATION ═══ */
-    button, select, input, textarea, a, [role="tab"] {
+    button, select, input, textarea, a, [role="tab"], [role="button"] {
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     
     /* Ensure minimum 44px touch targets for filter selects on touch devices */
@@ -579,7 +565,7 @@ const KuroStyles = memo(({ oledMode }) => (
         min-height: 44px;
       }
       /* P10-FIX: Ensure all standalone buttons meet minimum 36px touch target on touch devices (Step 10 audit — MEDIUM-5b) */
-      .kuro-body button:not(.kuro-btn):not([role="tab"]) {
+      .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn) {
         min-height: 36px;
       }
     }
@@ -593,17 +579,7 @@ const KuroStyles = memo(({ oledMode }) => (
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
+
     @keyframes scaleIn {
       from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
@@ -1005,14 +981,6 @@ const KuroStyles = memo(({ oledMode }) => (
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
     }
     
-    .kuro-btn.active-orange {
-      background: rgba(251, 146, 60, 0.15);
-      border-color: rgba(251, 146, 60, 0.7);
-      color: #fed7aa;
-      box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 146, 60, 0.08);
-      text-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
-    }
-    
     /* Red for 50/50 */
     .kuro-btn.active-red {
       background: rgba(239, 68, 68, 0.2);
@@ -1254,50 +1222,22 @@ const KuroStyles = memo(({ oledMode }) => (
       border: none;
     }
     
-    .kuro-slider.cyan::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    /* ═══ PRIORITY SLIDER THUMB (neutral so it stands out against both gold & pink track) ═══ */
+    .priority-slider::-webkit-slider-thumb {
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.3);
     }
-    .kuro-slider.cyan::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
+    .priority-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 1px 6px rgba(0,0,0,0.3);
     }
-    .kuro-slider.cyan::-moz-range-thumb {
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    .priority-slider::-moz-range-thumb {
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.3);
     }
-    /* P12-FIX: Firefox cyan slider hover (Step 12 audit — MEDIUM-12k) */
-    .kuro-slider.cyan::-moz-range-thumb:hover {
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
+    .priority-slider::-moz-range-thumb:hover {
+      box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 1px 6px rgba(0,0,0,0.3);
     }
-    .kuro-slider.cyan::-moz-range-track {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-      height: 6px;
-      border: none;
-    }
-    
-    .kuro-slider.pink::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #db2777, #ec4899);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    .kuro-slider.pink::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    .kuro-slider.pink::-moz-range-thumb {
-      background: linear-gradient(135deg, #db2777, #ec4899);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    /* P12-FIX: Firefox pink slider hover (Step 12 audit — MEDIUM-12k) */
-    .kuro-slider.pink::-moz-range-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    .kuro-slider.pink::-moz-range-track {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-      height: 6px;
-      border: none;
-    }
-    
+
     /* ═══ PROGRESS BAR ═══ */
     /* Progress bars use inline Tailwind styles */
     
@@ -1392,64 +1332,6 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform 0.1s ease;
     }
     
-    /* ═══ TOOLTIP IMPROVEMENTS ═══ */
-    [data-tooltip] {
-      position: relative;
-    }
-    [data-tooltip]::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-4px);
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 100;
-    }
-    [data-tooltip]:hover::after,
-    [data-tooltip]:focus::after,
-    [data-tooltip]:focus-visible::after {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-8px);
-    }
-    
-    /* ═══ LOADING SKELETON ═══ */
-    .skeleton {
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.05) 100%
-      );
-      background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s ease-in-out infinite;
-      border-radius: 6px;
-    }
-    @keyframes skeletonShimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    /* ═══ EMPTY STATE ═══ */
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: #9ca3af;
-    }
-    .empty-state-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 12px;
-      opacity: 0.4;
-    }
-    
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
     
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
@@ -1458,16 +1340,9 @@ const KuroStyles = memo(({ oledMode }) => (
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    /* P11-FIX: Respect OS-level reduced motion preference immediately (before JS hydrates).
-       The JS check (animationsEnabled) handles canvas; this handles CSS animations. (Step 7 audit — MEDIUM-3g) */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
+    /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
+       when prefers-reduced-motion: reduce) which adds .no-animations class above.
+       No separate @media rule needed — it was overriding the app toggle with !important. */
     /* Screen reader only utility */
     .sr-only {
       position: absolute;

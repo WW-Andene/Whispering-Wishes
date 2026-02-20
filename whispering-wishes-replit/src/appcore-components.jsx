@@ -4,16 +4,36 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Upload, Download, Check, Target, Zap, X, LayoutGrid, Info, CheckCircle, AlertCircle, Settings, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, Search } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
-  DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, ELEMENT_COLORS, haptic,
+  DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
+  MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
+  RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
+  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
-  getNextDailyReset, getNextWeeklyReset, storageAvailable,
+  getNextDailyReset, getNextWeeklyReset, storageAvailable, sanitizeStateObj,
 } from './appcore-engine.js';
 import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
+
+// P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
+const hideOnError = (e) => { e.target.style.display = 'none'; };
+
+// Material item display helper — shows [icon] name ×qty
+const MaterialItem = ({ name, qty }) => {
+  const img = MATERIAL_IMAGES[name];
+  return (
+    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-white/10 min-w-0">
+      {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
+      <div className="min-w-0 flex-1">
+        <div className="text-[9px] text-gray-300 truncate leading-tight">{name}</div>
+        {qty != null && qty > 0 && <div className="text-[9px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
+      </div>
+    </div>
+  );
+};
 
 // UNIFIED MASK GENERATORS & SHARED COLOR MAPS (deduplicated from v2.6)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -147,13 +167,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }}>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" style={{ 
+            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
               transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'right bottom'
             }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -186,13 +206,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
               {weaponImg && (
-                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" />
+                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" onError={hideOnError} />
               )}
               <div className="flex-1 min-w-0">
                 <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
                 {weaponData && (
                   <>
-                    <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.stat}</div>
+                    <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.baseAtk ? `${weaponData.baseAtk} Base ATK` : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
                     <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">{weaponData.passive}</div>
                   </>
                 )}
@@ -233,19 +253,19 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="space-y-2">
               {data.teams.map((team, i) => {
                 const members = parseTeamMembers(team);
-                const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m]);
+                const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m] || (m.includes('Rover') && DEFAULT_COLLECTION_IMAGES['Rover']));
                 return (
                   <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10">
                     {hasImages ? (
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {
-                          const memberImg = DEFAULT_COLLECTION_IMAGES[member];
+                          const memberImg = DEFAULT_COLLECTION_IMAGES[member] || (member.includes('Rover') ? DEFAULT_COLLECTION_IMAGES['Rover'] : null);
                           const mf = getImageFraming ? getImageFraming(`collection-${member}`) : { x: 0, y: 0, zoom: 100 };
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10" style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
@@ -278,24 +298,50 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
           
-          {/* Ascension Materials */}
+          {/* Ascension Materials (Lv 1→90) */}
           <div>
             <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
             </h3>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className="text-[9px] text-gray-500 mb-0.5">Boss</div>
-                <div className="text-[10px] text-orange-400">{data.ascension.boss}</div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <MaterialItem name={data.ascension.boss} qty={RESONATOR_ASCENSION_COSTS.boss} />
+              <MaterialItem name={data.ascension.specialty} qty={RESONATOR_ASCENSION_COSTS.specialty} />
+              {COMMON_MAT_TIERS[data.ascension.common] && <>
+                <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
+                <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
+              </>}
+            </div>
+          </div>
+
+          {/* Skill Upgrade Materials (all skills to Lv 10) */}
+          {data.skillMaterials && (
+            <div>
+              <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+                <Zap size={14} className="text-purple-400" /> Skill Materials
+              </h3>
+              <div className="grid grid-cols-2 gap-1.5">
+                <MaterialItem name={data.skillMaterials.weeklyDrop} qty={SKILL_UPGRADE_COSTS.weeklyDrop} />
+                {FORGERY_MAT_TIERS[data.skillMaterials.forgery] && <>
+                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][0]} qty={SKILL_UPGRADE_COSTS.forgeryT3} />
+                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][1]} qty={SKILL_UPGRADE_COSTS.forgeryT4} />
+                </>}
+                {COMMON_MAT_TIERS[data.ascension.common] && <>
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={SKILL_UPGRADE_COSTS.commonT3} />
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={SKILL_UPGRADE_COSTS.commonT4} />
+                </>}
               </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className="text-[9px] text-gray-500 mb-0.5">Common</div>
-                <div className="text-[10px] text-purple-400">{data.ascension.common}</div>
-              </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className="text-[9px] text-gray-500 mb-0.5">Specialty</div>
-                <div className="text-[10px] text-cyan-400">{data.ascension.specialty}</div>
-              </div>
+            </div>
+          )}
+
+          {/* EXP Materials */}
+          <div>
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+            </h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(RESONATOR_EXP_COSTS).filter(([, qty]) => qty > 0).map(([mat, qty]) => (
+                <MaterialItem key={mat} name={mat} qty={qty} />
+              ))}
             </div>
           </div>
         </div>
@@ -338,16 +384,17 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         <div className="relative h-40 overflow-hidden rounded-t-2xl">
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" />
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}</span>
+              {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.baseAtk} Base ATK</span>}
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
             </div>
             <h2 className="text-xl font-bold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -375,6 +422,42 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               </div>
             </div>
           )}
+
+          {/* Ascension Materials */}
+          {data.ascensionMaterials && (() => {
+            const costs = data.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
+            const forgeryTiers = FORGERY_MAT_TIERS[data.ascensionMaterials.forgery];
+            const commonTiers = COMMON_MAT_TIERS[data.ascensionMaterials.common];
+            return (
+              <div>
+                <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+                  <Swords size={14} className="text-orange-400" /> Ascension Materials
+                </h3>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {forgeryTiers && <>
+                    <MaterialItem name={forgeryTiers[0]} qty={costs.forgeryT3} />
+                    <MaterialItem name={forgeryTiers[1]} qty={costs.forgeryT4} />
+                  </>}
+                  {commonTiers && <>
+                    <MaterialItem name={commonTiers[0]} qty={costs.commonT3} />
+                    <MaterialItem name={commonTiers[1]} qty={costs.commonT4} />
+                  </>}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* EXP Materials */}
+          <div>
+            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+            </h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(data.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4).filter(([, qty]) => qty > 0).map(([mat, qty]) => (
+                <MaterialItem key={mat} name={mat} qty={qty} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -461,7 +544,7 @@ class AppErrorBoundary extends React.Component {
             {this.state.error && (
               <details style={{ marginTop: 16, textAlign: 'left' }}>
                 <summary style={{ color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>Error details</summary>
-                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{this.state.error.message}{'\n'}{this.state.error.stack}</pre>
+                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{this.state.error.message}</pre>
               </details>
             )}
           </div>
@@ -626,7 +709,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   // Unified compact style matching Tracker tab
   if (compact) {
     return (
-      <span className={`${textColor} font-mono text-xs font-medium`}>
+      <span className={`${textColor} font-mono text-xs font-medium`} role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
         {time.days > 0 && `${time.days}d `}{String(time.hours).padStart(2, '0')}h {String(time.minutes).padStart(2, '0')}m {String(time.seconds).padStart(2, '0')}s
       </span>
     );
@@ -741,7 +824,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
     const bctx = buf.getContext('2d');
     if (!bctx) return;
     let animId;
-    const SC = 0.08;
+    const BLUR_SCALE = 0.08; // Canvas downscale factor for blur buffer
     let w, h, bw, bh;
     
     // OLED mode uses darker base color
@@ -752,8 +835,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-      bw = Math.ceil(w * SC);
-      bh = Math.ceil(h * SC);
+      bw = Math.ceil(w * BLUR_SCALE);
+      bh = Math.ceil(h * BLUR_SCALE);
       buf.width = bw;
       buf.height = bh;
     };
@@ -776,8 +859,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
       const gs = 2;
       for (let by = 0; by < bh; by += gs) {
         for (let bx = 0; bx < bw; bx += gs) {
-          const sx = bx / SC;
-          const sy = by / SC;
+          const sx = bx / BLUR_SCALE;
+          const sy = by / BLUR_SCALE;
           
           const h1 = Math.sin(_wf1(sx, sy, time));
           const h2 = Math.sin(_wf2(sx, sy, time));
@@ -976,7 +1059,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           }}
           loading="eager"
 
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={hideOnError}
         />
       )}
       
@@ -986,7 +1069,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       )}
       
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
@@ -1005,7 +1088,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
       </div>
       
       {stats && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15 rounded-b-xl" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)'}}>
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15 rounded-b-xl" style={BANNER_CARD_OVERLAY_STYLE}>
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
@@ -1084,13 +1167,13 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             filter: isSkipped ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
           }}
           loading="lazy"
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={hideOnError}
         />
       )}
       
       {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
       
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
             <h4 className={`font-bold text-sm ${isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
@@ -1197,7 +1280,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           maskImage: collMask, 
           WebkitMaskImage: collMask
         }}
-        onError={(e) => { e.target.style.display = 'none'; }}
+        onError={hideOnError}
       />
     )}
     {isNew && (
@@ -1206,8 +1289,8 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {/* Profile pic setter — top-right corner */}
     {owned && !framingMode && onSetProfilePic && (
       <button
-        className={`absolute z-20 rounded flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
-        style={{ top: '6px', right: '6px', width: '24px', height: '24px', ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        className={`profile-pic-btn absolute z-20 flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
+        style={{ top: '4px', right: '4px', width: '22px', height: '22px', minHeight: '22px', borderRadius: '6px', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
         onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
         title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
         aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
@@ -1226,7 +1309,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       ) : (
         <div className="text-gray-500 font-bold text-xl">—</div>
       )}
-      <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{name}</div>
+      <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
     </div>
   </div>
 ), (prev, next) => 
@@ -1268,8 +1351,8 @@ const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVis
         <h4 className={`${c.text} text-[9px] font-medium uppercase tracking-wider`}>{title}</h4>
         {directionControl && (
           <div className="flex gap-1 mb-1.5">
-            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1 rounded text-[8px] ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`}>↑ Top</button>
-            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1 rounded text-[8px] ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`}>↓ Bottom</button>
+            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1 rounded text-[9px] ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to top`} aria-pressed={visualSettings[directionControl.key] === 'top'}>↑ Top</button>
+            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1 rounded text-[9px] ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to bottom`} aria-pressed={visualSettings[directionControl.key] === 'bottom'}>↓ Bottom</button>
           </div>
         )}
         <div className="space-y-1.5">{sliders.map(renderSlider)}</div>
@@ -1439,6 +1522,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
           <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
         </div>
       )}
+      <p className="text-[8px] text-gray-600 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. Exact DP formula.</p>
     </CardBody>
   </Card>
 ));
@@ -1457,10 +1541,10 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 1, opacity: stdOpacity, maskImage: stdMask, WebkitMaskImage: stdMask }}
           loading="eager"
-          onError={(e) => { e.target.style.display = 'none'; }}
+          onError={hideOnError}
         />
       )}
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' }}>
+      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex justify-between items-start mb-1">
             <h3 className="font-bold text-sm text-cyan-400">{title}</h3>
@@ -1559,7 +1643,7 @@ const loadCustomBanners = () => {
   try {
     const saved = localStorage.getItem(ADMIN_BANNER_KEY);
     if (!saved) return null;
-    const parsed = JSON.parse(saved);
+    const parsed = sanitizeStateObj(JSON.parse(saved));
     // P10-FIX: Validate loaded banner structure (Step 6 audit)
     if (typeof parsed !== 'object' || parsed === null || !Array.isArray(parsed.characters) || !Array.isArray(parsed.weapons)) {
       return null;
@@ -1577,8 +1661,7 @@ const getActiveBanners = () => {
 };
 
 export {
-  TROPHY_ICON_MAP, generateMaskGradient, generateVerticalMaskGradient,
-  DETAIL_ELEMENT_COLORS, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS,
+  TROPHY_ICON_MAP, generateVerticalMaskGradient,
   TabBackground, Card, CardHeader, CardBody,
   CharacterDetailModal, WeaponDetailModal,
   TabButton, PityRing, CountdownTimer,
@@ -1586,8 +1669,9 @@ export {
   BackgroundGlow, TriangleMirrorWave,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
-  CollectionGridCard, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
+  VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
   CollectionGridSection, PityCounterInput, CalcResultsCard,
   StandardBannerSection, ImportGuide,
-  loadCustomBanners, getActiveBanners,
+  getActiveBanners,
+  hideOnError,
 };
