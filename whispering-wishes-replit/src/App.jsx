@@ -2036,25 +2036,23 @@ function WhisperingWishesInner() {
       ctx.restore();
     };
 
-    // Trophy card — glassmorphism with path-drawn icons (no Unicode/font dependency)
+    // Trophy card — matching Stats tab style (linear gradients, single border, glow)
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
-      // Background gradient
-      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'22');bg2.addColorStop(1,tc+'08');
+      // Background gradient (matches linear-gradient(135deg, ${color}18, ${color}08))
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
       ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
-      // Outer glow border — wider, transparent
-      ctx.strokeStyle=tc+'25';ctx.lineWidth=3;rr(x-1,y-1,size+2,size+2,13);ctx.stroke();
-      // Inner border — colored
-      ctx.strokeStyle=tc+'55';ctx.lineWidth=1.5;rr(x,y,size,size,12);ctx.stroke();
-      // Top shimmer line
-      const ts=ctx.createLinearGradient(x,0,x+size,0);ts.addColorStop(0,'transparent');ts.addColorStop(0.3,tc+'40');ts.addColorStop(0.5,tc+'80');ts.addColorStop(0.7,tc+'40');ts.addColorStop(1,'transparent');
-      ctx.fillStyle=ts;ctx.fillRect(x+8,y,size-16,2);
-      // Circle icon background
+      // Outer glow (matches boxShadow: 0 0 20px ${color}15)
+      ctx.save();ctx.shadowColor=tc+'15';ctx.shadowBlur=20;ctx.fillStyle='transparent';rr(x,y,size,size,12);ctx.fill();ctx.restore();
+      // Single border (matches 1px solid ${color}50)
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
+      // Circle icon background — linear gradient 135deg (matches Stats tab)
       const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
-      const cg=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,circR);cg.addColorStop(0,tc+'50');cg.addColorStop(1,tc+'15');
+      const cg=ctx.createLinearGradient(cx2-circR*0.7,cy2-circR*0.7,cx2+circR*0.7,cy2+circR*0.7);
+      cg.addColorStop(0,tc+'30');cg.addColorStop(1,tc+'10');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
-      // Circle border
-      ctx.strokeStyle=tc+'45';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();
+      // Circle glow (matches boxShadow: 0 0 15px ${color}40)
+      ctx.save();ctx.shadowColor=tc+'40';ctx.shadowBlur=15;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.stroke();ctx.restore();
       // Icon — drawn with canvas paths (guaranteed to render)
       drawIconPath(cx2,cy2,circR,t.icon,tc);
       // Name at bottom
@@ -2137,7 +2135,7 @@ function WhisperingWishesInner() {
       return 48;
     };
 
-    // Mini histogram — glassmorphism style (no shadow dependency, solid fills)
+    // Mini histogram — neon glow style matching Stats tab
     const drawHisto = (hx,hy,hw,hh) => {
       if(!histSummary||!histLabels.length)return;
       const bg2=3,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
@@ -2145,21 +2143,21 @@ function WhisperingWishesInner() {
         const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
-        const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
-        // Outer glow — larger transparent fill behind bar
-        ctx.fillStyle=bc+'30';rr(bx2-2,by2-2,bw2+4,bh+4,5);ctx.fill();
-        // Main bar — solid color, full opacity
-        ctx.fillStyle=bc;rr(bx2,by2,bw2,bh,3);ctx.fill();
-        // Inner highlight — top half lighter
-        const inner=ctx.createLinearGradient(0,by2,0,by2+bh*0.6);inner.addColorStop(0,'rgba(255,255,255,0.3)');inner.addColorStop(1,'transparent');
-        ctx.fillStyle=inner;rr(bx2+1,by2+1,bw2-2,Math.max(1,bh-2),3);ctx.fill();
-        // Top shimmer
-        const sh=ctx.createLinearGradient(bx2,0,bx2+bw2,0);sh.addColorStop(0,'transparent');sh.addColorStop(0.5,'rgba(255,255,255,0.5)');sh.addColorStop(1,'transparent');
-        ctx.fillStyle=sh;ctx.fillRect(bx2+1,by2,bw2-2,Math.min(3,bh));
-        // Border
-        ctx.strokeStyle=bc;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,3);ctx.stroke();
-        // Count label — solid color
-        if(cnt>0){ctx.fillStyle=bc;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.textAlign='left';}
+        const bc=bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#fbbf24':bucket<=60?'#f97316':'#ef4444';
+        // Outer glow (matches boxShadow: 0 0 12px ${color}50)
+        ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;ctx.fillStyle=bc+'10';rr(bx2,by2,bw2,bh,3);ctx.fill();ctx.restore();
+        // Semi-transparent gradient fill (matches linear-gradient(to top, ${color}40, ${color}20))
+        const barGrad=ctx.createLinearGradient(0,by2+bh,0,by2);
+        barGrad.addColorStop(0,bc+'40');barGrad.addColorStop(1,bc+'20');
+        ctx.fillStyle=barGrad;rr(bx2,by2,bw2,bh,3);ctx.fill();
+        // Inset glow approximation (matches inset 0 0 15px ${color}30)
+        ctx.fillStyle=bc+'20';rr(bx2+3,by2+3,bw2-6,Math.max(1,bh-6),2);ctx.fill();
+        // Border (matches 1px solid ${color}90)
+        ctx.strokeStyle=bc+'90';ctx.lineWidth=1;rr(bx2,by2,bw2,bh,3);ctx.stroke();
+        // Bottom glow line (matches 2px bar with boxShadow glow)
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;ctx.fillRect(bx2+3,by2+bh-2,bw2-6,2);ctx.restore();}
+        // Count label with glow (matches textShadow: 0 0 8px ${color})
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.textAlign='left';ctx.restore();}
         // Bottom label
         ctx.fillStyle='#6b7280';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+15);ctx.textAlign='left';
       });
@@ -5277,20 +5275,39 @@ Example: {"pulls":[...]}'
                           <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
                         </div>
-                        <div className="flex items-end" style={{ height: '75px', gap: '3px' }}>
+                        <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
                           {labs.map((lab, i) => {
                             const cnt = bk[lab]||0;
-                            const barH = mx > 0 ? Math.max(4, Math.round((cnt/mx)*50)) : 4;
+                            const height = mx > 0 ? (cnt / mx) * 100 : 0;
                             const bucket = parseInt(lab)||81;
-                            const color = bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
+                            const color = bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#fbbf24':bucket<=60?'#f97316':'#ef4444';
                             return (
-                              <div key={i} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                {cnt > 0 && <span className="font-bold font-mono" style={{ fontSize: '8px', color, textShadow: `0 0 6px ${color}60`, marginBottom: '2px', lineHeight: 1 }}>{cnt}</span>}
-                                <div style={{ width: '100%', height: `${barH}px`, borderRadius: '3px', background: color, opacity: 0.75, boxShadow: `0 0 8px ${color}40, inset 0 1px 0 rgba(255,255,255,0.2)` }} />
-                                <span style={{ fontSize: '7px', color: '#6b7280', marginTop: '2px', lineHeight: 1 }}>{lab.split('-')[0]}</span>
+                              <div key={i} className="flex-1 flex flex-col items-center">
+                                <div className="w-full relative" style={{ height: '96px' }}>
+                                  {cnt > 0 && (
+                                    <div className="absolute left-0 right-0 text-center font-bold"
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}` }}>
+                                      {cnt}
+                                    </div>
+                                  )}
+                                  <div className="absolute bottom-0 left-1 right-1 rounded-t"
+                                    style={{ height: `${height}%`, minHeight: cnt > 0 ? '8px' : '0',
+                                      background: `linear-gradient(to top, ${color}40, ${color}20)`,
+                                      border: cnt > 0 ? `1px solid ${color}90` : 'none', borderBottom: 'none',
+                                      boxShadow: cnt > 0 ? `0 0 12px ${color}50, inset 0 0 15px ${color}30` : 'none' }} />
+                                  {cnt > 0 && (
+                                    <div className="absolute bottom-0 left-1 right-1 rounded-full"
+                                      style={{ height: '2px', background: color, boxShadow: `0 0 8px ${color}, 0 0 16px ${color}80` }} />
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
+                        </div>
+                        <div className="flex gap-1.5">
+                          {labs.map((lab, i) => (
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: '7px', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                          ))}
                         </div>
                         <div style={{ textAlign: 'right', marginTop: '4px' }}>
                           <span className="font-mono" style={{ fontSize: '8px', color: '#6b7280' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
@@ -5357,12 +5374,11 @@ Example: {"pulls":[...]}'
                           {sorted.map(trophy => {
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
-                              <div key={trophy.id} className="relative rounded-lg text-center overflow-hidden" style={{ padding: '10px 4px 8px', aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}40`, boxShadow: `0 0 20px ${trophy.color}12, inset 0 0 20px ${trophy.color}06` }}>
-                                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${trophy.color}60, transparent)` }} />
-                                <div className="rounded-full flex items-center justify-center mb-1.5" style={{ width: '28px', height: '28px', background: `radial-gradient(circle, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
-                                  <IconComponent size={15} style={{ color: trophy.color, filter: `drop-shadow(0 0 4px ${trophy.color})` }} />
+                              <div key={trophy.id} className="relative p-2.5 rounded-lg text-center overflow-hidden" style={{ aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
+                                <div className="rounded-full flex items-center justify-center mb-1.5" style={{ width: '36px', height: '36px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                  <IconComponent size={18} style={{ color: trophy.color }} />
                                 </div>
-                                <div className="text-[7px] font-bold text-white truncate w-full px-1" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{trophy.name}</div>
+                                <div className="text-[9px] font-bold text-white truncate w-full px-1">{trophy.name}</div>
                               </div>
                             );
                           })}
