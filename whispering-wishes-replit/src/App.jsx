@@ -2036,29 +2036,33 @@ function WhisperingWishesInner() {
       ctx.restore();
     };
 
-    // Trophy card — matching Stats tab style (linear gradients, border, glow)
+    // Trophy card — exact match to Stats tab CSS values
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
-      // Background gradient with outer glow
-      ctx.save();ctx.shadowColor=tc+'30';ctx.shadowBlur=24;
-      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'20');bg2.addColorStop(1,tc+'0a');
-      ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
+      // Background: linear-gradient(135deg, ${color}18, ${color}08)
+      // BoxShadow outer: 0 0 20px ${color}15
+      ctx.save();ctx.shadowColor=tc+'15';ctx.shadowBlur=20;
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
+      ctx.fillStyle=bg2;rr(x,y,size,size,8);ctx.fill();
       ctx.restore();
-      // Inset glow approximation (draws subtle lighter overlay near edges)
-      ctx.save();ctx.globalAlpha=0.03;ctx.fillStyle=tc;rr(x+2,y+2,size-4,size-4,10);ctx.fill();ctx.globalAlpha=1;ctx.restore();
-      // Border — more visible (matches 1px solid ${color})
-      ctx.strokeStyle=tc+'70';ctx.lineWidth=1.5;rr(x,y,size,size,12);ctx.stroke();
-      // Circle icon background with glow
+      // Inset glow: inset 0 0 20px ${color}05 — extremely subtle
+      ctx.save();ctx.globalAlpha=0.02;ctx.fillStyle=tc;rr(x+3,y+3,size-6,size-6,6);ctx.fill();ctx.globalAlpha=1;ctx.restore();
+      // Border: 1px solid ${color}50 (rounded-lg = 8px)
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,8);ctx.stroke();
+      // Circle: 36px fixed in Stats tab → scale proportionally for canvas
+      // Stats tab: ~36px circle in ~80px card = 45% ratio
       const circR=size*0.22;const cx2=x+size/2,cy2=y+size*0.38;
-      ctx.save();ctx.shadowColor=tc+'50';ctx.shadowBlur=18;
+      // Circle bg: linear-gradient(135deg, ${color}30, ${color}10)
+      // Circle shadow: 0 0 15px ${color}40
+      ctx.save();ctx.shadowColor=tc+'40';ctx.shadowBlur=15;
       const cg=ctx.createLinearGradient(cx2-circR*0.7,cy2-circR*0.7,cx2+circR*0.7,cy2+circR*0.7);
-      cg.addColorStop(0,tc+'40');cg.addColorStop(1,tc+'15');
+      cg.addColorStop(0,tc+'30');cg.addColorStop(1,tc+'10');
       ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx2,cy2,circR,0,Math.PI*2);ctx.fill();
       ctx.restore();
-      // Icon — drawn with canvas paths (guaranteed to render)
+      // Icon — drawn with canvas paths
       drawIconPath(cx2,cy2,circR,t.icon,tc);
-      // Name at bottom — text +10%
-      const nameFontSize=Math.max(11,Math.floor(size*0.132));
+      // Name: text-[9px] → 10px (+10%)
+      const nameFontSize=Math.max(10,Math.floor(size*0.12));
       ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
       const maxW=size-14;
       let nameText=t.name;
