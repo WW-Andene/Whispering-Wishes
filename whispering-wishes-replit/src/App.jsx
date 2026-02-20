@@ -5228,12 +5228,13 @@ Example: {"pulls":[...]}'
                     return (
                       <div className="mt-3">
                         <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Trophies ({sorted.length})</p>
-                        <div className="grid grid-cols-5 gap-1.5">
+                        <div className="flex flex-wrap justify-center gap-1.5">
                           {sorted.map(trophy => {
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
                               <div key={trophy.id} className="p-2 rounded-lg text-center"
                                 style={{
+                                  width: 'calc(20% - 5px)',
                                   background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
                                   border: `1px solid ${trophy.color}50`,
                                   boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05`
