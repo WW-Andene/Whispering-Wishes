@@ -664,7 +664,7 @@ const WEAPON_DATA = {
     desc: 'Phoebe signature. Spectro DPS rectifier.',
     passive: 'Spectro DMG +12%, Card skills +24%', bestFor: ['Phoebe'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
-  'Unflickering Valor': { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+77.0%',
+  'Unflickering Valor': { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 415, subStatValue: '+77.0%',
     desc: 'Brant signature. Aggressive Fusion sword.',
     passive: 'Fusion DMG +12%, ATK speed +10%', bestFor: ['Brant'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
