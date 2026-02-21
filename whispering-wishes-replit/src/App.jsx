@@ -4787,7 +4787,7 @@ function WhisperingWishesInner() {
               };
 
               return (
-                <>
+                <div className="space-y-3">
                   {/* Team Selector Row */}
                   <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                     {state.teams.map((team, idx) => {
@@ -4973,19 +4973,19 @@ function WhisperingWishesInner() {
                                 });
                                 haptic.success();
                               }}
-                              className="w-full flex items-center gap-2 p-2 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
+                              className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
                               style={{ background: 'var(--bg-btn)' }}
                             >
-                              <div className="flex -space-x-1.5 flex-shrink-0">
+                              <div className="flex -space-x-2 flex-shrink-0">
                                 {s.members.slice(0, 3).map((m, j) => {
                                   const cd = CHARACTER_DATA[m];
                                   return (
-                                    <div key={j} className="w-6 h-6 rounded-full border-2 border-gray-800 overflow-hidden flex-shrink-0"
+                                    <div key={j} className="w-10 h-10 rounded-full border-2 border-gray-800 overflow-hidden flex-shrink-0"
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)' }}>
                                       {collectionImages[m] ? (
-                                        <img src={collectionImages[m]} alt={m} className="w-full h-full object-cover" onError={hideOnError} />
+                                        <img src={collectionImages[m]} alt={m} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[7px] text-gray-400">{m[0]}</div>
+                                        <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400 font-medium">{m[0]}</div>
                                       )}
                                     </div>
                                   );
@@ -5142,7 +5142,7 @@ function WhisperingWishesInner() {
                       </div>
                     </FocusTrapModal>
                   )}
-                </>
+                </div>
               );
             })()}
           </div>
