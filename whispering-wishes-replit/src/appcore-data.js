@@ -542,6 +542,57 @@ const CHARACTER_DATA = {
     teams: ['Buling + Carlotta + Zhezhi', 'Buling + Carlotta + Shorekeeper'] },
 };
 
+// Structured combat tags — merged into CHARACTER_DATA for filtering & display
+[
+  ['Rover', [], [], ['Spectro DMG', 'Versatile']],
+  ['Jiyan', [], [], ['Burst DPS', 'Heavy ATK']],
+  ['Calcharo', [], [], ['Burst DPS', 'Combo']],
+  ['Encore', [], [], ['On-field DPS', 'Transformation']],
+  ['Jianxin', ['Shield', 'Grouping'], [], ['Aero Buff']],
+  ['Lingyang', [], [], ['Aerial DPS']],
+  ['Verina', ['ATK Buff', 'DMG Amp', 'Heal'], [], []],
+  ['Yinlin', ['Coordinated ATK'], ['Vibration Strength'], ['Off-field']],
+  ['Jinhsi', [], [], ['Burst DPS', 'AoE']],
+  ['Changli', ['DMG Amp'], [], ['Quickswap', 'Fusion DMG Amp']],
+  ['Zhezhi', ['Coordinated ATK'], [], ['Off-field']],
+  ['Xiangli Yao', [], [], ['Sustained DPS', 'Transformation']],
+  ['Shorekeeper', ['Crit Buff', 'Shield', 'Heal'], [], []],
+  ['Camellya', [], [], ['Sustained DPS', 'Stance']],
+  ['Carlotta', [], [], ['Burst DPS']],
+  ['Roccia', ['DMG Amp'], [], ['Basic ATK Amp']],
+  ['Phoebe', [], ['Frazzle'], ['Off-field', 'Summon']],
+  ['Brant', ['Heal'], [], ['On-field DPS', 'Self-heal']],
+  ['Cantarella', ['Coordinated ATK', 'Heal'], [], ['Off-field']],
+  ['Zani', [], ['Frazzle'], ['Counter DPS', 'Burst DPS']],
+  ['Ciaccona', ['DMG Amp'], ['Erosion'], ['Off-field', 'Aero Buff']],
+  ['Cartethyia', [], ['Erosion'], ['On-field DPS', 'HP Scaling']],
+  ['Lupa', ['DMG Amp', 'Coordinated ATK'], ['RES Shred'], ['Fusion Enabler']],
+  ['Phrolova', [], ['Erosion'], ['Off-field DPS', 'Summon']],
+  ['Augusta', ['Shield'], [], ['Burst DPS', 'Time Stop']],
+  ['Iuno', ['DMG Amp', 'Shield', 'Heal'], [], ['Heavy ATK Amp']],
+  ['Galbrena', [], [], ['Heavy ATK DPS', 'Echo Skill']],
+  ['Qiuyuan', ['Crit Buff', 'DMG Amp'], [], ['Echo Skill Buff']],
+  ['Chisa', [], ['DEF Shred'], ['Off-field']],
+  ['Lynae', ['DMG Amp'], ['Off-Tune'], ['Tune Break']],
+  ['Mornye', ['Heal'], ['Off-Tune'], ['DEF Scaling', 'Fusion Healer']],
+  ['Luuk Herssen', [], [], ['Aerial DPS', 'Basic ATK DPS']],
+  ['Aemeath', [], [], ['Burst DPS', 'Dual Mode']],
+  ['Aalto', [], [], ['Off-field']],
+  ['Baizhi', ['Heal'], [], ['F2P Healer']],
+  ['Chixia', [], [], ['On-field DPS']],
+  ['Danjin', ['DMG Amp'], [], ['Quickswap', 'HP Sacrifice']],
+  ['Yangyang', ['Energy Regen'], [], ['Battery']],
+  ['Sanhua', ['DMG Amp', 'Coordinated ATK'], [], ['Quickswap', 'Basic ATK Amp']],
+  ['Taoqi', ['Shield', 'DMG Amp'], [], ['Res. Skill Deepen']],
+  ['Yuanwu', ['Coordinated ATK', 'Shield'], ['Vibration Strength'], []],
+  ['Mortefi', ['Coordinated ATK', 'DMG Amp'], [], ['Heavy ATK Amp']],
+  ['Youhu', ['Heal', 'DMG Amp'], [], ['DMG Reduction']],
+  ['Lumi', ['DMG Amp'], [], ['Res. Skill Amp']],
+  ['Buling', ['Heal', 'DMG Amp'], [], ['Universal Support', 'Res. Skill Buff']],
+].forEach(([name, buffs, debuffs, tags]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { buffs, debuffs, tags });
+});
+
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
   // 5★ Weapons

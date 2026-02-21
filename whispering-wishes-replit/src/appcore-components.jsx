@@ -194,7 +194,41 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         <div className="p-4 space-y-4">
           {/* Description */}
           <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>
-          
+
+          {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
+          <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+            <div className="text-[9px] text-gray-500 uppercase tracking-wider">Combat Profile</div>
+            <div className="flex flex-wrap gap-1.5">
+              <span className={`text-[10px] px-2 py-0.5 rounded font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">{data.weapon}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">{data.role}</span>
+            </div>
+            {data.buffs?.length > 0 && (
+              <div>
+                <div className="text-[9px] text-gray-500 mb-1">Buffs</div>
+                <div className="flex flex-wrap gap-1">
+                  {data.buffs.map((b, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>)}
+                </div>
+              </div>
+            )}
+            {data.debuffs?.length > 0 && (
+              <div>
+                <div className="text-[9px] text-gray-500 mb-1">Debuffs</div>
+                <div className="flex flex-wrap gap-1">
+                  {data.debuffs.map((db, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>)}
+                </div>
+              </div>
+            )}
+            {data.tags?.length > 0 && (
+              <div>
+                <div className="text-[9px] text-gray-500 mb-1">Traits</div>
+                <div className="flex flex-wrap gap-1">
+                  {data.tags.map((t, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{t}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* BUILD GUIDE SECTION */}
           <div className="space-y-1">
             <h3 className="text-white font-bold text-sm flex items-center gap-2">

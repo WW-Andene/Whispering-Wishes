@@ -713,6 +713,8 @@ function WhisperingWishesInner() {
   const [teamSearch, setTeamSearch] = useState('');
   const [teamElementFilter, setTeamElementFilter] = useState('all');
   const [teamRarityFilter, setTeamRarityFilter] = useState('all');
+  const [teamBuffFilter, setTeamBuffFilter] = useState('all');
+  const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -4740,6 +4742,8 @@ function WhisperingWishesInner() {
                 setTeamSearch('');
                 setTeamElementFilter('all');
                 setTeamRarityFilter('all');
+                setTeamBuffFilter('all');
+                setTeamDebuffFilter('all');
                 setTeamSelectorOpen(true);
                 haptic.light();
               };
@@ -4761,6 +4765,18 @@ function WhisperingWishesInner() {
               // Characters already in this team (excluding current slot)
               const usedInTeam = new Set(teamSlots.filter((s, i) => s && i !== teamSelectorSlot));
 
+              // Compute recommended teammates from current team members' team suggestions
+              const recommendedNames = new Set();
+              teamSlots.filter(s => s).forEach(charInSlot => {
+                const d = CHARACTER_DATA[charInSlot];
+                if (!d?.teams) return;
+                d.teams.forEach(teamStr => {
+                  teamStr.split('+').map(m => m.trim()).forEach(m => {
+                    if (m !== charInSlot && !usedInTeam.has(m)) recommendedNames.add(m);
+                  });
+                });
+              });
+
               // Filter characters for selector
               const filteredChars = allCharNames.filter(name => {
                 if (usedInTeam.has(name)) return false;
@@ -4769,6 +4785,8 @@ function WhisperingWishesInner() {
                 if (!data) return false;
                 if (teamElementFilter !== 'all' && data.element !== teamElementFilter) return false;
                 if (teamRarityFilter !== 'all' && data.rarity !== Number(teamRarityFilter)) return false;
+                if (teamBuffFilter !== 'all' && !(data.buffs || []).includes(teamBuffFilter)) return false;
+                if (teamDebuffFilter !== 'all' && !(data.debuffs || []).includes(teamDebuffFilter)) return false;
                 return true;
               });
 
@@ -4938,20 +4956,50 @@ function WhisperingWishesInner() {
                                   </div>
                                 </div>
                                 {/* Description */}
-                                <p className="text-[10px] text-gray-400 leading-relaxed mb-2">{d.desc}</p>
-                                {/* Skills */}
-                                {d.skills && (
-                                  <div className="mb-2">
-                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Skills</div>
+                                <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{d.desc}</p>
+                                {/* Damage Type */}
+                                <div className="mb-1.5">
+                                  <div className="text-[9px] text-gray-500 font-medium mb-1">Damage Type</div>
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                    style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                    {d.element} DMG
+                                  </span>
+                                </div>
+                                {/* Buffs */}
+                                {d.buffs?.length > 0 && (
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Buffs</div>
                                     <div className="flex flex-wrap gap-1">
-                                      {d.skills.map((skill, si) => (
-                                        <span key={si} className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">{skill}</span>
+                                      {d.buffs.map((b, bi) => (
+                                        <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Debuffs */}
+                                {d.debuffs?.length > 0 && (
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Debuffs</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {d.debuffs.map((db, di) => (
+                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Tags */}
+                                {d.tags?.length > 0 && (
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Traits</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {d.tags.map((t, ti) => (
+                                        <span key={ti} className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{t}</span>
                                       ))}
                                     </div>
                                   </div>
                                 )}
                                 {/* Best Build */}
-                                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
                                   {d.bestWeapon && (
                                     <div className="text-[9px]">
                                       <span className="text-gray-500">Weapon: </span>
@@ -5017,14 +5065,15 @@ function WhisperingWishesInner() {
                               className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
                               style={{ background: 'var(--bg-btn)' }}
                             >
-                              <div className="flex -space-x-2 flex-shrink-0">
+                              <div className="flex gap-1 flex-shrink-0">
                                 {s.members.slice(0, 3).map((m, j) => {
                                   const cd = CHARACTER_DATA[m];
+                                  const sf = getImageFraming(`collection-${m}`);
                                   return (
-                                    <div key={j} className="w-10 h-10 rounded-full border-2 border-gray-800 overflow-hidden flex-shrink-0"
-                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)' }}>
+                                    <div key={j} className="w-10 h-10 rounded-lg border border-white/15 overflow-hidden flex-shrink-0 relative"
+                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint' }}>
                                       {collectionImages[m] ? (
-                                        <img src={collectionImages[m]} alt={m} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
                                         <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400 font-medium">{m[0]}</div>
                                       )}
@@ -5079,7 +5128,7 @@ function WhisperingWishesInner() {
                             />
                             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                           </div>
-                          <div className="flex gap-1.5">
+                          <div className="flex flex-wrap gap-1.5">
                             <select
                               value={teamElementFilter}
                               onChange={(e) => setTeamElementFilter(e.target.value)}
@@ -5104,7 +5153,44 @@ function WhisperingWishesInner() {
                               <option value="5">5★</option>
                               <option value="4">4★</option>
                             </select>
+                            <select
+                              value={teamBuffFilter}
+                              onChange={(e) => setTeamBuffFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">All Buffs</option>
+                              <option value="ATK Buff">ATK Buff</option>
+                              <option value="Crit Buff">Crit Buff</option>
+                              <option value="DMG Amp">DMG Amp</option>
+                              <option value="Coordinated ATK">Coordinated ATK</option>
+                              <option value="Shield">Shield</option>
+                              <option value="Heal">Heal</option>
+                              <option value="Energy Regen">Energy Regen</option>
+                              <option value="Grouping">Grouping</option>
+                            </select>
+                            <select
+                              value={teamDebuffFilter}
+                              onChange={(e) => setTeamDebuffFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">All Debuffs</option>
+                              <option value="Erosion">Erosion</option>
+                              <option value="RES Shred">RES Shred</option>
+                              <option value="DEF Shred">DEF Shred</option>
+                              <option value="Vibration Strength">Vibration Str.</option>
+                              <option value="Frazzle">Frazzle</option>
+                              <option value="Off-Tune">Off-Tune</option>
+                            </select>
                           </div>
+                          {/* Recommended teammates indicator */}
+                          {recommendedNames.size > 0 && (
+                            <div className="flex items-center gap-1.5 text-[9px] text-orange-400">
+                              <Star size={10} className="text-orange-400" fill="currentColor" />
+                              <span>Orange glow = recommended teammate</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Character Grid */}
@@ -5118,15 +5204,17 @@ function WhisperingWishesInner() {
                               const isInAnotherTeam = state.teams.some((t, ti) =>
                                 ti !== state.activeTeamIndex && t.slots.includes(name)
                               );
+                              const isRecommended = recommendedNames.has(name);
                               return (
                                 <button
                                   key={name}
                                   onClick={() => selectCharacter(name)}
-                                  className={`relative rounded-lg border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${owned ? (cd?.rarity === 5 ? 'bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'bg-purple-500/10 border-purple-500/30 glow-purple') : 'bg-neutral-800/50 border-neutral-700/50'}`}
+                                  className={`relative rounded-lg border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${isRecommended ? 'border-orange-400/70' : owned ? (cd?.rarity === 5 ? 'bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'bg-purple-500/10 border-purple-500/30 glow-purple') : 'bg-neutral-800/50 border-neutral-700/50'}`}
                                   style={{
                                     height: '90px',
                                     contain: 'paint',
                                     opacity: owned ? 1 : 0.5,
+                                    ...(isRecommended ? { boxShadow: '0 0 16px rgba(251,146,60,0.35), inset 0 0 12px rgba(251,146,60,0.08)', background: 'rgba(251,146,60,0.08)' } : {}),
                                   }}
                                 >
                                   {img && (() => {
