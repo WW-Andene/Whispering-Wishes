@@ -4788,160 +4788,147 @@ function WhisperingWishesInner() {
 
               return (
                 <>
-                  {/* Team Selector Sidebar */}
-                  <div className="flex gap-2">
-                    {/* Team Slot Buttons */}
-                    <div className="flex flex-col gap-1.5 flex-shrink-0">
-                      {state.teams.map((team, idx) => (
+                  {/* Team Selector Row */}
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+                    {state.teams.map((team, idx) => {
+                      const hasChars = team.slots.some(s => s);
+                      return (
                         <button
                           key={idx}
                           onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
-                          className={`w-14 h-14 rounded-lg border text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          className={`flex-shrink-0 px-3 py-2 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1.5 ${
                             state.activeTeamIndex === idx
                               ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
                               : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
                           }`}
                           style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
                         >
-                          <span className="text-[9px] opacity-60">{String(idx + 1).padStart(2, '0')}</span>
-                          <span className="text-[8px] truncate max-w-[48px]">{team.name}</span>
+                          <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
+                          <span>{team.name}</span>
+                          {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
                         </button>
-                      ))}
+                      );
+                    })}
+                  </div>
+
+                  {/* Team Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users size={14} className="text-yellow-400" />
+                      <span className="text-white text-xs font-medium">{activeTeam.name}</span>
                     </div>
+                    <button
+                      onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                      className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                      style={{ background: 'var(--bg-btn)' }}
+                    >
+                      Clear
+                    </button>
+                  </div>
 
-                    {/* Main Team Display Area */}
-                    <div className="flex-1 min-w-0">
-                      {/* Team Header */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Users size={16} className="text-yellow-400" />
-                          <span className="text-white text-sm font-medium">{activeTeam.name}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
+                  {/* Character Cards Grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {teamSlots.map((charName, slotIdx) => {
+                      const charData = charName ? CHARACTER_DATA[charName] : null;
+                      const imgUrl = charName ? (collectionImages[charName] || '') : '';
+                      const element = charData?.element;
+                      const framing = charName ? getImageFraming(charName) : null;
+
+                      if (!charName) {
+                        return (
                           <button
-                            onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
-                            className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                            style={{ background: 'var(--bg-btn)' }}
+                            key={slotIdx}
+                            onClick={() => openSelector(slotIdx)}
+                            className="relative aspect-[3/4] rounded-xl border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                            style={{ background: 'rgba(255,255,255,0.03)' }}
                           >
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Character Cards Grid */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {teamSlots.map((charName, slotIdx) => {
-                          const charData = charName ? CHARACTER_DATA[charName] : null;
-                          const imgUrl = charName ? (collectionImages[charName] || '') : '';
-                          const element = charData?.element;
-                          const framing = charName ? getImageFraming(charName) : null;
-
-                          if (!charName) {
-                            // Empty slot
-                            return (
-                              <button
-                                key={slotIdx}
-                                onClick={() => openSelector(slotIdx)}
-                                className="relative aspect-[3/4] rounded-xl border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
-                                style={{ background: 'rgba(255,255,255,0.03)' }}
-                              >
-                                <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
-                                  <Plus size={20} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                                </div>
-                                <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
-                              </button>
-                            );
-                          }
-
-                          // Filled slot with character
-                          return (
-                            <div
-                              key={slotIdx}
-                              className="relative aspect-[3/4] rounded-xl border overflow-hidden cursor-pointer group"
-                              style={{
-                                borderColor: getElementBorder(element),
-                                background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.6))`,
-                              }}
-                              onClick={() => openSelector(slotIdx)}
-                            >
-                              {/* Character Image */}
-                              {imgUrl && (
-                                <div className="absolute inset-0 overflow-hidden">
-                                  <img
-                                    src={imgUrl}
-                                    alt={charName}
-                                    className="w-full h-full object-contain"
-                                    style={framing ? {
-                                      transform: `scale(${(framing.zoom || 100) / 100}) translate(${-(framing.x || 0)}%, ${-(framing.y || 0)}%)`,
-                                    } : undefined}
-                                    loading="lazy"
-                                    onError={hideOnError}
-                                  />
-                                  {/* Gradient overlay at bottom */}
-                                  <div className="absolute inset-x-0 bottom-0 h-2/3" style={{
-                                    background: `linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)`,
-                                  }} />
-                                </div>
-                              )}
-
-                              {/* Element Badge */}
-                              <div className="absolute top-1.5 left-1.5 z-10">
-                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
-                                  style={{ background: getElementColor(element), boxShadow: `0 0 6px ${getElementColor(element)}60` }}>
-                                  {element?.[0]}
-                                </div>
-                              </div>
-
-                              {/* Rarity Stars */}
-                              <div className="absolute top-1.5 right-1.5 z-10 flex">
-                                {charData && Array.from({ length: charData.rarity }, (_, i) => (
-                                  <Star key={i} size={8} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
-                                ))}
-                              </div>
-
-                              {/* Remove button */}
-                              <button
-                                onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X size={10} />
-                              </button>
-
-                              {/* Character Info at Bottom */}
-                              <div className="absolute bottom-0 inset-x-0 p-2 z-10">
-                                <div className="text-white text-[11px] font-semibold truncate leading-tight">{charName}</div>
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  <span className="text-[9px] font-medium px-1 py-0.5 rounded" style={{
-                                    color: getElementColor(element),
-                                    background: getElementBg(element),
-                                  }}>{charData?.role || 'DPS'}</span>
-                                  <span className="text-[9px] text-gray-400">{charData?.weapon}</span>
-                                </div>
-                              </div>
+                            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
+                              <Plus size={16} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
                             </div>
-                          );
-                        })}
-                      </div>
+                            <span className="text-[9px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                          </button>
+                        );
+                      }
 
-                      {/* Team Synergy Info */}
-                      {teamSlots.some(s => s) && (
-                        <div className="mt-3 p-2.5 rounded-lg border border-white/10" style={{ background: 'var(--bg-btn)' }}>
-                          <div className="text-[10px] text-gray-400 mb-1.5">Team Elements</div>
-                          <div className="flex gap-1.5">
-                            {teamSlots.filter(s => s).map((name, i) => {
-                              const d = CHARACTER_DATA[name];
-                              return d ? (
-                                <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-medium"
-                                  style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                  {d.element}
-                                </div>
-                              ) : null;
-                            })}
+                      return (
+                        <div
+                          key={slotIdx}
+                          className="relative aspect-[3/4] rounded-xl border overflow-hidden cursor-pointer group"
+                          style={{
+                            borderColor: getElementBorder(element),
+                            background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.6))`,
+                          }}
+                          onClick={() => openSelector(slotIdx)}
+                        >
+                          {imgUrl && (
+                            <div className="absolute inset-0 overflow-hidden">
+                              <img
+                                src={imgUrl}
+                                alt={charName}
+                                className="w-full h-full object-contain"
+                                style={framing ? {
+                                  transform: `scale(${(framing.zoom || 100) / 100}) translate(${-(framing.x || 0)}%, ${-(framing.y || 0)}%)`,
+                                } : undefined}
+                                loading="lazy"
+                                onError={hideOnError}
+                              />
+                              <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
+                                background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+                              }} />
+                            </div>
+                          )}
+                          {/* Element Badge */}
+                          <div className="absolute top-1.5 left-1.5 z-10">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
+                              style={{ background: getElementColor(element), boxShadow: `0 0 6px ${getElementColor(element)}60` }}>
+                              {element?.[0]}
+                            </div>
+                          </div>
+                          {/* Rarity Stars */}
+                          <div className="absolute top-1.5 right-1.5 z-10 flex">
+                            {charData && Array.from({ length: charData.rarity }, (_, i) => (
+                              <Star key={i} size={7} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                            ))}
+                          </div>
+                          {/* Remove button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
+                            className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={10} />
+                          </button>
+                          {/* Character Info */}
+                          <div className="absolute bottom-0 inset-x-0 p-1.5 z-10">
+                            <div className="text-white text-[10px] font-semibold truncate leading-tight">{charName}</div>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="text-[8px] font-medium px-1 py-0.5 rounded" style={{
+                                color: getElementColor(element),
+                                background: getElementBg(element),
+                              }}>{charData?.role || 'DPS'}</span>
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
+
+                  {/* Team Elements */}
+                  {teamSlots.some(s => s) && (
+                    <div className="p-2 rounded-lg border border-white/10 flex items-center gap-2" style={{ background: 'var(--bg-btn)' }}>
+                      <span className="text-[9px] text-gray-500">Elements</span>
+                      <div className="flex gap-1">
+                        {teamSlots.filter(s => s).map((name, i) => {
+                          const d = CHARACTER_DATA[name];
+                          return d ? (
+                            <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium"
+                              style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                              {d.element}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Suggested Teams from Character Data */}
                   <Card>
@@ -4949,30 +4936,36 @@ function WhisperingWishesInner() {
                     <CardBody>
                       <div className="space-y-2">
                         {(() => {
-                          // Gather unique team suggestions from owned characters
+                          // Gather unique team suggestions — prioritize owned + newest characters
                           const ownedNames = new Set([
                             ...Object.keys(collectionData.chars5Counts),
                             ...Object.keys(collectionData.chars4Counts),
                           ]);
                           const suggestions = [];
                           const seen = new Set();
-                          for (const name of ownedNames) {
+                          // Iterate characters in reverse release order (newest first)
+                          const orderedChars = [...RELEASE_ORDER].reverse();
+                          for (const name of orderedChars) {
                             const d = CHARACTER_DATA[name];
                             if (!d?.teams) continue;
                             for (const t of d.teams) {
                               if (seen.has(t)) continue;
                               seen.add(t);
                               const members = t.split('+').map(m => m.trim());
-                              const allOwned = members.every(m => ownedNames.has(m));
-                              if (allOwned && members.length >= 2) {
-                                suggestions.push({ text: t, members });
-                              }
+                              if (members.length < 2) continue;
+                              const ownedCount = members.filter(m => ownedNames.has(m)).length;
+                              suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
                             }
                           }
+                          // Sort: all-owned first, then by owned count desc
+                          suggestions.sort((a, b) => {
+                            if (a.allOwned !== b.allOwned) return b.allOwned ? 1 : -1;
+                            return b.ownedCount - a.ownedCount;
+                          });
                           if (suggestions.length === 0) {
-                            return <p className="text-gray-500 text-[10px] text-center py-2">Import convene data or add characters to see team suggestions</p>;
+                            return <p className="text-gray-500 text-[10px] text-center py-2">No team suggestions available</p>;
                           }
-                          return suggestions.slice(0, 8).map((s, i) => (
+                          return suggestions.slice(0, 10).map((s, i) => (
                             <button
                               key={i}
                               onClick={() => {
@@ -5000,7 +4993,12 @@ function WhisperingWishesInner() {
                                   );
                                 })}
                               </div>
-                              <span className="text-[10px] text-gray-300 truncate">{s.text}</span>
+                              <span className="text-[10px] text-gray-300 truncate flex-1">{s.text}</span>
+                              {s.allOwned ? (
+                                <span className="text-[8px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1 py-0.5 rounded flex-shrink-0">All owned</span>
+                              ) : (
+                                <span className="text-[8px] text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
+                              )}
                             </button>
                           ));
                         })()}
@@ -5010,8 +5008,8 @@ function WhisperingWishesInner() {
 
                   {/* Character Selector Modal */}
                   {teamSelectorOpen && (
-                    <FocusTrapModal onClose={() => setSelectorOpen(false)}>
-                      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setSelectorOpen(false)}>
+                    <FocusTrapModal onClose={() => setTeamSelectorOpen(false)}>
+                      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setTeamSelectorOpen(false)}>
                         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
                         <div
                           className="relative w-full max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
@@ -5024,7 +5022,7 @@ function WhisperingWishesInner() {
                               <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
                               <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                             </div>
-                            <button onClick={() => setSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                            <button onClick={() => setTeamSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                               <X size={18} />
                             </button>
                           </div>
