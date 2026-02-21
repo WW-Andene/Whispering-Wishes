@@ -4826,25 +4826,25 @@ function WhisperingWishesInner() {
                     </button>
                   </div>
 
-                  {/* Character Cards Grid */}
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* Character Cards Grid — square cards like collection */}
+                  <div className="grid grid-cols-3 gap-2.5">
                     {teamSlots.map((charName, slotIdx) => {
                       const charData = charName ? CHARACTER_DATA[charName] : null;
                       const imgUrl = charName ? (collectionImages[charName] || '') : '';
                       const element = charData?.element;
+                      const framing = charName ? getImageFraming(charName) : null;
 
                       if (!charName) {
                         return (
                           <button
                             key={slotIdx}
                             onClick={() => openSelector(slotIdx)}
-                            className="rounded-xl border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-1.5 group"
-                            style={{ background: 'rgba(255,255,255,0.03)', height: '140px' }}
+                            className="aspect-square rounded-lg border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group bg-neutral-800/30"
                           >
-                            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
-                              <Plus size={16} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
+                            <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
+                              <Plus size={20} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
                             </div>
-                            <span className="text-[9px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                            <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
                           </button>
                         );
                       }
@@ -4852,58 +4852,50 @@ function WhisperingWishesInner() {
                       return (
                         <div
                           key={slotIdx}
-                          className="relative rounded-xl border overflow-hidden cursor-pointer group"
+                          className="relative aspect-square rounded-lg border overflow-hidden cursor-pointer group"
                           style={{
-                            height: '140px',
                             borderColor: getElementBorder(element),
                             background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.8))`,
+                            contain: 'paint',
                           }}
                           onClick={() => openSelector(slotIdx)}
                         >
+                          {/* Character image — same style as collection grid */}
                           {imgUrl && (
-                            <div className="absolute inset-0 overflow-hidden">
-                              <img
-                                src={imgUrl}
-                                alt={charName}
-                                className="w-full h-full object-cover object-top"
-                                loading="lazy"
-                                onError={hideOnError}
-                              />
-                              <div className="absolute inset-x-0 bottom-0 h-2/3" style={{
-                                background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, transparent 100%)',
-                              }} />
-                            </div>
+                            <img
+                              src={imgUrl}
+                              alt={charName}
+                              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                              style={framing ? {
+                                transform: `scale(${(framing.zoom || 100) / 100}) translate(${-(framing.x || 0)}%, ${-(framing.y || 0)}%)`,
+                              } : { transform: 'scale(1.4) translateY(8%)' }}
+                              loading="lazy"
+                              onError={hideOnError}
+                            />
                           )}
-                          {/* Element Badge */}
+                          {/* Element badge */}
                           <div className="absolute top-1.5 left-1.5 z-10">
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
-                              style={{ background: getElementColor(element), boxShadow: `0 0 6px ${getElementColor(element)}60` }}>
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold text-white"
+                              style={{ background: getElementColor(element), boxShadow: `0 0 8px ${getElementColor(element)}60` }}>
                               {element?.[0]}
                             </div>
                           </div>
-                          {/* Rarity Stars */}
-                          <div className="absolute top-1.5 right-1.5 z-10 flex">
-                            {charData && Array.from({ length: charData.rarity }, (_, i) => (
-                              <Star key={i} size={7} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
-                            ))}
-                          </div>
-                          {/* Remove button (always visible on mobile) */}
+                          {/* Remove button */}
                           <button
                             onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                            className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1 right-1 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                           >
                             <X size={10} />
                           </button>
-                          {/* Character Info */}
-                          <div className="absolute bottom-0 inset-x-0 p-2 z-10">
-                            <div className="text-white text-[11px] font-semibold truncate leading-tight">{charName}</div>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <span className="text-[8px] font-medium px-1 py-0.5 rounded" style={{
-                                color: getElementColor(element),
-                                background: getElementBg(element),
-                              }}>{charData?.role || 'DPS'}</span>
-                              <span className="text-[8px] text-gray-400">{charData?.weapon}</span>
+                          {/* Bottom overlay — matches collection card */}
+                          <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+                            <div className="flex">
+                              {Array.from({ length: charData?.rarity || 0 }, (_, i) => (
+                                <Star key={i} size={8} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                              ))}
                             </div>
+                            <div className="text-white text-[10px] font-semibold truncate leading-tight mt-0.5">{charName}</div>
+                            <div className="text-[8px] mt-0.5" style={{ color: getElementColor(element) }}>{charData?.element} • {charData?.role}</div>
                           </div>
                         </div>
                       );
