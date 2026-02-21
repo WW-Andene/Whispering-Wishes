@@ -423,6 +423,14 @@ const initialState = {
   },
   bookmarks: [],
   eventStatus: {},
+  teams: [
+    { name: 'Team 1', slots: [null, null, null] },
+    { name: 'Team 2', slots: [null, null, null] },
+    { name: 'Team 3', slots: [null, null, null] },
+    { name: 'Team 4', slots: [null, null, null] },
+    { name: 'Team 5', slots: [null, null, null] },
+  ],
+  activeTeamIndex: 0,
   settings: { showOnboarding: true },
 };
 
@@ -446,7 +454,7 @@ const isStorageAvailable = () => {
 const storageAvailable = isStorageAvailable();
 
 // P10-FIX: Sanitize imported state to prevent prototype pollution and reject unknown keys (Step 6 audit)
-const ALLOWED_STATE_KEYS = new Set(['server', 'profile', 'calc', 'planner', 'settings', 'bookmarks', 'eventStatus']);
+const ALLOWED_STATE_KEYS = new Set(['server', 'profile', 'calc', 'planner', 'settings', 'bookmarks', 'eventStatus', 'teams', 'activeTeamIndex']);
 const sanitizeStateObj = (obj) => {
   if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return obj;
   const clean = {};
@@ -495,6 +503,13 @@ const loadFromStorage = () => {
       settings: { ...initialState.settings, ...safeParsed.settings },
       bookmarks: safeParsed.bookmarks || [],
       eventStatus: safeParsed.eventStatus || {},
+      teams: Array.isArray(safeParsed.teams) && safeParsed.teams.length === 5
+        ? safeParsed.teams.map((t, i) => ({
+            name: (t && typeof t.name === 'string') ? t.name : initialState.teams[i].name,
+            slots: (t && Array.isArray(t.slots) && t.slots.length === 3) ? t.slots : [null, null, null],
+          }))
+        : initialState.teams,
+      activeTeamIndex: typeof safeParsed.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, safeParsed.activeTeamIndex)) : 0,
     };
   } catch (e) {
     console.error('Load failed:', e);
@@ -670,6 +685,36 @@ const reducer = (state, action) => {
       };
     }
     case 'DELETE_BOOKMARK': return { ...state, bookmarks: state.bookmarks.filter(b => b.id !== action.id) };
+    // Team builder actions
+    case 'SET_ACTIVE_TEAM': return { ...state, activeTeamIndex: Math.max(0, Math.min(4, action.index)) };
+    case 'SET_TEAM_SLOT': {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, slots: t.slots.map((s, j) => j === action.slotIndex ? action.character : s) }
+        : t
+      );
+      return { ...state, teams };
+    }
+    case 'CLEAR_TEAM_SLOT': {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, slots: t.slots.map((s, j) => j === action.slotIndex ? null : s) }
+        : t
+      );
+      return { ...state, teams };
+    }
+    case 'CLEAR_TEAM': {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, slots: [null, null, null] }
+        : t
+      );
+      return { ...state, teams };
+    }
+    case 'RENAME_TEAM': {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, name: (action.name || '').slice(0, 20) || t.name }
+        : t
+      );
+      return { ...state, teams };
+    }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
     case 'LOAD_STATE': return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
     case 'RESET': return initialState;

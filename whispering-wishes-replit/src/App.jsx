@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { AlertCircle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, X, Zap } from 'lucide-react';
+import { AlertCircle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import {
   APP_VERSION,
@@ -2949,7 +2949,7 @@ function WhisperingWishesInner() {
             </div>
           </div>
           <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
-              const tabs = ['tracker','events','calculator','planner','analytics','gathering','profile'];
+              const tabs = ['tracker','events','calculator','planner','analytics','gathering','teams','profile'];
               const idx = tabs.indexOf(activeTab);
               let newTab;
               if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
@@ -2963,6 +2963,7 @@ function WhisperingWishesInner() {
             <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner"><TrendingUp size={16} /> Plan</TabButton>
             <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics"><BarChart3 size={16} /> Stats</TabButton>
             <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering"><Archive size={16} /> Collection</TabButton>
+            <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams"><Users size={16} /> Teams</TabButton>
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={16} /> Profile</TabButton>
           </nav>
         </div>
@@ -4713,6 +4714,441 @@ function WhisperingWishesInner() {
                 </Card>
               </>
             )}
+          </div>
+          </TabErrorBoundary>
+          </div>
+        )}
+
+        {/* [SECTION:TAB-TEAMS] */}
+        {activeTab === 'teams' && (
+          <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
+          <TabErrorBoundary tabName="Teams">
+          <div className="kuro-calc space-y-3 tab-content">
+            <TabBackground id="teams" />
+
+            {(() => {
+              const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
+              const teamSlots = activeTeam.slots;
+              const [selectorOpen, setSelectorOpen] = React.useState(false);
+              const [selectorSlot, setSelectorSlot] = React.useState(0);
+              const [teamSearch, setTeamSearch] = React.useState('');
+              const [teamElementFilter, setTeamElementFilter] = React.useState('all');
+              const [teamRarityFilter, setTeamRarityFilter] = React.useState('all');
+
+              const openSelector = (slotIdx) => {
+                setSelectorSlot(slotIdx);
+                setTeamSearch('');
+                setTeamElementFilter('all');
+                setTeamRarityFilter('all');
+                setSelectorOpen(true);
+                haptic.light();
+              };
+
+              const selectCharacter = (name) => {
+                dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: selectorSlot, character: name });
+                setSelectorOpen(false);
+                haptic.success();
+              };
+
+              const removeFromSlot = (slotIdx) => {
+                dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
+                haptic.light();
+              };
+
+              // All available characters for selection
+              const allCharNames = [...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS];
+
+              // Characters already in this team (excluding current slot)
+              const usedInTeam = new Set(teamSlots.filter((s, i) => s && i !== selectorSlot));
+
+              // Filter characters for selector
+              const filteredChars = allCharNames.filter(name => {
+                if (usedInTeam.has(name)) return false;
+                if (teamSearch && !name.toLowerCase().includes(teamSearch.toLowerCase())) return false;
+                const data = CHARACTER_DATA[name];
+                if (!data) return false;
+                if (teamElementFilter !== 'all' && data.element !== teamElementFilter) return false;
+                if (teamRarityFilter !== 'all' && data.rarity !== Number(teamRarityFilter)) return false;
+                return true;
+              });
+
+              // Element color utilities
+              const getElementColor = (el) => {
+                const map = { Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' };
+                return map[el] || '#6b7280';
+              };
+              const getElementBg = (el) => {
+                const map = { Fusion: 'rgba(249,115,22,0.15)', Electro: 'rgba(168,85,247,0.15)', Aero: 'rgba(16,185,129,0.15)', Glacio: 'rgba(6,182,212,0.15)', Havoc: 'rgba(236,72,153,0.15)', Spectro: 'rgba(234,179,8,0.15)' };
+                return map[el] || 'rgba(107,114,128,0.15)';
+              };
+              const getElementBorder = (el) => {
+                const map = { Fusion: 'rgba(249,115,22,0.4)', Electro: 'rgba(168,85,247,0.4)', Aero: 'rgba(16,185,129,0.4)', Glacio: 'rgba(6,182,212,0.4)', Havoc: 'rgba(236,72,153,0.4)', Spectro: 'rgba(234,179,8,0.4)' };
+                return map[el] || 'rgba(107,114,128,0.4)';
+              };
+
+              return (
+                <>
+                  {/* Team Selector Sidebar */}
+                  <div className="flex gap-2">
+                    {/* Team Slot Buttons */}
+                    <div className="flex flex-col gap-1.5 flex-shrink-0">
+                      {state.teams.map((team, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
+                          className={`w-14 h-14 rounded-lg border text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            state.activeTeamIndex === idx
+                              ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
+                              : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                          }`}
+                          style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
+                        >
+                          <span className="text-[9px] opacity-60">{String(idx + 1).padStart(2, '0')}</span>
+                          <span className="text-[8px] truncate max-w-[48px]">{team.name}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Main Team Display Area */}
+                    <div className="flex-1 min-w-0">
+                      {/* Team Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Users size={16} className="text-yellow-400" />
+                          <span className="text-white text-sm font-medium">{activeTeam.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                            className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                            style={{ background: 'var(--bg-btn)' }}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Character Cards Grid */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {teamSlots.map((charName, slotIdx) => {
+                          const charData = charName ? CHARACTER_DATA[charName] : null;
+                          const imgUrl = charName ? (collectionImages[charName] || '') : '';
+                          const element = charData?.element;
+                          const framing = charName ? getImageFraming(charName) : null;
+
+                          if (!charName) {
+                            // Empty slot
+                            return (
+                              <button
+                                key={slotIdx}
+                                onClick={() => openSelector(slotIdx)}
+                                className="relative aspect-[3/4] rounded-xl border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                                style={{ background: 'rgba(255,255,255,0.03)' }}
+                              >
+                                <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
+                                  <Plus size={20} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
+                                </div>
+                                <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                              </button>
+                            );
+                          }
+
+                          // Filled slot with character
+                          return (
+                            <div
+                              key={slotIdx}
+                              className="relative aspect-[3/4] rounded-xl border overflow-hidden cursor-pointer group"
+                              style={{
+                                borderColor: getElementBorder(element),
+                                background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.6))`,
+                              }}
+                              onClick={() => openSelector(slotIdx)}
+                            >
+                              {/* Character Image */}
+                              {imgUrl && (
+                                <div className="absolute inset-0 overflow-hidden">
+                                  <img
+                                    src={imgUrl}
+                                    alt={charName}
+                                    className="w-full h-full object-contain"
+                                    style={framing ? {
+                                      transform: `scale(${(framing.zoom || 100) / 100}) translate(${-(framing.x || 0)}%, ${-(framing.y || 0)}%)`,
+                                    } : undefined}
+                                    loading="lazy"
+                                    onError={hideOnError}
+                                  />
+                                  {/* Gradient overlay at bottom */}
+                                  <div className="absolute inset-x-0 bottom-0 h-2/3" style={{
+                                    background: `linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)`,
+                                  }} />
+                                </div>
+                              )}
+
+                              {/* Element Badge */}
+                              <div className="absolute top-1.5 left-1.5 z-10">
+                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
+                                  style={{ background: getElementColor(element), boxShadow: `0 0 6px ${getElementColor(element)}60` }}>
+                                  {element?.[0]}
+                                </div>
+                              </div>
+
+                              {/* Rarity Stars */}
+                              <div className="absolute top-1.5 right-1.5 z-10 flex">
+                                {charData && Array.from({ length: charData.rarity }, (_, i) => (
+                                  <Star key={i} size={8} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                                ))}
+                              </div>
+
+                              {/* Remove button */}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
+                                className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={10} />
+                              </button>
+
+                              {/* Character Info at Bottom */}
+                              <div className="absolute bottom-0 inset-x-0 p-2 z-10">
+                                <div className="text-white text-[11px] font-semibold truncate leading-tight">{charName}</div>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <span className="text-[9px] font-medium px-1 py-0.5 rounded" style={{
+                                    color: getElementColor(element),
+                                    background: getElementBg(element),
+                                  }}>{charData?.role || 'DPS'}</span>
+                                  <span className="text-[9px] text-gray-400">{charData?.weapon}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Team Synergy Info */}
+                      {teamSlots.some(s => s) && (
+                        <div className="mt-3 p-2.5 rounded-lg border border-white/10" style={{ background: 'var(--bg-btn)' }}>
+                          <div className="text-[10px] text-gray-400 mb-1.5">Team Elements</div>
+                          <div className="flex gap-1.5">
+                            {teamSlots.filter(s => s).map((name, i) => {
+                              const d = CHARACTER_DATA[name];
+                              return d ? (
+                                <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-medium"
+                                  style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                  {d.element}
+                                </div>
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Suggested Teams from Character Data */}
+                  <Card>
+                    <CardHeader><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
+                    <CardBody>
+                      <div className="space-y-2">
+                        {(() => {
+                          // Gather unique team suggestions from owned characters
+                          const ownedNames = new Set([
+                            ...Object.keys(collectionData.chars5Counts),
+                            ...Object.keys(collectionData.chars4Counts),
+                          ]);
+                          const suggestions = [];
+                          const seen = new Set();
+                          for (const name of ownedNames) {
+                            const d = CHARACTER_DATA[name];
+                            if (!d?.teams) continue;
+                            for (const t of d.teams) {
+                              if (seen.has(t)) continue;
+                              seen.add(t);
+                              const members = t.split('+').map(m => m.trim());
+                              const allOwned = members.every(m => ownedNames.has(m));
+                              if (allOwned && members.length >= 2) {
+                                suggestions.push({ text: t, members });
+                              }
+                            }
+                          }
+                          if (suggestions.length === 0) {
+                            return <p className="text-gray-500 text-[10px] text-center py-2">Import convene data or add characters to see team suggestions</p>;
+                          }
+                          return suggestions.slice(0, 8).map((s, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                // Auto-fill the current team with up to 3 members
+                                s.members.slice(0, 3).forEach((m, idx) => {
+                                  dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: m });
+                                });
+                                haptic.success();
+                              }}
+                              className="w-full flex items-center gap-2 p-2 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <div className="flex -space-x-1.5 flex-shrink-0">
+                                {s.members.slice(0, 3).map((m, j) => {
+                                  const cd = CHARACTER_DATA[m];
+                                  return (
+                                    <div key={j} className="w-6 h-6 rounded-full border-2 border-gray-800 overflow-hidden flex-shrink-0"
+                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)' }}>
+                                      {collectionImages[m] ? (
+                                        <img src={collectionImages[m]} alt={m} className="w-full h-full object-cover" onError={hideOnError} />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[7px] text-gray-400">{m[0]}</div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <span className="text-[10px] text-gray-300 truncate">{s.text}</span>
+                            </button>
+                          ));
+                        })()}
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  {/* Character Selector Modal */}
+                  {selectorOpen && (
+                    <FocusTrapModal onClose={() => setSelectorOpen(false)}>
+                      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setSelectorOpen(false)}>
+                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                        <div
+                          className="relative w-full max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
+                          style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {/* Modal Header */}
+                          <div className="flex items-center justify-between p-3 border-b border-white/10">
+                            <div>
+                              <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
+                              <p className="text-gray-500 text-[10px]">Slot {selectorSlot + 1} • {activeTeam.name}</p>
+                            </div>
+                            <button onClick={() => setSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                              <X size={18} />
+                            </button>
+                          </div>
+
+                          {/* Search & Filters */}
+                          <div className="p-3 space-y-2 border-b border-white/5">
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={teamSearch}
+                                onChange={(e) => setTeamSearch(e.target.value)}
+                                placeholder="Search resonators..."
+                                className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                                style={{ background: 'var(--bg-btn)' }}
+                                autoFocus
+                              />
+                              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                            </div>
+                            <div className="flex gap-1.5">
+                              <select
+                                value={teamElementFilter}
+                                onChange={(e) => setTeamElementFilter(e.target.value)}
+                                className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                                style={{ background: 'var(--bg-btn)' }}
+                              >
+                                <option value="all">All Elements</option>
+                                <option value="Aero">Aero</option>
+                                <option value="Glacio">Glacio</option>
+                                <option value="Electro">Electro</option>
+                                <option value="Fusion">Fusion</option>
+                                <option value="Spectro">Spectro</option>
+                                <option value="Havoc">Havoc</option>
+                              </select>
+                              <select
+                                value={teamRarityFilter}
+                                onChange={(e) => setTeamRarityFilter(e.target.value)}
+                                className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                                style={{ background: 'var(--bg-btn)' }}
+                              >
+                                <option value="all">All Rarity</option>
+                                <option value="5">5★</option>
+                                <option value="4">4★</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Character Grid */}
+                          <div className="flex-1 overflow-y-auto p-3">
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                              {filteredChars.map(name => {
+                                const cd = CHARACTER_DATA[name];
+                                const img = collectionImages[name] || '';
+                                const el = cd?.element;
+                                const owned = collectionData.chars5Counts[name] || collectionData.chars4Counts[name];
+                                const isInAnotherTeam = state.teams.some((t, ti) =>
+                                  ti !== state.activeTeamIndex && t.slots.includes(name)
+                                );
+
+                                return (
+                                  <button
+                                    key={name}
+                                    onClick={() => selectCharacter(name)}
+                                    className="relative rounded-xl border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group aspect-square"
+                                    style={{
+                                      borderColor: owned ? getElementBorder(el) : 'rgba(255,255,255,0.1)',
+                                      background: `linear-gradient(135deg, ${getElementBg(el)}, rgba(0,0,0,0.4))`,
+                                      opacity: owned ? 1 : 0.5,
+                                    }}
+                                  >
+                                    {/* Character Image */}
+                                    {img && (
+                                      <img
+                                        src={img}
+                                        alt={name}
+                                        className="absolute inset-0 w-full h-full object-contain"
+                                        style={(() => {
+                                          const f = getImageFraming(name);
+                                          return f ? { transform: `scale(${(f.zoom || 100) / 100}) translate(${-(f.x || 0)}%, ${-(f.y || 0)}%)` } : undefined;
+                                        })()}
+                                        loading="lazy"
+                                        onError={hideOnError}
+                                      />
+                                    )}
+                                    {/* Bottom gradient */}
+                                    <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
+                                      background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
+                                    }} />
+                                    {/* Element dot */}
+                                    <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[6px] font-bold text-white flex items-center justify-center"
+                                      style={{ background: getElementColor(el) }}>
+                                      {el?.[0]}
+                                    </div>
+                                    {/* Rarity indicator */}
+                                    <div className="absolute top-1 right-1">
+                                      <Star size={8} className={cd?.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                                    </div>
+                                    {/* In another team indicator */}
+                                    {isInAnotherTeam && (
+                                      <div className="absolute top-1 right-1 mt-3">
+                                        <Users size={7} className="text-cyan-400" />
+                                      </div>
+                                    )}
+                                    {/* Character name */}
+                                    <div className="absolute bottom-0 inset-x-0 p-1 z-10">
+                                      <div className="text-white text-[8px] font-medium truncate text-center leading-tight">{name}</div>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {filteredChars.length === 0 && (
+                              <div className="text-center py-8">
+                                <Search size={24} className="mx-auto mb-2 text-gray-600" />
+                                <p className="text-gray-500 text-xs">No resonators found</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </FocusTrapModal>
+                  )}
+                </>
+              );
+            })()}
           </div>
           </TabErrorBoundary>
           </div>
