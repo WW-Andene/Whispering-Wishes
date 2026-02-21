@@ -707,6 +707,12 @@ function WhisperingWishesInner() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps — stable refs
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
+  // Team builder state (hoisted to satisfy Rules of Hooks)
+  const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
+  const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
+  const [teamSearch, setTeamSearch] = useState('');
+  const [teamElementFilter, setTeamElementFilter] = useState('all');
+  const [teamRarityFilter, setTeamRarityFilter] = useState('all');
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -4729,24 +4735,18 @@ function WhisperingWishesInner() {
             {(() => {
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
-              const [selectorOpen, setSelectorOpen] = React.useState(false);
-              const [selectorSlot, setSelectorSlot] = React.useState(0);
-              const [teamSearch, setTeamSearch] = React.useState('');
-              const [teamElementFilter, setTeamElementFilter] = React.useState('all');
-              const [teamRarityFilter, setTeamRarityFilter] = React.useState('all');
-
               const openSelector = (slotIdx) => {
-                setSelectorSlot(slotIdx);
+                setTeamSelectorSlot(slotIdx);
                 setTeamSearch('');
                 setTeamElementFilter('all');
                 setTeamRarityFilter('all');
-                setSelectorOpen(true);
+                setTeamSelectorOpen(true);
                 haptic.light();
               };
 
               const selectCharacter = (name) => {
-                dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: selectorSlot, character: name });
-                setSelectorOpen(false);
+                dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: teamSelectorSlot, character: name });
+                setTeamSelectorOpen(false);
                 haptic.success();
               };
 
@@ -4759,7 +4759,7 @@ function WhisperingWishesInner() {
               const allCharNames = [...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS];
 
               // Characters already in this team (excluding current slot)
-              const usedInTeam = new Set(teamSlots.filter((s, i) => s && i !== selectorSlot));
+              const usedInTeam = new Set(teamSlots.filter((s, i) => s && i !== teamSelectorSlot));
 
               // Filter characters for selector
               const filteredChars = allCharNames.filter(name => {
@@ -5009,7 +5009,7 @@ function WhisperingWishesInner() {
                   </Card>
 
                   {/* Character Selector Modal */}
-                  {selectorOpen && (
+                  {teamSelectorOpen && (
                     <FocusTrapModal onClose={() => setSelectorOpen(false)}>
                       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setSelectorOpen(false)}>
                         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -5022,7 +5022,7 @@ function WhisperingWishesInner() {
                           <div className="flex items-center justify-between p-3 border-b border-white/10">
                             <div>
                               <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
-                              <p className="text-gray-500 text-[10px]">Slot {selectorSlot + 1} • {activeTeam.name}</p>
+                              <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                             </div>
                             <button onClick={() => setSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                               <X size={18} />
