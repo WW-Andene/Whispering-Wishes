@@ -4832,15 +4832,14 @@ function WhisperingWishesInner() {
                       const charData = charName ? CHARACTER_DATA[charName] : null;
                       const imgUrl = charName ? (collectionImages[charName] || '') : '';
                       const element = charData?.element;
-                      const framing = charName ? getImageFraming(charName) : null;
 
                       if (!charName) {
                         return (
                           <button
                             key={slotIdx}
                             onClick={() => openSelector(slotIdx)}
-                            className="relative aspect-[3/4] rounded-xl border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
-                            style={{ background: 'rgba(255,255,255,0.03)' }}
+                            className="rounded-xl border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-1.5 group"
+                            style={{ background: 'rgba(255,255,255,0.03)', height: '140px' }}
                           >
                             <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
                               <Plus size={16} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
@@ -4853,10 +4852,11 @@ function WhisperingWishesInner() {
                       return (
                         <div
                           key={slotIdx}
-                          className="relative aspect-[3/4] rounded-xl border overflow-hidden cursor-pointer group"
+                          className="relative rounded-xl border overflow-hidden cursor-pointer group"
                           style={{
+                            height: '140px',
                             borderColor: getElementBorder(element),
-                            background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.6))`,
+                            background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.8))`,
                           }}
                           onClick={() => openSelector(slotIdx)}
                         >
@@ -4865,15 +4865,12 @@ function WhisperingWishesInner() {
                               <img
                                 src={imgUrl}
                                 alt={charName}
-                                className="w-full h-full object-contain"
-                                style={framing ? {
-                                  transform: `scale(${(framing.zoom || 100) / 100}) translate(${-(framing.x || 0)}%, ${-(framing.y || 0)}%)`,
-                                } : undefined}
+                                className="w-full h-full object-cover object-top"
                                 loading="lazy"
                                 onError={hideOnError}
                               />
-                              <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
-                                background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+                              <div className="absolute inset-x-0 bottom-0 h-2/3" style={{
+                                background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, transparent 100%)',
                               }} />
                             </div>
                           )}
@@ -4890,21 +4887,22 @@ function WhisperingWishesInner() {
                               <Star key={i} size={7} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
                             ))}
                           </div>
-                          {/* Remove button */}
+                          {/* Remove button (always visible on mobile) */}
                           <button
                             onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                            className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                           >
                             <X size={10} />
                           </button>
                           {/* Character Info */}
-                          <div className="absolute bottom-0 inset-x-0 p-1.5 z-10">
-                            <div className="text-white text-[10px] font-semibold truncate leading-tight">{charName}</div>
+                          <div className="absolute bottom-0 inset-x-0 p-2 z-10">
+                            <div className="text-white text-[11px] font-semibold truncate leading-tight">{charName}</div>
                             <div className="flex items-center gap-1 mt-0.5">
                               <span className="text-[8px] font-medium px-1 py-0.5 rounded" style={{
                                 color: getElementColor(element),
                                 background: getElementBg(element),
                               }}>{charData?.role || 'DPS'}</span>
+                              <span className="text-[8px] text-gray-400">{charData?.weapon}</span>
                             </div>
                           </div>
                         </div>
