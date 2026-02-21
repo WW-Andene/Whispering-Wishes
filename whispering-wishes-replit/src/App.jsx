@@ -640,7 +640,7 @@ function WhisperingWishesInner() {
         saveFailCountRef.current++;
         // Only show toast on first failure (avoid spamming on every state change)
         if (saveFailCountRef.current === 1) {
-          toast?.addToast?.('Storage full — data may not be saved. Try clearing old pull history.', 'error');
+          toast?.addToast?.('Storage full — data may not be saved. Try clearing old Convene history.', 'error');
         }
       } else {
         saveFailCountRef.current = 0;
@@ -1095,7 +1095,7 @@ function WhisperingWishesInner() {
         'Leaderboard Submission — Data Sharing Notice\n\n' +
         'By submitting your score, the following data will be sent to a shared database and displayed publicly:\n\n' +
         '• Your player ID (' + effectiveLeaderboardId + ')\n' +
-        '• Average pity, total pulls, 50/50 win/loss stats\n' +
+        '• Average pity, total Convenes, 50/50 win/loss stats\n' +
         '• Your owned 5★ characters and weapons\n\n' +
         'This data is pseudonymous (linked to your game UID or a random ID, not your real identity).\n\n' +
         'Do you consent to sharing this data?'
@@ -1449,7 +1449,7 @@ function WhisperingWishesInner() {
     if (all3WeapOwned) list.push({ id: '3weap', name: 'Data Bank: Full', desc: 'Every 3★ Weapon catalogued', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
     
     // ═══ LUCK TROPHIES ═══
-    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first pull. nobody believes you', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first Convene. nobody believes you', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
     else if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Dev Account?', desc: `5★ at pity ${earliest5Star} — go buy a lottery ticket`, icon: 'Gift', color: '#fbbf24', tier: 'legendary' });
     else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Disgusting Luck', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#fbbf24', tier: 'gold' });
     else if (earliest5Star && earliest5Star <= 40) list.push({ id: 'early40', name: 'Echo of Fortune', desc: `5★ at pity ${earliest5Star}`, icon: 'Clover', color: '#22c55e', tier: 'green' });
@@ -1466,8 +1466,8 @@ function WhisperingWishesInner() {
     // Back-to-back — two 5★ within 20 pulls across any banner
     const hasBackToBack = all5Stars.some(p => p.pity > 0 && p.pity <= 15);
     const backToBackCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 15).length;
-    if (backToBackCount >= 3) list.push({ id: 'b2b3', name: 'Actual Hack', desc: `${backToBackCount} five-stars within 15 pulls — how`, icon: 'Zap', color: '#a855f7', tier: 'purple' });
-    else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 pulls of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
+    if (backToBackCount >= 3) list.push({ id: 'b2b3', name: 'Actual Hack', desc: `${backToBackCount} five-stars within 15 Convenes — how`, icon: 'Zap', color: '#a855f7', tier: 'purple' });
+    else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 Convenes of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 STREAK TROPHIES ═══
     if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Rover\'s Blessing', desc: `${bestWinStreak}× 50/50 wins — the Sentinel chose you`, icon: 'Crown', color: '#ff0000', tier: 'legendary' });
@@ -1579,7 +1579,7 @@ function WhisperingWishesInner() {
       'Augusta': { name: 'Shocking Bill', desc: 'S6 Augusta — electrifying damage, electrifying debt', color: '#a855f7' },
       'Iuno': { name: 'Tone Deaf Spending', desc: 'S6 Iuno — the melody was "swipe swipe swipe"', color: '#22c55e' },
       'Galbrena': { name: 'Witch Time: Maxed', desc: 'S6 Galbrena — she IS Bayonetta now', color: '#f97316' },
-      'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more pull" seven times', color: '#22c55e' },
+      'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more Convene" seven times', color: '#22c55e' },
       'Chisa': { name: 'Cut Your Losses (Didn\'t)', desc: 'S6 Chisa — the blade cuts everything except your spending', color: '#ec4899' },
       'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#fbbf24' },
       'Mornye': { name: 'Rhythm of Regret', desc: 'S6 Mornye — the beat dropped and so did your balance', color: '#f97316' },
@@ -1626,16 +1626,16 @@ function WhisperingWishesInner() {
 
     // Weapon banner pull volume
     const weapBannerPulls = weaponHist.length;
-    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner pulls — this is a lifestyle choice`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
-    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner pulls — "it's a DPS increase bro"`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner Convenes — this is a lifestyle choice`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner Convenes — "it's a DPS increase bro"`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
 
-    // More weapon pulls than character pulls
+    // More weapon Convenes than character Convenes
     if (weapBannerPulls > 0 && featuredHist.length > 0 && weapBannerPulls > featuredHist.length) {
-      list.push({ id: 'weapsimp', name: 'BiS or Bust', desc: 'More weapon pulls than character pulls — priorities moment', icon: 'Sword', color: '#f97316', tier: 'orange' });
+      list.push({ id: 'weapsimp', name: 'BiS or Bust', desc: 'More weapon Convenes than character Convenes — priorities moment', icon: 'Sword', color: '#f97316', tier: 'orange' });
     }
 
-    // Never pulled on weapon banner
-    if (weapBannerPulls === 0 && totalPulls >= 100) list.push({ id: 'noweap', name: 'Fists Only Challenge', desc: 'Zero weapon banner pulls — who needs signatures anyway', icon: 'Shield', color: '#22c55e', tier: 'green' });
+    // Never Convened on weapon banner
+    if (weapBannerPulls === 0 && totalPulls >= 100) list.push({ id: 'noweap', name: 'Fists Only Challenge', desc: 'Zero weapon banner Convenes — who needs signatures anyway', icon: 'Shield', color: '#22c55e', tier: 'green' });
     
     // Average pity under 50 with 10+ 5★ (consistently lucky)
     if (total5Stars >= 10 && overallStats?.avgPity) {
@@ -1748,7 +1748,7 @@ function WhisperingWishesInner() {
     const t0Dps = ['Cartethyia', 'Camellya', 'Carlotta', 'Xiangli Yao', 'Phrolova', 'Iuno', 'Augusta', 'Aemeath'];
     const ownedT0 = t0Dps.filter(n => owns(n));
     if (ownedT0.length >= 6) list.push({ id: 't0six', name: 'Tower? Cleared.', desc: `${ownedT0.length} T0 DPS — ToA is your personal playground`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    else if (ownedT0.length >= 3) list.push({ id: 't0three', name: 'Meta Slave', desc: `${ownedT0.length} T0 DPS — tier list told you to pull`, icon: 'Trophy', color: '#a855f7', tier: 'purple' });
+    else if (ownedT0.length >= 3) list.push({ id: 't0three', name: 'Meta Slave', desc: `${ownedT0.length} T0 DPS — tier list told you to Convene`, icon: 'Trophy', color: '#a855f7', tier: 'purple' });
     
     // ═══ QUIRKY / COMMUNITY TROPHIES ═══
     // Never lost a 50/50 (with at least 3 wins)
@@ -1758,7 +1758,7 @@ function WhisperingWishesInner() {
     if (first5050 && first5050.won5050 === false) list.push({ id: 'firstloss', name: 'First Time?', desc: 'First 50/50 was a loss — it only gets worse', icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
     
     // 4★ only — lots of pulls but very few 5★ (bad luck overall)
-    if (totalPulls >= 200 && total5Stars <= 2) list.push({ id: 'dry', name: 'Down Horrendous', desc: `${totalPulls} pulls, ${total5Stars} five-stars — delete the app`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    if (totalPulls >= 200 && total5Stars <= 2) list.push({ id: 'dry', name: 'Down Horrendous', desc: `${totalPulls} Convenes, ${total5Stars} five-stars — delete the app`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
     
     // Duplicate magnet — same standard char lost to 3+ times
     const dupMagnet = stdChars.find(name => lostCount(name) >= 3);
@@ -1792,7 +1792,7 @@ function WhisperingWishesInner() {
 
     // Max Sequence on a standard character from 50/50 losses alone
     const stdS6FromLosses = [...stdChars].find(name => lostCount(name) >= 7);
-    if (stdS6FromLosses) list.push({ id: 'stdS6', name: 'Accidental S6: Coping', desc: `S6 ${stdS6FromLosses} entirely from 50/50 losses — didn't even pull for them`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    if (stdS6FromLosses) list.push({ id: 'stdS6', name: 'Accidental S6: Coping', desc: `S6 ${stdS6FromLosses} entirely from 50/50 losses — didn't even Convene for them`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
 
     // Guaranteed streak — multiple 5★ in a row that were all guaranteed (lost 50/50 every time)
     let guaranteedStreak = 0, maxGuaranteedStreak = 0;
@@ -1804,7 +1804,7 @@ function WhisperingWishesInner() {
     if (maxGuaranteedStreak >= 3) list.push({ id: 'guar3', name: 'Guarantee Gang', desc: `${maxGuaranteedStreak} guaranteed 5★ in a row — never won a 50/50 between them`, icon: 'Shield', color: '#f97316', tier: 'orange' });
 
     // F2P indicator — less than 200 pulls total but has 5+ five-stars (efficient)
-    if (totalPulls > 0 && totalPulls <= 200 && total5Stars >= 5) list.push({ id: 'efficient', name: 'F2P BTW', desc: `${total5Stars} five-stars in only ${totalPulls} pulls — maximum Astrite efficiency`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+    if (totalPulls > 0 && totalPulls <= 200 && total5Stars >= 5) list.push({ id: 'efficient', name: 'F2P BTW', desc: `${total5Stars} five-stars in only ${totalPulls} Convenes — maximum Astrite efficiency`, icon: 'Clover', color: '#22c55e', tier: 'green' });
 
     // Biggest gap — over 150 pulls between 5★ at any point
     let maxDryStreak = 0;
@@ -1813,8 +1813,8 @@ function WhisperingWishesInner() {
       currentDry++;
       if (p.rarity === 5) { maxDryStreak = Math.max(maxDryStreak, currentDry); currentDry = 0; }
     }
-    if (maxDryStreak >= 160) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} pulls between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
-    else if (maxDryStreak >= 145) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} pulls between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
+    if (maxDryStreak >= 160) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} Convenes between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
+    else if (maxDryStreak >= 145) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} Convenes between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
 
     // Apply admin trophy name/desc overrides
     const finalList = list.map(t => {
@@ -1914,7 +1914,7 @@ function WhisperingWishesInner() {
     const histSummary = fiveStarPulls.length>=2?{max:Math.max(...Object.values(histBuckets),1),avg:(fiveStarPulls.reduce((s,p)=>s+p.pity,0)/fiveStarPulls.length).toFixed(1),lo:Math.min(...fiveStarPulls.map(p=>p.pity)),hi:Math.max(...fiveStarPulls.map(p=>p.pity))}:null;
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#fbbf24'},
-      {l:'Total Pulls',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
+      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
       {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
       {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
       {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
@@ -2714,7 +2714,7 @@ function WhisperingWishesInner() {
       if (sc + sw) parts.push(`${sc + sw} std`);
       if (bc) parts.push(`${bc} beg`);
       
-      toast?.addToast?.(`Imported ${totalImported} pulls! (${parts.join(', ')})`, 'success');
+      toast?.addToast?.(`Imported ${totalImported} Convenes! (${parts.join(', ')})`, 'success');
       
       // P12-FIX: Check storage capacity after import (Step 14 audit — LOW-10a)
       if (storageAvailable) {
@@ -3524,7 +3524,7 @@ function WhisperingWishesInner() {
                         </span>
                         <div>
                           <div className={`text-xs font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
-                          <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Ast/day × {SUBSCRIPTIONS.lunite.duration}d</div>
+                          <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d</div>
                         </div>
                       </div>
                       <span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.lunite.price}/mo</span>
@@ -3604,11 +3604,11 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Total Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
-                      <div className="text-white kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
+                      <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Earned Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
-                      <div className="text-white kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
+                      <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
                       <div className="text-gray-400 text-[9px]">Total Astrite</div>
                     </div>
                   </div>
@@ -3626,7 +3626,7 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
                       <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Convenes</div>
-                      <div className="text-gray-500 text-[9px]">{(dailyIncome * days).toLocaleString()} Ast</div>
+                      <div className="text-gray-500 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
                     </div>
                   ))}
                 </div>
@@ -3666,7 +3666,7 @@ function WhisperingWishesInner() {
                 <div className="p-3 bg-white/5 rounded-lg">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-400">Target</span>
-                    <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Ast)</span>
+                    <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Astrite)</span>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                     <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
@@ -3705,7 +3705,7 @@ function WhisperingWishesInner() {
                   <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
                     <div>
                       <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                      <div className="text-gray-400 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
+                      <div className="text-gray-400 text-[10px]">{b.astrite} Astrite • P{b.charPity}/{b.weapPity}</div>
                     </div>
                     <div className="flex gap-1">
                       <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[36px]">Load</button>
@@ -3795,7 +3795,7 @@ function WhisperingWishesInner() {
                             Rankings
                           </button>
                           <button onClick={() => setLeaderboardTab('popular')} role="tab" aria-selected={leaderboardTab === 'popular'} className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'popular' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
-                            Most Pulled
+                            Most Convened
                           </button>
                         </div>
                       </div>
@@ -3938,7 +3938,7 @@ function WhisperingWishesInner() {
                           </div>
                           {communityStats.totalPullsAll > 0 && (
                             <div className="flex justify-between text-[9px]">
-                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total pulls tracked</span>
+                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
@@ -3963,7 +3963,7 @@ function WhisperingWishesInner() {
                             >
                               Submit My Score
                             </button>
-                            <p className="text-gray-500 text-[9px] text-center">Pseudonymous • Your ID, avg pity & pull stats are shared publicly on the leaderboard</p>
+                            <p className="text-gray-500 text-[9px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
                         )}
                         {!overallStats?.avgPity && (
@@ -4101,7 +4101,7 @@ function WhisperingWishesInner() {
                       <CardBody>
                         {/* Screen reader accessible summary */}
                         <div className="sr-only">
-                          Pity distribution: {allBuckets.map(label => `${label} pulls: ${buckets[label] || 0}`).join(', ')}. 
+                          Pity distribution: {allBuckets.map(label => `${label} Convenes: ${buckets[label] || 0}`).join(', ')}.
                           Average pity: {avgPity}, range: {minPity} to {maxPity}.
                         </div>
                         {/* Histogram bars - neon glow style */}
@@ -4313,7 +4313,7 @@ function WhisperingWishesInner() {
                             )}
                           </div>
                           <div className="h-32">
-                            <div className="sr-only">Pull history chart showing convene activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} pulls`).join(', ')}.</div>
+                            <div className="sr-only">Convene history chart showing activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} Convenes`).join(', ')}.</div>
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
@@ -4348,7 +4348,7 @@ function WhisperingWishesInner() {
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Pulls</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Convenes</div></div>
                       <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -4362,11 +4362,11 @@ function WhisperingWishesInner() {
 
                 {/* 5★ Pull Log */}
                 <Card>
-                  <CardHeader>5★ Pull Log</CardHeader>
+                  <CardHeader>5★ Convene Log</CardHeader>
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No 5★ pulls yet</p>;
+                      if (fiveStars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No 5★ Convenes yet</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto">
                           {fiveStars.map((p, i) => {
@@ -5606,7 +5606,7 @@ Example: {"pulls":[...]}'
                 <div className="space-y-2 text-[9px] text-gray-500">
                   <p className="font-medium text-gray-400">Data & Privacy</p>
                   <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
-                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, pull count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
+                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
                   <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
                 </div>
                 
@@ -5738,7 +5738,7 @@ Example: {"pulls":[...]}'
                       return;
                     }
                     if (s.profile?.featured?.history && !Array.isArray(s.profile.featured.history)) {
-                      toast?.addToast?.('Invalid backup — pull history must be an array', 'error');
+                      toast?.addToast?.('Invalid backup — Convene history must be an array', 'error');
                       return;
                     }
                     
@@ -5750,7 +5750,7 @@ Example: {"pulls":[...]}'
                     const confirmed = window.confirm(
                       `Restore backup from v${backupVersion}?\n\n` +
                       `This will REPLACE all current data:\n` +
-                      `• ${pullCount} total pulls\n` +
+                      `• ${pullCount} total Convenes\n` +
                       `• ${s.bookmarks?.length || 0} bookmarks\n` +
                       `• All calculator & planner settings\n\n` +
                       `This action cannot be undone. Continue?`
@@ -5872,8 +5872,8 @@ Example: {"pulls":[...]}'
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24', bg: 'rgba(251,191,36,0.1)', bc: 'rgba(251,191,36,0.3)' },
-                      { label: 'Total Pulls', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
-                      { label: '5★ Pulled', value: overallStats?.fiveStars ?? '—', color: '#a78bfa', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
+                      { label: 'Total Convenes', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
+                      { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a78bfa', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
                       { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
                       { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
                       { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },
@@ -6340,7 +6340,7 @@ Example: {"pulls":[...]}'
                                   <div className="flex items-center gap-3 ml-6 mt-0.5">
                                     <span className="text-gray-500 text-[9px]">Avg: <span className="text-yellow-400">{p.avgPity}</span></span>
                                     <span className="text-gray-500 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
-                                    <span className="text-gray-500 text-[9px]">Pulls: <span className="text-gray-300">{p.totalPulls}</span></span>
+                                    <span className="text-gray-500 text-[9px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
                                     <span className="text-gray-500 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                                   </div>
                                 </div>

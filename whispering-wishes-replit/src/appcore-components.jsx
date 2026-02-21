@@ -1540,7 +1540,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
       <div className="grid grid-cols-2 gap-2">
         <div className="kuro-stat kuro-stat-red">
           <div className="text-xl kuro-number text-red-400">{stats.missingPulls > 0 ? stats.missingPulls : '✓'}</div>
-          <div className="text-gray-400 text-[10px] mt-1">{stats.missingPulls > 0 ? 'Pulls Needed (avg)' : 'Ready!'}</div>
+          <div className="text-gray-400 text-[10px] mt-1">{stats.missingPulls > 0 ? 'Convenes Needed (avg)' : 'Ready!'}</div>
         </div>
         <div className="kuro-stat kuro-stat-gray">
           <div className="text-xl kuro-number text-gray-400">{stats.worstCase}</div>
