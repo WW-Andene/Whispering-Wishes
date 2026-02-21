@@ -4788,30 +4788,7 @@ function WhisperingWishesInner() {
 
               return (
                 <div className="space-y-3">
-                  {/* Team Selector Row */}
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-                    {state.teams.map((team, idx) => {
-                      const hasChars = team.slots.some(s => s);
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
-                          className={`flex-shrink-0 px-3 py-2 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1.5 ${
-                            state.activeTeamIndex === idx
-                              ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
-                              : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
-                          }`}
-                          style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
-                        >
-                          <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
-                          <span>{team.name}</span>
-                          {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Character Cards — inside Card like collection tab */}
+                  {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
                       <button
@@ -4822,9 +4799,33 @@ function WhisperingWishesInner() {
                         Clear
                       </button>
                     }>
-                      <Users size={14} className="text-yellow-400" /> {activeTeam.name}
+                      <Users size={14} className="text-yellow-400" /> Team Builder
                     </CardHeader>
                     <CardBody>
+                      {/* Team Selector Tabs */}
+                      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide mb-3">
+                        {state.teams.map((team, idx) => {
+                          const hasChars = team.slots.some(s => s);
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
+                              className={`flex-shrink-0 px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                                state.activeTeamIndex === idx
+                                  ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
+                                  : 'border-white/10 text-gray-400 hover:border-white/20 hover:text-gray-300'
+                              }`}
+                              style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
+                            >
+                              <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
+                              <span>{team.name}</span>
+                              {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Character Cards Grid */}
                       <div className="grid grid-cols-3 gap-2">
                         {teamSlots.map((charName, slotIdx) => {
                           const charData = charName ? CHARACTER_DATA[charName] : null;
@@ -4871,33 +4872,105 @@ function WhisperingWishesInner() {
                               >
                                 <X size={10} />
                               </button>
-                              <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
-                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} font-bold text-sm`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                                <div className={`text-[9px] truncate text-gray-200`}>{charName}</div>
+                              <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                <div className="text-[9px] truncate text-gray-200">{charName}</div>
                               </div>
                             </div>
                           );
                         })}
                       </div>
+
+                      {/* Team Elements Summary */}
+                      {teamSlots.some(s => s) && (
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
+                          {teamSlots.filter(s => s).map((name, i) => {
+                            const d = CHARACTER_DATA[name];
+                            return d ? (
+                              <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium"
+                                style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                {d.element}
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
                     </CardBody>
                   </Card>
 
-                  {/* Team Elements */}
+                  {/* Character Stats & Info */}
                   {teamSlots.some(s => s) && (
-                    <div className="p-2 rounded-lg border border-white/10 flex items-center gap-2" style={{ background: 'var(--bg-btn)' }}>
-                      <span className="text-[9px] text-gray-500">Elements</span>
-                      <div className="flex gap-1">
-                        {teamSlots.filter(s => s).map((name, i) => {
-                          const d = CHARACTER_DATA[name];
-                          return d ? (
-                            <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium"
-                              style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                              {d.element}
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
+                    <Card>
+                      <CardHeader><Info size={14} className="text-cyan-400" /> Team Overview</CardHeader>
+                      <CardBody>
+                        <div className="space-y-3">
+                          {teamSlots.filter(s => s).map((charName, i) => {
+                            const d = CHARACTER_DATA[charName];
+                            if (!d) return null;
+                            const rarity5 = d.rarity === 5;
+                            const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
+                            const rc = roleColors[d.role] || roleColors.Support;
+                            return (
+                              <div key={charName} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
+                                {/* Character header row */}
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
+                                    style={{ borderColor: getElementColor(d.element) }}>
+                                    {collectionImages[charName] ? (
+                                      <img src={collectionImages[charName]} alt={charName} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{charName[0]}</div>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-white text-xs font-semibold truncate">{charName}</span>
+                                      <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{d.role}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                        style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                        {d.element}
+                                      </span>
+                                      <span className="text-[9px] text-gray-400">{d.weapon}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* Description */}
+                                <p className="text-[10px] text-gray-400 leading-relaxed mb-2">{d.desc}</p>
+                                {/* Skills */}
+                                {d.skills && (
+                                  <div className="mb-2">
+                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Skills</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {d.skills.map((skill, si) => (
+                                        <span key={si} className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">{skill}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Best Build */}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                  {d.bestWeapon && (
+                                    <div className="text-[9px]">
+                                      <span className="text-gray-500">Weapon: </span>
+                                      <span className="text-yellow-400/80">{d.bestWeapon}</span>
+                                    </div>
+                                  )}
+                                  {d.bestEchoes && (
+                                    <div className="text-[9px]">
+                                      <span className="text-gray-500">Echoes: </span>
+                                      <span className="text-cyan-400/80">{d.bestEchoes.join(' + ')}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardBody>
+                    </Card>
                   )}
 
                   {/* Suggested Teams from Character Data */}
@@ -4906,14 +4979,12 @@ function WhisperingWishesInner() {
                     <CardBody>
                       <div className="space-y-2">
                         {(() => {
-                          // Gather unique team suggestions — prioritize owned + newest characters
                           const ownedNames = new Set([
                             ...Object.keys(collectionData.chars5Counts),
                             ...Object.keys(collectionData.chars4Counts),
                           ]);
                           const suggestions = [];
                           const seen = new Set();
-                          // Iterate characters in reverse release order (newest first)
                           const orderedChars = [...RELEASE_ORDER].reverse();
                           for (const name of orderedChars) {
                             const d = CHARACTER_DATA[name];
@@ -4927,7 +4998,6 @@ function WhisperingWishesInner() {
                               suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
                             }
                           }
-                          // Sort: all-owned first, then by owned count desc
                           suggestions.sort((a, b) => {
                             if (a.allOwned !== b.allOwned) return b.allOwned ? 1 : -1;
                             return b.ownedCount - a.ownedCount;
@@ -4939,7 +5009,6 @@ function WhisperingWishesInner() {
                             <button
                               key={i}
                               onClick={() => {
-                                // Auto-fill the current team with up to 3 members
                                 s.members.slice(0, 3).forEach((m, idx) => {
                                   dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: m });
                                 });
@@ -4976,147 +5045,148 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
 
-                  {/* Character Selector Modal */}
-                  {teamSelectorOpen && (
-                    <FocusTrapModal onClose={() => setTeamSelectorOpen(false)}>
-                      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setTeamSelectorOpen(false)}>
-                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-                        <div
-                          className="relative w-full max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
-                          style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {/* Modal Header */}
-                          <div className="flex items-center justify-between p-3 border-b border-white/10">
-                            <div>
-                              <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
-                              <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
-                            </div>
-                            <button onClick={() => setTeamSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
-                              <X size={18} />
-                            </button>
+                  {/* Character Selector Modal — FIX: pass isOpen prop */}
+                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)}>
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setTeamSelectorOpen(false)}>
+                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                      <div
+                        className="relative w-full max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
+                        style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-3 border-b border-white/10">
+                          <div>
+                            <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
+                            <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
+                          <button onClick={() => setTeamSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                            <X size={18} />
+                          </button>
+                        </div>
 
-                          {/* Search & Filters */}
-                          <div className="p-3 space-y-2 border-b border-white/5">
-                            <div className="relative">
-                              <input
-                                type="text"
-                                value={teamSearch}
-                                onChange={(e) => setTeamSearch(e.target.value)}
-                                placeholder="Search resonators..."
-                                className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
-                                style={{ background: 'var(--bg-btn)' }}
-                                autoFocus
-                              />
-                              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                            </div>
-                            <div className="flex gap-1.5">
-                              <select
-                                value={teamElementFilter}
-                                onChange={(e) => setTeamElementFilter(e.target.value)}
-                                className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
-                                style={{ background: 'var(--bg-btn)' }}
-                              >
-                                <option value="all">All Elements</option>
-                                <option value="Aero">Aero</option>
-                                <option value="Glacio">Glacio</option>
-                                <option value="Electro">Electro</option>
-                                <option value="Fusion">Fusion</option>
-                                <option value="Spectro">Spectro</option>
-                                <option value="Havoc">Havoc</option>
-                              </select>
-                              <select
-                                value={teamRarityFilter}
-                                onChange={(e) => setTeamRarityFilter(e.target.value)}
-                                className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
-                                style={{ background: 'var(--bg-btn)' }}
-                              >
-                                <option value="all">All Rarity</option>
-                                <option value="5">5★</option>
-                                <option value="4">4★</option>
-                              </select>
-                            </div>
+                        {/* Search & Filters */}
+                        <div className="p-3 space-y-2 border-b border-white/5">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={teamSearch}
+                              onChange={(e) => setTeamSearch(e.target.value)}
+                              placeholder="Search resonators..."
+                              className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                              style={{ background: 'var(--bg-btn)' }}
+                              autoFocus
+                            />
+                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                           </div>
-
-                          {/* Character Grid */}
-                          <div className="flex-1 overflow-y-auto p-3">
-                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                              {filteredChars.map(name => {
-                                const cd = CHARACTER_DATA[name];
-                                const img = collectionImages[name] || '';
-                                const el = cd?.element;
-                                const owned = collectionData.chars5Counts[name] || collectionData.chars4Counts[name];
-                                const isInAnotherTeam = state.teams.some((t, ti) =>
-                                  ti !== state.activeTeamIndex && t.slots.includes(name)
-                                );
-
-                                return (
-                                  <button
-                                    key={name}
-                                    onClick={() => selectCharacter(name)}
-                                    className={`relative rounded-lg border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group ${owned ? (cd?.rarity === 5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30') : 'bg-neutral-800/50 border-neutral-700/50'}`}
-                                    style={{
-                                      height: '90px',
-                                      contain: 'paint',
-                                      opacity: owned ? 1 : 0.5,
-                                    }}
-                                  >
-                                    {/* Character Image */}
-                                    {img && (() => {
-                                      const f = getImageFraming(`collection-${name}`);
-                                      return (
-                                      <img
-                                        src={img}
-                                        alt={name}
-                                        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                                        style={{
-                                          transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
-                                          filter: owned ? 'none' : 'grayscale(100%)',
-                                        }}
-                                        loading="lazy"
-                                        onError={hideOnError}
-                                      />
-                                      );
-                                    })()}
-                                    {/* Bottom gradient */}
-                                    <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
-                                      background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
-                                    }} />
-                                    {/* Element dot */}
-                                    <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[6px] font-bold text-white flex items-center justify-center"
-                                      style={{ background: getElementColor(el) }}>
-                                      {el?.[0]}
-                                    </div>
-                                    {/* Rarity indicator */}
-                                    <div className="absolute top-1 right-1">
-                                      <Star size={8} className={cd?.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
-                                    </div>
-                                    {/* In another team indicator */}
-                                    {isInAnotherTeam && (
-                                      <div className="absolute top-1 right-1 mt-3">
-                                        <Users size={7} className="text-cyan-400" />
-                                      </div>
-                                    )}
-                                    {/* Character name */}
-                                    <div className="absolute bottom-0 inset-x-0 p-1 z-10">
-                                      <div className="text-white text-[8px] font-medium truncate text-center leading-tight">{name}</div>
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                            {filteredChars.length === 0 && (
-                              <div className="text-center py-8">
-                                <Search size={24} className="mx-auto mb-2 text-gray-600" />
-                                <p className="text-gray-500 text-xs">No resonators found</p>
-                              </div>
-                            )}
+                          <div className="flex gap-1.5">
+                            <select
+                              value={teamElementFilter}
+                              onChange={(e) => setTeamElementFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">All Elements</option>
+                              <option value="Aero">Aero</option>
+                              <option value="Glacio">Glacio</option>
+                              <option value="Electro">Electro</option>
+                              <option value="Fusion">Fusion</option>
+                              <option value="Spectro">Spectro</option>
+                              <option value="Havoc">Havoc</option>
+                            </select>
+                            <select
+                              value={teamRarityFilter}
+                              onChange={(e) => setTeamRarityFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">All Rarity</option>
+                              <option value="5">5★</option>
+                              <option value="4">4★</option>
+                            </select>
                           </div>
                         </div>
+
+                        {/* Character Grid */}
+                        <div className="flex-1 overflow-y-auto p-3">
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                            {filteredChars.map(name => {
+                              const cd = CHARACTER_DATA[name];
+                              const img = collectionImages[name] || '';
+                              const el = cd?.element;
+                              const owned = collectionData.chars5Counts[name] || collectionData.chars4Counts[name];
+                              const isInAnotherTeam = state.teams.some((t, ti) =>
+                                ti !== state.activeTeamIndex && t.slots.includes(name)
+                              );
+                              return (
+                                <button
+                                  key={name}
+                                  onClick={() => selectCharacter(name)}
+                                  className={`relative rounded-lg border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${owned ? (cd?.rarity === 5 ? 'bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'bg-purple-500/10 border-purple-500/30 glow-purple') : 'bg-neutral-800/50 border-neutral-700/50'}`}
+                                  style={{
+                                    height: '90px',
+                                    contain: 'paint',
+                                    opacity: owned ? 1 : 0.5,
+                                  }}
+                                >
+                                  {img && (() => {
+                                    const f = getImageFraming(`collection-${name}`);
+                                    return (
+                                    <img
+                                      src={img}
+                                      alt={name}
+                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                                      style={{
+                                        transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                                        filter: owned ? 'none' : 'grayscale(100%)',
+                                      }}
+                                      loading="lazy"
+                                      onError={hideOnError}
+                                    />
+                                    );
+                                  })()}
+                                  <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
+                                    background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
+                                  }} />
+                                  {/* Element dot */}
+                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[6px] font-bold text-white flex items-center justify-center"
+                                    style={{ background: getElementColor(el) }}>
+                                    {el?.[0]}
+                                  </div>
+                                  {/* Rarity */}
+                                  <div className="absolute top-1 right-1">
+                                    <Star size={8} className={cd?.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                                  </div>
+                                  {/* In another team */}
+                                  {isInAnotherTeam && (
+                                    <div className="absolute top-1 left-1 mt-4">
+                                      <Users size={7} className="text-cyan-400" />
+                                    </div>
+                                  )}
+                                  {/* Role tag */}
+                                  {cd?.role && (
+                                    <div className="absolute bottom-4 inset-x-0 flex justify-center">
+                                      <span className="text-[6px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-white/10">{cd.role}</span>
+                                    </div>
+                                  )}
+                                  {/* Name */}
+                                  <div className="absolute bottom-0 inset-x-0 p-1 z-10">
+                                    <div className="text-white text-[8px] font-medium truncate text-center leading-tight">{name}</div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {filteredChars.length === 0 && (
+                            <div className="text-center py-8">
+                              <Search size={24} className="mx-auto mb-2 text-gray-600" />
+                              <p className="text-gray-500 text-xs">No resonators found</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </FocusTrapModal>
-                  )}
+                    </div>
+                  </FocusTrapModal>
                 </div>
               );
             })()}
