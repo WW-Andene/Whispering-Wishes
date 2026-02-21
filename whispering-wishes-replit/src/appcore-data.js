@@ -542,6 +542,61 @@ const CHARACTER_DATA = {
     teams: ['Buling + Carlotta + Zhezhi', 'Buling + Carlotta + Shorekeeper'] },
 };
 
+// Structured combat data — derived from desc fields. Merged into CHARACTER_DATA.
+// Format: [name, dmgFocus[], buffs[], debuffs[]]
+// dmgFocus: Normal ATK, Heavy ATK, Res. Skill, Liberation, Echo Skill, Coordinated ATK
+[
+  // 5★
+  ['Rover',         ['Normal ATK', 'Res. Skill'],   [],                                      []],
+  ['Jiyan',         ['Heavy ATK', 'Liberation'],     [],                                      []],
+  ['Calcharo',      ['Normal ATK', 'Liberation'],    [],                                      []],
+  ['Encore',        ['Normal ATK'],                  [],                                      []],
+  ['Jianxin',       [],                              ['Shield', 'Grouping', 'Aero Buff'],     []],
+  ['Lingyang',      ['Normal ATK'],                  [],                                      []],
+  ['Verina',        [],                              ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
+  ['Yinlin',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
+  ['Jinhsi',        ['Liberation'],                  [],                                      []],
+  ['Changli',       ['Res. Skill'],                  ['Fusion DMG Amp'],                      []],
+  ['Zhezhi',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
+  ['Xiangli Yao',   ['Normal ATK', 'Res. Skill'],   [],                                      []],
+  ['Shorekeeper',   [],                              ['Crit Buff', 'Heal'],                   []],
+  ['Camellya',      ['Normal ATK'],                  [],                                      []],
+  ['Carlotta',      ['Heavy ATK', 'Liberation'],     [],                                      []],
+  ['Roccia',        [],                              ['Basic ATK Amp'],                       []],
+  ['Phoebe',        ['Res. Skill'],                  [],                                      ['Frazzle']],
+  ['Brant',         ['Normal ATK', 'Res. Skill'],   ['Self-heal'],                           []],
+  ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
+  ['Zani',          ['Normal ATK'],                  [],                                      ['Frazzle']],
+  ['Ciaccona',      [],                              ['Aero Buff'],                           ['Erosion']],
+  ['Cartethyia',    ['Normal ATK'],                  [],                                      ['Erosion']],
+  ['Lupa',          ['Coordinated ATK'],             ['DMG Buff'],                            ['Fusion RES Shred']],
+  ['Phrolova',      ['Echo Skill'],                  [],                                      []],
+  ['Augusta',       ['Normal ATK', 'Liberation'],    ['Shield'],                              []],
+  ['Iuno',          [],                              ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
+  ['Galbrena',      ['Echo Skill', 'Heavy ATK'],     [],                                      []],
+  ['Qiuyuan',       [],                              ['Echo Skill DMG Buff', 'Crit DMG Amp'], []],
+  ['Chisa',         [],                              [],                                      ['DEF Shred']],
+  ['Lynae',         [],                              ['Tune Break DMG Buff'],                 ['Off-Tune']],
+  ['Mornye',        [],                              ['Heal'],                                ['Off-Tune']],
+  ['Luuk Herssen',  ['Normal ATK'],                  [],                                      []],
+  ['Aemeath',       ['Res. Skill', 'Liberation'],    [],                                      []],
+  // 4★
+  ['Aalto',         [],                              [],                                      []],
+  ['Baizhi',        [],                              ['Heal'],                                []],
+  ['Chixia',        ['Normal ATK'],                  [],                                      []],
+  ['Danjin',        [],                              ['Havoc DMG Bonus'],                     []],
+  ['Yangyang',      [],                              ['Energy Regen'],                        []],
+  ['Sanhua',        [],                              ['Basic ATK Amp'],                       []],
+  ['Taoqi',         [],                              ['Shield', 'Res. Skill DMG Deepen'],     []],
+  ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK', 'Shield'],           []],
+  ['Mortefi',       ['Coordinated ATK'],             ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
+  ['Youhu',         [],                              ['Heal', 'Coordinated ATK Amp'],         []],
+  ['Lumi',          [],                              ['Res. Skill DMG Amp'],                  []],
+  ['Buling',        [],                              ['Res. Skill DMG Buff', 'Heal'],         []],
+].forEach(([name, dmgFocus, buffs, debuffs]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs });
+});
+
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
   // 5★ Weapons
