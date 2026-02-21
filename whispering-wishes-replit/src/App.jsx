@@ -715,6 +715,7 @@ function WhisperingWishesInner() {
   const [teamRarityFilter, setTeamRarityFilter] = useState('all');
   const [teamBuffFilter, setTeamBuffFilter] = useState('all');
   const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
+  const [teamDmgFilter, setTeamDmgFilter] = useState('all');
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -4744,6 +4745,7 @@ function WhisperingWishesInner() {
                 setTeamRarityFilter('all');
                 setTeamBuffFilter('all');
                 setTeamDebuffFilter('all');
+                setTeamDmgFilter('all');
                 setTeamSelectorOpen(true);
                 haptic.light();
               };
@@ -4785,9 +4787,14 @@ function WhisperingWishesInner() {
                 if (!data) return false;
                 if (teamElementFilter !== 'all' && data.element !== teamElementFilter) return false;
                 if (teamRarityFilter !== 'all' && data.rarity !== Number(teamRarityFilter)) return false;
-                if (teamBuffFilter !== 'all' && !(data.buffs || []).includes(teamBuffFilter)) return false;
-                if (teamDebuffFilter !== 'all' && !(data.debuffs || []).includes(teamDebuffFilter)) return false;
+                if (teamBuffFilter !== 'all' && !(data.buffs || []).some(b => b.includes(teamBuffFilter))) return false;
+                if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.includes(teamDebuffFilter))) return false;
+                if (teamDmgFilter !== 'all' && !(data.dmgFocus || []).includes(teamDmgFilter)) return false;
                 return true;
+              }).sort((a, b) => {
+                const aRec = recommendedNames.has(a) ? 0 : 1;
+                const bRec = recommendedNames.has(b) ? 0 : 1;
+                return aRec - bRec;
               });
 
               // Element color utilities
@@ -4957,13 +4964,18 @@ function WhisperingWishesInner() {
                                 </div>
                                 {/* Description */}
                                 <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{d.desc}</p>
-                                {/* Damage Type */}
+                                {/* Damage Focus */}
                                 <div className="mb-1.5">
-                                  <div className="text-[9px] text-gray-500 font-medium mb-1">Damage Type</div>
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
-                                    style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                    {d.element} DMG
-                                  </span>
+                                  <div className="text-[9px] text-gray-500 font-medium mb-1">Damage Focus</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                      style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                      {d.element} DMG
+                                    </span>
+                                    {(d.dmgFocus || []).map((df, di) => (
+                                      <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                                    ))}
+                                  </div>
                                 </div>
                                 {/* Buffs */}
                                 {d.buffs?.length > 0 && (
@@ -4983,17 +4995,6 @@ function WhisperingWishesInner() {
                                     <div className="flex flex-wrap gap-1">
                                       {d.debuffs.map((db, di) => (
                                         <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Tags */}
-                                {d.tags?.length > 0 && (
-                                  <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Traits</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {d.tags.map((t, ti) => (
-                                        <span key={ti} className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{t}</span>
                                       ))}
                                     </div>
                                   </div>
@@ -5154,18 +5155,32 @@ function WhisperingWishesInner() {
                               <option value="4">4★</option>
                             </select>
                             <select
+                              value={teamDmgFilter}
+                              onChange={(e) => setTeamDmgFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">Dmg Focus</option>
+                              <option value="Normal ATK">Normal ATK</option>
+                              <option value="Heavy ATK">Heavy ATK</option>
+                              <option value="Res. Skill">Res. Skill</option>
+                              <option value="Liberation">Liberation</option>
+                              <option value="Echo Skill">Echo Skill</option>
+                              <option value="Coordinated ATK">Coordinated ATK</option>
+                            </select>
+                            <select
                               value={teamBuffFilter}
                               onChange={(e) => setTeamBuffFilter(e.target.value)}
                               className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
                             >
                               <option value="all">All Buffs</option>
-                              <option value="ATK Buff">ATK Buff</option>
-                              <option value="Crit Buff">Crit Buff</option>
-                              <option value="DMG Amp">DMG Amp</option>
-                              <option value="Coordinated ATK">Coordinated ATK</option>
-                              <option value="Shield">Shield</option>
                               <option value="Heal">Heal</option>
+                              <option value="Shield">Shield</option>
+                              <option value="Coordinated ATK">Coordinated ATK</option>
+                              <option value="ATK Buff">ATK Buff</option>
+                              <option value="Crit">Crit</option>
+                              <option value="DMG">DMG Buff</option>
                               <option value="Energy Regen">Energy Regen</option>
                               <option value="Grouping">Grouping</option>
                             </select>
@@ -5176,12 +5191,11 @@ function WhisperingWishesInner() {
                               style={{ background: 'var(--bg-btn)' }}
                             >
                               <option value="all">All Debuffs</option>
-                              <option value="Erosion">Erosion</option>
-                              <option value="RES Shred">RES Shred</option>
-                              <option value="DEF Shred">DEF Shred</option>
-                              <option value="Vibration Strength">Vibration Str.</option>
                               <option value="Frazzle">Frazzle</option>
+                              <option value="Erosion">Erosion</option>
                               <option value="Off-Tune">Off-Tune</option>
+                              <option value="DEF Shred">DEF Shred</option>
+                              <option value="RES Shred">RES Shred</option>
                             </select>
                           </div>
                           {/* Recommended teammates indicator */}
@@ -5209,12 +5223,12 @@ function WhisperingWishesInner() {
                                 <button
                                   key={name}
                                   onClick={() => selectCharacter(name)}
-                                  className={`relative rounded-lg border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${isRecommended ? 'border-orange-400/70' : owned ? (cd?.rarity === 5 ? 'bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'bg-purple-500/10 border-purple-500/30 glow-purple') : 'bg-neutral-800/50 border-neutral-700/50'}`}
+                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
                                   style={{
                                     height: '90px',
                                     contain: 'paint',
                                     opacity: owned ? 1 : 0.5,
-                                    ...(isRecommended ? { boxShadow: '0 0 16px rgba(251,146,60,0.35), inset 0 0 12px rgba(251,146,60,0.08)', background: 'rgba(251,146,60,0.08)' } : {}),
+                                    ...(isRecommended ? { boxShadow: '0 0 28px rgba(251,146,60,0.65), 0 0 56px rgba(251,146,60,0.3), inset 0 0 20px rgba(251,146,60,0.2)', background: 'rgba(251,146,60,0.15)' } : {}),
                                   }}
                                 >
                                   {img && (() => {
@@ -5249,6 +5263,12 @@ function WhisperingWishesInner() {
                                   {isInAnotherTeam && (
                                     <div className="absolute top-1 left-1 mt-4">
                                       <Users size={7} className="text-cyan-400" />
+                                    </div>
+                                  )}
+                                  {/* Recommended badge */}
+                                  {isRecommended && (
+                                    <div className="absolute top-0.5 right-0.5 z-10">
+                                      <span className="text-[6px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>
                                     </div>
                                   )}
                                   {/* Role tag */}

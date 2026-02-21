@@ -219,11 +219,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
               </div>
             )}
-            {data.tags?.length > 0 && (
+            {data.dmgFocus?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-500 mb-1">Traits</div>
+                <div className="text-[9px] text-gray-500 mb-1">Damage Focus</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.tags.map((t, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{t}</span>)}
+                  {data.dmgFocus.map((df, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
                 </div>
               </div>
             )}
