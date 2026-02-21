@@ -3509,7 +3509,7 @@ function WhisperingWishesInner() {
                   <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={`Lunite Subscription: ${state.planner.luniteActive ? 'active' : 'inactive'}`} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
-                        <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : 'bg-neutral-700'}`}>
+                        <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
                           {state.planner.luniteActive && <Check size={10} />}
                         </span>
                         <div>
@@ -3567,7 +3567,8 @@ function WhisperingWishesInner() {
                         <span className="text-yellow-400">+{i.astrite}</span>
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
-                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                        {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
+                        <button onClick={() => { if (window.confirm(`Remove "${i.label}"?`)) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -3657,7 +3658,7 @@ function WhisperingWishesInner() {
                     <span className="text-gray-400">Target</span>
                     <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Ast)</span>
                   </div>
-                  <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                     <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
                   </div>
                   <div className="flex justify-between text-[10px] mt-1">
@@ -3744,7 +3745,7 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400 text-[10px]">Percentile</span>
                             <span className="text-white font-bold text-sm">Top {Math.max(1, 100 - luckRating.percentile)}%</span>
                           </div>
-                          <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                             <div className="h-full rounded-full transition-all" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
                           </div>
                           <div className="flex items-baseline justify-between">
@@ -3866,7 +3867,7 @@ function WhisperingWishesInner() {
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
                                               <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
-                                            <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
+                                            <div className="h-1 rounded-full mt-0.5 overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                                               <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
                                             </div>
                                           </div>
@@ -3890,7 +3891,7 @@ function WhisperingWishesInner() {
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
                                               <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
-                                            <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
+                                            <div className="h-1 rounded-full mt-0.5 overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                                               <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
                                             </div>
                                           </div>
@@ -4478,7 +4479,7 @@ function WhisperingWishesInner() {
                         <span className="text-white text-xs font-medium">Collection Progress</span>
                         <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
                       </div>
-                      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden mb-3">
+                      <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-all" style={{width: `${pct}%`}} />
                       </div>
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center text-[9px]">
@@ -4502,7 +4503,8 @@ function WhisperingWishesInner() {
                       value={collectionSearch}
                       onChange={(e) => setCollectionSearch(e.target.value)}
                       placeholder="Search by name..."
-                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs bg-neutral-800/80 border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                      style={{ background: 'var(--bg-btn)' }}
                       aria-label="Search collection by name"
                     />
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -4520,7 +4522,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionElementFilter}
                         onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by element"
                       >
                         <option value="all">All Elements</option>
@@ -4536,7 +4538,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionWeaponFilter}
                         onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by weapon type"
                       >
                         <option value="all">All Weapons</option>
@@ -4551,7 +4553,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionOwnershipFilter}
                         onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by ownership"
                       >
                         <option value="all">All Items</option>
@@ -4574,7 +4576,8 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="px-2 py-1 rounded-lg text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        className="px-2 py-1 rounded-lg text-[10px] text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        style={{ background: 'var(--bg-btn)' }}
                         title="Refresh images if they don't load"
                         aria-label="Refresh images"
                       >
@@ -4582,7 +4585,8 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 border border-white/10'}`}
+                        style={collectionSort !== 'copies' ? { background: 'var(--bg-btn)' } : undefined}
                         title="Sort by copies"
                         aria-label="Sort by copies"
                         aria-pressed={collectionSort === 'copies'}
@@ -4591,7 +4595,8 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 border border-white/10'}`}
+                        style={collectionSort !== 'release' ? { background: 'var(--bg-btn)' } : undefined}
                         title="Sort by release date"
                         aria-label="Sort by release date"
                         aria-pressed={collectionSort === 'release'}
@@ -4794,7 +4799,7 @@ function WhisperingWishesInner() {
                 {/* OLED Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'bg-neutral-800 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Monitor size={16} />
                     </div>
                     <div>
@@ -4802,9 +4807,11 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">True black (#000) for OLED screens</div>
                     </div>
                   </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
-                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
+                    className="relative w-[52px] h-[24px] rounded-[3px] transition-colors"
+                    style={{ background: visualSettings.oledMode ? '#fff' : 'var(--bg-btn)' }}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
                     aria-label="Toggle OLED mode"
@@ -4819,7 +4826,7 @@ function WhisperingWishesInner() {
                 {/* Swipe Navigation Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'bg-neutral-800 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
@@ -4827,9 +4834,11 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Swipe left/right to switch tabs</div>
                     </div>
                   </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
-                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
+                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : ''}`}
+                    style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label="Toggle swipe navigation"
@@ -4844,7 +4853,7 @@ function WhisperingWishesInner() {
                 {/* Animations Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'bg-neutral-800 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -4852,9 +4861,11 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Background effects, transitions & glow</div>
                     </div>
                   </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
-                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
+                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : ''}`}
+                    style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled}
                     aria-label="Toggle animations"
