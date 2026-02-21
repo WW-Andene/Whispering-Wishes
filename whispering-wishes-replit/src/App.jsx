@@ -4811,86 +4811,76 @@ function WhisperingWishesInner() {
                     })}
                   </div>
 
-                  {/* Team Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Users size={14} className="text-yellow-400" />
-                      <span className="text-white text-xs font-medium">{activeTeam.name}</span>
-                    </div>
-                    <button
-                      onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
-                      className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                      style={{ background: 'var(--bg-btn)' }}
-                    >
-                      Clear
-                    </button>
-                  </div>
+                  {/* Character Cards — inside Card like collection tab */}
+                  <Card>
+                    <CardHeader action={
+                      <button
+                        onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                        className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                        style={{ background: 'var(--bg-btn)' }}
+                      >
+                        Clear
+                      </button>
+                    }>
+                      <Users size={14} className="text-yellow-400" /> {activeTeam.name}
+                    </CardHeader>
+                    <CardBody>
+                      <div className="grid grid-cols-3 gap-2">
+                        {teamSlots.map((charName, slotIdx) => {
+                          const charData = charName ? CHARACTER_DATA[charName] : null;
+                          const imgUrl = charName ? (collectionImages[charName] || '') : '';
+                          const framing = charName ? getImageFraming(`collection-${charName}`) : null;
 
-                  {/* Character Cards Grid — matches CollectionGridCard style */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {teamSlots.map((charName, slotIdx) => {
-                      const charData = charName ? CHARACTER_DATA[charName] : null;
-                      const imgUrl = charName ? (collectionImages[charName] || '') : '';
-                      const element = charData?.element;
-                      const framing = charName ? getImageFraming(`collection-${charName}`) : null;
+                          if (!charName) {
+                            return (
+                              <button
+                                key={slotIdx}
+                                onClick={() => openSelector(slotIdx)}
+                                className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                                style={{ height: '110px', contain: 'paint' }}
+                              >
+                                <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
+                                <span className="text-[9px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                              </button>
+                            );
+                          }
 
-                      if (!charName) {
-                        return (
-                          <button
-                            key={slotIdx}
-                            onClick={() => openSelector(slotIdx)}
-                            className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group bg-neutral-800/30"
-                            style={{ height: '140px', contain: 'paint' }}
-                          >
-                            <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
-                              <Plus size={20} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
+                          const rarity5 = charData?.rarity === 5;
+                          return (
+                            <div
+                              key={slotIdx}
+                              className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              style={{ height: '110px', contain: 'paint' }}
+                              onClick={() => openSelector(slotIdx)}
+                            >
+                              {imgUrl && (
+                                <img
+                                  src={imgUrl}
+                                  alt={charName}
+                                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                                  style={{
+                                    transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+                                  }}
+                                  loading="lazy"
+                                  onError={hideOnError}
+                                />
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
+                                className="absolute top-1 right-1 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={10} />
+                              </button>
+                              <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} font-bold text-sm`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                <div className={`text-[9px] truncate text-gray-200`}>{charName}</div>
+                              </div>
                             </div>
-                            <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
-                          </button>
-                        );
-                      }
-
-                      const rarity5 = charData?.rarity === 5;
-                      return (
-                        <div
-                          key={slotIdx}
-                          className={`relative overflow-hidden border rounded-lg cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
-                          style={{ height: '140px', contain: 'paint' }}
-                          onClick={() => openSelector(slotIdx)}
-                        >
-                          {/* Character image — identical to CollectionGridCard */}
-                          {imgUrl && (
-                            <img
-                              src={imgUrl}
-                              alt={charName}
-                              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                              style={{
-                                transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-                              }}
-                              loading="lazy"
-                              onError={hideOnError}
-                            />
-                          )}
-                          {/* Remove button */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                            className="absolute top-1 right-1 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                          >
-                            <X size={10} />
-                          </button>
-                          {/* Bottom overlay — identical to CollectionGridCard */}
-                          <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
-                            <div className="flex">
-                              {Array.from({ length: charData?.rarity || 0 }, (_, i) => (
-                                <Star key={i} size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
-                              ))}
-                            </div>
-                            <div className="text-white text-[9px] truncate">{charName}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                    </CardBody>
+                  </Card>
 
                   {/* Team Elements */}
                   {teamSlots.some(s => s) && (
