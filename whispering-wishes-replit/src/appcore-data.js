@@ -336,7 +336,7 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
     teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Cantarella + Verina'] },
-  'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Main DPS',
+  'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Acolyte of the Order of the Deep. Premier Spectro Frazzle applicator.',
     skills: ['Chamuel\'s Star', 'Seeking the Light', 'Dawn of Enlightenment', 'Starflash'],
     ascension: { boss: 'Cleansing Conch', common: 'Whisperin Core', specialty: 'Firecracker Jewelweed' },
