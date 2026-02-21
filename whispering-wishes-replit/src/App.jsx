@@ -4826,20 +4826,21 @@ function WhisperingWishesInner() {
                     </button>
                   </div>
 
-                  {/* Character Cards Grid — square cards like collection */}
-                  <div className="grid grid-cols-3 gap-2.5">
+                  {/* Character Cards Grid — matches CollectionGridCard style */}
+                  <div className="grid grid-cols-3 gap-2">
                     {teamSlots.map((charName, slotIdx) => {
                       const charData = charName ? CHARACTER_DATA[charName] : null;
                       const imgUrl = charName ? (collectionImages[charName] || '') : '';
                       const element = charData?.element;
-                      const framing = charName ? getImageFraming(charName) : null;
+                      const framing = charName ? getImageFraming(`collection-${charName}`) : null;
 
                       if (!charName) {
                         return (
                           <button
                             key={slotIdx}
                             onClick={() => openSelector(slotIdx)}
-                            className="aspect-square rounded-lg border-2 border-dashed border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group bg-neutral-800/30"
+                            className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group bg-neutral-800/30"
+                            style={{ height: '140px', contain: 'paint' }}
                           >
                             <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:border-yellow-500/50 group-hover:bg-yellow-500/10 transition-all">
                               <Plus size={20} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
@@ -4849,37 +4850,27 @@ function WhisperingWishesInner() {
                         );
                       }
 
+                      const rarity5 = charData?.rarity === 5;
                       return (
                         <div
                           key={slotIdx}
-                          className="relative aspect-square rounded-lg border overflow-hidden cursor-pointer group"
-                          style={{
-                            borderColor: getElementBorder(element),
-                            background: `linear-gradient(to bottom, ${getElementBg(element)}, rgba(0,0,0,0.8))`,
-                            contain: 'paint',
-                          }}
+                          className={`relative overflow-hidden border rounded-lg cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                          style={{ height: '140px', contain: 'paint' }}
                           onClick={() => openSelector(slotIdx)}
                         >
-                          {/* Character image — same style as collection grid */}
+                          {/* Character image — identical to CollectionGridCard */}
                           {imgUrl && (
                             <img
                               src={imgUrl}
                               alt={charName}
                               className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                              style={framing ? {
-                                transform: `scale(${(framing.zoom || 100) / 100}) translate(${-(framing.x || 0)}%, ${-(framing.y || 0)}%)`,
-                              } : { transform: 'scale(1.4) translateY(8%)' }}
+                              style={{
+                                transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+                              }}
                               loading="lazy"
                               onError={hideOnError}
                             />
                           )}
-                          {/* Element badge */}
-                          <div className="absolute top-1.5 left-1.5 z-10">
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold text-white"
-                              style={{ background: getElementColor(element), boxShadow: `0 0 8px ${getElementColor(element)}60` }}>
-                              {element?.[0]}
-                            </div>
-                          </div>
                           {/* Remove button */}
                           <button
                             onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
@@ -4887,15 +4878,14 @@ function WhisperingWishesInner() {
                           >
                             <X size={10} />
                           </button>
-                          {/* Bottom overlay — matches collection card */}
+                          {/* Bottom overlay — identical to CollectionGridCard */}
                           <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
                             <div className="flex">
                               {Array.from({ length: charData?.rarity || 0 }, (_, i) => (
-                                <Star key={i} size={8} className={charData.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                                <Star key={i} size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
                               ))}
                             </div>
-                            <div className="text-white text-[10px] font-semibold truncate leading-tight mt-0.5">{charName}</div>
-                            <div className="text-[8px] mt-0.5" style={{ color: getElementColor(element) }}>{charData?.element} • {charData?.role}</div>
+                            <div className="text-white text-[9px] truncate">{charName}</div>
                           </div>
                         </div>
                       );
@@ -5075,27 +5065,30 @@ function WhisperingWishesInner() {
                                   <button
                                     key={name}
                                     onClick={() => selectCharacter(name)}
-                                    className="relative rounded-xl border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group aspect-square"
+                                    className={`relative rounded-lg border overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group ${owned ? (cd?.rarity === 5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30') : 'bg-neutral-800/50 border-neutral-700/50'}`}
                                     style={{
-                                      borderColor: owned ? getElementBorder(el) : 'rgba(255,255,255,0.1)',
-                                      background: `linear-gradient(135deg, ${getElementBg(el)}, rgba(0,0,0,0.4))`,
+                                      height: '90px',
+                                      contain: 'paint',
                                       opacity: owned ? 1 : 0.5,
                                     }}
                                   >
                                     {/* Character Image */}
-                                    {img && (
+                                    {img && (() => {
+                                      const f = getImageFraming(`collection-${name}`);
+                                      return (
                                       <img
                                         src={img}
                                         alt={name}
-                                        className="absolute inset-0 w-full h-full object-contain"
-                                        style={(() => {
-                                          const f = getImageFraming(name);
-                                          return f ? { transform: `scale(${(f.zoom || 100) / 100}) translate(${-(f.x || 0)}%, ${-(f.y || 0)}%)` } : undefined;
-                                        })()}
+                                        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                                        style={{
+                                          transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                                          filter: owned ? 'none' : 'grayscale(100%)',
+                                        }}
                                         loading="lazy"
                                         onError={hideOnError}
                                       />
-                                    )}
+                                      );
+                                    })()}
                                     {/* Bottom gradient */}
                                     <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
                                       background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
