@@ -2616,6 +2616,12 @@ function WhisperingWishesInner() {
         throw new Error('No valid pull entries found — check data format');
       }
       
+      // Auto-save pre-import backup (mirrors restore flow) so users can recover if import corrupts data
+      try {
+        const preImportBackup = JSON.stringify({ timestamp: new Date().toISOString(), version: APP_VERSION, state: stateRef.current, _preImport: true });
+        localStorage.setItem('whispering-wishes-pre-import-backup', preImportBackup);
+      } catch {} // best-effort — don't block import if backup fails
+
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
           const poolType = p.cardPoolType ?? p.gachaType;
