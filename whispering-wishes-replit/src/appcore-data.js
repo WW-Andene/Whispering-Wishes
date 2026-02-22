@@ -147,9 +147,9 @@ const CURRENT_BANNERS = {
     { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
   ],
   weapons: [
-    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Celestial Spiral', 'Waning Redshift', 'Discord'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
-    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Broadblade', forCharacter: 'Chisa', element: 'Havoc', isNew: false, featured4Stars: ['Celestial Spiral', 'Waning Redshift', 'Discord'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
-    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Broadblade', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Celestial Spiral', 'Waning Redshift', 'Discord'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
+    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Commando of Conviction', 'Waning Redshift', 'Cadenza'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
+    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Broadblade', forCharacter: 'Chisa', element: 'Havoc', isNew: false, featured4Stars: ['Commando of Conviction', 'Waning Redshift', 'Cadenza'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
+    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Broadblade', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Commando of Conviction', 'Waning Redshift', 'Cadenza'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
