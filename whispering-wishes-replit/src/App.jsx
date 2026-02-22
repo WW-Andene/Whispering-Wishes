@@ -5138,6 +5138,7 @@ function WhisperingWishesInner() {
                               onChange={(e) => setTeamElementFilter(e.target.value)}
                               className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by element"
                             >
                               <option value="all">All Elements</option>
                               <option value="Aero">Aero</option>
@@ -5152,6 +5153,7 @@ function WhisperingWishesInner() {
                               onChange={(e) => setTeamRarityFilter(e.target.value)}
                               className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by rarity"
                             >
                               <option value="all">All Rarity</option>
                               <option value="5">5★</option>
@@ -5162,6 +5164,7 @@ function WhisperingWishesInner() {
                               onChange={(e) => setTeamDmgFilter(e.target.value)}
                               className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by damage focus"
                             >
                               <option value="all">Dmg Focus</option>
                               <option value="Normal ATK">Normal ATK</option>
@@ -5801,10 +5804,11 @@ Example: {"pulls":[...]}'
                         }
                         if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
                           localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
-                          setCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+                          setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
                         }
                         if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
                           localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+                          setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
                         }
                       } catch {}
                     }
