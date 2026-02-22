@@ -91,6 +91,7 @@ import {
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
   STANDARD_5STAR_WEAPONS,
+  generateUniqueId,
   ADMIN_HASH,
   ADMIN_BANNER_KEY,
   AppErrorBoundary,
@@ -198,7 +199,7 @@ function WhisperingWishesInner() {
   const [activePlayersHistory, setActivePlayersHistory] = useState([]); // last ~30 data points
   const [presenceError, setPresenceError] = useState(null);
   const [adminPlayerList, setAdminPlayerList] = useState(null); // full player data for admin only
-  const presenceSessionId = useRef('s_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36));
+  const presenceSessionId = useRef('s_' + generateUniqueId().replace(/-/g, '').slice(0, 12));
   
   // P6-FIX: Controlled admin banner form state — replaces all document.getElementById calls (HIGH-17/18)
   const buildBannerForm = useCallback((banners) => ({
@@ -2665,7 +2666,7 @@ function WhisperingWishesInner() {
           const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
 
           return {
-            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`,
+            id: p.id || `imp_${generateUniqueId()}_${i}`,
             name,
             rarity,
             pity: rarity === 5 ? pity : 0,
@@ -2894,6 +2895,7 @@ function WhisperingWishesInner() {
     const safeCompare = (a, b) => { if (!a || !b || a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; };
     if (safeCompare(saltedHash, ADMIN_HASH) || safeCompare(legacyHash, ADMIN_HASH)) {
       setAdminUnlocked(true);
+      setAdminPassword(''); // Clear plaintext password from React state after successful auth
       setBannerForm(buildBannerForm(activeBanners));
       try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
     } else {
@@ -3533,7 +3535,7 @@ function WhisperingWishesInner() {
                   </button>
                   {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}
                   {/* AUDIT-FIX L22: Toast feedback for purchases */}
-                  <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
+                  <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
                     <div className="flex items-center justify-between w-full">
                       <div>
                         <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
@@ -3543,7 +3545,7 @@ function WhisperingWishesInner() {
                     </div>
                   </button>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div>
                           <div className="text-gray-200 text-xs font-medium">{s.name}</div>
@@ -3555,7 +3557,7 @@ function WhisperingWishesInner() {
                   ))}
                   <div className="kuro-label mt-3">Direct Top-Ups</div>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
                         <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
