@@ -674,13 +674,18 @@ const reducer = (state, action) => {
       if (!b) return state;
       // P9-FIX: Restore ALL saved calc fields, not just a subset (Step 4 audit)
       // Bookmarks save ...state.calc, so we restore every calc field that was captured.
-      // Destructure out non-calc metadata, spread the rest as calc fields.
+      // Destructure out non-calc metadata, validate remaining fields against known calc keys.
       const { id: _id, name: _name, timestamp: _ts, ...savedCalc } = b;
+      // Only spread fields that exist in initialState.calc to prevent state pollution
+      const validCalc = {};
+      for (const key of Object.keys(savedCalc)) {
+        if (key in initialState.calc) validCalc[key] = savedCalc[key];
+      }
       return {
         ...state,
         calc: {
           ...state.calc,
-          ...savedCalc,
+          ...validCalc,
         },
       };
     }

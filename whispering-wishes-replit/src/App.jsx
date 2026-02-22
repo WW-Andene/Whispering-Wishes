@@ -2459,7 +2459,7 @@ function WhisperingWishesInner() {
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
     const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
-    const goalDaysNeeded = dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity;
+    const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
     const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
     return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress };
   }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
@@ -2652,14 +2652,9 @@ function WhisperingWishesInner() {
                 lastWasLost = isStandard;
               }
             } else if (type === 'weapon') {
-              const isStandard = STANDARD_5STAR_WEAPONS.has(name);
-              if (lastWasLost) {
-                won5050 = null;
-                lastWasLost = false;
-              } else {
-                won5050 = !isStandard;
-                lastWasLost = isStandard;
-              }
+              // Weapon Event Convene has NO 50/50 — every 5★ is always the featured weapon.
+              // won5050 is always null (not applicable) for weapon event banners.
+              won5050 = null;
             }
             pityCounter = 0;
           }
@@ -2697,7 +2692,8 @@ function WhisperingWishesInner() {
           }
           const fiveStars = history.filter(p => p.rarity === 5);
           const lastFive = fiveStars[fiveStars.length - 1];
-          const guaranteed = (type === 'featured' || type === 'weapon') && lastFive?.won5050 === false;
+          // Weapon Event Convene has no 50/50 — guaranteed is only relevant for character banners
+          const guaranteed = type === 'featured' && lastFive?.won5050 === false;
           dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
           totalImported += history.length;
         }
@@ -2785,9 +2781,14 @@ function WhisperingWishesInner() {
     }
   }, [pasteJsonText, processImportData, toast]);
 
-  // Export data
+  // Export data — includes main state + auxiliary localStorage settings for full round-trip
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state };
+    const aux = {};
+    try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+    const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state, ...(Object.keys(aux).length > 0 ? { aux } : {}) };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -3663,12 +3664,12 @@ function WhisperingWishesInner() {
                 <div className="p-2 bg-white/5 rounded text-[10px] text-gray-400 text-center">
                   Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
                 </div>
-                <div className="p-3 bg-white/5 rounded-lg">
+                <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-400">Target</span>
                     <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Astrite)</span>
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }} role="progressbar" aria-valuenow={planData.goalProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Goal progress: ${planData.goalProgress.toFixed(1)}%`}>
                     <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
                   </div>
                   <div className="flex justify-between text-[10px] mt-1">
@@ -5746,6 +5747,12 @@ Example: {"pulls":[...]}'
                     const backupVersion = data.version || 'unknown';
                     const pullCount = (s.profile?.featured?.history?.length || 0) + (s.profile?.weapon?.history?.length || 0) + (s.profile?.standardChar?.history?.length || 0) + (s.profile?.standardWeap?.history?.length || 0);
                     
+                    // Auto-save pre-restore backup to localStorage for recovery
+                    try {
+                      const preRestoreBackup = JSON.stringify({ timestamp: new Date().toISOString(), version: APP_VERSION, state: stateRef.current, _preRestore: true });
+                      localStorage.setItem('whispering-wishes-pre-restore-backup', preRestoreBackup);
+                    } catch {} // best-effort — don't block restore if backup fails
+
                     // Confirmation dialog
                     const confirmed = window.confirm(
                       `Restore backup from v${backupVersion}?\n\n` +
@@ -5753,7 +5760,8 @@ Example: {"pulls":[...]}'
                       `• ${pullCount} total Convenes\n` +
                       `• ${s.bookmarks?.length || 0} bookmarks\n` +
                       `• All calculator & planner settings\n\n` +
-                      `This action cannot be undone. Continue?`
+                      `A pre-restore backup has been saved automatically.\n` +
+                      `Continue?`
                     );
                     if (!confirmed) return;
                     
@@ -5778,6 +5786,26 @@ Example: {"pulls":[...]}'
                       bookmarks: Array.isArray(safeParsed.bookmarks) ? safeParsed.bookmarks : [],
                     };
                     dispatch({ type: 'LOAD_STATE', state: restoredState });
+                    // Restore auxiliary localStorage data if present in backup
+                    if (data.aux && typeof data.aux === 'object') {
+                      try {
+                        if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+                          localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+                          setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+                        }
+                        if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+                          localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+                          setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+                        }
+                        if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+                          localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+                          setCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+                        }
+                        if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+                          localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+                        }
+                      } catch {}
+                    }
                     toast?.addToast?.(`Backup restored! (v${backupVersion})`, 'success');
                     setRestoreText('');
                     setShowExportModal(false);
