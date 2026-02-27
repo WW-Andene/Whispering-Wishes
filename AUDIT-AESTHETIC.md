@@ -1251,6 +1251,470 @@ LOADING STATE SPECIFICATION — Data Import
 
 ---
 
+## XIV. SOURCE MATERIAL INTELLIGENCE
+
+> **Source:** Wuthering Waves (Kuro Games, 2024–present). The app's §0 identifies Wuthering Waves as the subject identity (A4: Strong aesthetic). The `.kuro-*` CSS class prefix, game-native terminology ("Resonators," "Convene," "Astrite"), and element-color mapping all derive directly from the game. This section executes the full source research protocol.
+
+### §SR0. Source Research Mandate
+
+**Research passes executed:**
+
+```
+Pass 1 (UI screenshots):  Wuthering Waves in-game UI, menus, HUD
+  Evidence: Game UI uses a dark navy-black base with angular panel framing,
+  gold/amber accent for premium currency (Astrite) and 5-star indicators,
+  element-coded colors matching the 6 in-game elements.
+
+Pass 2 (Art direction):   Kuro Games visual development philosophy
+  Evidence: Post-apocalyptic sci-fi aesthetic blending Eastern (Chinese ink wash,
+  calligraphic motifs) and Western (industrial sci-fi, brutalist tech) traditions.
+  Art direction emphasizes "technological sublime" — high-tech interfaces in a
+  ruined world. UI designed to feel diegetic (exists in the game world).
+
+Pass 3 (Cultural roots):  Chinese wuxia/xianxia fantasy + post-apocalyptic sci-fi
+  Evidence: Strong influence from Chinese ink-wash painting (shuǐmò) in environmental
+  art, contrasted with hard-edged technological UI panels. The fusion of organic/natural
+  and technological/angular is the game's defining visual tension.
+
+Pass 4 (Community codification):  Fan-extracted palettes and aesthetic analysis
+  Evidence: Community identifies WuWa's palette as "dark navy + amber gold + element neons."
+  Fan tools consistently use dark backgrounds with gold accents. The element color system
+  (Fusion=orange, Glacio=cyan, Electro=purple, Aero=green, Havoc=pink, Spectro=yellow)
+  is canonical and universally adopted by companion tools.
+
+Pass 5 (Competitive):  Wuthering Waves vs Genshin Impact visual identity
+  Evidence: Genshin uses warmer, lighter tones (sky blue, warm gold, pastoral).
+  WuWa deliberately differentiates with darker, cooler, more angular aesthetics.
+  The "technological ruin" vibe vs Genshin's "fantasy adventure" vibe is the
+  clearest differentiator. WuWa's UI is more HUD-like; Genshin's is more book-like.
+```
+
+### §SR1. Source Style Brief
+
+```
+━━━ SOURCE STYLE BRIEF ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Source: Wuthering Waves (Kuro Games, 2024 — current live version)
+Research method: 5-pass protocol (UI evidence, art direction, cultural roots,
+  community codification, competitive differentiation)
+Reference quality: MEDIUM (community-compiled references + gameplay evidence;
+  no official art book citations)
+Era/version specificity: Current live version (post-1.0, including UI refinements
+  through version 2.x)
+
+━━━ LAYER 1: SURFACE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+─── COLOR PALETTE ────────────────────────────────────────────
+  Dominant backgrounds:   Deep navy-black (~oklch(10-14% 0.02-0.03 240-250))
+                          Not neutral black — distinctly blue-shifted dark
+  Primary surfaces:       Dark blue-gray panels with subtle angular framing
+                          Slightly lighter than background (~oklch(16-20% 0.02 240))
+  Accent / highlight:     Amber-gold for premium items, Astrite currency, 5-star
+                          indicators (~oklch(78-82% 0.17-0.19 80-85))
+                          This IS the color Whispering Wishes uses as #fbbf24
+  Typography colors:      White/near-white for primary (#e8e8f0 — slightly blue-tinted)
+                          Muted blue-gray for secondary (~oklch(60% 0.01 240))
+  Glow / atmosphere:      Element-specific glow on character portraits, skill icons,
+                          and UI accent moments. Cyan for Glacio, orange for Fusion, etc.
+  Palette character:      Cool-dominant with selective warm amber highlights; low average
+                          chroma (~0.03) except accent at high chroma (~0.18).
+                          Monochromatic dark with element-coded color punctuation.
+  Colors that NEVER appear: Pastel tones, warm browns, earthy greens, cream/beige,
+                             bright pure white backgrounds. No pastoral warmth.
+
+─── TYPOGRAPHY CHARACTER ─────────────────────────────────────
+  Heading typeface feel:  Geometric sans-serif, slightly condensed, clean terminals.
+                          Feels institutional/military — authority without warmth.
+  Body typeface feel:     Clean geometric sans, similar to DIN or Barlow family.
+                          Functional, precise, not humanist.
+  Weight range used:      400 (body) to 700 (headings) — standard, no extreme weights
+  Tracking character:     Slightly expanded on UI labels and small text (+0.03-0.05em).
+                          Normal on body. Tight on display numbers.
+  Distinctive type treatments: All-caps on UI labels with expanded tracking.
+                               Numeric displays use tabular, monospaced alignment.
+                               Section headers sometimes use a light weight (300) for
+                               subtitle contrast.
+  Hierarchy strategy:     Size + weight + case. Headings: larger, bolder, title case.
+                          Labels: smaller, all-caps, tracked. Numbers: bold, tight.
+  Typeface to use (mapped): Geist Sans (geometric precision, modern terminals) or
+                             Barlow Semi Condensed (military/institutional feel,
+                             condensed proportions matching game UI density)
+
+─── ICONOGRAPHY GRAMMAR ──────────────────────────────────────
+  Icon style:             Line icons with slight angular quality — not fully rounded
+  Stroke weight:          ~1.5px at 24px — precise, not heavy
+  Corner treatment:       Slightly rounded, not fully circular terminals
+  Complexity level:       Moderate — functional with some decorative detail on
+                          element-specific icons
+  Distinctive motifs:     Angular bracket/chevron motifs on panel frames.
+                          Diamond/rhombus shapes in element indicators.
+                          Circuit-trace line patterns in loading/transition screens.
+  Cultural/thematic roots: Chinese/East Asian design influence — subtle calligraphic
+                           curves in some ornamental elements. Tech-meets-tradition.
+  What icons are NOT:     Not cute, not rounded-friendly, not Material-style.
+                          Never fully circular — angular is the default.
+
+─── SPATIAL GRAMMAR ──────────────────────────────────────────
+  Layout character:       Panel-based with angular framing. Information-dense.
+                          HUD-like spatial organization (status bars, gauges,
+                          element indicators positioned like cockpit instruments).
+  Density:                High — game UI packs character stats, element info,
+                          ability descriptions, and resource counts per screen.
+  Padding rhythm:         Tight — ~8-12px padding within panels, narrow gutters.
+  Border/frame treatment: Angular bracket/chevron corner decorations on panels.
+                          Thin luminous borders at low opacity. Not rounded —
+                          panels have slightly chamfered or angular corners.
+  Layering depth:         Dramatic — background environment → mid-ground vignette →
+                          foreground UI panels → overlay modals/tooltips.
+  Signature spatial elements: The angular corner-bracket frame on data panels.
+                               The thin gold accent line on premium UI elements.
+                               The vignette darkening at screen edges.
+
+─── ATMOSPHERIC QUALITIES ────────────────────────────────────
+  Light source character: Ambient, no strong directional source in UI. Some elements
+                          have internal luminosity (glow from within, not lit from outside).
+  Depth cues used:        Blur falloff on background, vignette at edges, luminous
+                          glow halos on highlighted elements, translucency on panels.
+  Texture presence:       Subtle noise/grain on some surfaces. Environmental
+                          backgrounds have painterly quality (ink wash influence).
+  Contrast strategy:      High contrast — bright elements on very dark backgrounds.
+                          Chroma contrast: nearly monochromatic dark with selective
+                          vivid accent moments.
+  Atmospheric signature:  "Technological sublime in ruins" — the UI feels like it
+                          exists inside a barely-lit command center of a fallen
+                          civilization's technology. Dark, precise, luminous at edges.
+
+─── MOTION CHARACTER ─────────────────────────────────────────
+  Speed character:        Snappy — 100-200ms for UI transitions. No lingering.
+  Signature transitions:  Panels slide in with slight scale. Element glow pulses
+                          on selection. Tab transitions are cross-fades, not spatial.
+  Motion personality:     Mechanical-to-considered — precise, efficient, no bounce.
+                          More institutional than playful.
+  What motion AVOIDS:     No spring physics, no bounce, no overshoot.
+                          No organic/fluid motion — everything is controlled.
+
+━━━ LAYER 2: STRUCTURAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+─── VISUAL HIERARCHY STRATEGY ───────────────────────────────
+  Primary attention target: Character artwork / active ability display
+  How contrast is used:   Bright character art on dark panels creates immediate focal
+  Hierarchy tools:        Size (character art large), color (gold = premium),
+                          glow (element color = active/important)
+  Consistently de-emphasized: Resource counts, secondary stats — small, muted
+
+─── MOTIF & SYMBOL LIBRARY ──────────────────────────────────
+  Recurring geometric forms: Angular brackets/chevrons as panel frame decoration
+                              Diamond/rhombus shapes in element indicators
+                              Hexagonal motifs in some system interfaces
+  Ornamental patterns:    Thin accent lines along panel edges (gold for premium)
+                          Circuit-trace patterns in loading transitions
+  Symbolic vocabulary:    Element symbols (6 canonical icons), star rarity indicators,
+                          currency (Astrite) represented by amber crystal
+  Color-role consistency: Amber/gold = premium/5-star/Astrite — NEVER decorative
+                          Element colors = ALWAYS their specific element — NEVER mixed
+                          White = neutral UI text — NEVER used as accent
+
+─── NEGATIVE SPACE DEFINITION ───────────────────────────────
+  Excluded palette ranges:  Warm earth tones, pastels, neon green, orange-red (fire)
+  Excluded form language:   Fully rounded corners (>12px radius), circular containers,
+                            bubbly/soft shapes
+  Excluded typographic moves: Script/calligraphic display type, extremely heavy weights,
+                               decorative serifs
+  Excluded atmospheric qualities: Warmth, softness, coziness, pastoral calm
+  Excluded motion qualities: Bounce, wobble, elastic, slow-motion reveal
+
+━━━ LAYER 3: CULTURAL & HISTORICAL ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+─── VISUAL TRADITIONS DRAWN FROM ────────────────────────────
+  Primary cultural references:
+    - Chinese ink-wash painting (shuǐmò) — atmospheric depth, calligraphic
+      energy in environmental art, use of void as compositional element
+    - Sci-fi brutalism — angular, utilitarian UI framing; the "command
+      center" spatial metaphor for data-dense panels
+  Historical art movements:
+    - Futurism (speed, technology, forward motion)
+    - Chinese landscape tradition (vast emptiness as power, not absence)
+  Regional character:
+    - Chinese (mainland) game design sensibility — information density
+      that Western UI designers would typically reduce is retained as
+      "expertise signaling." Dense data = respect for the player's intelligence.
+  What it rejects culturally:
+    - Japanese kawaii/cute conventions (despite being an anime-styled game)
+    - Western minimalism (the UI is intentionally dense, not sparse)
+    - Material Design conventions (no Google-style elevation/shadow system)
+
+━━━ LAYER 4: PHILOSOPHICAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+─── DESIGN PHILOSOPHY EXTRACTION ────────────────────────────
+  What problem was this visual language solving?
+    The UI must feel like it belongs IN the game world (diegetic design) while
+    remaining functionally usable as a data-heavy RPG interface. The failure mode
+    avoided: generic anime game UI that breaks immersion.
+
+  What emotional experience was being engineered?
+    "You are the last operator of a civilization's most advanced technology.
+    The interface is precise because what you're doing matters. The darkness
+    is not absence — it's the depth of the world you're operating in."
+
+  What does the design say to the user non-verbally?
+    "This is serious. This world is beautiful but dangerous. You are an
+    insider operating powerful systems. We respect your competence."
+
+  How do individual visual choices serve this intent?
+    - Angular panel frames = "manufactured technology" (not organic, not generic)
+    - Gold accent = "premium/critical/worth attention" (not decorative)
+    - Dense information = "you can handle this" (respect, not overwhelm)
+
+  What would be lost if the aesthetic were stripped to generic?
+    The sense of place — the feeling that the UI exists in the game's world,
+    not above it. The "insider operator" emotional register. The authority
+    that comes from precise, intentional darkness.
+
+━━━ LAYER 5: IDENTITY THESIS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+─── IDENTITY THESIS ─────────────────────────────────────────
+  Thesis: "A cool, angular, information-dense vocabulary built from dark
+    blue-black surfaces and selective gold-amber accent that communicates
+    precision mastery and diegetic technology — never warm, never sparse,
+    never generic game UI."
+
+  Three decisions that make the source instantly recognizable:
+    1. The angular bracket/chevron corner decoration on panels — more than
+       any color, this is the framing signature
+    2. The gold-amber accent reserved exclusively for premium/critical
+       elements (Astrite, 5-star, key CTAs) — never decorative
+    3. The deep blue-black background (oklch ~12% with 240° hue) — not
+       neutral black, distinctly cool-shifted
+
+  Minimum authentic set:
+    1. Deep blue-black background with cool hue shift (not neutral)
+    2. Gold-amber accent for premium/critical signaling only
+    3. Angular corner decorations on data panels
+    4. Element-color system (6 canonical element colors)
+    5. Dense, HUD-like spatial character (tight padding, data-forward)
+    6. Cool-tinted text (not neutral gray)
+
+  What would kill the identity:
+    1. Warm, pastoral tones (beige, cream, warm gray)
+    2. Rounded, soft, "friendly" components (bubble shapes, large radius)
+    3. Sparse, whitespace-heavy layout (contradicts the dense expertise signal)
+
+─── TRANSLATION CONSTRAINTS ─────────────────────────────────
+  What translates well to web UI:
+    - Dark blue-black surface palette → direct translation to CSS
+    - Gold accent system → already implemented as #fbbf24 / --color-gold
+    - Element-color mapping → already implemented
+    - Dense spatial rhythm → natural for data-heavy companion app
+    - Cool-tinted text → CSS variable replacement
+
+  What requires interpretation:
+    - Angular panel framing: Game uses clip-path-like angular cuts on panels.
+      Web translation: the existing corner L-shape decorations (::before/::after)
+      are the correct interpretation — but need higher opacity (D-HIERARCHY-1)
+    - Diegetic atmosphere: Game has 3D environment behind UI. Web translation:
+      the canvas wave background is an excellent interpretation of "world behind
+      the interface."
+
+  What to avoid copying literally:
+    - Game HUD elements sized for TV distance (44px+ touch targets already correct)
+    - In-game environmental textures as web backgrounds (would be heavy and kitsch)
+    - Character art as dominant visual element (the companion app is about data,
+      not screenshots — character art should support, not dominate)
+
+  Scale-specific issues:
+    - Game UI designed for 1080p+ screens at arm's length — web must work at 375px mobile
+    - Angular corner decorations at 12px game-scale → need minimum 8px for web visibility
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### §SR2. Fidelity Spectrum
+
+**Target fidelity level: L3 — Visual Vocabulary**
+
+This is a fan-created companion tool (not an official Kuro Games product). L4 (Deep fidelity) would require licensing considerations and risk looking like an unofficial clone. L3 maintains the visual vocabulary (colors, typography character, spatial grammar, atmospheric quality) while allowing the companion app to have its own identity within the source's design orbit.
+
+The existing implementation is at **L3 with aspects of L4** — the element-color system, gold accent usage, angular corner motifs, dense spatial rhythm, and canvas atmosphere all derive from the source. The primary L3 gaps are the neutral text stack and system font, which read as "web default" rather than "Wuthering Waves vocabulary."
+
+### §SR3. Source Translation Plan
+
+```
+━━━ IDENTITY THESIS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"A cool, angular, information-dense vocabulary built from dark blue-black
+surfaces and selective gold-amber accent that communicates precision mastery
+and diegetic technology — never warm, never sparse, never generic game UI."
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+─── MINIMUM AUTHENTIC SET ──────────────────────────────────────────────
+
+ELEMENT: Deep blue-black background
+  Source: oklch(10-14% 0.02-0.03 240-250) — not neutral, blue-shifted
+  Identity role: Creates the "void" — the technological depth that everything floats in
+  Translation: ✓ IMPLEMENTED — #080c14 (oklch ~8% 0.02 240) — correctly blue-shifted
+  Fidelity level: L3 ✓
+  Status: COMPLETE — protect this value
+
+ELEMENT: Gold-amber accent for premium signaling
+  Source: ~oklch(78-82% 0.17-0.19 80-85) — Astrite/5-star indicator color
+  Identity role: "This is important/premium/worth attention"
+  Translation: ✓ IMPLEMENTED — #fbbf24 (oklch ~82% 0.17 85) — correct range
+  Fidelity level: L3 ✓ (could move to L4 with calibration per D-COLOR-2)
+  Status: COMPLETE — protect; optionally calibrate to oklch(78% 0.19 78)
+
+ELEMENT: Angular corner decorations on panels
+  Source: Chevron/bracket motifs on panel frames — angular, not rounded
+  Identity role: "Manufactured technology" — the frame says this is equipment, not software
+  Translation: ⚠ IMPLEMENTED BUT TOO SUBTLE — .kuro-card-inner ::before/::after at 7% opacity
+  Fidelity level: L2 (implemented but invisible → not yet serving identity role)
+  Status: NEEDS FIX — D-HIERARCHY-1 — increase opacity to 0.15-0.2
+
+ELEMENT: Element-color system
+  Source: 6 canonical element colors (Fusion, Glacio, Electro, Aero, Havoc, Spectro)
+  Identity role: Connects the companion app directly to the game's core systems
+  Translation: ✓ IMPLEMENTED — DETAIL_ELEMENT_COLORS with correct game-matching values
+  Fidelity level: L4 ✓ (exact game colors used)
+  Status: COMPLETE — protect
+
+ELEMENT: Dense, HUD-like spatial character
+  Source: Tight padding (8-12px), narrow gutters, data-forward layout
+  Identity role: "Expertise signaling" — dense data = respect for the player
+  Translation: ✓ IMPLEMENTED — 14px card padding, 8-12px gaps, 9-10px text
+  Fidelity level: L3 ✓
+  Status: COMPLETE — protect
+
+ELEMENT: Cool-tinted text (not neutral gray)
+  Source: ~#e8e8f0 primary (slightly blue-tinted), muted blue-gray secondary
+  Identity role: Text participates in the cool temperature — no neutral dead zones
+  Translation: ✗ NOT IMPLEMENTED — text-gray-300/400/500 (Tailwind neutral)
+  Fidelity level: L1 (wrong — neutral text undermines the source vocabulary)
+  Status: NEEDS FIX — D-COLOR-1 — replace with oklch cool-tinted values
+
+─── SECONDARY ELEMENTS ─────────────────────────────────────────────────
+
+ELEMENT: Geometric sans-serif typography
+  Source: Condensed geometric sans (DIN/Barlow family feel)
+  Translation: ✗ NOT IMPLEMENTED — system font stack (invisible, no character)
+  Fidelity level: L1
+  Status: D-TYPE-1 — adopt Geist Sans or Barlow Semi Condensed
+
+ELEMENT: Circuit-trace / tech-line decorative motifs
+  Source: Loading screens and transitions use circuit-trace line patterns
+  Translation: ✓ PARTIALLY — card shimmer line (::after) is an interpretation
+  Fidelity level: L2
+  Status: The shimmer line is a valid web translation — protect
+
+─── NEGATIVE SPACE RULES ──────────────────────────────────────────────
+
+PROHIBITED: Warm/neutral gray text
+  Why: Violates the cool temperature identity — warm/neutral reads as "default web"
+  Common mistake: Using Tailwind's gray-400/500 without chromatic adjustment
+
+PROHIBITED: Rounded, bubbly component shapes (>16px radius)
+  Why: Angular = manufactured technology. Round = consumer-friendly. Wrong character.
+  Common mistake: Adding rounded-full badges or pill-shaped buttons
+
+PROHIBITED: Sparse layout with large whitespace zones
+  Why: Dense data = expertise signal = source identity. Sparse = different product.
+  Common mistake: "Cleaning up" the UI by removing density — this breaks the identity
+```
+
+### §SR4. Authenticity vs Legibility Balance
+
+```
+TENSION: Dense data display at small sizes (9-10px)
+  Source treatment: Game UI shows dense stats at 1080p on large screens
+  Legibility problem: 9-10px text on mobile (375px) is at the legibility floor
+  Preferred resolution: Maintain density but add tabular-nums and cool-tinted text
+    for maximum optical clarity at small sizes (D-TYPE-2)
+  Identity cost: None — density preserved, legibility improved
+  Alternative: If 9px proves unreadable on low-DPI screens, floor at 10px
+
+TENSION: Angular corner decorations at small card sizes
+  Source treatment: Game panels have prominent angular bracket frames
+  Legibility problem: At mobile card sizes (300-350px width), 12px corner decorations
+    consume meaningful layout area
+  Preferred resolution: Scale corner decoration proportionally (8px at mobile) and
+    increase opacity (D-HIERARCHY-1) — visible but not space-consuming
+  Identity cost: Slight reduction in motif scale — acceptable at L3 fidelity
+```
+
+### §SR5. Source Material Accuracy Audit
+
+```
+For each recommendation referencing Wuthering Waves:
+  ✓ Gold accent color range confirmed by Astrite/premium indicator usage
+  ✓ Element color mapping confirmed by canonical game element system
+  ✓ Dark blue-black background confirmed by game UI evidence
+  ✓ Dense spatial rhythm confirmed by game HUD information density
+  ✓ Angular panel framing confirmed by game menu/panel design
+  ⚠ Typography specific font identification is INFERRED — game uses proprietary font;
+    Geist Sans / Barlow are closest available web equivalents [INFERRED FROM THESIS]
+  ⚠ Exact background OKLCH values are INFERRED from screenshots — not sampled from
+    game asset files [INFERRED — directionally correct, verify against in-game capture]
+  ✓ Cool text temperature confirmed — game UI text has blue-tint, not neutral white
+
+Identity thesis check:
+  ✓ Minimum authentic set appears in recommendations (all 6 elements addressed)
+  ✓ Identity thesis honored in secondary elements
+  ⚠ Insider recognition: PARTIAL — an insider would recognize the element colors and
+    gold accent immediately. The angular corner decorations need higher opacity (D-HIERARCHY-1)
+    to register. Neutral gray text would NOT pass the insider test — fix D-COLOR-1.
+```
+
+### §SR6. Source Research Log
+
+```
+━━━ SOURCE RESEARCH LOG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Source: Wuthering Waves (Kuro Games, 2024 — current live version)
+
+Research passes completed:
+  Pass 1 (UI screenshots): Searched "Wuthering Waves UI", "WuWa menu screen",
+    "Wuthering Waves HUD" → Found: dark navy-black UI panels with angular framing,
+    gold Astrite indicators, element-colored character screens. Quality: MEDIUM
+    (gameplay screenshots, not official UI documentation)
+
+  Pass 2 (Art direction): Searched "Wuthering Waves art direction",
+    "Kuro Games visual development" → Found: post-apocalyptic sci-fi with
+    Chinese cultural fusion. Emphasis on "technological sublime" aesthetic.
+    Quality: MEDIUM (interviews and promotional material)
+
+  Pass 3 (Cultural roots): Searched "Wuthering Waves aesthetic influences",
+    "Wuthering Waves art style" → Found: ink-wash painting influence in
+    environment art, futurist/brutalist UI design, Chinese landscape tradition
+    in spatial composition. Quality: MEDIUM (community analysis)
+
+  Pass 4 (Community codification): Searched "Wuthering Waves color palette",
+    "WuWa design breakdown" → Found: fan-extracted palettes confirm dark navy +
+    gold accent + element neons. Community tools universally use this palette.
+    Quality: HIGH (consistent across multiple community sources)
+
+  Pass 5 (Competitive): Searched "Wuthering Waves vs Genshin Impact design" →
+    Found: WuWa deliberately darker, cooler, more angular than Genshin.
+    "Technological ruin vs pastoral fantasy" is the key differentiator.
+    Quality: HIGH (widely discussed distinction in community)
+
+Best reference sources:
+  - In-game UI screenshots (menu, inventory, character detail screens) — Layer 1
+  - Community-extracted element color palettes — Layer 1 (color-specific)
+  - Fan analysis comparing WuWa vs Genshin visual identity — Layer 3 + 5
+  - Kuro Games promotional material showing art direction — Layer 4
+
+Identity thesis confidence: MEDIUM-HIGH
+  Strong evidence for: color palette, element system, spatial density, angular framing
+  Moderate evidence for: typography character, atmospheric specifics
+  Thin evidence for: exact OKLCH values, motion timing specifications
+
+Gaps (what could not be verified):
+  - Exact typeface used in game UI → marked [INFERRED FROM THESIS]
+  - Precise OKLCH background values → marked [INFERRED — directionally correct]
+  - Motion timing values in game transitions → marked [INFERRED]
+
+If user can provide: In-game screenshots of the current UI (character detail screen,
+  inventory, settings menu) would increase confidence to HIGH. An official art book
+  or developer blog post about UI design would close all remaining gaps.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
 ## FINDINGS SUMMARY
 
 | ID | Severity | Finding | Section |
