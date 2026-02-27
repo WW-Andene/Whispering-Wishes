@@ -1234,6 +1234,9 @@ const KuroStyles = memo(({ oledMode }) => (
       border-radius: 8px;
       animation: emptyFadeIn 0.4s ease-out both;
       border: 1px dashed rgba(237, 175, 24, 0.10);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
     }
     .kuro-empty-state::before {
       content: '';
