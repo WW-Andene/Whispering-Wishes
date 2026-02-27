@@ -511,24 +511,26 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
     
-    /* Glow effect for 5-star items */
+    /* D-HIERARCHY-2: Enhanced glow for 5★ — radial bg + stronger box-shadow for visual hierarchy */
     .glow-gold {
-      box-shadow: 0 0 20px rgba(237, 175, 24, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 24px rgba(237, 175, 24, 0.20), inset 0 0 20px rgba(237, 175, 24, 0.06), 0 4px 12px rgba(0,0,0,0.3);
+      background-image: radial-gradient(ellipse at 50% 80%, rgba(237, 175, 24, 0.08) 0%, transparent 60%);
     }
-    
+
     @media (hover: hover) {
       .glow-gold:hover {
-        box-shadow: 0 0 30px rgba(237, 175, 24, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 0 36px rgba(237, 175, 24, 0.30), inset 0 0 24px rgba(237, 175, 24, 0.08), 0 8px 20px rgba(0,0,0,0.4);
       }
     }
-    
+
+    /* 4★ glow — intentionally subtler than 5★ for visual hierarchy */
     .glow-purple {
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.12), 0 4px 12px rgba(0,0,0,0.3);
     }
-    
+
     @media (hover: hover) {
       .glow-purple:hover {
-        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 0 24px rgba(168, 85, 247, 0.20), 0 8px 20px rgba(0,0,0,0.4);
       }
     }
     
