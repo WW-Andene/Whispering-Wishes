@@ -5005,14 +5005,14 @@ function WhisperingWishesInner() {
                     </CardHeader>
                     <CardBody>
                       {/* Team Selector Tabs */}
-                      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide mb-3">
+                      <div className="flex gap-1 mb-3">
                         {state.teams.map((team, idx) => {
                           const hasChars = team.slots.some(s => s);
                           return (
                             <button
                               key={idx}
                               onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
-                              className={`flex-shrink-0 px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                              className={`flex-1 min-w-0 px-1.5 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
                                 state.activeTeamIndex === idx
                                   ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
                                   : 'border-white/10 text-gray-400 hover:border-white/20 hover:text-gray-300'
@@ -5020,7 +5020,7 @@ function WhisperingWishesInner() {
                               style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
                             >
                               <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
-                              <span>{team.name}</span>
+                              <span className="truncate">{team.name}</span>
                               {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
                             </button>
                           );
