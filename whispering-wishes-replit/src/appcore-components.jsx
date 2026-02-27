@@ -628,7 +628,7 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
       aria-label={`${text || 'Navigation'} tab`}
       className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
     >
-      <div className={`relative z-10 p-2 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5'}`}>
+      <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5'}`} style={active ? { filter: 'drop-shadow(0 0 5px rgba(237,175,24,0.5))' } : undefined}>
         {icon}
       </div>
       <span className="relative z-10">{text}</span>

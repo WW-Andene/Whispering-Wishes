@@ -2287,13 +2287,13 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-STATE-2 | Data import has no loading feedback | Leaderboard and community pull loading states now use contextual skeleton UI matching final layout shape. Admin player list loading also replaced. |
 | D-HIERARCHY-2 | Collection grid has uniform visual weight — 5★ should stand out | Enhanced `.glow-gold` with stronger box-shadow (0.20), inner glow (inset 0.06), and radial-gradient bg (0.08). Reduced `.glow-purple` (0.12) to widen 5★ vs 4★ hierarchy gap. |
 | D-ATMOSPHERE-1 | Banner card could have persistent subtle glow at rest | Added `boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)'` to BannerCard rest state inline style. |
+| D-ICON-1 | Default Lucide icons are stylistically neutral | Added gold `drop-shadow(0 0 5px rgba(237,175,24,0.5))` filter on active tab icon container for glow effect. |
+| D-ICON-2 | 14px icons in 32px containers — excessive padding | Increased icon size 16→18px in all 8 tab buttons. Tightened container padding `p-2`→`p-1.5` (container 32→30px). |
 
-### Remaining — 6 findings (11 actionable fixes → 5 implementation steps)
+### Remaining — 4 findings (9 actionable fixes → 3 implementation steps)
 
 | ID | Severity | Finding |
 |----|----------|---------|
-| D-ICON-1 | [LOW] | Default Lucide icons are stylistically neutral |
-| D-ICON-2 | [POLISH] | 14px icons in 32px containers — excessive padding |
 | D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character |
 | D-COPY-1 | [LOW] | Empty state copy is personality-absent |
 | D-DATAVIZ-1 | [LOW] | Recharts defaults break character on grid/axis/tooltip |
@@ -2303,7 +2303,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 
 ## IMPLEMENTATION PLAN
 
-17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2, D-HIERARCHY-2, D-ATMOSPHERE-1 already applied) grouped into 10 implementation steps:
+17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2, D-HIERARCHY-2, D-ATMOSPHERE-1, D-ICON-1, D-ICON-2 already applied) grouped into 10 implementation steps:
 
 | Step | What | Findings | Files | Effort |
 |------|------|----------|-------|--------|
@@ -2312,7 +2312,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 | ~~**3**~~ | ~~**Skeleton loading system**~~ ✅ DONE — Created `.kuro-skeleton` class family with gold shimmer animation. Variants: `-row`, `-stat`, `-text`, `-circle`. Replaced "Loading..." text in leaderboard, community pulls (null state), and admin player list with contextual skeleton UI. | D-MOTION-1, D-STATE-2 | `appcore-providers.jsx`, `App.jsx` | ✅ |
 | ~~**4**~~ | ~~**5★ rarity glow in Collection grid**~~ ✅ DONE — Enhanced `.glow-gold` with stronger box-shadow (0.15→0.20), inner glow (inset 0.06), and radial-gradient background (0.08 at bottom). Reduced `.glow-purple` slightly (0.15→0.12) to widen visual hierarchy gap. | D-HIERARCHY-2 | `appcore-providers.jsx` | ✅ |
 | ~~**5**~~ | ~~**Banner card rest-state glow**~~ ✅ DONE — Added persistent gold `boxShadow: 0 0 40px rgba(237,175,24,0.06)` + depth shadow to BannerCard inline style. | D-ATMOSPHERE-1 | `appcore-components.jsx` | ✅ |
-| **6** | **Icon expressiveness** — Add subtle glow/stroke treatment to key navigation tab icons (Tracker, Stats, Collection, Profile). Use `filter: drop-shadow()` with element-appropriate colors when active. Tighten icon container sizing from 32px → 24px, or increase icon size from 14px → 18px. | D-ICON-1, D-ICON-2 | `App.jsx` (tab bar icons), `appcore-providers.jsx` (KuroStyles — icon classes) | ~20 min |
+| ~~**6**~~ | ~~**Icon expressiveness**~~ ✅ DONE — Added gold `drop-shadow` filter on active tab icons. Increased icon size 16→18px. Tightened container padding `p-2`→`p-1.5`. | D-ICON-1, D-ICON-2 | `appcore-components.jsx`, `App.jsx` | ✅ |
 | **7** | **Empty state atmospheric upgrade** — Enhance existing `.kuro-empty-state` with a faint character silhouette or element-themed SVG illustration behind the text. Add staggered entrance animation (fade + translateY) matching card entrance timing. Apply to Tracker, Stats, and Collection empty states. | D-STATE-1 | `App.jsx` (empty state JSX), `appcore-providers.jsx` (empty state animation keyframes) | ~30 min |
 | **8** | **Import loading feedback** — Add progress indicator during JSON parse/import. Show file name, estimated size, and a shimmer animation (using Step 3's skeleton system). Display parse errors inline with recoverable messaging. | D-STATE-2 | `App.jsx` (processImportData, handleFileImport) | ~20 min |
 | **9** | **Recharts theme integration** — Override Recharts defaults: set grid stroke to `rgba(255,255,255,0.06)`, axis tick/label to chromatic gray (`#8892a4`), tooltip background to `rgba(12,16,24,0.95)` with `backdrop-filter: blur(12px)` and gold accent border. Match chart line/bar colors to element-color system. | D-DATAVIZ-1 | `App.jsx` (Recharts `<XAxis>`, `<YAxis>`, `<CartesianGrid>`, `<Tooltip>` props), `appcore-providers.jsx` (optional `.kuro-chart` class) | ~25 min |
