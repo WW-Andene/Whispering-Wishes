@@ -851,6 +851,125 @@ Emergent personality statement:
   Weakest/incoherent: (1) Neutral gray text stack, (2) System font with no character, (3) Corner decorations too faint
 ```
 
+### §DP1. Character Dimensions Analysis
+
+#### Dimension 1 — Visual Voice
+
+```
+Terse ━━━━━━━━━━●━━━━━━━━━━ Expansive
+                 ↑ CURRENT (7/10 terse)
+                 ↑ TARGET  (7/10 terse) ✓ ALIGNED
+Dense cards, tight spacing (14px padding), small text (9-10px stats).
+No decoration for decoration's sake. Every element serves a data function.
+
+Cold ━━━━━━━━●━━━━━━━━━━━━━ Warm
+              ↑ CURRENT (8/10 cold)
+              ↑ TARGET  (7/10 cold) ≈ ALIGNED
+Cool-blue surfaces, void background, cyan/purple accents. Gold accent introduces
+controlled warmth — but text stack is neutral gray (should be cool-tinted).
+Gap: Neutral gray text is neither cold nor warm — it's absent. Fix: D-COLOR-1.
+
+Formal ━━━━━━━●━━━━━━━━━━━━ Casual
+               ↑ CURRENT (7/10 formal)
+               ↑ TARGET  (6/10 formal) ≈ ALIGNED
+Structured card layouts, consistent borders, hierarchical tabs. Copy is expert-casual
+("Resonators", game-native terminology) — slightly less formal than the visual language.
+Acceptable tension between visual formality and copy casualness.
+
+Restrained ━━━━━━━━━●━━━━━━ Expressive
+                     ↑ CURRENT (6/10 expressive)
+                     ↑ TARGET  (7/10 expressive) ≈ ALIGNED
+Canvas wave backgrounds, element-color glow, shimmer lines, staggered card entrances —
+the app is more expressive than most utility tools. Could push further on typography
+expressiveness (D-TYPE-4 banner countdown treatment).
+```
+
+#### Dimension 2 — Spatial Character
+
+```
+Dense ━━━━━━━━●━━━━━━━━━━━━ Airy
+              ↑ CURRENT: 7/10 dense — 14px card padding, 8-12px gaps, 9-10px text
+              ↑ TARGET:  7/10 dense ✓ ALIGNED
+
+Flat ━━━━━━━━━━━━━━━●━━━━━━ Deep
+                     ↑ CURRENT: 8/10 deep — 6 distinct Z-layers (void→canvas→vignette→cards→content→modals)
+                     ↑ TARGET:  8/10 deep ✓ ALIGNED
+
+Rigid ━━━━━━━━●━━━━━━━━━━━━ Fluid
+              ↑ CURRENT: 7/10 rigid — single-column, tab-based, grid-locked cards
+              ↑ TARGET:  7/10 rigid ✓ ALIGNED
+
+Anchored ━━━━━━━━━━━━●━━━━━ Floating
+                      ↑ CURRENT: 7/10 floating — content appears to float above void
+                      ↑ TARGET:  7/10 floating ✓ ALIGNED
+```
+
+All four spatial dimensions are aligned. The "dense + deep + rigid + floating" combination creates the "atmospheric precision instrument" spatial character correctly.
+
+#### Dimension 3 — Material Character
+
+**Current material:** **Glass + Void** — Translucent frosted-glass cards (`backdrop-filter: blur`, semi-transparent `rgba` backgrounds, inset top highlight) float in luminous void (`#010204` near-black with canvas wave animation beneath).
+
+| Material Property | Evidence |
+|------------------|----------|
+| Glass indicators | Blur filter, translucency, thin borders, top-edge specular highlight |
+| Void indicators | Near-black base, no material "floor," content floats without ground plane |
+| Luminous indicators | Element-colored glow emanates from interactive elements; canvas provides subsurface light |
+
+**Target material:** Glass + Void — ✓ **Aligned with axis profile.** For a cyberpunk/atmospheric product (A4: Strong aesthetic), the glass-on-void material feels premium, digital-native, and game-appropriate.
+
+**Material contradictions:** No component contradicts the dominant glass/void material. Every card, button, and input uses the same frosted-glass vocabulary. The only neutral elements are the text colors (Tailwind grays carry no material quality — they read as "no material" rather than "glass material"). Fix: D-COLOR-1 chromatic tinting.
+
+#### Dimension 4 — Interaction Character
+
+```
+Mechanical ━━━━━━━━━━━━━●━━ Physical
+                         ↑ CURRENT: 7/10 physical — scale(0.97) press, translateY(-2px) lift, glow
+                         ↑ TARGET:  7/10 physical ✓ ALIGNED
+
+Snappy ━━━━━━●━━━━━━━━━━━━━ Considered
+              ↑ CURRENT: 100ms micro, 300ms entrance, 150ms exit — snappy-leaning
+              ↑ TARGET:  6/10 snappy ✓ ALIGNED
+
+Passive ━━━━━━━━━━━━━●━━━━━ Reactive
+                      ↑ CURRENT: 7/10 reactive — generous hover (lift + brighten + glow), focus ring
+                      ↑ TARGET:  7/10 reactive ✓ ALIGNED
+
+Silent ━━━━━━━━━━━━━━━━●━━━ Expressive
+                        ↑ CURRENT: 7/10 expressive — borderGlow animation, gold pulse, staggered reveal
+                        ↑ TARGET:  7/10 expressive ✓ ALIGNED
+```
+
+Interaction character is fully coherent. The `cubic-bezier(0.16, 1, 0.3, 1)` signature easing produces a consistent "bouncy precision" feel across all interactions.
+
+#### Dimension 5 — State Character Consistency
+
+| State | Character from §DP0 | Character Here | Consistent? |
+|-------|-------------------|----------------|------------|
+| First arrival (onboarding) | Atmospheric precision instrument | Gold-accented step cards, canvas background visible, clear action sequence | ✓ Yes — onboarding is atmospheric and precise |
+| Active engagement (tracker) | Atmospheric precision instrument | Element-colored glow, staggered card reveals, gold shimmer lines, dense data | ✓ Yes — peak character expression |
+| Success / completion | Atmospheric precision instrument | Gold pulse animation (`kuroPulseOrange`), trophy shine, emerald active glow | ✓ Yes — celebration maintains character temperature |
+| Error / failure | Atmospheric precision instrument | Red-tinted text/badges at controlled saturation; not panic-inducing | ✓ Yes — errors are clinical, not alarming |
+| Loading / waiting | Atmospheric precision instrument | Staggered card entrance animations; no dedicated loading state | ⚠ Partial — canvas background provides atmosphere, but no skeleton/placeholder maintains the precision feel during waits |
+| Edge/empty (no data) | Atmospheric precision instrument | `text-gray-400` + action button — functional but flat | ⚠ Weak — empty states lose atmospheric quality (D-COLOR-3). Character drops to "generic utility." |
+
+**Character break points:** Loading and empty states. Both lose the atmospheric quality that defines the active experience. See D-MOTION-1 (skeleton system) and D-COLOR-3 (empty state atmosphere).
+
+#### Dimension 6 — Overall Character Coherence
+
+```
+Character Coherence: PARTIALLY COHERENT
+Dominant character: "atmospheric precision instrument"
+Conflicting signals:
+  1. Neutral gray text stack (text-gray-300/400) — no temperature, no character
+  2. System font (invisible) — doesn't participate in the character at all
+  3. Empty/loading states — character collapses to generic when data is absent
+  4. Corner decorations at 7% opacity — too faint to read as intentional (D-HIERARCHY-1)
+Primary coherence fix: Replace neutral text grays with cool-tinted chromatic equivalents
+  (D-COLOR-1) — this single change touches every screen and every state, raising the
+  character floor across the entire app.
+```
+
 ### §DP2. Design Character Brief
 
 ```
