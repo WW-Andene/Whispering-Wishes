@@ -608,8 +608,8 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
           if (indicator) {
             indicator.style.left = `${btn.offsetLeft + btn.offsetWidth * 0.2}px`;
             indicator.style.width = `${btn.offsetWidth * 0.6}px`;
-            indicator.style.background = `linear-gradient(90deg, rgba(251,191,36,0.6), rgba(251,191,36,1), rgba(251,191,36,0.6))`;
-            indicator.style.boxShadow = `0 0 12px rgba(251,191,36,0.5)`;
+            indicator.style.background = `linear-gradient(90deg, rgba(237,175,24,0.6), rgba(237,175,24,1), rgba(237,175,24,0.6))`;
+            indicator.style.boxShadow = `0 0 12px rgba(237,175,24,0.5)`;
           }
         });
       }
@@ -771,7 +771,7 @@ const TIMER_BOX_STYLE = Object.freeze({ backgroundColor: 'rgba(12,16,24,0.7)', b
 const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 
-const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#fbbf24', glowColor = 'rgba(251,191,36,0.4)', label, sublabel, softPityStart }) => {
+const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#edaf18', glowColor = 'rgba(237,175,24,0.4)', label, sublabel, softPityStart }) => {
   const safeValue = Number(value) || 0;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -1308,7 +1308,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(237,175,24,0.5)', textShadow: 'none'}}>New</div>
     )}
     {/* Profile pic setter — top-right corner */}
     {owned && !framingMode && onSetProfilePic && (
@@ -1447,7 +1447,7 @@ const VISUAL_SLIDER_CONFIGS = [
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
 const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic }) => {
-  if (items.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No items match your filters</p>;
+  if (items.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No items match your filters</p>;
   const ownedCount = items.filter(([_, c]) => c > 0).length;
   return (
     <>

@@ -52,9 +52,9 @@ const PWAProvider = ({ children }) => {
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
-      { name: 'theme-color', content: '#fbbf24' },
-      { name: 'msapplication-TileColor', content: '#fbbf24' },
-      { name: 'msapplication-navbutton-color', content: '#fbbf24' }
+      { name: 'theme-color', content: '#edaf18' },
+      { name: 'msapplication-TileColor', content: '#edaf18' },
+      { name: 'msapplication-navbutton-color', content: '#edaf18' }
     ];
     
     metaTags.forEach(({ name, content }) => {
@@ -256,13 +256,13 @@ const OnboardingModal = ({ onComplete }) => {
   const focusTrapRef = useFocusTrap(true);
   useEscapeKey(true, onComplete);
   const steps = [
-    { title: "Welcome to Whispering Wishes!", icon: <Sparkles size={32} />, desc: "Your companion for Wuthering Waves Convene planning.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#fbbf24' },
+    { title: "Welcome to Whispering Wishes!", icon: <Sparkles size={32} />, desc: "Your companion for Wuthering Waves Convene planning.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#edaf18' },
     { title: "Import Your History", icon: <Upload size={32} />, desc: "Go to the Profile tab and import data from wuwatracker.com.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20', color: '#22d3ee' },
     { title: "Track Your Banners", icon: <Target size={32} />, desc: "View current banners, pity progress, and time remaining.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30', border: 'border-orange-500/30', bg: 'bg-orange-500/20', color: '#fb923c' },
     { title: "Build Your Collection", icon: <LayoutGrid size={32} />, desc: "Track all your Resonators and weapons.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30', border: 'border-purple-500/30', bg: 'bg-purple-500/20', color: '#a855f7' },
     { title: "Calculate Your Odds", icon: <Calculator size={32} />, desc: "See your chances based on pity and resources.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-emerald-900/30', border: 'border-emerald-500/30', bg: 'bg-emerald-500/20', color: '#34d399' },
     { title: "View Analytics", icon: <BarChart3 size={32} />, desc: "Check your luck rating, charts, and Convene history.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30', border: 'border-pink-500/30', bg: 'bg-pink-500/20', color: '#f472b6' },
-    { title: "You're Ready!", icon: <CheckCircle size={32} />, desc: "Good luck on your Convenes, Rover!", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#fbbf24' }
+    { title: "You're Ready!", icon: <CheckCircle size={32} />, desc: "Good luck on your Convenes, Rover!", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#edaf18' }
   ];
   
   const s = steps[step];
@@ -332,6 +332,8 @@ const KuroStyles = memo(({ oledMode }) => (
       overscroll-behavior: none;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
        is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
@@ -349,7 +351,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* ═══ CSS CUSTOM PROPERTIES ═══ */
     :root {
-      --color-gold: 251, 191, 36;
+      --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
       --color-cyan: 56, 189, 248;
       --color-purple: 168, 85, 247;
@@ -363,8 +365,8 @@ const KuroStyles = memo(({ oledMode }) => (
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       /* Z-index scale: bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000) */
-      --text-body: #e2e8f0;
-      --text-heading: #f1f5f9;
+      --text-body: #dfe5ef;
+      --text-heading: #edf1f8;
       --bg-card: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
       --bg-card-inner: ${oledMode ? 'rgba(5, 5, 5, 1)' : 'rgba(6, 10, 18, 1)'};
       --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
@@ -452,8 +454,8 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     @keyframes borderGlow {
-      0%, 100% { border-color: rgba(251, 191, 36, 0.3); }
-      50% { border-color: rgba(251, 191, 36, 0.6); }
+      0%, 100% { border-color: rgba(237, 175, 24, 0.3); }
+      50% { border-color: rgba(237, 175, 24, 0.6); }
     }
     
     @keyframes pulseScale {
@@ -509,12 +511,12 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Glow effect for 5-star items */
     .glow-gold {
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 20px rgba(237, 175, 24, 0.15), 0 4px 12px rgba(0,0,0,0.3);
     }
     
     @media (hover: hover) {
       .glow-gold:hover {
-        box-shadow: 0 0 30px rgba(251, 191, 36, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 0 30px rgba(237, 175, 24, 0.25), 0 8px 20px rgba(0,0,0,0.4);
       }
     }
     
@@ -679,7 +681,7 @@ const KuroStyles = memo(({ oledMode }) => (
       border-radius: 15px;
     }
     
-    /* Corner decorations - more subtle */
+    /* Corner decorations */
     .kuro-card-inner::before {
       content: '';
       position: absolute;
@@ -687,13 +689,13 @@ const KuroStyles = memo(({ oledMode }) => (
       right: 8px;
       width: 12px;
       height: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 0 4px 0 0;
       z-index: 2;
-      opacity: 0.7;
+      opacity: 0.85;
     }
-    
+
     .kuro-card-inner::after {
       content: '';
       position: absolute;
@@ -701,11 +703,11 @@ const KuroStyles = memo(({ oledMode }) => (
       left: 8px;
       width: 12px;
       height: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      border-left: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 0 0 0 4px;
       z-index: 2;
-      opacity: 0.7;
+      opacity: 0.85;
     }
     
     .kuro-header {
@@ -745,9 +747,9 @@ const KuroStyles = memo(({ oledMode }) => (
       content: '';
       width: 3px;
       height: 16px;
-      background: linear-gradient(180deg, rgba(251, 191, 36, 0.9), rgba(251, 191, 36, 0.4));
+      background: linear-gradient(180deg, rgba(237, 175, 24, 0.9), rgba(237, 175, 24, 0.4));
       border-radius: 2px;
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 8px rgba(237, 175, 24, 0.3);
     }
     
     .kuro-body {
@@ -812,11 +814,11 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
-      background: rgba(251, 191, 36, 0.15);
-      border-color: rgba(251, 191, 36, 0.7);
+      background: rgba(237, 175, 24, 0.15);
+      border-color: rgba(237, 175, 24, 0.7);
       color: #fef08a;
-      box-shadow: 0 0 25px rgba(251, 191, 36, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 191, 36, 0.08);
-      text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 25px rgba(237, 175, 24, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(237, 175, 24, 0.08);
+      text-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
       animation: borderGlow 2s ease-in-out infinite;
     }
     
@@ -922,6 +924,7 @@ const KuroStyles = memo(({ oledMode }) => (
       overflow: hidden;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
+      font-variant-numeric: tabular-nums;
       transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
     
@@ -944,11 +947,11 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     .kuro-stat-gold {
-      background: rgba(251, 191, 36, 0.15);
-      border-color: rgba(251, 191, 36, 0.5);
+      background: rgba(237, 175, 24, 0.15);
+      border-color: rgba(237, 175, 24, 0.5);
     }
     .kuro-stat-gold::before {
-      background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 1), transparent);
+      background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 1), transparent);
     }
     
     .kuro-stat-cyan {
@@ -1003,8 +1006,8 @@ const KuroStyles = memo(({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-stat-gold:hover {
-        border-color: rgba(251, 191, 36, 0.7);
-        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
+        border-color: rgba(237, 175, 24, 0.7);
+        box-shadow: 0 4px 20px rgba(237, 175, 24, 0.15);
       }
       .kuro-stat-cyan:hover {
         border-color: rgba(56, 189, 248, 0.7);
@@ -1062,31 +1065,31 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #f0c040, #fbbf24);
+      background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
       border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
       transition: transform 0.15s, box-shadow 0.15s;
     }
     
     .kuro-slider::-webkit-slider-thumb:hover {
       transform: scale(1.15);
-      box-shadow: 0 0 18px rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 18px rgba(237, 175, 24, 0.8);
     }
     
     .kuro-slider::-moz-range-thumb {
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #f0c040, #fbbf24);
+      background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
       border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
     }
     /* P12-FIX: Firefox slider hover states + range-track (Step 12 audit — MEDIUM-12k) */
     .kuro-slider::-moz-range-thumb:hover {
       transform: scale(1.15);
-      box-shadow: 0 0 18px rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 18px rgba(237, 175, 24, 0.8);
     }
     .kuro-slider::-moz-range-track {
       background: rgba(255, 255, 255, 0.15);
@@ -1161,6 +1164,12 @@ const KuroStyles = memo(({ oledMode }) => (
       font-weight: 700;
     }
     
+    /* ═══ EMPTY STATE — atmospheric warmth ═══ */
+    .kuro-empty-state {
+      background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);
+      border-radius: 8px;
+    }
+
     /* ═══ DIVIDER ═══ */
     .kuro-divider {
       height: 1px;

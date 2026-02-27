@@ -1469,17 +1469,17 @@ function WhisperingWishesInner() {
     const list = [];
     
     // ═══ COLLECTION TROPHIES ═══
-    if (allCollected) list.push({ id: 'all', name: 'No Life Achievement', desc: 'Every Resonator and Weapon collected. go outside.', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    if (all5ResOwned) list.push({ id: '5res', name: 'Gotta Whale \'Em All', desc: 'All 5★ Resonators unlocked', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (allCollected) list.push({ id: 'all', name: 'No Life Achievement', desc: 'Every Resonator and Weapon collected. go outside.', icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    if (all5ResOwned) list.push({ id: '5res', name: 'Gotta Whale \'Em All', desc: 'All 5★ Resonators unlocked', icon: 'Sparkles', color: '#edaf18', tier: 'gold' });
     if (all4ResOwned) list.push({ id: '4res', name: 'Sonata Effect', desc: 'All 4★ Resonators in your roster', icon: 'Heart', color: '#a855f7', tier: 'purple' });
     if (all5WeapOwned) list.push({ id: '5weap', name: 'Forgemaster', desc: 'All 5★ Weapons acquired', icon: 'Swords', color: '#ec4899', tier: 'gold' });
     if (all4WeapOwned) list.push({ id: '4weap', name: 'Armory of Jinzhou', desc: 'All 4★ Weapons in your arsenal', icon: 'Sword', color: '#a855f7', tier: 'purple' });
     if (all3WeapOwned) list.push({ id: '3weap', name: 'Data Bank: Full', desc: 'Every 3★ Weapon catalogued', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
     
     // ═══ LUCK TROPHIES ═══
-    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first Convene. nobody believes you', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    else if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Dev Account?', desc: `5★ at pity ${earliest5Star} — go buy a lottery ticket`, icon: 'Gift', color: '#fbbf24', tier: 'legendary' });
-    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Disgusting Luck', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#fbbf24', tier: 'gold' });
+    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first Convene. nobody believes you', icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Dev Account?', desc: `5★ at pity ${earliest5Star} — go buy a lottery ticket`, icon: 'Gift', color: '#edaf18', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Disgusting Luck', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#edaf18', tier: 'gold' });
     else if (earliest5Star && earliest5Star <= 40) list.push({ id: 'early40', name: 'Echo of Fortune', desc: `5★ at pity ${earliest5Star}`, icon: 'Clover', color: '#22c55e', tier: 'green' });
     
     // Hard pity — the unluckiest possible outcome
@@ -1499,7 +1499,7 @@ function WhisperingWishesInner() {
     
     // ═══ 50/50 STREAK TROPHIES ═══
     if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Rover\'s Blessing', desc: `${bestWinStreak}× 50/50 wins — the Sentinel chose you`, icon: 'Crown', color: '#ff0000', tier: 'legendary' });
-    else if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#fbbf24', tier: 'legendary' });
+    else if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#edaf18', tier: 'legendary' });
     else if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Main Character Energy', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Flame', color: '#f97316', tier: 'orange' });
     else if (bestWinStreak >= 4) list.push({ id: 'win4', name: 'Resonance Chain', desc: `${bestWinStreak}× 50/50 wins in a row — keep the chain going`, icon: 'Flame', color: '#22c55e', tier: 'green' });
     else if (bestWinStreak >= 3) list.push({ id: 'win3', name: 'Casually Winning', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Target', color: '#22c55e', tier: 'green' });
@@ -1542,8 +1542,8 @@ function WhisperingWishesInner() {
     // 5★ count milestones
     const total5Stars = all5Stars.length;
     if (total5Stars >= 100) list.push({ id: '100stars', name: 'Convene Printer Goes Brr', desc: `${total5Stars} five-stars obtained — you ARE the banner`, icon: 'Star', color: '#ff0000', tier: 'legendary' });
-    else if (total5Stars >= 75) list.push({ id: '75stars', name: 'Resonance Overload', desc: `${total5Stars} five-stars obtained — Sonata Effect: maxed`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
-    else if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    else if (total5Stars >= 75) list.push({ id: '75stars', name: 'Resonance Overload', desc: `${total5Stars} five-stars obtained — Sonata Effect: maxed`, icon: 'Star', color: '#edaf18', tier: 'gold' });
+    else if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#edaf18', tier: 'gold' });
     else if (total5Stars >= 35) list.push({ id: '35stars', name: 'Tacet Discord Hoarder', desc: `${total5Stars} five-stars obtained — your roster IS the Tacet Discord`, icon: 'Star', color: '#a855f7', tier: 'purple' });
     else if (total5Stars >= 25) list.push({ id: '25stars', name: 'Stargazer', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#a855f7', tier: 'purple' });
     else if (total5Stars >= 15) list.push({ id: '15stars', name: 'Sequence Node: Farming', desc: `${total5Stars} five-stars obtained — the grind is real`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
@@ -1551,7 +1551,7 @@ function WhisperingWishesInner() {
     else if (total5Stars >= 5) list.push({ id: '5stars', name: 'First Expedition', desc: `${total5Stars} five-stars obtained — your team is forming`, icon: 'Star', color: '#22c55e', tier: 'green' });
 
     // First 5★
-    if (total5Stars > 0 && total5Stars < 5) list.push({ id: 'first5', name: 'Awakening', desc: 'Obtained your first 5★', icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    if (total5Stars > 0 && total5Stars < 5) list.push({ id: 'first5', name: 'Awakening', desc: 'Obtained your first 5★', icon: 'Star', color: '#edaf18', tier: 'gold' });
     
     // Banner diversity — pulled on multiple banner types
     const bannerTypesUsed = [featuredHist, weaponHist, stdCharHist, stdWeapHist].filter(h => h.length > 0).length;
@@ -1560,8 +1560,8 @@ function WhisperingWishesInner() {
 
     // ═══ CHARACTER OWNERSHIP PROGRESSION ═══
     const owned5Count = owned5StarChars.size;
-    if (owned5Count >= 30) list.push({ id: 'own30', name: 'Huanglong\'s Census', desc: `${owned5Count} unique 5★ Resonators — Rover collected them all`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    else if (owned5Count >= 25) list.push({ id: 'own25', name: 'Sonata Library: Full', desc: `${owned5Count} unique 5★ Resonators — you ARE the tier list`, icon: 'Crown', color: '#fbbf24', tier: 'gold' });
+    if (owned5Count >= 30) list.push({ id: 'own30', name: 'Huanglong\'s Census', desc: `${owned5Count} unique 5★ Resonators — Rover collected them all`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    else if (owned5Count >= 25) list.push({ id: 'own25', name: 'Sonata Library: Full', desc: `${owned5Count} unique 5★ Resonators — you ARE the tier list`, icon: 'Crown', color: '#edaf18', tier: 'gold' });
     else if (owned5Count >= 20) list.push({ id: 'own20', name: 'Jinzhou Housing Crisis', desc: `${owned5Count} unique 5★ Resonators — where do they all sleep`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
     else if (owned5Count >= 15) list.push({ id: 'own15', name: 'Forte Circuit Overload', desc: `${owned5Count} unique 5★ Resonators — too many builds to farm`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
     else if (owned5Count >= 10) list.push({ id: 'own10', name: 'Union Level: Whale', desc: `${owned5Count} unique 5★ Resonators — the roster is stacked`, icon: 'Sparkles', color: '#3b82f6', tier: 'blue' });
@@ -1569,7 +1569,7 @@ function WhisperingWishesInner() {
 
     // ═══ WEAPON OWNERSHIP PROGRESSION ═══
     const owned5WeapCount = owned5StarWeaps.size;
-    if (owned5WeapCount >= 20) list.push({ id: 'weap20', name: 'Forgery Domain Resident', desc: `${owned5WeapCount} unique 5★ Weapons — open a museum in Jinzhou`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    if (owned5WeapCount >= 20) list.push({ id: 'weap20', name: 'Forgery Domain Resident', desc: `${owned5WeapCount} unique 5★ Weapons — open a museum in Jinzhou`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
     else if (owned5WeapCount >= 15) list.push({ id: 'weap15', name: 'Sonance Casket: Stuffed', desc: `${owned5WeapCount} unique 5★ Weapons — inventory management simulator`, icon: 'Swords', color: '#a855f7', tier: 'purple' });
     else if (owned5WeapCount >= 10) list.push({ id: 'weap10', name: 'Pioneer\'s Arsenal', desc: `${owned5WeapCount} unique 5★ Weapons — a blade for every occasion`, icon: 'Swords', color: '#3b82f6', tier: 'blue' });
     else if (owned5WeapCount >= 5) list.push({ id: 'weap5', name: 'Tacet Field Sweep', desc: `${owned5WeapCount} unique 5★ Weapons — the field has been cleared`, icon: 'Sword', color: '#22c55e', tier: 'green' });
@@ -1586,20 +1586,20 @@ function WhisperingWishesInner() {
       'Encore': { name: 'Woolies World Domination', desc: 'S6 Encore — Cosmos and Cloudy run this account now', color: '#f97316' },
       'Jianxin': { name: 'Down Bad for Parry', desc: 'S6 Jianxin — "I\'ll take all the 50/50 losses" energy', color: '#22c55e' },
       'Lingyang': { name: 'You Actually S6\'d HIM?!', desc: 'S6 Lingyang — built different or brain different', color: '#38bdf8' },
-      'Verina': { name: 'Lost 50/50 Seven Times', desc: 'S6 Verina — and every single one was a W', color: '#fbbf24' },
+      'Verina': { name: 'Lost 50/50 Seven Times', desc: 'S6 Verina — and every single one was a W', color: '#edaf18' },
       'Yinlin': { name: 'Down Catastrophic', desc: 'S6 Yinlin — she pulled your strings and your wallet', color: '#a855f7' },
-      'Jinhsi': { name: 'Simp Magistrate', desc: 'S6 Jinhsi — sold Jinzhou to fund this', color: '#fbbf24' },
+      'Jinhsi': { name: 'Simp Magistrate', desc: 'S6 Jinhsi — sold Jinzhou to fund this', color: '#edaf18' },
       'Changli': { name: 'Touch Grass? Touch Fire.', desc: 'S6 Changli — your savings went up in flames', color: '#f97316' },
       'Zhezhi': { name: 'Drawing Bankruptcy', desc: 'S6 Zhezhi — her art costs more than actual art', color: '#38bdf8' },
       'Xiangli Yao': { name: 'He Did The Math (x7)', desc: 'S6 Xiangli Yao — calculated your savings into Hypercubes', color: '#a855f7' },
-      'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#fbbf24' },
+      'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#edaf18' },
       'Camellya': { name: 'Dislocated But Worth It', desc: 'S6 Camellya — thumbs broken, damage beautiful', color: '#ec4899' },
       'Carlotta': { name: 'Wallet? Frozen.', desc: 'S6 Carlotta — bank account colder than her kit', color: '#38bdf8' },
       'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — Mamma mia...who\'s the clown now?', color: '#ec4899' },
-      'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#fbbf24' },
+      'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#edaf18' },
       'Brant': { name: 'Burned Through Savings', desc: 'S6 Brant — fire DPS, fire wallet', color: '#f97316' },
       'Cantarella': { name: 'Toxic Relationship', desc: 'S6 Cantarella — she\'s poison and you keep coming back', color: '#ec4899' },
-      'Zani': { name: 'Frazzle Addict', desc: 'S6 Zani — 19 stacks of Frazzle, zero stacks of savings', color: '#fbbf24' },
+      'Zani': { name: 'Frazzle Addict', desc: 'S6 Zani — 19 stacks of Frazzle, zero stacks of savings', color: '#edaf18' },
       'Ciaccona': { name: 'Wind Main in 2026', desc: 'S6 Ciaccona — bold, delusional, committed', color: '#22c55e' },
       'Cartethyia': { name: 'Blessed Wallet Drain', desc: 'S6 Cartethyia — the Maiden blessed your poverty', color: '#22c55e' },
       'Lupa': { name: 'Awoo\'d Too Hard', desc: 'S6 Lupa — the wolf pack ate your bank account', color: '#f97316' },
@@ -1609,9 +1609,9 @@ function WhisperingWishesInner() {
       'Galbrena': { name: 'Witch Time: Maxed', desc: 'S6 Galbrena — she IS Bayonetta now', color: '#f97316' },
       'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more Convene" seven times', color: '#22c55e' },
       'Chisa': { name: 'Cut Your Losses (Didn\'t)', desc: 'S6 Chisa — the blade cuts everything except your spending', color: '#ec4899' },
-      'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#fbbf24' },
+      'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#edaf18' },
       'Mornye': { name: 'Rhythm of Regret', desc: 'S6 Mornye — the beat dropped and so did your balance', color: '#f97316' },
-      'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#fbbf24' },
+      'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#edaf18' },
       'Aemeath': { name: 'Rode Into Bankruptcy', desc: 'S6 Aemeath — the Exostrider ran over your finances', color: '#f97316' },
     };
     
@@ -1654,7 +1654,7 @@ function WhisperingWishesInner() {
 
     // Weapon banner pull volume
     const weapBannerPulls = weaponHist.length;
-    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner Convenes — this is a lifestyle choice`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner Convenes — this is a lifestyle choice`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
     else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner Convenes — "it's a DPS increase bro"`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
 
     // More weapon Convenes than character Convenes
@@ -1669,7 +1669,7 @@ function WhisperingWishesInner() {
     if (total5Stars >= 10 && overallStats?.avgPity) {
       const avg = parseFloat(overallStats.avgPity);
       if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Edited Convene Log', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — has to be fake right??`, icon: 'Clover', color: '#ff0000', tier: 'legendary' });
-      else if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#fbbf24', tier: 'gold' });
+      else if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#edaf18', tier: 'gold' });
       else if (!isNaN(avg) && avg >= 70) list.push({ id: 'unluckyavg', name: 'Certified Unlucky', desc: `Avg pity ${overallStats.avgPity} — genuinely painful to look at`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
       else if (!isNaN(avg) && avg >= 65) list.push({ id: 'unluckyavg2', name: 'Soft Pity Squatter', desc: `Avg pity ${overallStats.avgPity} — you live in the soft zone rent-free`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
     }
@@ -1685,7 +1685,7 @@ function WhisperingWishesInner() {
 
     // Got a 5★ at very low pity multiple times
     const veryEarlyCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 10).length;
-    if (veryEarlyCount >= 5) list.push({ id: 'early5x', name: 'Rover\'s Plot Armor', desc: `${veryEarlyCount} five-stars within first 10 pity — protagonist luck is real`, icon: 'Clover', color: '#fbbf24', tier: 'legendary' });
+    if (veryEarlyCount >= 5) list.push({ id: 'early5x', name: 'Rover\'s Plot Armor', desc: `${veryEarlyCount} five-stars within first 10 pity — protagonist luck is real`, icon: 'Clover', color: '#edaf18', tier: 'legendary' });
     else if (veryEarlyCount >= 3) list.push({ id: 'early3x', name: 'Resonance Beacon', desc: `${veryEarlyCount} five-stars within first 10 pity — they come to you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 LOSS CHARACTER TROPHIES ═══
@@ -1727,7 +1727,7 @@ function WhisperingWishesInner() {
     const total5050s = totalWins + totalLosses;
     if (total5050s >= 5) {
       const winRate = Math.round((totalWins / total5050s) * 100);
-      if (winRate >= 80) list.push({ id: 'highwr', name: 'Account For Sale?', desc: `${winRate}% win rate across ${total5050s} flips — this isn't normal`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+      if (winRate >= 80) list.push({ id: 'highwr', name: 'Account For Sale?', desc: `${winRate}% win rate across ${total5050s} flips — this isn't normal`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
       else if (winRate >= 65) list.push({ id: 'goodwr', name: 'Jinzhou\'s Luckiest', desc: `${winRate}% win rate across ${total5050s} flips — the Magistrate blesses you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
       else if (winRate <= 20) list.push({ id: 'lowwr', name: 'Statistically Bullied', desc: `${winRate}% win rate across ${total5050s} flips — file a complaint`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
       else if (winRate <= 35) list.push({ id: 'badwr', name: 'Tacet Field: Account', desc: `${winRate}% win rate across ${total5050s} flips — corrupted beyond repair`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
@@ -1736,7 +1736,7 @@ function WhisperingWishesInner() {
     }
 
     // 50/50 win total milestones
-    if (totalWins >= 20) list.push({ id: 'wins20', name: 'Shorekeeper\'s Chosen', desc: `${totalWins} 50/50 wins — she protects your account too`, icon: 'Crown', color: '#fbbf24', tier: 'gold' });
+    if (totalWins >= 20) list.push({ id: 'wins20', name: 'Shorekeeper\'s Chosen', desc: `${totalWins} 50/50 wins — she protects your account too`, icon: 'Crown', color: '#edaf18', tier: 'gold' });
     else if (totalWins >= 10) list.push({ id: 'wins10', name: 'Sonance Cascade', desc: `${totalWins} 50/50 wins total — the echoes answer`, icon: 'Target', color: '#22c55e', tier: 'green' });
 
     // Against All Odds — won 50/50 immediately after 3+ consecutive losses
@@ -1756,8 +1756,8 @@ function WhisperingWishesInner() {
     
     // T0 Meta Teams
     if (ownsAll('Phrolova', 'Cantarella')) list.push({ id: 'phrol', name: 'Codependency', desc: 'Phrolova + Cantarella — useless without each other, broken together', icon: 'Heart', color: '#a855f7', tier: 'purple' });
-    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#fbbf24', tier: 'gold' });
-    if (ownsAll('Lynae', 'Mornye')) list.push({ id: 'lynmor', name: 'Pay2Win Unlocked', desc: 'Lynae + Mornye — the game plays itself now', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#edaf18', tier: 'gold' });
+    if (ownsAll('Lynae', 'Mornye')) list.push({ id: 'lynmor', name: 'Pay2Win Unlocked', desc: 'Lynae + Mornye — the game plays itself now', icon: 'Sparkles', color: '#edaf18', tier: 'gold' });
     if (ownsAll('Changli') && ownsAll('Brant') && ownsAll('Lupa')) list.push({ id: 'monofusion', name: 'Arsonist Squad', desc: 'Changli + Brant + Lupa — everything burns, including your primos', icon: 'Flame', color: '#f97316', tier: 'orange' });
     if (ownsAll('Galbrena', 'Qiuyuan', 'Shorekeeper')) list.push({ id: 'fusion', name: 'Bayonetta at Home', desc: 'Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home', icon: 'Flame', color: '#f97316', tier: 'orange' });
     if (ownsAll('Jiyan') && owned4StarChars.has('Mortefi')) list.push({ id: 'jiyan', name: 'Boomer Comp', desc: 'Jiyan + Mortefi — 1.0 copium that refuses to retire', icon: 'Shield', color: '#22c55e', tier: 'green' });
@@ -1775,12 +1775,12 @@ function WhisperingWishesInner() {
     // Own 3+ T0 DPS
     const t0Dps = ['Cartethyia', 'Camellya', 'Carlotta', 'Xiangli Yao', 'Phrolova', 'Iuno', 'Augusta', 'Aemeath'];
     const ownedT0 = t0Dps.filter(n => owns(n));
-    if (ownedT0.length >= 6) list.push({ id: 't0six', name: 'Tower? Cleared.', desc: `${ownedT0.length} T0 DPS — ToA is your personal playground`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    if (ownedT0.length >= 6) list.push({ id: 't0six', name: 'Tower? Cleared.', desc: `${ownedT0.length} T0 DPS — ToA is your personal playground`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
     else if (ownedT0.length >= 3) list.push({ id: 't0three', name: 'Meta Slave', desc: `${ownedT0.length} T0 DPS — tier list told you to Convene`, icon: 'Trophy', color: '#a855f7', tier: 'purple' });
     
     // ═══ QUIRKY / COMMUNITY TROPHIES ═══
     // Never lost a 50/50 (with at least 3 wins)
-    if (totalWins >= 3 && totalLosses === 0) list.push({ id: 'noloss', name: 'Literally Never Lost', desc: `${totalWins} 50/50 wins, zero losses — touch grass`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    if (totalWins >= 3 && totalLosses === 0) list.push({ id: 'noloss', name: 'Literally Never Lost', desc: `${totalWins} 50/50 wins, zero losses — touch grass`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
     
     // Lost first 50/50 (very first was a loss)
     if (first5050 && first5050.won5050 === false) list.push({ id: 'firstloss', name: 'First Time?', desc: 'First 50/50 was a loss — it only gets worse', icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
@@ -1809,7 +1809,7 @@ function WhisperingWishesInner() {
       ['Mornye', 'Starfield Calibrator'], ['Luuk Herssen', 'Everbright Polestar'], ['Aemeath', "Daybreaker's Spine"],
     ];
     const sigCount = sigPairs.filter(([char, weap]) => owned5StarChars.has(char) && owned5StarWeaps.has(weap)).length;
-    if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#fbbf24', tier: 'gold' });
+    if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
     else if (sigCount >= 5) list.push({ id: 'sig5', name: 'Forte Synergy', desc: `${sigCount} characters with their signature weapon — built different`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
     else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Echo Equipped', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
     else if (sigCount >= 1) list.push({ id: 'sig1', name: 'Signature Acquired', desc: 'Pulled a character and their signature weapon — BiS secured', icon: 'Sword', color: '#22c55e', tier: 'green' });
@@ -1941,7 +1941,7 @@ function WhisperingWishesInner() {
     const histLabels = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(histBuckets['81+'])histLabels.push('81+'); histLabels.forEach(b=>{if(!histBuckets[b])histBuckets[b]=0;});
     const histSummary = fiveStarPulls.length>=2?{max:Math.max(...Object.values(histBuckets),1),avg:(fiveStarPulls.reduce((s,p)=>s+p.pity,0)/fiveStarPulls.length).toFixed(1),lo:Math.min(...fiveStarPulls.map(p=>p.pity)),hi:Math.max(...fiveStarPulls.map(p=>p.pity))}:null;
     const sts = [
-      {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#fbbf24'},
+      {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
       {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
       {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
       {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
@@ -1956,7 +1956,7 @@ function WhisperingWishesInner() {
     const stdWHist = state.profile.standardWeap?.history||[];
     const bgnHist = state.profile.beginner?.history||[];
     const bannerStats = [
-      {l:'Featured',v:String(featHist.length),c:'#fbbf24',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Featured',v:String(featHist.length),c:'#edaf18',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Weapon',v:String(weapBannerHist.length),c:'#c084fc',s:weapBannerHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Std. Char',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Std. Weap',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
@@ -1986,9 +1986,9 @@ function WhisperingWishesInner() {
       hg.addColorStop(0,'rgba(255,255,255,0.02)');hg.addColorStop(0.4,'transparent');hg.addColorStop(0.6,'transparent');hg.addColorStop(1,'rgba(255,255,255,0.02)');
       ctx.fillStyle=hg;ctx.fillRect(x,y,w,hH);
       ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+hH);ctx.lineTo(x+w,y+hH);ctx.stroke();
-      const gb=ctx.createLinearGradient(0,y+15,0,y+15+26);gb.addColorStop(0,'rgba(251,191,36,0.9)');gb.addColorStop(1,'rgba(251,191,36,0.4)');
+      const gb=ctx.createLinearGradient(0,y+15,0,y+15+26);gb.addColorStop(0,'rgba(237,175,24,0.9)');gb.addColorStop(1,'rgba(237,175,24,0.4)');
       ctx.fillStyle=gb;rr(x+18,y+15,4,26,2);ctx.fill();
-      ctx.shadowColor='rgba(251,191,36,0.3)';ctx.shadowBlur=12;rr(x+18,y+15,4,26,2);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
+      ctx.shadowColor='rgba(237,175,24,0.3)';ctx.shadowBlur=12;rr(x+18,y+15,4,26,2);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
       ctx.fillStyle='#f1f5f9';ctx.font='600 18px sans-serif';ctx.fillText('RESONATOR ID',x+32,y+34);
       ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-18,y+34);ctx.textAlign='left';
       return hH;
@@ -2004,7 +2004,7 @@ function WhisperingWishesInner() {
       ctx.beginPath();ctx.moveTo(x+w-9-12,y+6);ctx.lineTo(x+w-9,y+6);ctx.lineTo(x+w-9,y+6+12);ctx.stroke();
       ctx.beginPath();ctx.moveTo(x+9+12,y+h-6);ctx.lineTo(x+9,y+h-6);ctx.lineTo(x+9,y+h-6-12);ctx.stroke();
       if(label){
-        const gb2=ctx.createLinearGradient(0,y+12,0,y+12+20);gb2.addColorStop(0,'rgba(251,191,36,0.8)');gb2.addColorStop(1,'rgba(251,191,36,0.3)');
+        const gb2=ctx.createLinearGradient(0,y+12,0,y+12+20);gb2.addColorStop(0,'rgba(237,175,24,0.8)');gb2.addColorStop(1,'rgba(237,175,24,0.3)');
         ctx.fillStyle=gb2;rr(x+15,y+12,3.5,20,1.5);ctx.fill();
         ctx.fillStyle='#e2e8f0';ctx.font='600 17px sans-serif';ctx.fillText(label,x+26,y+28);
         return 39;
@@ -2153,11 +2153,11 @@ function WhisperingWishesInner() {
       ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;rr(x,y,w,12,6);ctx.stroke();
       const fw=Math.max(6,Math.min(lr.percentile||50,100)/100*w);
       ctx.save();rr(x,y,w,12,6);ctx.clip();
-      const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#fbbf24');g.addColorStop(1,'#34d399');
+      const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#edaf18');g.addColorStop(1,'#34d399');
       ctx.fillStyle=g;rr(x,y,fw,12,6);ctx.fill();ctx.restore();
       ctx.fillStyle='rgba(10,14,22,0.85)';rr(x+w+9,y-5,105,21,6);ctx.fill();
-      ctx.strokeStyle=(lr.color||'#fbbf24')+'60';ctx.lineWidth=1;rr(x+w+9,y-5,105,21,6);ctx.stroke();
-      ctx.fillStyle=lr.color||'#fbbf24';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+61,y+10);ctx.textAlign='left';
+      ctx.strokeStyle=(lr.color||'#edaf18')+'60';ctx.lineWidth=1;rr(x+w+9,y-5,105,21,6);ctx.stroke();
+      ctx.fillStyle=lr.color||'#edaf18';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+61,y+10);ctx.textAlign='left';
       return 27;
     };
 
@@ -2180,7 +2180,7 @@ function WhisperingWishesInner() {
 
     // Collection row
     const drawColl = (cx2,cy2,cw2) => {
-      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#fbbf24'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#fbbf24'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
+      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
       const g2=6,iw=(cw2-4*g2)/5;
       items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,48,it.o+'/'+it.t,it.l,it.c,16);});
       return 48;
@@ -2204,7 +2204,7 @@ function WhisperingWishesInner() {
         const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
-        const bc=bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#fbbf24':bucket<=60?'#f97316':'#ef4444';
+        const bc=bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
         // Semi-transparent gradient fill with outer glow (single fill, no stacking)
         ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;
         const barGrad=ctx.createLinearGradient(0,by2+bh,0,by2);
@@ -2264,7 +2264,7 @@ function WhisperingWishesInner() {
     // ═══ RENDER ═══
     ctx.fillStyle='#080810';ctx.fillRect(0,0,W,H);
     const bgG=ctx.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.4,W*0.5);
-    bgG.addColorStop(0,'rgba(251,191,36,0.008)');bgG.addColorStop(1,'transparent');
+    bgG.addColorStop(0,'rgba(237,175,24,0.008)');bgG.addColorStop(1,'transparent');
     ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
 
     const M=18,ox=M,oy=M,ow=W-M*2,oh=H-M*2;
@@ -2295,7 +2295,7 @@ function WhisperingWishesInner() {
       ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',bx+15,idY+idOff+45);
       ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,bx+48,idY+idOff+45);
       ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',bx+15,idY+idOff+66);
-      ctx.fillStyle='#fbbf24';ctx.font='18px monospace';ctx.fillText(svr,bx+72,idY+idOff+66);
+      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,bx+72,idY+idOff+66);
       if(lr)drawLuck(bx+15,idY+idOff+87,leftW-135);
       const metaY=idY+idOff+(lr?117:90);
       ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
@@ -2377,7 +2377,7 @@ function WhisperingWishesInner() {
       ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',ix+15,uidLY);
       ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,ix+48,uidLY);
       ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',ix+15,uidLY+24);
-      ctx.fillStyle='#fbbf24';ctx.font='18px monospace';ctx.fillText(svr,ix+72,uidLY+24);
+      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,ix+72,uidLY+24);
       if(lr)drawLuck(ix+15,uidLY+51,iw-135);
       const metaY2=uidLY+(lr?84:57);
       ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
@@ -3289,7 +3289,7 @@ function WhisperingWishesInner() {
                       label="Featured Resonator" pity={state.calc.charPity} onPityChange={v => setCalc('charPity', v)}
                       copies={state.calc.charCopies} maxCopies={7} onCopiesChange={v => setCalc('charCopies', v)}
                       fourStarCopies={state.calc.char4StarCopies} maxFourStar={21} onFourStarChange={v => setCalc('char4StarCopies', v)}
-                      color="#fbbf24" softColor="#fb923c" softGlow="rgba(251,146,60,0.5)" sliderClass="" softPityClass="kuro-soft-pity" SoftPityIcon={Sparkles} ariaPrefix="Featured Resonator"
+                      color="#edaf18" softColor="#fb923c" softGlow="rgba(251,146,60,0.5)" sliderClass="" softPityClass="kuro-soft-pity" SoftPityIcon={Sparkles} ariaPrefix="Featured Resonator"
                     />
                   )}
 
@@ -3392,8 +3392,8 @@ function WhisperingWishesInner() {
                       <div className="kuro-label">Astrite Priority{state.calc.bannerCategory === 'standard' ? ' (Standard)' : ''}</div>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
-                          <Crown size={12} style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }} />
-                          <span className="text-xs font-medium" style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }}>Resonator {currentPriority}%</span>
+                          <Crown size={12} style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }} />
+                          <span className="text-xs font-medium" style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }}>Resonator {currentPriority}%</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-medium" style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }}>Weapon {100 - currentPriority}%</span>
@@ -3405,7 +3405,7 @@ function WhisperingWishesInner() {
                         onChange={e => setCalc(priorityKey, +e.target.value)}
                         className="kuro-slider priority-slider w-full"
                         aria-label={`Astrite allocation: ${currentPriority}% Resonator, ${100 - currentPriority}% Weapon`}
-                        style={{ background: `linear-gradient(to right, #fbbf24 0%, #fbbf24 ${currentPriority}%, #ec4899 ${currentPriority}%, #ec4899 100%)` }}
+                        style={{ background: `linear-gradient(to right, #edaf18 0%, #edaf18 ${currentPriority}%, #ec4899 ${currentPriority}%, #ec4899 100%)` }}
                       />
                       {currentPriority !== 50 && (
                         <button 
@@ -3738,7 +3738,7 @@ function WhisperingWishesInner() {
               <CardHeader>Saved States</CardHeader>
               <CardBody className="space-y-2">
                 {state.bookmarks.length === 0 ? (
-                  <p className="text-gray-500 text-xs text-center py-3">No saved states yet. Use "Save Current State" in the Calculator to bookmark your setup.</p>
+                  <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No saved states yet. Use "Save Current State" in the Calculator to bookmark your setup.</p>
                 ) : state.bookmarks.map(b => (
                   <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
                     <div>
@@ -4126,7 +4126,7 @@ function WhisperingWishesInner() {
                     const start = parseInt(label.split('-')[0], 10);
                     if (start <= 20) return '#22c55e'; // Green - very lucky
                     if (start <= 40) return '#84cc16'; // Lime - lucky
-                    if (start <= 50) return '#fbbf24'; // Yellow - average
+                    if (start <= 50) return '#edaf18'; // Yellow - average
                     if (start <= 60) return '#f97316'; // Orange - unlucky
                     return '#ef4444'; // Red - soft pity / hard pity
                   };
@@ -4209,7 +4209,7 @@ function WhisperingWishesInner() {
                             <div className="text-gray-400 text-[9px]">Lowest</div>
                           </div>
                           <div>
-                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(251,191,36,0.5)' }}>{avgPity}</div>
+                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(237,175,24,0.5)' }}>{avgPity}</div>
                             <div className="text-gray-400 text-[9px]">Average</div>
                           </div>
                           <div>
@@ -4229,7 +4229,7 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400">21-40</span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#fbbf24', boxShadow: '0 0 6px #fbbf24' }}></span> 
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#edaf18', boxShadow: '0 0 6px #edaf18' }}></span> 
                             <span className="text-gray-400">41-50</span>
                           </span>
                           <span className="flex items-center gap-1">
@@ -4255,7 +4255,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHist = statsTabData.allHist;
-                      if (allHist.length < 10) return <p className="text-gray-500 text-xs text-center py-4">Need more Convene data for trends</p>;
+                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Need more Convene data for trends</p>;
                       
                       const groupData = (range) => {
                         const grouped = {};
@@ -4309,7 +4309,7 @@ function WhisperingWishesInner() {
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="text-gray-500 text-xs text-center py-4">Need more data</p>;
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Need more data</p>;
                       
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
@@ -4357,8 +4357,8 @@ function WhisperingWishesInner() {
                               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                   <linearGradient id="pullGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="rgba(251,191,36,0.22)" />
-                                    <stop offset="100%" stopColor="rgba(251,191,36,0)" />
+                                    <stop offset="0%" stopColor="rgba(237,175,24,0.22)" />
+                                    <stop offset="100%" stopColor="rgba(237,175,24,0)" />
                                   </linearGradient>
                                 </defs>
                                 <XAxis dataKey="label" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -4367,7 +4367,7 @@ function WhisperingWishesInner() {
                                   contentStyle={{ background: 'rgba(15,20,28,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', fontSize: '11px' }} 
                                   labelStyle={{ color: '#e5e7eb' }}
                                 />
-                                <Area type="natural" dataKey="pulls" stroke="rgba(251,191,36,0.4)" fill="url(#pullGradient)" strokeWidth={1} name="Convenes" />
+                                <Area type="natural" dataKey="pulls" stroke="rgba(237,175,24,0.4)" fill="url(#pullGradient)" strokeWidth={1} name="Convenes" />
                               </AreaChart>
                             </ResponsiveContainer>
                           </div>
@@ -4405,12 +4405,12 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No 5★ Convenes yet</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No 5★ Convenes yet</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto">
                           {fiveStars.map((p, i) => {
                             // P2-FIX: Unified pity color thresholds — matches histogram
-                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#fbbf24' : p.pity <= 60 ? '#f97316' : '#ef4444';
+                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
                             const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-lime-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
                               <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
@@ -4470,7 +4470,7 @@ function WhisperingWishesInner() {
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
                       const pity = state.profile[banner.key]?.pity5 ?? 0;
-                      const colorHex = { yellow: '#fbbf24', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
+                      const colorHex = { yellow: '#edaf18', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
                       return (
                         <div key={banner.name} className="p-2 bg-white/5 rounded">
                           <div className="flex justify-between items-center mb-1">
@@ -5919,20 +5919,20 @@ Example: {"pulls":[...]}'
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
-                            <span className="text-xs font-mono" style={{ color: '#fbbf24', textShadow: '0 0 8px rgba(251,191,36,0.3)' }}>{state.server}</span>
+                            <span className="text-xs font-mono" style={{ color: '#edaf18', textShadow: '0 0 8px rgba(237,175,24,0.3)' }}>{state.server}</span>
                           </div>
                         </div>
                         {luckRating && (
                           <div className="mt-2.5 flex items-center gap-2">
                             <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #fbbf24, #34d399)', boxShadow: '0 0 6px rgba(251,191,36,0.4)' }} />
+                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #edaf18, #34d399)', boxShadow: '0 0 6px rgba(237,175,24,0.4)' }} />
                             </div>
-                            <span className="text-[9px] font-mono font-bold flex-shrink-0 px-1.5 py-0.5 rounded" style={{ color: luckRating.color || '#fbbf24', background: `${luckRating.color || '#fbbf24'}15`, border: `1px solid ${luckRating.color || '#fbbf24'}30`, textShadow: `0 0 8px ${luckRating.color || '#fbbf24'}60` }}>{luckRating.tier} {luckRating.rating}</span>
+                            <span className="text-[9px] font-mono font-bold flex-shrink-0 px-1.5 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60` }}>{luckRating.tier} {luckRating.rating}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex-shrink-0 flex flex-col items-center">
-                        <div className="relative rounded-xl overflow-hidden" style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(251,191,36,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
+                        <div className="relative rounded-xl overflow-hidden" style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
                           <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
                           {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                             const f = getImageFraming(`collection-${state.profile.profilePic}`);
@@ -5954,16 +5954,16 @@ Example: {"pulls":[...]}'
 
                   {/* ═══ CONVENE STATS PANEL ═══ */}
                   <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
-                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.4), transparent)' }} />
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.4), transparent)' }} />
                     <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
                     <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                     <div className="flex items-center gap-2 mb-2">
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
                       <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24', bg: 'rgba(251,191,36,0.1)', bc: 'rgba(251,191,36,0.3)' },
+                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
                       { label: 'Total Convenes', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
                       { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a78bfa', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
                       { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
@@ -6001,7 +6001,7 @@ Example: {"pulls":[...]}'
                         <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
                         <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                         <div className="flex items-center gap-2 mb-2">
-                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
                         </div>
                         <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
@@ -6009,7 +6009,7 @@ Example: {"pulls":[...]}'
                             const cnt = bk[lab]||0;
                             const height = mx > 0 ? (cnt / mx) * 100 : 0;
                             const bucket = parseInt(lab)||81;
-                            const color = bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#fbbf24':bucket<=60?'#f97316':'#ef4444';
+                            const color = bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
                             return (
                               <div key={i} className="flex-1 flex flex-col items-center">
                                 <div className="w-full relative" style={{ height: '96px' }}>
@@ -6052,7 +6052,7 @@ Example: {"pulls":[...]}'
                       <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
                       <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                       <div className="flex items-center gap-2 mb-2">
-                        <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
                         <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
@@ -6092,11 +6092,11 @@ Example: {"pulls":[...]}'
                     if (!sorted.length) return null;
                     return (
                       <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
-                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.3), transparent)' }} />
                         <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
                         <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                         <div className="flex items-center gap-2 mb-2">
-                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(251,191,36,0.3))', boxShadow: '0 0 6px rgba(251,191,36,0.3)' }} />
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
                         </div>
                         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
@@ -6133,7 +6133,7 @@ Example: {"pulls":[...]}'
                 <button
                   onClick={() => setIdCardFormat('landscape')}
                   className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
-                  style={idCardFormat === 'landscape' ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
                   title="Landscape 16:9"
                 >
                   <Monitor size={12} /> 16:9
@@ -6141,7 +6141,7 @@ Example: {"pulls":[...]}'
                 <button
                   onClick={() => setIdCardFormat('portrait')}
                   className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
-                  style={idCardFormat === 'portrait' ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' } : { color: '#6b7280' }}
+                  style={idCardFormat === 'portrait' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18' } : { color: '#6b7280' }}
                   title="Portrait 9:16"
                 >
                   <Smartphone size={12} /> 9:16
@@ -6255,7 +6255,7 @@ Example: {"pulls":[...]}'
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           
                           if (uniqueNames.length === 0) {
-                            return <p className="text-gray-500 text-xs text-center py-4">Import Convene data first to see your collection items</p>;
+                            return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data first to see your collection items</p>;
                           }
                           
                           return (
@@ -6416,9 +6416,9 @@ Example: {"pulls":[...]}'
                           <div className="text-gray-400 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
                         </div>
                         {!adminPlayerList ? (
-                          <p className="text-gray-500 text-xs text-center py-4">Loading...</p>
+                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Loading...</p>
                         ) : adminPlayerList.length === 0 ? (
-                          <p className="text-gray-500 text-xs text-center py-4">No players yet</p>
+                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No players yet</p>
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (
@@ -6494,7 +6494,7 @@ Example: {"pulls":[...]}'
                               </div>
                             ))}
                             {(!trophies?.list || trophies.list.length === 0) && (
-                              <p className="text-gray-500 text-xs text-center py-4">Import Convene data first to see trophies</p>
+                              <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data first to see trophies</p>
                             )}
                           </div>
                         </div>
@@ -7035,7 +7035,7 @@ Example: {"pulls":[...]}'
       {/* Footer */}
       <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
-          <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
+          <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>
       </footer>
     </div>
