@@ -628,6 +628,42 @@ Icon-only buttons (modal close `<X>`) rely on the parent button's hover/active s
 
 **Trend posture:** Trend Selective — uses glassmorphism and aurora where they serve the cyberpunk character, ignores irrelevant trends. ✓ Correct posture for this product.
 
+### §DDT2. Trend Strategy
+
+**Appropriate posture:** **Trend Selective** — Given A1 (Non-revenue), A2 (Leisure/Emotional), and A4 (Strong aesthetic), the product should use trends where they serve the aesthetic vision and ignore them elsewhere. It should not chase trends (wrong for a companion tool with a specific identity) nor be trend-agnostic (wrong for a product where aesthetics amplify value).
+
+**Actual posture:** **Trend Selective** — ✓ Aligned. Glassmorphism is used because frosted glass surfaces serve the "content floating in void" spatial character. Aurora gradients are used because procedural canvas backgrounds serve the "living atmosphere" personality. Neo-brutalism, neumorphism, bento grids, and dot textures are correctly absent.
+
+**Posture gap:** None — intended and actual trend posture are aligned.
+
+**Trend adoption quality bar assessment:**
+
+| Trend In Use | Quality Bar | Current Execution | Above Bar? |
+|-------------|-------------|-------------------|------------|
+| **Glassmorphism** | Requires vivid backdrop, text 4.5:1 contrast, sufficient blur | Backdrop = procedural canvas glow (vivid ✓). Blur at 4-8px (adequate). Text contrast maintained on semi-transparent surfaces. | ✓ Yes — the procedural canvas beneath glass surfaces creates the "something to blur through" that glassmorphism requires |
+| **Aurora/chromatic gradients** | Must feel organic and living; no banding; text zones clean | Procedural canvas (sine wave functions) = truly organic. No CSS gradient banding. Text zones are on card surfaces above the aurora, not directly over it. | ✓ Yes — implementation uses canvas (no banding risk), and content sits on elevated frosted surfaces above the aurora |
+
+**Trend debt check:** No trend debt found. Neither glassmorphism (cooling but not passed) nor aurora gradients (currently peak) have reached "dated" status. The procedural canvas implementation future-proofs the aurora trend — it can be subtly adjusted (color, speed, pattern) without replacing the system.
+
+**Trend risk forecast:**
+
+```
+Glassmorphism:  Currently COOLING — may feel dated in 2-3 years.
+  Mitigation:   The app's glassmorphism is subtle (low blur, translucent cards) rather
+                than heavy (full-screen frosted panels). This means it will age gracefully
+                as "translucent dark UI" rather than "2022 glassmorphism."
+  Action:       No change needed now. If the trend passes fully, reduce blur values and
+                increase card background opacity — the transition from glass to solid-dark
+                can be seamless.
+
+Aurora gradients: Currently PEAK — will cool within 1-2 years.
+  Mitigation:   Procedural canvas is not a CSS gradient — it's a living, unique animation.
+                This reads as "custom atmospheric background" rather than "trend-following
+                gradient." It will age as "distinctive" rather than "dated."
+  Action:       No change needed. The canvas system is a signature element (§DBI2),
+                not a trend adoption.
+```
+
 ---
 
 ## IX. BRAND IDENTITY
