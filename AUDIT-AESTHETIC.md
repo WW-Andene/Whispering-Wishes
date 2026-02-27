@@ -2292,12 +2292,11 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-STATE-1 | Empty states lose atmospheric character | Enhanced `.kuro-empty-state` with entrance animation (`emptyFadeIn` — fade+translateY), dashed gold border (0.10), and `::before` gold accent line. Applied to all 8 empty states automatically via CSS. |
 | D-DATAVIZ-1 | Recharts defaults break character on grid/axis/tooltip | Themed both AreaCharts: axis ticks use chromatic gray `#8892a4` + `var(--font-data)`, axis lines `rgba(255,255,255,0.06)`, tooltip styled as frosted kuro-card (dark bg, gold border `rgba(237,175,24,0.3)`, backdrop-blur, data font). Gold cursor highlight. |
 | D-TOKEN-1 | Border opacity values not tokenized | Added 5 border tokens to `:root`: `--border-subtle` (0.06), `--border-default` (0.08), `--border-medium` (0.1), `--border-hover` (0.15), `--border-bright` (0.2). Replaced 9 border values across `.kuro-card`, `.kuro-btn`, `.kuro-input`, `.kuro-stat`, `.kuro-header`, `.kuro-card-inner` corner decorations, `.kuro-divider`, `.pity-ring-track`. |
+| D-COPY-1 | Empty state copy is personality-absent | Rewrote 11 empty state strings with cyberpunk-luxe instrument voice: "No data to analyze yet" → "Awaiting signal data", "No entries yet" → "No signals received", "Need more data" → "Insufficient signal data", "No 5★ Convenes yet" → "No 5★ signals detected", "No players yet" → "No operatives registered", etc. |
 
-### Remaining — 1 finding
+### Remaining — 0 findings
 
-| ID | Severity | Finding |
-|----|----------|---------|
-| D-COPY-1 | [LOW] | Empty state copy is personality-absent |
+All 18 findings have been addressed.
 
 ---
 

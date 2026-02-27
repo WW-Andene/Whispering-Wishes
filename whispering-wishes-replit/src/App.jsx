@@ -3832,7 +3832,7 @@ function WhisperingWishesInner() {
               <CardHeader>Saved States</CardHeader>
               <CardBody className="space-y-2">
                 {state.bookmarks.length === 0 ? (
-                  <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No saved states yet. Use "Save Current State" in the Calculator to bookmark your setup.</p>
+                  <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No states archived. Use Save Current State in the Calculator to bookmark your configuration.</p>
                 ) : state.bookmarks.map(b => (
                   <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
                     <div>
@@ -3864,9 +3864,9 @@ function WhisperingWishesInner() {
               <Card>
                 <CardBody className="text-center py-8">
                   <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-gray-300 text-sm font-medium">No data to analyze yet</p>
-                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to see luck ratings, pity stats, and pull analytics.</p>
-                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Go to Profile tab to import</button>
+                  <p className="text-gray-300 text-sm font-medium">Awaiting signal data</p>
+                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and pull analytics.</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
             ) : (
@@ -3972,8 +3972,8 @@ function WhisperingWishesInner() {
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">No entries yet</div>
-                                <div className="text-gray-500 text-[10px]">Be the first to submit!</div>
+                                <div className="text-gray-500 text-sm mb-2">No signals received</div>
+                                <div className="text-gray-500 text-[10px]">Be the first to transmit</div>
                               </div>
                             ) : (
                               leaderboardData.map((entry, i) => {
@@ -4391,7 +4391,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHist = statsTabData.allHist;
-                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Need more Convene data for trends</p>;
+                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Insufficient data for trend analysis</p>;
                       
                       const groupData = (range) => {
                         const grouped = {};
@@ -4445,7 +4445,7 @@ function WhisperingWishesInner() {
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Need more data</p>;
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Insufficient signal data</p>;
                       
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
@@ -4543,7 +4543,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No 5★ Convenes yet</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No 5★ signals detected</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto">
                           {fiveStars.map((p, i) => {
@@ -4643,8 +4643,8 @@ function WhisperingWishesInner() {
               <Card>
                 <CardBody className="text-center py-8">
                   <Archive size={32} className="mx-auto mb-2 text-gray-500" />
-                  <p className="text-gray-400 text-sm">No Convene data imported</p>
-                  <p className="text-gray-500 text-xs mt-1">Go to Profile tab to import your data</p>
+                  <p className="text-gray-400 text-sm">No Convene data on record</p>
+                  <p className="text-gray-500 text-xs mt-1">Import via Profile to initialize your archive</p>
                 </CardBody>
               </Card>
             ) : (
@@ -5468,7 +5468,7 @@ function WhisperingWishesInner() {
                           {filteredChars.length === 0 && (
                             <div className="text-center py-8">
                               <Search size={24} className="mx-auto mb-2 text-gray-600" />
-                              <p className="text-gray-500 text-xs">No resonators found</p>
+                              <p className="text-gray-500 text-xs">No resonators match</p>
                             </div>
                           )}
                         </div>
@@ -6401,7 +6401,7 @@ Example: {"pulls":[...]}'
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           
                           if (uniqueNames.length === 0) {
-                            return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data first to see your collection items</p>;
+                            return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data to populate your archive</p>;
                           }
                           
                           return (
@@ -6572,7 +6572,7 @@ Example: {"pulls":[...]}'
                             ))}
                           </div>
                         ) : adminPlayerList.length === 0 ? (
-                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No players yet</p>
+                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No operatives registered</p>
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (
@@ -6648,7 +6648,7 @@ Example: {"pulls":[...]}'
                               </div>
                             ))}
                             {(!trophies?.list || trophies.list.length === 0) && (
-                              <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data first to see trophies</p>
+                              <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data to unlock achievements</p>
                             )}
                           </div>
                         </div>
