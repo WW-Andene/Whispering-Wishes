@@ -2286,12 +2286,12 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-MOTION-1 | No skeleton/loading state system | Created `.kuro-skeleton` class system with gold shimmer animation (`kuroShimmer`). Variants: `-row`, `-stat`, `-text`, `-circle`. Applied skeleton loaders to leaderboard rankings, community pulls, and admin player list. No spinners. |
 | D-STATE-2 | Data import has no loading feedback | Leaderboard and community pull loading states now use contextual skeleton UI matching final layout shape. Admin player list loading also replaced. |
 | D-HIERARCHY-2 | Collection grid has uniform visual weight — 5★ should stand out | Enhanced `.glow-gold` with stronger box-shadow (0.20), inner glow (inset 0.06), and radial-gradient bg (0.08). Reduced `.glow-purple` (0.12) to widen 5★ vs 4★ hierarchy gap. |
+| D-ATMOSPHERE-1 | Banner card could have persistent subtle glow at rest | Added `boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)'` to BannerCard rest state inline style. |
 
-### Remaining — 7 findings (12 actionable fixes → 6 implementation steps)
+### Remaining — 6 findings (11 actionable fixes → 5 implementation steps)
 
 | ID | Severity | Finding |
 |----|----------|---------|
-| D-ATMOSPHERE-1 | [POLISH] | Banner card could have persistent subtle glow at rest |
 | D-ICON-1 | [LOW] | Default Lucide icons are stylistically neutral |
 | D-ICON-2 | [POLISH] | 14px icons in 32px containers — excessive padding |
 | D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character |
@@ -2303,7 +2303,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 
 ## IMPLEMENTATION PLAN
 
-17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2, D-HIERARCHY-2 already applied) grouped into 10 implementation steps:
+17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2, D-HIERARCHY-2, D-ATMOSPHERE-1 already applied) grouped into 10 implementation steps:
 
 | Step | What | Findings | Files | Effort |
 |------|------|----------|-------|--------|
@@ -2311,7 +2311,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 | ~~**2**~~ | ~~**Countdown numeral treatment**~~ ✅ DONE — Added `.kuro-scoreboard` class (18px, JetBrains Mono, tabular-nums, letter-spacing: -0.02em). Applied to all CountdownTimer digits. PityRing number scaled from 0.28→0.36 multiplier. Compact timer switched from font-mono to kuro-number. | D-TYPE-4 | `appcore-components.jsx`, `appcore-providers.jsx` | ✅ |
 | ~~**3**~~ | ~~**Skeleton loading system**~~ ✅ DONE — Created `.kuro-skeleton` class family with gold shimmer animation. Variants: `-row`, `-stat`, `-text`, `-circle`. Replaced "Loading..." text in leaderboard, community pulls (null state), and admin player list with contextual skeleton UI. | D-MOTION-1, D-STATE-2 | `appcore-providers.jsx`, `App.jsx` | ✅ |
 | ~~**4**~~ | ~~**5★ rarity glow in Collection grid**~~ ✅ DONE — Enhanced `.glow-gold` with stronger box-shadow (0.15→0.20), inner glow (inset 0.06), and radial-gradient background (0.08 at bottom). Reduced `.glow-purple` slightly (0.15→0.12) to widen visual hierarchy gap. | D-HIERARCHY-2 | `appcore-providers.jsx` | ✅ |
-| **5** | **Banner card rest-state glow** — Add persistent low-opacity gold `box-shadow: 0 0 40px rgba(237,175,24,0.06)` to the active banner card at rest (not just on hover). Subtle enough to signal primacy without overloading. | D-ATMOSPHERE-1 | `App.jsx` (banner card styling) | ~10 min |
+| ~~**5**~~ | ~~**Banner card rest-state glow**~~ ✅ DONE — Added persistent gold `boxShadow: 0 0 40px rgba(237,175,24,0.06)` + depth shadow to BannerCard inline style. | D-ATMOSPHERE-1 | `appcore-components.jsx` | ✅ |
 | **6** | **Icon expressiveness** — Add subtle glow/stroke treatment to key navigation tab icons (Tracker, Stats, Collection, Profile). Use `filter: drop-shadow()` with element-appropriate colors when active. Tighten icon container sizing from 32px → 24px, or increase icon size from 14px → 18px. | D-ICON-1, D-ICON-2 | `App.jsx` (tab bar icons), `appcore-providers.jsx` (KuroStyles — icon classes) | ~20 min |
 | **7** | **Empty state atmospheric upgrade** — Enhance existing `.kuro-empty-state` with a faint character silhouette or element-themed SVG illustration behind the text. Add staggered entrance animation (fade + translateY) matching card entrance timing. Apply to Tracker, Stats, and Collection empty states. | D-STATE-1 | `App.jsx` (empty state JSX), `appcore-providers.jsx` (empty state animation keyframes) | ~30 min |
 | **8** | **Import loading feedback** — Add progress indicator during JSON parse/import. Show file name, estimated size, and a shimmer animation (using Step 3's skeleton system). Display parse errors inline with recoverable messaging. | D-STATE-2 | `App.jsx` (processImportData, handleFileImport) | ~20 min |
