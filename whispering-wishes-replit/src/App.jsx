@@ -149,6 +149,8 @@ const DEFAULT_VISUAL_SETTINGS = {
   animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
 };
 const TRACKER_CATEGORIES = [['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']];
+// P15-FIX: MEDIUM-3 — Domain allowlist for custom image URLs (single source of truth)
+const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
@@ -570,7 +572,6 @@ function WhisperingWishesInner() {
       if (!saved) return {};
       const raw = JSON.parse(saved);
       // P15-FIX: MEDIUM-3 — Validate URLs: HTTPS-only + domain allowlist to prevent tracking/SSRF
-      const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
       const safe = {};
       for (const [k, v] of Object.entries(raw)) {
         if (typeof v === 'string' && /^https:\/\//i.test(v)) {
@@ -6278,7 +6279,7 @@ Example: {"pulls":[...]}'
                                         if (val) {
                                           if (val.length > 5 && !/^https:\/\//i.test(val)) return; // Enforce HTTPS-only URLs
                                           // P15-FIX: MEDIUM-3 — Validate against domain allowlist
-                                          if (val.length > 10) { try { const h = new URL(val).hostname; if (!['i.ibb.co','i.imgur.com','imgur.com','cdn.discordapp.com','media.discordapp.net','pbs.twimg.com','raw.githubusercontent.com','i.postimg.cc'].some(d => h === d || h.endsWith('.'+d))) return; } catch { return; } }
+                                          if (val.length > 10) { try { const h = new URL(val).hostname; if (!ALLOWED_IMAGE_HOSTS.some(d => h === d || h.endsWith('.'+d))) return; } catch { return; } }
                                           newCustom[name] = val;
                                         } else {
                                           delete newCustom[name];

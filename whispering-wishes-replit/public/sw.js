@@ -18,7 +18,7 @@ const PRECACHE = ['/', '/index.html'];
 const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 // Image domains — stale-while-revalidate
-const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co', 'wuwa.gg', 'wuwatracker.com'];
+const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 
 // Install — precache app shell
 self.addEventListener('install', (event) => {

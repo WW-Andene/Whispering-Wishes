@@ -3,7 +3,7 @@
 // Pure data, constants, game databases. No React. Leaf module (no imports).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '3.2.2';
+const APP_VERSION = '3.2.3';
 const MAX_IMPORT_SIZE_MB = 5; // P7-FIX: Import file size limit constant (7E)
 
 // Header icon (uploaded app icon)
