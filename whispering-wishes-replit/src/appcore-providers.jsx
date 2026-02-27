@@ -1269,6 +1269,21 @@ const KuroStyles = memo(({ oledMode }) => (
       background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
     }
 
+    /* §DST1: Ghost-grid placeholder cells for collection empty state */
+    @keyframes ghostPulse {
+      0%, 100% { opacity: 0.04; }
+      50% { opacity: 0.08; }
+    }
+    .ghost-grid-cell {
+      background: linear-gradient(
+        135deg,
+        rgba(140, 160, 200, 0.06) 0%,
+        rgba(140, 160, 200, 0.02) 50%,
+        rgba(140, 160, 200, 0.05) 100%
+      );
+      animation: ghostPulse 2.5s ease-in-out infinite;
+    }
+
     /* ═══ DIVIDER ═══ */
     .kuro-divider {
       height: 1px;

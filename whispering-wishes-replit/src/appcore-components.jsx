@@ -1447,7 +1447,17 @@ const VISUAL_SLIDER_CONFIGS = [
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
 const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic }) => {
-  if (items.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No items match your filters</p>;
+  if (items.length === 0) return (
+    <div className="kuro-empty-state relative py-3">
+      {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
+      <div className="grid grid-cols-3 gap-2 mb-2" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="ghost-grid-cell aspect-[3/4] rounded-lg border border-white/[0.04]" style={{ animationDelay: `${i * 0.08}s` }} />
+        ))}
+      </div>
+      <p className="text-gray-500 text-xs text-center">No items match your filters</p>
+    </div>
+  );
   const ownedCount = items.filter(([_, c]) => c > 0).length;
   return (
     <>
