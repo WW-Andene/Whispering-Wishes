@@ -210,6 +210,46 @@ On macOS/Retina displays, `antialiased` smoothing produces thinner, more refined
 
 **Fix:** Add to root CSS: `body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }`
 
+### §DT4. Typographic Voice and Expressiveness
+
+**The measure (line length):**
+
+| Context | Current Measure | Assessment |
+|---------|----------------|------------|
+| Card body text | ~35–45 characters (constrained by card width on mobile) | ✓ Appropriate — tight, editorial, efficient for a data companion |
+| Stat labels | ~15–25 characters | ✓ Short, punchy — correct for label context |
+| Modal body text | ~50–65 characters | ✓ Comfortable reading range for detail views |
+| Empty state messages | ~40–55 characters | ✓ Adequate, though these could benefit from tighter constraint for more impact |
+
+The mobile-first layout naturally constrains measure. No text blocks exceed 75 characters — the app avoids the "wide paragraph on large screen" anti-pattern by keeping content in cards.
+
+**Line-height assessment:**
+
+| Context | Current | Assessment |
+|---------|---------|------------|
+| Body text (14px) | Tailwind default ~1.5 | ✓ Standard, comfortable for UI text |
+| Stat values (9-12px) | Tailwind default ~1.5 | ⚠ At small sizes, 1.5 is generous — could tighten to 1.3 for denser, more "precision instrument" feel |
+| Headings (18-20px) | Tailwind default ~1.5 | ⚠ Slightly loose for headings — 1.25-1.3 would feel more confident |
+
+**Typography as composition element:**
+
+The app currently does *not* use typography as a compositional tool — display text is not used as a hero element, no scale contrast creates visual energy, and weight contrast tops out at 400→700 (adequate but not dramatic). This is consistent with the data-dense companion role, but given A5 (Amplifies value), there is one key opportunity:
+
+**[POLISH] D-TYPE-4: Banner countdown timers could use type as visual element**
+
+The pity countdown numbers (e.g., "47 pulls remaining") are the app's highest-emotional-value data point — the number every gacha player watches. Currently rendered at the same scale as surrounding text with `font-weight: 700`. A larger, more dramatic numeral treatment (28-32px, `tabular-nums`, slight `letter-spacing: -0.02em` tightening) would make this moment feel like the "scoreboard" it is for the user — type *as* illustration, not type as label.
+
+**Variable font utilization:** N/A — system font stack does not guarantee variable font availability. If §DT1 recommendation (Geist Sans) is adopted, its `wght` axis (100–900) would enable micro-weight variation: 350 for body (slightly lighter than 400 = more refined dark-mode rendering), 650 for subheadings (more contrast than 600), 800 for key numerals (heavier impact).
+
+**Typographic personality moments:**
+
+| State | Current Type Treatment | Assessment |
+|-------|----------------------|------------|
+| Empty state | `text-gray-400` body text + action button — plain | ⚠ No typographic expression — could use a larger, lighter-weight statement |
+| Error state | Standard red-tinted text | ✓ Appropriate — clinical precision, not dramatic |
+| Success state | Standard green-tinted text within stat boxes | ⚠ Gold pulse animation adds motion character, but type remains neutral |
+| Loading state | No dedicated loading typography | ⚠ No skeleton text rhythm — staggered card entrance compensates |
+
 ---
 
 ## IV. MOTION ARCHITECTURE
