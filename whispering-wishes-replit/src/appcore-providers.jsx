@@ -827,7 +827,28 @@ const KuroStyles = memo(({ oledMode }) => (
       cursor: not-allowed;
       pointer-events: none;
     }
-    
+
+    /* §DI3: Global icon hover color transitions
+       Ensures every Lucide SVG inside an interactive element
+       transitions color smoothly + gains a subtle atmospheric glow */
+    button svg, a svg, [role="button"] svg {
+      transition: color var(--transition-fast), filter var(--transition-fast);
+    }
+    @media (hover: hover) {
+      button:hover > svg,
+      a:hover > svg,
+      [role="button"]:hover > svg,
+      button:hover svg,
+      a:hover svg,
+      [role="button"]:hover svg {
+        filter: drop-shadow(0 0 3px currentColor);
+      }
+      button:disabled:hover svg,
+      button[disabled]:hover svg {
+        filter: none;
+      }
+    }
+
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
       background: rgba(237, 175, 24, 0.15);
