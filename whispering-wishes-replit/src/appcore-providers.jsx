@@ -1213,10 +1213,25 @@ const KuroStyles = memo(({ oledMode }) => (
       border-radius: 50%;
     }
 
-    /* ═══ EMPTY STATE — atmospheric warmth ═══ */
+    /* ═══ EMPTY STATE — D-STATE-1 atmospheric upgrade ═══ */
+    @keyframes emptyFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .kuro-empty-state {
+      position: relative;
       background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);
       border-radius: 8px;
+      animation: emptyFadeIn 0.4s ease-out both;
+      border: 1px dashed rgba(237, 175, 24, 0.10);
+    }
+    .kuro-empty-state::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
     }
 
     /* ═══ DIVIDER ═══ */

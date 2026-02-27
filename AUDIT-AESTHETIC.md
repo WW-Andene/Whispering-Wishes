@@ -2289,12 +2289,12 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-ATMOSPHERE-1 | Banner card could have persistent subtle glow at rest | Added `boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)'` to BannerCard rest state inline style. |
 | D-ICON-1 | Default Lucide icons are stylistically neutral | Added gold `drop-shadow(0 0 5px rgba(237,175,24,0.5))` filter on active tab icon container for glow effect. |
 | D-ICON-2 | 14px icons in 32px containers — excessive padding | Increased icon size 16→18px in all 8 tab buttons. Tightened container padding `p-2`→`p-1.5` (container 32→30px). |
+| D-STATE-1 | Empty states lose atmospheric character | Enhanced `.kuro-empty-state` with entrance animation (`emptyFadeIn` — fade+translateY), dashed gold border (0.10), and `::before` gold accent line. Applied to all 8 empty states automatically via CSS. |
 
-### Remaining — 4 findings (9 actionable fixes → 3 implementation steps)
+### Remaining — 3 findings (8 actionable fixes → 2 implementation steps)
 
 | ID | Severity | Finding |
 |----|----------|---------|
-| D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character |
 | D-COPY-1 | [LOW] | Empty state copy is personality-absent |
 | D-DATAVIZ-1 | [LOW] | Recharts defaults break character on grid/axis/tooltip |
 | D-TOKEN-1 | [LOW] | Border opacity values not tokenized |
@@ -2303,7 +2303,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 
 ## IMPLEMENTATION PLAN
 
-17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2, D-HIERARCHY-2, D-ATMOSPHERE-1, D-ICON-1, D-ICON-2 already applied) grouped into 10 implementation steps:
+17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2, D-HIERARCHY-2, D-ATMOSPHERE-1, D-ICON-1, D-ICON-2, D-STATE-1 already applied) grouped into 10 implementation steps:
 
 | Step | What | Findings | Files | Effort |
 |------|------|----------|-------|--------|
@@ -2313,7 +2313,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 | ~~**4**~~ | ~~**5★ rarity glow in Collection grid**~~ ✅ DONE — Enhanced `.glow-gold` with stronger box-shadow (0.15→0.20), inner glow (inset 0.06), and radial-gradient background (0.08 at bottom). Reduced `.glow-purple` slightly (0.15→0.12) to widen visual hierarchy gap. | D-HIERARCHY-2 | `appcore-providers.jsx` | ✅ |
 | ~~**5**~~ | ~~**Banner card rest-state glow**~~ ✅ DONE — Added persistent gold `boxShadow: 0 0 40px rgba(237,175,24,0.06)` + depth shadow to BannerCard inline style. | D-ATMOSPHERE-1 | `appcore-components.jsx` | ✅ |
 | ~~**6**~~ | ~~**Icon expressiveness**~~ ✅ DONE — Added gold `drop-shadow` filter on active tab icons. Increased icon size 16→18px. Tightened container padding `p-2`→`p-1.5`. | D-ICON-1, D-ICON-2 | `appcore-components.jsx`, `App.jsx` | ✅ |
-| **7** | **Empty state atmospheric upgrade** — Enhance existing `.kuro-empty-state` with a faint character silhouette or element-themed SVG illustration behind the text. Add staggered entrance animation (fade + translateY) matching card entrance timing. Apply to Tracker, Stats, and Collection empty states. | D-STATE-1 | `App.jsx` (empty state JSX), `appcore-providers.jsx` (empty state animation keyframes) | ~30 min |
+| ~~**7**~~ | ~~**Empty state atmospheric upgrade**~~ ✅ DONE — Enhanced `.kuro-empty-state` with `emptyFadeIn` entrance animation, dashed gold border (0.10), and `::before` top accent line. CSS-only — all 8 empty states upgraded automatically. | D-STATE-1 | `appcore-providers.jsx` | ✅ |
 | **8** | **Import loading feedback** — Add progress indicator during JSON parse/import. Show file name, estimated size, and a shimmer animation (using Step 3's skeleton system). Display parse errors inline with recoverable messaging. | D-STATE-2 | `App.jsx` (processImportData, handleFileImport) | ~20 min |
 | **9** | **Recharts theme integration** — Override Recharts defaults: set grid stroke to `rgba(255,255,255,0.06)`, axis tick/label to chromatic gray (`#8892a4`), tooltip background to `rgba(12,16,24,0.95)` with `backdrop-filter: blur(12px)` and gold accent border. Match chart line/bar colors to element-color system. | D-DATAVIZ-1 | `App.jsx` (Recharts `<XAxis>`, `<YAxis>`, `<CartesianGrid>`, `<Tooltip>` props), `appcore-providers.jsx` (optional `.kuro-chart` class) | ~25 min |
 | **10** | **Border opacity tokens + copy voice** — Extract repeated `rgba(255,255,255,0.06)` and `0.08` border values into `--kuro-border-subtle` and `--kuro-border-medium` CSS custom properties. Rewrite empty state copy with cyberpunk-luxe voice (e.g., "No signals detected" instead of "No data yet"). | D-TOKEN-1, D-COPY-1 | `appcore-providers.jsx` (KuroStyles `:root` + border references), `App.jsx` (empty state text strings) | ~20 min |
