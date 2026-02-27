@@ -473,6 +473,83 @@ The `.kuro-card-inner::before` and `::after` pseudo-elements create 12×12px L-s
 
 **Corner decorations:** L-shaped corner marks on cards are a design motif reference to sci-fi/cyberpunk UI frames. See D-HIERARCHY-1 regarding visibility.
 
+### §DSA4. Light Physics
+
+**Light source identification:**
+
+```
+Light direction: Ambient top — no strong directional source
+Light quality:   Soft / diffuse — no hard shadows anywhere
+Light warmth:    Cool-white (implied by blue-tinted surfaces)
+Light intensity: Low (atmospheric) — deep void absorbs light; surfaces glow from within
+```
+
+**Light source consistency:**
+
+✓ **All shadows are vertical-only** — shadow custom properties use `0 Ypx` offsets exclusively:
+- `--shadow-sm: 0 1px 2px rgba(0,0,0,0.3)`
+- `--shadow-md: 0 4px 12px rgba(0,0,0,0.4)`
+- `--shadow-lg: 0 8px 24px rgba(0,0,0,0.5)`
+- `--shadow-xl: 0 12px 40px rgba(0,0,0,0.6)`
+
+No horizontal shadow offsets → consistent "above" light source. No shadow angle conflicts found.
+
+✓ **Highlights appear on correct edge** — `inset 0 1px 0 rgba(255,255,255,0.05)` places the highlight on the top edge of cards, consistent with light from above.
+
+**Light-surface interaction:**
+
+| Surface Type | Treatment | Physics Assessment |
+|-------------|-----------|-------------------|
+| Cards (glass) | Inset top highlight + shimmer line + frosted blur | ✓ Correct glass physics — top-edge specular + translucency |
+| Buttons (glass) | Border glow + ripple pseudo-element on hover | ✓ Luminous surface — emits its own light on interaction |
+| Active states | Element-colored outward glow `0 0 25px rgba(color, 0.3)` | ✓ Self-luminous — glow emanates from element's own color, not white |
+| Background (void) | Canvas wave animation — procedural blue-green light | ✓ Background acts as a distant light source beneath the UI layer |
+| Stat boxes | Element-color border glow | ✓ Each element produces its own colored light — physically coherent |
+
+**Dark mode light physics:**
+
+✓ The app correctly treats its dark UI as looking *up* toward diffuse light:
+- Higher elevation = lighter OKLCH value (cards at ~7% > void at ~2%)
+- Shadows are purely for depth cue, not for catching directional light
+- No shadows on cards (correct — shadows invisible on dark) — only glow effects
+- Glow effects replace shadow as the primary "this element is elevated" signal
+
+**Light coherence verdict:** ✓ Excellent. The entire light system is coherent: ambient overhead light illuminates card top edges, surfaces glow from within using their accent color, and the canvas background functions as a subsurface luminous plane. No conflicting light directions found.
+
+### §DSA5. Focal vs Ambient Atmosphere
+
+**Atmosphere hierarchy map:**
+
+```
+Background atmosphere  → Canvas wave glow (BackgroundGlow + TriangleMirrorWave)
+   ↓                     Opacity: 0.3 max | Always present | z-index: 1-2
+   ↓                     Color: blue-green procedural waves + triangle mesh specular
+Surface atmosphere     → Card shimmer line (::after 1px gradient, 3s pulse)
+   ↓                     Border glow (rgba white 0.08) | Present on all cards
+   ↓                     Inset highlight (1px top edge)
+Focal atmosphere       → Element-colored glow on stat boxes and active states
+   ↓                     Gold glow on banner countdown | 0.25-0.3 opacity
+   ↓                     Active button border pulse (borderGlow 2s infinite)
+Accent atmosphere      → 5-star pull glow (gold 30px glow on hover)
+                         Trophy shine animation (3s pulsing opacity)
+```
+
+**Ambient/focal distinction:** ✓ Clear — the canvas background provides constant atmospheric motion at low intensity. Card shimmer lines are surface-level atmosphere (present on every card but subtle). Focal glow concentrates on interactive moments (hover, active toggle) and high-value data (5-star pulls, pity countdown). The 5-star pull gold glow appears only on premium items — correctly reserved.
+
+**Glow frequency analysis:**
+
+| Glow Type | Frequency | Assessment |
+|-----------|-----------|------------|
+| Canvas wave (ambient) | Always visible on every screen | ✓ Atmosphere baseline — never competes with content |
+| Card shimmer (surface) | Every card, every screen | ✓ High frequency but extremely subtle (3s pulse, ~50% opacity gradient) |
+| Border glow on hover (focal) | Only on hover — transient | ✓ Appears only on interaction — earned, not default |
+| Active state glow (focal) | Only on selected elements (1-2 per screen) | ✓ Concentrated on the user's current selection |
+| 5-star/trophy glow (accent) | Rare — only premium items | ✓ Rarest glow = highest value signal |
+
+**[POLISH] D-ATMOSPHERE-1: Atmosphere hierarchy could be more pronounced at the focal level**
+
+The ambient layer (canvas) and surface layer (card shimmer) are excellently calibrated. The focal layer, however, is only active on *hover* — when the user is not hovering, the stat boxes and banner card sit at the same atmospheric intensity as every other card. The banner card (the single most important element) could benefit from a persistent subtle glow (gold at 0.05 opacity) to signal its primacy even at rest — creating a "breathing focal point" effect that strengthens the hierarchy without requiring interaction.
+
 ---
 
 ## VII. ICONOGRAPHY
