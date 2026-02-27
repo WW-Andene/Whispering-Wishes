@@ -1261,10 +1261,17 @@ LOADING STATE SPECIFICATION — Data Import
 | D-TYPE-1 | [MEDIUM] | System font stack underdelivers for aesthetic-primary cyberpunk product | §DT1 |
 | D-TYPE-2 | [LOW] | Small stat displays (9-10px) need `tabular-nums` for column alignment | §DT2 |
 | D-TYPE-3 | [LOW] | Missing `-webkit-font-smoothing: antialiased` for refined dark-mode type | §DT3 |
+| D-TYPE-4 | [POLISH] | Banner countdown timers could use type as visual element (larger numeral treatment) | §DT4 |
+| D-MOTION-1 | [MEDIUM] | No skeleton/loading state system — no designed loading visual for async operations | §DM4 |
 | D-HIERARCHY-1 | [POLISH] | Card corner decorations at ~7% opacity too subtle to read as intentional design motif | §DH4 |
+| D-HIERARCHY-2 | [POLISH] | Collection grid has uniform visual weight — 5-star characters could carry more weight for rarity hierarchy | §DH3 |
+| D-ATMOSPHERE-1 | [POLISH] | Banner card could have persistent subtle glow at rest to signal primacy without hover | §DSA5 |
 | D-ICON-1 | [LOW] | Default Lucide icons are stylistically neutral — don't amplify the cyberpunk character | §DI1 |
+| D-ICON-2 | [POLISH] | 14px icons in 32px containers create excessive padding — tighten to 24px | §DI2 |
+| D-STATE-1 | [MEDIUM] | Empty states (Tracker, Stats, Collection) lose atmospheric character — need investment to match Profile onboarding | §DST1 |
+| D-STATE-2 | [MEDIUM] | Data import has no loading feedback — longest user-facing operation has zero visual status | §DST2 |
 
-**Total: 8 findings (0 Critical, 0 High, 2 Medium, 4 Low, 2 Polish)**
+**Total: 15 findings (0 Critical, 0 High, 5 Medium, 4 Low, 6 Polish)**
 
 ---
 
@@ -1273,14 +1280,21 @@ LOADING STATE SPECIFICATION — Data Import
 | Dimension | Score | Notes |
 |-----------|-------|-------|
 | Color architecture | 8.5/10 | Excellent palette, strong temperature contrast; neutral text stack is the gap |
-| Typography | 6.5/10 | Functional but personality-absent; weight hierarchy is good |
-| Motion | 9/10 | Signature easing, staggered reveals, ambient atmosphere, reduced-motion support |
-| Surface & atmosphere | 9.5/10 | Canvas backgrounds, frosted glass cards, shimmer lines — premium tier |
-| Visual hierarchy | 9/10 | Clear reading order, effective use of chroma contrast and glow |
+| Typography | 6.5/10 | Functional but personality-absent; weight hierarchy is good; countdown numerals underplayed |
+| Motion | 8.5/10 | Signature easing, staggered reveals, ambient atmosphere, reduced-motion support; no loading state design |
+| Surface & atmosphere | 9.5/10 | Canvas backgrounds, frosted glass cards, shimmer lines — premium tier; light physics fully coherent |
+| Visual hierarchy | 8.5/10 | Clear reading order, effective chroma contrast; collection grid lacks rarity hierarchy; banner needs focal glow |
 | Brand identity | 8.5/10 | 5 signature elements, low genericness (2/12), strong competitive differentiation |
-| Icon system | 7/10 | Consistent library, appropriate sizes, but generic personality |
-| Overall coherence | 8.5/10 | Strong identity with minor chrome gaps (text stack, font, corner decorations) |
+| Icon system | 6.5/10 | Consistent library, but Utilitarian when Signature is appropriate; sizing ratios loose |
+| State design | 7/10 | Active/error states hold character; empty/loading states drop below character floor |
+| Character coherence | 8/10 | PARTIALLY COHERENT — dominant character strong, text stack and empty states break it |
+| Competitive positioning | 9/10 | Ahead of all benchmarks; clear path to unoccupied Polished+Authentic quadrant |
+| Overall coherence | 8.5/10 | Strong identity with specific chrome gaps; character deepening protocol provides concrete path |
 
-**Composite aesthetic score: 8.4/10**
+**Composite aesthetic score: 8.2/10**
 
-This is a well-designed product that is significantly ahead of its competitive landscape in visual quality. The primary investment opportunities are in the text color stack (chromatically match surfaces) and typography (add character to the typeface choice).
+This is a well-designed product that is significantly ahead of its competitive landscape in visual quality. The expanded audit reveals that while the active-state experience is exceptional (9+/10 in color, surface, motion), the character drops at boundary states (empty, loading). The primary investment opportunities are:
+1. **Text color stack** (D-COLOR-1) — chromatically match surfaces — touches every screen
+2. **Empty/loading states** (D-STATE-1, D-STATE-2, D-MOTION-1) — maintain character floor
+3. **Typography character** (D-TYPE-1) — add personality to the typeface choice
+4. **Icon expressiveness** (D-ICON-1) — move from Utilitarian to Signature level
