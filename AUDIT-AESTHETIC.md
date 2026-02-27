@@ -734,6 +734,70 @@ Fit for this app: Perfect — already occupying this position
 Claim strategy: Protect the canvas background, deepen the card shimmer, and refine the text color stack
 ```
 
+### §DCP2. Positioning Matrix
+
+**Axes chosen for gacha companion domain:** Generic ←→ Authentic × Polished ←→ Raw
+
+```
+                        POLISHED
+                           │
+                           │
+        Whispering         │
+         Wishes ●          │
+                           │
+                           │
+  GENERIC ─────────────────┼──────────────────── AUTHENTIC
+                           │
+               Prydwen ●   │
+                           │
+                           │
+        Paimon.moe ●       │       ● WuWa Tracker
+                           │
+                        RAW
+```
+
+**Positioning analysis:**
+
+| Product | Position | Rationale |
+|---------|----------|-----------|
+| **Whispering Wishes** | Polished + Generic-leaning-Authentic | Premium visual craft (polished axis), game-derived element colors and terminology (authentic axis), but system font and neutral gray text hold it back from fully authentic |
+| **Paimon.moe** | Mid-Raw + Generic | Clean light-mode UI, functional but visually generic. No atmospheric investment. Reads as "community utility." |
+| **WuWa Tracker** | Raw + Slightly Authentic | Dark mode with basic Tailwind, game-appropriate colors but template execution. Raw craft level. |
+| **Prydwen.gg** | Mid-Polished + Generic-Mid | Professional editorial layout, competent design, but generic — could be any content wiki. No game-specific atmosphere. |
+
+**Whitespace identified:** The **Polished + Fully Authentic** quadrant is unoccupied. No gacha companion in the Wuthering Waves ecosystem achieves both premium visual craft AND deep game-aesthetic authenticity (using the game's own design language, not just its colors).
+
+**Whispering Wishes is closest** to this position. The gap is narrow: replacing the neutral text stack with cool-tinted chromatic text (D-COLOR-1) and adopting a character-positive typeface (D-TYPE-1) would move the app into the unoccupied quadrant — a position no competitor currently threatens.
+
+### §DCP3. Visual Differentiation Opportunities
+
+```
+Differentiator 1: Atmospheric depth
+  Current state:   Canvas wave background + frosted glass cards — already distinctive
+  Target state:    Maintain and protect. This is the primary visual differentiator.
+                   No competitor has procedural background animation.
+  Effort:          None (already implemented)
+  Competitive value: Differentiates from ALL benchmarks — none invest in ambient atmosphere
+
+Differentiator 2: Chromatic text integration
+  Current state:   Neutral Tailwind grays (text-gray-300/400/500)
+  Target state:    Cool-blue-tinted text stack: oklch(92% 0.01 240) primary,
+                   oklch(80% 0.01 240) secondary, oklch(62% 0.015 240) muted
+  Effort:          Low — CSS variable replacement, ~15 minutes
+  Competitive value: No competitor uses chromatically integrated text. This would
+                     make Whispering Wishes the only tool in the space where the
+                     text feels "designed" rather than "defaulted."
+
+Differentiator 3: Game-authentic typography
+  Current state:   System font stack (invisible, personality-absent)
+  Target state:    Geist Sans (geometric precision, cyberpunk-adjacent) or
+                   alternative with angular character
+  Effort:          Low-Medium — font import + weight configuration
+  Competitive value: Paimon.moe uses Inter. Prydwen uses system stack. WuWa Tracker
+                     uses system stack. A distinctive typeface would be immediately
+                     noticeable as "this product was designed."
+```
+
 ---
 
 ## XIII. DESIGN CHARACTER SYSTEM
