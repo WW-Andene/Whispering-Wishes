@@ -1149,7 +1149,7 @@ Character Risks (watch for these as the product scales):
 
 ---
 
-## XV. STATE DESIGN SYSTEM
+## XIV. STATE DESIGN SYSTEM
 
 ### §DST1. Empty State Design
 
@@ -1251,7 +1251,7 @@ LOADING STATE SPECIFICATION — Data Import
 
 ---
 
-## XIV. SOURCE MATERIAL INTELLIGENCE
+## XV. SOURCE MATERIAL INTELLIGENCE
 
 > **Source:** Wuthering Waves (Kuro Games, 2024–present). The app's §0 identifies Wuthering Waves as the subject identity (A4: Strong aesthetic). The `.kuro-*` CSS class prefix, game-native terminology ("Resonators," "Convene," "Astrite"), and element-color mapping all derive directly from the game. This section executes the full source research protocol.
 
@@ -1715,6 +1715,500 @@ If user can provide: In-game screenshots of the current UI (character detail scr
 
 ---
 
+## XVI. RESPONSIVE DESIGN CHARACTER
+
+### §DRC1. Breakpoint Character Audit
+
+**Architecture:** Mobile-first progressive enhancement. Default styles target mobile; `sm:` (640px) and `md:` (768px) Tailwind breakpoints add desktop enhancements. No custom breakpoints in `tailwind.config.js`.
+
+**Breakpoint assessment:**
+
+| Breakpoint | Typography | Spacing | Color | Component Character | Motion |
+|------------|-----------|---------|-------|-------------------|--------|
+| Mobile (375–768px) | ✓ Type scale survives — 9–20px range appropriate for data-dense mobile | ✓ `px-3` (12px) consistent mobile spacing vocabulary | ✓ Identical — dark surface + element colors | ✓ Cards, stats, glow effects all intact | ✓ Touch-appropriate — `@media (hover: hover)` guards hover states |
+| Tablet (768–1024px) | ✓ Container expands to `md:max-w-2xl` (672px) | ✓ Same spacing tokens, more breathing room | ✓ Identical | ✓ Modals shift from bottom-sheet to centered (`items-end` → `sm:items-center`) | ✓ Same animation system |
+| Desktop (1024px+) | ✓ Content contained within 672px — intentional constraint | ✓ Same vocabulary | ✓ Identical | ✓ All components hold character | ✓ Hover states activate via `@media (hover: hover)` |
+
+**Character compression failures:** None detected. The mobile-first approach means character is at full expression on mobile — desktop adds space, not character.
+
+### §DRC2. Mobile Character Intensification
+
+**Mobile-specific character features:**
+
+1. **Touch feedback:** `touch-action: manipulation` + `-webkit-tap-highlight-color: transparent` on all interactive elements (`appcore-providers.jsx:423-426`). Minimum touch targets: 36px buttons, 44px selects/inputs on `@media (pointer: coarse)` (`appcore-providers.jsx:429-436`)
+2. **Safe area handling:** `viewport-fit=cover` + `env(safe-area-inset-*)` padding on header and content (`App.jsx:3060, 3107`). iOS PWA: `apple-mobile-web-app-status-bar-style: black-translucent` — the dark void extends into the status bar area, maintaining atmospheric immersion.
+3. **Swipe navigation:** Optional swipe gesture system (`App.jsx:758-825`) with `deltaX > 50px`, `deltaTime < 300ms`, haptic feedback via `haptic.medium()`. User-toggleable in settings. Visual indicator: `← swipe to navigate →` (`App.jsx:3103`)
+4. **Bottom-sheet modals:** Modals anchor to `items-end` on mobile with `rounded-t-2xl` (top-only radius), shifting to centered `sm:items-center` with full `rounded-2xl` on desktop (`App.jsx:5249-5252`)
+5. **Scrollbar craft:** Hidden on mobile (`scrollbar-width: none`), 3px translucent thin scrollbar on desktop (`appcore-providers.jsx:327-405`)
+
+**Mobile character assessment:** ✓ The mobile experience is the *primary* design — not a compressed desktop. Character intensifies through intimate touch feedback, atmospheric safe-area handling, and gesture navigation. The app feels more like a native game companion on mobile than on desktop.
+
+### §DRC3. Adaptive Character Specification
+
+```
+ADAPTIVE ELEMENT SPECIFICATION
+  Element: Modal/overlay presentation
+  Desktop version: Centered overlay (items-center), rounded-2xl (16px all corners)
+  Mobile adaptation: Bottom-sheet (items-end), rounded-t-2xl (16px top only, flush bottom)
+  Character preserved: Frosted glass surface, backdrop blur, gold-accented actions
+  Character traded: Centered spatial balance → bottom-anchored thumb-reachability
+  Breakpoint trigger: sm (640px)
+
+ADAPTIVE ELEMENT SPECIFICATION
+  Element: Collection grid density
+  Desktop version: grid-cols-5 (sm:grid-cols-5) — browser, scanning multiple characters
+  Mobile adaptation: grid-cols-3 — thumb-friendly, larger portraits
+  Character preserved: Element-color borders, glow effects, portrait framing
+  Character traded: Grid density → larger individual character visibility
+  Breakpoint trigger: sm (640px)
+```
+
+**Character floor:** ✓ Every screen at every viewport contains: (1) the canvas wave background, (2) gold-accented UI elements, (3) frosted glass cards with shimmer lines, (4) element-color coding. The character floor is never violated.
+
+---
+
+## XVII. COMPONENT DESIGN CHARACTER
+
+### §DCO1. Button System Audit
+
+**Button hierarchy:**
+
+| Level | Class | Treatment | Character Assessment |
+|-------|-------|-----------|---------------------|
+| **Primary (active)** | `.kuro-btn.active-gold` | Gold bg (0.15), gold border (0.7), `box-shadow: 0 0 25px` gold glow, `borderGlow 2s infinite` breathing animation, gold text-shadow | ✓ Exceptional — the active button gets the full atmospheric treatment. The breathing glow is a strong personality moment. |
+| **Secondary** | `.kuro-btn` (default) | Frosted glass (`var(--bg-btn)`), white/10 border, `backdrop-filter: blur(8px)`, `var(--shadow-md)` | ✓ Consistent with card surface vocabulary — translucent, elevated, glassy |
+| **Variant (element-colored)** | `.kuro-btn.active-pink/cyan/purple/emerald/red` | Same pattern as gold but in element colors — each with matching glow, border, text-shadow | ✓ Systematic — 6 color variants following identical structure |
+| **Disabled** | `.kuro-btn:disabled` | `opacity: 0.5`, `cursor: not-allowed`, `pointer-events: none` | ✓ Clear, functional |
+
+**Button craft:**
+- Hover: `translateY(-2px)` + border brighten (0.1→0.2) + `var(--shadow-lg)` + ripple pseudo-element fade-in (`appcore-providers.jsx:790-800`)
+- Active/press: `translateY(0) scale(0.97)` at `0.1s ease` — physical compression (`appcore-providers.jsx:803-806`)
+- Focus ring: Gold outline with 4px halo glow — character-positive
+- Transition: `var(--transition-normal)` = `0.25s cubic-bezier(0.16, 1, 0.3, 1)` — the signature easing
+- Radius: `12px` — consistent with cyberpunk-luxe vocabulary (softened precision)
+
+**Character verdict:** ✓ Buttons are on-character. The cyberpunk vocabulary is expressed through glow envelopes, frosted glass, and the signature spring easing. The active-gold breathing glow is a standout personality moment.
+
+### §DCO2. Input & Form System Audit
+
+**Input anatomy:**
+
+| Part | Value | Character Assessment |
+|------|-------|---------------------|
+| Background | `var(--bg-input)` = `rgba(15,20,28,0.9)` | ✓ Dark, cool-blue, matches surface vocabulary |
+| Border | `1px solid rgba(255,255,255,0.2)` | ✓ Semi-transparent, consistent with card borders |
+| Focus border | `rgba(var(--color-gold), 0.6)` | ✓ Gold accent — matches primary identity |
+| Focus shadow | `0 0 0 3px rgba(gold, 0.1), 0 0 20px rgba(gold, 0.08)` | ✓ Halo glow — consistent with button focus ring |
+| Radius | `8px` | ✓ Slightly less than button (12px) — correct: data-entry < action |
+| Placeholder | `#6b7280` → `#9ca3af` on focus | ⚠ Neutral gray — not chromatic (but acceptable at low visibility) |
+| `backdrop-filter` | `blur(8px)` | ✓ Frosted glass — matches button treatment |
+
+**Variant:** `.kuro-input-sm` — compact at `4px 8px`, 12px font, 56px width, centered text. Used for numeric inputs.
+
+**Slider:** `.kuro-slider` — gold gradient thumb with glow (`box-shadow: 0 0 12px rgba(gold, 0.6)`), hover scale 1.15×. Priority variant uses white thumb. (`appcore-providers.jsx:1051-1112`)
+
+**Coherence:** ✓ Inputs belong to the same world as buttons — frosted glass, gold focus, signature easing. The radius family (8px input < 12px button) follows a coherent logic.
+
+### §DCO3. Card & Surface System Audit
+
+**Card anatomy:**
+
+```
+.kuro-card
+  Background:     var(--bg-card) = rgba(12, 16, 24, 0.55)
+  Border:         1px solid rgba(255, 255, 255, 0.08)
+  Radius:         12px (matches button)
+  Padding:        (applied per usage, typically 12-16px)
+  Shadow:         var(--shadow-md) → var(--shadow-lg) on hover
+  Backdrop:       blur(8px)
+  Hover:          border → 0.15, translateY(-2px), enhanced shadow + faint gold glow rgba(237,175,24,0.03)
+  Shimmer:        ::after — gold shimmer line across top edge (3s infinite)
+
+.kuro-card-inner
+  Background:     var(--bg-card-inner) = rgba(6, 10, 18, 1)
+  Border:         1px solid rgba(255, 255, 255, 0.08)
+  Radius:         8px (inner container, less than card)
+  Corner motifs:  ::before + ::after L-shapes at ~17% opacity (top-right + bottom-left)
+```
+
+**Radius coherence:**
+```
+Buttons:  12px (action elements)
+Cards:    12px (content containers — same as buttons, unified vocabulary)
+Inputs:   8px (data-entry, slightly tighter)
+Card-inner: 8px (nested containers, matching inputs)
+Stat boxes: 10px (intermediate — between input and card)
+Modals:   12px (same as cards)
+```
+
+✓ Coherent radius family: 8px → 10px → 12px. All values relate proportionally.
+
+### §DCO4. Navigation Design Character
+
+**Navigation type:** Bottom tab bar with horizontal scroll on mobile.
+
+**Active state:** Gold background glow (`bg-yellow-500/10`) + gold `shadow-lg` (`shadow-yellow-500/25`) + animated underline indicator with gold gradient + glow. The active indicator slides dynamically via `requestAnimationFrame` positioning (`appcore-components.jsx:608-613`).
+
+**Inactive state:** Transparent background, `text-gray-400`. Hover: `bg-white/5 shadow-md shadow-white/5`.
+
+**Icon treatment:** Icon + text stacked vertically (`flex flex-col`), 10px text. Icons at `size={18}` wrapped in `p-2 rounded-xl` container with the active glow.
+
+**Character assessment:** ✓ Strong — the gold active glow + sliding indicator creates a distinctive navigation identity. The icon containers with glow on active state are on-character. Tab transitions use `tabFadeIn 350ms ease-out`.
+
+### §DCO5. Modal & Overlay System Audit
+
+**Backdrop:** `bg-black/80 backdrop-blur-sm` — chromatic near-black at 80% opacity with blur. Character-positive (not generic `rgba(0,0,0,0.5)`).
+
+**Entry animation:** `scaleIn 300ms ease-out` — scale from 95% to 100% with fade. Matches the card entrance vocabulary.
+
+**Mobile adaptation:** Bottom-sheet (`items-end`, `rounded-t-2xl`) → centered (`sm:items-center`, `rounded-2xl`).
+
+**Close button:** `min-h-[44px]` accessible target, `rounded-lg`, `bg-white/5 hover:bg-white/10`. The modal close in `CharacterDetailModal` has `min-w-[36px]` — minor inconsistency vs 44px standard (noted in §DS2 as [LOW] finding).
+
+**Internal structure:** Header zone with title + close button, scrollable body, action zone with consistent button hierarchy.
+
+**Character assessment:** ✓ Modals maintain the frosted-glass-on-void vocabulary. Backdrop blur + chromatic dimming is character-positive. Bottom-sheet mobile adaptation is a thoughtful touch.
+
+### §DCO6. Toast & Notification Design
+
+**Toast component** (`appcore-providers.jsx:132-183`):
+
+| Severity | Background | Icon | Border |
+|----------|-----------|------|--------|
+| Success | `bg-emerald-500/20` | CheckCircle (emerald) | `border-emerald-500/30` |
+| Error | `bg-red-500/20` | AlertCircle (red) | `border-red-500/30` |
+| Warning | `bg-amber-500/20` | AlertTriangle (amber) | `border-amber-500/30` |
+| Info | `bg-cyan-500/20` | Info (cyan) | `border-cyan-500/30` |
+
+**Motion:** Entry from bottom (`slideUp 300ms ease-out`), auto-dismiss after 3.5 seconds. Toast stacking supported with consistent `space-y-2` gap.
+
+**Positioning:** `fixed bottom-24 left-3 right-3 z-[9998]` — above tab bar area, full-width mobile.
+
+**Character assessment:** ✓ Toasts use the element-color vocabulary (not generic green/red) with translucent backgrounds matching the frosted-glass system. The severity colors are chromatic and integrated.
+
+---
+
+## XVIII. COPY × VISUAL ALIGNMENT
+
+### §DCVW1. Voice-Character Alignment
+
+**Character brief (from §DP2):** Cyberpunk-luxe, mystical high-tech, insider-premium. "A secret weapon only serious players use."
+
+**Voice dimension assessment:**
+
+```
+VOICE DIMENSION 1: Formality
+  Observed: Mid-range — casual for achievements ("restraining order when"), formal for data labels
+  Target: Mid-formal (instrument precision + insider casualness)
+  Gap: MINOR — achievement copy skews too casual for the visual premium
+
+VOICE DIMENSION 2: Length
+  Observed: Terse — "Calc", "Plan", "Stats" (nav); "Need more data" (empty states)
+  Target: Terse (matches precision instrument character)
+  Gap: ALIGNED ✓
+
+VOICE DIMENSION 3: Personality presence
+  Observed: Strong in achievements ("Gotta Whale 'Em All", "Skill Issue (Gacha)", "Lament Never Ended")
+           Invisible in UI labels and empty states
+  Target: Moderate (instrument-like, not chatty)
+  Gap: MINOR — split between personality-heavy (trophies) and personality-absent (UI)
+
+VOICE DIMENSION 4: User address
+  Observed: Mixed — "Your ID:", "Submit My Score", "Your companion for Wuthering Waves"
+  Target: Personal but restrained
+  Gap: ALIGNED ✓
+
+VOICE DIMENSION 5: Technical transparency
+  Observed: Transparent — "Heartbeat write failed (status). Add 'presence' read/write rule..."
+  Target: Semi-transparent (expert audience can handle technical detail)
+  Gap: ALIGNED ✓ — appropriate for gacha-literate audience
+```
+
+### §DCVW2. Microcopy System Audit
+
+**Button labels:** ✓ Verb-led, specific. "Export backup", "Submit My Score", "Go to Profile tab to import", "Save Current State". Avoids generic "OK/Submit".
+
+**Navigation labels:** ✓ Nouns (places): "Tracker", "Events", "Calc", "Plan", "Stats", "Collection", "Teams", "Profile". Consistent. "Calc" and "Plan" are abbreviated — appropriate for mobile space constraints.
+
+**Empty state copy:** ⚠ Functional but personality-absent. "Import Convene data first to see your collection items" — helpful but reads like a system message, not the product's voice. Could benefit from a warmer address: "Import your Convene history to see your Resonators here."
+
+**Error copy:** ✓ Technically transparent, action-oriented: "Storage full — data may not be saved. Try clearing old Convene history."
+
+**Placeholder text:** ✓ Instructional: "Search by name...", "Paste your wuwatracker JSON here..."
+
+**Achievement/trophy copy:** ✓ Personality-maximized. Self-referential gaming humor ("Lost 50/50 to Calcharo N× — restraining order when"). This is the product's strongest voice moment — it sounds like a fellow player, not a system.
+
+### §DCVW3. Voice-Visual Coherence Assessment
+
+```
+VOICE-VISUAL COHERENCE
+  Screen/component: Trophy achievements
+  Visual character: Premium cyberpunk with gold/element-color glow envelopes
+  Copy voice: Sarcastic gaming humor — "No Life Achievement", "Skill Issue"
+  Coherence: ALIGNED — the visual premium + verbal irreverence creates the
+    "insider secret weapon" personality described in §0. The contrast is intentional.
+
+VOICE-VISUAL COHERENCE
+  Screen/component: Empty states (Tracker, Stats, Collection)
+  Visual character: Atmospheric void (canvas background still active)
+  Copy voice: Flat, instructional — "Import your data in Profile tab"
+  Coherence: MINOR GAP — the visual atmosphere says "mystical void waiting"
+    but the copy says "generic instruction"
+  Recommendation: "Your Resonator data awaits — import from Profile to begin"
+```
+
+**[LOW] D-COPY-1: Empty state copy is personality-absent**
+
+The empty states use generic instructional copy while the rest of the app (trophies, onboarding) has strong personality. The copy voice should maintain the "insider companion" tone even in empty states. This overlaps with D-STATE-1 (visual empty state treatment).
+
+---
+
+## XIX. ILLUSTRATION & GRAPHIC LANGUAGE
+
+### §DIL1. Current Illustration Audit
+
+```
+ILLUSTRATION INVENTORY
+  Location: Background (all screens)
+  Type: Procedural canvas animation — wave/glow chromatic effect
+  Source: Custom (BackgroundGlow + TriangleMirrorWave components)
+  Library recognizability: LOW — clearly custom procedural art
+  Character alignment: ALIGNED ✓ — atmospheric, mystical, alive
+  Usage context: Ambient atmosphere
+
+  Location: Card corner decorations (all .kuro-card-inner)
+  Type: Geometric L-shape motifs (::before + ::after pseudo-elements)
+  Source: Custom CSS
+  Library recognizability: N/A
+  Character alignment: ALIGNED ✓ — angular precision, cyberpunk vocabulary
+  Usage context: Decorative identity marker
+
+  Location: Card top shimmer line (all .kuro-card)
+  Type: Animated gradient line
+  Source: Custom CSS animation (shimmer 3s)
+  Library recognizability: N/A
+  Character alignment: ALIGNED ✓ — holographic, premium signal
+  Usage context: Ambient decoration + loading state signal
+
+  Location: Canvas ID card (Profile tab)
+  Type: Custom canvas rendering — player profile card with panels, stats, trophies
+  Source: Custom (App.jsx:1939-2193)
+  Library recognizability: LOW — fully bespoke canvas rendering
+  Character alignment: ALIGNED ✓ — gold accent bars, monospace stat text, gradient fades
+  Usage context: Feature showcase (shareable player card)
+```
+
+**No external stock illustrations found.** The app uses zero library illustrations (no Undraw, Storyset, etc.). All graphic elements are custom: procedural canvas animations, CSS geometric motifs, and bespoke canvas rendering.
+
+### §DIL2. Illustration Character Specification
+
+```
+━━━ ILLUSTRATION CHARACTER BRIEF ━━━━━━━━━━━━━━━━━━━━━━━━━━
+Product character: Cyberpunk-luxe instrument panel — "precision tool in a mystical void"
+
+Style direction:
+  Figurative vs abstract: ABSTRACT — no character illustrations; geometric + atmospheric
+  Rendering approach:     Gradient + translucent layers + glow effects
+  Line weight:            1px precision lines (border treatment, L-shape motifs)
+  Color palette:          Must use: gold (#edaf18), element colors, cool-blue surfaces
+  Mood:                   "Instruments floating in a dark ocean" — calm precision with depth
+
+What the illustration must NEVER do:
+  - No figurative/character illustrations (the game characters ARE the illustration via portraits)
+  - No rounded blob shapes (conflicts with angular precision vocabulary)
+  - No flat/bright illustration styles (would break the dark atmospheric context)
+  - No white backgrounds (all elements must work on the deep void surface)
+  - No third-party illustration libraries (would introduce foreign visual identity)
+
+Motif integration:
+  The L-shape corner decoration, shimmer line, and element-color glow envelope
+  should appear in any new graphic elements as connecting visual threads.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### §DIL3. Spot Graphic & Abstract Shape System
+
+**Shape vocabulary in use:**
+
+| Shape | Usage | Character Alignment |
+|-------|-------|-------------------|
+| L-shape corner motifs | Card inner decorations | ✓ Angular faceted geometry — cyberpunk |
+| Shimmer gradient line | Card top edges | ✓ Light trace — holographic |
+| Canvas wave/glow | Full-screen background | ✓ Concentric waves — signal/atmosphere |
+| Radial gradients | Stat box backgrounds, empty states | ✓ Focal glow — depth signal |
+| Linear gradients | Element-color top bars on stat boxes | ✓ Light strip — instrument panel |
+
+**Assessment:** ✓ The abstract graphic language is coherent and character-appropriate. Every graphic element uses the angular/glow/translucent vocabulary. No foreign graphic styles detected.
+
+---
+
+## XX. DATA VISUALIZATION CHARACTER
+
+### §DDV1. Chart Color System Audit
+
+**Chart library:** Recharts (Area charts for Convene trends, activity history).
+
+**Chart colors assessed:**
+
+| Element | Current Value | Assessment |
+|---------|---------------|-----------|
+| Area fill | Category-specific — gold (character), pink (weapon), cyan (standard) | ✓ Uses the product's element-color vocabulary, not Recharts defaults |
+| Grid lines | Default Recharts gray | ⚠ Not customized — reads as library default on the dark surface |
+| Axis labels | Default Recharts rendering | ⚠ Not using product typography tokens |
+| Tooltip | `RechartsTooltip` (default styling) | ⚠ Not themed to match frosted-glass component vocabulary |
+
+**[LOW] D-DATAVIZ-1: Recharts defaults break character on grid/axis/tooltip**
+
+The chart area fills correctly use element colors, but grid lines, axis labels, and tooltips use Recharts defaults. On the dark atmospheric surface, default gray gridlines and white tooltips create a style break.
+
+**Recommendation:**
+```
+CHART STYLE SPECIFICATION
+  Character target: Cyberpunk instrument panel
+  Grid lines:       rgba(255, 255, 255, 0.06) — barely visible, atmospheric
+  Axis labels:      var(--text-body) at 10px, tabular-nums
+  Tooltip:          Styled as mini .kuro-card (frosted glass, gold border accent)
+  Area fill:        Current element-color fills at 15-20% opacity ✓
+  Line type:        Monotone (smooth curves — trend focus, not clinical precision)
+  Animation:        300ms ease-out (matches card entrance timing)
+```
+
+### §DDV2. Chart Typography Alignment
+
+**Stat number rendering:**
+
+| Component | Font Treatment | Assessment |
+|-----------|---------------|-----------|
+| PityRing (SVG) | Monospace, `tabular-nums`, gold fill with glow | ✓ On-character — instrument dial aesthetic |
+| `.kuro-stat` number | `font-variant-numeric: tabular-nums` | ✓ Aligned columns |
+| `.kuro-number` | Large display numeral | ✓ Appropriate weight |
+| Canvas ID card text | `'monospace'` font for numbers, sans-serif for labels | ✓ Deliberately technical |
+| Recharts axis ticks | Default Recharts font | ⚠ Not using product typography |
+
+### §DDV3. Chart Style × Product Character
+
+**Probability histogram** (`App.jsx:2628`): Custom-rendered bar chart with bucket labels ("P7-FIX: Data-driven bucket labels"). Uses color-coding by rarity. This is a character-positive visualization — built to the product's design, not a library default.
+
+**PityRing** (`appcore-components.jsx:774`): SVG circular progress with gold stroke, glow shadow, animated. This IS data visualization as character design — the pity ring is as much a personality moment as it is a data display.
+
+**Assessment:** The custom-built visualizations (PityRing, histogram, canvas ID card) are strong. Only the Recharts-powered charts (Convene trends) show library-default styling that breaks character.
+
+---
+
+## XXI. DESIGN TOKEN ARCHITECTURE
+
+### §DTA1. Token Layer Architecture
+
+**Layer 1: Primitive Tokens — PRESENT** (`appcore-providers.jsx:353-367`)
+
+```css
+--color-gold: 237, 175, 24;     /* RGB tuple for rgba() composition */
+--color-pink: 236, 72, 153;
+--color-cyan: 56, 189, 248;
+--color-purple: 168, 85, 247;
+--color-emerald: 34, 197, 94;
+--color-red: 248, 113, 113;
+
+--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+--shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+--transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+--transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+--transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+```
+
+**Layer 2: Semantic Tokens — PRESENT** (`appcore-providers.jsx:368-375`)
+
+```css
+--text-body: #dfe5ef;           /* cool-tinted body text */
+--text-heading: #edf1f8;        /* cool-tinted heading text */
+--bg-card: rgba(12, 16, 24, 0.55);
+--bg-card-inner: rgba(6, 10, 18, 1);
+--bg-btn: rgba(15, 20, 28, 0.85);
+--bg-input: rgba(15, 20, 28, 0.9);
+--bg-stat: rgba(10, 14, 22, 0.8);
+```
+
+OLED mode dynamically swaps to true-black variants (e.g., `--bg-card: rgba(0,0,0,0.95)`).
+
+**Layer 3: Component Tokens — PARTIAL**
+
+Component classes (`.kuro-btn`, `.kuro-input`, `.kuro-card`, `.kuro-stat`) reference semantic tokens. However, component-specific values are not extracted to their own token layer:
+
+- Button radius `12px` → hardcoded in `.kuro-btn`, not `--btn-radius`
+- Card border `rgba(255,255,255,0.08)` → hardcoded, not `--border-card`
+- Hover transform `translateY(-2px)` → hardcoded, not `--lift`
+
+**Token maturity:**
+```
+Layer 1 (primitives): PRESENT ✓ — colors, shadows, transitions
+Layer 2 (semantic):   PRESENT ✓ — text, surface, component bg
+Layer 3 (component):  PARTIAL — classes reference L2, but no L3 variables
+
+Highest-impact gap: Component-level tokens for radius, border opacity, and transforms
+Migration path: Extract hardcoded values in .kuro-* classes into --kuro-* component tokens
+```
+
+### §DTA2. Character-Carrying Token Gaps
+
+```
+CHARACTER TOKEN AUDIT
+  □ Background surface lightness step: ✓ tokenized (--bg-card, --bg-card-inner, --bg-stat)
+  □ Primary accent OKLCH value: PARTIAL — stored as RGB tuple, not OKLCH
+  □ Component border-radius: ✗ hardcoded (12px, 10px, 8px per class)
+  □ Typography scale: ✗ Tailwind class strings (text-xs, text-sm, text-[9px])
+  □ Transition durations: ✓ tokenized (--transition-fast/normal/slow)
+  □ Shadow definitions: ✓ tokenized (--shadow-sm/md/lg/xl)
+  □ Focus ring style: PARTIAL — color tokenized (var(--color-gold)), but ring width/offset hardcoded
+  □ Spacing base unit: ✗ assumed 4px via Tailwind (not explicitly tokenized)
+```
+
+**The "find and replace" test:**
+- Change accent color globally: **2 files** (appcore-providers.jsx `:root` + appcore-data.js element-color map). ✓ Good architecture for the accent.
+- Change border radius globally: **5+ locations** in KuroStyles (btn: 12px, input: 8px, stat: 10px, card: 12px, slider: 3px). ⚠ No radius token system.
+- Change border opacity globally: **30+ raw `rgba(255,255,255,0.08/0.1/0.15)` values**. ⚠ Major token gap.
+
+**[LOW] D-TOKEN-1: Border opacity values not tokenized**
+
+The `rgba(255,255,255,0.08/0.1/0.15/0.2)` pattern appears 30+ times across KuroStyles. These should be extracted to tokens: `--border-subtle: rgba(255,255,255,0.08)`, `--border-default: rgba(255,255,255,0.1)`, `--border-hover: rgba(255,255,255,0.2)`.
+
+---
+
+## XII. EXECUTION ORDER
+
+This audit followed the source-material path (Wuthering Waves = named source):
+
+```
+✓ §SR0 — 5-pass research (Source Material Intelligence)
+✓ §SR1 — Source Style Brief (5 layers: Surface → Identity Thesis)
+✓ §SR2 — Fidelity level (L3: Translated Identity)
+✓ §DP0 + §DP1 → §DP2 — Character Brief
+✓ §SR3 — Translation plan (minimum authentic set)
+✓ §DC1–§DC5 — Color science
+✓ §DT1–§DT4 — Typography
+✓ §DCO1–§DCO6 — Component character ← NEW
+✓ §DSA1–§DSA5 — Surface & atmosphere
+✓ §DM1–§DM5 — Motion architecture
+✓ §DI1–§DI3 — Iconography
+✓ §DDT1–§DDT2 — Trend calibration
+✓ §DBI1–§DBI3 — Brand identity
+✓ §DCP1–§DCP3 — Competitive positioning
+✓ §DP3 — Character deepening protocol
+✓ §DST1–§DST2 — State design
+✓ §DRC1–§DRC3 — Responsive character ← NEW
+✓ §DCVW1–§DCVW3 — Copy voice alignment ← NEW
+✓ §DIL1–§DIL3 — Illustration & graphic language ← NEW
+✓ §DDV1–§DDV3 — Data visualization character ← NEW
+✓ §DTA1–§DTA2 — Design token architecture ← NEW
+✓ §SR4–§SR6 — Authenticity audit + research log
+```
+
+All 21 audit dimensions complete. Total: 65+ sub-sections analyzed.
+
+---
+
 ## FINDINGS SUMMARY
 
 | ID | Severity | Finding | Section |
@@ -1734,8 +2228,11 @@ If user can provide: In-game screenshots of the current UI (character detail scr
 | D-ICON-2 | [POLISH] | 14px icons in 32px containers create excessive padding — tighten to 24px | §DI2 |
 | D-STATE-1 | [MEDIUM] | Empty states (Tracker, Stats, Collection) lose atmospheric character — need investment to match Profile onboarding | §DST1 |
 | D-STATE-2 | [MEDIUM] | Data import has no loading feedback — longest user-facing operation has zero visual status | §DST2 |
+| D-COPY-1 | [LOW] | Empty state copy is personality-absent — functional placeholder text with no voice alignment to cyberpunk-luxe character | §DCVW3 |
+| D-DATAVIZ-1 | [LOW] | Recharts defaults break character — grid lines, axis labels, and tooltips use library defaults instead of theme tokens | §DDV1 |
+| D-TOKEN-1 | [LOW] | Border opacity values not tokenized — `rgba(255,255,255,0.06)` and `0.08` repeated inline without semantic custom properties | §DTA2 |
 
-**Total: 15 findings (0 Critical, 0 High, 5 Medium, 4 Low, 6 Polish)**
+**Total: 18 findings (0 Critical, 0 High, 5 Medium, 7 Low, 6 Polish)**
 
 ---
 
@@ -1751,17 +2248,24 @@ If user can provide: In-game screenshots of the current UI (character detail scr
 | Brand identity | 8.5/10 | 5 signature elements, low genericness (2/12), strong competitive differentiation |
 | Icon system | 6.5/10 | Consistent library, but Utilitarian when Signature is appropriate; sizing ratios loose |
 | State design | 7/10 | Active/error states hold character; empty/loading states drop below character floor |
+| Component design | 8.5/10 | KuroStyles component system is coherent; buttons/cards/inputs hold character; modals and toasts consistent |
+| Responsive character | 8/10 | Mobile-first Tailwind breakpoints preserve hierarchy; character intensification at mobile is minimal |
+| Copy × visual alignment | 6/10 | Microcopy is functional but voice-absent; empty state copy breaks character floor |
+| Data visualization | 5.5/10 | Recharts defaults (grid lines, axis labels, tooltips) break character; color mapping is correct |
+| Token architecture | 8/10 | 3-layer system well-structured; border opacity values repeated inline instead of tokenized |
 | Character coherence | 8/10 | PARTIALLY COHERENT — dominant character strong, text stack and empty states break it |
 | Competitive positioning | 9/10 | Ahead of all benchmarks; clear path to unoccupied Polished+Authentic quadrant |
-| Overall coherence | 8.5/10 | Strong identity with specific chrome gaps; character deepening protocol provides concrete path |
+| Overall coherence | 8.1/10 | Strong identity with specific chrome gaps; new dimensions reveal copy and dataviz as additional weaknesses |
 
-**Composite aesthetic score: 8.2/10**
+**Composite aesthetic score: 7.9/10**
 
-This is a well-designed product that is significantly ahead of its competitive landscape in visual quality. The expanded audit reveals that while the active-state experience is exceptional (9+/10 in color, surface, motion), the character drops at boundary states (empty, loading). The primary investment opportunities are:
+This is a well-designed product that is significantly ahead of its competitive landscape in visual quality. The expanded 21-dimension audit reveals that while the active-state experience is exceptional (9+/10 in color, surface, motion), character drops at boundary states (empty, loading) and in newly-audited dimensions (copy voice, data visualization). The primary investment opportunities are:
 1. **Text color stack** (D-COLOR-1) — chromatically match surfaces — touches every screen
 2. **Empty/loading states** (D-STATE-1, D-STATE-2, D-MOTION-1) — maintain character floor
 3. **Typography character** (D-TYPE-1) — add personality to the typeface choice
-4. **Icon expressiveness** (D-ICON-1) — move from Utilitarian to Signature level
+4. **Data visualization theming** (D-DATAVIZ-1) — Recharts defaults break immersion
+5. **Copy voice alignment** (D-COPY-1) — empty state copy needs cyberpunk-luxe voice
+6. **Icon expressiveness** (D-ICON-1) — move from Utilitarian to Signature level
 
 ---
 
@@ -1778,7 +2282,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-TYPE-3 | Missing font smoothing for dark-mode type | Added `-webkit-font-smoothing: antialiased` to `html`/`body` |
 | D-HIERARCHY-1 | Card corner decorations too subtle (~7% opacity) | Increased corner decoration opacity to ~17% for legible motifs |
 
-### Remaining — 9 findings (14 actionable fixes → 8 implementation steps)
+### Remaining — 12 findings (17 actionable fixes → 10 implementation steps)
 
 | ID | Severity | Finding |
 |----|----------|---------|
@@ -1791,12 +2295,15 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-ICON-2 | [POLISH] | 14px icons in 32px containers — excessive padding |
 | D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character |
 | D-STATE-2 | [MEDIUM] | Data import has no loading feedback |
+| D-COPY-1 | [LOW] | Empty state copy is personality-absent |
+| D-DATAVIZ-1 | [LOW] | Recharts defaults break character on grid/axis/tooltip |
+| D-TOKEN-1 | [LOW] | Border opacity values not tokenized |
 
 ---
 
 ## IMPLEMENTATION PLAN
 
-14 actionable fixes (D-TYPE-3 already applied) grouped into 8 implementation steps:
+17 actionable fixes (D-TYPE-3 already applied) grouped into 10 implementation steps:
 
 | Step | What | Findings | Files | Effort |
 |------|------|----------|-------|--------|
@@ -1808,9 +2315,11 @@ This is a well-designed product that is significantly ahead of its competitive l
 | **6** | **Icon expressiveness** — Add subtle glow/stroke treatment to key navigation tab icons (Tracker, Stats, Collection, Profile). Use `filter: drop-shadow()` with element-appropriate colors when active. Tighten icon container sizing from 32px → 24px, or increase icon size from 14px → 18px. | D-ICON-1, D-ICON-2 | `App.jsx` (tab bar icons), `appcore-providers.jsx` (KuroStyles — icon classes) | ~20 min |
 | **7** | **Empty state atmospheric upgrade** — Enhance existing `.kuro-empty-state` with a faint character silhouette or element-themed SVG illustration behind the text. Add staggered entrance animation (fade + translateY) matching card entrance timing. Apply to Tracker, Stats, and Collection empty states. | D-STATE-1 | `App.jsx` (empty state JSX), `appcore-providers.jsx` (empty state animation keyframes) | ~30 min |
 | **8** | **Import loading feedback** — Add progress indicator during JSON parse/import. Show file name, estimated size, and a shimmer animation (using Step 3's skeleton system). Display parse errors inline with recoverable messaging. | D-STATE-2 | `App.jsx` (processImportData, handleFileImport) | ~20 min |
+| **9** | **Recharts theme integration** — Override Recharts defaults: set grid stroke to `rgba(255,255,255,0.06)`, axis tick/label to chromatic gray (`#8892a4`), tooltip background to `rgba(12,16,24,0.95)` with `backdrop-filter: blur(12px)` and gold accent border. Match chart line/bar colors to element-color system. | D-DATAVIZ-1 | `App.jsx` (Recharts `<XAxis>`, `<YAxis>`, `<CartesianGrid>`, `<Tooltip>` props), `appcore-providers.jsx` (optional `.kuro-chart` class) | ~25 min |
+| **10** | **Border opacity tokens + copy voice** — Extract repeated `rgba(255,255,255,0.06)` and `0.08` border values into `--kuro-border-subtle` and `--kuro-border-medium` CSS custom properties. Rewrite empty state copy with cyberpunk-luxe voice (e.g., "No signals detected" instead of "No data yet"). | D-TOKEN-1, D-COPY-1 | `appcore-providers.jsx` (KuroStyles `:root` + border references), `App.jsx` (empty state text strings) | ~20 min |
 
-**Total estimated effort: ~3 hours**
+**Total estimated effort: ~3.75 hours**
 
-**Priority order:** Steps 1–3 (typography + loading) deliver the most visible improvement. Steps 4–5 (hierarchy + atmosphere) are quick wins. Steps 6–8 are polish.
+**Priority order:** Steps 1–3 (typography + loading) deliver the most visible improvement. Steps 4–5 (hierarchy + atmosphere) are quick wins. Step 9 (Recharts theming) is high-visibility for stats users. Steps 6–8 and 10 are polish.
 
-**Dependencies:** Step 8 depends on Step 3 (skeleton system). All others are independent and can be done in any order.
+**Dependencies:** Step 8 depends on Step 3 (skeleton system). Step 10's border tokens should be done before Step 9 for consistent chart borders. All others are independent and can be done in any order.
