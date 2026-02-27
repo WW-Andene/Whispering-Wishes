@@ -5,7 +5,7 @@
 // proper SW update lifecycle. A static file fixes all three issues.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '3.2.2';
+const APP_VERSION = '3.2.3';
 const APP_CACHE = `ww-app-v${APP_VERSION}`;
 const IMG_CACHE = `ww-images-v${APP_VERSION}`;
 const CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
@@ -18,7 +18,7 @@ const PRECACHE = ['/', '/index.html'];
 const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 // Image domains — stale-while-revalidate
-const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co'];
+const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co', 'wuwa.gg', 'wuwatracker.com'];
 
 // Install — precache app shell
 self.addEventListener('install', (event) => {

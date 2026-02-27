@@ -570,7 +570,7 @@ function WhisperingWishesInner() {
       if (!saved) return {};
       const raw = JSON.parse(saved);
       // P15-FIX: MEDIUM-3 — Validate URLs: HTTPS-only + domain allowlist to prevent tracking/SSRF
-      const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc'];
+      const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
       const safe = {};
       for (const [k, v] of Object.entries(raw)) {
         if (typeof v === 'string' && /^https:\/\//i.test(v)) {

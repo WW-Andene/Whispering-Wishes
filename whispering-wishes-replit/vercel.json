@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://i.ibb.co https://i.imgur.com https://cdn.discordapp.com https://media.discordapp.net https://pbs.twimg.com https://raw.githubusercontent.com https://i.postimg.cc https://wuwa.gg https://*.googleapis.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://i.ibb.co https://i.imgur.com https://cdn.discordapp.com https://media.discordapp.net https://pbs.twimg.com https://raw.githubusercontent.com https://i.postimg.cc https://wuwa.gg; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://i.ibb.co https://ibb.co https://i.imgur.com https://cdn.discordapp.com https://media.discordapp.net https://pbs.twimg.com https://raw.githubusercontent.com https://i.postimg.cc https://wuwa.gg https://wuwatracker.com https://*.googleapis.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://i.ibb.co https://ibb.co https://i.imgur.com https://cdn.discordapp.com https://media.discordapp.net https://pbs.twimg.com https://raw.githubusercontent.com https://i.postimg.cc https://wuwa.gg https://wuwatracker.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'"
         },
         {
           "key": "X-Frame-Options",
