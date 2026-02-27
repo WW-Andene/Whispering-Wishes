@@ -298,6 +298,68 @@ Given A2 (Leisure/Emotional) and A4 (Strong aesthetic), the correct motion chara
 
 **Stagger pattern:** Card entrances stagger at 50ms intervals (50, 100, 150, 200ms) — within the ideal 30-50ms range, capped at 200ms. ✓ Correct.
 
+### §DM4. Micro-interaction Design
+
+**1. Hover states:**
+
+| Element | Hover Treatment | Assessment |
+|---------|----------------|------------|
+| `.kuro-card:hover` | Border brightens (`0.08→0.15`), `translateY(-2px)`, enhanced box-shadow with faint gold glow `rgba(237,175,24,0.03)` | ✓ Excellent — multi-layered response: lift + brighten + glow. Communicates interactivity with character. |
+| `.kuro-btn:hover` | Border brightens (`→0.2`), text goes white, `translateY(-2px)`, ripple pseudo-element fades in | ✓ Strong — consistent lift behavior with cards. Ripple effect adds personality. |
+| `.kuro-input:hover` | Border subtly brightens (`0.2→0.3`) | ✓ Appropriate — inputs should respond but not distract |
+| `.pull-log-row:hover` | Background `rgba(255,255,255,0.08)` | ✓ Subtle list-row hover — correct for data-dense context |
+| `.glow-gold:hover` (5-star pulls) | `box-shadow: 0 0 30px rgba(237,175,24,0.25)` | ✓ Character-positive — gold glow on premium items signals rarity |
+| Element-glow variants (`.glow-purple`, `.glow-cyan`, etc.) | Element-colored 30px glow at 0.25 opacity | ✓ Consistent system — each game element gets its own glow color |
+
+**Hover consistency:** ✓ All interactive elements respond. The consistent pattern is: border brighten + subtle lift + optional glow. Transition timing uses the signature `cubic-bezier(0.16, 1, 0.3, 1)` — the "bouncy precision" feel carries through every hover.
+
+**2. Focus rings:**
+
+```
+*:focus-visible {
+  outline: 2px solid rgba(var(--color-gold), 0.7);
+  outline-offset: 2px;
+}
+
+button:focus-visible, input:focus-visible {
+  outline: 2px solid rgba(var(--color-gold), 0.8);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--color-gold), 0.15);  /* halo effect */
+}
+```
+
+✓ **Character-positive focus system.** Gold focus rings match the primary accent identity. The 4px halo at 0.15 opacity creates a glow effect consistent with the app's atmospheric vocabulary. This is significantly better than browser defaults and expresses the product character at the accessibility layer.
+
+**3. Active/press states:**
+
+| Element | Active Treatment | Assessment |
+|---------|-----------------|------------|
+| `.kuro-btn:active` | `translateY(0) scale(0.97)`, `transition: 0.1s ease` | ✓ Physical compression — fast (100ms), returns to baseline. Feels "pressed into surface." |
+| `.kuro-card.interactive:active` | `translateY(0) scale(0.98)` | ✓ Slightly less compression than buttons — proportional to visual weight. Correct. |
+| Active toggle states (`.active-gold`, `.active-pink`, etc.) | Full glow envelope: accent bg at 0.15 + border at 0.7 + `box-shadow: 0 0 25px` + `animation: borderGlow 2s infinite` | ✓ Exceptional — active toggles get the full atmospheric treatment. The 2s breathing glow on selected elements is a strong personality moment. |
+
+**4. Loading and skeleton states:**
+
+**[MEDIUM] D-MOTION-1: No skeleton/loading state system**
+
+The app has no dedicated skeleton loaders, shimmer placeholders, or loading indicators. Content appears via staggered card entrance animations (50ms intervals), which masks brief load times effectively. However, for longer operations (initial data import, API fetches), there is no designed loading state — the user sees nothing, then everything appears at once.
+
+**Recommendation:** Design a character-appropriate loading system:
+- **Skeleton color:** Use `rgba(12,16,24,0.55)` with the gold shimmer line treatment already on cards — skeletons as "empty cards" with the shimmer line still pulsing, signaling "something is coming"
+- **Animation:** The existing 3s shimmer pulse is perfect as a loading indicator — apply to skeleton blocks
+- **No spinner** — spinners contradict the atmospheric character. The shimmer pulse IS the loading signal.
+
+**5. Scroll behavior:**
+
+✓ **Custom scrollbar styling implemented:**
+- Vertical scroll containers: `scrollbar-width: thin`, 3px webkit scrollbar with `rgba(255,255,255,0.15)` thumb
+- Nav/horizontal: scrollbar hidden entirely (`scrollbar-width: none`)
+- Hover: scrollbar thumb brightens to `rgba(255,255,255,0.25)`
+
+✓ **Scroll character matches product:** Thin, nearly invisible scrollbars that brighten on hover — consistent with the "void with floating content" spatial character. The 3px width is unusually refined for a web app.
+
+**No scroll-triggered reveals or parallax** — appropriate for a utility companion app. The canvas wave background provides ambient atmospheric motion without scroll-linked effects.
+
 ### §DM5. Motion Signature
 
 **Identified:** The app HAS a motion signature — the `cubic-bezier(0.16, 1, 0.3, 1)` easing applied to all interactive transitions. This produces a distinctive "bouncy precision" feel — elements move quickly then settle with a slight deceleration overshoot. It's used on cards, buttons, inputs, and hover states. This should be protected across updates.
