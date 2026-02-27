@@ -197,7 +197,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
-            <div className="text-[9px] text-gray-500 uppercase tracking-wider">Combat Profile</div>
+            <div className="text-[9px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
               <span className={`text-[10px] px-2 py-0.5 rounded font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">{data.weapon}</span>
@@ -205,7 +205,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
             {data.buffs?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-500 mb-1">Buffs</div>
+                <div className="text-[9px] text-gray-400 mb-1">Buffs</div>
                 <div className="flex flex-wrap gap-1">
                   {data.buffs.map((b, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>)}
                 </div>
@@ -213,7 +213,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             )}
             {data.debuffs?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-500 mb-1">Debuffs</div>
+                <div className="text-[9px] text-gray-400 mb-1">Debuffs</div>
                 <div className="flex flex-wrap gap-1">
                   {data.debuffs.map((db, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>)}
                 </div>
@@ -221,7 +221,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             )}
             {data.dmgFocus?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-500 mb-1">Damage Focus</div>
+                <div className="text-[9px] text-gray-400 mb-1">Damage Focus</div>
                 <div className="flex flex-wrap gap-1">
                   {data.dmgFocus.map((df, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
                 </div>
@@ -248,7 +248,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 {weaponData && (
                   <>
                     <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.baseAtk ? `${weaponData.baseAtk} Base ATK` : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
-                    <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">{weaponData.passive}</div>
+                    <div className="text-gray-400 text-[9px] mt-1 leading-relaxed">{weaponData.passive}</div>
                   </>
                 )}
               </div>
@@ -257,7 +257,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Best Echoes - enhanced */}
           <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-            <div className="text-[9px] text-gray-500 uppercase tracking-wider mb-2">Recommended Echoes</div>
+            <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
@@ -265,7 +265,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
                 <div>
                   <div className="text-cyan-400 text-xs font-bold">{data.bestEchoes[0]}</div>
-                  <div className="text-gray-500 text-[9px]">Main Echo</div>
+                  <div className="text-gray-400 text-[9px]">Main Echo</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
                 <div>
                   <div className="text-purple-400 text-xs font-bold">{data.bestEchoes[1]}</div>
-                  <div className="text-gray-500 text-[9px]">Echo Set</div>
+                  <div className="text-gray-400 text-[9px]">Echo Set</div>
                 </div>
               </div>
             </div>
@@ -531,7 +531,7 @@ class TabErrorBoundary extends React.Component {
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left">
-                    <summary className="text-gray-500 text-[9px] cursor-pointer">Error details</summary>
+                    <summary className="text-gray-400 text-[9px] cursor-pointer">Error details</summary>
                     <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}</pre>
                   </details>
                 )}
@@ -809,7 +809,7 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.28} fill={color}>{safeValue}</text>
       </svg>
       {label && <div className="text-gray-300 text-[9px] mt-0.5">{label}</div>}
-      {sublabel && <div className="text-gray-500 text-[9px]">{sublabel}</div>}
+      {sublabel && <div className="text-gray-400 text-[9px]">{sublabel}</div>}
     </div>
   );
 });
@@ -1113,11 +1113,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-sm ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-500 text-[9px]">/{HARD_PITY}</span></div>
+                  <div className={`font-bold text-sm ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
                   <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
+                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[9px]">/10</span></div>
                   <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">
@@ -1288,21 +1288,24 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       }
     }}
   >
-    {imgUrl && (
-      <img 
-        src={imgUrl} 
+    {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
+    {imgUrl ? (
+      <img
+        src={imgUrl}
         alt={name}
         loading="lazy"
         className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-        style={{ 
+        style={{
           transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
           opacity: owned ? collOpacity : 0.3,
           filter: owned ? 'none' : 'grayscale(100%)',
-          maskImage: collMask, 
+          maskImage: collMask,
           WebkitMaskImage: collMask
         }}
         onError={hideOnError}
       />
+    ) : (
+      <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {isNew && (
       <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
@@ -1544,7 +1547,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
         </div>
       )}
       {/* AUDIT-FIX M33: Accurate method label — DP is exact for ≤500 pulls, MC simulation for larger values */}
-      <p className="text-[9px] text-gray-500 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
+      <p className="text-[9px] text-gray-400 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
     </CardBody>
   </Card>
 ));
@@ -1582,11 +1585,11 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
             <div className="flex items-center gap-3">
               <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-500 text-[9px]">/{HARD_PITY}</span></div>
+                  <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
                   <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-500 text-[9px]">/10</span></div>
+                  <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[9px]">/10</span></div>
                   <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">

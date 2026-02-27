@@ -569,10 +569,16 @@ function WhisperingWishesInner() {
       const saved = localStorage.getItem(COLLECTION_IMAGES_KEY);
       if (!saved) return {};
       const raw = JSON.parse(saved);
-      // Validate URLs: only allow HTTPS to prevent data: URI injection from tampered localStorage
+      // P15-FIX: MEDIUM-3 — Validate URLs: HTTPS-only + domain allowlist to prevent tracking/SSRF
+      const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc'];
       const safe = {};
       for (const [k, v] of Object.entries(raw)) {
-        if (typeof v === 'string' && /^https:\/\//i.test(v)) safe[k] = v;
+        if (typeof v === 'string' && /^https:\/\//i.test(v)) {
+          try {
+            const host = new URL(v).hostname;
+            if (ALLOWED_IMAGE_HOSTS.some(d => host === d || host.endsWith('.' + d))) safe[k] = v;
+          } catch { /* invalid URL, skip */ }
+        }
       }
       return safe;
     } catch { return {}; }
@@ -857,7 +863,9 @@ function WhisperingWishesInner() {
 
   // but heavy DP computation only fires 150ms after the last slider tick.
   // Prevents ~7MB array allocation × 60Hz during slider drag.
-  const [deferredCalc, setDeferredCalc] = useState(state.calc);
+  // P15-FIX: MEDIUM-16 — Initial deferredCalc is null to defer first DP computation
+  // until after first paint, preventing jank on calculator tab open.
+  const [deferredCalc, setDeferredCalc] = useState(null);
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
     if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current);
@@ -868,13 +876,13 @@ function WhisperingWishesInner() {
   // Smart astrite allocation for "Both" mode
   // P2-FIX: Uses deferredCalc so heavy DP isn't triggered on every slider tick
   const astriteAllocation = useMemo(() => {
-    const totalAstrite = +deferredCalc.astrite || 0;
+    const totalAstrite = +effectiveCalc.astrite || 0;
     const totalPulls = Math.floor(totalAstrite / ASTRITE_PER_PULL);
-    const radiant = +deferredCalc.radiant || 0;
-    const forging = +deferredCalc.forging || 0;
-    const lustrous = +deferredCalc.lustrous || 0;
-    
-    if (deferredCalc.selectedBanner !== 'both') {
+    const radiant = +effectiveCalc.radiant || 0;
+    const forging = +effectiveCalc.forging || 0;
+    const lustrous = +effectiveCalc.lustrous || 0;
+
+    if (effectiveCalc.selectedBanner !== 'both') {
       // Single banner mode - all resources go to that banner
       return {
         charAstritePulls: totalPulls,
@@ -892,8 +900,8 @@ function WhisperingWishesInner() {
     
     // "Both" mode - split resources based on priority (0-100)
     // 0 = all weapon, 50 = balanced, 100 = all char
-    const featPriority = typeof deferredCalc.allocPriority === 'number' ? deferredCalc.allocPriority : 50;
-    const stdPriority = typeof deferredCalc.stdAllocPriority === 'number' ? deferredCalc.stdAllocPriority : 50;
+    const featPriority = typeof effectiveCalc.allocPriority === 'number' ? effectiveCalc.allocPriority : 50;
+    const stdPriority = typeof effectiveCalc.stdAllocPriority === 'number' ? effectiveCalc.stdAllocPriority : 50;
     const charPercent = featPriority;
     const weapPercent = 100 - featPriority;
     
@@ -921,31 +929,35 @@ function WhisperingWishesInner() {
       stdCharLustrous,
       stdWeapLustrous,
     };
-  }, [deferredCalc.astrite, deferredCalc.radiant, deferredCalc.forging, deferredCalc.lustrous, deferredCalc.selectedBanner, deferredCalc.allocPriority, deferredCalc.stdAllocPriority]);
+  }, [effectiveCalc.astrite, effectiveCalc.radiant, effectiveCalc.forging, effectiveCalc.lustrous, effectiveCalc.selectedBanner, effectiveCalc.allocPriority, effectiveCalc.stdAllocPriority]);
 
   // Calculate pulls for each banner type using allocation
   const { charTotal: charPulls, weapTotal: weapPulls, stdCharTotal: stdCharPulls, stdWeapTotal: stdWeapPulls } = astriteAllocation;
   
+  // Use state.calc as fallback when deferredCalc is null (initial render before deferred computation fires)
+  const effectiveCalc = deferredCalc || state.calc;
+
   // Calculate stats for each banner type
   // P2-FIX: Uses deferredCalc so DP arrays aren't allocated 60×/sec during slider drag
-  const charStats = useMemo(() => calcStats(charPulls, deferredCalc.charPity, deferredCalc.charGuaranteed, true, deferredCalc.charCopies), [charPulls, deferredCalc.charPity, deferredCalc.charGuaranteed, deferredCalc.charCopies]);
-  const weapStats = useMemo(() => calcStats(weapPulls, deferredCalc.weapPity, false, false, deferredCalc.weapCopies), [weapPulls, deferredCalc.weapPity, deferredCalc.weapCopies]);
-  const stdCharStats = useMemo(() => calcStats(stdCharPulls, deferredCalc.stdCharPity, false, false, deferredCalc.stdCharCopies), [stdCharPulls, deferredCalc.stdCharPity, deferredCalc.stdCharCopies]);
-  const stdWeapStats = useMemo(() => calcStats(stdWeapPulls, deferredCalc.stdWeapPity, false, false, deferredCalc.stdWeapCopies), [stdWeapPulls, deferredCalc.stdWeapPity, deferredCalc.stdWeapCopies]);
+  const charStats = useMemo(() => deferredCalc ? calcStats(charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, true, effectiveCalc.charCopies) : null, [deferredCalc, charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, effectiveCalc.charCopies]);
+  const weapStats = useMemo(() => deferredCalc ? calcStats(weapPulls, effectiveCalc.weapPity, false, false, effectiveCalc.weapCopies) : null, [deferredCalc, weapPulls, effectiveCalc.weapPity, effectiveCalc.weapCopies]);
+  const stdCharStats = useMemo(() => deferredCalc ? calcStats(stdCharPulls, effectiveCalc.stdCharPity, false, false, effectiveCalc.stdCharCopies) : null, [deferredCalc, stdCharPulls, effectiveCalc.stdCharPity, effectiveCalc.stdCharCopies]);
+  const stdWeapStats = useMemo(() => deferredCalc ? calcStats(stdWeapPulls, effectiveCalc.stdWeapPity, false, false, effectiveCalc.stdWeapCopies) : null, [deferredCalc, stdWeapPulls, effectiveCalc.stdWeapPity, effectiveCalc.stdWeapCopies]);
 
   // Combined stats for "Both" mode
   const combined = useMemo(() => {
-    if (deferredCalc.selectedBanner !== 'both') return null;
-    
+    if (effectiveCalc.selectedBanner !== 'both') return null;
+    if (!charStats || !weapStats || !stdCharStats || !stdWeapStats) return null;
+
     let charProb, weapProb;
-    if (deferredCalc.bannerCategory === 'featured') {
+    if (effectiveCalc.bannerCategory === 'featured') {
       charProb = (parseFloat(charStats.successRate) || 0) / 100;
       weapProb = (parseFloat(weapStats.successRate) || 0) / 100;
     } else {
       charProb = (parseFloat(stdCharStats.successRate) || 0) / 100;
       weapProb = (parseFloat(stdWeapStats.successRate) || 0) / 100;
     }
-    
+
     return {
       both: (charProb * weapProb * 100).toFixed(1),
       atLeastOne: ((charProb + weapProb - charProb * weapProb) * 100).toFixed(1),
@@ -953,7 +965,7 @@ function WhisperingWishesInner() {
       weapOnly: (weapProb * (1 - charProb) * 100).toFixed(1),
       neither: ((1 - charProb) * (1 - weapProb) * 100).toFixed(1),
     };
-  }, [deferredCalc.selectedBanner, deferredCalc.bannerCategory, charStats, weapStats, stdCharStats, stdWeapStats]);
+  }, [effectiveCalc.selectedBanner, effectiveCalc.bannerCategory, charStats, weapStats, stdCharStats, stdWeapStats]);
 
   // Overall stats from imported history
   const overallStats = useMemo(() => {
@@ -2972,10 +2984,10 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[36px]" style={headerControlBg}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
             </div>
@@ -2998,6 +3010,8 @@ function WhisperingWishesInner() {
             <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams"><Users size={16} /> Teams</TabButton>
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={16} /> Profile</TabButton>
           </nav>
+          {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
+          {visualSettings.swipeNavigation && <div className="text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
         </div>
       </header>
 
@@ -3116,7 +3130,7 @@ function WhisperingWishesInner() {
                     <div key={`bh-${b.version}-${b.phase}`} className="p-2 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-white text-xs font-medium">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-500 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
+                        <span className="text-gray-400 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {b.characters.map(c => (
@@ -3411,28 +3425,28 @@ function WhisperingWishesInner() {
                         <div className="text-center">
                           <div className="text-yellow-400 kuro-number text-xl">{charPulls}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-pink-400 kuro-number text-xl">{weapPulls}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -3601,7 +3615,7 @@ function WhisperingWishesInner() {
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
                         {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
-                        <button onClick={() => { if (window.confirm(`Remove "${i.label}"?`)) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                        <button onClick={() => { if (window.confirm(`Remove "${i.label}"?`)) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -3635,7 +3649,7 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Total Astrite</div>
                     </div>
                   </div>
-                  <div className="text-gray-500 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+                  <div className="text-gray-400 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
                 </CardBody>
               </Card>
             )}
@@ -3649,7 +3663,7 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
                       <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Convenes</div>
-                      <div className="text-gray-500 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
+                      <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
                     </div>
                   ))}
                 </div>
@@ -3731,9 +3745,9 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[10px]">{b.astrite} Astrite • P{b.charPity}/{b.weapPity}</div>
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[36px]">Load</button>
+                      <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">Load</button>
                       {/* AUDIT-FIX H6: Confirm before deleting bookmark */}
-                      <button onClick={() => { if (window.confirm(`Delete bookmark "${b.name}"?`)) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[36px]">×</button>
+                      <button onClick={() => { if (window.confirm(`Delete bookmark "${b.name}"?`)) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
                     </div>
                   </div>
                 ))}
@@ -3754,9 +3768,10 @@ function WhisperingWishesInner() {
             {!overallStats ? (
               <Card>
                 <CardBody className="text-center py-8">
-                  <BarChart3 size={32} className="mx-auto mb-2 text-gray-500" />
-                  <p className="text-gray-400 text-sm">No data to analyze</p>
-                  <p className="text-gray-500 text-xs mt-1">Import your Convene history in Profile tab</p>
+                  <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-300 text-sm font-medium">No data to analyze yet</p>
+                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to see luck ratings, pity stats, and pull analytics.</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Go to Profile tab to import</button>
                 </CardBody>
               </Card>
             ) : (
@@ -3809,7 +3824,7 @@ function WhisperingWishesInner() {
                             <h3 className="text-white font-bold text-sm">Community</h3>
                             <p className="text-gray-400 text-[10px]">Leaderboard & stats</p>
                           </div>
-                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
+                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
                             <X size={16} />
                           </button>
                         </div>
@@ -3868,7 +3883,7 @@ function WhisperingWishesInner() {
                                       <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
                                         {entry.avgPity.toFixed(1)}
                                       </div>
-                                      <div className="text-[9px] text-gray-500">avg pity</div>
+                                      <div className="text-[9px] text-gray-400">avg pity</div>
                                     </div>
                                   </div>
                                 );
@@ -3884,7 +3899,7 @@ function WhisperingWishesInner() {
                               </div>
                             ) : (
                               <>
-                                <p className="text-gray-500 text-[9px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
+                                <p className="text-gray-400 text-[9px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
                                 {communityPulls.chars.length > 0 && (
                                   <>
                                     <p className="text-[10px] text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
@@ -3948,15 +3963,15 @@ function WhisperingWishesInner() {
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-yellow-400 font-bold text-xs">{communityStats.avgPityAll}</div>
-                              <div className="text-gray-500 text-[9px]">Global Avg Pity</div>
+                              <div className="text-gray-400 text-[9px]">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate ?? '—'}%</div>
-                              <div className="text-gray-500 text-[9px]">50/50 Win Rate</div>
+                              <div className="text-gray-400 text-[9px]">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-cyan-400 font-bold text-xs">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-500 text-[9px]">Total 5★</div>
+                              <div className="text-gray-400 text-[9px]">Total 5★</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
@@ -3986,7 +4001,7 @@ function WhisperingWishesInner() {
                             >
                               Submit My Score
                             </button>
-                            <p className="text-gray-500 text-[9px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
+                            <p className="text-gray-400 text-[9px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
                         )}
                         {!overallStats?.avgPity && (
@@ -4063,7 +4078,7 @@ function WhisperingWishesInner() {
                                 boxShadow: `0 0 40px ${t.color}25, 0 0 80px ${t.color}10, inset 0 0 30px ${t.color}08`
                               }}
                             >
-                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label="Close trophy">
+                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label="Close trophy">
                                 <X size={14} />
                               </button>
                               <div 
@@ -4077,7 +4092,7 @@ function WhisperingWishesInner() {
                               </div>
                               <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
                               <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-[9px] text-gray-500">tap outside or ✕ to close</div>
+                              <div className="mt-3 text-[9px] text-gray-400">tap outside or ✕ to close</div>
                             </div>
                           </div>
                         );
@@ -4180,7 +4195,7 @@ function WhisperingWishesInner() {
                         {/* X-axis labels */}
                         <div className="flex gap-1.5">
                           {allBuckets.map(label => (
-                            <div key={label} className="flex-1 text-[9px] text-gray-500 text-center">
+                            <div key={label} className="flex-1 text-[9px] text-gray-400 text-center">
                               {label.split('-')[0]}
                             </div>
                           ))}
@@ -4190,15 +4205,15 @@ function WhisperingWishesInner() {
                         <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
                           <div>
                             <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{minPity}</div>
-                            <div className="text-gray-500 text-[9px]">Lowest</div>
+                            <div className="text-gray-400 text-[9px]">Lowest</div>
                           </div>
                           <div>
                             <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(251,191,36,0.5)' }}>{avgPity}</div>
-                            <div className="text-gray-500 text-[9px]">Average</div>
+                            <div className="text-gray-400 text-[9px]">Average</div>
                           </div>
                           <div>
                             <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)' }}>{maxPity}</div>
-                            <div className="text-gray-500 text-[9px]">Highest</div>
+                            <div className="text-gray-400 text-[9px]">Highest</div>
                           </div>
                         </div>
                         
@@ -4356,7 +4371,7 @@ function WhisperingWishesInner() {
                             </ResponsiveContainer>
                           </div>
                           {allData.length > maxVisible && (
-                            <div className="text-center text-[9px] text-gray-500 mt-1">
+                            <div className="text-center text-[9px] text-gray-400 mt-1">
                               {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
                             </div>
                           )}
@@ -4403,11 +4418,11 @@ function WhisperingWishesInner() {
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-[9px] font-bold flex-shrink-0" aria-label="Won 50/50">W<span className="sr-only"> (Won 50/50)</span></span>}
                                   {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-[9px] font-bold flex-shrink-0" aria-label="Lost 50/50">L<span className="sr-only"> (Lost 50/50)</span></span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-500 text-[9px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[9px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-500 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-400 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );
@@ -4555,7 +4570,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionElementFilter}
                         onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]" style={{ background: 'var(--bg-btn)' }}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by element"
                       >
                         <option value="all">All Elements</option>
@@ -4571,7 +4586,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionWeaponFilter}
                         onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]" style={{ background: 'var(--bg-btn)' }}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by weapon type"
                       >
                         <option value="all">All Weapons</option>
@@ -4586,7 +4601,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionOwnershipFilter}
                         onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]" style={{ background: 'var(--bg-btn)' }}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by ownership"
                       >
                         <option value="all">All Items</option>
@@ -4889,7 +4904,7 @@ function WhisperingWishesInner() {
                                 style={{ height: '110px', contain: 'paint' }}
                               >
                                 <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                                <span className="text-[9px] text-gray-500 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                                <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
                               </button>
                             );
                           }
@@ -4989,7 +5004,7 @@ function WhisperingWishesInner() {
                                 <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{d.desc}</p>
                                 {/* Damage Focus */}
                                 <div className="mb-1.5">
-                                  <div className="text-[9px] text-gray-500 font-medium mb-1">Damage Focus</div>
+                                  <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
                                   <div className="flex flex-wrap gap-1">
                                     <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
                                       style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
@@ -5003,7 +5018,7 @@ function WhisperingWishesInner() {
                                 {/* Buffs */}
                                 {d.buffs?.length > 0 && (
                                   <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Buffs</div>
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
                                     <div className="flex flex-wrap gap-1">
                                       {d.buffs.map((b, bi) => (
                                         <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
@@ -5014,7 +5029,7 @@ function WhisperingWishesInner() {
                                 {/* Debuffs */}
                                 {d.debuffs?.length > 0 && (
                                   <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-500 font-medium mb-1">Debuffs</div>
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
                                     <div className="flex flex-wrap gap-1">
                                       {d.debuffs.map((db, di) => (
                                         <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
@@ -5365,7 +5380,7 @@ function WhisperingWishesInner() {
                     className="kuro-input w-full"
                   />
                   {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                  <p className="text-gray-500 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
+                  <p className="text-gray-400 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -5382,7 +5397,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
-                      <p className="text-gray-500 text-[9px] mt-0.5">Tap the <Crown size={9} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      <p className="text-gray-400 text-[9px] mt-0.5">Tap the <Crown size={9} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
                       {state.profile.profilePic && (
                         <button
                           onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
@@ -5485,7 +5500,7 @@ function WhisperingWishesInner() {
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
-                  <p className="text-gray-500 text-[9px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
+                  <p className="text-gray-400 text-[9px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
                 )}
                 {visualSettings.animationsEnabled && (
                   <p className="text-purple-400 text-[9px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
@@ -5572,7 +5587,7 @@ Example: {"pulls":[...]}'
                         </button>
                       )}
                     </div>
-                    <p className="text-gray-500 text-[9px]">
+                    <p className="text-gray-400 text-[9px]">
                       💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
                     </p>
                   </div>
@@ -5586,7 +5601,7 @@ Example: {"pulls":[...]}'
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
-                  <p className="text-gray-500 text-[9px] mt-2">View detailed stats in the Stats tab</p>
+                  <p className="text-gray-400 text-[9px] mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
             )}
@@ -5623,25 +5638,25 @@ Example: {"pulls":[...]}'
                 
                 <div className="kuro-divider" />
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Disclaimer</p>
                   <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
                   <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{currentYear}. All rights reserved.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Data & Privacy</p>
                   <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
                   <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
                   <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Third-Party Services</p>
                   <p>This app recommends wuwatracker.com for data export. We are not affiliated with wuwatracker.com and are not responsible for their services, data handling, or availability.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
@@ -5651,7 +5666,7 @@ Example: {"pulls":[...]}'
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">License</p>
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
@@ -5670,7 +5685,7 @@ Example: {"pulls":[...]}'
       {showBookmarkModal && (
         <div ref={bookmarkTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
+            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
@@ -5687,7 +5702,7 @@ Example: {"pulls":[...]}'
       {showExportModal && (
         <div ref={exportTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
           <Card className="w-full max-w-sm">
-            <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
+            <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
               <textarea
@@ -5720,7 +5735,7 @@ Example: {"pulls":[...]}'
               
               <div className="relative my-1">
                 <div className="kuro-divider" />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[9px] text-gray-500 uppercase tracking-wider">Restore</span>
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[9px] text-gray-400 uppercase tracking-wider">Restore</span>
               </div>
               
               <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
@@ -5844,6 +5859,28 @@ Example: {"pulls":[...]}'
               >
                 Restore Backup
               </button>
+              {/* P15-FIX: LOW-11 — UI to restore pre-import backup from localStorage */}
+              {(() => {
+                try { return !!localStorage.getItem('whispering-wishes-pre-import-backup'); } catch { return false; }
+              })() && (
+                <button
+                  onClick={() => {
+                    try {
+                      const raw = localStorage.getItem('whispering-wishes-pre-import-backup');
+                      if (!raw) { toast?.addToast?.('No pre-import backup found', 'error'); return; }
+                      const data = JSON.parse(raw);
+                      if (!data?.state || typeof data.state !== 'object') { toast?.addToast?.('Invalid pre-import backup', 'error'); return; }
+                      if (!window.confirm(`Restore pre-import backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown date'}?\n\nThis will revert to the state before your last import.`)) return;
+                      dispatch({ type: 'LOAD_STATE', state: data.state });
+                      toast?.addToast?.('Pre-import backup restored!', 'success');
+                      setShowExportModal(false);
+                    } catch (e) { toast?.addToast?.('Failed to restore: ' + e.message, 'error'); }
+                  }}
+                  className="kuro-btn w-full text-[10px] mt-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                >
+                  Restore Pre-Import Backup
+                </button>
+              )}
             </CardBody>
           </Card>
         </div>
@@ -6134,7 +6171,7 @@ Example: {"pulls":[...]}'
         <div ref={adminTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
           <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
-            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
+            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
             </CardHeader>
             <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
@@ -6240,6 +6277,8 @@ Example: {"pulls":[...]}'
                                         const newCustom = { ...customCollectionImages };
                                         if (val) {
                                           if (val.length > 5 && !/^https:\/\//i.test(val)) return; // Enforce HTTPS-only URLs
+                                          // P15-FIX: MEDIUM-3 — Validate against domain allowlist
+                                          if (val.length > 10) { try { const h = new URL(val).hostname; if (!['i.ibb.co','i.imgur.com','imgur.com','cdn.discordapp.com','media.discordapp.net','pbs.twimg.com','raw.githubusercontent.com','i.postimg.cc'].some(d => h === d || h.endsWith('.'+d))) return; } catch { return; } }
                                           newCustom[name] = val;
                                         } else {
                                           delete newCustom[name];
@@ -6331,10 +6370,10 @@ Example: {"pulls":[...]}'
                         <div className="text-gray-400 text-xs mt-1">
                           {activePlayersCount === 1 ? 'Open Session' : 'Open Sessions'}
                         </div>
-                        <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">
+                        <div className="text-gray-400 text-[9px] mt-1 leading-relaxed">
                           Anyone browsing the app — includes visitors who haven't imported data or submitted to the leaderboard
                         </div>
-                        <div className="text-gray-500 text-[9px] mt-1">
+                        <div className="text-gray-400 text-[9px] mt-1">
                           Updates every 30s • Heartbeat: 60s • Timeout: 2min
                         </div>
                       </div>
@@ -6373,7 +6412,7 @@ Example: {"pulls":[...]}'
                       <div className="bg-white/5 border border-white/10 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Registered Players</div>
-                          <div className="text-gray-500 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
+                          <div className="text-gray-400 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
                         </div>
                         {!adminPlayerList ? (
                           <p className="text-gray-500 text-xs text-center py-4">Loading...</p>
@@ -6385,17 +6424,17 @@ Example: {"pulls":[...]}'
                               <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded bg-white/5 hover:bg-white/10 transition-colors">
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-gray-500 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
+                                    <span className="text-gray-400 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
                                     <span className="text-white text-[11px] font-mono font-medium truncate">{p.uid || p.id}</span>
                                     {p.uid && p.id !== p.uid && (
                                       <span className="text-gray-500 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-3 ml-6 mt-0.5">
-                                    <span className="text-gray-500 text-[9px]">Avg: <span className="text-yellow-400">{p.avgPity}</span></span>
-                                    <span className="text-gray-500 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
-                                    <span className="text-gray-500 text-[9px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
-                                    <span className="text-gray-500 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
+                                    <span className="text-gray-400 text-[9px]">Avg: <span className="text-yellow-400">{p.avgPity}</span></span>
+                                    <span className="text-gray-400 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
+                                    <span className="text-gray-400 text-[9px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
+                                    <span className="text-gray-400 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                                   </div>
                                 </div>
                                 <div className="text-gray-500 text-[8px] text-right flex-shrink-0 ml-2">
@@ -6408,7 +6447,7 @@ Example: {"pulls":[...]}'
                       </div>
                       
                       {/* Privacy Notice */}
-                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-500 space-y-1">
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-400 space-y-1">
                         <div className="text-gray-400 font-medium">🔒 Privacy</div>
                         <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
                         <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
@@ -6481,7 +6520,7 @@ Example: {"pulls":[...]}'
                           placeholder={'{\n  "pity1": { "name": "New Name Here", "desc": "New description" },\n  "win7": { "name": "Another Name" }\n}'}
                           aria-label="Trophy overrides JSON input"
                         />
-                        <p className="text-gray-500 text-[9px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
+                        <p className="text-gray-400 text-[9px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
 
                         <div className="flex gap-2">
                           <button
@@ -6721,7 +6760,7 @@ Example: {"pulls":[...]}'
                         />
                       </div>
                     </div>
-                    <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
+                    <p className="text-gray-400 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
                   </div>
 
                   <div className="flex gap-2">

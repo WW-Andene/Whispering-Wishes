@@ -153,6 +153,9 @@ const MAX_PITY = HARD_PITY; // P7-FIX: Use single source of truth (7E)
 const GACHA_EPS = 1e-15;
 
 // Soft pity rate function: 0.8% base, linear ramp from SOFT_PITY_START to 100% at HARD_PITY
+// P15-FIX: MEDIUM-7 — pity=80 (MAX_PITY) is the absorbing state: the formula yields >1.0
+// before clamping, but Math.min ensures it returns exactly 1.0. The DP table accesses
+// getPullRate(80) via nextPity = Math.min(MAX_PITY, p+1), which is correct — pity 80 = guaranteed.
 const BASE_5STAR_RATE = 0.008; // 0.8%
 const SOFT_PITY_STEPS = MAX_PITY - SOFT_PITY_START; // 80 - 65 = 15 steps
 const getPullRate = (pity) => {
@@ -375,12 +378,12 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
       low = mid + 1;
     }
   }
-  // MC verification: stochastic noise can make binary search converge ±1-2 off.
-  // Walk down from ans to find the true minimum where P >= minProb.
+  // P15-FIX: MEDIUM-8 — Widen MC verification window from ±2 to ±5 and increase trial count
+  // to reduce stochastic noise in binary search convergence near exact thresholds.
   if (ans > DP_MAX_PULLS && ans > 1) {
-    for (let check = ans - 2; check <= ans + 2; check++) {
+    for (let check = ans - 5; check <= ans + 5; check++) {
       if (check < 1) continue;
-      const vDist = computeDistMC(check, isWeapon, startPity, startGuar, targetK, 200000);
+      const vDist = computeDistMC(check, isWeapon, startPity, startGuar, targetK, 500000);
       if (getCumulativeProb(vDist, targetK) * 100 >= minProb) {
         ans = Math.min(ans, check);
         break;
@@ -389,6 +392,34 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
   }
   return ans;
 };
+
+// P15-FIX: MEDIUM-12 — Action type constants to prevent silent typo failures in dispatch calls
+const ACTION = Object.freeze({
+  SET_SERVER: 'SET_SERVER',
+  SET_CALC: 'SET_CALC',
+  SET_PLANNER: 'SET_PLANNER',
+  SET_SETTINGS: 'SET_SETTINGS',
+  SET_EVENT_STATUS: 'SET_EVENT_STATUS',
+  ADD_INCOME: 'ADD_INCOME',
+  REMOVE_INCOME: 'REMOVE_INCOME',
+  CLEAR_ALL_INCOME: 'CLEAR_ALL_INCOME',
+  ADD_DAILY_INCOME: 'ADD_DAILY_INCOME',
+  IMPORT_HISTORY: 'IMPORT_HISTORY',
+  SET_UID: 'SET_UID',
+  SET_USERNAME: 'SET_USERNAME',
+  SET_PROFILE_PIC: 'SET_PROFILE_PIC',
+  CLEAR_PROFILE: 'CLEAR_PROFILE',
+  SAVE_BOOKMARK: 'SAVE_BOOKMARK',
+  LOAD_BOOKMARK: 'LOAD_BOOKMARK',
+  DELETE_BOOKMARK: 'DELETE_BOOKMARK',
+  SET_ACTIVE_TEAM: 'SET_ACTIVE_TEAM',
+  SET_TEAM_SLOT: 'SET_TEAM_SLOT',
+  CLEAR_TEAM_SLOT: 'CLEAR_TEAM_SLOT',
+  CLEAR_TEAM: 'CLEAR_TEAM',
+  RENAME_TEAM: 'RENAME_TEAM',
+  LOAD_STATE: 'LOAD_STATE',
+  RESET: 'RESET',
+});
 
 // [SECTION:STATE]
 const initialState = {
@@ -540,17 +571,17 @@ const saveToStorage = (state) => {
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'SET_SERVER': return { ...state, server: action.server };
-    case 'SET_CALC': return { ...state, calc: { ...state.calc, [action.field]: action.value } };
-    case 'SET_PLANNER': return { ...state, planner: { ...state.planner, [action.field]: action.value } };
-    case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, [action.field]: action.value } };
-    case 'SET_EVENT_STATUS': {
+    case ACTION.SET_SERVER: return { ...state, server: action.server };
+    case ACTION.SET_CALC: return { ...state, calc: { ...state.calc, [action.field]: action.value } };
+    case ACTION.SET_PLANNER: return { ...state, planner: { ...state.planner, [action.field]: action.value } };
+    case ACTION.SET_SETTINGS: return { ...state, settings: { ...state.settings, [action.field]: action.value } };
+    case ACTION.SET_EVENT_STATUS: {
       const newStatus = { ...state.eventStatus };
       if (action.status === null) { delete newStatus[action.eventKey]; } 
       else { newStatus[action.eventKey] = action.status; }
       return { ...state, eventStatus: newStatus };
     }
-    case 'ADD_INCOME': {
+    case ACTION.ADD_INCOME: {
       const incAst = Math.floor(+action.income.astrite || 0);
       const incRad = Math.floor(+action.income.radiant || 0);
       const incLus = Math.floor(+action.income.lustrous || 0);
@@ -568,7 +599,7 @@ const reducer = (state, action) => {
         },
       };
     }
-    case 'REMOVE_INCOME': {
+    case ACTION.REMOVE_INCOME: {
       const item = state.planner.addedIncome.find(i => i.id === action.id);
       if (!item) return state;
       return {
@@ -585,7 +616,7 @@ const reducer = (state, action) => {
         },
       };
     }
-    case 'CLEAR_ALL_INCOME': {
+    case ACTION.CLEAR_ALL_INCOME: {
       const totalAst = state.planner.addedIncome.reduce((s, i) => s + (i.astrite || 0), 0);
       const totalRad = state.planner.addedIncome.reduce((s, i) => s + (i.radiant || 0), 0);
       const totalLus = state.planner.addedIncome.reduce((s, i) => s + (i.lustrous || 0), 0);
@@ -600,14 +631,14 @@ const reducer = (state, action) => {
         },
       };
     }
-    case 'ADD_DAILY_INCOME': {
+    case ACTION.ADD_DAILY_INCOME: {
       const days = Math.max(0, Math.min(365, Number(action.days) || 0));
       const dailyTotal = (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
       const totalAstrite = dailyTotal * days;
       return { ...state, calc: { ...state.calc, astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + totalAstrite)) } }; // P12-FIX: Cap at MAX_ASTRITE (Step 14 — MEDIUM-10e)
     }
     // SYNC_PITY removed - calculator is fully independent from history
-    case 'IMPORT_HISTORY': {
+    case ACTION.IMPORT_HISTORY: {
       const newProfile = { ...state.profile, importedAt: new Date().toISOString(), uid: action.uid || state.profile.uid };
       
       // Deduplicate: merge new history with existing, filtering out entries that match by timestamp + name + rarity
@@ -668,12 +699,12 @@ const reducer = (state, action) => {
       }
       return { ...state, profile: newProfile };
     }
-    case 'SET_UID': return { ...state, profile: { ...state.profile, uid: action.uid } };
-    case 'SET_USERNAME': return { ...state, profile: { ...state.profile, username: action.value } };
-    case 'SET_PROFILE_PIC': return { ...state, profile: { ...state.profile, profilePic: action.value } };
-    case 'CLEAR_PROFILE': return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
-    case 'SAVE_BOOKMARK': return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
-    case 'LOAD_BOOKMARK': {
+    case ACTION.SET_UID: return { ...state, profile: { ...state.profile, uid: action.uid } };
+    case ACTION.SET_USERNAME: return { ...state, profile: { ...state.profile, username: action.value } };
+    case ACTION.SET_PROFILE_PIC: return { ...state, profile: { ...state.profile, profilePic: action.value } };
+    case ACTION.CLEAR_PROFILE: return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
+    case ACTION.SAVE_BOOKMARK: return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
+    case ACTION.LOAD_BOOKMARK: {
       const b = state.bookmarks.find(bm => bm.id === action.id);
       if (!b) return state;
       // P9-FIX: Restore ALL saved calc fields, not just a subset (Step 4 audit)
@@ -693,31 +724,31 @@ const reducer = (state, action) => {
         },
       };
     }
-    case 'DELETE_BOOKMARK': return { ...state, bookmarks: state.bookmarks.filter(b => b.id !== action.id) };
+    case ACTION.DELETE_BOOKMARK: return { ...state, bookmarks: state.bookmarks.filter(b => b.id !== action.id) };
     // Team builder actions
-    case 'SET_ACTIVE_TEAM': return { ...state, activeTeamIndex: Math.max(0, Math.min(4, action.index)) };
-    case 'SET_TEAM_SLOT': {
+    case ACTION.SET_ACTIVE_TEAM: return { ...state, activeTeamIndex: Math.max(0, Math.min(4, action.index)) };
+    case ACTION.SET_TEAM_SLOT: {
       const teams = state.teams.map((t, i) => i === action.teamIndex
         ? { ...t, slots: t.slots.map((s, j) => j === action.slotIndex ? action.character : s) }
         : t
       );
       return { ...state, teams };
     }
-    case 'CLEAR_TEAM_SLOT': {
+    case ACTION.CLEAR_TEAM_SLOT: {
       const teams = state.teams.map((t, i) => i === action.teamIndex
         ? { ...t, slots: t.slots.map((s, j) => j === action.slotIndex ? null : s) }
         : t
       );
       return { ...state, teams };
     }
-    case 'CLEAR_TEAM': {
+    case ACTION.CLEAR_TEAM: {
       const teams = state.teams.map((t, i) => i === action.teamIndex
         ? { ...t, slots: [null, null, null] }
         : t
       );
       return { ...state, teams };
     }
-    case 'RENAME_TEAM': {
+    case ACTION.RENAME_TEAM: {
       const teams = state.teams.map((t, i) => i === action.teamIndex
         ? { ...t, name: (action.name || '').slice(0, 20) || t.name }
         : t
@@ -725,8 +756,8 @@ const reducer = (state, action) => {
       return { ...state, teams };
     }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
-    case 'LOAD_STATE': return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
-    case 'RESET': return initialState;
+    case ACTION.LOAD_STATE: return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
+    case ACTION.RESET: return initialState;
     default: return state;
   }
 };
@@ -797,4 +828,5 @@ export {
   initialState, STORAGE_KEY, storageAvailable,
   sanitizeStateObj, sanitizeImportedState,
   loadFromStorage, saveToStorage, reducer, calcStats,
+  ACTION, // P15-FIX: MEDIUM-12 — Exported for use in dispatch call sites
 };
