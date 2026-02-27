@@ -4497,11 +4497,13 @@ function WhisperingWishesInner() {
                                     <stop offset="100%" stopColor="rgba(237,175,24,0)" />
                                   </linearGradient>
                                 </defs>
-                                <XAxis dataKey="label" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fill: '#4b5563', fontSize: 9 }} axisLine={false} tickLine={false} />
-                                <RechartsTooltip 
-                                  contentStyle={{ background: 'rgba(15,20,28,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', fontSize: '11px' }} 
-                                  labelStyle={{ color: '#e5e7eb' }}
+                                <XAxis dataKey="label" tick={{ fill: '#8892a4', fontSize: 10, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} />
+                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} />
+                                <RechartsTooltip
+                                  contentStyle={{ background: 'rgba(12,16,24,0.95)', border: '1px solid rgba(237,175,24,0.3)', borderRadius: '8px', fontSize: '11px', fontFamily: 'var(--font-data)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+                                  labelStyle={{ color: '#dfe5ef', fontFamily: 'var(--font-display)', fontWeight: 600 }}
+                                  itemStyle={{ color: '#bcc3d1' }}
+                                  cursor={{ stroke: 'rgba(237,175,24,0.2)' }}
                                 />
                                 <Area type="natural" dataKey="pulls" stroke="rgba(237,175,24,0.4)" fill="url(#pullGradient)" strokeWidth={1} name="Convenes" />
                               </AreaChart>
@@ -6536,8 +6538,8 @@ Example: {"pulls":[...]}'
                                     <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
                                   </linearGradient>
                                 </defs>
-                                <XAxis dataKey="time" tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                                <YAxis tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
+                                <XAxis dataKey="time" tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} interval="preserveStartEnd" />
+                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
                                 <Area type="monotone" dataKey="count" stroke="#34d399" strokeWidth={2} fill="url(#presenceGrad)" />
                               </AreaChart>
                             </ResponsiveContainer>

@@ -2290,13 +2290,13 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-ICON-1 | Default Lucide icons are stylistically neutral | Added gold `drop-shadow(0 0 5px rgba(237,175,24,0.5))` filter on active tab icon container for glow effect. |
 | D-ICON-2 | 14px icons in 32px containers — excessive padding | Increased icon size 16→18px in all 8 tab buttons. Tightened container padding `p-2`→`p-1.5` (container 32→30px). |
 | D-STATE-1 | Empty states lose atmospheric character | Enhanced `.kuro-empty-state` with entrance animation (`emptyFadeIn` — fade+translateY), dashed gold border (0.10), and `::before` gold accent line. Applied to all 8 empty states automatically via CSS. |
+| D-DATAVIZ-1 | Recharts defaults break character on grid/axis/tooltip | Themed both AreaCharts: axis ticks use chromatic gray `#8892a4` + `var(--font-data)`, axis lines `rgba(255,255,255,0.06)`, tooltip styled as frosted kuro-card (dark bg, gold border `rgba(237,175,24,0.3)`, backdrop-blur, data font). Gold cursor highlight. |
 
-### Remaining — 3 findings (8 actionable fixes → 2 implementation steps)
+### Remaining — 2 findings
 
 | ID | Severity | Finding |
 |----|----------|---------|
 | D-COPY-1 | [LOW] | Empty state copy is personality-absent |
-| D-DATAVIZ-1 | [LOW] | Recharts defaults break character on grid/axis/tooltip |
 | D-TOKEN-1 | [LOW] | Border opacity values not tokenized |
 
 ---
@@ -2315,7 +2315,7 @@ This is a well-designed product that is significantly ahead of its competitive l
 | ~~**6**~~ | ~~**Icon expressiveness**~~ ✅ DONE — Added gold `drop-shadow` filter on active tab icons. Increased icon size 16→18px. Tightened container padding `p-2`→`p-1.5`. | D-ICON-1, D-ICON-2 | `appcore-components.jsx`, `App.jsx` | ✅ |
 | ~~**7**~~ | ~~**Empty state atmospheric upgrade**~~ ✅ DONE — Enhanced `.kuro-empty-state` with `emptyFadeIn` entrance animation, dashed gold border (0.10), and `::before` top accent line. CSS-only — all 8 empty states upgraded automatically. | D-STATE-1 | `appcore-providers.jsx` | ✅ |
 | ~~**8**~~ | ~~**Import loading feedback**~~ ✅ DONE — Added `importStatus` state tracking file name + size. Shows skeleton shimmer with file info during import. Applied to both file upload and drag-and-drop handlers. | D-STATE-2 | `App.jsx` | ✅ |
-| **9** | **Recharts theme integration** — Override Recharts defaults: set grid stroke to `rgba(255,255,255,0.06)`, axis tick/label to chromatic gray (`#8892a4`), tooltip background to `rgba(12,16,24,0.95)` with `backdrop-filter: blur(12px)` and gold accent border. Match chart line/bar colors to element-color system. | D-DATAVIZ-1 | `App.jsx` (Recharts `<XAxis>`, `<YAxis>`, `<CartesianGrid>`, `<Tooltip>` props), `appcore-providers.jsx` (optional `.kuro-chart` class) | ~25 min |
+| ~~**9**~~ | ~~**Recharts theme integration**~~ ✅ DONE — Themed both AreaCharts: axis ticks chromatic gray `#8892a4` + `var(--font-data)`, axis lines `rgba(255,255,255,0.06)`, tooltip as frosted kuro-card (dark bg, gold border, backdrop-blur, data font, gold cursor). | D-DATAVIZ-1 | `App.jsx` | ✅ |
 | **10** | **Border opacity tokens + copy voice** — Extract repeated `rgba(255,255,255,0.06)` and `0.08` border values into `--kuro-border-subtle` and `--kuro-border-medium` CSS custom properties. Rewrite empty state copy with cyberpunk-luxe voice (e.g., "No signals detected" instead of "No data yet"). | D-TOKEN-1, D-COPY-1 | `appcore-providers.jsx` (KuroStyles `:root` + border references), `App.jsx` (empty state text strings) | ~20 min |
 
 **Total estimated effort: ~3.75 hours**
