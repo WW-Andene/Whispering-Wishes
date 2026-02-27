@@ -873,6 +873,9 @@ function WhisperingWishesInner() {
     return () => { if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current); };
   }, [state.calc]);
 
+  // Use state.calc as fallback when deferredCalc is null (initial render before deferred computation fires)
+  const effectiveCalc = deferredCalc || state.calc;
+
   // Smart astrite allocation for "Both" mode
   // P2-FIX: Uses deferredCalc so heavy DP isn't triggered on every slider tick
   const astriteAllocation = useMemo(() => {
@@ -934,9 +937,6 @@ function WhisperingWishesInner() {
   // Calculate pulls for each banner type using allocation
   const { charTotal: charPulls, weapTotal: weapPulls, stdCharTotal: stdCharPulls, stdWeapTotal: stdWeapPulls } = astriteAllocation;
   
-  // Use state.calc as fallback when deferredCalc is null (initial render before deferred computation fires)
-  const effectiveCalc = deferredCalc || state.calc;
-
   // Calculate stats for each banner type
   // P2-FIX: Uses deferredCalc so DP arrays aren't allocated 60×/sec during slider drag
   const charStats = useMemo(() => deferredCalc ? calcStats(charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, true, effectiveCalc.charCopies) : null, [deferredCalc, charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, effectiveCalc.charCopies]);
