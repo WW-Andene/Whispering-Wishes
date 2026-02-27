@@ -1778,16 +1778,39 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-TYPE-3 | Missing font smoothing for dark-mode type | Added `-webkit-font-smoothing: antialiased` to `html`/`body` |
 | D-HIERARCHY-1 | Card corner decorations too subtle (~7% opacity) | Increased corner decoration opacity to ~17% for legible motifs |
 
-### Remaining — 9 findings
+### Remaining — 9 findings (14 actionable fixes → 8 implementation steps)
 
-| ID | Severity | Finding | Recommended Fix |
-|----|----------|---------|-----------------|
-| D-TYPE-1 | [MEDIUM] | System font stack underdelivers for cyberpunk aesthetic | Add a display/monospace accent font (e.g., JetBrains Mono, Orbitron) for headings and stat numerals; keep system font for body |
-| D-TYPE-4 | [POLISH] | Banner countdown timers could use type as visual element | Larger numeral treatment (2–3x size) with reduced opacity or gradient mask for cinematic countdown feel |
-| D-MOTION-1 | [MEDIUM] | No skeleton/loading state system | Design shimmer-pulse skeleton cards matching kuro-card dimensions; apply to leaderboard, community pulls, and data-loading paths |
-| D-HIERARCHY-2 | [POLISH] | Collection grid has uniform visual weight — 5★ should stand out | Add subtle gold border-glow or faint background radial to 5★ cards in collection grid |
-| D-ATMOSPHERE-1 | [POLISH] | Banner card could have persistent subtle glow at rest | Add low-opacity gold `box-shadow` or radial gradient to active banner card (not just on hover) |
-| D-ICON-1 | [LOW] | Default Lucide icons are stylistically neutral | Replace key navigation icons with custom SVGs or add glow/stroke effects to existing Lucide icons for cyberpunk character |
-| D-ICON-2 | [POLISH] | 14px icons in 32px containers — excessive padding | Tighten icon container sizing to 24px or increase icon size to 18px for better visual fill |
-| D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character | Extend `.kuro-empty-state` glow treatment with a faint character silhouette or element-themed illustration; add staggered entrance animation |
-| D-STATE-2 | [MEDIUM] | Data import has no loading feedback | Add progress indicator or shimmer animation during JSON parse/import; show file name and estimated size |
+| ID | Severity | Finding |
+|----|----------|---------|
+| D-TYPE-1 | [MEDIUM] | System font stack underdelivers for cyberpunk aesthetic |
+| D-TYPE-4 | [POLISH] | Banner countdown timers could use type as visual element |
+| D-MOTION-1 | [MEDIUM] | No skeleton/loading state system |
+| D-HIERARCHY-2 | [POLISH] | Collection grid has uniform visual weight — 5★ should stand out |
+| D-ATMOSPHERE-1 | [POLISH] | Banner card could have persistent subtle glow at rest |
+| D-ICON-1 | [LOW] | Default Lucide icons are stylistically neutral |
+| D-ICON-2 | [POLISH] | 14px icons in 32px containers — excessive padding |
+| D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character |
+| D-STATE-2 | [MEDIUM] | Data import has no loading feedback |
+
+---
+
+## IMPLEMENTATION PLAN
+
+14 actionable fixes (D-TYPE-3 already applied) grouped into 8 implementation steps:
+
+| Step | What | Findings | Files | Effort |
+|------|------|----------|-------|--------|
+| **1** | **Typography upgrade** — Add Geist Sans (or JetBrains Mono) as display/accent font for headings, stat numerals, and countdown timers. Keep system font for body text. Add `letter-spacing: 0.03em` on uppercase labels globally. | D-TYPE-1 | `index.html` (font link), `tailwind.config.js` (fontFamily), `appcore-providers.jsx` (KuroStyles) | ~30 min |
+| **2** | **Countdown numeral treatment** — Scale banner pity countdown numbers to 28–32px with `tabular-nums`, tight `letter-spacing: -0.02em`, and optional gradient mask. Make the pity number feel like a scoreboard. | D-TYPE-4 | `App.jsx` (banner countdown JSX + inline styles) | ~15 min |
+| **3** | **Skeleton loading system** — Create `.kuro-skeleton` class using `rgba(12,16,24,0.55)` with the existing gold shimmer pulse animation. Build skeleton variants for cards, stat boxes, and list rows. Apply to leaderboard, community pulls, and data import loading states. No spinners. | D-MOTION-1, D-STATE-2 | `appcore-providers.jsx` (KuroStyles — skeleton classes), `App.jsx` (loading states in leaderboard, import) | ~45 min |
+| **4** | **5★ rarity glow in Collection grid** — Add subtle gold `box-shadow` or faint radial background to 5★ character cards in the collection grid. Use the existing `.glow-gold` class pattern but at reduced intensity (~0.08 opacity). | D-HIERARCHY-2 | `appcore-components.jsx` (CollectionGridCard or equivalent) | ~15 min |
+| **5** | **Banner card rest-state glow** — Add persistent low-opacity gold `box-shadow: 0 0 40px rgba(237,175,24,0.06)` to the active banner card at rest (not just on hover). Subtle enough to signal primacy without overloading. | D-ATMOSPHERE-1 | `App.jsx` (banner card styling) | ~10 min |
+| **6** | **Icon expressiveness** — Add subtle glow/stroke treatment to key navigation tab icons (Tracker, Stats, Collection, Profile). Use `filter: drop-shadow()` with element-appropriate colors when active. Tighten icon container sizing from 32px → 24px, or increase icon size from 14px → 18px. | D-ICON-1, D-ICON-2 | `App.jsx` (tab bar icons), `appcore-providers.jsx` (KuroStyles — icon classes) | ~20 min |
+| **7** | **Empty state atmospheric upgrade** — Enhance existing `.kuro-empty-state` with a faint character silhouette or element-themed SVG illustration behind the text. Add staggered entrance animation (fade + translateY) matching card entrance timing. Apply to Tracker, Stats, and Collection empty states. | D-STATE-1 | `App.jsx` (empty state JSX), `appcore-providers.jsx` (empty state animation keyframes) | ~30 min |
+| **8** | **Import loading feedback** — Add progress indicator during JSON parse/import. Show file name, estimated size, and a shimmer animation (using Step 3's skeleton system). Display parse errors inline with recoverable messaging. | D-STATE-2 | `App.jsx` (processImportData, handleFileImport) | ~20 min |
+
+**Total estimated effort: ~3 hours**
+
+**Priority order:** Steps 1–3 (typography + loading) deliver the most visible improvement. Steps 4–5 (hierarchy + atmosphere) are quick wins. Steps 6–8 are polish.
+
+**Dependencies:** Step 8 depends on Step 3 (skeleton system). All others are independent and can be done in any order.
