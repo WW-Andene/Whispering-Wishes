@@ -828,6 +828,7 @@ function WhisperingWishesInner() {
   const [importPlatform, setImportPlatform] = useState(null);
   const [importMethod, setImportMethod] = useState('file'); // 'file' or 'paste'
   const [isDragOver, setIsDragOver] = useState(false); // P8-FIX: MED — drag-and-drop state
+  const [importStatus, setImportStatus] = useState(null); // D-STATE-2: { fileName, fileSize } during import
   const [pasteJsonText, setPasteJsonText] = useState('');
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [showIdCard, setShowIdCard] = useState(false);
@@ -2819,12 +2820,15 @@ function WhisperingWishesInner() {
       e.target.value = '';
       return;
     }
+    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
     reader.onload = (ev) => {
       processImportData(ev.target.result);
+      setImportStatus(null);
     };
     reader.onerror = () => {
       toast?.addToast?.('Failed to read file', 'error');
+      setImportStatus(null);
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -2846,8 +2850,10 @@ function WhisperingWishesInner() {
       toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
       return;
     }
+    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
-    reader.onload = (ev) => { processImportData(ev.target.result); };
+    reader.onload = (ev) => { processImportData(ev.target.result); setImportStatus(null); };
+    reader.onerror = () => { setImportStatus(null); };
     reader.readAsText(file);
   }, [processImportData, toast]);
 
@@ -5672,18 +5678,26 @@ function WhisperingWishesInner() {
                 
                 {/* File Upload Method — P8-FIX: Now supports drag-and-drop */}
                 {importMethod === 'file' && (
-                  <label 
+                  <label
                     className="block"
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
                     onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
                     onDrop={handleFileDrop}
                   >
+                    {importStatus ? (
+                      <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
+                        <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '60%', height: '12px' }} />
+                        <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
+                        <p className="text-gray-500 text-[9px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
+                      </div>
+                    ) : (
                     <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
                       <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
                       <p className={`text-[10px] ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
                         {isDragOver ? 'Drop JSON file here' : 'Upload or drag & drop JSON file from wuwatracker'}
                       </p>
                     </div>
+                    )}
                     <input type="file" accept=".json" onChange={handleFileImport} className="hidden" />
                   </label>
                 )}
