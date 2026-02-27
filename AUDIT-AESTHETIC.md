@@ -566,6 +566,53 @@ Lucide is a competent library but reads as "starter kit" — the rounded termina
 
 **Priority:** Low — the current icons don't actively hurt the design, they just don't amplify it.
 
+### §DI2. Icon Grid & Optical Sizing
+
+**Icon grid compliance:**
+
+Lucide icons use a 24×24 grid with 2px internal padding (20×20 content area). The app renders icons at three primary sizes:
+
+| Render Size | Usage | Optical Assessment |
+|-------------|-------|-------------------|
+| 12px | Rarity stars (`<Star size={12} />`) | ⚠ At 12px, the 24px-designed icon is scaled to 50% — fine for simple shapes (star) but complex icons would lose detail |
+| 14px | Section headers, indicators (`<Target>`, `<Swords>`, `<Zap>`, `<Star>`) | ✓ Most common size — 58% scale. Simple Lucide icons remain legible. Stroke weight renders at ~0.87px effective — slightly thin but functional |
+| 16px | Modal close button (`<X size={16} />`) | ✓ Close/dismiss — large enough for touch, simple glyph |
+| 32px | Onboarding step icons (`<Sparkles size={32} />`) | ✓ Display size — full detail preserved, appropriate for decorative role |
+
+**Icon-to-text alignment:**
+
+Icons are aligned via `flex items-center justify-center` inside container `div`s (typically `w-8 h-8` containers for 14px icons). This creates mathematical centering rather than optical centering.
+
+**[POLISH] D-ICON-2: 14px icons in 32px containers create excessive padding**
+
+The common pattern of a 14px icon inside a `w-8 h-8` (32×32px) container means the icon occupies only 19% of the container area. This is generous spacing that reads as "icon in a box" rather than "icon as label." Reducing containers to `w-6 h-6` (24×24px) would tighten the optical relationship between icon and surrounding text, matching the app's dense spatial character.
+
+**Interactive icon states:**
+
+Icon-only buttons (modal close `<X>`) rely on the parent button's hover/active state. The icon itself does not change color or weight on hover. This is acceptable given the app's current icon investment level (Utilitarian), but if icons are upgraded to Signature level per §DI3, individual icon state transitions would strengthen the micro-interaction vocabulary.
+
+### §DI3. Icon Expressiveness Spectrum
+
+**Current position:** **Utilitarian** — Standard Lucide library, no customization, zero modification to default rendering. Icons function purely as semantic indicators.
+
+**Appropriate position given axis profile:** **Signature** — Given A4 (Strong aesthetic) and A5 (Amplifies value), the icon system should express the cyberpunk character. The app has invested heavily in atmospheric surfaces, motion, and color — icons are the one visual layer that remains at "starter kit" level.
+
+**Gap: Utilitarian → Signature** (2 levels)
+
+**Character alignment check:**
+
+| App Character | Current Icon Choice | Assessment |
+|---------------|-------------------|------------|
+| Cyberpunk/Terminal | Lucide (rounded terminals, friendly proportions) | ✗ Misaligned — Lucide's rounded, humanist endpoints contradict the angular, precision-oriented character |
+| Cold precision | Lucide default weight (2px stroke) | ⚠ Slightly heavy — a thinner stroke (1.5px or `weight="light"`) would read as more precise |
+| Void/atmospheric | Icons at neutral gray with no glow | ⚠ Icons don't participate in the atmospheric layer — they sit as flat vector shapes on a living surface |
+
+**Recommendation path to Signature level:**
+
+1. **Immediate (no library change):** Add `color` transitions to icons on hover (fade from `text-gray-400` to element-appropriate accent color). Icons should participate in the interactive glow system.
+2. **Short-term:** Switch to **Phosphor Icons** with `weight="thin"` — sharper terminals, more geometric construction, configurable weight. Same semantic coverage as Lucide, better character fit.
+3. **Long-term (if design investment continues):** Commission a small set of 8-10 custom icons for the most-used functions (star/rarity, element icons, pity counter, import) with angular terminal treatments matching the card corner-decoration motif.
+
 ---
 
 ## VIII. DESIGN TREND CALIBRATION
