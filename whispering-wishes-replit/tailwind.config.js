@@ -6,6 +6,11 @@ export default {
   ],
   theme: {
     extend: {
+      // D-TYPE-1: Display + data font families for cyberpunk-luxe character
+      fontFamily: {
+        display: ['Rajdhani', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        data: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
       // D-COLOR-1: Cool-tinted gray scale to match the app's blue-tinted surfaces
       // Replaces Tailwind's neutral grays with chromatic cool variants
       colors: {

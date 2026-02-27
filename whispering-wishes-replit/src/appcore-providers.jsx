@@ -367,6 +367,8 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Z-index scale: bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000) */
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
+      --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
+      --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       --bg-card: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
       --bg-card-inner: ${oledMode ? 'rgba(5, 5, 5, 1)' : 'rgba(6, 10, 18, 1)'};
       --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
@@ -548,7 +550,7 @@ const KuroStyles = memo(({ oledMode }) => (
       filter: drop-shadow(0 0 4px var(--ring-glow));
     }
     .pity-ring-text {
-      font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--font-data);
       font-weight: 700;
       fill: currentColor;
       text-anchor: middle;
@@ -733,7 +735,8 @@ const KuroStyles = memo(({ oledMode }) => (
     
     .kuro-header h3 {
       color: var(--text-heading);
-      font-size: 13px;
+      font-family: var(--font-display);
+      font-size: 14px;
       font-weight: 600;
       letter-spacing: 0.03em;
       display: flex;
@@ -765,8 +768,10 @@ const KuroStyles = memo(({ oledMode }) => (
       border-radius: 12px;
       padding: 10px 12px;
       color: var(--text-heading);
+      font-family: var(--font-display);
       font-size: 11px;
       font-weight: 500;
+      letter-spacing: 0.02em;
       cursor: pointer;
       transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), color var(--transition-fast);
       text-align: center;
@@ -922,6 +927,7 @@ const KuroStyles = memo(({ oledMode }) => (
       padding: 14px;
       text-align: center;
       overflow: hidden;
+      font-family: var(--font-data);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       font-variant-numeric: tabular-nums;
@@ -1038,6 +1044,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ LABELS - Bright for readability ═══ */
     .kuro-label {
       color: var(--text-body);
+      font-family: var(--font-display);
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1159,7 +1166,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* ═══ NUMBER STYLING ═══ */
     .kuro-number {
-      font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--font-data);
       font-variant-numeric: tabular-nums;
       font-weight: 700;
     }

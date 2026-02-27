@@ -3873,8 +3873,8 @@ function WhisperingWishesInner() {
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
-                            <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color}}>{luckRating.tier}</div>
-                            <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`}}>{luckRating.rating}</div>
+                            <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-display)'}}>{luckRating.tier}</div>
+                            <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 space-y-2">
@@ -4265,11 +4265,12 @@ function WhisperingWishesInner() {
                                   {count > 0 && (
                                     <div 
                                       className="absolute left-0 right-0 text-[9px] text-center font-bold"
-                                      style={{ 
-                                        bottom: `${height}%`, 
+                                      style={{
+                                        bottom: `${height}%`,
                                         marginBottom: '4px',
                                         color: color,
-                                        textShadow: `0 0 8px ${color}`
+                                        textShadow: `0 0 8px ${color}`,
+                                        fontFamily: 'var(--font-data)'
                                       }}
                                     >
                                       {count}
@@ -4315,15 +4316,15 @@ function WhisperingWishesInner() {
                         {/* Stats summary */}
                         <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
                           <div>
-                            <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{minPity}</div>
+                            <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)', fontFamily: 'var(--font-data)' }}>{minPity}</div>
                             <div className="text-gray-400 text-[9px]">Lowest</div>
                           </div>
                           <div>
-                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(237,175,24,0.5)' }}>{avgPity}</div>
+                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(237,175,24,0.5)', fontFamily: 'var(--font-data)' }}>{avgPity}</div>
                             <div className="text-gray-400 text-[9px]">Average</div>
                           </div>
                           <div>
-                            <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)' }}>{maxPity}</div>
+                            <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)', fontFamily: 'var(--font-data)' }}>{maxPity}</div>
                             <div className="text-gray-400 text-[9px]">Highest</div>
                           </div>
                         </div>
@@ -6021,7 +6022,7 @@ Example: {"pulls":[...]}'
                     <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                     <div className="flex gap-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-bold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <h3 className="text-white font-bold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
@@ -6069,7 +6070,7 @@ Example: {"pulls":[...]}'
                     <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                     <div className="flex items-center gap-2 mb-2">
                       <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
-                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
+                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Convene Stats</span>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
@@ -6082,7 +6083,7 @@ Example: {"pulls":[...]}'
                     ].map((s, i) => (
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
-                        <div className="font-bold font-mono text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30` }}>{s.value}</div>
+                        <div className="font-bold text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30`, fontFamily: 'var(--font-data)' }}>{s.value}</div>
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: '7px', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
@@ -6112,7 +6113,7 @@ Example: {"pulls":[...]}'
                         <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                         <div className="flex items-center gap-2 mb-2">
                           <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
-                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Pity Distribution</span>
                         </div>
                         <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
                           {labs.map((lab, i) => {
@@ -6125,7 +6126,7 @@ Example: {"pulls":[...]}'
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {cnt > 0 && (
                                     <div className="absolute left-0 right-0 text-center font-bold"
-                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}` }}>
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
                                       {cnt}
                                     </div>
                                   )}
@@ -6149,7 +6150,7 @@ Example: {"pulls":[...]}'
                           ))}
                         </div>
                         <div style={{ textAlign: 'right', marginTop: '4px' }}>
-                          <span className="font-mono" style={{ fontSize: '8px', color: '#6b7280' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
+                          <span style={{ fontSize: '8px', color: '#6b7280', fontFamily: 'var(--font-data)' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
                         </div>
                       </div>
                     );
