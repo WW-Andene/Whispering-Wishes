@@ -1023,6 +1023,130 @@ REJECT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+### §DP3. Character Deepening Protocol
+
+#### 1. Character Token Extraction
+
+```
+EXPRESSES the "atmospheric precision instrument" character:
+  background: #080c14 (chromatic near-black, cool-blue undertone)
+  surface: rgba(12,16,24,0.55) (translucent, chromatically consistent)
+  accent: #fbbf24 (warm gold — intentional temperature contrast)
+  border: rgba(255,255,255,0.08) (semi-transparent — adapts to surface)
+  easing: cubic-bezier(0.16, 1, 0.3, 1) (bouncy precision)
+  shadow: 0 0 25px rgba(color, 0.3) (glow instead of shadow — luminous)
+  radius: 16px cards, 12px buttons (varied — intentional assignment)
+
+UNDERMINES the character:
+  text: text-gray-300/400/500 (neutral — no temperature, no material quality)
+  font: system-ui stack (invisible — carries zero personality)
+  corner-deco: opacity 0.07 (too faint to register as intentional)
+  empty states: text-gray-400 + button (no atmosphere, no character)
+
+CHARACTER TOKEN SET (the correct values for this app):
+  --text-primary:   oklch(92% 0.01 240)  ≈ #dfe5ef  (cool-tinted)
+  --text-secondary: oklch(80% 0.01 240)  ≈ #bcc3d1  (cool-tinted)
+  --text-muted:     oklch(62% 0.015 240) ≈ #8892a4  (cool-tinted)
+  --surface-card:   rgba(12,16,24,0.55)  (existing — protect)
+  --accent-gold:    oklch(78% 0.19 78)   ≈ #edaf18  (calibrated — Option B from D-COLOR-2)
+  --glow-intensity: 0.25                  (focal) | 0.03 (ambient)
+  --easing-sig:     cubic-bezier(0.16, 1, 0.3, 1)  (protect)
+```
+
+#### 2. Character Stress Testing
+
+| Stress Scenario | Character Holds? | Gap |
+|----------------|-----------------|-----|
+| Error states | ✓ Yes — red at controlled saturation, clinical not alarming | None |
+| Empty states | ⚠ Partial — functional but flat, loses atmosphere | D-COLOR-3: Add subtle gold radial glow behind empty-state text |
+| Loading states | ✗ No — no dedicated loading state exists | D-MOTION-1: Design shimmer-line skeleton system |
+| Edge-case components (tooltips, date pickers) | N/A — app doesn't use these components | No gap |
+| Mobile breakpoints | ✓ Yes — mobile-first design, character survives compression | None |
+
+#### 3. Sensory Vocabulary
+
+```
+Character: "atmospheric precision instrument"
+Sensory reference: "the cockpit of a stealth fighter at night — dark glass panels with
+  focused instrument glow, precise readouts, the hum of systems running beneath the
+  surface, nothing decorative, everything functional but beautiful in its precision"
+
+Design implications not yet fully expressed:
+  - Text should feel instrument-grade: cool-tinted, slightly condensed, tabular numerals
+    on all data displays → partially present (tabular-nums missing on small stats)
+  - Empty states should feel like "instruments powered on, awaiting signal" — not
+    "nothing here" but "ready to receive data" → currently too passive
+  - The gold accent should feel like a critical status indicator — the one warm
+    instrument light on a cool dashboard → correctly used but could be more concentrated
+  - Loading should feel like "systems initializing" — structured shimmer, not spinning
+    → currently no loading state at all
+```
+
+#### 4. Character Hierarchy
+
+```
+PRIMARY CARRIERS — character expressed at maximum intensity:
+  - Banner card (character artwork + pity countdown) — the "main instrument"
+  - Element-colored stat boxes — the "dashboard gauges"
+  - Canvas wave background — the "cockpit windshield"
+  - Card shimmer lines — the "instrument panel edge lighting"
+
+SECONDARY CARRIERS — character present but not dominant:
+  - Pull history rows — data readouts
+  - Tab navigation — navigation scaffold
+  - Settings toggles — control panel
+  - Collection grid — inventory display
+
+BACKGROUND ELEMENTS — character-consistent but recede:
+  - Scrollbars (3px, subtle — correct)
+  - Borders (rgba semi-transparent — correct)
+  - Section headers (tracking + semibold — correct)
+  - Footer/copyright text
+```
+
+#### 5. The One Unavoidable Moment
+
+**The moment:** Checking pity count on the Tracker tab — specifically, seeing the number of pulls remaining until the next guaranteed 5-star. This is the atomic unit of value delivery for a gacha companion.
+
+**Current expression:** The pity count is displayed inside stat boxes with element-colored borders and glow. The number uses `font-weight: 700` at the same text scale as surrounding content.
+
+**Character assessment:** The *context* (glow border, element color, atmospheric background) is strongly on-character. The *data itself* (the number) is underplayed — it doesn't receive special typographic treatment that marks it as "the most important number on this screen."
+
+**Deepening recommendation:** The pity countdown number should be the typographic hero of the stat box — 28-32px, `tabular-nums`, slightly tightened tracking (`-0.02em`), full accent-color rendering. This elevates it from "a number in a card" to "the readout" — consistent with the "instrument panel" sensory vocabulary. See D-TYPE-4.
+
+#### 6. Character-Neutral Audit
+
+| Element | Current Treatment | Character-Positive Treatment | Impact |
+|---------|------------------|----------------------------|--------|
+| Text colors | `text-gray-300/400/500` (neutral) | `oklch(92/80/62% 0.01-0.015 240)` (cool-tinted) | HIGH — touches every screen |
+| Scrollbar thumb | `rgba(255,255,255,0.15)` (white-neutral) | `oklch(30% 0.02 240 / 0.25)` (cool-tinted) | LOW — barely visible but contributes to integration |
+| Disabled button | `opacity: 0.5` (generic fade) | `opacity: 0.35` + slight blue tint on text | LOW — maintains character at reduced intensity |
+| Empty state text | `text-gray-400` (dead neutral) | `oklch(55% 0.01 240)` + faint gold radial glow behind | MEDIUM — first-use impression |
+
+#### 7. Character Future-Proofing
+
+```
+Character Rules (non-negotiable as new features are added):
+  1. Every new surface uses rgba(12,16,24,X) — never neutral gray backgrounds
+  2. Every new interactive element uses cubic-bezier(0.16, 1, 0.3, 1) — the signature easing
+  3. Text colors always use cool-tinted chromatic values — never Tailwind neutral grays
+  4. Glow effects use the element's own accent color — never white glow
+  5. Card shimmer line (::after) must appear on every new card component
+  6. Element-color mapping (Fusion=orange, Electro=purple, etc.) is canonical — never deviate
+
+Character Risks (watch for these as the product scales):
+  - Settings/admin sections: These typically revert to generic UI kit defaults. Apply
+    the glass-on-void vocabulary explicitly to every new section.
+  - Third-party embeds (charts, graphs): Chart libraries ship with their own color palettes
+    and backgrounds. Override chart theme to use the app's chromatic dark surfaces and
+    cool-tinted text colors. Never allow a white/light-gray chart in the dark void.
+  - New game elements: As Wuthering Waves adds elements, assign colors that maintain
+    perceptual brightness consistency (OKLCH lightness within ±5% of existing elements).
+  - Feature expansion (resource planner, team builder): Complex tools with many inputs
+    risk dense-neutral-gray fatigue. Maintain atmospheric breaks — every 3-4 dense data
+    sections, allow a breathing card with the shimmer line and element glow.
+```
+
 ---
 
 ## FINDINGS SUMMARY
