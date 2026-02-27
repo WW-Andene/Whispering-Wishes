@@ -396,7 +396,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* Thin subtle scrollbar for vertical scroll containers */
     .overflow-y-auto {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: rgba(140,160,200,0.18) transparent;
     }
     .overflow-y-auto::-webkit-scrollbar {
       width: 3px;
@@ -405,11 +405,11 @@ const KuroStyles = memo(({ oledMode }) => (
       background: transparent;
     }
     .overflow-y-auto::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.15);
+      background: rgba(140,160,200,0.18);
       border-radius: 3px;
     }
     .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.25);
+      background: rgba(140,160,200,0.28);
     }
     
     /* ═══ IMPROVED FOCUS STATES ═══ */
@@ -820,9 +820,10 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform 0.1s ease;
     }
 
-    /* AUDIT-FIX M30: Disabled button state */
+    /* AUDIT-FIX M30: Disabled button state — §DP3: cool-shifted opacity */
     .kuro-btn:disabled, .kuro-btn[disabled] {
-      opacity: 0.5;
+      opacity: 0.4;
+      filter: saturate(0.7) brightness(0.8);
       cursor: not-allowed;
       pointer-events: none;
     }
@@ -911,12 +912,12 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     .kuro-input::placeholder {
-      color: #6b7280;
+      color: #6b7389;
       transition: color var(--transition-fast);
     }
-    
+
     .kuro-input:focus::placeholder {
-      color: #9ca3af;
+      color: #8f99ab;
     }
     
     .kuro-input-sm {
@@ -1265,7 +1266,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ CUSTOM SCROLLBAR ═══ */
     .kuro-scroll {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: rgba(140,160,200,0.18) transparent;
     }
     .kuro-scroll::-webkit-scrollbar {
       width: 4px;
@@ -1274,11 +1275,11 @@ const KuroStyles = memo(({ oledMode }) => (
       background: transparent;
     }
     .kuro-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.15);
+      background: rgba(140,160,200,0.18);
       border-radius: 2px;
     }
     .kuro-scroll::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.25);
+      background: rgba(140,160,200,0.28);
     }
     @media (hover: hover) {
       .collection-card:hover {
