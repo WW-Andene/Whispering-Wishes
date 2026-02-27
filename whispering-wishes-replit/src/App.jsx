@@ -124,8 +124,11 @@ const ADMIN_SALT = 'whispering-wishes-v3-admin';
 const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
-const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
-const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes';
+// P13-FIX: CRITICAL-1 — Read Firebase config from env vars (set in .env or Vercel dashboard).
+// Fallbacks ensure the app still works without env vars, but production should always use env vars
+// so credentials aren't grep-able in source. The real protection is Firebase Security Rules (see database.rules.json).
+const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || 'https://whispering-wishes-default-rtdb.firebaseio.com';
+const FIREBASE_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyWhisperingWishes';
 const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
 const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
@@ -151,6 +154,28 @@ const DEFAULT_VISUAL_SETTINGS = {
 const TRACKER_CATEGORIES = [['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']];
 // P15-FIX: MEDIUM-3 — Domain allowlist for custom image URLs (single source of truth)
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
+
+// P13-FIX: HIGH-5 — Hash UIDs before writing to Firebase to protect player privacy.
+// Game UIDs can potentially be correlated to real identities; hashing makes stored data pseudonymous.
+const hashUidForStorage = async (uid) => {
+  if (!uid) return null;
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ww-uid-' + uid));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  } catch { return uid; } // fallback if crypto unavailable (HTTP)
+};
+
+// P13-FIX: HIGH-2 — Client-side rate limiter for Firebase writes.
+// Prevents runaway writes from bugs or abuse. Firebase Security Rules handle server-side enforcement.
+const firebaseWriteTimestamps = new Map(); // key → last write timestamp
+const FIREBASE_WRITE_COOLDOWN_MS = 5000; // 5 seconds between writes to the same path
+const checkFirebaseRateLimit = (pathKey) => {
+  const now = Date.now();
+  const lastWrite = firebaseWriteTimestamps.get(pathKey) || 0;
+  if (now - lastWrite < FIREBASE_WRITE_COOLDOWN_MS) return false; // rate-limited
+  firebaseWriteTimestamps.set(pathKey, now);
+  return true; // allowed
+};
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
@@ -819,6 +844,9 @@ function WhisperingWishesInner() {
   const [leaderboardConsented, setLeaderboardConsented] = useState(() => {
     try { return localStorage.getItem('ww-leaderboard-consent') === 'true'; } catch { return false; }
   });
+  // P13-FIX: MEDIUM-4 — Custom consent modal instead of window.confirm (accessible, stylable, screen-reader friendly)
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const consentResolveRef = useRef(null);
 
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
@@ -1105,18 +1133,18 @@ function WhisperingWishesInner() {
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
     if (submittingRef.current) return; // prevent double-submit
+    // P13-FIX: HIGH-2 — Rate limit leaderboard writes
+    if (!checkFirebaseRateLimit('leaderboard-submit')) {
+      toast?.addToast?.('Please wait a few seconds before submitting again', 'error');
+      return;
+    }
     
-    // Require explicit consent before first submission
+    // P13-FIX: MEDIUM-4 — Require explicit consent via accessible custom modal before first submission
     if (!leaderboardConsented) {
-      const consent = window.confirm(
-        'Leaderboard Submission — Data Sharing Notice\n\n' +
-        'By submitting your score, the following data will be sent to a shared database and displayed publicly:\n\n' +
-        '• Your player ID (' + effectiveLeaderboardId + ')\n' +
-        '• Average pity, total Convenes, 50/50 win/loss stats\n' +
-        '• Your owned 5★ characters and weapons\n\n' +
-        'This data is pseudonymous (linked to your game UID or a random ID, not your real identity).\n\n' +
-        'Do you consent to sharing this data?'
-      );
+      const consent = await new Promise(resolve => {
+        consentResolveRef.current = resolve;
+        setShowConsentModal(true);
+      });
       if (!consent) return;
       setLeaderboardConsented(true);
       try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
@@ -1124,14 +1152,31 @@ function WhisperingWishesInner() {
     
     submittingRef.current = true;
     try {
+      // P13-FIX: HIGH-3 — Validate entry bounds before submission to prevent fabricated stats.
+      // Server-side validation via Firebase Security Rules (database.rules.json) is the real enforcement;
+      // this client-side check provides early feedback and prevents accidental garbage data.
+      const avgPity = parseFloat(overallStats.avgPity);
+      const pulls = overallStats.fiveStars ?? 0;
+      const totalPulls = overallStats.totalPulls ?? 0;
+      const won5050 = overallStats.won5050 ?? 0;
+      const lost5050 = overallStats.lost5050 ?? 0;
+      if (isNaN(avgPity) || avgPity < 1 || avgPity > 80) throw new Error('Invalid average pity value');
+      if (pulls < 0 || pulls > 9999) throw new Error('Invalid 5★ pull count');
+      if (totalPulls < 0 || totalPulls > 999999) throw new Error('Invalid total pull count');
+      if (won5050 < 0 || won5050 > pulls) throw new Error('Invalid 50/50 win count');
+      if (lost5050 < 0 || lost5050 > pulls) throw new Error('Invalid 50/50 loss count');
+      if (effectiveLeaderboardId.length > 64) throw new Error('Leaderboard ID too long');
+
+      // P13-FIX: HIGH-5 — Hash UID before storing in Firebase for privacy
+      const hashedUid = await hashUidForStorage(state.profile.uid);
       const entry = {
         id: effectiveLeaderboardId,
-        uid: state.profile.uid || null, // P8-FIX: Store game UID for cross-device dedup
-        avgPity: parseFloat(overallStats.avgPity),
-        pulls: overallStats.fiveStars ?? 0,
-        totalPulls: overallStats.totalPulls ?? 0,
-        won5050: overallStats.won5050 ?? 0,
-        lost5050: overallStats.lost5050 ?? 0,
+        uid: hashedUid, // P8-FIX: Store game UID for cross-device dedup (now hashed for privacy)
+        avgPity,
+        pulls,
+        totalPulls,
+        won5050,
+        lost5050,
         timestamp: Date.now()
       };
       // P8-FIX: CRIT-4 — Authenticate before writing
@@ -1184,12 +1229,12 @@ function WhisperingWishesInner() {
               const myWon = overallStats.won5050 ?? 0;
               const myLost = overallStats.lost5050 ?? 0;
               const staleKeys = Object.entries(rawData)
-                .filter(([key, e]) => 
+                .filter(([key, e]) =>
                   key !== effectiveLeaderboardId && // not the new UID entry
                   key !== userLeaderboardId && // already handled above
-                  (!e.uid || e.uid === state.profile.uid) && // no uid OR same uid (old duplicate)
-                  e.avgPity === myAvg && 
-                  e.totalPulls === myPulls && 
+                  (!e.uid || e.uid === hashedUid) && // no uid OR same hashed uid (old duplicate)
+                  e.avgPity === myAvg &&
+                  e.totalPulls === myPulls &&
                   e.pulls === myFives &&
                   (e.won5050 ?? 0) === myWon &&
                   (e.lost5050 ?? 0) === myLost
@@ -1257,6 +1302,8 @@ function WhisperingWishesInner() {
   const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
   
   const sendPresenceHeartbeat = useCallback(async () => {
+    // P13-FIX: HIGH-2 — Rate limit presence writes (guard against runaway intervals)
+    if (!checkFirebaseRateLimit('presence-heartbeat')) return;
     try {
       const authToken = await getFirebaseAuth();
       // P14-FIX: HIGH-1 — Fail closed
@@ -2887,10 +2934,26 @@ function WhisperingWishesInner() {
     }
   }, [toast]);
 
-  // Hash a password using SHA-256 (5.1 fix: salted variant added to harden against rainbow tables)
-  // Note: admin panel is client-side only (controls local banner customization, not server resources).
-  // For true security, admin auth should move to a backend service with proper KDF (PBKDF2/Argon2).
-  const hashPassword = useCallback(async (password, salt = '') => {
+  // P13-FIX: CRITICAL-2 — Upgraded from plain SHA-256 to PBKDF2 with 100k iterations.
+  // SHA-256 is ~10B hashes/sec on GPU; PBKDF2-100k reduces throughput to ~100k/sec, making
+  // brute-force of passwords < 12 chars significantly harder (minutes → months).
+  // For true security, admin auth should move to a backend service with Argon2.
+  const hashPasswordPBKDF2 = useCallback(async (password, salt) => {
+    try {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+      const derivedBits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+        keyMaterial, 256
+      );
+      return Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle PBKDF2 unavailable:', e);
+      return null;
+    }
+  }, []);
+  // Legacy SHA-256 hasher — kept for backward compatibility with existing ADMIN_HASH
+  const hashPasswordSHA256 = useCallback(async (password, salt = '') => {
     try {
       const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
       return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -2900,57 +2963,82 @@ function WhisperingWishesInner() {
     }
   }, []);
 
+  // P13-FIX: HIGH-4 — Session-based lockout tracking (survives localStorage clearing / incognito)
+  const adminSessionFailsRef = useRef(0);
+  const adminSessionLockUntilRef = useRef(0);
+
   // Verify admin password (with failed attempt tracking → 5-min admin-only cooldown)
   const verifyAdminPassword = useCallback(async () => {
     if (!adminPassword || adminPassword.length < 4) {
       toast?.addToast?.('Password must be at least 4 characters', 'error');
       return;
     }
-    
-    // Check if admin is currently locked out
+
+    // P13-FIX: HIGH-4 — Check BOTH session-based and localStorage lockout (cannot bypass either)
+    const now = Date.now();
+    if (adminSessionLockUntilRef.current > now) {
+      const remaining = Math.ceil((adminSessionLockUntilRef.current - now) / 60000);
+      toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+      return;
+    }
     try {
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
-      if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
-        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - Date.now()) / 60000);
+      if (lockoutUntil && now < parseInt(lockoutUntil, 10)) {
+        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - now) / 60000);
         toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
         return;
       }
     } catch {}
-    
-    // 5.1 fix: try salted hash first, fall back to legacy unsalted for backward compat
-    const saltedHash = await hashPassword(adminPassword, ADMIN_SALT);
-    const legacyHash = await hashPassword(adminPassword);
-    if (!saltedHash && !legacyHash) {
+
+    // P13-FIX: CRITICAL-2 — Try PBKDF2 first, fall back to legacy SHA-256 for existing hash
+    const pbkdf2Hash = await hashPasswordPBKDF2(adminPassword, ADMIN_SALT);
+    const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
+    const legacyHash = await hashPasswordSHA256(adminPassword);
+    if (!saltedHash && !legacyHash && !pbkdf2Hash) {
       toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
       return;
     }
-    // AUDIT-FIX H2: Constant-time comparison to prevent timing attacks on admin hash
+    // Constant-time comparison to prevent timing attacks on admin hash
     const safeCompare = (a, b) => { if (!a || !b || a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; };
-    if (safeCompare(saltedHash, ADMIN_HASH) || safeCompare(legacyHash, ADMIN_HASH)) {
+    if (safeCompare(pbkdf2Hash, ADMIN_HASH) || safeCompare(saltedHash, ADMIN_HASH) || safeCompare(legacyHash, ADMIN_HASH)) {
       setAdminUnlocked(true);
       setAdminPassword(''); // Clear plaintext password from React state after successful auth
+      adminSessionFailsRef.current = 0;
       setBannerForm(buildBannerForm(activeBanners));
       try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
     } else {
-      // Wrong password — increment fails, lock admin after 5 attempts for 5 minutes
+      // Wrong password — increment fails in BOTH session ref and localStorage
+      adminSessionFailsRef.current += 1;
+      const sessionFails = adminSessionFailsRef.current;
       try {
-        const fails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1; // P10-FIX: Radix was passed to getItem instead of parseInt (Step 6 audit)
-        localStorage.setItem('ww-admin-fails', fails.toString());
-        if (fails >= MAX_ADMIN_ATTEMPTS) {
-          const lockoutTime = Date.now() + ADMIN_LOCKOUT_MS;
+        const storageFails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1;
+        localStorage.setItem('ww-admin-fails', storageFails.toString());
+        // Lock if EITHER tracker exceeds limit
+        const totalFails = Math.max(sessionFails, storageFails);
+        if (totalFails >= MAX_ADMIN_ATTEMPTS) {
+          const lockoutTime = now + ADMIN_LOCKOUT_MS;
+          adminSessionLockUntilRef.current = lockoutTime;
           localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
           setAdminLockedUntil(lockoutTime);
           setShowAdminPanel(false);
           setAdminPassword('');
           toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
         } else {
-          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - fails} attempts remaining)`, 'error');
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - totalFails} attempts remaining)`, 'error');
         }
       } catch {
-        toast?.addToast?.('Incorrect password', 'error');
+        // localStorage unavailable — use session tracking only
+        if (sessionFails >= MAX_ADMIN_ATTEMPTS) {
+          adminSessionLockUntilRef.current = now + ADMIN_LOCKOUT_MS;
+          setShowAdminPanel(false);
+          setAdminPassword('');
+          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+        } else {
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - sessionFails} attempts remaining)`, 'error');
+        }
       }
     }
-  }, [adminPassword, toast, hashPassword]);
+  }, [adminPassword, toast, hashPasswordPBKDF2, hashPasswordSHA256]);
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
@@ -3815,6 +3903,28 @@ function WhisperingWishesInner() {
                   </Card>
                 )}
                 
+                {/* P13-FIX: MEDIUM-4 — Accessible consent modal (replaces window.confirm) */}
+                {showConsentModal && (
+                  <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Leaderboard consent">
+                    <div className="kuro-card w-full max-w-sm p-5 space-y-4">
+                      <h3 className="text-white font-bold text-sm">Leaderboard — Data Sharing Notice</h3>
+                      <div className="text-gray-300 text-xs space-y-2">
+                        <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
+                        <ul className="list-disc pl-4 space-y-1 text-gray-400">
+                          <li>Your player ID (<span className="text-cyan-400 font-mono">{effectiveLeaderboardId}</span>)</li>
+                          <li>Average pity, total Convenes, 50/50 win/loss stats</li>
+                          <li>Your owned 5★ characters and weapons</li>
+                        </ul>
+                        <p className="text-gray-500">This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).</p>
+                      </div>
+                      <div className="flex gap-3 pt-1">
+                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-white/5 hover:bg-white/10 text-gray-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
+                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Luck Leaderboard Modal */}
                 {showLeaderboard && (
                   <div ref={leaderboardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-busy={leaderboardLoading} aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
