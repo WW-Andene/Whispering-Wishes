@@ -722,7 +722,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   if (time.expired && !alwaysShow) return <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
     // If expired but alwaysShow, show "0h 0m 0s" briefly until next tick updates
-    return <span className={`font-mono text-xs ${TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple}`}>0h 0m 0s</span>;
+    return <span className={`kuro-number text-xs ${TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple}`}>0h 0m 0s</span>;
   }
   
   const textColor = TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple;
@@ -730,36 +730,36 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   // Unified compact style matching Tracker tab
   if (compact) {
     return (
-      <span className={`${textColor} font-mono text-xs font-medium`} role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
+      <span className={`${textColor} kuro-number text-xs font-medium`} role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
         {time.days > 0 && `${time.days}d `}{String(time.hours).padStart(2, '0')}h {String(time.minutes).padStart(2, '0')}m {String(time.seconds).padStart(2, '0')}s
       </span>
     );
   }
   
   return (
-    <div className="flex items-center gap-1" role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
+    <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
       {time.days > 0 && (
         <>
-          <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={TIMER_BOX_STYLE}>
-            <div className="text-white font-bold text-sm kuro-number">{time.days}</div>
-            <div className="text-gray-400 text-[9px] uppercase tracking-wider">{time.days === 1 ? 'Day' : 'Days'}</div>
+          <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+            <div className="text-white kuro-scoreboard">{time.days}</div>
+            <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">{time.days === 1 ? 'Day' : 'Days'}</div>
           </div>
-          <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
+          <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
         </>
       )}
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={TIMER_BOX_STYLE}>
-        <div className="text-white font-bold text-sm kuro-number">{String(time.hours).padStart(2, '0')}</div>
-        <div className="text-gray-400 text-[9px] uppercase tracking-wider">Hr</div>
+      <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+        <div className="text-white kuro-scoreboard">{String(time.hours).padStart(2, '0')}</div>
+        <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Hr</div>
       </div>
-      <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={TIMER_BOX_STYLE}>
-        <div className="text-white font-bold text-sm kuro-number">{String(time.minutes).padStart(2, '0')}</div>
-        <div className="text-gray-400 text-[9px] uppercase tracking-wider">Min</div>
+      <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
+      <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+        <div className="text-white kuro-scoreboard">{String(time.minutes).padStart(2, '0')}</div>
+        <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Min</div>
       </div>
-      <span className={`${textColor} font-bold text-xs opacity-60`}>:</span>
-      <div className="rounded-lg px-2 py-1 text-center border border-white/10" style={TIMER_BOX_STYLE}>
-        <div className={`font-bold text-sm kuro-number ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
-        <div className="text-gray-400 text-[9px] uppercase tracking-wider">Sec</div>
+      <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
+      <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+        <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
+        <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Sec</div>
       </div>
     </div>
   );
@@ -806,7 +806,7 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
           />
         )}
         <circle className="pity-ring-fill" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} stroke={color} strokeDasharray={circumference} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{'--ring-glow': glowColor}} />
-        <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.28} fill={color}>{safeValue}</text>
+        <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.36} fill={color}>{safeValue}</text>
       </svg>
       {label && <div className="text-gray-300 text-[9px] mt-0.5">{label}</div>}
       {sublabel && <div className="text-gray-400 text-[9px]">{sublabel}</div>}

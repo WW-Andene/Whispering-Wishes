@@ -2282,12 +2282,12 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-TYPE-3 | Missing font smoothing for dark-mode type | Added `-webkit-font-smoothing: antialiased` to `html`/`body` |
 | D-HIERARCHY-1 | Card corner decorations too subtle (~7% opacity) | Increased corner decoration opacity to ~17% for legible motifs |
 | D-TYPE-1 | System font stack underdelivers for cyberpunk aesthetic | Added Rajdhani (display/headings/buttons/labels) + JetBrains Mono (data numerals/stats/countdowns) via Google Fonts. CSS vars `--font-display` and `--font-data` in KuroStyles. Applied to `.kuro-header h3`, `.kuro-btn`, `.kuro-stat`, `.kuro-label`, `.pity-ring-text`, `.kuro-number`, and inline stat displays in `App.jsx`. |
+| D-TYPE-4 | Banner countdown timers could use type as visual element | Added `.kuro-scoreboard` class (18px, JetBrains Mono, tabular-nums, letter-spacing: -0.02em). Applied to all CountdownTimer box digits. PityRing number scaled 0.28→0.36. Compact timer uses kuro-number. |
 
-### Remaining — 11 findings (16 actionable fixes → 9 implementation steps)
+### Remaining — 10 findings (15 actionable fixes → 8 implementation steps)
 
 | ID | Severity | Finding |
 |----|----------|---------|
-| D-TYPE-4 | [POLISH] | Banner countdown timers could use type as visual element |
 | D-MOTION-1 | [MEDIUM] | No skeleton/loading state system |
 | D-HIERARCHY-2 | [POLISH] | Collection grid has uniform visual weight — 5★ should stand out |
 | D-ATMOSPHERE-1 | [POLISH] | Banner card could have persistent subtle glow at rest |
@@ -2303,12 +2303,12 @@ This is a well-designed product that is significantly ahead of its competitive l
 
 ## IMPLEMENTATION PLAN
 
-17 actionable fixes (D-TYPE-1, D-TYPE-3 already applied) grouped into 10 implementation steps:
+17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4 already applied) grouped into 10 implementation steps:
 
 | Step | What | Findings | Files | Effort |
 |------|------|----------|-------|--------|
 | ~~**1**~~ | ~~**Typography upgrade**~~ ✅ DONE — Added Rajdhani (display) + JetBrains Mono (data) via Google Fonts. CSS vars `--font-display`/`--font-data` applied to headings, buttons, labels, stats, pity rings, countdown numerals. | D-TYPE-1 | `index.html`, `tailwind.config.js`, `appcore-providers.jsx`, `App.jsx` | ✅ |
-| **2** | **Countdown numeral treatment** — Scale banner pity countdown numbers to 28–32px with `tabular-nums`, tight `letter-spacing: -0.02em`, and optional gradient mask. Make the pity number feel like a scoreboard. | D-TYPE-4 | `App.jsx` (banner countdown JSX + inline styles) | ~15 min |
+| ~~**2**~~ | ~~**Countdown numeral treatment**~~ ✅ DONE — Added `.kuro-scoreboard` class (18px, JetBrains Mono, tabular-nums, letter-spacing: -0.02em). Applied to all CountdownTimer digits. PityRing number scaled from 0.28→0.36 multiplier. Compact timer switched from font-mono to kuro-number. | D-TYPE-4 | `appcore-components.jsx`, `appcore-providers.jsx` | ✅ |
 | **3** | **Skeleton loading system** — Create `.kuro-skeleton` class using `rgba(12,16,24,0.55)` with the existing gold shimmer pulse animation. Build skeleton variants for cards, stat boxes, and list rows. Apply to leaderboard, community pulls, and data import loading states. No spinners. | D-MOTION-1, D-STATE-2 | `appcore-providers.jsx` (KuroStyles — skeleton classes), `App.jsx` (loading states in leaderboard, import) | ~45 min |
 | **4** | **5★ rarity glow in Collection grid** — Add subtle gold `box-shadow` or faint radial background to 5★ character cards in the collection grid. Use the existing `.glow-gold` class pattern but at reduced intensity (~0.08 opacity). | D-HIERARCHY-2 | `appcore-components.jsx` (CollectionGridCard or equivalent) | ~15 min |
 | **5** | **Banner card rest-state glow** — Add persistent low-opacity gold `box-shadow: 0 0 40px rgba(237,175,24,0.06)` to the active banner card at rest (not just on hover). Subtle enough to signal primacy without overloading. | D-ATMOSPHERE-1 | `App.jsx` (banner card styling) | ~10 min |

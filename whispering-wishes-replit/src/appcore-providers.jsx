@@ -555,6 +555,7 @@ const KuroStyles = memo(({ oledMode }) => (
       fill: currentColor;
       text-anchor: middle;
       dominant-baseline: central;
+      letter-spacing: -0.02em;
     }
     
     /* ═══ LUCK BADGE ═══ */
@@ -1170,7 +1171,17 @@ const KuroStyles = memo(({ oledMode }) => (
       font-variant-numeric: tabular-nums;
       font-weight: 700;
     }
-    
+
+    /* D-TYPE-4: Scoreboard numeral treatment for countdown timers */
+    .kuro-scoreboard {
+      font-family: var(--font-data);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
     /* ═══ EMPTY STATE — atmospheric warmth ═══ */
     .kuro-empty-state {
       background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);
