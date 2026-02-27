@@ -456,13 +456,17 @@ const storageAvailable = isStorageAvailable();
 // P10-FIX: Sanitize imported state to prevent prototype pollution and reject unknown keys (Step 6 audit)
 const ALLOWED_STATE_KEYS = new Set(['server', 'profile', 'calc', 'planner', 'settings', 'bookmarks', 'eventStatus', 'teams', 'activeTeamIndex']);
 const sanitizeStateObj = (obj) => {
-  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return obj;
+  if (typeof obj !== 'object' || obj === null) return obj;
+  // P14-FIX: MEDIUM-2 — Also recurse into array elements to sanitize objects inside arrays
+  // (e.g., [{__proto__: {isAdmin: true}}] would have passed through unsanitized)
+  if (Array.isArray(obj)) {
+    return obj.map(item => (typeof item === 'object' && item !== null) ? sanitizeStateObj(item) : item);
+  }
   const clean = {};
   for (const key of Object.keys(obj)) {
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    // P14-FIX: Recurse into nested objects for defense-in-depth prototype pollution protection
     const val = obj[key];
-    clean[key] = (typeof val === 'object' && val !== null && !Array.isArray(val)) ? sanitizeStateObj(val) : val;
+    clean[key] = (typeof val === 'object' && val !== null) ? sanitizeStateObj(val) : val;
   }
   return clean;
 };

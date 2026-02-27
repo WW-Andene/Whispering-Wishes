@@ -47,6 +47,7 @@ import {
   SUBSCRIPTIONS,
   HARD_PITY,
   ASTRITE_PER_PULL,
+  BEGINNER_ASTRITE_PER_PULL,
   LUNITE_DAILY_ASTRITE,
   MAX_ASTRITE,
   MAX_CALC_PULLS,
@@ -154,9 +155,8 @@ function WhisperingWishesInner() {
   // Check admin-only lockout (5-min cooldown after 5 failed attempts — does NOT lock the app)
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
-      // Clean up legacy keys from older versions
-      localStorage.removeItem('whispering-wishes-admin-pass'); // removed: no user-set passwords
-      localStorage.removeItem('ww-app-lockout'); // removed: old 24h full-app lockout (CRIT-2)
+      // P14-FIX: MEDIUM-15 — Removed legacy localStorage key cleanup (whispering-wishes-admin-pass, ww-app-lockout).
+      // These were removed in P8; cleanup code is no longer needed after sufficient migration period.
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
       if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
         return parseInt(lockoutUntil, 10);
@@ -626,8 +626,8 @@ function WhisperingWishesInner() {
       setShowOnboarding(true);
     }
     setStorageLoaded(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — mount-only, toast ref is stable at first render
-  
+  }, []); // P14-FIX: LOW-3 — Removed dead eslint-disable comment (no ESLint configured)
+
   // Save state to storage whenever it changes (debounced to avoid jank from rapid state changes)
   // P9-FIX: Debounce saveToStorage to prevent synchronous JSON.stringify jank (Step 4 audit)
   const saveTimerRef = useRef(null);
@@ -705,7 +705,7 @@ function WhisperingWishesInner() {
     };
     window.addEventListener('storage', handleStorageChange);
     return () => { clearTimeout(debounceTimer); window.removeEventListener('storage', handleStorageChange); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — stable refs
+  }, []); // P14-FIX: LOW-3 — Removed dead eslint-disable comment (no ESLint configured)
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
   // Team builder state (hoisted to satisfy Rules of Hooks)
@@ -981,8 +981,8 @@ function WhisperingWishesInner() {
     
     return { 
       totalPulls: all.length, 
-      // Beginner banner costs 128 Astrite/pull (80% of standard 160)
-      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * 128, 
+      // P14-FIX: NIT-2 — Use named constant for beginner banner pull cost
+      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * BEGINNER_ASTRITE_PER_PULL,
       fiveStars: fives.length, 
       won5050: won, 
       lost5050: lost, 
@@ -1015,8 +1015,10 @@ function WhisperingWishesInner() {
       };
       return data.idToken;
     } catch (e) {
-      console.warn('Firebase anonymous auth failed, falling back to unauthenticated:', e);
-      return null; // Graceful degradation — still works if Firebase rules allow public reads
+      // P14-FIX: HIGH-1 — Fail closed: don't fall back to unauthenticated requests.
+      // Returning null here previously allowed unauthenticated access, defeating the purpose of auth.
+      console.warn('Firebase anonymous auth failed:', e);
+      return null; // Auth failed — callers must check for null and skip the request
     }
   }, []);
   
@@ -1028,8 +1030,9 @@ function WhisperingWishesInner() {
     try {
       // P8-FIX: CRIT-4 — Authenticate before reading
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      // P14-FIX: HIGH-1 — Fail closed: require auth token for all Firebase operations
+      if (!authToken) throw new Error('Authentication required');
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json?auth=${authToken}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1120,7 +1123,9 @@ function WhisperingWishesInner() {
       };
       // P8-FIX: CRIT-4 — Authenticate before writing
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
+      // P14-FIX: HIGH-1 — Fail closed: require auth token for all Firebase operations
+      if (!authToken) throw new Error('Authentication required');
+      const authParam = `?auth=${authToken}`;
       // P8-FIX: Use effectiveLeaderboardId as Firebase key — same UID across devices overwrites instead of duplicating
       const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
         method: 'PUT',
@@ -1203,7 +1208,9 @@ function WhisperingWishesInner() {
   const loadCommunityPulls = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
-      const authParam = authToken ? `?auth=${authToken}` : '';
+      // P14-FIX: HIGH-1 — Fail closed
+      if (!authToken) throw new Error('Authentication required');
+      const authParam = `?auth=${authToken}`;
       const res = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
@@ -1239,7 +1246,9 @@ function WhisperingWishesInner() {
   const sendPresenceHeartbeat = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
+      // P14-FIX: HIGH-1 — Fail closed
+      if (!authToken) return;
+      const authParam = `?auth=${authToken}`;
       const res = await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -1257,15 +1266,18 @@ function WhisperingWishesInner() {
   const removePresence = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
+      // P14-FIX: HIGH-1 — Fail closed
+      if (!authToken) return;
+      await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json?auth=${authToken}`, { method: 'DELETE' });
     } catch { /* best-effort */ }
   }, [getFirebaseAuth]);
 
   const fetchActivePlayersCount = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
+      // P14-FIX: HIGH-1 — Fail closed
+      if (!authToken) return;
+      const authParam = `?auth=${authToken}`;
       const res = await fetchWithTimeout(`${FIREBASE_DB}/presence.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
@@ -1300,7 +1312,9 @@ function WhisperingWishesInner() {
   const fetchAdminPlayerList = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
+      // P14-FIX: HIGH-1 — Fail closed
+      if (!authToken) throw new Error('Authentication required');
+      const authParam = `?auth=${authToken}`;
       const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
       if (res.ok) {
         const data = await res.json();
@@ -3778,7 +3792,7 @@ function WhisperingWishesInner() {
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
                           {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                          <p className="text-[8px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
+                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>

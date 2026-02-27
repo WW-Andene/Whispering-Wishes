@@ -532,7 +532,7 @@ class TabErrorBoundary extends React.Component {
                 {this.state.error && (
                   <details className="mt-3 text-left">
                     <summary className="text-gray-500 text-[9px] cursor-pointer">Error details</summary>
-                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[8px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}</pre>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}</pre>
                   </details>
                 )}
               </div>
@@ -643,8 +643,6 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   const [currentEnd, setCurrentEnd] = useState(endDate);
   const [time, setTime] = useState(() => getTimeRemaining(endDate));
   const expiredRef = useRef(false);
-  const rafRef = useRef(null);
-  const lastUpdateRef = useRef(0);
   const currentEndRef = useRef(currentEnd);
   // P9-FIX: Use refs for callbacks to avoid effect re-runs on reference changes (MEDIUM-5f)
   const recalcFnRef = useRef(recalcFn);
@@ -662,76 +660,63 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     expiredRef.current = false;
   }, [endDate]);
   
-  // Main timer logic using requestAnimationFrame for accuracy
+  // P14-FIX: MEDIUM-18 — Use setInterval(1000) instead of requestAnimationFrame for second-precision timer.
+  // rAF runs at 60fps but only does meaningful work once per second; setInterval is more efficient.
+  // Visibility API pause/resume prevents stale timers when tab is backgrounded.
   useEffect(() => {
-    let isMounted = true;
-    
+    let intervalId = null;
+
     const updateTimer = () => {
-      if (!isMounted) return;
-      
-      const now = Date.now();
-      // Only update state once per second to avoid excessive renders
-      if (now - lastUpdateRef.current >= 1000 || lastUpdateRef.current === 0) {
-        lastUpdateRef.current = now;
-        
-        const end = currentEndRef.current;
-        const t = getTimeRemaining(end);
-        if (t.expired && recalcFnRef.current) {
-          // Auto-rollover for recurring timers (daily/weekly)
-          const newEnd = recalcFnRef.current();
-          setCurrentEnd(newEnd);
-          setTime(getTimeRemaining(newEnd));
-          expiredRef.current = false;
-        } else {
-          setTime(t);
-          if (t.expired && !expiredRef.current) {
-            expiredRef.current = true;
-            if (onExpireRef.current) setTimeout(onExpireRef.current, 500);
-          }
+      const end = currentEndRef.current;
+      const t = getTimeRemaining(end);
+      if (t.expired && recalcFnRef.current) {
+        // Auto-rollover for recurring timers (daily/weekly)
+        const newEnd = recalcFnRef.current();
+        setCurrentEnd(newEnd);
+        setTime(getTimeRemaining(newEnd));
+        expiredRef.current = false;
+      } else {
+        setTime(t);
+        if (t.expired && !expiredRef.current) {
+          expiredRef.current = true;
+          if (onExpireRef.current) setTimeout(onExpireRef.current, 500);
         }
       }
-      
-      rafRef.current = requestAnimationFrame(updateTimer);
     };
-    
-    // Start the animation frame loop
-    rafRef.current = requestAnimationFrame(updateTimer);
-    
-    // Handle visibility change - update immediately when tab becomes visible
+
+    const startInterval = () => {
+      if (intervalId) return;
+      updateTimer(); // Immediate update
+      intervalId = setInterval(updateTimer, 1000);
+    };
+
+    const stopInterval = () => {
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    };
+
+    startInterval();
+
+    // Pause when tab is hidden, resume with immediate update when visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        lastUpdateRef.current = 0; // Force immediate update
-        const end = currentEndRef.current;
-        const t = getTimeRemaining(end);
-        if (t.expired && recalcFnRef.current) {
-          const newEnd = recalcFnRef.current();
-          setCurrentEnd(newEnd);
-          setTime(getTimeRemaining(newEnd));
-          expiredRef.current = false;
-        } else {
-          setTime(t);
-        }
+        updateTimer(); // Immediate catch-up
+        startInterval();
+      } else {
+        stopInterval();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     // Handle page focus (backup for visibility)
-    const handleFocus = () => {
-      lastUpdateRef.current = 0;
-      setTime(getTimeRemaining(currentEndRef.current));
-    };
+    const handleFocus = () => { updateTimer(); };
     window.addEventListener('focus', handleFocus);
-    
-    // Cleanup
+
     return () => {
-      isMounted = false;
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
+      stopInterval();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, []); // P9-FIX: Empty deps — callbacks accessed via refs (MEDIUM-5f)
+  }, []); // Callbacks accessed via refs (P9-FIX: MEDIUM-5f)
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
   if (time.expired && !alwaysShow) return <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Ended</span>;
@@ -1320,7 +1305,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       />
     )}
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(251,191,36,0.5)', textShadow: 'none'}}>New</div>
     )}
     {/* Profile pic setter — top-right corner */}
     {owned && !framingMode && onSetProfilePic && (

@@ -5,140 +5,10 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
 import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
-import { APP_VERSION, haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
+import { haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 
-// Service Worker code as string (will be registered as blob)
-const SERVICE_WORKER_CODE = `
-const APP_CACHE = 'ww-app-v${APP_VERSION}';
-const IMG_CACHE = 'ww-images-v${APP_VERSION}';
-const CDN_CACHE = 'ww-cdn-v${APP_VERSION}';
-const MAX_IMG_ENTRIES = 250;
-
-// Core app shell to precache
-const PRECACHE = ['/', '/index.html'];
-
-// CDN domains — cache-first (these rarely change)
-const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
-
-// Image domains — stale-while-revalidate
-const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co'];
-
-// Install — precache app shell
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(APP_CACHE)
-      .then(cache => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
-  );
-});
-
-// Activate — purge old caches
-self.addEventListener('activate', (event) => {
-  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE];
-  event.waitUntil(
-    caches.keys().then(names =>
-      Promise.all(names.filter(n => !currentCaches.includes(n)).map(n => caches.delete(n)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-// Trim image cache to MAX_IMG_ENTRIES (LRU by insertion order)
-async function trimCache(cacheName, maxEntries) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  if (keys.length > maxEntries) {
-    await Promise.all(keys.slice(0, keys.length - maxEntries).map(k => cache.delete(k)));
-  }
-}
-
-// Strategy: Cache-first (for CDN assets)
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    return new Response('', { status: 503 });
-  }
-}
-
-// Strategy: Stale-while-revalidate (for images)
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone());
-      trimCache(cacheName, MAX_IMG_ENTRIES);
-    }
-    return response;
-  }).catch(() => {
-    // Return cached version if available; otherwise let browser handle the error natively
-    if (cached) return cached;
-    return new Response('', { status: 503, statusText: 'Service Unavailable' });
-  });
-  
-  return cached || fetchPromise;
-}
-
-// Strategy: Network-first with cache fallback (for app/API)
-async function networkFirst(request, cacheName) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    if (request.mode === 'navigate') {
-      return caches.match('/');
-    }
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-// Fetch router — pick strategy by domain/type
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  if (!event.request.url.startsWith('http')) return;
-  
-  const url = new URL(event.request.url);
-  
-  // CDN assets → cache-first
-  if (CDN_DOMAINS.some(d => url.hostname.includes(d))) {
-    event.respondWith(cacheFirst(event.request, CDN_CACHE));
-    return;
-  }
-  
-  // Images → stale-while-revalidate
-  if (IMG_DOMAINS.some(d => url.hostname.includes(d)) || /\\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)) {
-    event.respondWith(staleWhileRevalidate(event.request, IMG_CACHE));
-    return;
-  }
-  
-  // Everything else → network-first
-  event.respondWith(networkFirst(event.request, APP_CACHE));
-});
-
-// Handle messages
-self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') self.skipWaiting();
-  if (event.data === 'clearImageCache') {
-    caches.delete(IMG_CACHE).then(() => {
-      event.source?.postMessage('imageCacheCleared');
-    });
-  }
-});
-`;
+// P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
+// Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
 
 // PWA Provider Component
 const PWAProvider = ({ children }) => {
@@ -197,35 +67,24 @@ const PWAProvider = ({ children }) => {
       }
     });
     
-    // Register service worker (blob URLs only work in Chromium browsers)
-    // Firefox/Safari require a real SW file — app still functions without SW
+    // P14-FIX: HIGH-6 — Register service worker from a proper static file instead of blob URL.
+    // Blob URLs bypass CSP, are invisible to security scanners, and prevent proper SW update lifecycle.
+    // The static /sw.js file works in all browsers (Firefox, Safari, Chrome).
     if ('serviceWorker' in navigator) {
-      try {
-        const swBlob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(swBlob);
-        
-        navigator.serviceWorker.register(swUrl, { scope: '/' })
-          .then((registration) => {
-            URL.revokeObjectURL(swUrl); // P7-FIX: Revoke blob URL after registration (7D)
-            // Check for updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[WW] New version available');
-                }
-              });
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then((registration) => {
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[WW] New version available');
+              }
             });
-          })
-          .catch((err) => {
-            URL.revokeObjectURL(swUrl); // P7-FIX: Revoke blob URL on failure too (7D)
-            // Blob URL service workers are not supported in Firefox/Safari
-            console.info('[WW] Service worker not registered (blob URL not supported in this browser). App works fine without it.', err.message);
           });
-      } catch (err) {
-        // Service worker not critical — app works fine without it
-        console.info('[WW] Service worker setup skipped:', err.message);
-      }
+        })
+        .catch((err) => {
+          console.info('[WW] Service worker not registered:', err.message);
+        });
     }
     
     return () => {
@@ -336,6 +195,8 @@ const ToastProvider = ({ children }) => {
 const useToast = () => useContext(ToastContext);
 
 // [SECTION:A11Y_HOOKS] - Accessibility hooks for modal focus trapping & escape key
+// P14-FIX: MEDIUM-22 — Re-query focusable elements on each Tab keypress instead of caching.
+// Dynamic modals may render content after the trap is set up, so the focusable list can become stale.
 const useFocusTrap = (isOpen) => {
   const ref = useRef(null);
   const previousFocusRef = useRef(null);
@@ -344,11 +205,12 @@ const useFocusTrap = (isOpen) => {
     previousFocusRef.current = document.activeElement;
     const el = ref.current;
     if (!el) return;
-    const focusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const timer = setTimeout(() => { const f = focusable(); if (f.length) f[0].focus(); }, 50);
+    const getFocusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const timer = setTimeout(() => { const f = getFocusable(); if (f.length) f[0].focus(); }, 50);
     const handleKeyDown = (e) => {
       if (e.key !== 'Tab') return;
-      const nodes = focusable();
+      // Re-query on each Tab press to catch dynamically rendered elements
+      const nodes = getFocusable();
       if (!nodes.length) return;
       const first = nodes[0], last = nodes[nodes.length - 1];
       if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }

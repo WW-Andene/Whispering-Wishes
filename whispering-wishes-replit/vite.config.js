@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5000,
-    allowedHosts: true
+    // P14-FIX: HIGH-7 — Removed allowedHosts: true which disabled host header validation,
+    // allowing DNS rebinding attacks during development
   }
 })
