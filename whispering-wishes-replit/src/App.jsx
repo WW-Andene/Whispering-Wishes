@@ -3952,8 +3952,17 @@ function WhisperingWishesInner() {
                         {leaderboardTab === 'rankings' ? (
                           <>
                             {leaderboardLoading ? (
-                              <div className="text-center py-8">
-                                <div className="text-gray-400 text-sm">Loading...</div>
+                              <div className="space-y-2 py-2" aria-label="Loading leaderboard">
+                                {[...Array(6)].map((_, i) => (
+                                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
+                                    <div className="kuro-skeleton kuro-skeleton-circle w-7 h-7 flex-shrink-0" />
+                                    <div className="flex-1 space-y-1.5">
+                                      <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
+                                      <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
+                                    </div>
+                                    <div className="kuro-skeleton kuro-skeleton-text w-10 h-4 flex-shrink-0" />
+                                  </div>
+                                ))}
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="text-center py-8">
@@ -4004,9 +4013,19 @@ function WhisperingWishesInner() {
                         ) : (
                           <>
                             {!communityPulls ? (
-                              <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">No data yet</div>
-                                <div className="text-gray-500 text-[10px]">Submit your score to contribute!</div>
+                              <div className="space-y-1.5 py-2" aria-label="Loading community data">
+                                <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '40%' }} />
+                                <div className="kuro-skeleton kuro-skeleton-text w-24 mb-1.5" style={{ height: '8px' }} />
+                                {[...Array(5)].map((_, i) => (
+                                  <div key={i} className="flex items-center gap-2.5 py-1.5">
+                                    <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
+                                    <div className="kuro-skeleton w-7 h-7 rounded-md flex-shrink-0" />
+                                    <div className="flex-1 space-y-1">
+                                      <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
+                                      <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             ) : (
                               <>
@@ -6527,7 +6546,15 @@ Example: {"pulls":[...]}'
                           <div className="text-gray-400 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
                         </div>
                         {!adminPlayerList ? (
-                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Loading...</p>
+                          <div className="space-y-1.5 py-2" aria-label="Loading player list">
+                            {[...Array(4)].map((_, i) => (
+                              <div key={i} className="flex items-center gap-2 p-2 rounded bg-white/5">
+                                <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
+                                <div className="kuro-skeleton kuro-skeleton-text flex-1" style={{ width: `${60 + i * 5}%` }} />
+                                <div className="kuro-skeleton kuro-skeleton-text w-12 h-3 flex-shrink-0" />
+                              </div>
+                            ))}
+                          </div>
                         ) : adminPlayerList.length === 0 ? (
                           <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No players yet</p>
                         ) : (

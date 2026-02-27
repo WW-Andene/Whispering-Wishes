@@ -1182,6 +1182,35 @@ const KuroStyles = memo(({ oledMode }) => (
       line-height: 1;
     }
 
+    /* ═══ SKELETON LOADING — D-MOTION-1 ═══ */
+    @keyframes kuroShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .kuro-skeleton {
+      background: rgba(12, 16, 24, 0.55);
+      background-image: linear-gradient(90deg, transparent 0%, rgba(237, 175, 24, 0.06) 40%, rgba(237, 175, 24, 0.10) 50%, rgba(237, 175, 24, 0.06) 60%, transparent 100%);
+      background-size: 200% 100%;
+      animation: kuroShimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    .kuro-skeleton-row {
+      height: 36px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+    }
+    .kuro-skeleton-stat {
+      height: 72px;
+      border-radius: 10px;
+    }
+    .kuro-skeleton-text {
+      height: 10px;
+      border-radius: 4px;
+    }
+    .kuro-skeleton-circle {
+      border-radius: 50%;
+    }
+
     /* ═══ EMPTY STATE — atmospheric warmth ═══ */
     .kuro-empty-state {
       background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);

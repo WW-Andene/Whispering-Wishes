@@ -2283,18 +2283,18 @@ This is a well-designed product that is significantly ahead of its competitive l
 | D-HIERARCHY-1 | Card corner decorations too subtle (~7% opacity) | Increased corner decoration opacity to ~17% for legible motifs |
 | D-TYPE-1 | System font stack underdelivers for cyberpunk aesthetic | Added Rajdhani (display/headings/buttons/labels) + JetBrains Mono (data numerals/stats/countdowns) via Google Fonts. CSS vars `--font-display` and `--font-data` in KuroStyles. Applied to `.kuro-header h3`, `.kuro-btn`, `.kuro-stat`, `.kuro-label`, `.pity-ring-text`, `.kuro-number`, and inline stat displays in `App.jsx`. |
 | D-TYPE-4 | Banner countdown timers could use type as visual element | Added `.kuro-scoreboard` class (18px, JetBrains Mono, tabular-nums, letter-spacing: -0.02em). Applied to all CountdownTimer box digits. PityRing number scaled 0.28→0.36. Compact timer uses kuro-number. |
+| D-MOTION-1 | No skeleton/loading state system | Created `.kuro-skeleton` class system with gold shimmer animation (`kuroShimmer`). Variants: `-row`, `-stat`, `-text`, `-circle`. Applied skeleton loaders to leaderboard rankings, community pulls, and admin player list. No spinners. |
+| D-STATE-2 | Data import has no loading feedback | Leaderboard and community pull loading states now use contextual skeleton UI matching final layout shape. Admin player list loading also replaced. |
 
-### Remaining — 10 findings (15 actionable fixes → 8 implementation steps)
+### Remaining — 8 findings (13 actionable fixes → 7 implementation steps)
 
 | ID | Severity | Finding |
 |----|----------|---------|
-| D-MOTION-1 | [MEDIUM] | No skeleton/loading state system |
 | D-HIERARCHY-2 | [POLISH] | Collection grid has uniform visual weight — 5★ should stand out |
 | D-ATMOSPHERE-1 | [POLISH] | Banner card could have persistent subtle glow at rest |
 | D-ICON-1 | [LOW] | Default Lucide icons are stylistically neutral |
 | D-ICON-2 | [POLISH] | 14px icons in 32px containers — excessive padding |
 | D-STATE-1 | [MEDIUM] | Empty states lose atmospheric character |
-| D-STATE-2 | [MEDIUM] | Data import has no loading feedback |
 | D-COPY-1 | [LOW] | Empty state copy is personality-absent |
 | D-DATAVIZ-1 | [LOW] | Recharts defaults break character on grid/axis/tooltip |
 | D-TOKEN-1 | [LOW] | Border opacity values not tokenized |
@@ -2303,13 +2303,13 @@ This is a well-designed product that is significantly ahead of its competitive l
 
 ## IMPLEMENTATION PLAN
 
-17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4 already applied) grouped into 10 implementation steps:
+17 actionable fixes (D-TYPE-1, D-TYPE-3, D-TYPE-4, D-MOTION-1, D-STATE-2 already applied) grouped into 10 implementation steps:
 
 | Step | What | Findings | Files | Effort |
 |------|------|----------|-------|--------|
 | ~~**1**~~ | ~~**Typography upgrade**~~ ✅ DONE — Added Rajdhani (display) + JetBrains Mono (data) via Google Fonts. CSS vars `--font-display`/`--font-data` applied to headings, buttons, labels, stats, pity rings, countdown numerals. | D-TYPE-1 | `index.html`, `tailwind.config.js`, `appcore-providers.jsx`, `App.jsx` | ✅ |
 | ~~**2**~~ | ~~**Countdown numeral treatment**~~ ✅ DONE — Added `.kuro-scoreboard` class (18px, JetBrains Mono, tabular-nums, letter-spacing: -0.02em). Applied to all CountdownTimer digits. PityRing number scaled from 0.28→0.36 multiplier. Compact timer switched from font-mono to kuro-number. | D-TYPE-4 | `appcore-components.jsx`, `appcore-providers.jsx` | ✅ |
-| **3** | **Skeleton loading system** — Create `.kuro-skeleton` class using `rgba(12,16,24,0.55)` with the existing gold shimmer pulse animation. Build skeleton variants for cards, stat boxes, and list rows. Apply to leaderboard, community pulls, and data import loading states. No spinners. | D-MOTION-1, D-STATE-2 | `appcore-providers.jsx` (KuroStyles — skeleton classes), `App.jsx` (loading states in leaderboard, import) | ~45 min |
+| ~~**3**~~ | ~~**Skeleton loading system**~~ ✅ DONE — Created `.kuro-skeleton` class family with gold shimmer animation. Variants: `-row`, `-stat`, `-text`, `-circle`. Replaced "Loading..." text in leaderboard, community pulls (null state), and admin player list with contextual skeleton UI. | D-MOTION-1, D-STATE-2 | `appcore-providers.jsx`, `App.jsx` | ✅ |
 | **4** | **5★ rarity glow in Collection grid** — Add subtle gold `box-shadow` or faint radial background to 5★ character cards in the collection grid. Use the existing `.glow-gold` class pattern but at reduced intensity (~0.08 opacity). | D-HIERARCHY-2 | `appcore-components.jsx` (CollectionGridCard or equivalent) | ~15 min |
 | **5** | **Banner card rest-state glow** — Add persistent low-opacity gold `box-shadow: 0 0 40px rgba(237,175,24,0.06)` to the active banner card at rest (not just on hover). Subtle enough to signal primacy without overloading. | D-ATMOSPHERE-1 | `App.jsx` (banner card styling) | ~10 min |
 | **6** | **Icon expressiveness** — Add subtle glow/stroke treatment to key navigation tab icons (Tracker, Stats, Collection, Profile). Use `filter: drop-shadow()` with element-appropriate colors when active. Tighten icon container sizing from 32px → 24px, or increase icon size from 14px → 18px. | D-ICON-1, D-ICON-2 | `App.jsx` (tab bar icons), `appcore-providers.jsx` (KuroStyles — icon classes) | ~20 min |
