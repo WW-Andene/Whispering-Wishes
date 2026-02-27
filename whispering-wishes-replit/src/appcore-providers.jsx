@@ -374,6 +374,12 @@ const KuroStyles = memo(({ oledMode }) => (
       --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
       --bg-input: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
       --bg-stat: ${oledMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
+      /* D-TOKEN-1: Border opacity tokens — replaces 30+ raw rgba(255,255,255,0.xx) border values */
+      --border-subtle: rgba(255,255,255,0.06);
+      --border-default: rgba(255,255,255,0.08);
+      --border-medium: rgba(255,255,255,0.1);
+      --border-hover: rgba(255,255,255,0.15);
+      --border-bright: rgba(255,255,255,0.2);
     }
     
     /* Hide scrollbar on specific horizontal scroll containers */
@@ -543,7 +549,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ PITY RING ═══ */
     .pity-ring-track {
       fill: none;
-      stroke: rgba(255,255,255,0.06);
+      stroke: var(--border-subtle);
     }
     .pity-ring-fill {
       fill: none;
@@ -623,7 +629,7 @@ const KuroStyles = memo(({ oledMode }) => (
       position: relative;
       z-index: 5;
       background: var(--bg-card);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-default);
       border-radius: 16px;
       overflow: visible;
       backdrop-filter: blur(4px);
@@ -637,7 +643,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-card:hover {
-        border-color: rgba(255, 255, 255, 0.15);
+        border-color: var(--border-hover);
         transform: translateY(-2px);
         box-shadow: 
           0 8px 32px rgba(0, 0, 0, 0.6),
@@ -694,8 +700,8 @@ const KuroStyles = memo(({ oledMode }) => (
       right: 8px;
       width: 12px;
       height: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      border-top: 1px solid var(--border-bright);
+      border-right: 1px solid var(--border-bright);
       border-radius: 0 4px 0 0;
       z-index: 2;
       opacity: 0.85;
@@ -708,8 +714,8 @@ const KuroStyles = memo(({ oledMode }) => (
       left: 8px;
       width: 12px;
       height: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-      border-left: 1px solid rgba(255, 255, 255, 0.18);
+      border-bottom: 1px solid var(--border-bright);
+      border-left: 1px solid var(--border-bright);
       border-radius: 0 0 0 4px;
       z-index: 2;
       opacity: 0.85;
@@ -718,7 +724,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-header {
       position: relative;
       padding: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -767,7 +773,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-btn {
       position: relative;
       background: var(--bg-btn);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-medium);
       border-radius: 12px;
       padding: 10px 12px;
       color: var(--text-heading);
@@ -797,7 +803,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-btn:hover {
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: var(--border-bright);
         color: #ffffff;
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
@@ -876,7 +882,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ INPUTS - Glassy style ═══ */
     .kuro-input {
       background: var(--bg-input);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--border-bright);
       border-radius: 8px;
       padding: 10px 12px;
       color: #ffffff;
@@ -925,7 +931,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-stat {
       position: relative;
       background: var(--bg-stat);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--border-hover);
       border-radius: 10px;
       padding: 14px;
       text-align: center;
@@ -940,7 +946,7 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (hover: hover) {
       .kuro-stat:hover {
         transform: translateY(-1px);
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: var(--border-bright);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       }
     }
@@ -1237,7 +1243,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ DIVIDER ═══ */
     .kuro-divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
       margin: 12px 0;
     }
     
