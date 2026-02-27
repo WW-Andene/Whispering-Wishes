@@ -1149,6 +1149,108 @@ Character Risks (watch for these as the product scales):
 
 ---
 
+## XV. STATE DESIGN SYSTEM
+
+### §DST1. Empty State Design
+
+**Audit of all empty states:**
+
+```
+State location: Tracker tab (no imported history)
+  Current treatment: text-gray-400 message "Import your Convene history in Profile tab"
+                     + emerald-tinted action button "Go to Profile tab to import"
+  Character consistency: PARTIAL
+    ✓ Action button uses element-color glow (emerald active state)
+    ✗ Body text is neutral gray-400 — drops below the chromatic character floor
+    ✗ No atmospheric element — the void behind is visible but no focal atmosphere
+      marks this as a meaningful space
+  Recommendation:
+    - Replace text-gray-400 with oklch(55% 0.01 240) (cool-tinted muted text)
+    - Add a faint gold radial glow (opacity: 0.04) centered behind the text block —
+      a "waiting signal" that maintains the instrument-panel metaphor
+    - Consider larger typographic treatment for the primary message: 16-18px, font-weight: 500,
+      reading as "Ready to receive data" rather than "Nothing to show"
+
+State location: Stats tab (no data)
+  Current treatment: Similar to Tracker — text prompt + action button
+  Character consistency: PARTIAL (same gaps as Tracker)
+  Recommendation: Same treatment — share the empty state component pattern
+
+State location: Collection tab (no characters imported)
+  Current treatment: Grid area empty with minimal text
+  Character consistency: PARTIAL
+  Recommendation: The empty collection grid could show a ghost-grid of card placeholders
+    (8-12 empty card outlines at 0.05 opacity) with the shimmer line still pulsing —
+    a "this space is designed and waiting" signal rather than blank void.
+
+State location: Profile tab (not yet configured)
+  Current treatment: Import flow with step-by-step onboarding cards
+  Character consistency: ✓ CONSISTENT — onboarding uses gold-accented step cards with
+    proper atmospheric treatment. This is the strongest empty-state design in the app.
+```
+
+**[MEDIUM] D-STATE-1: Empty states lose atmospheric character**
+
+The Profile onboarding flow demonstrates that character-positive empty states are achievable in this app (gold-accented cards, atmospheric treatment). The Tracker, Stats, and Collection empty states should receive the same investment level — a shared empty-state component with cool-tinted text, subtle gold radial glow, and larger typographic treatment for the primary message.
+
+### §DST2. Loading State Design
+
+**Audit of all loading states:**
+
+```
+Location: Initial app load
+  Type: None — canvas background renders immediately, content stagger-enters
+  Geometry match: N/A
+  Palette match: N/A
+  Animation character: Canvas wave begins immediately, providing atmosphere while
+    content populates. Card stagger (50ms intervals) creates a progressive reveal.
+  Assessment: ✓ Effective for short load times — the canvas animation IS the
+    loading state. The app feels "alive" immediately.
+
+Location: Tab switches (Tracker → Stats → Collection → Profile)
+  Type: Tab fade animation (tabFadeIn, 350ms ease-out)
+  Geometry match: N/A — cross-fade between full tab content
+  Palette match: ✓ — tab content maintains the same surface vocabulary
+  Animation character: ✓ — uses the app's signature easing
+  Assessment: ✓ Correct — tab switches are fast enough that no dedicated
+    loading state is needed.
+
+Location: Data import (Profile tab → import Convene history)
+  Type: None — async operation with no loading indicator
+  Geometry match: N/A
+  Palette match: N/A
+  Animation character: N/A
+  Assessment: ⚠ GAP — data import is the longest user-facing operation.
+    During import, the user sees no feedback. This is the one location
+    where a designed loading state is needed.
+
+Location: Character detail modal (collection)
+  Type: None — modal opens immediately with data already available
+  Geometry match: N/A
+  Palette match: N/A
+  Assessment: ✓ No loading state needed — data is client-side.
+```
+
+**[MEDIUM] D-STATE-2: Data import has no loading feedback**
+
+The Convene history import (Profile tab) is the longest operation a user performs. Currently there is no visual feedback during the import process. Design a character-appropriate loading treatment:
+
+```
+LOADING STATE SPECIFICATION — Data Import
+  Type:       Ambient pulse (unknown duration, background process)
+  Visual:     The import button transitions to a "processing" state:
+              - Button text changes to "Importing..."
+              - Gold border pulse animation (borderGlow 2s infinite, already exists)
+              - Stat boxes below could show shimmer-line skeleton cards
+                (card outlines with the existing ::after shimmer line pulsing)
+  Color:      Gold accent at 0.15 opacity (matches active-gold button state)
+  Duration:   Indeterminate — use the breathing pulse, not a progress bar
+  Character:  "Systems processing" — the instrument panel is working. The gold
+              pulse says "something valuable is being computed." No spinner.
+```
+
+---
+
 ## FINDINGS SUMMARY
 
 | ID | Severity | Finding | Section |
