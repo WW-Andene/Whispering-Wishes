@@ -381,6 +381,54 @@ The app has no dedicated skeleton loaders, shimmer placeholders, or loading indi
 
 The app uses a mobile-first single-column layout with tab navigation. This naturally creates an F-pattern where the top (header + server selector) and left-aligned content dominate reading flow. ✓ Correct for the form factor.
 
+### §DH3. Visual Weight Distribution
+
+**Weight map — Tracker tab (primary screen):**
+
+```
+Visual Weight Distribution (size × saturation × contrast)
+──────────────────────────────────────────────────────────
+┌─────────────────────────────────────┐
+│  Header (semi-transparent, sticky)  │  LOW weight — recedes correctly
+│  Server selector                    │
+├─────────────────────────────────────┤
+│  ████ BANNER CARD ████████████████  │  HIGHEST weight — character artwork
+│  ████ (character art + countdown) █ │  + gold accent + large surface area
+│  ████████████████████████████████████│  → ✓ Primary user focus
+├─────────────────────────────────────┤
+│  [Gold stat] [Cyan stat] [Pink stat]│  HIGH weight — element-colored
+│  Pity counts + % probabilities      │  glow badges at full saturation
+│                                     │  → ✓ Secondary reading (key data)
+├─────────────────────────────────────┤
+│  Pull history row 1                 │  MEDIUM weight — text-dominant,
+│  Pull history row 2                 │  muted colors, smaller elements
+│  Pull history row 3                 │  → ✓ Tertiary (historical data)
+│  ...                                │
+├─────────────────────────────────────┤
+│  [Tracker] [Stats] [Collection]     │  LOW weight — tab bar is navigation
+│  [Profile]                          │  scaffold, not content
+└─────────────────────────────────────┘
+```
+
+**Weight concentration:** ✓ Visual weight is concentrated at the banner card (top 30% of viewport) where the primary information lives. The element-colored stat boxes create a strong secondary band. Pull history rows correctly recede into tertiary reading.
+
+**Heavy corner test:** No heavy corner detected. The single-column mobile layout prevents asymmetric weight accumulation. Content is center-weighted with consistent left-aligned text.
+
+**The 80/20 test:** ✓ A user can accomplish their primary task (check pity count, see next banner) by interacting with only the top 25% of the screen (banner card + stat boxes). The pull history below is supplementary detail, not required for the core task.
+
+**Weight distribution by tab:**
+
+| Tab | Weight Anchor | Secondary | Assessment |
+|-----|--------------|-----------|------------|
+| Tracker | Banner card (character art) | Element-colored stat boxes | ✓ Clear hierarchy — primary info dominates |
+| Stats | Probability charts + large numbers | Secondary stat breakdowns | ✓ Numbers carry appropriate weight |
+| Collection | Character grid (40×40px portraits) | Detail modal on tap | ✓ Grid creates even weight — intentional for browsing |
+| Profile | Import button (emerald glow) | Settings toggles | ✓ Primary action (import) is the heaviest element |
+
+**[POLISH] D-HIERARCHY-2: Collection tab has uniform visual weight across all characters**
+
+In the Collection grid, all characters have identical visual weight (same size portrait, same border treatment). For a gacha companion, 5-star characters could carry slightly more weight (larger portrait, glow border, or element-color tint) to create a natural hierarchy that mirrors the game's rarity system. This would make the grid scannable by rarity without requiring the user to read star counts.
+
 ### §DH4. Contrast as Composition
 
 **Value contrast:** Excellent. The near-black void (`#010204`) creates maximum contrast with the translucent card surfaces, which in turn contrast with bright accent colors. The hierarchy is: void → card → accent glow.
