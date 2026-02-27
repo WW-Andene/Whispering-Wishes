@@ -747,6 +747,7 @@ const KuroStyles = memo(({ oledMode }) => (
       font-family: var(--font-display);
       font-size: 14px;
       font-weight: 600;
+      line-height: 1.25;
       letter-spacing: 0.03em;
       display: flex;
       align-items: center;
@@ -937,6 +938,7 @@ const KuroStyles = memo(({ oledMode }) => (
       text-align: center;
       overflow: hidden;
       font-family: var(--font-data);
+      line-height: 1.3;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       font-variant-numeric: tabular-nums;
@@ -1055,6 +1057,7 @@ const KuroStyles = memo(({ oledMode }) => (
       color: var(--text-body);
       font-family: var(--font-display);
       font-size: 11px;
+      line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
@@ -1178,6 +1181,7 @@ const KuroStyles = memo(({ oledMode }) => (
       font-family: var(--font-data);
       font-variant-numeric: tabular-nums;
       font-weight: 700;
+      line-height: 1.2;
     }
 
     /* D-TYPE-4: Scoreboard numeral treatment for countdown timers */
