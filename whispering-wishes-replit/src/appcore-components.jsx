@@ -1068,13 +1068,14 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   return (
     <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
-        <img 
-          src={imgUrl} 
-          alt={item.name} 
+        <img
+          src={imgUrl}
+          alt={item.name}
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             zIndex: 1,
             opacity: pictureOpacity,
+            objectPosition: item.imagePosition || 'center',
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient
           }}

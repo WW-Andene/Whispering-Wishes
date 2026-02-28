@@ -237,7 +237,9 @@ function WhisperingWishesInner() {
     charsJson: JSON.stringify(banners.characters, null, 2),
     weapsJson: JSON.stringify(banners.weapons, null, 2),
     charImages: Object.fromEntries((banners.characters || []).map((c, i) => [i, c.imageUrl || ''])),
+    charImagePositions: Object.fromEntries((banners.characters || []).map((c, i) => [i, c.imagePosition || ''])),
     weapImages: Object.fromEntries((banners.weapons || []).map((w, i) => [i, w.imageUrl || ''])),
+    weapImagePositions: Object.fromEntries((banners.weapons || []).map((w, i) => [i, w.imagePosition || ''])),
     standardCharImg: banners.standardCharBannerImage || '',
     standardWeapImg: banners.standardWeapBannerImage || '',
     wwImg: banners.whimperingWastesImage || '',
@@ -6744,6 +6746,15 @@ Example: {"pulls":[...]}'
                             className="kuro-input flex-1 text-[10px] py-1"
                             aria-label={`${c.name} image URL`}
                           />
+                          <input
+                            type="text"
+                            placeholder="center 20%"
+                            value={bannerForm.charImagePositions[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, charImagePositions: { ...prev.charImagePositions, [i]: e.target.value } }))}
+                            className="kuro-input w-24 text-[10px] py-1"
+                            aria-label={`${c.name} image position`}
+                            title="CSS object-position (e.g. center 20%)"
+                          />
                         </div>
                       ))}
                     </div>
@@ -6762,6 +6773,15 @@ Example: {"pulls":[...]}'
                             onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
                             aria-label={`${w.name} image URL`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="center 30%"
+                            value={bannerForm.weapImagePositions[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, weapImagePositions: { ...prev.weapImagePositions, [i]: e.target.value } }))}
+                            className="kuro-input w-24 text-[10px] py-1"
+                            aria-label={`${w.name} image position`}
+                            title="CSS object-position (e.g. center 30%)"
                           />
                         </div>
                       ))}
@@ -6883,11 +6903,15 @@ Example: {"pulls":[...]}'
                             if (!c.id || !c.name) throw new Error(`Character ${i + 1} missing id or name`);
                             const img = (bannerForm.charImages[i] ?? '').trim();
                             if (img) { validateImgUrl(img, `Character ${i + 1} image`); c.imageUrl = img; }
+                            const pos = (bannerForm.charImagePositions[i] ?? '').trim();
+                            if (pos) c.imagePosition = pos;
                           });
                           weaps.forEach((w, i) => {
                             if (!w.id || !w.name) throw new Error(`Weapon ${i + 1} missing id or name`);
                             const img = (bannerForm.weapImages[i] ?? '').trim();
                             if (img) { validateImgUrl(img, `Weapon ${i + 1} image`); w.imageUrl = img; }
+                            const pos = (bannerForm.weapImagePositions[i] ?? '').trim();
+                            if (pos) w.imagePosition = pos;
                           });
                           const startDate = new Date(bannerForm.startDate);
                           const endDate = new Date(bannerForm.endDate);
