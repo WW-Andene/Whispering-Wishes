@@ -176,6 +176,10 @@ const checkFirebaseRateLimit = (pathKey) => {
   firebaseWriteTimestamps.set(pathKey, now);
   return true; // allowed
 };
+const stampFirebaseRateLimit = (pathKey) => {
+  firebaseWriteTimestamps.set(pathKey, Date.now());
+};
+const LOCAL_LEADERBOARD_KEY = 'ww-leaderboard-local';
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
@@ -1119,7 +1123,8 @@ function WhisperingWishesInner() {
       }
     } catch (e) {
       console.error('Leaderboard load error:', e);
-      // Fallback to Claude storage if available
+      // Fallback to Replit storage if available
+      let fallbackEntries = [];
       if (hasReplitStorage) {
         try {
           const result = await window.storage.list('luck:', true);
@@ -1132,13 +1137,23 @@ function WhisperingWishesInner() {
                 } catch { return null; }
               })
             );
-            const valid = entries.filter(e => e && e.avgPity && e.id);
-            valid.sort((a, b) => a.avgPity - b.avgPity);
-            setAllLeaderboardEntries(valid); // full list for community stats
-            setLeaderboardData(valid.slice(0, 20));
+            fallbackEntries = entries.filter(e => e && e.avgPity && e.id);
           }
-        } catch { setLeaderboardData([]); }
+        } catch { /* Replit storage unavailable */ }
       }
+      // Also merge localStorage entries (saved when Firebase is unavailable)
+      try {
+        const localData = JSON.parse(localStorage.getItem(LOCAL_LEADERBOARD_KEY) || '{}');
+        const localEntries = Object.values(localData).filter(e => e && e.avgPity && e.id);
+        // Merge: localStorage entries override fallback entries with same id
+        const merged = new Map();
+        fallbackEntries.forEach(e => merged.set(e.id, e));
+        localEntries.forEach(e => merged.set(e.id, e));
+        fallbackEntries = [...merged.values()];
+      } catch { /* localStorage unavailable */ }
+      fallbackEntries.sort((a, b) => a.avgPity - b.avgPity);
+      setAllLeaderboardEntries(fallbackEntries);
+      setLeaderboardData(fallbackEntries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
     }
     setLeaderboardLoading(false);
     leaderboardLoadingRef.current = false;
@@ -1173,12 +1188,14 @@ function WhisperingWishesInner() {
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
     if (submittingRef.current) return; // prevent double-submit
-    // P13-FIX: HIGH-2 — Rate limit leaderboard writes
-    if (!checkFirebaseRateLimit('leaderboard-submit')) {
+    // P13-FIX: HIGH-2 — Rate limit leaderboard writes (check only; stamp on successful write)
+    const now = Date.now();
+    const lastWrite = firebaseWriteTimestamps.get('leaderboard-submit') || 0;
+    if (now - lastWrite < FIREBASE_WRITE_COOLDOWN_MS) {
       toast?.addToast?.('Please wait a few seconds before submitting again', 'error');
       return;
     }
-    
+
     // P13-FIX: MEDIUM-4 — Require explicit consent via accessible custom modal before first submission
     if (!leaderboardConsented) {
       const consent = await new Promise(resolve => {
@@ -1189,13 +1206,11 @@ function WhisperingWishesInner() {
       setLeaderboardConsented(true);
       try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
     }
-    
+
     submittingRef.current = true;
     setLeaderboardSubmitting(true);
     try {
-      // P13-FIX: HIGH-3 — Validate entry bounds before submission to prevent fabricated stats.
-      // Server-side validation via Firebase Security Rules (database.rules.json) is the real enforcement;
-      // this client-side check provides early feedback and prevents accidental garbage data.
+      // P13-FIX: HIGH-3 — Validate entry bounds before submission
       const avgPity = parseFloat(overallStats.avgPity);
       const pulls = overallStats.fiveStars ?? 0;
       const totalPulls = overallStats.totalPulls ?? 0;
@@ -1208,11 +1223,10 @@ function WhisperingWishesInner() {
       if (lost5050 < 0 || lost5050 > pulls) throw new Error('Invalid 50/50 loss count');
       if (effectiveLeaderboardId.length > 64) throw new Error('Leaderboard ID too long');
 
-      // P13-FIX: HIGH-5 — Hash UID before storing in Firebase for privacy
       const hashedUid = await hashUidForStorage(state.profile.uid);
       const entry = {
         id: effectiveLeaderboardId,
-        uid: hashedUid, // P8-FIX: Store game UID for cross-device dedup (now hashed for privacy)
+        uid: hashedUid,
         avgPity,
         pulls,
         totalPulls,
@@ -1220,86 +1234,64 @@ function WhisperingWishesInner() {
         lost5050,
         timestamp: Date.now()
       };
-      // P8-FIX: CRIT-4 — Authenticate before writing
+
+      // Try Firebase first, fall back to localStorage if auth/write fails
+      let firebaseSuccess = false;
       const authToken = await getFirebaseAuth();
-      // P14-FIX: HIGH-1 — Fail closed: require auth token for all Firebase operations
-      if (!authToken) throw new Error('Authentication required');
-      const authParam = `?auth=${authToken}`;
-      // P8-FIX: Use effectiveLeaderboardId as Firebase key — same UID across devices overwrites instead of duplicating
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      });
-      if (!res.ok) throw new Error('Firebase submit failed');
-      
-      // Submit owned 5★ for community "Most Pulled" ranking
-      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-        const pullsRes = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
-        });
-        if (!pullsRes.ok) console.warn('Community-pulls PUT failed:', pullsRes.status);
-      }
-      
-      toast?.addToast?.('Score submitted to leaderboard!', 'success');
-      
-      // P8-FIX: Clean up stale duplicate entries from before UID-based keying
-      // Step 1: Delete this device's old random-ID entry if we switched to UID
-      if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
+      if (authToken) {
         try {
-          await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-          await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-        } catch { /* best-effort cleanup */ }
-      }
-      // Step 2: Fetch raw leaderboard and find other stale entries with matching stats from other devices' old random IDs
-      if (state.profile.uid) {
-        try {
-          const rawRes = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
-          if (rawRes.ok) {
-            const rawData = await rawRes.json();
-            if (rawData) {
-              const myAvg = parseFloat(overallStats.avgPity);
-              const myPulls = overallStats.totalPulls ?? 0;
-              const myFives = overallStats.fiveStars ?? 0;
-              const myWon = overallStats.won5050 ?? 0;
-              const myLost = overallStats.lost5050 ?? 0;
-              const staleKeys = Object.entries(rawData)
-                .filter(([key, e]) =>
-                  key !== effectiveLeaderboardId && // not the new UID entry
-                  key !== userLeaderboardId && // already handled above
-                  (!e.uid || e.uid === hashedUid) && // no uid OR same hashed uid (old duplicate)
-                  e.avgPity === myAvg &&
-                  e.totalPulls === myPulls &&
-                  e.pulls === myFives &&
-                  (e.won5050 ?? 0) === myWon &&
-                  (e.lost5050 ?? 0) === myLost
-                )
-                .map(([key]) => key);
-              for (const key of staleKeys) {
-                try {
-                  await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${key}.json${authParam}`, { method: 'DELETE' });
-                  await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${key}.json${authParam}`, { method: 'DELETE' });
-                } catch { /* best-effort */ }
-              }
-              if (staleKeys.length > 0) {
-                // AUDIT-FIX L1: Remove debug logging in production
-              }
+          const authParam = `?auth=${authToken}`;
+          const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+          });
+          if (res.ok) {
+            firebaseSuccess = true;
+            stampFirebaseRateLimit('leaderboard-submit');
+            // Submit owned 5★ for community "Most Pulled" ranking
+            const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
+            const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+            const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+            const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+            if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
+              try {
+                await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
+                });
+              } catch { /* community-pulls is best-effort */ }
+            }
+            // Clean up stale duplicate entries
+            if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
+              try {
+                await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
+                await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
+              } catch { /* best-effort cleanup */ }
             }
           }
-        } catch { /* cleanup is best-effort */ }
+        } catch { /* Firebase write failed — will fall back to localStorage */ }
       }
-      
+
+      // Always save to localStorage as fallback/cache
+      try {
+        const localData = JSON.parse(localStorage.getItem(LOCAL_LEADERBOARD_KEY) || '{}');
+        localData[effectiveLeaderboardId] = entry;
+        localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(localData));
+      } catch { /* localStorage full or unavailable */ }
+
+      if (firebaseSuccess) {
+        toast?.addToast?.('Score submitted to leaderboard!', 'success');
+      } else {
+        toast?.addToast?.('Score saved locally (server unavailable)', 'info');
+      }
+
       loadLeaderboard();
       loadCommunityPulls();
     } catch (e) {
       console.error('Submit error:', e);
-      toast?.addToast?.('Failed to submit score', 'error');
+      toast?.addToast?.('Failed to submit: ' + e.message, 'error');
     } finally {
       submittingRef.current = false;
       setLeaderboardSubmitting(false);
