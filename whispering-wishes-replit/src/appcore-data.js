@@ -142,11 +142,11 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'luuk-herssen', name: 'Luuk Herssen', title: 'Should That Molten Gold Drip', element: 'Spectro', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Kc4nxTrD/post-lament-anthropocene-stars-intertwined-luuk-herssen-v0-b4p94ck3quag1.jpg', imagePosition: 'center top' },
+    { id: 'luuk-herssen', name: 'Luuk Herssen', title: 'Should That Molten Gold Drip', element: 'Spectro', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Kc4nxTrD/post-lament-anthropocene-stars-intertwined-luuk-herssen-v0-b4p94ck3quag1.jpg' },
     { id: 'galbrena', name: 'Galbrena', title: 'Fiend of Ever-Burning Flame', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/rGyhGWWd/galbrena-drip-marketing-v0-xcdhhporc2nf1.jpg' },
   ],
   weapons: [
-    { id: 'daybreakers-spine', name: "Daybreaker's Spine", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Luuk Herssen', element: 'Spectro', isNew: true, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/DPYTDNRG/IMG-20260204-001043.png', imagePosition: 'left center' },
+    { id: 'daybreakers-spine', name: "Daybreaker's Spine", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Luuk Herssen', element: 'Spectro', isNew: true, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/DPYTDNRG/IMG-20260204-001043.png' },
     { id: 'lux-umbra', name: 'Lux & Umbra', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Galbrena', element: 'Fusion', isNew: false, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/cSWsQcds/HB6tgp-Baw-AASr-C.jpg' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
