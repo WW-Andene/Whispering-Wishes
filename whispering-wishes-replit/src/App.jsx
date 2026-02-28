@@ -881,6 +881,16 @@ function WhisperingWishesInner() {
   const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
   const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
+  // Pre-compute hashed UID for leaderboard "You" comparison (entry.uid is hashed, state.profile.uid is raw)
+  const [hashedProfileUid, setHashedProfileUid] = useState(null);
+  useEffect(() => {
+    if (state.profile.uid) {
+      hashUidForStorage(state.profile.uid).then(setHashedProfileUid);
+    } else {
+      setHashedProfileUid(null);
+    }
+  }, [state.profile.uid]);
+
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
   // 6.1 fix: Focus trapping for inline modals — Tab wraps within modal, auto-focus first element, restore on close
@@ -1097,8 +1107,10 @@ function WhisperingWishesInner() {
           });
           const entries = [...deduped.values()];
           entries.sort((a, b) => a.avgPity - b.avgPity);
+          setAllLeaderboardEntries(entries); // full list for community stats
           setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
         } else {
+          setAllLeaderboardEntries([]);
           setLeaderboardData([]);
         }
       } else {
@@ -1121,6 +1133,7 @@ function WhisperingWishesInner() {
             );
             const valid = entries.filter(e => e && e.avgPity && e.id);
             valid.sort((a, b) => a.avgPity - b.avgPity);
+            setAllLeaderboardEntries(valid); // full list for community stats
             setLeaderboardData(valid.slice(0, 20));
           }
         } catch { setLeaderboardData([]); }
@@ -1396,8 +1409,13 @@ function WhisperingWishesInner() {
         } else {
           setAdminPlayerList([]);
         }
+      } else {
+        setAdminPlayerList([]);
       }
-    } catch (e) { console.error('Admin player list fetch error:', e); }
+    } catch (e) {
+      console.error('Admin player list fetch error:', e);
+      setAdminPlayerList([]); // Show empty state instead of perpetual loading skeleton
+    }
   }, [getFirebaseAuth]);
 
   // Start heartbeat on mount, clean up on unmount
@@ -1426,11 +1444,11 @@ function WhisperingWishesInner() {
   }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount, fetchAdminPlayerList]);
 
   // Community stats aggregated from leaderboard entries
-  // Note: leaderboardData is limited to top-20 by avgPity (luckiest players),
-  // so these stats skew favorable and don't represent the full player base
+  // Community stats from ALL leaderboard entries (not just displayed top-20)
+  const [allLeaderboardEntries, setAllLeaderboardEntries] = useState([]);
   const communityStats = useMemo(() => {
-    if (!leaderboardData.length) return null;
-    const entries = leaderboardData;
+    if (!allLeaderboardEntries.length) return null;
+    const entries = allLeaderboardEntries;
     const totalPlayers = entries.length;
     const avgPityAll = (entries.reduce((s, e) => s + e.avgPity, 0) / totalPlayers).toFixed(1);
     const totalFiveStars = entries.reduce((s, e) => s + (e.pulls ?? 0), 0);
@@ -1441,7 +1459,7 @@ function WhisperingWishesInner() {
     const luckiest = entries.length > 0 ? entries.reduce((min, e) => e.avgPity < min.avgPity ? e : min) : null;
     const unluckiest = entries.length > 0 ? entries.reduce((max, e) => e.avgPity > max.avgPity ? e : max) : null;
     return { totalPlayers, avgPityAll, totalFiveStars, totalPullsAll, totalWon, totalLost, globalWinRate, luckiest, unluckiest };
-  }, [leaderboardData]);
+  }, [allLeaderboardEntries]);
 
   // Trophies/Badges computation
   const trophies = useMemo(() => {
@@ -3977,8 +3995,8 @@ function WhisperingWishesInner() {
                               </div>
                             ) : (
                               leaderboardData.map((entry, i) => {
-                                const isYou = entry.id === effectiveLeaderboardId || 
-                                  (entry.uid && entry.uid === state.profile.uid) ||
+                                const isYou = entry.id === effectiveLeaderboardId ||
+                                  (entry.uid && hashedProfileUid && entry.uid === hashedProfileUid) ||
                                   (!entry.uid && overallStats?.avgPity && entry.avgPity === parseFloat(overallStats.avgPity) && entry.totalPulls === (overallStats.totalPulls ?? 0) && entry.pulls === (overallStats.fiveStars ?? 0));
                                 return (
                                   <div 
@@ -6586,7 +6604,7 @@ Example: {"pulls":[...]}'
                                     )}
                                   </div>
                                   <div className="flex items-center gap-3 ml-6 mt-0.5">
-                                    <span className="text-gray-400 text-[9px]">Avg: <span className="text-yellow-400">{p.avgPity}</span></span>
+                                    <span className="text-gray-400 text-[9px]">Avg: <span className="text-yellow-400">{typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity}</span></span>
                                     <span className="text-gray-400 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
                                     <span className="text-gray-400 text-[9px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
                                     <span className="text-gray-400 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
