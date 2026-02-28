@@ -45,12 +45,12 @@ const TROPHY_ICON_MAP = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Z
 
 const generateMaskGradient = (fadePos, fadeIntensity) => {
   if (fadePos === undefined || fadeIntensity === undefined) {
-    return 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0.9) 85%, rgba(0,0,0,0.5) 94%, rgba(0,0,0,0) 100%)';
+    return 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)';
   }
   const maxOpacity = fadeIntensity / 100;
   const endPos = fadePos;
   if (endPos <= 10) {
-    return `linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 85%, rgba(0,0,0,0) 100%)`;
+    return `linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
   }
   const steps = [`rgba(0,0,0,0) 0%`];
   const fadeStart = Math.max(0, endPos - 40);
@@ -60,10 +60,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
     const opacity = maxOpacity * (i / 5);
     steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
   }
-  // Right-side fade: hold full opacity, then fade out at the right edge
-  steps.push(`rgba(0,0,0,${maxOpacity}) 85%`);
-  steps.push(`rgba(0,0,0,${(maxOpacity * 0.55).toFixed(2)}) 94%`);
-  steps.push(`rgba(0,0,0,0) 100%`);
+  steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
   return `linear-gradient(to right, ${steps.join(', ')})`;
 };
 
@@ -1069,13 +1066,15 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, background: '#050a14', boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <img
           src={imgUrl}
           alt={item.name}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute w-full h-full object-cover"
           style={{
+            top: '-1px', left: '-1px', right: '-1px', bottom: '-1px',
+            width: 'calc(100% + 2px)', height: 'calc(100% + 2px)',
             zIndex: 1,
             opacity: pictureOpacity,
             objectPosition: item.imagePosition || 'center',
