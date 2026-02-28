@@ -851,6 +851,7 @@ function WhisperingWishesInner() {
 
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardSubmitting, setLeaderboardSubmitting] = useState(false);
   const [leaderboardTab, setLeaderboardTab] = useState('rankings'); // 'rankings' or 'popular'
   const [communityPulls, setCommunityPulls] = useState(null);
   const [userLeaderboardId] = useState(() => {
@@ -1143,6 +1144,31 @@ function WhisperingWishesInner() {
     leaderboardLoadingRef.current = false;
   }, [hasReplitStorage, getFirebaseAuth]);
   
+  const loadCommunityPulls = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
+      // P14-FIX: HIGH-1 — Fail closed
+      if (!authToken) throw new Error('Authentication required');
+      const authParam = `?auth=${authToken}`;
+      const res = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls.json${authParam}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const charCounts = {};
+          const weapCounts = {};
+          const playerCount = Object.keys(data).length;
+          Object.values(data).forEach(entry => {
+            (entry.chars || []).forEach(name => { charCounts[name] = (charCounts[name] || 0) + 1; });
+            (entry.weaps || []).forEach(name => { weapCounts[name] = (weapCounts[name] || 0) + 1; });
+          });
+          const sortedChars = Object.entries(charCounts).sort((a, b) => b[1] - a[1]);
+          const sortedWeaps = Object.entries(weapCounts).sort((a, b) => b[1] - a[1]);
+          setCommunityPulls({ chars: sortedChars, weaps: sortedWeaps, playerCount });
+        }
+      }
+    } catch (e) { console.error('Community pulls load error:', e); }
+  }, [getFirebaseAuth]);
+
   const submittingRef = useRef(false);
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
@@ -1165,6 +1191,7 @@ function WhisperingWishesInner() {
     }
     
     submittingRef.current = true;
+    setLeaderboardSubmitting(true);
     try {
       // P13-FIX: HIGH-3 — Validate entry bounds before submission to prevent fabricated stats.
       // Server-side validation via Firebase Security Rules (database.rules.json) is the real enforcement;
@@ -1269,38 +1296,15 @@ function WhisperingWishesInner() {
       }
       
       loadLeaderboard();
+      loadCommunityPulls();
     } catch (e) {
       console.error('Submit error:', e);
       toast?.addToast?.('Failed to submit score', 'error');
     } finally {
       submittingRef.current = false;
+      setLeaderboardSubmitting(false);
     }
-  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, leaderboardConsented, getFirebaseAuth]);
-  
-  const loadCommunityPulls = useCallback(async () => {
-    try {
-      const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
-      // P14-FIX: HIGH-1 — Fail closed
-      if (!authToken) throw new Error('Authentication required');
-      const authParam = `?auth=${authToken}`;
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls.json${authParam}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          const charCounts = {};
-          const weapCounts = {};
-          const playerCount = Object.keys(data).length;
-          Object.values(data).forEach(entry => {
-            (entry.chars || []).forEach(name => { charCounts[name] = (charCounts[name] || 0) + 1; });
-            (entry.weaps || []).forEach(name => { weapCounts[name] = (weapCounts[name] || 0) + 1; });
-          });
-          const sortedChars = Object.entries(charCounts).sort((a, b) => b[1] - a[1]);
-          const sortedWeaps = Object.entries(weapCounts).sort((a, b) => b[1] - a[1]);
-          setCommunityPulls({ chars: sortedChars, weaps: sortedWeaps, playerCount });
-        }
-      }
-    } catch (e) { console.error('Community pulls load error:', e); }
-  }, [getFirebaseAuth]);
+  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth]);
 
   useEffect(() => {
     if (showLeaderboard) {
@@ -4143,7 +4147,7 @@ function WhisperingWishesInner() {
                         </div>
                       )}
                       <div className="p-4 border-t border-white/10 space-y-2">
-                        {effectiveLeaderboardId && overallStats?.avgPity && (
+                        {effectiveLeaderboardId && overallStats?.avgPity && overallStats.avgPity !== '—' ? (
                           <>
                             <div className="flex items-center justify-between text-[10px]">
                               <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-500 ml-1">(UID)</span>}</span>
@@ -4151,14 +4155,14 @@ function WhisperingWishesInner() {
                             </div>
                             <button
                               onClick={submitToLeaderboard}
-                              className="w-full kuro-btn active-cyan py-2 text-xs font-medium"
+                              disabled={leaderboardSubmitting}
+                              className={`w-full kuro-btn active-cyan py-2 text-xs font-medium ${leaderboardSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              Submit My Score
+                              {leaderboardSubmitting ? 'Submitting…' : 'Submit My Score'}
                             </button>
                             <p className="text-gray-400 text-[9px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
-                        )}
-                        {!overallStats?.avgPity && (
+                        ) : (
                           <p className="text-gray-500 text-[10px] text-center">Import convene history to participate</p>
                         )}
                       </div>
