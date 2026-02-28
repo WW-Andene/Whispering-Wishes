@@ -1109,7 +1109,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
       </div>
       
       {stats && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15 rounded-b-xl" style={BANNER_CARD_OVERLAY_STYLE}>
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15" style={BANNER_CARD_OVERLAY_STYLE}>
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
