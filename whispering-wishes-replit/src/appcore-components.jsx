@@ -1076,8 +1076,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             zIndex: 1,
             opacity: pictureOpacity,
             objectPosition: item.imagePosition || 'center',
-            filter: item.imageBrightness ? `brightness(${item.imageBrightness})` : undefined,
-            backgroundColor: '#010204',
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient
           }}
