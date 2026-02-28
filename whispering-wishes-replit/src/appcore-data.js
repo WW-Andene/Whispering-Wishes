@@ -123,12 +123,12 @@ const getServerOffset = (server, atDate) => {
 
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
-  version: '3.1', phase: 1, // Game version (not app version)
+  version: '3.1', phase: 2, // Game version (not app version)
   // Times from wuwatracker.com (Europe CET/CEST reference, converted to UTC)
-  // P9-FIX: Feb is CET (UTC+1) — these conversions are correct for winter
-  // Banner: Thu, 05 Feb 2026 03:00 - Thu, 26 Feb 2026 09:59 (Europe CET)
-  startDate: '2026-02-05T02:00:00Z', // Feb 5, 03:00 Europe = 02:00 UTC
-  endDate: '2026-02-26T08:59:00Z',   // Feb 26, 09:59 Europe = 08:59 UTC
+  // Feb is CET (UTC+1) — these conversions are correct for winter
+  // Banner: Thu, 26 Feb 2026 10:00 - Wed, 18 Mar 2026 11:59 (Europe CET)
+  startDate: '2026-02-26T09:00:00Z', // Feb 26, 10:00 Europe = 09:00 UTC
+  endDate: '2026-03-18T10:59:00Z',   // Mar 18, 11:59 Europe = 10:59 UTC
   characterBannerImage: '',
   weaponBannerImage: '',
   eventBannerImage: '',
@@ -142,14 +142,12 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'aemeath', name: 'Aemeath', title: 'The Star That Voyages Far', element: 'Fusion', weaponType: 'Sword', isNew: true, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/sdR97cQP/is-it-just-me-or-im-getting-big-xenoblade-vibes-from-aemeath-v0-qy9dmys1lqag1.jpg' },
-    { id: 'chisa', name: 'Chisa', title: 'Snowfield Melody', element: 'Havoc', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/KcYh2QNC/vvcistuu87vf1.jpg' },
-    { id: 'lupa', name: 'Lupa', title: 'Blazing Fang', element: 'Fusion', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Mortefi', 'Taoqi', 'Aalto'], imageUrl: 'https://i.ibb.co/Y4mKyFJm/Gq-Vx28sao-AAekz-H.jpg' },
+    { id: 'luuk-herssen', name: 'Luuk Herssen', title: 'Should That Molten Gold Drip', element: 'Spectro', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: '' },
+    { id: 'galbrena', name: 'Galbrena', title: 'Fiend of Ever-Burning Flame', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: '' },
   ],
   weapons: [
-    { id: 'everbright', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: true, featured4Stars: ['Commando of Conviction', 'Waning Redshift', 'Cadenza'], imageUrl: 'https://i.ibb.co/b5sWk8HR/featured-Image-6.jpg' },
-    { id: 'kumokiri', name: 'Kumokiri', title: 'Frigid Moon', type: 'Broadblade', forCharacter: 'Chisa', element: 'Havoc', isNew: false, featured4Stars: ['Commando of Conviction', 'Waning Redshift', 'Cadenza'], imageUrl: 'https://i.ibb.co/7BwnqBN/images-2026-02-04-T182250-074.jpg' },
-    { id: 'wildfire', name: 'Wildfire Mark', title: 'Scorching Trail', type: 'Broadblade', forCharacter: 'Lupa', element: 'Fusion', isNew: false, featured4Stars: ['Commando of Conviction', 'Waning Redshift', 'Cadenza'], imageUrl: 'https://i.ibb.co/1Y5gbsfC/684baaa5266f9f96e0cfb644f-MGLAQ5m03.webp' },
+    { id: 'daybreakers-spine', name: "Daybreaker's Spine", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Luuk Herssen', element: 'Spectro', isNew: true, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: '' },
+    { id: 'lux-umbra', name: 'Lux & Umbra', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Galbrena', element: 'Fusion', isNew: false, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: '' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -172,7 +170,7 @@ const CURRENT_BANNERS = {
 // [SECTION:HISTORY]
 const BANNER_HISTORY = [
   // Version 3.1
-  { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18', predicted: true },
+  { version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18' },
   { version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
   // Version 3.0
   { version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04' },
@@ -836,9 +834,9 @@ const EVENTS = {
     description: 'Combat challenge with token system', 
     resetType: '28 days', 
     color: 'cyan', 
-    // Mon, 19 Jan 2026 04:00 - Mon, 16 Feb 2026 03:59 (Europe)
-    // Feb 16, 03:59 Europe = Feb 16, 02:59 UTC
-    currentEnd: '2026-02-16T02:59:00Z',
+    // Mon, 16 Feb 2026 04:00 - Mon, 16 Mar 2026 03:59 (Europe)
+    // Mar 16, 03:59 Europe = Mar 16, 02:59 UTC
+    currentEnd: '2026-03-16T02:59:00Z',
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
@@ -865,7 +863,7 @@ const EVENTS = {
     resetType: 'Weekly (Monday)', 
     color: 'purple', 
     weeklyReset: true, 
-    rewards: '300 Astrite',
+    rewards: '160 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
     imageUrl: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg'
