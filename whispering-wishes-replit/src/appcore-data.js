@@ -142,7 +142,7 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'luuk-herssen', name: 'Luuk Herssen', title: 'Should That Molten Gold Drip', element: 'Spectro', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Kc4nxTrD/post-lament-anthropocene-stars-intertwined-luuk-herssen-v0-b4p94ck3quag1.jpg', imagePosition: 'center 20%' },
+    { id: 'luuk-herssen', name: 'Luuk Herssen', title: 'Should That Molten Gold Drip', element: 'Spectro', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Kc4nxTrD/post-lament-anthropocene-stars-intertwined-luuk-herssen-v0-b4p94ck3quag1.jpg', imagePosition: 'center 20%', imageBrightness: 0.55 },
     { id: 'galbrena', name: 'Galbrena', title: 'Fiend of Ever-Burning Flame', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/rGyhGWWd/galbrena-drip-marketing-v0-xcdhhporc2nf1.jpg', imagePosition: 'center 15%' },
   ],
   weapons: [
