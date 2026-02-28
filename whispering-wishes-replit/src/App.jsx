@@ -176,10 +176,6 @@ const checkFirebaseRateLimit = (pathKey) => {
   firebaseWriteTimestamps.set(pathKey, now);
   return true; // allowed
 };
-const stampFirebaseRateLimit = (pathKey) => {
-  firebaseWriteTimestamps.set(pathKey, Date.now());
-};
-const LOCAL_LEADERBOARD_KEY = 'ww-leaderboard-local';
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
@@ -1049,9 +1045,9 @@ function WhisperingWishesInner() {
   }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
   
   // Leaderboard functions — Firebase Realtime Database (constants at module level)
-  const hasReplitStorage = typeof window !== 'undefined' && !!window.storage;
-  
-  // P8-FIX: CRIT-4 — Firebase Anonymous Auth token management
+
+  // Firebase Anonymous Auth — tries to get a token, returns '' if auth unavailable.
+  // All Firebase requests work with or without auth (unauthenticated if token is empty).
   const firebaseAuthRef = useRef({ idToken: null, expiresAt: 0 });
   const getFirebaseAuth = useCallback(async () => {
     const now = Date.now();
@@ -1066,106 +1062,69 @@ function WhisperingWishesInner() {
       });
       if (!res.ok) throw new Error('Firebase auth failed');
       const data = await res.json();
-      firebaseAuthRef.current = { 
-        idToken: data.idToken, 
-        expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000 
+      firebaseAuthRef.current = {
+        idToken: data.idToken,
+        expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000
       };
       return data.idToken;
     } catch (e) {
-      // P14-FIX: HIGH-1 — Fail closed: don't fall back to unauthenticated requests.
-      // Returning null here previously allowed unauthenticated access, defeating the purpose of auth.
       console.warn('Firebase anonymous auth failed:', e);
-      return null; // Auth failed — callers must check for null and skip the request
+      return null;
     }
+  }, []);
+
+  // Helper: build Firebase URL with optional auth param
+  const firebaseUrl = useCallback((path, authToken) => {
+    const base = `${FIREBASE_DB}/${path}.json`;
+    return authToken ? `${base}?auth=${authToken}` : base;
   }, []);
   
   const leaderboardLoadingRef = useRef(false);
   const loadLeaderboard = useCallback(async () => {
-    if (leaderboardLoadingRef.current) return; // prevent concurrent loads
+    if (leaderboardLoadingRef.current) return;
     leaderboardLoadingRef.current = true;
     setLeaderboardLoading(true);
     try {
-      // P8-FIX: CRIT-4 — Authenticate before reading
       const authToken = await getFirebaseAuth();
-      // P14-FIX: HIGH-1 — Fail closed: require auth token for all Firebase operations
-      if (!authToken) throw new Error('Authentication required');
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json?auth=${authToken}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
-          // P8-FIX: Deduplicate by uid, then by stats fingerprint — same player on multiple devices = one entry
-          const deduped = new Map();
-          rawEntries.forEach(e => {
-            // Primary key: game UID if available
-            // Secondary key: stats fingerprint (avgPity + totalPulls + pulls) to catch old entries without uid
-            const uidKey = e.uid || null;
-            // Include id in stats key to reduce false collisions between different players with identical stats
-            const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
-            const key = uidKey || statsKey; // Group by UID first; if no UID, group by identical stats+id
-            const existing = deduped.get(key);
-            if (!existing || 
-                (e.uid && !existing.uid) || // prefer entry with uid
-                ((e.timestamp ?? 0) > (existing.timestamp ?? 0))) { // then prefer most recent
-              deduped.set(key, e);
-            }
-          });
-          const entries = [...deduped.values()];
-          entries.sort((a, b) => a.avgPity - b.avgPity);
-          setAllLeaderboardEntries(entries); // full list for community stats
-          setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
-        } else {
-          setAllLeaderboardEntries([]);
-          setLeaderboardData([]);
-        }
+      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
+      const data = await res.json();
+      if (data) {
+        const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
+        // Deduplicate by uid, then by stats fingerprint
+        const deduped = new Map();
+        rawEntries.forEach(e => {
+          const uidKey = e.uid || null;
+          const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
+          const key = uidKey || statsKey;
+          const existing = deduped.get(key);
+          if (!existing ||
+              (e.uid && !existing.uid) ||
+              ((e.timestamp ?? 0) > (existing.timestamp ?? 0))) {
+            deduped.set(key, e);
+          }
+        });
+        const entries = [...deduped.values()];
+        entries.sort((a, b) => a.avgPity - b.avgPity);
+        setAllLeaderboardEntries(entries);
+        setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
       } else {
-        throw new Error('Firebase fetch failed');
+        setAllLeaderboardEntries([]);
+        setLeaderboardData([]);
       }
     } catch (e) {
       console.error('Leaderboard load error:', e);
-      // Fallback to Replit storage if available
-      let fallbackEntries = [];
-      if (hasReplitStorage) {
-        try {
-          const result = await window.storage.list('luck:', true);
-          if (result?.keys) {
-            const entries = await Promise.all(
-              result.keys.slice(0, 50).map(async (key) => {
-                try {
-                  const data = await window.storage.get(key, true);
-                  return data?.value ? JSON.parse(data.value) : null;
-                } catch { return null; }
-              })
-            );
-            fallbackEntries = entries.filter(e => e && e.avgPity && e.id);
-          }
-        } catch { /* Replit storage unavailable */ }
-      }
-      // Also merge localStorage entries (saved when Firebase is unavailable)
-      try {
-        const localData = JSON.parse(localStorage.getItem(LOCAL_LEADERBOARD_KEY) || '{}');
-        const localEntries = Object.values(localData).filter(e => e && e.avgPity && e.id);
-        // Merge: localStorage entries override fallback entries with same id
-        const merged = new Map();
-        fallbackEntries.forEach(e => merged.set(e.id, e));
-        localEntries.forEach(e => merged.set(e.id, e));
-        fallbackEntries = [...merged.values()];
-      } catch { /* localStorage unavailable */ }
-      fallbackEntries.sort((a, b) => a.avgPity - b.avgPity);
-      setAllLeaderboardEntries(fallbackEntries);
-      setLeaderboardData(fallbackEntries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
+      setAllLeaderboardEntries([]);
+      setLeaderboardData([]);
     }
     setLeaderboardLoading(false);
     leaderboardLoadingRef.current = false;
-  }, [hasReplitStorage, getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
   
   const loadCommunityPulls = useCallback(async () => {
     try {
-      const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
-      // P14-FIX: HIGH-1 — Fail closed
-      if (!authToken) throw new Error('Authentication required');
-      const authParam = `?auth=${authToken}`;
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/community-pulls.json${authParam}`);
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1182,16 +1141,14 @@ function WhisperingWishesInner() {
         }
       }
     } catch (e) { console.error('Community pulls load error:', e); }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   const submittingRef = useRef(false);
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
     if (submittingRef.current) return; // prevent double-submit
-    // P13-FIX: HIGH-2 — Rate limit leaderboard writes (check only; stamp on successful write)
-    const now = Date.now();
-    const lastWrite = firebaseWriteTimestamps.get('leaderboard-submit') || 0;
-    if (now - lastWrite < FIREBASE_WRITE_COOLDOWN_MS) {
+    // P13-FIX: HIGH-2 — Rate limit leaderboard writes
+    if (!checkFirebaseRateLimit('leaderboard-submit')) {
       toast?.addToast?.('Please wait a few seconds before submitting again', 'error');
       return;
     }
@@ -1235,57 +1192,37 @@ function WhisperingWishesInner() {
         timestamp: Date.now()
       };
 
-      // Try Firebase first, fall back to localStorage if auth/write fails
-      let firebaseSuccess = false;
       const authToken = await getFirebaseAuth();
-      if (authToken) {
+      const res = await fetchWithTimeout(firebaseUrl(`leaderboard/${effectiveLeaderboardId}`, authToken), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error(`Firebase write failed (${res.status})`);
+
+      // Submit owned 5★ for community "Most Pulled" ranking
+      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
+      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
         try {
-          const authParam = `?auth=${authToken}`;
-          const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
+          await fetchWithTimeout(firebaseUrl(`community-pulls/${effectiveLeaderboardId}`, authToken), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry)
+            body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
           });
-          if (res.ok) {
-            firebaseSuccess = true;
-            stampFirebaseRateLimit('leaderboard-submit');
-            // Submit owned 5★ for community "Most Pulled" ranking
-            const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-            const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-            const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-            const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-            if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-              try {
-                await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
-                });
-              } catch { /* community-pulls is best-effort */ }
-            }
-            // Clean up stale duplicate entries
-            if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
-              try {
-                await fetchWithTimeout(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-                await fetchWithTimeout(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-              } catch { /* best-effort cleanup */ }
-            }
-          }
-        } catch { /* Firebase write failed — will fall back to localStorage */ }
+        } catch { /* community-pulls is best-effort */ }
+      }
+      // Clean up stale duplicate entries
+      if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
+        try {
+          await fetchWithTimeout(firebaseUrl(`leaderboard/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+          await fetchWithTimeout(firebaseUrl(`community-pulls/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+        } catch { /* best-effort cleanup */ }
       }
 
-      // Always save to localStorage as fallback/cache
-      try {
-        const localData = JSON.parse(localStorage.getItem(LOCAL_LEADERBOARD_KEY) || '{}');
-        localData[effectiveLeaderboardId] = entry;
-        localStorage.setItem(LOCAL_LEADERBOARD_KEY, JSON.stringify(localData));
-      } catch { /* localStorage full or unavailable */ }
-
-      if (firebaseSuccess) {
-        toast?.addToast?.('Score submitted to leaderboard!', 'success');
-      } else {
-        toast?.addToast?.('Score saved locally (server unavailable)', 'info');
-      }
+      toast?.addToast?.('Score submitted to leaderboard!', 'success');
 
       loadLeaderboard();
       loadCommunityPulls();
@@ -1296,7 +1233,7 @@ function WhisperingWishesInner() {
       submittingRef.current = false;
       setLeaderboardSubmitting(false);
     }
-  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth]);
+  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseUrl]);
 
   useEffect(() => {
     if (showLeaderboard) {
@@ -1316,10 +1253,7 @@ function WhisperingWishesInner() {
     if (!checkFirebaseRateLimit('presence-heartbeat')) return;
     try {
       const authToken = await getFirebaseAuth();
-      // P14-FIX: HIGH-1 — Fail closed
-      if (!authToken) return;
-      const authParam = `?auth=${authToken}`;
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
+      const res = await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ t: Date.now() }) // only a timestamp — zero personal data
@@ -1331,24 +1265,19 @@ function WhisperingWishesInner() {
         setPresenceError(null);
       }
     } catch (e) { setPresenceError(`Heartbeat error: ${e.message}`); }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   const removePresence = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      // P14-FIX: HIGH-1 — Fail closed
-      if (!authToken) return;
-      await fetchWithTimeout(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json?auth=${authToken}`, { method: 'DELETE' });
+      await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), { method: 'DELETE' });
     } catch { /* best-effort */ }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   const fetchActivePlayersCount = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      // P14-FIX: HIGH-1 — Fail closed
-      if (!authToken) return;
-      const authParam = `?auth=${authToken}`;
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/presence.json${authParam}`);
+      const res = await fetchWithTimeout(firebaseUrl('presence', authToken));
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1357,7 +1286,7 @@ function WhisperingWishesInner() {
           // Clean up stale sessions from Firebase (older than TTL) — batch limit 50 (3.15 fix)
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
           for (const [key] of staleSessions.slice(0, 50)) {
-            try { await fetchWithTimeout(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
+            try { await fetchWithTimeout(firebaseUrl(`presence/${key}`, authToken), { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;
           setActivePlayersCount(count);
@@ -1376,16 +1305,13 @@ function WhisperingWishesInner() {
         setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
       }
     } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   // Admin-only: fetch full player list with unmasked UIDs from leaderboard
   const fetchAdminPlayerList = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      // P14-FIX: HIGH-1 — Fail closed
-      if (!authToken) throw new Error('Authentication required');
-      const authParam = `?auth=${authToken}`;
-      const res = await fetchWithTimeout(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1412,7 +1338,7 @@ function WhisperingWishesInner() {
       console.error('Admin player list fetch error:', e);
       setAdminPlayerList([]); // Show empty state instead of perpetual loading skeleton
     }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   // Start heartbeat on mount, clean up on unmount
   useEffect(() => {
