@@ -146,7 +146,7 @@ const CURRENT_BANNERS = {
     { id: 'galbrena', name: 'Galbrena', title: 'Fiend of Ever-Burning Flame', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/rGyhGWWd/galbrena-drip-marketing-v0-xcdhhporc2nf1.jpg' },
   ],
   weapons: [
-    { id: 'daybreakers-spine', name: "Daybreaker's Spine", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Luuk Herssen', element: 'Spectro', isNew: true, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/DPYTDNRG/IMG-20260204-001043.png' },
+    { id: 'daybreakers-spine', name: "Daybreaker's Spine", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Luuk Herssen', element: 'Spectro', isNew: true, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/Z6ZQGVLK/Absolute-Pulsation-Daybreaker-s-Spine-2026-02-26.webp' },
     { id: 'lux-umbra', name: 'Lux & Umbra', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Galbrena', element: 'Fusion', isNew: false, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/cSWsQcds/HB6tgp-Baw-AASr-C.jpg' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
