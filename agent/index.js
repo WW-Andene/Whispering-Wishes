@@ -25,6 +25,9 @@ import { validate } from './lib/validate.js';
 import { gitPublish } from './lib/git.js';
 import { processMissingImages, findMissingImages } from './lib/images.js';
 import { runSelfAudit, applyPatches, enrichData } from './lib/audit.js';
+import { loadMemory, saveMemory, recordRun, recordPatch, recordFailure, wasRecentlyPatched } from './lib/memory.js';
+import { extractImageUrls, checkUrls, identifyDeadUrlOwners } from './lib/health.js';
+import { loadSkills } from './lib/skills.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -38,6 +41,11 @@ async function main() {
   log.section(`WW UPDATE AGENT v2 [${MODE.toUpperCase()}]`);
   log.info(`Mode: ${MODE} | Dry run: ${DRY_RUN} | Only: ${ONLY || 'all'}`);
   clearChangeLog();
+  const startTime = Date.now();
+
+  // Load persistent memory and skills
+  const memory = loadMemory();
+  loadSkills();
 
   const state = readCurrentState();
   if (!state.banners) { log.error('Failed to read state — aborting'); process.exit(1); }
@@ -48,20 +56,24 @@ async function main() {
 
   let hasChanges = false;
 
-  if (MODE === 'micro') hasChanges = await microCycle(state, hoursLeft);
-  else if (MODE === 'audit') hasChanges = await auditCycle(state);
-  else hasChanges = await fullCycle(state, hoursLeft);
+  if (MODE === 'micro') hasChanges = await microCycle(state, hoursLeft, memory);
+  else if (MODE === 'audit') hasChanges = await auditCycle(state, memory);
+  else hasChanges = await fullCycle(state, hoursLeft, memory);
 
-  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); process.exit(0); }
+  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - startTime); saveMemory(memory); process.exit(0); }
 
   if (!DRY_RUN) bumpVersion(state.appVersion);
   const v = validate(getBuffer());
-  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); process.exit(1); }
+  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); saveMemory(memory); process.exit(1); }
   if (!DRY_RUN) flush();
   if (!DRY_RUN && !NO_GIT) {
     const summary = getChangeLog().slice(0, 3).map(c => c.description).join('; ').slice(0, 72);
     gitPublish(`${MODE}: ${summary}`);
   }
+
+  // Save memory
+  recordRun(memory, MODE, getChangeLog().length, Date.now() - startTime);
+  saveMemory(memory);
 
   log.section('COMPLETE');
   getChangeLog().forEach(c => log.ok(`  [${c.category}] ${c.description}`));
@@ -69,19 +81,20 @@ async function main() {
 }
 
 // ═══ FULL CYCLE (daily 00:00 UTC) ════════════════════════════════════════════
-async function fullCycle(state, hoursLeft) {
+async function fullCycle(state, hoursLeft, memory) {
   let c = false;
-  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');    if (await doBanners(state)) c = true; }
-  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');     if (await doEvents(state)) c = true; }
-  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');     if (await doRoster(state)) c = true; }
-  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');     if (await doImages(state)) c = true; }
-  if (!ONLY)                          { log.section('ENRICHMENT'); if (await doEnrich(state)) c = true; }
-  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT'); if (await doAudit(state, 'full')) c = true; }
+  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');      if (await doBanners(state)) c = true; }
+  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');       if (await doEvents(state)) c = true; }
+  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');       if (await doRoster(state)) c = true; }
+  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');       if (await doImages(state)) c = true; }
+  if (!ONLY)                          { log.section('HEALTH CHECK'); await doHealthCheck(state, memory); }
+  if (!ONLY)                          { log.section('ENRICHMENT');   if (await doEnrich(state)) c = true; }
+  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');   if (await doAudit(state, 'full', memory)) c = true; }
   return c;
 }
 
 // ═══ MICRO CYCLE (6h intervals) ══════════════════════════════════════════════
-async function microCycle(state, hoursLeft) {
+async function microCycle(state, hoursLeft, memory) {
   let c = false;
   log.section('MICRO — EVENTS');
   if (await doEvents(state)) c = true;
@@ -91,14 +104,14 @@ async function microCycle(state, hoursLeft) {
     if (await doBanners(state)) c = true;
   }
   log.section('MICRO — QUICK FIXES');
-  if (await doAudit(state, 'micro')) c = true;
+  if (await doAudit(state, 'micro', memory)) c = true;
   return c;
 }
 
 // ═══ AUDIT-ONLY CYCLE ════════════════════════════════════════════════════════
-async function auditCycle(state) {
+async function auditCycle(state, memory) {
   log.section('SELF-AUDIT (standalone)');
-  return await doAudit(state, 'full');
+  return await doAudit(state, 'full', memory);
 }
 
 // ═══ TASK FUNCTIONS ══════════════════════════════════════════════════════════
@@ -223,11 +236,44 @@ async function doEnrich(state) {
   return c;
 }
 
-async function doAudit(state, mode) {
-  const patches = await runSelfAudit(askClaude, mode, state);
+async function doHealthCheck(state, memory) {
+  const allUrls = extractImageUrls(state.source);
+  // Only check URLs not recently verified
+  const { getStaleUrls, recordUrlCheck } = await import('./lib/memory.js');
+  const staleUrls = getStaleUrls(memory, allUrls);
+  if (!staleUrls.length) { log.ok(`All ${allUrls.length} URLs checked recently`); return; }
+  log.info(`Checking ${staleUrls.length} stale URL(s) out of ${allUrls.length} total`);
+  const { alive, dead } = await checkUrls(staleUrls);
+  // Record results in memory
+  for (const url of alive) recordUrlCheck(memory, url, true);
+  for (const d of dead) recordUrlCheck(memory, d.url, false);
+  if (dead.length) {
+    const owners = identifyDeadUrlOwners(state.source, dead);
+    for (const o of owners) log.warn(`Broken: ${o.name} → ${o.url} (${o.status})`);
+  }
+}
+
+async function doAudit(state, mode, memory = null) {
+  const patches = await runSelfAudit(askClaude, mode, state, memory);
   if (!patches.length) { log.ok('No improvements found'); return false; }
   if (DRY_RUN) { log.json('[DRY] Patches', patches); return false; }
-  const { applied } = applyPatches(patches, THRESHOLDS.autoApplyConfidence);
+
+  // Filter out recently-applied patches (memory dedup)
+  const fresh = memory
+    ? patches.filter(p => !wasRecentlyPatched(memory, p.description))
+    : patches;
+
+  if (fresh.length < patches.length) {
+    log.dim(`Filtered ${patches.length - fresh.length} recently-applied patch(es)`);
+  }
+
+  const { applied } = applyPatches(fresh, THRESHOLDS.autoApplyConfidence);
+
+  // Record applied patches in memory
+  if (memory) {
+    for (const p of applied) recordPatch(memory, p.description, p.file);
+  }
+
   if (applied.some(p => p.file === 'appcore-data.js')) {
     loadBuffer(readFileSync(PATHS.dataFile, 'utf-8'));
   }

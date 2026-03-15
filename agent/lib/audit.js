@@ -16,6 +16,8 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
+import { buildSkillsContext } from './skills.js';
+import { getRecentActivitySummary } from './memory.js';
 
 /**
  * Run a self-audit cycle. Claude reads the source code, identifies
@@ -26,8 +28,12 @@ import { log, addChange } from './log.js';
  * @param {Object} currentState - Current app state from reader.js
  * @returns {Object[]} Array of patch objects to apply
  */
-export async function runSelfAudit(askClaudeFn, mode, currentState) {
+export async function runSelfAudit(askClaudeFn, mode, currentState, memory = null) {
   log.info(`Running self-audit (${mode} mode)...`);
+
+  // Load skills context for the audit
+  const skillsContext = buildSkillsContext(mode);
+  const recentActivity = memory ? getRecentActivitySummary(memory) : 'No memory available.';
 
   // Read the relevant source files
   const sources = {};
@@ -48,8 +54,8 @@ export async function runSelfAudit(askClaudeFn, mode, currentState) {
     return [];
   }
 
-  const systemPrompt = buildAuditSystemPrompt(mode);
-  const userPrompt = buildAuditUserPrompt(mode, sources, currentState);
+  const systemPrompt = buildAuditSystemPrompt(mode, skillsContext);
+  const userPrompt = buildAuditUserPrompt(mode, sources, currentState, recentActivity);
 
   try {
     const response = await askClaudeFn(systemPrompt, userPrompt, { maxTokens: 8192 });
@@ -187,12 +193,12 @@ Return ONLY the JSON object.`;
 // PROMPT BUILDERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function buildAuditSystemPrompt(mode) {
+function buildAuditSystemPrompt(mode, skillsContext = '') {
   return `You are the Whispering Wishes autonomous maintenance agent. Your job is to analyze the app's source code and generate precise, safe improvements.
 
 THE APP: Whispering Wishes — a Wuthering Waves gacha companion (React SPA, Tailwind CSS, single-file architecture).
 
-DESIGN LANGUAGE (non-negotiable — PROTECT these):
+${skillsContext ? `═══ LOADED SKILL FRAMEWORKS ═══\n${skillsContext}\n\n` : ''}DESIGN LANGUAGE (non-negotiable — PROTECT these):
 - Gold (#edaf18) accent as primary identity color
 - Element-color mapping: Fusion=orange, Electro=purple, Aero=emerald, Glacio=cyan, Havoc=pink, Spectro=yellow
 - Deep blue-black base (#080c14)
@@ -236,7 +242,7 @@ Return ONLY the JSON array. No commentary, no markdown fences.
 If there are no improvements to make, return an empty array: []`;
 }
 
-function buildAuditUserPrompt(mode, sources, currentState) {
+function buildAuditUserPrompt(mode, sources, currentState, recentActivity = '') {
   const fileSnippets = mode === 'micro'
     ? `
 --- appcore-data.js (first 3000 chars) ---
@@ -284,6 +290,8 @@ ${mode === 'micro'
   ? 'MICRO MODE: Only suggest quick fixes — stale dates, typos, minor CSS issues, broken/empty values. MAX 5 patches.'
   : 'FULL MODE: Suggest up to 10 improvements. Prioritize: data accuracy > UI polish > code quality > new features.'
 }
+
+${recentActivity ? `═══ RECENT AGENT ACTIVITY (avoid re-doing these) ═══\n${recentActivity}` : ''}
 
 Return the JSON array of patches.`;
 }
