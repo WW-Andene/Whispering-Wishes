@@ -1450,7 +1450,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   if (items.length === 0) return (
     <div className="kuro-empty-state relative py-3">
       {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
-      <div className="grid grid-cols-3 gap-2 mb-2" aria-hidden="true">
+      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 mb-2" aria-hidden="true">
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="ghost-grid-cell aspect-[3/4] rounded-lg border border-white/[0.04]" style={{ animationDelay: `${i * 0.08}s` }} />
         ))}
@@ -1462,7 +1462,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   return (
     <>
       <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{items.length} shown{hasActiveFilters ? ` (${totalCount} total)` : ''}</div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
         {items.map(([name, count]) => {
           const imgUrl = collectionImages[name];
           const imageKey = `collection-${name}`;

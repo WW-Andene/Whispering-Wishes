@@ -3315,7 +3315,8 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Pity Counter */}
+            {/* Pity Counter + Resources — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             <Card>
               <CardHeader>Pity Counter</CardHeader>
               <CardBody className="space-y-3">
@@ -3490,9 +3491,10 @@ function WhisperingWishesInner() {
                   </div>
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
             {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
-            <div aria-live="polite" aria-atomic="false">
+            <div aria-live="polite" aria-atomic="false" className="banner-grid space-y-3 lg:space-y-0">
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
               <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}
@@ -3691,6 +3693,8 @@ function WhisperingWishesInner() {
               </Card>
             )}
 
+            {/* Income + Goal — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             <Card>
               <CardHeader>Income Projections</CardHeader>
               <CardBody>
@@ -3768,6 +3772,7 @@ function WhisperingWishesInner() {
                 )}
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
             {/* AUDIT-FIX M21: Always show Saved States card with empty state message */}
             <Card>
@@ -5042,6 +5047,8 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
 
+                  {/* Team info cards — side by side on desktop */}
+                  <div className="desktop-grid-2 space-y-3 lg:space-y-0">
                   {/* Character Stats & Info */}
                   {teamSlots.some(s => s) && (
                     <Card>
@@ -5213,6 +5220,7 @@ function WhisperingWishesInner() {
                       </div>
                     </CardBody>
                   </Card>
+                  </div>{/* end desktop-grid-2 */}
 
                   {/* Character Selector Modal — FIX: pass isOpen prop */}
                   <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)}>
@@ -5432,6 +5440,8 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 
+            {/* Server + Profile — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             <Card>
               <CardHeader>Server Region</CardHeader>
               <CardBody>
@@ -5498,7 +5508,10 @@ function WhisperingWishesInner() {
                 </button>
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
+            {/* Settings + Import — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             {/* Display Settings */}
             <Card>
               <CardHeader><Settings size={14} className="text-gray-400" /> Display Settings</CardHeader>
@@ -5683,6 +5696,7 @@ Example: {"pulls":[...]}'
                 )}
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
             {state.profile.importedAt && (
               <Card>
