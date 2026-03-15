@@ -2991,7 +2991,7 @@ function WhisperingWishesInner() {
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
-    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
+    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
       <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
@@ -3006,8 +3006,8 @@ function WhisperingWishesInner() {
       
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/10" style={{backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)'}}>
-        <div className="max-w-lg md:max-w-2xl mx-auto px-3">
-          <div className="flex items-center justify-between py-2.5">
+        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3">
+          <div className="header-top flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
@@ -3020,7 +3020,7 @@ function WhisperingWishesInner() {
                 <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="header-controls flex items-center gap-1.5">
               <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -3048,11 +3048,11 @@ function WhisperingWishesInner() {
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={18} /> Profile</TabButton>
           </nav>
           {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
-          {visualSettings.swipeNavigation && <div className="text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
+          {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 lg:px-6 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -3094,7 +3094,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'character' && (
-              <div className="space-y-2 content-layer">
+              <div className="space-y-2 banner-grid content-layer">
                 {activeBanners.characters.map(c => (
                   <BannerCard
                     key={c.id}
@@ -3116,7 +3116,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'weapon' && (
-              <div className="space-y-2 content-layer">
+              <div className="space-y-2 banner-grid content-layer">
                 {activeBanners.weapons.map(w => (
                   <BannerCard
                     key={w.id}
@@ -3233,7 +3233,7 @@ function WhisperingWishesInner() {
                 </div>
               );
             })()}
-            <div className="space-y-2">
+            <div className="space-y-2 event-grid">
               {(() => {
                 const eventImageMap = {
                   tacticalHologram: activeBanners.tacticalHologramImage,
@@ -3315,7 +3315,8 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Pity Counter */}
+            {/* Pity Counter + Resources — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             <Card>
               <CardHeader>Pity Counter</CardHeader>
               <CardBody className="space-y-3">
@@ -3490,9 +3491,10 @@ function WhisperingWishesInner() {
                   </div>
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
             {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
-            <div aria-live="polite" aria-atomic="false">
+            <div aria-live="polite" aria-atomic="false" className="banner-grid space-y-3 lg:space-y-0">
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
               <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}
@@ -3691,6 +3693,8 @@ function WhisperingWishesInner() {
               </Card>
             )}
 
+            {/* Income + Goal — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             <Card>
               <CardHeader>Income Projections</CardHeader>
               <CardBody>
@@ -3768,6 +3772,7 @@ function WhisperingWishesInner() {
                 )}
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
             {/* AUDIT-FIX M21: Always show Saved States card with empty state message */}
             <Card>
@@ -3812,7 +3817,7 @@ function WhisperingWishesInner() {
                 </CardBody>
               </Card>
             ) : (
-              <>
+              <div className="stats-grid">
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
@@ -4326,7 +4331,7 @@ function WhisperingWishesInner() {
 
                 {/* Convenes Chart with Time Range */}
                 {/* P2-FIX: Now reads from memoized statsTabData instead of recomputing allHist */}
-                <Card>
+                <Card className="stats-full-width">
                   <CardHeader>
                     <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
                   </CardHeader>
@@ -4539,7 +4544,7 @@ function WhisperingWishesInner() {
                 </Card>
 
                 {/* Per-Banner Stats */}
-                <Card>
+                <Card className="stats-full-width">
                   <CardHeader>Per-Banner Breakdown</CardHeader>
                   <CardBody className="space-y-2">
                     {[
@@ -4567,7 +4572,7 @@ function WhisperingWishesInner() {
                     })}
                   </CardBody>
                 </Card>
-              </>
+              </div>
             )}
           </div>
           </TabErrorBoundary>
@@ -5145,7 +5150,7 @@ function WhisperingWishesInner() {
                   <Card>
                     <CardHeader><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
                     <CardBody>
-                      <div className="space-y-2">
+                      <div className="space-y-2 team-suggestions-grid">
                         {(() => {
                           const ownedNames = new Set([
                             ...Object.keys(collectionData.chars5Counts),
@@ -5432,6 +5437,8 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 
+            {/* Server + Profile — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             <Card>
               <CardHeader>Server Region</CardHeader>
               <CardBody>
@@ -5498,7 +5505,10 @@ function WhisperingWishesInner() {
                 </button>
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
+            {/* Settings + Import — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             {/* Display Settings */}
             <Card>
               <CardHeader><Settings size={14} className="text-gray-400" /> Display Settings</CardHeader>
@@ -5683,6 +5693,7 @@ Example: {"pulls":[...]}'
                 )}
               </CardBody>
             </Card>
+            </div>{/* end desktop-grid-2 */}
 
             {state.profile.importedAt && (
               <Card>
@@ -5767,6 +5778,20 @@ Example: {"pulls":[...]}'
           </TabErrorBoundary>
           </div>
         )}
+
+        {/* Desktop ad area — sits in the natural right margin, hidden on mobile */}
+        <div className="desktop-ad-area" aria-label="Sponsored content">
+          <div className="ad-sticky">
+            <div className="ad-slot ad-slot-sky">
+              <div className="ad-placeholder">Ad 160×600</div>
+            </div>
+            <div className="ad-footer">
+              <p className="text-gray-600 text-[9px]">
+                {`v${APP_VERSION}`} • u/WW_Andene<br/>Not affiliated with Kuro Games
+              </p>
+            </div>
+          </div>
+        </div>
 
       </main>
 
