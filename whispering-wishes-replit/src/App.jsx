@@ -2991,7 +2991,7 @@ function WhisperingWishesInner() {
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
-    <div className={`${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
+    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
       <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
@@ -3006,8 +3006,8 @@ function WhisperingWishesInner() {
       
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/10" style={{backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)'}}>
-        <div className="max-w-lg md:max-w-2xl mx-auto px-3">
-          <div className="flex items-center justify-between py-2.5">
+        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3">
+          <div className="header-top flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
@@ -3020,7 +3020,7 @@ function WhisperingWishesInner() {
                 <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="header-controls flex items-center gap-1.5">
               <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -3048,11 +3048,11 @@ function WhisperingWishesInner() {
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={18} /> Profile</TabButton>
           </nav>
           {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
-          {visualSettings.swipeNavigation && <div className="text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
+          {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 lg:px-6 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -3094,7 +3094,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'character' && (
-              <div className="space-y-2 content-layer">
+              <div className="space-y-2 banner-grid content-layer">
                 {activeBanners.characters.map(c => (
                   <BannerCard
                     key={c.id}
@@ -3116,7 +3116,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'weapon' && (
-              <div className="space-y-2 content-layer">
+              <div className="space-y-2 banner-grid content-layer">
                 {activeBanners.weapons.map(w => (
                   <BannerCard
                     key={w.id}
@@ -3233,7 +3233,7 @@ function WhisperingWishesInner() {
                 </div>
               );
             })()}
-            <div className="space-y-2">
+            <div className="space-y-2 event-grid">
               {(() => {
                 const eventImageMap = {
                   tacticalHologram: activeBanners.tacticalHologramImage,
@@ -3812,7 +3812,7 @@ function WhisperingWishesInner() {
                 </CardBody>
               </Card>
             ) : (
-              <>
+              <div className="stats-grid">
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
@@ -4567,7 +4567,7 @@ function WhisperingWishesInner() {
                     })}
                   </CardBody>
                 </Card>
-              </>
+              </div>
             )}
           </div>
           </TabErrorBoundary>

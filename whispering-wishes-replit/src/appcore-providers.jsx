@@ -1351,6 +1351,193 @@ const KuroStyles = memo(({ oledMode }) => (
       white-space: nowrap;
       border-width: 0;
     }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       DESKTOP / LANDSCAPE MODE (≥1024px)
+       Sidebar nav + wide content area. Mobile layout untouched.
+       ══════════════════════════════════════════════════════════════════════ */
+    @media (min-width: 1024px) {
+      /* Root layout: sidebar + content */
+      .desktop-layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar navigation */
+      .desktop-layout > header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 220px;
+        border-bottom: none;
+        border-right: 1px solid rgba(255,255,255,0.08);
+        z-index: 50;
+        overflow-y: auto;
+        scrollbar-width: none;
+      }
+      .desktop-layout > header::-webkit-scrollbar { display: none; }
+
+      /* Header inner container — full width in sidebar mode */
+      .desktop-layout > header > .header-inner {
+        max-width: none;
+        padding: 1rem 0.75rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Logo/title area in sidebar */
+      .desktop-layout > header .header-top {
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.75rem;
+      }
+
+      /* Server select + export in sidebar */
+      .desktop-layout > header .header-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      .desktop-layout > header .header-controls select {
+        width: 100%;
+        min-height: 36px;
+      }
+
+      /* Tab navigation — vertical in sidebar */
+      .desktop-layout > header nav {
+        flex-direction: column;
+        gap: 2px;
+        overflow-x: visible;
+        padding-bottom: 0;
+        flex: 1;
+      }
+
+      /* Tab buttons — full width, left-aligned */
+      .desktop-layout > header nav .kuro-tab {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.625rem 0.75rem;
+        border-radius: 0.5rem;
+        white-space: nowrap;
+        font-size: 0.8125rem;
+        gap: 0.5rem;
+        border-bottom: none;
+        transition: background 0.2s, color 0.2s;
+      }
+      .desktop-layout > header nav .kuro-tab:hover {
+        background: rgba(255,255,255,0.04);
+      }
+      .desktop-layout > header nav .kuro-tab[aria-selected="true"] {
+        background: rgba(237, 175, 24, 0.08);
+        border-bottom: none;
+        border-left: 2px solid #edaf18;
+        padding-left: calc(0.75rem - 2px);
+      }
+
+      /* Hide the horizontal tab indicator on desktop */
+      .desktop-layout > header nav .tab-indicator { display: none; }
+
+      /* Hide swipe hint on desktop */
+      .desktop-layout > header .swipe-hint { display: none; }
+
+      /* Main content — offset by sidebar width */
+      .desktop-layout > main {
+        margin-left: 220px;
+        max-width: none;
+        width: calc(100% - 220px);
+        padding: 1.5rem 2rem;
+      }
+
+      /* Content constraint — readable line length */
+      .desktop-layout > main > [role="tabpanel"] {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      /* Card grids — 2 columns where appropriate */
+      .desktop-layout .desktop-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+
+      /* Banner cards in grid */
+      .desktop-layout .banner-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 0.75rem;
+      }
+
+      /* Event cards in grid */
+      .desktop-layout .event-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 0.75rem;
+      }
+
+      /* Stats cards in 2-3 column grid */
+      .desktop-layout .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 0.75rem;
+      }
+
+      /* Planner sections side by side */
+      .desktop-layout .planner-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      /* Collection grid — wider items */
+      .desktop-layout .collection-grid-desktop {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+
+      /* Wider modals on desktop */
+      .desktop-layout [class*="fixed inset-0"] > div {
+        max-width: 640px;
+      }
+
+      /* Hide mobile-only scroll shadows */
+      .desktop-layout .scrollbar-hide {
+        overflow-x: visible;
+      }
+
+      /* Scrollbar visible on desktop for main content */
+      .desktop-layout > main {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.1) transparent;
+      }
+      .desktop-layout > main::-webkit-scrollbar {
+        width: 6px;
+      }
+      .desktop-layout > main::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+      }
+      .desktop-layout > main::-webkit-scrollbar-track {
+        background: transparent;
+      }
+    }
+
+    /* Extra-wide screens (≥1440px) — 3 column grids */
+    @media (min-width: 1440px) {
+      .desktop-layout > main {
+        padding: 1.5rem 3rem;
+      }
+      .desktop-layout > main > [role="tabpanel"] {
+        max-width: 1400px;
+      }
+      .desktop-layout .event-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .desktop-layout .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   `}</style>
 ));
 KuroStyles.displayName = 'KuroStyles';
