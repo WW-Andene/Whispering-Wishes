@@ -53,6 +53,7 @@ const NEVER_TOUCH = new Set([
   'lib/validate.js',
   'lib/memory.js',
   'lib/evolution.js',
+  'lib/protected.js',  // Content protection rules — sacred
 ]);
 
 const MODIFY_OK = new Set([
@@ -463,6 +464,18 @@ function executeModify(action) {
   }
 
   let content = readFileSync(fullPath, 'utf-8');
+
+  // ── CODE-LEVEL CONTENT PROTECTION (same as audit.js) ──────────────────
+  // Evolution patches that target app data get the same guards.
+  if (action.file === 'lib/writer.js' || action.file === 'lib/reader.js') {
+    // These modify how we READ/WRITE the data file — extra scrutiny
+    // Block if the patch would remove safety checks
+    if (action.oldStr.includes('isExistingUrl') || action.oldStr.includes('isProtected') ||
+        action.oldStr.includes('PROTECTION') || action.oldStr.includes('BLOCKED')) {
+      log.warn(`BLOCKED: Evolution cannot remove safety checks from ${action.file}`);
+      return false;
+    }
+  }
 
   // Verify target string exists and is unique
   if (!content.includes(action.oldStr)) {

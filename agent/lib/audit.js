@@ -96,6 +96,64 @@ export function applyPatches(patches, minConfidence = 0.85) {
       continue;
     }
 
+    // ── CODE-LEVEL CONTENT PROTECTION ────────────────────────────────────
+    // These checks cannot be bypassed by prompt engineering.
+    if (patch.file === 'appcore-data.js') {
+      // BLOCK: replacing existing image URLs
+      if (patch.oldStr.match(/https?:\/\/i\.ibb\.co[^'"]+/)) {
+        log.warn(`BLOCKED patch — would overwrite existing image URL: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites curated image URL' });
+        continue;
+      }
+
+      // BLOCK: replacing existing character descriptions (non-TBD)
+      // Catches both full desc: '...' and partial matches
+      if (patch.oldStr.match(/desc:\s*'(?!TBD)[^']{10,}/)) {
+        log.warn(`BLOCKED patch — would overwrite curated description: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites curated description' });
+        continue;
+      }
+
+      // BLOCK: replacing existing skills arrays (non-TBD)
+      if (patch.oldStr.match(/skills:\s*\[/) && !patch.oldStr.includes('TBD')) {
+        log.warn(`BLOCKED patch — would overwrite curated skills: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites curated skills' });
+        continue;
+      }
+
+      // BLOCK: replacing existing ascension/material data (non-TBD)
+      if (patch.oldStr.match(/(?:ascension|skillMaterials):\s*\{/) && !patch.oldStr.includes('TBD')) {
+        log.warn(`BLOCKED patch — would overwrite curated material data: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites curated materials' });
+        continue;
+      }
+
+      // BLOCK: replacing existing event image fields
+      if (patch.oldStr.match(/(?:whimpering|doubled|tower|illusive|tactical|weekly|standard|daily)\w*Image:\s*'https?:\/\//)) {
+        log.warn(`BLOCKED patch — would overwrite protected event image: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites protected event image' });
+        continue;
+      }
+
+      // BLOCK: changing game constants (pity rates, astrite costs)
+      if (patch.oldStr.match(/HARD_PITY|SOFT_PITY|BASE_5STAR_RATE|ASTRITE_PER_PULL/)) {
+        log.warn(`BLOCKED patch — would change game constants: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'modifies game constants' });
+        continue;
+      }
+    }
+
+    // ── DESIGN LANGUAGE PROTECTION (providers, components) ──────────────
+    if (patch.file === 'appcore-providers.jsx') {
+      // BLOCK: changing core design tokens (colors, fonts, identity)
+      if (patch.oldStr.match(/#edaf18|#080c14|Rajdhani|JetBrains Mono|--color-gold|LAHAI-ROI/i)) {
+        log.warn(`BLOCKED patch — would change design identity: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'modifies design identity tokens' });
+        continue;
+      }
+    }
+
+    // ── APPLY PATCH ──────────────────────────────────────────────────────
     try {
       let content = readFileSync(filePath, 'utf-8');
 
