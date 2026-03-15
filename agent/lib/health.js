@@ -1,8 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WW Update Agent — Health Checker
 //
-// Verifies external image URLs (ibb.co, imgur, etc.) are still alive.
-// Reports broken links so the image manager can re-upload replacements.
+// Verifies external image URLs (ibb.co, etc.) are still alive.
+// REPORT ONLY — logs broken links for human review.
+//
+// IMPORTANT: Dead URLs are NEVER auto-replaced. All 267+ existing images
+// are human-curated. If an image goes dead, the human creator needs to
+// re-upload their original artwork. The agent cannot recreate custom art.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { log, addChange } from './log.js';

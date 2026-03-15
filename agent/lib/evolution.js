@@ -40,6 +40,7 @@ import { resolve, dirname } from 'path';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { executeShellSwap, checkRollbackNeeded } from './shell-swap.js';
+import { PROTECTION_RULES } from './protected.js';
 
 const AGENT_DIR = resolve(PATHS.repoRoot, 'agent');
 const EVOLUTION_LOG = resolve(AGENT_DIR, 'evolution-log.md');
@@ -267,6 +268,8 @@ ${sourceView}
 6. NEVER lower safety thresholds, NEVER remove rate limits
 7. NEVER remove existing features — only add or improve
 8. Prefer high-value, low-risk changes
+
+${PROTECTION_RULES}
 ${feedback.toxic?.length ? `9. AVOID category: ${feedback.toxic.join(', ')} (high failure rate)\n` : ''}${feedback.strong?.length ? `10. PREFER category: ${feedback.strong.join(', ')} (high success rate)\n` : ''}
 
 ═══ TASK ═══

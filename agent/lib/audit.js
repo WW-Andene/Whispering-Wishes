@@ -18,6 +18,7 @@ import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { buildSkillsContext } from './skills.js';
 import { getRecentActivitySummary } from './memory.js';
+import { PROTECTION_RULES } from './protected.js';
 
 /**
  * Run a self-audit cycle. Claude reads the source code, identifies
@@ -225,6 +226,8 @@ RULES:
 6. Confidence below 0.85 = the change will be skipped
 7. Prefer small, targeted improvements over large refactors
 8. ${mode === 'micro' ? 'MICRO MODE: Only quick fixes — typos, broken URLs, stale dates, minor CSS polish. NO feature additions.' : 'FULL MODE: Can include feature improvements, UI polish, code quality, and data enrichment.'}
+
+${PROTECTION_RULES}
 
 RESPONSE FORMAT: Return a JSON array of patch objects:
 [

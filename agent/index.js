@@ -250,8 +250,15 @@ async function doImages(state) {
     for (const [name, url] of Object.entries(urls)) {
       const buf = getBuffer();
       const esc = name.includes("'") ? `"${name}"` : `'${name}'`;
-      const pat = new RegExp(`${esc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*'[^']*'`);
-      if (buf.match(pat)) { loadBuffer(buf.replace(pat, `${esc}: '${url}'`)); c = true; }
+      const pat = new RegExp(`${esc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*'([^']*)'`);
+      const existing = buf.match(pat);
+      // PROTECTION: Only fill empty slots. Never overwrite existing URLs.
+      if (existing && (!existing[1] || existing[1] === '' || existing[1] === 'TBD')) {
+        loadBuffer(buf.replace(pat, `${esc}: '${url}'`));
+        c = true;
+      } else if (existing && existing[1]) {
+        log.dim(`Skipped ${name} — already has image: ${existing[1].slice(0, 50)}...`);
+      }
     }
   }
   return c;
@@ -267,6 +274,11 @@ async function doEnrich(state) {
   let c = false;
   for (const u of updates) {
     if (u.confidence < THRESHOLDS.autoApplyConfidence) continue;
+    // PROTECTION: Only fill TBD/empty placeholders, never overwrite real content
+    if (u.oldValue && u.oldValue !== 'TBD' && u.oldValue !== 'N/A' && u.oldValue !== '') {
+      log.dim(`Skipped enrichment for ${u.name}.${u.field} — existing value is not a placeholder`);
+      continue;
+    }
     const buf = getBuffer();
     const ci = buf.indexOf(`'${u.name}':`);
     if (ci === -1) continue;
