@@ -7162,11 +7162,27 @@ Example: {"pulls":[...]}'
       )}
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
+      <footer className="app-footer relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
           <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>
       </footer>
+
+      {/* Desktop Ad Rail — hidden on mobile via CSS */}
+      <aside className="ad-rail" aria-label="Sponsored content">
+        <div className="ad-slot ad-slot-rect">
+          <div className="ad-placeholder">Ad 300×250</div>
+        </div>
+        <div className="ad-slot ad-slot-tall">
+          <div className="ad-placeholder">Ad 300×600</div>
+        </div>
+        <div className="ad-rail-footer">
+          <p className="text-gray-500 text-[10px]">
+            {`Whispering Wishes v${APP_VERSION}`} • by u/WW_Andene<br/>Not affiliated with Kuro Games<br/>
+            <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
+          </p>
+        </div>
+      </aside>
     </div>
   );
 }

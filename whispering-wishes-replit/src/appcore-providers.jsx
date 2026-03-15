@@ -1353,245 +1353,139 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     /* ══════════════════════════════════════════════════════════════════════
-       DESKTOP / LANDSCAPE MODE (≥1024px)
-       Sidebar nav + wide content area. Mobile layout untouched.
+       DESKTOP / LANDSCAPE — Sidebar + Content + Ad Rail
        ══════════════════════════════════════════════════════════════════════ */
     @media (min-width: 1024px) {
-      /* Root layout: sidebar + content */
-      .desktop-layout {
-        display: flex !important;
-        min-height: 100vh;
-      }
+      .desktop-layout { display: flex !important; min-height: 100vh; }
 
-      /* Sidebar navigation */
+      /* LEFT SIDEBAR (nav) */
       .desktop-layout > header {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        bottom: 0 !important;
-        width: 200px !important;
-        min-width: 200px !important;
-        border-bottom: none !important;
-        border-right: 1px solid rgba(255,255,255,0.08) !important;
-        z-index: 50;
-        overflow-y: auto;
-        scrollbar-width: none;
+        position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important;
+        width: 180px !important; min-width: 180px !important;
+        border-bottom: none !important; border-right: 1px solid rgba(255,255,255,0.08) !important;
+        z-index: 50; overflow-y: auto; scrollbar-width: none;
       }
       .desktop-layout > header::-webkit-scrollbar { display: none; }
-
-      /* Header inner container — full width in sidebar mode */
       .desktop-layout > header > .header-inner {
-        max-width: none !important;
-        padding: 0.75rem !important;
-        margin: 0 !important;
-        height: 100%;
-        display: flex !important;
-        flex-direction: column !important;
+        max-width: none !important; padding: 0.75rem !important; margin: 0 !important;
+        height: 100%; display: flex !important; flex-direction: column !important;
       }
-
-      /* Logo/title area in sidebar — stack vertically */
       .desktop-layout > header .header-top {
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.5rem;
-        gap: 0.5rem;
+        flex-direction: column !important; align-items: center !important; text-align: center;
+        padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.5rem; gap: 0.5rem;
       }
-      /* Center the logo + text group */
-      .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 {
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 0.375rem !important;
+      .desktop-layout > header .header-top > .flex.items-center.gap-2\.5 {
+        flex-direction: column !important; align-items: center !important; gap: 0.375rem !important;
       }
-      .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 > div:last-child {
-        text-align: center;
-      }
-
-      /* Server select + export in sidebar — horizontal row */
+      .desktop-layout > header .header-top > .flex.items-center.gap-2\.5 > div:last-child { text-align: center; }
       .desktop-layout > header .header-controls {
-        flex-direction: row !important;
-        gap: 0.375rem !important;
-        margin-bottom: 0.75rem;
+        flex-direction: row !important; gap: 0.375rem !important; margin-bottom: 0.75rem;
       }
-      .desktop-layout > header .header-controls select {
-        flex: 1;
-        min-height: 32px !important;
-        font-size: 10px;
-      }
-      .desktop-layout > header .header-controls button {
-        min-width: 32px !important;
-        min-height: 32px !important;
-        padding: 0.375rem !important;
-      }
-
-      /* Tab navigation — vertical in sidebar */
+      .desktop-layout > header .header-controls select { flex: 1; min-height: 32px !important; font-size: 10px; }
+      .desktop-layout > header .header-controls button { min-width: 32px !important; min-height: 32px !important; padding: 0.375rem !important; }
       .desktop-layout > header nav {
-        flex-direction: column !important;
-        gap: 1px !important;
-        overflow-x: visible !important;
-        padding-bottom: 0 !important;
-        flex: 1;
+        flex-direction: column !important; gap: 1px !important; overflow-x: visible !important;
+        padding-bottom: 0 !important; flex: 1;
       }
-
-      /* Tab buttons — full width, left-aligned */
       .desktop-layout > header nav .kuro-tab {
-        width: 100% !important;
-        justify-content: flex-start !important;
-        padding: 0.5rem 0.625rem !important;
-        border-radius: 0.375rem !important;
-        white-space: nowrap;
-        font-size: 0.75rem;
-        gap: 0.5rem;
-        border-bottom: none !important;
-        transition: background 0.15s, color 0.15s;
+        width: 100% !important; justify-content: flex-start !important; padding: 0.5rem 0.625rem !important;
+        border-radius: 0.375rem !important; white-space: nowrap; font-size: 0.75rem; gap: 0.5rem;
+        border-bottom: none !important; transition: background 0.15s, color 0.15s;
       }
-      .desktop-layout > header nav .kuro-tab:hover {
-        background: rgba(255,255,255,0.04);
-      }
+      .desktop-layout > header nav .kuro-tab:hover { background: rgba(255,255,255,0.04); }
       .desktop-layout > header nav .kuro-tab[aria-selected="true"] {
-        background: rgba(237, 175, 24, 0.08) !important;
-        border-bottom: none !important;
-        border-left: 2px solid #edaf18 !important;
-        padding-left: calc(0.625rem - 2px) !important;
+        background: rgba(237, 175, 24, 0.08) !important; border-bottom: none !important;
+        border-left: 2px solid #edaf18 !important; padding-left: calc(0.625rem - 2px) !important;
       }
-
-      /* Hide the horizontal tab indicator on desktop */
       .desktop-layout > header nav .tab-indicator { display: none !important; }
-
-      /* Hide swipe hint on desktop */
       .desktop-layout > header .swipe-hint { display: none !important; }
 
-      /* Main content — fills all space right of sidebar */
+      /* MAIN CONTENT (center) */
       .desktop-layout > main {
-        margin-left: 200px !important;
-        max-width: none !important;
-        width: calc(100% - 200px) !important;
-        padding: 1.25rem 2rem !important;
-        box-sizing: border-box !important;
+        margin-left: 180px !important; margin-right: 300px !important;
+        max-width: none !important; width: calc(100% - 180px - 300px) !important;
+        padding: 1rem 1.5rem !important; box-sizing: border-box !important;
+        scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+      }
+      .desktop-layout > main::-webkit-scrollbar { width: 6px; }
+      .desktop-layout > main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+      .desktop-layout > main::-webkit-scrollbar-track { background: transparent; }
+      .desktop-layout > main > [role="tabpanel"] { max-width: none; width: 100%; }
+      .desktop-layout > main .tab-content { max-width: none !important; }
+      .desktop-layout > main .app-footer { display: none !important; }
+
+      /* RIGHT AD RAIL (300px — fits 280px ad units) */
+      .desktop-layout > .ad-rail {
+        position: fixed !important; top: 0; right: 0; bottom: 0; width: 300px;
+        border-left: 1px solid rgba(255,255,255,0.06);
+        background: rgba(8, 12, 18, 0.4);
+        display: flex; flex-direction: column; align-items: center;
+        padding: 1rem 10px; gap: 1rem;
+        overflow-y: auto; scrollbar-width: none; z-index: 40;
+      }
+      .desktop-layout > .ad-rail::-webkit-scrollbar { display: none; }
+      .ad-rail .ad-slot {
+        width: 280px; display: flex; align-items: center; justify-content: center;
+        border-radius: 0.375rem; flex-shrink: 0;
+      }
+      .ad-rail .ad-slot-rect { height: 250px; }
+      .ad-rail .ad-slot-tall { height: 600px; }
+      .ad-rail .ad-placeholder {
+        width: 100%; height: 100%;
+        border: 1px dashed rgba(255,255,255,0.08);
+        display: flex; align-items: center; justify-content: center;
+        color: rgba(255,255,255,0.08); font-size: 10px;
+        text-transform: uppercase; letter-spacing: 0.1em;
+      }
+      .ad-rail .ad-rail-footer {
+        margin-top: auto; text-align: center; padding: 0.75rem 0;
+        border-top: 1px solid rgba(255,255,255,0.06); width: 100%;
       }
 
-      /* Content fills the width — no narrow constraint */
-      .desktop-layout > main > [role="tabpanel"] {
-        max-width: none;
-        width: 100%;
-      }
-      /* Inner content wrapper */
-      .desktop-layout > main .tab-content {
-        max-width: none !important;
-      }
-
-      /* Card grids — 2 columns */
+      /* GRIDS */
       .desktop-layout .desktop-grid-2 {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      /* Reset vertical spacing inside grids */
-      .desktop-layout .desktop-grid-2 > * {
-        margin-top: 0 !important;
-      }
-
-      /* Banner cards in grid */
+      .desktop-layout .desktop-grid-2 > * { margin-top: 0 !important; }
       .desktop-layout .banner-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: 1fr !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      .desktop-layout .banner-grid > * {
-        margin-top: 0 !important;
-      }
-
-      /* Event cards in grid */
+      .desktop-layout .banner-grid > * { margin-top: 0 !important; }
       .desktop-layout .event-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      .desktop-layout .event-grid > * {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-      }
-
-      /* Stats cards — fill width, top-aligned */
+      .desktop-layout .event-grid > * { margin-top: 0 !important; margin-bottom: 0 !important; }
       .desktop-layout .stats-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      .desktop-layout .stats-grid > * {
-        margin-top: 0 !important;
-      }
-      /* Full-width cards in stats (luck rating, chart) span both columns */
-      .desktop-layout .stats-grid > .stats-full-width {
-        grid-column: 1 / -1;
-      }
-
-      /* Remove space-y gap from grids (Tailwind space-y adds margin-top) */
+      .desktop-layout .stats-grid > * { margin-top: 0 !important; }
+      .desktop-layout .stats-grid > .stats-full-width { grid-column: 1 / -1; }
       .desktop-layout .desktop-grid-2.space-y-3 > * + *,
       .desktop-layout .banner-grid.space-y-3 > * + *,
       .desktop-layout .banner-grid.space-y-2 > * + *,
-      .desktop-layout .event-grid.space-y-2 > * + * {
-        margin-top: 0 !important;
-      }
-
-      /* Team suggestions list — 2 columns when many items */
+      .desktop-layout .event-grid.space-y-2 > * + * { margin-top: 0 !important; }
       .desktop-layout .team-suggestions-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.5rem !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important;
       }
-      .desktop-layout .team-suggestions-grid > * {
-        margin-top: 0 !important;
-      }
-
-      /* Scrollbar visible on desktop for main content */
-      .desktop-layout > main {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.1) transparent;
-      }
-      .desktop-layout > main::-webkit-scrollbar {
-        width: 6px;
-      }
-      .desktop-layout > main::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-      }
-      .desktop-layout > main::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      /* Background effects should span full width behind content */
-      .desktop-layout > canvas {
-        left: 200px !important;
-        width: calc(100% - 200px) !important;
-      }
+      .desktop-layout .team-suggestions-grid > * { margin-top: 0 !important; }
+      .desktop-layout [class*="fixed inset-0"] > div { max-width: 640px; }
+      .desktop-layout > canvas { left: 180px !important; width: calc(100% - 180px - 300px) !important; }
     }
 
-    /* Extra-wide screens (≥1440px) */
     @media (min-width: 1440px) {
-      .desktop-layout > main {
-        padding: 1.5rem 3rem !important;
-      }
-      .desktop-layout .event-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-      }
-      .desktop-layout .stats-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-      }
+      .desktop-layout > main { padding: 1.25rem 2rem !important; }
+      .desktop-layout .event-grid { grid-template-columns: repeat(3, 1fr) !important; }
     }
-
-    /* Ultra-wide (≥1800px) — add some max-width to prevent stretching too far */
     @media (min-width: 1800px) {
-      .desktop-layout > main > [role="tabpanel"] {
-        max-width: 1600px;
-        margin: 0 auto;
-      }
+      .desktop-layout > main > [role="tabpanel"] { max-width: 1400px; margin: 0 auto; }
+    }
+    @media (max-width: 1023px) {
+      .ad-rail { display: none !important; }
     }
 
   `}</style>
