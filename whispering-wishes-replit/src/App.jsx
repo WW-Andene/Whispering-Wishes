@@ -5437,8 +5437,7 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 
-            {/* Server + Profile — side by side on desktop */}
-            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
+            {/* Server Region */}
             <Card>
               <CardHeader>Server Region</CardHeader>
               <CardBody>
@@ -5505,7 +5504,6 @@ function WhisperingWishesInner() {
                 </button>
               </CardBody>
             </Card>
-            </div>{/* end desktop-grid-2 */}
 
             {/* Settings + Import — side by side on desktop */}
             <div className="desktop-grid-2 space-y-3 lg:space-y-0">

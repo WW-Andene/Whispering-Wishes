@@ -1356,7 +1356,13 @@ const KuroStyles = memo(({ oledMode }) => (
     /* DESKTOP LAYOUT */
     @media (min-width: 1024px) {
       /* Root */
-      .desktop-layout { display: flex !important; min-height: 100vh; }
+      .desktop-layout {
+        display: block !important; min-height: 100vh;
+        background: inherit;
+      }
+      .desktop-layout > footer {
+        margin-top: auto;
+      }
 
       /* LEFT SIDEBAR — narrow icon bar */
       .desktop-layout > header {
@@ -1427,6 +1433,7 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > main {
         margin-left: 72px !important; max-width: none !important;
         width: calc(100% - 72px) !important;
+        min-height: 100vh !important;
         padding: 1rem 1.25rem !important; padding-right: 180px !important;
         box-sizing: border-box !important;
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
