@@ -72,6 +72,14 @@ function safeExit(code) {
 async function main() {
   log.section(`WW UPDATE AGENT v2 [${MODE.toUpperCase()}]`);
   log.info(`Mode: ${MODE} | Dry run: ${DRY_RUN} | Only: ${ONLY || 'all'}`);
+
+  // Validate required environment
+  if (!process.env.ANTHROPIC_API_KEY) {
+    log.error('ANTHROPIC_API_KEY is not set or is empty.');
+    log.error('Go to GitHub repo → Settings → Secrets → Actions');
+    log.error('Delete and re-create the secret. The key starts with sk-ant-api03-...');
+    safeExit(1);
+  }
   clearChangeLog();
   _startTime = Date.now();
 

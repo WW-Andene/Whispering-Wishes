@@ -14,14 +14,9 @@ import { uploadToImgbb } from './images.js';
 import { isProtectedImageField } from './protected.js';
 
 const BANNER_IMAGE_SOURCES = [
-  // Game8 banner pages (usually have the banner art first)
-  'https://game8.co/games/Wuthering-Waves/archives/468081',
-  // Prydwen banner page
-  'https://prydwen.gg/wuthering-waves/banners',
-  // Fandom wiki convene page
-  'https://wutheringwaves.fandom.com/wiki/Convene',
-  // Reddit (drip marketing / official art posts)
-  'https://wutheringwaves.fandom.com/wiki/Convene/History',
+  'https://game8.co/games/Wuthering-Waves/archives/453303',
+  'https://prydwen.gg/wuthering-waves/',
+  'https://game8.co/games/Wuthering-Waves/archives/582216',
 ];
 
 /**

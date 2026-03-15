@@ -210,6 +210,12 @@ export function updateEventDate(eventKey, newEndDate) {
  * Add a new character entry to CHARACTER_DATA.
  */
 export function addCharacterEntry(name, data) {
+  // Check if already exists
+  if (buffer.includes(`'${name}':`) || buffer.includes(`"${name}":`)) {
+    log.dim(`${name} already in CHARACTER_DATA — skipping`);
+    return false;
+  }
+
   // Find the end of CHARACTER_DATA (just before the closing };)
   // We insert before the 4★ section if the character is 5★, or at the end of 4★ section
   const isNew5Star = data.rarity === 5;
@@ -248,6 +254,12 @@ export function addCharacterEntry(name, data) {
  * Add a new weapon entry to WEAPON_DATA.
  */
 export function addWeaponEntry(name, data) {
+  // Check if already exists (both quote styles)
+  if (buffer.includes(`'${name}':`) || buffer.includes(`"${name}":`)) {
+    log.dim(`${name} already in WEAPON_DATA — skipping`);
+    return false;
+  }
+
   // Find the end of WEAPON_DATA
   const marker = "\n};\n\n// [SECTION:EVENTS]";
   if (!buffer.includes(marker)) {
@@ -281,12 +293,13 @@ export function addToList(listName, name) {
     return false;
   }
 
-  // Check if already present
-  if (match[1].includes(`'${name}'`)) {
+  // Check if already present (handle both 'Name' and "Name's Thing" quote styles)
+  if (match[1].includes(`'${name}'`) || match[1].includes(`"${name}"`)) {
     log.dim(`${name} already in ${listName}`);
     return false;
   }
 
+  // Use double quotes for names with apostrophes, single quotes otherwise
   const qName = name.includes("'") ? `"${name}"` : `'${name}'`;
   safeReplace(
     match[0],

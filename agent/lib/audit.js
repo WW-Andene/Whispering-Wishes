@@ -297,7 +297,11 @@ RULES:
 
 ${PROTECTION_RULES}
 
-RESPONSE FORMAT: Return a JSON array of patch objects:
+RESPONSE FORMAT: Return ONLY a JSON array of patch objects. No explanation, no preamble, no "I need to" or "Let me analyze" — just the raw JSON array starting with [ and ending with ].
+
+If there are no improvements to make, return exactly: []
+
+Each patch object:
 [
   {
     "file": "appcore-data.js" | "appcore-engine.js" | "appcore-components.jsx" | "appcore-providers.jsx" | "App.jsx",
