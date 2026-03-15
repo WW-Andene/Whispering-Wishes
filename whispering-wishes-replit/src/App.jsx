@@ -3813,7 +3813,7 @@ function WhisperingWishesInner() {
                 </CardBody>
               </Card>
             ) : (
-              <div className="stats-grid">
+              <div className="space-y-3">
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
