@@ -29,28 +29,26 @@ export const PATHS = {
 // Multiple sources per category for cross-referencing and fallback
 export const SOURCES = {
   banners: [
-    'https://game8.co/games/Wuthering-Waves/archives/468081',         // Game8 banner schedule
-    'https://wutheringwaves.fandom.com/wiki/Convene',                  // Fandom wiki convene page
-    'https://prydwen.gg/wuthering-waves/banners',                      // Prydwen banner list
+    'https://game8.co/games/Wuthering-Waves/archives/453303',         // Game8 current banners
+    'https://game8.co/games/Wuthering-Waves/archives/494979',         // Game8 banner history
+    'https://prydwen.gg/wuthering-waves/',                             // Prydwen home (has banner info)
   ],
   characters: [
-    'https://game8.co/games/Wuthering-Waves/archives/466498',         // Game8 character list
+    'https://game8.co/games/Wuthering-Waves/archives/452883',         // Game8 character list
     'https://prydwen.gg/wuthering-waves/characters',                   // Prydwen character tier list
-    'https://wutheringwaves.fandom.com/wiki/Resonator',                // Fandom resonator list
   ],
   weapons: [
-    'https://game8.co/games/Wuthering-Waves/archives/466500',         // Game8 weapon list
+    'https://game8.co/games/Wuthering-Waves/archives/452883',         // Game8 (includes weapons)
     'https://prydwen.gg/wuthering-waves/weapons',                      // Prydwen weapons
   ],
   events: [
-    'https://game8.co/games/Wuthering-Waves/archives/466517',         // Game8 events
-    'https://wutheringwaves.fandom.com/wiki/Events',                   // Fandom events
+    'https://game8.co/games/Wuthering-Waves/archives/453303',         // Game8 (includes events)
+    'https://wuwatracker.com/timeline',                                // WuWa Tracker timeline
   ],
   builds: [
     'https://prydwen.gg/wuthering-waves/characters',                   // Prydwen builds
-    'https://game8.co/games/Wuthering-Waves/archives/466498',         // Game8 builds
+    'https://game8.co/games/Wuthering-Waves/archives/452883',         // Game8 builds
   ],
-  // For image sourcing
   images: [
     'https://wutheringwaves.fandom.com/wiki/',                         // Base wiki URL + character name
   ],
@@ -81,8 +79,8 @@ export const AI = {
 
 // ─── Scraper Configuration ───────────────────────────────────────────────────
 export const SCRAPER = {
-  // User agent to identify ourselves
-  userAgent: 'WhisperingWishes-UpdateAgent/1.0 (game-companion-updater)',
+  // User agent — use a real browser UA to avoid 403 blocks from wikis
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   // Timeout per request (ms)
   timeout: 15000,
   // Delay between requests to the same domain (ms)
