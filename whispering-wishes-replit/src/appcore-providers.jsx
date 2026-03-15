@@ -3,159 +3,12 @@
 // PWA infrastructure, toast system, a11y hooks, onboarding, KuroStyles.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
-import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle } from 'lucide-react';
-import { APP_VERSION, HEADER_ICON, haptic, generateUniqueId } from './appcore-data.js';
+import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
+import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
+import { haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 
-const PWA_MANIFEST = {
-  name: 'Whispering Wishes',
-  short_name: 'Whispering Wishes',
-  description: 'Wuthering Waves Convene Companion - Track pulls, plan resources, analyze luck',
-  start_url: '/',
-  display: 'standalone',
-  background_color: '#0a0a0a',
-  theme_color: '#fbbf24',
-  orientation: 'portrait-primary',
-  icons: [
-    { src: HEADER_ICON, sizes: '64x64', type: 'image/png', purpose: 'any' }
-  ], // Also populated dynamically in setupPWA with proper sized icons
-  categories: ['games', 'utilities'],
-  screenshots: [],
-  shortcuts: [
-    { name: 'Tracker', url: '/?tab=tracker', description: 'View pity tracker' },
-    { name: 'Calculator', url: '/?tab=calculator', description: 'Calculate probabilities' },
-    { name: 'Collection', url: '/?tab=gathering', description: 'View your collection' }
-  ]
-};
-
-// Service Worker code as string (will be registered as blob)
-const SERVICE_WORKER_CODE = `
-const APP_CACHE = 'ww-app-v${APP_VERSION}';
-const IMG_CACHE = 'ww-images-v${APP_VERSION}';
-const CDN_CACHE = 'ww-cdn-v${APP_VERSION}';
-const MAX_IMG_ENTRIES = 250;
-
-// Core app shell to precache
-const PRECACHE = ['/', '/index.html'];
-
-// CDN domains — cache-first (these rarely change)
-const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
-
-// Image domains — stale-while-revalidate
-const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co'];
-
-// Install — precache app shell
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(APP_CACHE)
-      .then(cache => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
-  );
-});
-
-// Activate — purge old caches
-self.addEventListener('activate', (event) => {
-  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE];
-  event.waitUntil(
-    caches.keys().then(names =>
-      Promise.all(names.filter(n => !currentCaches.includes(n)).map(n => caches.delete(n)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-// Trim image cache to MAX_IMG_ENTRIES (LRU by insertion order)
-async function trimCache(cacheName, maxEntries) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  if (keys.length > maxEntries) {
-    await Promise.all(keys.slice(0, keys.length - maxEntries).map(k => cache.delete(k)));
-  }
-}
-
-// Strategy: Cache-first (for CDN assets)
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    return new Response('', { status: 503 });
-  }
-}
-
-// Strategy: Stale-while-revalidate (for images)
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone());
-      trimCache(cacheName, MAX_IMG_ENTRIES);
-    }
-    return response;
-  }).catch(() => cached || new Response('', { status: 503 }));
-  
-  return cached || fetchPromise;
-}
-
-// Strategy: Network-first with cache fallback (for app/API)
-async function networkFirst(request, cacheName) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    if (request.mode === 'navigate') {
-      return caches.match('/');
-    }
-    return new Response('Offline', { status: 503 });
-  }
-}
-
-// Fetch router — pick strategy by domain/type
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  if (!event.request.url.startsWith('http')) return;
-  
-  const url = new URL(event.request.url);
-  
-  // CDN assets → cache-first
-  if (CDN_DOMAINS.some(d => url.hostname.includes(d))) {
-    event.respondWith(cacheFirst(event.request, CDN_CACHE));
-    return;
-  }
-  
-  // Images → stale-while-revalidate
-  if (IMG_DOMAINS.some(d => url.hostname.includes(d)) || /\\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)) {
-    event.respondWith(staleWhileRevalidate(event.request, IMG_CACHE));
-    return;
-  }
-  
-  // Everything else → network-first
-  event.respondWith(networkFirst(event.request, APP_CACHE));
-});
-
-// Handle messages
-self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') self.skipWaiting();
-  if (event.data === 'clearImageCache') {
-    caches.delete(IMG_CACHE).then(() => {
-      event.source?.postMessage('imageCacheCleared');
-    });
-  }
-});
-`;
+// P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
+// Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
 
 // PWA Provider Component
 const PWAProvider = ({ children }) => {
@@ -199,9 +52,9 @@ const PWAProvider = ({ children }) => {
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
-      { name: 'theme-color', content: '#fbbf24' },
-      { name: 'msapplication-TileColor', content: '#fbbf24' },
-      { name: 'msapplication-navbutton-color', content: '#fbbf24' }
+      { name: 'theme-color', content: '#edaf18' },
+      { name: 'msapplication-TileColor', content: '#edaf18' },
+      { name: 'msapplication-navbutton-color', content: '#edaf18' }
     ];
     
     metaTags.forEach(({ name, content }) => {
@@ -214,35 +67,24 @@ const PWAProvider = ({ children }) => {
       }
     });
     
-    // Register service worker (blob URLs only work in Chromium browsers)
-    // Firefox/Safari require a real SW file — app still functions without SW
+    // P14-FIX: HIGH-6 — Register service worker from a proper static file instead of blob URL.
+    // Blob URLs bypass CSP, are invisible to security scanners, and prevent proper SW update lifecycle.
+    // The static /sw.js file works in all browsers (Firefox, Safari, Chrome).
     if ('serviceWorker' in navigator) {
-      try {
-        const swBlob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(swBlob);
-        
-        navigator.serviceWorker.register(swUrl, { scope: '/' })
-          .then((registration) => {
-            URL.revokeObjectURL(swUrl); // P7-FIX: Revoke blob URL after registration (7D)
-            // Check for updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[WW] New version available');
-                }
-              });
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then((registration) => {
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[WW] New version available');
+              }
             });
-          })
-          .catch((err) => {
-            URL.revokeObjectURL(swUrl); // P7-FIX: Revoke blob URL on failure too (7D)
-            // Blob URL service workers are not supported in Firefox/Safari
-            console.info('[WW] Service worker not registered (blob URL not supported in this browser). App works fine without it.', err.message);
           });
-      } catch (err) {
-        // Service worker not critical — app works fine without it
-        console.info('[WW] Service worker setup skipped:', err.message);
-      }
+        })
+        .catch((err) => {
+          console.info('[WW] Service worker not registered:', err.message);
+        });
     }
     
     return () => {
@@ -272,7 +114,7 @@ const PWAProvider = ({ children }) => {
       {children}
       {/* Offline indicator */}
       {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
+        <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[10000] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
           ⚡ You're offline - Some features may be limited
         </div>
       )}
@@ -280,7 +122,9 @@ const PWAProvider = ({ children }) => {
       {installPrompt && !isInstalled && (
         <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-yellow-500/90 to-amber-500/90 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black/20 rounded-lg flex items-center justify-center text-xl">✨</div>
+            <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
+              <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+            </div>
             <div className="flex-1">
               <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
               <div className="text-black/70 text-xs">Add to home screen for the best experience</div>
@@ -328,7 +172,8 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <div className="fixed bottom-24 left-3 right-3 z-[9999] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
+      {/* AUDIT-FIX M27: z-[9998] to avoid collision with mini visual settings panel at z-[9999] */}
+      <div className="fixed bottom-24 left-3 right-3 z-[9998] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
         {toasts.map(toast => (
           <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
             animation: 'slideUp 0.2s ease-out',
@@ -336,7 +181,8 @@ const ToastProvider = ({ children }) => {
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
-            {toast.type === 'warning' && <AlertCircle size={16} />}
+            {/* AUDIT-FIX N7: Use AlertTriangle for warnings to distinguish from errors */}
+            {toast.type === 'warning' && <AlertTriangle size={16} />}
             {toast.type === 'info' && <Info size={16} />}
             {toast.message}
           </div>
@@ -349,6 +195,8 @@ const ToastProvider = ({ children }) => {
 const useToast = () => useContext(ToastContext);
 
 // [SECTION:A11Y_HOOKS] - Accessibility hooks for modal focus trapping & escape key
+// P14-FIX: MEDIUM-22 — Re-query focusable elements on each Tab keypress instead of caching.
+// Dynamic modals may render content after the trap is set up, so the focusable list can become stale.
 const useFocusTrap = (isOpen) => {
   const ref = useRef(null);
   const previousFocusRef = useRef(null);
@@ -357,11 +205,12 @@ const useFocusTrap = (isOpen) => {
     previousFocusRef.current = document.activeElement;
     const el = ref.current;
     if (!el) return;
-    const focusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const timer = setTimeout(() => { const f = focusable(); if (f.length) f[0].focus(); }, 50);
+    const getFocusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const timer = setTimeout(() => { const f = getFocusable(); if (f.length) f[0].focus(); }, 50);
     const handleKeyDown = (e) => {
       if (e.key !== 'Tab') return;
-      const nodes = focusable();
+      // Re-query on each Tab press to catch dynamically rendered elements
+      const nodes = getFocusable();
       if (!nodes.length) return;
       const first = nodes[0], last = nodes[nodes.length - 1];
       if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
@@ -407,13 +256,13 @@ const OnboardingModal = ({ onComplete }) => {
   const focusTrapRef = useFocusTrap(true);
   useEscapeKey(true, onComplete);
   const steps = [
-    { title: "Welcome to Whispering Wishes!", icon: <Sparkles size={32} />, desc: "Your companion for Wuthering Waves Convene planning.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#fbbf24' },
+    { title: "Welcome to Whispering Wishes!", icon: <Sparkles size={32} />, desc: "Your companion for Wuthering Waves Convene planning.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#edaf18' },
     { title: "Import Your History", icon: <Upload size={32} />, desc: "Go to the Profile tab and import data from wuwatracker.com.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20', color: '#22d3ee' },
     { title: "Track Your Banners", icon: <Target size={32} />, desc: "View current banners, pity progress, and time remaining.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30', border: 'border-orange-500/30', bg: 'bg-orange-500/20', color: '#fb923c' },
     { title: "Build Your Collection", icon: <LayoutGrid size={32} />, desc: "Track all your Resonators and weapons.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30', border: 'border-purple-500/30', bg: 'bg-purple-500/20', color: '#a855f7' },
     { title: "Calculate Your Odds", icon: <Calculator size={32} />, desc: "See your chances based on pity and resources.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-emerald-900/30', border: 'border-emerald-500/30', bg: 'bg-emerald-500/20', color: '#34d399' },
     { title: "View Analytics", icon: <BarChart3 size={32} />, desc: "Check your luck rating, charts, and Convene history.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30', border: 'border-pink-500/30', bg: 'bg-pink-500/20', color: '#f472b6' },
-    { title: "You're Ready!", icon: <CheckCircle size={32} />, desc: "Good luck on your Convenes, Rover!", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#fbbf24' }
+    { title: "You're Ready!", icon: <CheckCircle size={32} />, desc: "Good luck on your Convenes, Rover!", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#edaf18' }
   ];
   
   const s = steps[step];
@@ -483,6 +332,8 @@ const KuroStyles = memo(({ oledMode }) => (
       overscroll-behavior: none;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
        is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
@@ -500,7 +351,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* ═══ CSS CUSTOM PROPERTIES ═══ */
     :root {
-      --color-gold: 251, 191, 36;
+      --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
       --color-cyan: 56, 189, 248;
       --color-purple: 168, 85, 247;
@@ -514,13 +365,21 @@ const KuroStyles = memo(({ oledMode }) => (
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       /* Z-index scale: bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000) */
-      --text-body: #e2e8f0;
-      --text-heading: #f1f5f9;
+      --text-body: #dfe5ef;
+      --text-heading: #edf1f8;
+      --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
+      --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       --bg-card: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
       --bg-card-inner: ${oledMode ? 'rgba(5, 5, 5, 1)' : 'rgba(6, 10, 18, 1)'};
       --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
       --bg-input: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
       --bg-stat: ${oledMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
+      /* D-TOKEN-1: Border opacity tokens — replaces 30+ raw rgba(255,255,255,0.xx) border values */
+      --border-subtle: rgba(255,255,255,0.06);
+      --border-default: rgba(255,255,255,0.08);
+      --border-medium: rgba(255,255,255,0.1);
+      --border-hover: rgba(255,255,255,0.15);
+      --border-bright: rgba(255,255,255,0.2);
     }
     
     /* Hide scrollbar on specific horizontal scroll containers */
@@ -537,7 +396,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* Thin subtle scrollbar for vertical scroll containers */
     .overflow-y-auto {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: rgba(140,160,200,0.18) transparent;
     }
     .overflow-y-auto::-webkit-scrollbar {
       width: 3px;
@@ -546,11 +405,11 @@ const KuroStyles = memo(({ oledMode }) => (
       background: transparent;
     }
     .overflow-y-auto::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.15);
+      background: rgba(140,160,200,0.18);
       border-radius: 3px;
     }
     .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.25);
+      background: rgba(140,160,200,0.28);
     }
     
     /* ═══ IMPROVED FOCUS STATES ═══ */
@@ -569,8 +428,9 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ TOUCH OPTIMIZATION ═══ */
-    button, select, input, textarea, a, [role="tab"] {
+    button, select, input, textarea, a, [role="tab"], [role="button"] {
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     
     /* Ensure minimum 44px touch targets for filter selects on touch devices */
@@ -579,7 +439,7 @@ const KuroStyles = memo(({ oledMode }) => (
         min-height: 44px;
       }
       /* P10-FIX: Ensure all standalone buttons meet minimum 36px touch target on touch devices (Step 10 audit — MEDIUM-5b) */
-      .kuro-body button:not(.kuro-btn):not([role="tab"]) {
+      .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn) {
         min-height: 36px;
       }
     }
@@ -587,31 +447,23 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-calc {
       position: relative;
       color: var(--text-body);
+      /* AUDIT-FIX M23: Explicit body font-family fallback */
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
     
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
+
     @keyframes scaleIn {
       from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
     }
     
     @keyframes borderGlow {
-      0%, 100% { border-color: rgba(251, 191, 36, 0.3); }
-      50% { border-color: rgba(251, 191, 36, 0.6); }
+      0%, 100% { border-color: rgba(237, 175, 24, 0.3); }
+      50% { border-color: rgba(237, 175, 24, 0.6); }
     }
     
     @keyframes pulseScale {
@@ -665,24 +517,26 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
     
-    /* Glow effect for 5-star items */
+    /* D-HIERARCHY-2: Enhanced glow for 5★ — radial bg + stronger box-shadow for visual hierarchy */
     .glow-gold {
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 24px rgba(237, 175, 24, 0.20), inset 0 0 20px rgba(237, 175, 24, 0.06), 0 4px 12px rgba(0,0,0,0.3);
+      background-image: radial-gradient(ellipse at 50% 80%, rgba(237, 175, 24, 0.08) 0%, transparent 60%);
     }
-    
+
     @media (hover: hover) {
       .glow-gold:hover {
-        box-shadow: 0 0 30px rgba(251, 191, 36, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 0 36px rgba(237, 175, 24, 0.30), inset 0 0 24px rgba(237, 175, 24, 0.08), 0 8px 20px rgba(0,0,0,0.4);
       }
     }
-    
+
+    /* 4★ glow — intentionally subtler than 5★ for visual hierarchy */
     .glow-purple {
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.12), 0 4px 12px rgba(0,0,0,0.3);
     }
-    
+
     @media (hover: hover) {
       .glow-purple:hover {
-        box-shadow: 0 0 30px rgba(168, 85, 247, 0.25), 0 8px 20px rgba(0,0,0,0.4);
+        box-shadow: 0 0 24px rgba(168, 85, 247, 0.20), 0 8px 20px rgba(0,0,0,0.4);
       }
     }
     
@@ -695,7 +549,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ PITY RING ═══ */
     .pity-ring-track {
       fill: none;
-      stroke: rgba(255,255,255,0.06);
+      stroke: var(--border-subtle);
     }
     .pity-ring-fill {
       fill: none;
@@ -704,11 +558,12 @@ const KuroStyles = memo(({ oledMode }) => (
       filter: drop-shadow(0 0 4px var(--ring-glow));
     }
     .pity-ring-text {
-      font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--font-data);
       font-weight: 700;
       fill: currentColor;
       text-anchor: middle;
       dominant-baseline: central;
+      letter-spacing: -0.02em;
     }
     
     /* ═══ LUCK BADGE ═══ */
@@ -774,7 +629,7 @@ const KuroStyles = memo(({ oledMode }) => (
       position: relative;
       z-index: 5;
       background: var(--bg-card);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-default);
       border-radius: 16px;
       overflow: visible;
       backdrop-filter: blur(4px);
@@ -788,7 +643,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-card:hover {
-        border-color: rgba(255, 255, 255, 0.15);
+        border-color: var(--border-hover);
         transform: translateY(-2px);
         box-shadow: 
           0 8px 32px rgba(0, 0, 0, 0.6),
@@ -837,7 +692,7 @@ const KuroStyles = memo(({ oledMode }) => (
       border-radius: 15px;
     }
     
-    /* Corner decorations - more subtle */
+    /* Corner decorations */
     .kuro-card-inner::before {
       content: '';
       position: absolute;
@@ -845,13 +700,13 @@ const KuroStyles = memo(({ oledMode }) => (
       right: 8px;
       width: 12px;
       height: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid var(--border-bright);
+      border-right: 1px solid var(--border-bright);
       border-radius: 0 4px 0 0;
       z-index: 2;
-      opacity: 0.7;
+      opacity: 0.85;
     }
-    
+
     .kuro-card-inner::after {
       content: '';
       position: absolute;
@@ -859,17 +714,17 @@ const KuroStyles = memo(({ oledMode }) => (
       left: 8px;
       width: 12px;
       height: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--border-bright);
+      border-left: 1px solid var(--border-bright);
       border-radius: 0 0 0 4px;
       z-index: 2;
-      opacity: 0.7;
+      opacity: 0.85;
     }
     
     .kuro-header {
       position: relative;
       padding: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -889,8 +744,10 @@ const KuroStyles = memo(({ oledMode }) => (
     
     .kuro-header h3 {
       color: var(--text-heading);
-      font-size: 13px;
+      font-family: var(--font-display);
+      font-size: 14px;
       font-weight: 600;
+      line-height: 1.25;
       letter-spacing: 0.03em;
       display: flex;
       align-items: center;
@@ -903,9 +760,9 @@ const KuroStyles = memo(({ oledMode }) => (
       content: '';
       width: 3px;
       height: 16px;
-      background: linear-gradient(180deg, rgba(251, 191, 36, 0.9), rgba(251, 191, 36, 0.4));
+      background: linear-gradient(180deg, rgba(237, 175, 24, 0.9), rgba(237, 175, 24, 0.4));
       border-radius: 2px;
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 8px rgba(237, 175, 24, 0.3);
     }
     
     .kuro-body {
@@ -917,12 +774,14 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-btn {
       position: relative;
       background: var(--bg-btn);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-medium);
       border-radius: 12px;
       padding: 10px 12px;
       color: var(--text-heading);
+      font-family: var(--font-display);
       font-size: 11px;
       font-weight: 500;
+      letter-spacing: 0.02em;
       cursor: pointer;
       transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), color var(--transition-fast);
       text-align: center;
@@ -945,7 +804,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-btn:hover {
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: var(--border-bright);
         color: #ffffff;
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
@@ -960,14 +819,43 @@ const KuroStyles = memo(({ oledMode }) => (
       transform: translateY(0) scale(0.97);
       transition: transform 0.1s ease;
     }
-    
+
+    /* AUDIT-FIX M30: Disabled button state — §DP3: cool-shifted opacity */
+    .kuro-btn:disabled, .kuro-btn[disabled] {
+      opacity: 0.4;
+      filter: saturate(0.7) brightness(0.8);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* §DI3: Global icon hover color transitions
+       Ensures every Lucide SVG inside an interactive element
+       transitions color smoothly + gains a subtle atmospheric glow */
+    button svg, a svg, [role="button"] svg {
+      transition: color var(--transition-fast), filter var(--transition-fast);
+    }
+    @media (hover: hover) {
+      button:hover > svg,
+      a:hover > svg,
+      [role="button"]:hover > svg,
+      button:hover svg,
+      a:hover svg,
+      [role="button"]:hover svg {
+        filter: drop-shadow(0 0 3px currentColor);
+      }
+      button:disabled:hover svg,
+      button[disabled]:hover svg {
+        filter: none;
+      }
+    }
+
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
-      background: rgba(251, 191, 36, 0.15);
-      border-color: rgba(251, 191, 36, 0.7);
+      background: rgba(237, 175, 24, 0.15);
+      border-color: rgba(237, 175, 24, 0.7);
       color: #fef08a;
-      box-shadow: 0 0 25px rgba(251, 191, 36, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 191, 36, 0.08);
-      text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 25px rgba(237, 175, 24, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(237, 175, 24, 0.08);
+      text-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
       animation: borderGlow 2s ease-in-out infinite;
     }
     
@@ -1005,14 +893,6 @@ const KuroStyles = memo(({ oledMode }) => (
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
     }
     
-    .kuro-btn.active-orange {
-      background: rgba(251, 146, 60, 0.15);
-      border-color: rgba(251, 146, 60, 0.7);
-      color: #fed7aa;
-      box-shadow: 0 0 25px rgba(251, 146, 60, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(251, 146, 60, 0.08);
-      text-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
-    }
-    
     /* Red for 50/50 */
     .kuro-btn.active-red {
       background: rgba(239, 68, 68, 0.2);
@@ -1025,7 +905,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ INPUTS - Glassy style ═══ */
     .kuro-input {
       background: var(--bg-input);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--border-bright);
       border-radius: 8px;
       padding: 10px 12px;
       color: #ffffff;
@@ -1053,12 +933,12 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     .kuro-input::placeholder {
-      color: #6b7280;
+      color: #6b7389;
       transition: color var(--transition-fast);
     }
-    
+
     .kuro-input:focus::placeholder {
-      color: #9ca3af;
+      color: #8f99ab;
     }
     
     .kuro-input-sm {
@@ -1074,20 +954,23 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-stat {
       position: relative;
       background: var(--bg-stat);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--border-hover);
       border-radius: 10px;
       padding: 14px;
       text-align: center;
       overflow: hidden;
+      font-family: var(--font-data);
+      line-height: 1.3;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
+      font-variant-numeric: tabular-nums;
       transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
     
     @media (hover: hover) {
       .kuro-stat:hover {
         transform: translateY(-1px);
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: var(--border-bright);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       }
     }
@@ -1103,11 +986,11 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     .kuro-stat-gold {
-      background: rgba(251, 191, 36, 0.15);
-      border-color: rgba(251, 191, 36, 0.5);
+      background: rgba(237, 175, 24, 0.15);
+      border-color: rgba(237, 175, 24, 0.5);
     }
     .kuro-stat-gold::before {
-      background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 1), transparent);
+      background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 1), transparent);
     }
     
     .kuro-stat-cyan {
@@ -1162,8 +1045,8 @@ const KuroStyles = memo(({ oledMode }) => (
     
     @media (hover: hover) {
       .kuro-stat-gold:hover {
-        border-color: rgba(251, 191, 36, 0.7);
-        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
+        border-color: rgba(237, 175, 24, 0.7);
+        box-shadow: 0 4px 20px rgba(237, 175, 24, 0.15);
       }
       .kuro-stat-cyan:hover {
         border-color: rgba(56, 189, 248, 0.7);
@@ -1194,7 +1077,9 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ LABELS - Bright for readability ═══ */
     .kuro-label {
       color: var(--text-body);
+      font-family: var(--font-display);
       font-size: 11px;
+      line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
@@ -1221,31 +1106,31 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #f0c040, #fbbf24);
+      background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
       border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
       transition: transform 0.15s, box-shadow 0.15s;
     }
     
     .kuro-slider::-webkit-slider-thumb:hover {
       transform: scale(1.15);
-      box-shadow: 0 0 18px rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 18px rgba(237, 175, 24, 0.8);
     }
     
     .kuro-slider::-moz-range-thumb {
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #f0c040, #fbbf24);
+      background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
       border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+      box-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
     }
     /* P12-FIX: Firefox slider hover states + range-track (Step 12 audit — MEDIUM-12k) */
     .kuro-slider::-moz-range-thumb:hover {
       transform: scale(1.15);
-      box-shadow: 0 0 18px rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 18px rgba(237, 175, 24, 0.8);
     }
     .kuro-slider::-moz-range-track {
       background: rgba(255, 255, 255, 0.15);
@@ -1254,50 +1139,22 @@ const KuroStyles = memo(({ oledMode }) => (
       border: none;
     }
     
-    .kuro-slider.cyan::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    /* ═══ PRIORITY SLIDER THUMB (neutral so it stands out against both gold & pink track) ═══ */
+    .priority-slider::-webkit-slider-thumb {
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.3);
     }
-    .kuro-slider.cyan::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
+    .priority-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 1px 6px rgba(0,0,0,0.3);
     }
-    .kuro-slider.cyan::-moz-range-thumb {
-      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    .priority-slider::-moz-range-thumb {
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 1px 4px rgba(0,0,0,0.3);
     }
-    /* P12-FIX: Firefox cyan slider hover (Step 12 audit — MEDIUM-12k) */
-    .kuro-slider.cyan::-moz-range-thumb:hover {
-      box-shadow: 0 0 18px rgba(56, 189, 248, 0.8);
+    .priority-slider::-moz-range-thumb:hover {
+      box-shadow: 0 0 14px rgba(255,255,255,0.7), 0 1px 6px rgba(0,0,0,0.3);
     }
-    .kuro-slider.cyan::-moz-range-track {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-      height: 6px;
-      border: none;
-    }
-    
-    .kuro-slider.pink::-webkit-slider-thumb {
-      background: linear-gradient(135deg, #db2777, #ec4899);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    .kuro-slider.pink::-webkit-slider-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    .kuro-slider.pink::-moz-range-thumb {
-      background: linear-gradient(135deg, #db2777, #ec4899);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
-    }
-    /* P12-FIX: Firefox pink slider hover (Step 12 audit — MEDIUM-12k) */
-    .kuro-slider.pink::-moz-range-thumb:hover {
-      box-shadow: 0 0 18px rgba(236, 72, 153, 0.8);
-    }
-    .kuro-slider.pink::-moz-range-track {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-      height: 6px;
-      border: none;
-    }
-    
+
     /* ═══ PROGRESS BAR ═══ */
     /* Progress bars use inline Tailwind styles */
     
@@ -1343,15 +1200,94 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* ═══ NUMBER STYLING ═══ */
     .kuro-number {
-      font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: var(--font-data);
       font-variant-numeric: tabular-nums;
       font-weight: 700;
+      line-height: 1.2;
     }
-    
+
+    /* D-TYPE-4: Scoreboard numeral treatment for countdown timers */
+    .kuro-scoreboard {
+      font-family: var(--font-data);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    /* ═══ SKELETON LOADING — D-MOTION-1 ═══ */
+    @keyframes kuroShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .kuro-skeleton {
+      background: rgba(12, 16, 24, 0.55);
+      background-image: linear-gradient(90deg, transparent 0%, rgba(237, 175, 24, 0.06) 40%, rgba(237, 175, 24, 0.10) 50%, rgba(237, 175, 24, 0.06) 60%, transparent 100%);
+      background-size: 200% 100%;
+      animation: kuroShimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    .kuro-skeleton-row {
+      height: 36px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+    }
+    .kuro-skeleton-stat {
+      height: 72px;
+      border-radius: 10px;
+    }
+    .kuro-skeleton-text {
+      height: 10px;
+      border-radius: 4px;
+    }
+    .kuro-skeleton-circle {
+      border-radius: 50%;
+    }
+
+    /* ═══ EMPTY STATE — D-STATE-1 atmospheric upgrade ═══ */
+    @keyframes emptyFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .kuro-empty-state {
+      position: relative;
+      background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);
+      border-radius: 8px;
+      animation: emptyFadeIn 0.4s ease-out both;
+      border: 1px dashed rgba(237, 175, 24, 0.10);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .kuro-empty-state::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
+    }
+
+    /* §DST1: Ghost-grid placeholder cells for collection empty state */
+    @keyframes ghostPulse {
+      0%, 100% { opacity: 0.04; }
+      50% { opacity: 0.08; }
+    }
+    .ghost-grid-cell {
+      background: linear-gradient(
+        135deg,
+        rgba(140, 160, 200, 0.06) 0%,
+        rgba(140, 160, 200, 0.02) 50%,
+        rgba(140, 160, 200, 0.05) 100%
+      );
+      animation: ghostPulse 2.5s ease-in-out infinite;
+    }
+
     /* ═══ DIVIDER ═══ */
     .kuro-divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
       margin: 12px 0;
     }
     
@@ -1366,7 +1302,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ CUSTOM SCROLLBAR ═══ */
     .kuro-scroll {
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: rgba(140,160,200,0.18) transparent;
     }
     .kuro-scroll::-webkit-scrollbar {
       width: 4px;
@@ -1375,11 +1311,11 @@ const KuroStyles = memo(({ oledMode }) => (
       background: transparent;
     }
     .kuro-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.15);
+      background: rgba(140,160,200,0.18);
       border-radius: 2px;
     }
     .kuro-scroll::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.25);
+      background: rgba(140,160,200,0.28);
     }
     @media (hover: hover) {
       .collection-card:hover {
@@ -1392,64 +1328,6 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform 0.1s ease;
     }
     
-    /* ═══ TOOLTIP IMPROVEMENTS ═══ */
-    [data-tooltip] {
-      position: relative;
-    }
-    [data-tooltip]::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(-4px);
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 100;
-    }
-    [data-tooltip]:hover::after,
-    [data-tooltip]:focus::after,
-    [data-tooltip]:focus-visible::after {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-8px);
-    }
-    
-    /* ═══ LOADING SKELETON ═══ */
-    .skeleton {
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.05) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0.05) 100%
-      );
-      background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s ease-in-out infinite;
-      border-radius: 6px;
-    }
-    @keyframes skeletonShimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    /* ═══ EMPTY STATE ═══ */
-    .empty-state {
-      text-align: center;
-      padding: 32px 16px;
-      color: #9ca3af;
-    }
-    .empty-state-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 12px;
-      opacity: 0.4;
-    }
-    
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
     
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
@@ -1458,16 +1336,9 @@ const KuroStyles = memo(({ oledMode }) => (
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    /* P11-FIX: Respect OS-level reduced motion preference immediately (before JS hydrates).
-       The JS check (animationsEnabled) handles canvas; this handles CSS animations. (Step 7 audit — MEDIUM-3g) */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
+    /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
+       when prefers-reduced-motion: reduce) which adds .no-animations class above.
+       No separate @media rule needed — it was overriding the app toggle with !important. */
     /* Screen reader only utility */
     .sr-only {
       position: absolute;

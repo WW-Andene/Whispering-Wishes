@@ -7,10 +7,10 @@
 
 // --- appcore-data.js ---
 export {
-  APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
+  APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
   calculateLuckRating, SERVERS, getServerOffset,
   CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA,
-  EVENTS, SUBSCRIPTIONS, HARD_PITY, ASTRITE_PER_PULL,
+  EVENTS, SUBSCRIPTIONS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
   LUNITE_DAILY_ASTRITE, MAX_ASTRITE, MAX_CALC_PULLS,
   DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER, WEAPON_RELEASE_ORDER,
   ALL_5STAR_RESONATORS, ALL_5STAR_WEAPONS,
@@ -47,4 +47,5 @@ export {
   CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
   PityCounterInput, CalcResultsCard, StandardBannerSection,
   ImportGuide, getActiveBanners,
+  hideOnError,
 } from './appcore-components.jsx';

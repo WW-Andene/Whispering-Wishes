@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { AlertCircle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, X, Zap } from 'lucide-react';
+import { AlertCircle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
 import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import {
   APP_VERSION,
@@ -47,6 +47,7 @@ import {
   SUBSCRIPTIONS,
   HARD_PITY,
   ASTRITE_PER_PULL,
+  BEGINNER_ASTRITE_PER_PULL,
   LUNITE_DAILY_ASTRITE,
   MAX_ASTRITE,
   MAX_CALC_PULLS,
@@ -91,22 +92,98 @@ import {
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
   STANDARD_5STAR_WEAPONS,
+  generateUniqueId,
   ADMIN_HASH,
   ADMIN_BANNER_KEY,
   AppErrorBoundary,
   TabErrorBoundary,
   TAB_ORDER,
-  MEDAL_COLORS
+  MEDAL_COLORS,
+  hideOnError,
 } from './AppCore';
+
+// ── Module-level constants (hoisted from render body) ──────────────────────
+// 8.1 fix: Fetch wrapper with AbortController timeout — fails fast on network loss
+const FETCH_TIMEOUT_MS = 10000;
+const fetchWithTimeout = (url, options = {}) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+};
+const DEBOUNCE_MS = 300;
+const FOCUS_DELAY_MS = 50;
+const CALC_DEFER_MS = 150;
+const MAX_ADMIN_ATTEMPTS = 5;
+const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const ADMIN_TAP_TIMEOUT_MS = 1500;
+const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
+const MAX_USERNAME_LENGTH = 24;
+const MAX_BOOKMARK_NAME_LENGTH = 30;
+const LEADERBOARD_DISPLAY_LIMIT = 20;
+const ADMIN_SALT = 'whispering-wishes-v3-admin';
+const currentYear = new Date().getFullYear();
+const MIN_ZOOM = 100;
+const MAX_ZOOM = 300;
+// P13-FIX: CRITICAL-1 — Read Firebase config from env vars (set in .env or Vercel dashboard).
+// Fallbacks ensure the app still works without env vars, but production should always use env vars
+// so credentials aren't grep-able in source. The real protection is Firebase Security Rules (see database.rules.json).
+const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || 'https://whispering-wishes-default-rtdb.firebaseio.com';
+const FIREBASE_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyWhisperingWishes';
+const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
+const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
+const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
+const DEFAULT_VISUAL_SETTINGS = {
+  fadePosition: 50,
+  fadeIntensity: 100,
+  pictureOpacity: 100,
+  standardFadePosition: 50,
+  standardFadeIntensity: 100,
+  standardOpacity: 100,
+  shadowFadePosition: 50,
+  shadowFadeIntensity: 100,
+  shadowOpacity: 100,
+  collectionFadePosition: 50,
+  collectionFadeIntensity: 100,
+  collectionOpacity: 100,
+  collectionFadeDirection: 'top',
+  collectionZoom: 120,
+  oledMode: false,
+  swipeNavigation: false,
+  animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
+};
+const TRACKER_CATEGORIES = [['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']];
+// P15-FIX: MEDIUM-3 — Domain allowlist for custom image URLs (single source of truth)
+const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
+
+// P13-FIX: HIGH-5 — Hash UIDs before writing to Firebase to protect player privacy.
+// Game UIDs can potentially be correlated to real identities; hashing makes stored data pseudonymous.
+const hashUidForStorage = async (uid) => {
+  if (!uid) return null;
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ww-uid-' + uid));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  } catch { return uid; } // fallback if crypto unavailable (HTTP)
+};
+
+// P13-FIX: HIGH-2 — Client-side rate limiter for Firebase writes.
+// Prevents runaway writes from bugs or abuse. Firebase Security Rules handle server-side enforcement.
+const firebaseWriteTimestamps = new Map(); // key → last write timestamp
+const FIREBASE_WRITE_COOLDOWN_MS = 5000; // 5 seconds between writes to the same path
+const checkFirebaseRateLimit = (pathKey) => {
+  const now = Date.now();
+  const lastWrite = firebaseWriteTimestamps.get(pathKey) || 0;
+  if (now - lastWrite < FIREBASE_WRITE_COOLDOWN_MS) return false; // rate-limited
+  firebaseWriteTimestamps.set(pathKey, now);
+  return true; // allowed
+};
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   // Check admin-only lockout (5-min cooldown after 5 failed attempts — does NOT lock the app)
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
-      // Clean up legacy keys from older versions
-      localStorage.removeItem('whispering-wishes-admin-pass'); // removed: no user-set passwords
-      localStorage.removeItem('ww-app-lockout'); // removed: old 24h full-app lockout (CRIT-2)
+      // P14-FIX: MEDIUM-15 — Removed legacy localStorage key cleanup (whispering-wishes-admin-pass, ww-app-lockout).
+      // These were removed in P8; cleanup code is no longer needed after sufficient migration period.
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
       if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
         return parseInt(lockoutUntil, 10);
@@ -137,15 +214,19 @@ function WhisperingWishesInner() {
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
   // Banner ends at server-specific time (e.g., 11:59 local for each server)
   const bannerEndDate = useMemo(() => getServerAdjustedEnd(activeBanners.endDate, state.server), [activeBanners.endDate, state.server]);
-  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', 'visuals', or 'players'
+  const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', 'visuals', 'trophies', or 'players'
   const [adminMiniMode, setAdminMiniMode] = useState(false);
+  const [trophyOverrides, setTrophyOverrides] = useState(() => {
+    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+  const [trophyJsonInput, setTrophyJsonInput] = useState('');
   
   // Anonymous presence tracking — no personal data, just a timestamp per ephemeral session
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]); // last ~30 data points
   const [presenceError, setPresenceError] = useState(null);
   const [adminPlayerList, setAdminPlayerList] = useState(null); // full player data for admin only
-  const presenceSessionId = useRef('s_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36));
+  const presenceSessionId = useRef('s_' + generateUniqueId().replace(/-/g, '').slice(0, 12));
   
   // P6-FIX: Controlled admin banner form state — replaces all document.getElementById calls (HIGH-17/18)
   const buildBannerForm = useCallback((banners) => ({
@@ -156,7 +237,9 @@ function WhisperingWishesInner() {
     charsJson: JSON.stringify(banners.characters, null, 2),
     weapsJson: JSON.stringify(banners.weapons, null, 2),
     charImages: Object.fromEntries((banners.characters || []).map((c, i) => [i, c.imageUrl || ''])),
+    charImagePositions: Object.fromEntries((banners.characters || []).map((c, i) => [i, c.imagePosition || ''])),
     weapImages: Object.fromEntries((banners.weapons || []).map((w, i) => [i, w.imageUrl || ''])),
+    weapImagePositions: Object.fromEntries((banners.weapons || []).map((w, i) => [i, w.imagePosition || ''])),
     standardCharImg: banners.standardCharBannerImage || '',
     standardWeapImg: banners.standardWeapBannerImage || '',
     wwImg: banners.whimperingWastesImage || '',
@@ -169,36 +252,11 @@ function WhisperingWishesInner() {
   const updateBannerForm = useCallback((field, value) => setBannerForm(prev => ({ ...prev, [field]: value })), []);
   
   // Banner visual settings - v3 forces fresh defaults
-  const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
-  const defaultVisualSettings = {
-    // Featured Banner Cards
-    fadePosition: 50,
-    fadeIntensity: 100,
-    pictureOpacity: 100,
-    // Standard Banner Cards
-    standardFadePosition: 50,
-    standardFadeIntensity: 100,
-    standardOpacity: 100,
-    // Event Cards
-    shadowFadePosition: 50,
-    shadowFadeIntensity: 100,
-    shadowOpacity: 100,
-    // Collection Cards (vertical fade)
-    collectionFadePosition: 50,
-    collectionFadeIntensity: 100,
-    collectionOpacity: 100,
-    collectionFadeDirection: 'top',
-    collectionZoom: 120,
-    // Display Settings
-    oledMode: false,
-    swipeNavigation: false,
-    animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
-  };
   // Always start with defaults - localStorage can override but we validate each property
   const [visualSettings, setVisualSettings] = useState(() => {
     // Return defaults - don't load from localStorage on initial load
     // This ensures fresh users always get correct defaults
-    return { ...defaultVisualSettings };
+    return { ...DEFAULT_VISUAL_SETTINGS };
   });
   
   // Load from localStorage after mount (so SSR/preview gets defaults)
@@ -247,8 +305,12 @@ function WhisperingWishesInner() {
       const manifest = {
         name: 'Whispering Wishes',
         short_name: 'Whispering Wishes',
-        icons: [{ src: darkBgIcon, sizes: '180x180', type: 'image/png' }],
-        start_url: window.location.href,
+        icons: [
+          { src: darkBgIcon, sizes: '180x180', type: 'image/png' },
+          { src: darkBgIcon, sizes: '192x192', type: 'image/png' },
+          { src: darkBgIcon, sizes: '512x512', type: 'image/png' }
+        ],
+        start_url: '/',
         display: 'standalone',
         background_color: '#0a0a1a',
         theme_color: '#0c0820'
@@ -275,11 +337,27 @@ function WhisperingWishesInner() {
     if (visualSettingsTimerRef.current) clearTimeout(visualSettingsTimerRef.current);
     visualSettingsTimerRef.current = setTimeout(() => {
       try { localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(newSettings)); } catch {}
-    }, 300);
+    }, DEBOUNCE_MS);
   }, [storageAvailable]);
-  
+
+  // Cleanup debounce timers and admin tap timer on unmount
+  useEffect(() => {
+    return () => {
+      if (visualSettingsTimerRef.current) clearTimeout(visualSettingsTimerRef.current);
+      if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
+    };
+  }, []);
+
+  // AUDIT-FIX L10: Listen for runtime prefers-reduced-motion changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e) => { saveVisualSettings({ ...visualSettings, animationsEnabled: !e.matches }); };
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [visualSettings, saveVisualSettings]);
+
   // Image framing state - stores position/zoom for each image by key
-  const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
   const [framingMode, setFramingMode] = useState(false);
@@ -290,7 +368,7 @@ function WhisperingWishesInner() {
     if (!storageAvailable) return;
     try {
       const saved = localStorage.getItem(IMAGE_FRAMING_KEY);
-      if (saved) setImageFraming(JSON.parse(saved));
+      if (saved) setImageFraming(sanitizeStateObj(JSON.parse(saved)));
       const pos = localStorage.getItem('ww-mini-panel-pos');
       if (pos) setMiniPanelPosition(pos);
     } catch {}
@@ -414,7 +492,7 @@ function WhisperingWishesInner() {
     // Clamp values - larger range for better control
     newFraming.x = Math.max(-100, Math.min(100, newFraming.x));
     newFraming.y = Math.max(-100, Math.min(100, newFraming.y));
-    newFraming.zoom = Math.max(100, Math.min(300, newFraming.zoom));
+    newFraming.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newFraming.zoom));
     saveImageFraming(editingImage, newFraming);
   };
   
@@ -518,7 +596,19 @@ function WhisperingWishesInner() {
     if (!storageAvailable) return {};
     try {
       const saved = localStorage.getItem(COLLECTION_IMAGES_KEY);
-      return saved ? JSON.parse(saved) : {};
+      if (!saved) return {};
+      const raw = JSON.parse(saved);
+      // P15-FIX: MEDIUM-3 — Validate URLs: HTTPS-only + domain allowlist to prevent tracking/SSRF
+      const safe = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (typeof v === 'string' && /^https:\/\//i.test(v)) {
+          try {
+            const host = new URL(v).hostname;
+            if (ALLOWED_IMAGE_HOSTS.some(d => host === d || host.endsWith('.' + d))) safe[k] = v;
+          } catch { /* invalid URL, skip */ }
+        }
+      }
+      return safe;
     } catch { return {}; }
   });
   
@@ -532,9 +622,12 @@ function WhisperingWishesInner() {
     clearTimeout(saveCollectionImagesDebounced.current);
     saveCollectionImagesDebounced.current = setTimeout(() => { // P7-FIX: Debounce localStorage writes (7B)
       try { localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(newImages)); } catch {}
-    }, 300)
+    }, DEBOUNCE_MS)
   };
-  
+  useEffect(() => {
+    return () => { if (saveCollectionImagesDebounced.current) clearTimeout(saveCollectionImagesDebounced.current); };
+  }, []);
+
   // Admin password — only the app owner can access admin (hash defined at module level)
   
   // Keep ref updated
@@ -557,7 +650,7 @@ function WhisperingWishesInner() {
       try {
         const parsed = rawSaved ? JSON.parse(rawSaved) : null;
         originalSettings = parsed?.settings || {};
-      } catch (e) {}
+      } catch (e) { console.warn('Failed to parse saved settings:', e); }
       // Only show onboarding if the original saved data had it explicitly true
       // If settings.showOnboarding is missing/undefined, user is existing - don't show
       const shouldShow = originalSettings.showOnboarding === true;
@@ -567,8 +660,8 @@ function WhisperingWishesInner() {
       setShowOnboarding(true);
     }
     setStorageLoaded(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — mount-only, toast ref is stable at first render
-  
+  }, []); // P14-FIX: LOW-3 — Removed dead eslint-disable comment (no ESLint configured)
+
   // Save state to storage whenever it changes (debounced to avoid jank from rapid state changes)
   // P9-FIX: Debounce saveToStorage to prevent synchronous JSON.stringify jank (Step 4 audit)
   const saveTimerRef = useRef(null);
@@ -582,7 +675,7 @@ function WhisperingWishesInner() {
         saveFailCountRef.current++;
         // Only show toast on first failure (avoid spamming on every state change)
         if (saveFailCountRef.current === 1) {
-          toast?.addToast?.('Storage full — data may not be saved. Try clearing old pull history.', 'error');
+          toast?.addToast?.('Storage full — data may not be saved. Try clearing old Convene history.', 'error');
         }
       } else {
         saveFailCountRef.current = 0;
@@ -607,43 +700,57 @@ function WhisperingWishesInner() {
   
   // P12-FIX: Cross-tab synchronization — reload state when another tab writes to localStorage (Step 14 audit — MEDIUM-10b)
   // Without this, two tabs open simultaneously would silently overwrite each other's changes (last-write-wins).
+  // Debounced (3.7 fix) to prevent rapid dispatches when another tab saves frequently.
   useEffect(() => {
     if (!storageAvailable) return;
+    let debounceTimer = null;
     const handleStorageChange = (e) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
-      try {
-        const externalState = JSON.parse(e.newValue);
-        const safeParsed = sanitizeStateObj(externalState);
-        const merged = {
-          ...initialState,
-          ...sanitizeImportedState(safeParsed),
-          server: safeParsed.server || initialState.server,
-          profile: {
-            ...initialState.profile,
-            ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
-            featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
-            weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
-            standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
-            standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
-            beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
-          },
-          calc: { ...initialState.calc }, // Always start calculator fresh
-          planner: { ...initialState.planner, ...safeParsed.planner },
-          settings: { ...initialState.settings, ...safeParsed.settings },
-          bookmarks: safeParsed.bookmarks || [],
-          eventStatus: safeParsed.eventStatus || {},
-        };
-        dispatch({ type: 'LOAD_STATE', state: merged });
-        toast?.addToast?.('Data synced from another tab', 'info');
-      } catch (err) {
-        console.warn('Cross-tab sync failed:', err);
-      }
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        try {
+          const externalState = JSON.parse(e.newValue);
+          const safeParsed = sanitizeStateObj(externalState);
+          const merged = {
+            ...initialState,
+            ...sanitizeImportedState(safeParsed),
+            server: safeParsed.server || initialState.server,
+            profile: {
+              ...initialState.profile,
+              ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
+              featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
+              weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
+              standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
+              standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
+              beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
+            },
+            calc: { ...initialState.calc }, // Always start calculator fresh
+            planner: { ...initialState.planner, ...safeParsed.planner },
+            settings: { ...initialState.settings, ...safeParsed.settings },
+            bookmarks: safeParsed.bookmarks || [],
+            eventStatus: safeParsed.eventStatus || {},
+          };
+          dispatch({ type: 'LOAD_STATE', state: merged });
+          toast?.addToast?.('Data synced from another tab', 'info');
+        } catch (err) {
+          console.warn('Cross-tab sync failed:', err);
+        }
+      }, DEBOUNCE_MS);
     };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps — stable refs
+    return () => { clearTimeout(debounceTimer); window.removeEventListener('storage', handleStorageChange); };
+  }, []); // P14-FIX: LOW-3 — Removed dead eslint-disable comment (no ESLint configured)
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
+  // Team builder state (hoisted to satisfy Rules of Hooks)
+  const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
+  const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
+  const [teamSearch, setTeamSearch] = useState('');
+  const [teamElementFilter, setTeamElementFilter] = useState('all');
+  const [teamRarityFilter, setTeamRarityFilter] = useState('all');
+  const [teamBuffFilter, setTeamBuffFilter] = useState('all');
+  const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
+  const [teamDmgFilter, setTeamDmgFilter] = useState('all');
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -667,8 +774,14 @@ function WhisperingWishesInner() {
         }
         el = el.parentElement;
       }
+      // Exclude swipes starting near screen edges to avoid conflicting with OS back/forward gestures
+      const touchX = e.touches[0].clientX;
+      if (touchX < 20 || touchX > window.innerWidth - 20) {
+        swipeRef.current = { startX: 0, startY: 0, startTime: 0, ignore: true };
+        return;
+      }
       swipeRef.current = {
-        startX: e.touches[0].clientX,
+        startX: touchX,
         startY: e.touches[0].clientY,
         startTime: Date.now(),
         ignore: false
@@ -717,6 +830,7 @@ function WhisperingWishesInner() {
   const [importPlatform, setImportPlatform] = useState(null);
   const [importMethod, setImportMethod] = useState('file'); // 'file' or 'paste'
   const [isDragOver, setIsDragOver] = useState(false); // P8-FIX: MED — drag-and-drop state
+  const [importStatus, setImportStatus] = useState(null); // D-STATE-2: { fileName, fileSize } during import
   const [pasteJsonText, setPasteJsonText] = useState('');
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [showIdCard, setShowIdCard] = useState(false);
@@ -733,9 +847,13 @@ function WhisperingWishesInner() {
   const [leaderboardConsented, setLeaderboardConsented] = useState(() => {
     try { return localStorage.getItem('ww-leaderboard-consent') === 'true'; } catch { return false; }
   });
+  // P13-FIX: MEDIUM-4 — Custom consent modal instead of window.confirm (accessible, stylable, screen-reader friendly)
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const consentResolveRef = useRef(null);
 
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardSubmitting, setLeaderboardSubmitting] = useState(false);
   const [leaderboardTab, setLeaderboardTab] = useState('rankings'); // 'rankings' or 'popular'
   const [communityPulls, setCommunityPulls] = useState(null);
   const [userLeaderboardId] = useState(() => {
@@ -743,7 +861,14 @@ function WhisperingWishesInner() {
     try {
       let id = localStorage.getItem('ww-leaderboard-id');
       if (!id) {
-        id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        // 5.2 fix: CSPRNG for leaderboard ID (Math.random is predictable)
+        try {
+          const arr = new Uint8Array(4);
+          crypto.getRandomValues(arr);
+          id = 'WW' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        } catch {
+          id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
         localStorage.setItem('ww-leaderboard-id', id);
       }
       return id;
@@ -755,45 +880,55 @@ function WhisperingWishesInner() {
 
   // P8-FIX: Use in-game UID as primary leaderboard key so same player on web + Android = one entry
   // Falls back to random ID only if no import has been done yet
-  const effectiveLeaderboardId = state.profile.uid || userLeaderboardId;
+  // Sanitize UIDs for Firebase path safety — only allow alphanumeric, hyphens, underscores
+  const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
+  const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
+
+  // Pre-compute hashed UID for leaderboard "You" comparison (entry.uid is hashed, state.profile.uid is raw)
+  const [hashedProfileUid, setHashedProfileUid] = useState(null);
+  useEffect(() => {
+    if (state.profile.uid) {
+      hashUidForStorage(state.profile.uid).then(setHashedProfileUid);
+    } else {
+      setHashedProfileUid(null);
+    }
+  }, [state.profile.uid]);
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), []);
 
-  // P2-FIX: Deferred calc state — sliders update UI instantly (state.calc),
-  // A11y: Focus trap for inline modals — auto-focus first focusable element on open
-  const anyModalOpen = showBookmarkModal || showExportModal || showAdminPanel || showLeaderboard || selectedTrophy;
-  useEffect(() => {
-    if (!anyModalOpen) return;
-    const timer = setTimeout(() => {
-      const modal = document.querySelector('[role="dialog"]');
-      if (modal) {
-        const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (focusable) focusable.focus();
-      }
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [anyModalOpen]);
+  // 6.1 fix: Focus trapping for inline modals — Tab wraps within modal, auto-focus first element, restore on close
+  const leaderboardTrapRef = useFocusTrap(showLeaderboard);
+  const bookmarkTrapRef = useFocusTrap(showBookmarkModal);
+  const exportTrapRef = useFocusTrap(showExportModal);
+  const idCardTrapRef = useFocusTrap(showIdCard);
+  const adminTrapRef = useFocusTrap(showAdminPanel && !adminMiniMode);
+  const trophyTrapRef = useFocusTrap(!!selectedTrophy);
 
   // but heavy DP computation only fires 150ms after the last slider tick.
   // Prevents ~7MB array allocation × 60Hz during slider drag.
-  const [deferredCalc, setDeferredCalc] = useState(state.calc);
+  // P15-FIX: MEDIUM-16 — Initial deferredCalc is null to defer first DP computation
+  // until after first paint, preventing jank on calculator tab open.
+  const [deferredCalc, setDeferredCalc] = useState(null);
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
     if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current);
-    calcDeferTimerRef.current = setTimeout(() => setDeferredCalc(state.calc), 150);
+    calcDeferTimerRef.current = setTimeout(() => setDeferredCalc(state.calc), CALC_DEFER_MS);
     return () => { if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current); };
   }, [state.calc]);
+
+  // Use state.calc as fallback when deferredCalc is null (initial render before deferred computation fires)
+  const effectiveCalc = deferredCalc || state.calc;
 
   // Smart astrite allocation for "Both" mode
   // P2-FIX: Uses deferredCalc so heavy DP isn't triggered on every slider tick
   const astriteAllocation = useMemo(() => {
-    const totalAstrite = +deferredCalc.astrite || 0;
+    const totalAstrite = +effectiveCalc.astrite || 0;
     const totalPulls = Math.floor(totalAstrite / ASTRITE_PER_PULL);
-    const radiant = +deferredCalc.radiant || 0;
-    const forging = +deferredCalc.forging || 0;
-    const lustrous = +deferredCalc.lustrous || 0;
-    
-    if (deferredCalc.selectedBanner !== 'both') {
+    const radiant = +effectiveCalc.radiant || 0;
+    const forging = +effectiveCalc.forging || 0;
+    const lustrous = +effectiveCalc.lustrous || 0;
+
+    if (effectiveCalc.selectedBanner !== 'both') {
       // Single banner mode - all resources go to that banner
       return {
         charAstritePulls: totalPulls,
@@ -811,8 +946,8 @@ function WhisperingWishesInner() {
     
     // "Both" mode - split resources based on priority (0-100)
     // 0 = all weapon, 50 = balanced, 100 = all char
-    const featPriority = typeof deferredCalc.allocPriority === 'number' ? deferredCalc.allocPriority : 50;
-    const stdPriority = typeof deferredCalc.stdAllocPriority === 'number' ? deferredCalc.stdAllocPriority : 50;
+    const featPriority = typeof effectiveCalc.allocPriority === 'number' ? effectiveCalc.allocPriority : 50;
+    const stdPriority = typeof effectiveCalc.stdAllocPriority === 'number' ? effectiveCalc.stdAllocPriority : 50;
     const charPercent = featPriority;
     const weapPercent = 100 - featPriority;
     
@@ -840,31 +975,32 @@ function WhisperingWishesInner() {
       stdCharLustrous,
       stdWeapLustrous,
     };
-  }, [deferredCalc.astrite, deferredCalc.radiant, deferredCalc.forging, deferredCalc.lustrous, deferredCalc.selectedBanner, deferredCalc.allocPriority, deferredCalc.stdAllocPriority]);
+  }, [effectiveCalc.astrite, effectiveCalc.radiant, effectiveCalc.forging, effectiveCalc.lustrous, effectiveCalc.selectedBanner, effectiveCalc.allocPriority, effectiveCalc.stdAllocPriority]);
 
   // Calculate pulls for each banner type using allocation
   const { charTotal: charPulls, weapTotal: weapPulls, stdCharTotal: stdCharPulls, stdWeapTotal: stdWeapPulls } = astriteAllocation;
   
   // Calculate stats for each banner type
   // P2-FIX: Uses deferredCalc so DP arrays aren't allocated 60×/sec during slider drag
-  const charStats = useMemo(() => calcStats(charPulls, deferredCalc.charPity, deferredCalc.charGuaranteed, true, deferredCalc.charCopies), [charPulls, deferredCalc.charPity, deferredCalc.charGuaranteed, deferredCalc.charCopies]);
-  const weapStats = useMemo(() => calcStats(weapPulls, deferredCalc.weapPity, false, false, deferredCalc.weapCopies), [weapPulls, deferredCalc.weapPity, deferredCalc.weapCopies]);
-  const stdCharStats = useMemo(() => calcStats(stdCharPulls, deferredCalc.stdCharPity, false, false, deferredCalc.stdCharCopies), [stdCharPulls, deferredCalc.stdCharPity, deferredCalc.stdCharCopies]);
-  const stdWeapStats = useMemo(() => calcStats(stdWeapPulls, deferredCalc.stdWeapPity, false, false, deferredCalc.stdWeapCopies), [stdWeapPulls, deferredCalc.stdWeapPity, deferredCalc.stdWeapCopies]);
+  const charStats = useMemo(() => deferredCalc ? calcStats(charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, true, effectiveCalc.charCopies) : null, [deferredCalc, charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, effectiveCalc.charCopies]);
+  const weapStats = useMemo(() => deferredCalc ? calcStats(weapPulls, effectiveCalc.weapPity, false, false, effectiveCalc.weapCopies) : null, [deferredCalc, weapPulls, effectiveCalc.weapPity, effectiveCalc.weapCopies]);
+  const stdCharStats = useMemo(() => deferredCalc ? calcStats(stdCharPulls, effectiveCalc.stdCharPity, false, false, effectiveCalc.stdCharCopies) : null, [deferredCalc, stdCharPulls, effectiveCalc.stdCharPity, effectiveCalc.stdCharCopies]);
+  const stdWeapStats = useMemo(() => deferredCalc ? calcStats(stdWeapPulls, effectiveCalc.stdWeapPity, false, false, effectiveCalc.stdWeapCopies) : null, [deferredCalc, stdWeapPulls, effectiveCalc.stdWeapPity, effectiveCalc.stdWeapCopies]);
 
   // Combined stats for "Both" mode
   const combined = useMemo(() => {
-    if (deferredCalc.selectedBanner !== 'both') return null;
-    
+    if (effectiveCalc.selectedBanner !== 'both') return null;
+    if (!charStats || !weapStats || !stdCharStats || !stdWeapStats) return null;
+
     let charProb, weapProb;
-    if (deferredCalc.bannerCategory === 'featured') {
-      charProb = parseFloat(charStats.successRate) / 100;
-      weapProb = parseFloat(weapStats.successRate) / 100;
+    if (effectiveCalc.bannerCategory === 'featured') {
+      charProb = (parseFloat(charStats.successRate) || 0) / 100;
+      weapProb = (parseFloat(weapStats.successRate) || 0) / 100;
     } else {
-      charProb = parseFloat(stdCharStats.successRate) / 100;
-      weapProb = parseFloat(stdWeapStats.successRate) / 100;
+      charProb = (parseFloat(stdCharStats.successRate) || 0) / 100;
+      weapProb = (parseFloat(stdWeapStats.successRate) || 0) / 100;
     }
-    
+
     return {
       both: (charProb * weapProb * 100).toFixed(1),
       atLeastOne: ((charProb + weapProb - charProb * weapProb) * 100).toFixed(1),
@@ -872,7 +1008,7 @@ function WhisperingWishesInner() {
       weapOnly: (weapProb * (1 - charProb) * 100).toFixed(1),
       neither: ((1 - charProb) * (1 - weapProb) * 100).toFixed(1),
     };
-  }, [deferredCalc.selectedBanner, deferredCalc.bannerCategory, charStats, weapStats, stdCharStats, stdWeapStats]);
+  }, [effectiveCalc.selectedBanner, effectiveCalc.bannerCategory, charStats, weapStats, stdCharStats, stdWeapStats]);
 
   // Overall stats from imported history
   const overallStats = useMemo(() => {
@@ -900,22 +1036,20 @@ function WhisperingWishesInner() {
     
     return { 
       totalPulls: all.length, 
-      // Beginner banner costs 128 Astrite/pull (80% of standard 160)
-      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * 128, 
+      // P14-FIX: NIT-2 — Use named constant for beginner banner pull cost
+      totalAstrite: (all.length - beginnerHist.length) * ASTRITE_PER_PULL + beginnerHist.length * BEGINNER_ASTRITE_PER_PULL,
       fiveStars: fives.length, 
       won5050: won, 
       lost5050: lost, 
       winRate: (won + lost) > 0 ? ((won / (won + lost)) * 100).toFixed(1) : null, 
-      avgPity 
+      avgPity
     };
-  }, [state.profile]);
+  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
   
-  // Leaderboard functions — Firebase Realtime Database
-  const FIREBASE_DB = 'https://whispering-wishes-default-rtdb.firebaseio.com';
-  const FIREBASE_API_KEY = 'AIzaSyWhisperingWishes'; // P8-FIX: CRIT-4 — Firebase project API key for anonymous auth
-  const hasClaudeStorage = typeof window !== 'undefined' && !!window.storage;
-  
-  // P8-FIX: CRIT-4 — Firebase Anonymous Auth token management
+  // Leaderboard functions — Firebase Realtime Database (constants at module level)
+
+  // Firebase Anonymous Auth — tries to get a token, returns '' if auth unavailable.
+  // All Firebase requests work with or without auth (unauthenticated if token is empty).
   const firebaseAuthRef = useRef({ idToken: null, expiresAt: 0 });
   const getFirebaseAuth = useCallback(async () => {
     const now = Date.now();
@@ -923,198 +1057,76 @@ function WhisperingWishesInner() {
       return firebaseAuthRef.current.idToken;
     }
     try {
-      const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
+      const res = await fetchWithTimeout(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ returnSecureToken: true })
       });
       if (!res.ok) throw new Error('Firebase auth failed');
       const data = await res.json();
-      firebaseAuthRef.current = { 
-        idToken: data.idToken, 
-        expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000 
+      firebaseAuthRef.current = {
+        idToken: data.idToken,
+        expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000
       };
       return data.idToken;
     } catch (e) {
-      console.warn('Firebase anonymous auth failed, falling back to unauthenticated:', e);
-      return null; // Graceful degradation — still works if Firebase rules allow public reads
+      console.warn('Firebase anonymous auth failed:', e);
+      return null;
     }
   }, []);
+
+  // Helper: build Firebase URL with optional auth param
+  const firebaseUrl = useCallback((path, authToken) => {
+    const base = `${FIREBASE_DB}/${path}.json`;
+    return authToken ? `${base}?auth=${authToken}` : base;
+  }, []);
   
+  const leaderboardLoadingRef = useRef(false);
   const loadLeaderboard = useCallback(async () => {
+    if (leaderboardLoadingRef.current) return;
+    leaderboardLoadingRef.current = true;
     setLeaderboardLoading(true);
     try {
-      // P8-FIX: CRIT-4 — Authenticate before reading
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
-          // P8-FIX: Deduplicate by uid, then by stats fingerprint — same player on multiple devices = one entry
-          const deduped = new Map();
-          rawEntries.forEach(e => {
-            // Primary key: game UID if available
-            // Secondary key: stats fingerprint (avgPity + totalPulls + pulls) to catch old entries without uid
-            const uidKey = e.uid || null;
-            const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}`;
-            const key = uidKey || statsKey; // Group by UID first; if no UID, group by identical stats
-            const existing = deduped.get(key);
-            if (!existing || 
-                (e.uid && !existing.uid) || // prefer entry with uid
-                ((e.timestamp ?? 0) > (existing.timestamp ?? 0))) { // then prefer most recent
-              deduped.set(key, e);
-            }
-          });
-          const entries = [...deduped.values()];
-          entries.sort((a, b) => a.avgPity - b.avgPity);
-          setLeaderboardData(entries.slice(0, 20));
-        } else {
-          setLeaderboardData([]);
-        }
+      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
+      const data = await res.json();
+      if (data) {
+        const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
+        // Deduplicate by uid, then by stats fingerprint
+        const deduped = new Map();
+        rawEntries.forEach(e => {
+          const uidKey = e.uid || null;
+          const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
+          const key = uidKey || statsKey;
+          const existing = deduped.get(key);
+          if (!existing ||
+              (e.uid && !existing.uid) ||
+              ((e.timestamp ?? 0) > (existing.timestamp ?? 0))) {
+            deduped.set(key, e);
+          }
+        });
+        const entries = [...deduped.values()];
+        entries.sort((a, b) => a.avgPity - b.avgPity);
+        setAllLeaderboardEntries(entries);
+        setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
       } else {
-        throw new Error('Firebase fetch failed');
+        setAllLeaderboardEntries([]);
+        setLeaderboardData([]);
       }
     } catch (e) {
       console.error('Leaderboard load error:', e);
-      // Fallback to Claude storage if available
-      if (hasClaudeStorage) {
-        try {
-          const result = await window.storage.list('luck:', true);
-          if (result?.keys) {
-            const entries = await Promise.all(
-              result.keys.slice(0, 50).map(async (key) => {
-                try {
-                  const data = await window.storage.get(key, true);
-                  return data?.value ? JSON.parse(data.value) : null;
-                } catch { return null; }
-              })
-            );
-            const valid = entries.filter(e => e && e.avgPity && e.id);
-            valid.sort((a, b) => a.avgPity - b.avgPity);
-            setLeaderboardData(valid.slice(0, 20));
-          }
-        } catch { setLeaderboardData([]); }
-      }
+      setAllLeaderboardEntries([]);
+      setLeaderboardData([]);
     }
     setLeaderboardLoading(false);
-  }, [hasClaudeStorage, getFirebaseAuth]);
-  
-  const submitToLeaderboard = useCallback(async () => {
-    if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
-    
-    // Require explicit consent before first submission
-    if (!leaderboardConsented) {
-      const consent = window.confirm(
-        'Leaderboard Submission — Data Sharing Notice\n\n' +
-        'By submitting your score, the following data will be sent to a shared database and displayed publicly:\n\n' +
-        '• Your player ID (' + effectiveLeaderboardId + ')\n' +
-        '• Average pity, total pulls, 50/50 win/loss stats\n' +
-        '• Your owned 5★ characters and weapons\n\n' +
-        'This data is pseudonymous (linked to your game UID or a random ID, not your real identity).\n\n' +
-        'Do you consent to sharing this data?'
-      );
-      if (!consent) return;
-      setLeaderboardConsented(true);
-      try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
-    }
-    
-    try {
-      const entry = {
-        id: effectiveLeaderboardId,
-        uid: state.profile.uid || null, // P8-FIX: Store game UID for cross-device dedup
-        avgPity: parseFloat(overallStats.avgPity),
-        pulls: overallStats.fiveStars ?? 0,
-        totalPulls: overallStats.totalPulls ?? 0,
-        won5050: overallStats.won5050 ?? 0,
-        lost5050: overallStats.lost5050 ?? 0,
-        timestamp: Date.now()
-      };
-      // P8-FIX: CRIT-4 — Authenticate before writing
-      const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      // P8-FIX: Use effectiveLeaderboardId as Firebase key — same UID across devices overwrites instead of duplicating
-      const res = await fetch(`${FIREBASE_DB}/leaderboard/${effectiveLeaderboardId}.json${authParam}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      });
-      if (!res.ok) throw new Error('Firebase submit failed');
-      
-      // Submit owned 5★ for community "Most Pulled" ranking
-      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-        await fetch(`${FIREBASE_DB}/community-pulls/${effectiveLeaderboardId}.json${authParam}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
-        });
-      }
-      
-      toast?.addToast?.('Score submitted to leaderboard!', 'success');
-      
-      // P8-FIX: Clean up stale duplicate entries from before UID-based keying
-      // Step 1: Delete this device's old random-ID entry if we switched to UID
-      if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
-        try {
-          await fetch(`${FIREBASE_DB}/leaderboard/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-          await fetch(`${FIREBASE_DB}/community-pulls/${userLeaderboardId}.json${authParam}`, { method: 'DELETE' });
-        } catch { /* best-effort cleanup */ }
-      }
-      // Step 2: Fetch raw leaderboard and find other stale entries with matching stats from other devices' old random IDs
-      if (state.profile.uid) {
-        try {
-          const rawRes = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
-          if (rawRes.ok) {
-            const rawData = await rawRes.json();
-            if (rawData) {
-              const myAvg = parseFloat(overallStats.avgPity);
-              const myPulls = overallStats.totalPulls ?? 0;
-              const myFives = overallStats.fiveStars ?? 0;
-              const myWon = overallStats.won5050 ?? 0;
-              const myLost = overallStats.lost5050 ?? 0;
-              const staleKeys = Object.entries(rawData)
-                .filter(([key, e]) => 
-                  key !== effectiveLeaderboardId && // not the new UID entry
-                  key !== userLeaderboardId && // already handled above
-                  (!e.uid || e.uid === state.profile.uid) && // no uid OR same uid (old duplicate)
-                  e.avgPity === myAvg && 
-                  e.totalPulls === myPulls && 
-                  e.pulls === myFives &&
-                  (e.won5050 ?? 0) === myWon &&
-                  (e.lost5050 ?? 0) === myLost
-                )
-                .map(([key]) => key);
-              for (const key of staleKeys) {
-                try {
-                  await fetch(`${FIREBASE_DB}/leaderboard/${key}.json${authParam}`, { method: 'DELETE' });
-                  await fetch(`${FIREBASE_DB}/community-pulls/${key}.json${authParam}`, { method: 'DELETE' });
-                } catch { /* best-effort */ }
-              }
-              if (staleKeys.length > 0) {
-                console.log(`Cleaned up ${staleKeys.length} stale leaderboard entries for UID ${state.profile.uid}`);
-              }
-            }
-          }
-        } catch { /* cleanup is best-effort */ }
-      }
-      
-      loadLeaderboard();
-    } catch (e) { 
-      console.error('Submit error:', e);
-      toast?.addToast?.('Failed to submit score', 'error');
-    }
-  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, leaderboardConsented, getFirebaseAuth]);
+    leaderboardLoadingRef.current = false;
+  }, [getFirebaseAuth, firebaseUrl]);
   
   const loadCommunityPulls = useCallback(async () => {
     try {
-      const authToken = await getFirebaseAuth(); // P8-FIX: CRIT-4
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/community-pulls.json${authParam}`);
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1131,13 +1143,107 @@ function WhisperingWishesInner() {
         }
       }
     } catch (e) { console.error('Community pulls load error:', e); }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
+
+  const submittingRef = useRef(false);
+  const submitToLeaderboard = useCallback(async () => {
+    if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
+    if (submittingRef.current) return; // prevent double-submit
+    // P13-FIX: HIGH-2 — Rate limit leaderboard writes
+    if (!checkFirebaseRateLimit('leaderboard-submit')) {
+      toast?.addToast?.('Please wait a few seconds before submitting again', 'error');
+      return;
+    }
+
+    // P13-FIX: MEDIUM-4 — Require explicit consent via accessible custom modal before first submission
+    if (!leaderboardConsented) {
+      const consent = await new Promise(resolve => {
+        consentResolveRef.current = resolve;
+        setShowConsentModal(true);
+      });
+      if (!consent) return;
+      setLeaderboardConsented(true);
+      try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
+    }
+
+    submittingRef.current = true;
+    setLeaderboardSubmitting(true);
+    try {
+      // P13-FIX: HIGH-3 — Validate entry bounds before submission
+      const avgPity = parseFloat(overallStats.avgPity);
+      const pulls = overallStats.fiveStars ?? 0;
+      const totalPulls = overallStats.totalPulls ?? 0;
+      const won5050 = overallStats.won5050 ?? 0;
+      const lost5050 = overallStats.lost5050 ?? 0;
+      if (isNaN(avgPity) || avgPity < 1 || avgPity > 80) throw new Error('Invalid average pity value');
+      if (pulls < 0 || pulls > 9999) throw new Error('Invalid 5★ pull count');
+      if (totalPulls < 0 || totalPulls > 999999) throw new Error('Invalid total pull count');
+      if (won5050 < 0 || won5050 > pulls) throw new Error('Invalid 50/50 win count');
+      if (lost5050 < 0 || lost5050 > pulls) throw new Error('Invalid 50/50 loss count');
+      if (effectiveLeaderboardId.length > 64) throw new Error('Leaderboard ID too long');
+
+      const hashedUid = await hashUidForStorage(state.profile.uid);
+      const entry = {
+        id: effectiveLeaderboardId,
+        uid: hashedUid,
+        avgPity,
+        pulls,
+        totalPulls,
+        won5050,
+        lost5050,
+        timestamp: Date.now()
+      };
+
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl(`leaderboard/${effectiveLeaderboardId}`, authToken), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error(`Firebase write failed (${res.status})`);
+
+      // Submit owned 5★ for community "Most Pulled" ranking
+      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
+      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
+        try {
+          await fetchWithTimeout(firebaseUrl(`community-pulls/${effectiveLeaderboardId}`, authToken), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
+          });
+        } catch { /* community-pulls is best-effort */ }
+      }
+      // Clean up stale duplicate entries
+      if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
+        try {
+          await fetchWithTimeout(firebaseUrl(`leaderboard/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+          await fetchWithTimeout(firebaseUrl(`community-pulls/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+        } catch { /* best-effort cleanup */ }
+      }
+
+      toast?.addToast?.('Score submitted to leaderboard!', 'success');
+
+      loadLeaderboard();
+      loadCommunityPulls();
+    } catch (e) {
+      console.error('Submit error:', e);
+      toast?.addToast?.('Failed to submit: ' + e.message, 'error');
+    } finally {
+      submittingRef.current = false;
+      setLeaderboardSubmitting(false);
+    }
+  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseUrl]);
 
   useEffect(() => {
     if (showLeaderboard) {
       loadLeaderboard();
       loadCommunityPulls();
     }
+    // Note: AbortController not added here because loadLeaderboard/loadCommunityPulls
+    // set state only on success paths and are guarded by showLeaderboard gate
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
 
   // Anonymous presence system — writes only a timestamp (no personal data) to track active users
@@ -1145,10 +1251,11 @@ function WhisperingWishesInner() {
   const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
   
   const sendPresenceHeartbeat = useCallback(async () => {
+    // P13-FIX: HIGH-2 — Rate limit presence writes (guard against runaway intervals)
+    if (!checkFirebaseRateLimit('presence-heartbeat')) return;
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, {
+      const res = await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ t: Date.now() }) // only a timestamp — zero personal data
@@ -1160,30 +1267,28 @@ function WhisperingWishesInner() {
         setPresenceError(null);
       }
     } catch (e) { setPresenceError(`Heartbeat error: ${e.message}`); }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   const removePresence = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      await fetch(`${FIREBASE_DB}/presence/${presenceSessionId.current}.json${authParam}`, { method: 'DELETE' });
+      await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), { method: 'DELETE' });
     } catch { /* best-effort */ }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   const fetchActivePlayersCount = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/presence.json${authParam}`);
+      const res = await fetchWithTimeout(firebaseUrl('presence', authToken));
       if (res.ok) {
         const data = await res.json();
         if (data) {
           const now = Date.now();
           const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
-          // Clean up stale sessions from Firebase (older than TTL)
+          // Clean up stale sessions from Firebase (older than TTL) — batch limit 50 (3.15 fix)
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
-          for (const [key] of staleSessions.slice(0, 20)) { // batch limit
-            try { await fetch(`${FIREBASE_DB}/presence/${key}.json${authParam}`, { method: 'DELETE' }); } catch {}
+          for (const [key] of staleSessions.slice(0, 50)) {
+            try { await fetchWithTimeout(firebaseUrl(`presence/${key}`, authToken), { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;
           setActivePlayersCount(count);
@@ -1202,14 +1307,13 @@ function WhisperingWishesInner() {
         setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
       }
     } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
-  }, [getFirebaseAuth]);
+  }, [getFirebaseAuth, firebaseUrl]);
 
   // Admin-only: fetch full player list with unmasked UIDs from leaderboard
   const fetchAdminPlayerList = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const authParam = authToken ? `?auth=${authToken}` : '';
-      const res = await fetch(`${FIREBASE_DB}/leaderboard.json${authParam}`);
+      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -1229,9 +1333,14 @@ function WhisperingWishesInner() {
         } else {
           setAdminPlayerList([]);
         }
+      } else {
+        setAdminPlayerList([]);
       }
-    } catch (e) { console.error('Admin player list fetch error:', e); }
-  }, [getFirebaseAuth]);
+    } catch (e) {
+      console.error('Admin player list fetch error:', e);
+      setAdminPlayerList([]); // Show empty state instead of perpetual loading skeleton
+    }
+  }, [getFirebaseAuth, firebaseUrl]);
 
   // Start heartbeat on mount, clean up on unmount
   useEffect(() => {
@@ -1259,11 +1368,11 @@ function WhisperingWishesInner() {
   }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount, fetchAdminPlayerList]);
 
   // Community stats aggregated from leaderboard entries
-  // Note: leaderboardData is limited to top-20 by avgPity (luckiest players),
-  // so these stats skew favorable and don't represent the full player base
+  // Community stats from ALL leaderboard entries (not just displayed top-20)
+  const [allLeaderboardEntries, setAllLeaderboardEntries] = useState([]);
   const communityStats = useMemo(() => {
-    if (!leaderboardData.length) return null;
-    const entries = leaderboardData;
+    if (!allLeaderboardEntries.length) return null;
+    const entries = allLeaderboardEntries;
     const totalPlayers = entries.length;
     const avgPityAll = (entries.reduce((s, e) => s + e.avgPity, 0) / totalPlayers).toFixed(1);
     const totalFiveStars = entries.reduce((s, e) => s + (e.pulls ?? 0), 0);
@@ -1274,7 +1383,7 @@ function WhisperingWishesInner() {
     const luckiest = entries.length > 0 ? entries.reduce((min, e) => e.avgPity < min.avgPity ? e : min) : null;
     const unluckiest = entries.length > 0 ? entries.reduce((max, e) => e.avgPity > max.avgPity ? e : max) : null;
     return { totalPlayers, avgPityAll, totalFiveStars, totalPullsAll, totalWon, totalLost, globalWinRate, luckiest, unluckiest };
-  }, [leaderboardData]);
+  }, [allLeaderboardEntries]);
 
   // Trophies/Badges computation
   const trophies = useMemo(() => {
@@ -1350,17 +1459,17 @@ function WhisperingWishesInner() {
     const list = [];
     
     // ═══ COLLECTION TROPHIES ═══
-    if (allCollected) list.push({ id: 'all', name: 'No Life Achievement', desc: 'Every Resonator and Weapon collected. go outside.', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    if (all5ResOwned) list.push({ id: '5res', name: 'Gotta Whale \'Em All', desc: 'All 5★ Resonators unlocked', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (allCollected) list.push({ id: 'all', name: 'No Life Achievement', desc: 'Every Resonator and Weapon collected. go outside.', icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    if (all5ResOwned) list.push({ id: '5res', name: 'Gotta Whale \'Em All', desc: 'All 5★ Resonators unlocked', icon: 'Sparkles', color: '#edaf18', tier: 'gold' });
     if (all4ResOwned) list.push({ id: '4res', name: 'Sonata Effect', desc: 'All 4★ Resonators in your roster', icon: 'Heart', color: '#a855f7', tier: 'purple' });
     if (all5WeapOwned) list.push({ id: '5weap', name: 'Forgemaster', desc: 'All 5★ Weapons acquired', icon: 'Swords', color: '#ec4899', tier: 'gold' });
     if (all4WeapOwned) list.push({ id: '4weap', name: 'Armory of Jinzhou', desc: 'All 4★ Weapons in your arsenal', icon: 'Sword', color: '#a855f7', tier: 'purple' });
     if (all3WeapOwned) list.push({ id: '3weap', name: 'Data Bank: Full', desc: 'Every 3★ Weapon catalogued', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
     
     // ═══ LUCK TROPHIES ═══
-    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first pull. nobody believes you', icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    else if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Dev Account?', desc: `5★ at pity ${earliest5Star} — go buy a lottery ticket`, icon: 'Gift', color: '#fbbf24', tier: 'legendary' });
-    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Disgusting Luck', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#fbbf24', tier: 'gold' });
+    if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first Convene. nobody believes you', icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 10) list.push({ id: 'early10', name: 'Dev Account?', desc: `5★ at pity ${earliest5Star} — go buy a lottery ticket`, icon: 'Gift', color: '#edaf18', tier: 'legendary' });
+    else if (earliest5Star && earliest5Star <= 20) list.push({ id: 'early20', name: 'Disgusting Luck', desc: `5★ at pity ${earliest5Star}`, icon: 'Zap', color: '#edaf18', tier: 'gold' });
     else if (earliest5Star && earliest5Star <= 40) list.push({ id: 'early40', name: 'Echo of Fortune', desc: `5★ at pity ${earliest5Star}`, icon: 'Clover', color: '#22c55e', tier: 'green' });
     
     // Hard pity — the unluckiest possible outcome
@@ -1369,21 +1478,26 @@ function WhisperingWishesInner() {
     
     // Soft pity zone specialist — majority of 5★ came from 65-79
     const softPityPulls = all5Stars.filter(p => p.pity >= 65 && p.pity < 80);
-    if (softPityPulls.length >= 5) list.push({ id: 'softpro', name: 'Soft Pity Merchant', desc: `${softPityPulls.length} five-stars from soft zone — never early, never late`, icon: 'TrendingUp', color: '#f97316', tier: 'orange' });
+    if (softPityPulls.length >= 10) list.push({ id: 'softpro2', name: 'Soft Pity Landlord', desc: `${softPityPulls.length} five-stars from soft zone — you own property here`, icon: 'TrendingUp', color: '#ec4899', tier: 'pink' });
+    else if (softPityPulls.length >= 5) list.push({ id: 'softpro', name: 'Soft Pity Merchant', desc: `${softPityPulls.length} five-stars from soft zone — never early, never late`, icon: 'TrendingUp', color: '#f97316', tier: 'orange' });
     
     // Back-to-back — two 5★ within 20 pulls across any banner
     const hasBackToBack = all5Stars.some(p => p.pity > 0 && p.pity <= 15);
     const backToBackCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 15).length;
-    if (backToBackCount >= 3) list.push({ id: 'b2b3', name: 'Actual Hack', desc: `${backToBackCount} five-stars within 15 pulls — how`, icon: 'Zap', color: '#a855f7', tier: 'purple' });
-    else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 pulls of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
+    if (backToBackCount >= 3) list.push({ id: 'b2b3', name: 'Actual Hack', desc: `${backToBackCount} five-stars within 15 Convenes — how`, icon: 'Zap', color: '#a855f7', tier: 'purple' });
+    else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 Convenes of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 STREAK TROPHIES ═══
-    if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#fbbf24', tier: 'legendary' });
+    if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Rover\'s Blessing', desc: `${bestWinStreak}× 50/50 wins — the Sentinel chose you`, icon: 'Crown', color: '#ff0000', tier: 'legendary' });
+    else if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#edaf18', tier: 'legendary' });
     else if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Main Character Energy', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Flame', color: '#f97316', tier: 'orange' });
+    else if (bestWinStreak >= 4) list.push({ id: 'win4', name: 'Resonance Chain', desc: `${bestWinStreak}× 50/50 wins in a row — keep the chain going`, icon: 'Flame', color: '#22c55e', tier: 'green' });
     else if (bestWinStreak >= 3) list.push({ id: 'win3', name: 'Casually Winning', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Target', color: '#22c55e', tier: 'green' });
-    
-    if (worstLossStreak >= 7) list.push({ id: 'loss7', name: 'Clinically Cursed', desc: `${worstLossStreak}× 50/50 losses — uninstall tbh`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+
+    if (worstLossStreak >= 10) list.push({ id: 'loss10s', name: 'Lament Never Ended', desc: `${worstLossStreak}× 50/50 losses — the catastrophe hit your account`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+    else if (worstLossStreak >= 7) list.push({ id: 'loss7', name: 'Clinically Cursed', desc: `${worstLossStreak}× 50/50 losses — uninstall tbh`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
     else if (worstLossStreak >= 5) list.push({ id: 'loss5', name: 'Kuro Hates You', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+    else if (worstLossStreak >= 4) list.push({ id: 'loss4', name: 'Waveworn', desc: `${worstLossStreak}× 50/50 losses in a row — eroded by RNG`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
     else if (worstLossStreak >= 3) list.push({ id: 'loss3', name: 'Skill Issue (Gacha)', desc: `${worstLossStreak}× 50/50 losses in a row`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
     
     // Won first ever 50/50
@@ -1407,23 +1521,50 @@ function WhisperingWishesInner() {
     
     // ═══ MILESTONE TROPHIES ═══
     if (isMegaWhale) list.push({ id: 'mega', name: 'Mortgage Status', desc: '2000+ Convenes — seek financial advice', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (totalPulls >= 1500) list.push({ id: '1500', name: 'Astrite Overdose', desc: '1500+ Convenes — Kuro sends you a Christmas card', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
     else if (isWhale) list.push({ id: 'whale', name: 'Kuro Employee of the Month', desc: '1000+ Convenes — they know you by name', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
+    else if (totalPulls >= 750) list.push({ id: '750', name: 'Terminal Stage', desc: '750+ Convenes — the Lament hit your wallet', icon: 'Fish', color: '#8b5cf6', tier: 'purple' });
     else if (totalPulls >= 500) list.push({ id: '500', name: 'Down the Rabbit Hole', desc: '500+ Convenes — no turning back', icon: 'Diamond', color: '#8b5cf6', tier: 'purple' });
+    else if (totalPulls >= 300) list.push({ id: '300', name: 'Sunk Cost Fallacy', desc: '300+ Convenes — too deep to quit, too broke to continue', icon: 'Diamond', color: '#3b82f6', tier: 'blue' });
+    else if (totalPulls >= 200) list.push({ id: '200', name: 'Rover\'s Allowance: Gone', desc: '200+ Convenes — emotionally and financially invested', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
     else if (totalPulls >= 100) list.push({ id: '100', name: 'First Steps', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
     
     // 5★ count milestones
     const total5Stars = all5Stars.length;
-    if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    if (total5Stars >= 100) list.push({ id: '100stars', name: 'Convene Printer Goes Brr', desc: `${total5Stars} five-stars obtained — you ARE the banner`, icon: 'Star', color: '#ff0000', tier: 'legendary' });
+    else if (total5Stars >= 75) list.push({ id: '75stars', name: 'Resonance Overload', desc: `${total5Stars} five-stars obtained — Sonata Effect: maxed`, icon: 'Star', color: '#edaf18', tier: 'gold' });
+    else if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#edaf18', tier: 'gold' });
+    else if (total5Stars >= 35) list.push({ id: '35stars', name: 'Tacet Discord Hoarder', desc: `${total5Stars} five-stars obtained — your roster IS the Tacet Discord`, icon: 'Star', color: '#a855f7', tier: 'purple' });
     else if (total5Stars >= 25) list.push({ id: '25stars', name: 'Stargazer', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#a855f7', tier: 'purple' });
+    else if (total5Stars >= 15) list.push({ id: '15stars', name: 'Sequence Node: Farming', desc: `${total5Stars} five-stars obtained — the grind is real`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
     else if (total5Stars >= 10) list.push({ id: '10stars', name: 'Rising Star', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
-    
+    else if (total5Stars >= 5) list.push({ id: '5stars', name: 'First Expedition', desc: `${total5Stars} five-stars obtained — your team is forming`, icon: 'Star', color: '#22c55e', tier: 'green' });
+
     // First 5★
-    if (total5Stars > 0 && total5Stars < 10) list.push({ id: 'first5', name: 'Awakening', desc: 'Obtained your first 5★', icon: 'Star', color: '#fbbf24', tier: 'gold' });
+    if (total5Stars > 0 && total5Stars < 5) list.push({ id: 'first5', name: 'Awakening', desc: 'Obtained your first 5★', icon: 'Star', color: '#edaf18', tier: 'gold' });
     
     // Banner diversity — pulled on multiple banner types
     const bannerTypesUsed = [featuredHist, weaponHist, stdCharHist, stdWeapHist].filter(h => h.length > 0).length;
     if (bannerTypesUsed >= 4) list.push({ id: 'diverse', name: 'Pioneer Podcast', desc: 'Convened on all banner types', icon: 'Trophy', color: '#06b6d4', tier: 'cyan' });
-    
+    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Pioneer Intern', desc: 'Pulled on 3 different banner types — almost a real Pioneer', icon: 'Trophy', color: '#3b82f6', tier: 'blue' });
+
+    // ═══ CHARACTER OWNERSHIP PROGRESSION ═══
+    const owned5Count = owned5StarChars.size;
+    if (owned5Count >= 30) list.push({ id: 'own30', name: 'Huanglong\'s Census', desc: `${owned5Count} unique 5★ Resonators — Rover collected them all`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    else if (owned5Count >= 25) list.push({ id: 'own25', name: 'Sonata Library: Full', desc: `${owned5Count} unique 5★ Resonators — you ARE the tier list`, icon: 'Crown', color: '#edaf18', tier: 'gold' });
+    else if (owned5Count >= 20) list.push({ id: 'own20', name: 'Jinzhou Housing Crisis', desc: `${owned5Count} unique 5★ Resonators — where do they all sleep`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
+    else if (owned5Count >= 15) list.push({ id: 'own15', name: 'Forte Circuit Overload', desc: `${owned5Count} unique 5★ Resonators — too many builds to farm`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
+    else if (owned5Count >= 10) list.push({ id: 'own10', name: 'Union Level: Whale', desc: `${owned5Count} unique 5★ Resonators — the roster is stacked`, icon: 'Sparkles', color: '#3b82f6', tier: 'blue' });
+    else if (owned5Count >= 5) list.push({ id: 'own5', name: 'First Expedition Team', desc: `${owned5Count} unique 5★ Resonators — your party is forming`, icon: 'Sparkles', color: '#22c55e', tier: 'green' });
+
+    // ═══ WEAPON OWNERSHIP PROGRESSION ═══
+    const owned5WeapCount = owned5StarWeaps.size;
+    if (owned5WeapCount >= 20) list.push({ id: 'weap20', name: 'Forgery Domain Resident', desc: `${owned5WeapCount} unique 5★ Weapons — open a museum in Jinzhou`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
+    else if (owned5WeapCount >= 15) list.push({ id: 'weap15', name: 'Sonance Casket: Stuffed', desc: `${owned5WeapCount} unique 5★ Weapons — inventory management simulator`, icon: 'Swords', color: '#a855f7', tier: 'purple' });
+    else if (owned5WeapCount >= 10) list.push({ id: 'weap10', name: 'Pioneer\'s Arsenal', desc: `${owned5WeapCount} unique 5★ Weapons — a blade for every occasion`, icon: 'Swords', color: '#3b82f6', tier: 'blue' });
+    else if (owned5WeapCount >= 5) list.push({ id: 'weap5', name: 'Tacet Field Sweep', desc: `${owned5WeapCount} unique 5★ Weapons — the field has been cleared`, icon: 'Sword', color: '#22c55e', tier: 'green' });
+    else if (owned5WeapCount >= 3) list.push({ id: 'weap3', name: 'First Forgery Run', desc: `${owned5WeapCount} unique 5★ Weapons — your collection begins`, icon: 'Sword', color: '#22c55e', tier: 'green' });
+
     // Max sequences — any character pulled 7+ times (S6)
     const charCounts = {};
     charHistory.filter(p => p.rarity === 5 && p.name).forEach(p => { charCounts[p.name] = (charCounts[p.name] ?? 0) + 1; });
@@ -1435,32 +1576,32 @@ function WhisperingWishesInner() {
       'Encore': { name: 'Woolies World Domination', desc: 'S6 Encore — Cosmos and Cloudy run this account now', color: '#f97316' },
       'Jianxin': { name: 'Down Bad for Parry', desc: 'S6 Jianxin — "I\'ll take all the 50/50 losses" energy', color: '#22c55e' },
       'Lingyang': { name: 'You Actually S6\'d HIM?!', desc: 'S6 Lingyang — built different or brain different', color: '#38bdf8' },
-      'Verina': { name: 'Lost 50/50 Seven Times', desc: 'S6 Verina — and every single one was a W', color: '#fbbf24' },
+      'Verina': { name: 'Lost 50/50 Seven Times', desc: 'S6 Verina — and every single one was a W', color: '#edaf18' },
       'Yinlin': { name: 'Down Catastrophic', desc: 'S6 Yinlin — she pulled your strings and your wallet', color: '#a855f7' },
-      'Jinhsi': { name: 'Simp Magistrate', desc: 'S6 Jinhsi — sold Jinzhou to fund this', color: '#fbbf24' },
+      'Jinhsi': { name: 'Simp Magistrate', desc: 'S6 Jinhsi — sold Jinzhou to fund this', color: '#edaf18' },
       'Changli': { name: 'Touch Grass? Touch Fire.', desc: 'S6 Changli — your savings went up in flames', color: '#f97316' },
       'Zhezhi': { name: 'Drawing Bankruptcy', desc: 'S6 Zhezhi — her art costs more than actual art', color: '#38bdf8' },
       'Xiangli Yao': { name: 'He Did The Math (x7)', desc: 'S6 Xiangli Yao — calculated your savings into Hypercubes', color: '#a855f7' },
-      'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#fbbf24' },
+      'Shorekeeper': { name: 'She Protecc (x7)', desc: 'S6 Shorekeeper — your team cannot die. ever.', color: '#edaf18' },
       'Camellya': { name: 'Dislocated But Worth It', desc: 'S6 Camellya — thumbs broken, damage beautiful', color: '#ec4899' },
       'Carlotta': { name: 'Wallet? Frozen.', desc: 'S6 Carlotta — bank account colder than her kit', color: '#38bdf8' },
-      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — she\'s a rock. you\'re the clown who S6\'d her', color: '#ec4899' },
-      'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#fbbf24' },
+      'Roccia': { name: 'Hard Carried (Literally)', desc: 'S6 Roccia — Mamma mia...who\'s the clown now?', color: '#ec4899' },
+      'Phoebe': { name: 'Feebi Chupi Supremacy', desc: 'S6 Phoebe — max power cheek pinch unlocked', color: '#edaf18' },
       'Brant': { name: 'Burned Through Savings', desc: 'S6 Brant — fire DPS, fire wallet', color: '#f97316' },
       'Cantarella': { name: 'Toxic Relationship', desc: 'S6 Cantarella — she\'s poison and you keep coming back', color: '#ec4899' },
-      'Zani': { name: 'Frazzle Addict', desc: 'S6 Zani — 19 stacks of Frazzle, zero stacks of savings', color: '#fbbf24' },
+      'Zani': { name: 'Frazzle Addict', desc: 'S6 Zani — 19 stacks of Frazzle, zero stacks of savings', color: '#edaf18' },
       'Ciaccona': { name: 'Wind Main in 2026', desc: 'S6 Ciaccona — bold, delusional, committed', color: '#22c55e' },
       'Cartethyia': { name: 'Blessed Wallet Drain', desc: 'S6 Cartethyia — the Maiden blessed your poverty', color: '#22c55e' },
       'Lupa': { name: 'Awoo\'d Too Hard', desc: 'S6 Lupa — the wolf pack ate your bank account', color: '#f97316' },
       'Phrolova': { name: 'Puppet? You\'re the Puppet.', desc: 'S6 Phrolova — she played you like her dolls', color: '#ec4899' },
       'Augusta': { name: 'Shocking Bill', desc: 'S6 Augusta — electrifying damage, electrifying debt', color: '#a855f7' },
       'Iuno': { name: 'Tone Deaf Spending', desc: 'S6 Iuno — the melody was "swipe swipe swipe"', color: '#22c55e' },
-      'Galbrena': { name: 'Bayonetta at Home (S6)', desc: 'S6 Galbrena — Mom said we have Bayonetta at home', color: '#f97316' },
-      'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more pull" seven times', color: '#22c55e' },
+      'Galbrena': { name: 'Witch Time: Maxed', desc: 'S6 Galbrena — she IS Bayonetta now', color: '#f97316' },
+      'Qiuyuan': { name: 'Echo Chamber', desc: 'S6 Qiuyuan — he echoed "one more Convene" seven times', color: '#22c55e' },
       'Chisa': { name: 'Cut Your Losses (Didn\'t)', desc: 'S6 Chisa — the blade cuts everything except your spending', color: '#ec4899' },
-      'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#fbbf24' },
+      'Lynae': { name: 'Lynae Impact', desc: 'S6 Lynae — just rename the game already', color: '#edaf18' },
       'Mornye': { name: 'Rhythm of Regret', desc: 'S6 Mornye — the beat dropped and so did your balance', color: '#f97316' },
-      'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#fbbf24' },
+      'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#edaf18' },
       'Aemeath': { name: 'Rode Into Bankruptcy', desc: 'S6 Aemeath — the Exostrider ran over your finances', color: '#f97316' },
     };
     
@@ -1490,18 +1631,52 @@ function WhisperingWishesInner() {
       list.push({ id: 's6_harem5', name: 'Starting a Collection', desc: `${s6Count} at S6 — the harem arc is canon`, icon: 'Crown', color: '#ff8c00', tier: 'epic' });
     }
     
-    // Weapon R5 — any 5★ weapon pulled 5+ times
+    // ═══ WEAPON REFINEMENT TROPHIES ═══
     const weapCounts = {};
     weapHistory.filter(p => p.rarity === 5 && p.name).forEach(p => { weapCounts[p.name] = (weapCounts[p.name] ?? 0) + 1; });
-    const maxedWeap = Object.entries(weapCounts).find(([, c]) => c >= 5);
-    if (maxedWeap) list.push({ id: 'r5', name: 'Weapon Banner Victim', desc: `R5 ${maxedWeap[0]} — financially irresponsible`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
+    const r5Weapons = Object.entries(weapCounts).filter(([, c]) => c >= 5);
+    const r3Weapons = Object.entries(weapCounts).filter(([, c]) => c >= 3);
+    const maxedWeap = r5Weapons[0];
+    if (r5Weapons.length >= 3) list.push({ id: 'r5three', name: 'Forge of Impermanence', desc: `${r5Weapons.length} R5 weapons — your armory costs more than a car`, icon: 'Swords', color: '#ff0000', tier: 'legendary' });
+    else if (r5Weapons.length >= 2) list.push({ id: 'r5two', name: 'Tuner Diff', desc: `${r5Weapons.length} R5 weapons — one wasn't enough apparently`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
+    else if (maxedWeap) list.push({ id: 'r5', name: 'Weapon Banner Victim', desc: `R5 ${maxedWeap[0]} — financially irresponsible`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
+    else if (r3Weapons.length >= 1) list.push({ id: 'r3', name: 'Halfway to Copium', desc: `R3+ ${r3Weapons[0][0]} — too invested to stop, too broke to finish`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
+
+    // Weapon banner pull volume
+    const weapBannerPulls = weaponHist.length;
+    if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner Convenes — this is a lifestyle choice`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
+    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner Convenes — "it's a DPS increase bro"`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+
+    // More weapon Convenes than character Convenes
+    if (weapBannerPulls > 0 && featuredHist.length > 0 && weapBannerPulls > featuredHist.length) {
+      list.push({ id: 'weapsimp', name: 'BiS or Bust', desc: 'More weapon Convenes than character Convenes — priorities moment', icon: 'Sword', color: '#f97316', tier: 'orange' });
+    }
+
+    // Never Convened on weapon banner
+    if (weapBannerPulls === 0 && totalPulls >= 100) list.push({ id: 'noweap', name: 'Fists Only Challenge', desc: 'Zero weapon banner Convenes — who needs signatures anyway', icon: 'Shield', color: '#22c55e', tier: 'green' });
     
     // Average pity under 50 with 10+ 5★ (consistently lucky)
     if (total5Stars >= 10 && overallStats?.avgPity) {
       const avg = parseFloat(overallStats.avgPity);
-      if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#fbbf24', tier: 'gold' });
+      if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Edited Convene Log', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — has to be fake right??`, icon: 'Clover', color: '#ff0000', tier: 'legendary' });
+      else if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#edaf18', tier: 'gold' });
       else if (!isNaN(avg) && avg >= 70) list.push({ id: 'unluckyavg', name: 'Certified Unlucky', desc: `Avg pity ${overallStats.avgPity} — genuinely painful to look at`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
+      else if (!isNaN(avg) && avg >= 65) list.push({ id: 'unluckyavg2', name: 'Soft Pity Squatter', desc: `Avg pity ${overallStats.avgPity} — you live in the soft zone rent-free`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
     }
+
+    // Never got early pity — all 5★ at pity 50+ (with 5+ pulls)
+    const allLatePity = total5Stars >= 5 && all5Stars.every(p => p.pity >= 65);
+    if (allLatePity) list.push({ id: 'neverearly', name: 'Waveplate Syndrome', desc: 'Never once got a 5★ before soft pity — always waiting, never winning', icon: 'Shield', color: '#6b7280', tier: 'gray' });
+
+    // Multiple hard pity hits
+    const hardPityCount = all5Stars.filter(p => p.pity >= HARD_PITY).length;
+    if (hardPityCount >= 5) list.push({ id: 'hard5', name: 'Tacet Mark: Permanent', desc: `Hit hard pity ${hardPityCount}× — the Lament scarred your account`, icon: 'Shield', color: '#ef4444', tier: 'red' });
+    else if (hardPityCount >= 3) list.push({ id: 'hard3', name: 'Frequent Flyer: Pity 80', desc: `Hit hard pity ${hardPityCount}× — you know the road to 80 by heart`, icon: 'Shield', color: '#6b7280', tier: 'gray' });
+
+    // Got a 5★ at very low pity multiple times
+    const veryEarlyCount = all5Stars.filter(p => p.pity > 0 && p.pity <= 10).length;
+    if (veryEarlyCount >= 5) list.push({ id: 'early5x', name: 'Rover\'s Plot Armor', desc: `${veryEarlyCount} five-stars within first 10 pity — protagonist luck is real`, icon: 'Clover', color: '#edaf18', tier: 'legendary' });
+    else if (veryEarlyCount >= 3) list.push({ id: 'early3x', name: 'Resonance Beacon', desc: `${veryEarlyCount} five-stars within first 10 pity — they come to you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 LOSS CHARACTER TROPHIES ═══
     // Standard banner chars you can lose 50/50 to: Calcharo, Encore, Jianxin, Lingyang, Verina
@@ -1542,9 +1717,27 @@ function WhisperingWishesInner() {
     const total5050s = totalWins + totalLosses;
     if (total5050s >= 5) {
       const winRate = Math.round((totalWins / total5050s) * 100);
-      if (winRate >= 80) list.push({ id: 'highwr', name: 'Account For Sale?', desc: `${winRate}% win rate across ${total5050s} flips — this isn't normal`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+      if (winRate >= 80) list.push({ id: 'highwr', name: 'Account For Sale?', desc: `${winRate}% win rate across ${total5050s} flips — this isn't normal`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+      else if (winRate >= 65) list.push({ id: 'goodwr', name: 'Jinzhou\'s Luckiest', desc: `${winRate}% win rate across ${total5050s} flips — the Magistrate blesses you`, icon: 'Clover', color: '#22c55e', tier: 'green' });
       else if (winRate <= 20) list.push({ id: 'lowwr', name: 'Statistically Bullied', desc: `${winRate}% win rate across ${total5050s} flips — file a complaint`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+      else if (winRate <= 35) list.push({ id: 'badwr', name: 'Tacet Field: Account', desc: `${winRate}% win rate across ${total5050s} flips — corrupted beyond repair`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
+      // Perfectly balanced — exactly 50% ±2%
+      if (total5050s >= 10 && winRate >= 48 && winRate <= 52) list.push({ id: 'balanced', name: '50/50 at 50/50', desc: `${winRate}% win rate across ${total5050s} flips — mathematically perfect copium`, icon: 'Target', color: '#06b6d4', tier: 'cyan' });
     }
+
+    // 50/50 win total milestones
+    if (totalWins >= 20) list.push({ id: 'wins20', name: 'Shorekeeper\'s Chosen', desc: `${totalWins} 50/50 wins — she protects your account too`, icon: 'Crown', color: '#edaf18', tier: 'gold' });
+    else if (totalWins >= 10) list.push({ id: 'wins10', name: 'Sonance Cascade', desc: `${totalWins} 50/50 wins total — the echoes answer`, icon: 'Target', color: '#22c55e', tier: 'green' });
+
+    // Against All Odds — won 50/50 immediately after 3+ consecutive losses
+    let hasAgainstOdds = false;
+    let lossRunCount = 0;
+    for (const p of featured5Stars) {
+      if (p.won5050 === null) continue;
+      if (p.won5050 === false) lossRunCount++;
+      else { if (lossRunCount >= 3) { hasAgainstOdds = true; break; } lossRunCount = 0; }
+    }
+    if (hasAgainstOdds) list.push({ id: 'odds', name: 'Plot Armor Activated', desc: 'Won 50/50 after 3+ consecutive losses — anime comeback arc', icon: 'Flame', color: '#f97316', tier: 'orange' });
     
     // ═══ META TEAM TROPHIES ═══
     // Check if player owns all members of a meta team (using their 5★ collection)
@@ -1553,37 +1746,103 @@ function WhisperingWishesInner() {
     
     // T0 Meta Teams
     if (ownsAll('Phrolova', 'Cantarella')) list.push({ id: 'phrol', name: 'Codependency', desc: 'Phrolova + Cantarella — useless without each other, broken together', icon: 'Heart', color: '#a855f7', tier: 'purple' });
-    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair Meta', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#fbbf24', tier: 'gold' });
-    if (ownsAll('Lynae', 'Mornye')) list.push({ id: 'lynmor', name: 'Pay2Win Unlocked', desc: 'Lynae + Mornye — the game plays itself now', icon: 'Sparkles', color: '#fbbf24', tier: 'gold' });
+    if (ownsAll('Phoebe', 'Zani')) list.push({ id: 'zaphi', name: 'Wheelchair', desc: 'Phoebe + Zani — 19 Frazzle stacks, zero skill required', icon: 'Heart', color: '#edaf18', tier: 'gold' });
+    if (ownsAll('Lynae', 'Mornye')) list.push({ id: 'lynmor', name: 'Pay2Win Unlocked', desc: 'Lynae + Mornye — the game plays itself now', icon: 'Sparkles', color: '#edaf18', tier: 'gold' });
     if (ownsAll('Changli') && ownsAll('Brant') && ownsAll('Lupa')) list.push({ id: 'monofusion', name: 'Arsonist Squad', desc: 'Changli + Brant + Lupa — everything burns, including your primos', icon: 'Flame', color: '#f97316', tier: 'orange' });
     if (ownsAll('Galbrena', 'Qiuyuan', 'Shorekeeper')) list.push({ id: 'fusion', name: 'Bayonetta at Home', desc: 'Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home', icon: 'Flame', color: '#f97316', tier: 'orange' });
     if (ownsAll('Jiyan') && owned4StarChars.has('Mortefi')) list.push({ id: 'jiyan', name: 'Boomer Comp', desc: 'Jiyan + Mortefi — 1.0 copium that refuses to retire', icon: 'Shield', color: '#22c55e', tier: 'green' });
     
     // Own both Shorekeeper and Verina (the two universal supports)
     if (ownsAll('Shorekeeper', 'Verina')) list.push({ id: 'heals', name: 'Skill Issue Insurance', desc: 'SK + Verina — can\'t die even if you tried', icon: 'Heart', color: '#22c55e', tier: 'green' });
+
+    // Jinhsi + Changli (Jinzhou power couple)
+    if (ownsAll('Jinhsi', 'Changli')) list.push({ id: 'jinzhou', name: 'Magistrate\'s Flame', desc: 'Jinhsi + Changli — Jinzhou\'s power duo', icon: 'Flame', color: '#f97316', tier: 'orange' });
+    // Carlotta + Roccia (Rinascita duo)
+    if (ownsAll('Carlotta', 'Roccia')) list.push({ id: 'rinascita', name: 'Rinascita Familia', desc: 'Carlotta + Roccia — the ice queen and her ride', icon: 'Diamond', color: '#38bdf8', tier: 'blue' });
+    // Own all standard 5★ characters
+    if (stdChars.length > 0 && [...stdChars].every(n => owns(n))) list.push({ id: 'stdall', name: 'Losers Club', desc: 'All standard 5★ Resonators — the "thanks for the 50/50 loss" squad', icon: 'Trophy', color: '#a855f7', tier: 'purple' });
     
     // Own 3+ T0 DPS
     const t0Dps = ['Cartethyia', 'Camellya', 'Carlotta', 'Xiangli Yao', 'Phrolova', 'Iuno', 'Augusta', 'Aemeath'];
     const ownedT0 = t0Dps.filter(n => owns(n));
-    if (ownedT0.length >= 6) list.push({ id: 't0six', name: 'Tower? Cleared.', desc: `${ownedT0.length} T0 DPS — ToA is your personal playground`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
-    else if (ownedT0.length >= 3) list.push({ id: 't0three', name: 'Meta Slave', desc: `${ownedT0.length} T0 DPS — tier list told you to pull`, icon: 'Trophy', color: '#a855f7', tier: 'purple' });
+    if (ownedT0.length >= 6) list.push({ id: 't0six', name: 'Tower? Cleared.', desc: `${ownedT0.length} T0 DPS — ToA is your personal playground`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
+    else if (ownedT0.length >= 3) list.push({ id: 't0three', name: 'Meta Slave', desc: `${ownedT0.length} T0 DPS — tier list told you to Convene`, icon: 'Trophy', color: '#a855f7', tier: 'purple' });
     
     // ═══ QUIRKY / COMMUNITY TROPHIES ═══
     // Never lost a 50/50 (with at least 3 wins)
-    if (totalWins >= 3 && totalLosses === 0) list.push({ id: 'noloss', name: 'Literally Never Lost', desc: `${totalWins} 50/50 wins, zero losses — touch grass`, icon: 'Crown', color: '#fbbf24', tier: 'legendary' });
+    if (totalWins >= 3 && totalLosses === 0) list.push({ id: 'noloss', name: 'Literally Never Lost', desc: `${totalWins} 50/50 wins, zero losses — touch grass`, icon: 'Crown', color: '#edaf18', tier: 'legendary' });
     
     // Lost first 50/50 (very first was a loss)
     if (first5050 && first5050.won5050 === false) list.push({ id: 'firstloss', name: 'First Time?', desc: 'First 50/50 was a loss — it only gets worse', icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
     
     // 4★ only — lots of pulls but very few 5★ (bad luck overall)
-    if (totalPulls >= 200 && total5Stars <= 2) list.push({ id: 'dry', name: 'Down Horrendous', desc: `${totalPulls} pulls, ${total5Stars} five-stars — delete the app`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
+    if (totalPulls >= 200 && total5Stars <= 2) list.push({ id: 'dry', name: 'Down Horrendous', desc: `${totalPulls} Convenes, ${total5Stars} five-stars — delete the app`, icon: 'TrendingDown', color: '#6b7280', tier: 'gray' });
     
     // Duplicate magnet — same standard char lost to 3+ times
     const dupMagnet = stdChars.find(name => lostCount(name) >= 3);
     if (dupMagnet && dupMagnet !== 'Lingyang') list.push({ id: 'dup', name: 'Hostage Situation', desc: `${dupMagnet} S${lostCount(dupMagnet) - 1} from 50/50 losses alone — didn't even want them`, icon: 'Diamond', color: '#6b7280', tier: 'gray' });
-    
+
+    // ═══ MORE QUIRKY / SITUATIONAL TROPHIES ═══
+    // Only own 1 unique 5★ character
+    if (owned5StarChars.size === 1 && totalPulls >= 50) list.push({ id: 'onetrick', name: 'Solo Resonator', desc: `Only ${[...owned5StarChars][0]} — loyalty or poverty?`, icon: 'Target', color: '#f97316', tier: 'orange' });
+
+    // Pulled 5★ character and their signature weapon
+    const sigPairs = [
+      ['Jiyan', 'Verdant Summit'], ['Yinlin', 'Stringmaster'], ['Jinhsi', 'Ages of Harvest'],
+      ['Changli', 'Blazing Brilliance'], ['Zhezhi', 'Rime-Draped Sprouts'], ['Xiangli Yao', "Verity's Handle"],
+      ['Shorekeeper', 'Stellar Symphony'], ['Camellya', 'Red Spring'], ['Carlotta', 'The Last Dance'],
+      ['Roccia', 'Tragicomedy'], ['Phoebe', 'Luminous Hymn'], ['Brant', 'Unflickering Valor'],
+      ['Cantarella', 'Whispers of Sirens'], ['Zani', 'Blazing Justice'], ['Ciaccona', 'Woodland Aria'],
+      ['Cartethyia', "Defier's Thorn"], ['Lupa', 'Wildfire Mark'], ['Phrolova', 'Lethean Elegy'],
+      ['Augusta', 'Thunderflare Dominion'], ['Iuno', "Moongazer's Sigil"], ['Galbrena', 'Lux & Umbra'],
+      ['Qiuyuan', 'Emerald Sentence'], ['Chisa', 'Kumokiri'], ['Lynae', 'Spectrum Blaster'],
+      ['Mornye', 'Starfield Calibrator'], ['Luuk Herssen', 'Everbright Polestar'], ['Aemeath', "Daybreaker's Spine"],
+    ];
+    const sigCount = sigPairs.filter(([char, weap]) => owned5StarChars.has(char) && owned5StarWeaps.has(weap)).length;
+    if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
+    else if (sigCount >= 5) list.push({ id: 'sig5', name: 'Forte Synergy', desc: `${sigCount} characters with their signature weapon — built different`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
+    else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Echo Equipped', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+    else if (sigCount >= 1) list.push({ id: 'sig1', name: 'Signature Acquired', desc: 'Pulled a character and their signature weapon — BiS secured', icon: 'Sword', color: '#22c55e', tier: 'green' });
+
+    // Speedrun — won 50/50 at low pity (<25)
+    const speedrun5050 = featured5Stars.find(p => p.won5050 === true && p.pity > 0 && p.pity <= 20);
+    if (speedrun5050) list.push({ id: 'speed', name: 'Early Pity Any%', desc: `Won 50/50 at pity ${speedrun5050.pity} — frame-perfect gacha luck`, icon: 'Zap', color: '#22c55e', tier: 'green' });
+
+    // Max Sequence on a standard character from 50/50 losses alone
+    const stdS6FromLosses = [...stdChars].find(name => lostCount(name) >= 7);
+    if (stdS6FromLosses) list.push({ id: 'stdS6', name: 'Accidental S6: Coping', desc: `S6 ${stdS6FromLosses} entirely from 50/50 losses — didn't even Convene for them`, icon: 'AlertCircle', color: '#ef4444', tier: 'red' });
+
+    // Guaranteed streak — multiple 5★ in a row that were all guaranteed (lost 50/50 every time)
+    let guaranteedStreak = 0, maxGuaranteedStreak = 0;
+    for (const p of featured5Stars) {
+      if (p.won5050 === null) { guaranteedStreak++; } // null = guaranteed
+      else { maxGuaranteedStreak = Math.max(maxGuaranteedStreak, guaranteedStreak); guaranteedStreak = 0; }
+    }
+    maxGuaranteedStreak = Math.max(maxGuaranteedStreak, guaranteedStreak);
+    if (maxGuaranteedStreak >= 3) list.push({ id: 'guar3', name: 'Guarantee Gang', desc: `${maxGuaranteedStreak} guaranteed 5★ in a row — never won a 50/50 between them`, icon: 'Shield', color: '#f97316', tier: 'orange' });
+
+    // F2P indicator — less than 200 pulls total but has 5+ five-stars (efficient)
+    if (totalPulls > 0 && totalPulls <= 200 && total5Stars >= 5) list.push({ id: 'efficient', name: 'F2P BTW', desc: `${total5Stars} five-stars in only ${totalPulls} Convenes — maximum Astrite efficiency`, icon: 'Clover', color: '#22c55e', tier: 'green' });
+
+    // Biggest gap — over 150 pulls between 5★ at any point
+    let maxDryStreak = 0;
+    let currentDry = 0;
+    for (const p of allHistory) {
+      currentDry++;
+      if (p.rarity === 5) { maxDryStreak = Math.max(maxDryStreak, currentDry); currentDry = 0; }
+    }
+    if (maxDryStreak >= 160) list.push({ id: 'dry150', name: 'Huanglong\'s Desert', desc: `${maxDryStreak} Convenes between 5★ — the wasteland arc`, icon: 'TrendingDown', color: '#ef4444', tier: 'red' });
+    else if (maxDryStreak >= 145) list.push({ id: 'dry130', name: 'Tacet Drought', desc: `${maxDryStreak} Convenes between 5★ — silence from the banner`, icon: 'TrendingDown', color: '#f97316', tier: 'orange' });
+
+    // Apply admin trophy name/desc overrides
+    const finalList = list.map(t => {
+      const ov = trophyOverrides[t.id];
+      if (!ov) return t;
+      return { ...t, ...(ov.name && { name: ov.name }), ...(ov.desc && { desc: ov.desc }) };
+    });
+
     return {
-      list,
+      list: finalList,
       stats: {
         earliest5Star,
         bestWinStreak,
@@ -1597,7 +1856,7 @@ function WhisperingWishesInner() {
         owned3StarWeaps: owned3StarWeaps.size,
       }
     };
-  }, [state.profile, overallStats]);
+  }, [state.profile, overallStats, trophyOverrides]);
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity, overallStats?.fiveStars), [overallStats]);
@@ -1605,7 +1864,7 @@ function WhisperingWishesInner() {
   // Owned 5★ character names for profile pic picker
   const ownedCharNames = useMemo(() => {
     const charHistory = [...(state.profile.featured?.history || []), ...(state.profile.standardChar?.history || []), ...(state.profile.beginner?.history || []).filter(p => p.name && ALL_CHARACTERS.has(p.name))];
-    return [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+    return [...new Set(charHistory.filter(p => (p.rarity === 5 || p.rarity === 4) && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
   }, [state.profile.featured?.history, state.profile.standardChar?.history, state.profile.beginner?.history]);
 
   const handleSetProfilePic = useCallback((name) => {
@@ -1618,12 +1877,14 @@ function WhisperingWishesInner() {
     }
   }, [state.profile.profilePic, toast]);
 
+  const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
+
   // ID Card canvas download — supports landscape (16:9) and portrait (9:16)
   const downloadIdCard = useCallback(async (format) => {
     const isPortrait = (format || idCardFormat) === 'portrait';
     const canvas = document.createElement('canvas');
-    const W = isPortrait ? 720 : 1280;
-    const H = isPortrait ? 1280 : 720;
+    const W = isPortrait ? 1080 : 1920;
+    const H = isPortrait ? 1920 : 1080;
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
     const rr = (x,y,w,h,r) => { ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath(); };
@@ -1632,379 +1893,551 @@ function WhisperingWishesInner() {
     const picName = state.profile.profilePic;
     const picUrl = picName ? (collectionImages[picName] || '') : '';
     let pImg = null;
-    if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{pImg.onload=r;pImg.onerror=j;pImg.src=picUrl;setTimeout(j,3000);}); } catch { pImg = null; } }
+    // AUDIT-FIX H1: Clear timeouts to prevent leaks on image preload
+    if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{const t=setTimeout(j,3000);pImg.onload=()=>{clearTimeout(t);r();};pImg.onerror=()=>{clearTimeout(t);j();};pImg.src=picUrl;}); } catch { pImg = null; } }
     let appIco = null;
-    try { appIco = new Image(); await new Promise((r,j)=>{appIco.onload=r;appIco.onerror=j;appIco.src=HEADER_ICON;setTimeout(j,2000);}); } catch { appIco = null; }
+    try { appIco = new Image(); await new Promise((r,j)=>{const t=setTimeout(j,2000);appIco.onload=()=>{clearTimeout(t);r();};appIco.onerror=()=>{clearTimeout(t);j();};appIco.src=HEADER_ICON;}); } catch { appIco = null; }
+
+    // Preload resonator portrait images
+    const resImgs = {};
+    const charHist0 = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+    const preloadNames = [...new Set(charHist0.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse().slice(0, 24);
+    await Promise.all(preloadNames.map(name => {
+      const url = collectionImages[name];
+      if (!url) return Promise.resolve();
+      return new Promise(resolve => {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        // AUDIT-FIX H1: Clear timeout on load/error to prevent leaks
+        const t = setTimeout(resolve, 3000);
+        img.onload = () => { clearTimeout(t); resImgs[name] = img; resolve(); };
+        img.onerror = () => { clearTimeout(t); resolve(); }; img.src = url;
+      });
+    }));
 
     const uname = state.profile.username || 'Resonator';
     const uid = state.profile.uid || '--';
     const svr = state.server;
     const lr = luckRating;
-    const tList = trophies?.list || [];
-    const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString() : null;
-    const _bh = state.profile.beginner?.history||[];
-    const _ch = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),..._bh.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
-    const _wh = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),..._bh.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
-    const _cu = (h,r,ic) => new Set(h.filter(p=>p.rarity===r&&p.name&&(ic?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
-    const c5=_cu(_ch,5,true), c4=_cu(_ch,4,true), w5=_cu(_wh,5,false), w4=_cu(_wh,4,false), w3=_cu(_wh,3,false);
-    const newestRes = [...new Set(_ch.filter(p=>p.rarity===5&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
-    const _fs = [..._ch,..._wh].filter(p=>p.rarity===5&&p.pity>0);
-    const hB = {}; _fs.forEach(p=>{if(p.pity>80){hB['81+']=(hB['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;hB[`${b}-${b+9}`]=(hB[`${b}-${b+9}`]??0)+1;}});
-    const hL = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(hB['81+'])hL.push('81+'); hL.forEach(b=>{if(!hB[b])hB[b]=0;});
-    const hS = _fs.length>=2?{max:Math.max(...Object.values(hB),1),avg:(_fs.reduce((s,p)=>s+p.pity,0)/_fs.length).toFixed(1),lo:Math.min(..._fs.map(p=>p.pity)),hi:Math.max(..._fs.map(p=>p.pity))}:null;
+    const tList = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
+    const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+    const beginnerHist = state.profile.beginner?.history||[];
+    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
+    const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
+    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false);
+    const newestRes = [...new Set(charHist.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
+    const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
+    const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
+    const histLabels = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(histBuckets['81+'])histLabels.push('81+'); histLabels.forEach(b=>{if(!histBuckets[b])histBuckets[b]=0;});
+    const histSummary = fiveStarPulls.length>=2?{max:Math.max(...Object.values(histBuckets),1),avg:(fiveStarPulls.reduce((s,p)=>s+p.pity,0)/fiveStarPulls.length).toFixed(1),lo:Math.min(...fiveStarPulls.map(p=>p.pity)),hi:Math.max(...fiveStarPulls.map(p=>p.pity))}:null;
     const sts = [
-      {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#fbbf24'},
-      {l:'Total Pulls',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
+      {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
+      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
       {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
       {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
       {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
       {l:'Lost',v:String(overallStats?.lost5050??'--'),c:'#f87171'},
     ];
 
+    // Per-banner breakdown data
+    const featHist = state.profile.featured?.history||[];
+    const weapBannerHist = state.profile.weapon?.history||[];
+    const stdCHist = state.profile.standardChar?.history||[];
+    const stdWHist = state.profile.standardWeap?.history||[];
+    const bgnHist = state.profile.beginner?.history||[];
+    const bannerStats = [
+      {l:'Featured',v:String(featHist.length),c:'#edaf18',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Weapon',v:String(weapBannerHist.length),c:'#c084fc',s:weapBannerHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Std. Char',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Std. Weap',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Beginner',v:String(bgnHist.length),c:'#34d399',s:bgnHist.filter(p=>p.rarity===5).length+' ★5'},
+    ];
+
     // ═══ DRAWING PRIMITIVES ═══
     // Outer card — .kuro-card
     const drawShell = (x,y,w,h) => {
-      ctx.fillStyle='rgba(12,16,24,0.8)';rr(x,y,w,h,16);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;rr(x,y,w,h,16);ctx.stroke();
-      // inset top light
-      const il=ctx.createLinearGradient(x,y,x,y+2);il.addColorStop(0,'rgba(255,255,255,0.05)');il.addColorStop(1,'transparent');
-      ctx.fillStyle=il;ctx.fillRect(x+16,y+1,w-32,1);
-      // shimmer
+      ctx.fillStyle='rgba(12,16,24,0.8)';rr(x,y,w,h,24);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,24);ctx.stroke();
+      const il=ctx.createLinearGradient(x,y,x,y+3);il.addColorStop(0,'rgba(255,255,255,0.07)');il.addColorStop(1,'transparent');
+      ctx.fillStyle=il;ctx.fillRect(x+24,y+1,w-48,2);
       const sh=ctx.createLinearGradient(x,0,x+w,0);
-      sh.addColorStop(0,'transparent');sh.addColorStop(0.2,'rgba(255,255,255,0.3)');sh.addColorStop(0.5,'rgba(255,255,255,0.5)');sh.addColorStop(0.8,'rgba(255,255,255,0.3)');sh.addColorStop(1,'transparent');
-      ctx.fillStyle=sh;ctx.fillRect(x+16,y,w-32,1);
-      // corners
-      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(x+w-8-12,y+8);ctx.lineTo(x+w-8,y+8);ctx.lineTo(x+w-8,y+8+12);ctx.stroke();
-      ctx.strokeStyle='rgba(255,255,255,0.08)';
-      ctx.beginPath();ctx.moveTo(x+8+12,y+h-8);ctx.lineTo(x+8,y+h-8);ctx.lineTo(x+8,y+h-8-12);ctx.stroke();
+      sh.addColorStop(0,'transparent');sh.addColorStop(0.2,'rgba(255,255,255,0.35)');sh.addColorStop(0.5,'rgba(255,255,255,0.55)');sh.addColorStop(0.8,'rgba(255,255,255,0.35)');sh.addColorStop(1,'transparent');
+      ctx.fillStyle=sh;ctx.fillRect(x+24,y,w-48,1.5);
+      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(x+w-12-18,y+12);ctx.lineTo(x+w-12,y+12);ctx.lineTo(x+w-12,y+12+18);ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';
+      ctx.beginPath();ctx.moveTo(x+12+18,y+h-12);ctx.lineTo(x+12,y+h-12);ctx.lineTo(x+12,y+h-12-18);ctx.stroke();
     };
 
     // Header
     const drawHeader = (x,y,w) => {
-      const hH=36;
+      const hH=54;
       const hg=ctx.createLinearGradient(x,y,x+w,y);
       hg.addColorStop(0,'rgba(255,255,255,0.02)');hg.addColorStop(0.4,'transparent');hg.addColorStop(0.6,'transparent');hg.addColorStop(1,'rgba(255,255,255,0.02)');
       ctx.fillStyle=hg;ctx.fillRect(x,y,w,hH);
-      ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+hH);ctx.lineTo(x+w,y+hH);ctx.stroke();
-      const gb=ctx.createLinearGradient(0,y+10,0,y+10+16);gb.addColorStop(0,'rgba(251,191,36,0.9)');gb.addColorStop(1,'rgba(251,191,36,0.4)');
-      ctx.fillStyle=gb;rr(x+12,y+10,3,16,1.5);ctx.fill();
-      ctx.shadowColor='rgba(251,191,36,0.3)';ctx.shadowBlur=8;rr(x+12,y+10,3,16,1.5);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
-      ctx.fillStyle='#f1f5f9';ctx.font='600 11px sans-serif';ctx.fillText('RESONATOR ID',x+22,y+23);
-      ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-12,y+23);ctx.textAlign='left';
+      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+hH);ctx.lineTo(x+w,y+hH);ctx.stroke();
+      const gb=ctx.createLinearGradient(0,y+15,0,y+15+26);gb.addColorStop(0,'rgba(237,175,24,0.9)');gb.addColorStop(1,'rgba(237,175,24,0.4)');
+      ctx.fillStyle=gb;rr(x+18,y+15,4,26,2);ctx.fill();
+      ctx.shadowColor='rgba(237,175,24,0.3)';ctx.shadowBlur=12;rr(x+18,y+15,4,26,2);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
+      ctx.fillStyle='#f1f5f9';ctx.font='600 18px sans-serif';ctx.fillText('RESONATOR ID',x+32,y+34);
+      ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-18,y+34);ctx.textAlign='left';
       return hH;
     };
 
     // Section panel with gold bar label
     const drawPanel = (x,y,w,h,label) => {
-      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,10);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;rr(x,y,w,h,10);ctx.stroke();
-      const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.12)');ps.addColorStop(0.5,'rgba(255,255,255,0.2)');ps.addColorStop(0.7,'rgba(255,255,255,0.12)');ps.addColorStop(1,'transparent');
-      ctx.fillStyle=ps;ctx.fillRect(x+8,y,w-16,1);
-      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(x+w-6-8,y+4);ctx.lineTo(x+w-6,y+4);ctx.lineTo(x+w-6,y+4+8);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x+6+8,y+h-4);ctx.lineTo(x+6,y+h-4);ctx.lineTo(x+6,y+h-4-8);ctx.stroke();
+      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,15);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,15);ctx.stroke();
+      const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.18)');ps.addColorStop(0.5,'rgba(255,255,255,0.3)');ps.addColorStop(0.7,'rgba(255,255,255,0.18)');ps.addColorStop(1,'transparent');
+      ctx.fillStyle=ps;ctx.fillRect(x+12,y,w-24,1.5);
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x+w-9-12,y+6);ctx.lineTo(x+w-9,y+6);ctx.lineTo(x+w-9,y+6+12);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+9+12,y+h-6);ctx.lineTo(x+9,y+h-6);ctx.lineTo(x+9,y+h-6-12);ctx.stroke();
       if(label){
-        const gb2=ctx.createLinearGradient(0,y+8,0,y+8+12);gb2.addColorStop(0,'rgba(251,191,36,0.8)');gb2.addColorStop(1,'rgba(251,191,36,0.3)');
-        ctx.fillStyle=gb2;rr(x+10,y+8,2.5,12,1);ctx.fill();
-        ctx.fillStyle='#e2e8f0';ctx.font='600 10px sans-serif';ctx.fillText(label,x+18,y+18);
-        return 26;
+        const gb2=ctx.createLinearGradient(0,y+12,0,y+12+20);gb2.addColorStop(0,'rgba(237,175,24,0.8)');gb2.addColorStop(1,'rgba(237,175,24,0.3)');
+        ctx.fillStyle=gb2;rr(x+15,y+12,3.5,20,1.5);ctx.fill();
+        ctx.fillStyle='#e2e8f0';ctx.font='600 17px sans-serif';ctx.fillText(label,x+26,y+28);
+        return 39;
       }
-      return 6;
+      return 9;
     };
 
     // .kuro-stat cell
     const drawStat = (x,y,w,h,val,lab,col,fs) => {
-      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,w,h,8);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
-      const ss=ctx.createLinearGradient(x,0,x+w,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.35)');ss.addColorStop(1,'transparent');
-      ctx.fillStyle=ss;ctx.fillRect(x+4,y,w-8,1);
-      const f=fs||16;
+      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,w,h,12);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(x,y,w,h,12);ctx.stroke();
+      const ss=ctx.createLinearGradient(x,0,x+w,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
+      ctx.fillStyle=ss;ctx.fillRect(x+6,y,w-12,1.5);
+      const f=Math.round((fs||24)*1.1);
       ctx.fillStyle=col;ctx.font=`bold ${f}px monospace`;ctx.textAlign='center';ctx.fillText(val,x+w/2,y+h*0.48);
-      ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(7,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
+      ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(11,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
     };
 
-    // Resonator tag — .kuro-btn style with visible border
-    const drawTag = (x,y,w,h,text) => {
-      ctx.fillStyle='rgba(15,20,28,0.85)';rr(x,y,w,h,8);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
-      ctx.fillStyle='#e2e8f0';ctx.font='11px sans-serif';ctx.textAlign='center';
-      const ml=Math.floor(w/6.5);ctx.fillText(text.length>ml?text.slice(0,ml-1)+'..':text,x+w/2,y+h/2+4);ctx.textAlign='left';
-    };
-
-    // Trophy card — individual bordered card with name + full description
-    const drawTrophy = (x,y,w,h,t) => {
-      const tc=t.color||'#9ca3af';
-      // bg: gradient like app
-      const bg2=ctx.createLinearGradient(x,y,x+w,y+h);bg2.addColorStop(0,tc+'18');bg2.addColorStop(1,tc+'08');
-      ctx.fillStyle=bg2;rr(x,y,w,h,8);ctx.fill();
-      ctx.strokeStyle=tc+'55';ctx.lineWidth=1;rr(x,y,w,h,8);ctx.stroke();
-      // glow
-      ctx.shadowColor=tc+'20';ctx.shadowBlur=8;rr(x,y,w,h,8);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
-      // Name bold
-      ctx.fillStyle='#ffffff';ctx.font='bold 10px sans-serif';
-      const nameText = t.name.length > Math.floor(w/5.5) ? t.name.slice(0, Math.floor(w/5.5)-1)+'..' : t.name;
-      ctx.fillText(nameText,x+8,y+14);
-      // Desc - wrapped in trophy color
-      ctx.fillStyle=tc+'bb';ctx.font='9px sans-serif';
-      const desc=t.desc||'';const words=desc.split(' ');let line='';let ly=y+27;const maxW=w-16;
-      for(const word of words){const test=line+(line?' ':'')+word;if(ctx.measureText(test).width>maxW&&line){if(ly>y+h-6)break;ctx.fillText(line,x+8,ly);ly+=11;line=word;}else line=test;}
-      if(line&&ly<=y+h-4)ctx.fillText(line,x+8,ly);
-    };
-
-    // Hero profile image — large, with gradient fade
-    const drawHero = (x,y,w,h) => {
-      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,10);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;rr(x,y,w,h,10);ctx.stroke();
-      if(pImg){
-        ctx.save();rr(x+1,y+1,w-2,h-2,9);ctx.clip();
-        const ratio=pImg.width/pImg.height;const cw=ratio>1?h*ratio:w;const ch=ratio>1?h:w/ratio;
-        ctx.drawImage(pImg,(pImg.width-pImg.width*(w/cw))/2,(pImg.height-pImg.height*(h/ch))/2,pImg.width*(w/cw),pImg.height*(h/ch),x+1,y+1,w-2,h-2);
+    // Resonator portrait — collection-panel style: tall card with image + gradient name overlay
+    const drawResPortrait = (x,y,cellW,cellH,name,img) => {
+      ctx.fillStyle='rgba(10,14,22,0.9)';rr(x,y,cellW,cellH,9);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;rr(x,y,cellW,cellH,9);ctx.stroke();
+      if(img){
+        ctx.save();rr(x+1,y+1,cellW-2,cellH-2,8);ctx.clip();
+        const f=getImageFraming('collection-'+name);
+        const sc=f.zoom/100;
+        // Preserve aspect ratio (object-contain): fit image inside cell
+        const imgAR=img.naturalWidth/img.naturalHeight;
+        const cellAR=cellW/cellH;
+        let bw2,bh2;
+        if(imgAR>cellAR){bw2=cellW;bh2=cellW/imgAR;}else{bh2=cellH;bw2=cellH*imgAR;}
+        const dw=bw2*sc,dh=bh2*sc;
+        const dx=x+(cellW-dw)/2-(f.x/100)*bw2*sc;
+        const dy=y+(cellH-dh)/2-(f.y/100)*bh2*sc;
+        ctx.drawImage(img,dx,dy,dw,dh);
         ctx.restore();
-        // Bottom gradient fade
-        const fade=ctx.createLinearGradient(0,y+h-60,0,y+h);
+        const fade=ctx.createLinearGradient(0,y+cellH-33,0,y+cellH);
+        fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(1,'rgba(0,0,0,0.85)');
+        ctx.save();rr(x+1,y+1,cellW-2,cellH-2,8);ctx.clip();
+        ctx.fillStyle=fade;ctx.fillRect(x+1,y+cellH-33,cellW-2,32);
+        ctx.restore();
+      } else {
+        ctx.fillStyle='#4b5563';ctx.font=Math.max(14,Math.round(cellW*0.3))+'px sans-serif';
+        ctx.textAlign='center';ctx.fillText(name[0],x+cellW/2,y+cellH/2+6);ctx.textAlign='left';
+      }
+      ctx.fillStyle='#e5e7eb';ctx.font='11px sans-serif';ctx.textAlign='center';
+      const ml=Math.floor(cellW/5.5);
+      ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+cellH-5);ctx.textAlign='left';
+    };
+
+    // Draw icon using canvas path primitives — guaranteed to render (no font/Unicode dependency)
+    const drawIconPath = (icx,icy,r,iconName,color) => {
+      ctx.save();ctx.fillStyle=color;ctx.strokeStyle=color;
+      ctx.lineWidth=Math.max(1.5,r*0.15);ctx.lineCap='round';ctx.lineJoin='round';
+      const s=r*0.65;
+      switch(iconName){
+        case 'Crown':{ctx.beginPath();ctx.moveTo(icx-s,icy+s*0.5);ctx.lineTo(icx-s*0.9,icy-s*0.3);ctx.lineTo(icx-s*0.4,icy+s*0.05);ctx.lineTo(icx,icy-s*0.6);ctx.lineTo(icx+s*0.4,icy+s*0.05);ctx.lineTo(icx+s*0.9,icy-s*0.3);ctx.lineTo(icx+s,icy+s*0.5);ctx.closePath();ctx.fill();break;}
+        case 'Sparkles':{ctx.beginPath();for(let i=0;i<8;i++){const a=(i*Math.PI/4)-Math.PI/2,rd=i%2===0?s:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+        case 'Heart':{const ht=s*0.9;ctx.beginPath();ctx.moveTo(icx,icy+ht*0.55);ctx.bezierCurveTo(icx-ht*1.1,icy-ht*0.2,icx-ht*0.5,icy-ht*0.9,icx,icy-ht*0.3);ctx.bezierCurveTo(icx+ht*0.5,icy-ht*0.9,icx+ht*1.1,icy-ht*0.2,icx,icy+ht*0.55);ctx.fill();break;}
+        case 'Swords':{ctx.lineWidth=r*0.18;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy-s*0.7);ctx.lineTo(icx+s*0.7,icy+s*0.7);ctx.moveTo(icx+s*0.7,icy-s*0.7);ctx.lineTo(icx-s*0.7,icy+s*0.7);ctx.stroke();break;}
+        case 'Sword':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx,icy-s*0.8);ctx.lineTo(icx,icy+s*0.6);ctx.moveTo(icx-s*0.35,icy-s*0.1);ctx.lineTo(icx+s*0.35,icy-s*0.1);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy+s*0.7,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'Shield':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.75);ctx.lineTo(icx+s*0.7,icy-s*0.35);ctx.lineTo(icx+s*0.55,icy+s*0.25);ctx.quadraticCurveTo(icx,icy+s*0.85,icx,icy+s*0.85);ctx.quadraticCurveTo(icx,icy+s*0.85,icx-s*0.55,icy+s*0.25);ctx.lineTo(icx-s*0.7,icy-s*0.35);ctx.closePath();ctx.fill();break;}
+        case 'Gift':{ctx.fillStyle=color;rr(icx-s*0.55,icy-s*0.15,s*1.1,s*0.8,2);ctx.fill();rr(icx-s*0.65,icy-s*0.45,s*1.3,s*0.35,2);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.4)';ctx.fillRect(icx-s*0.06,icy-s*0.45,s*0.12,s*1.25);ctx.fillRect(icx-s*0.65,icy-s*0.35,s*1.3,s*0.1);break;}
+        case 'Zap':{ctx.beginPath();ctx.moveTo(icx+s*0.15,icy-s*0.8);ctx.lineTo(icx-s*0.3,icy+s*0.05);ctx.lineTo(icx+s*0.05,icy+s*0.05);ctx.lineTo(icx-s*0.15,icy+s*0.8);ctx.lineTo(icx+s*0.3,icy-s*0.05);ctx.lineTo(icx-s*0.05,icy-s*0.05);ctx.closePath();ctx.fill();break;}
+        case 'Clover':{const cr=s*0.28;ctx.beginPath();ctx.arc(icx,icy-cr,cr,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx-cr*0.87,icy+cr*0.5,cr,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx+cr*0.87,icy+cr*0.5,cr,0,Math.PI*2);ctx.fill();ctx.lineWidth=r*0.1;ctx.beginPath();ctx.moveTo(icx,icy+cr*0.4);ctx.lineTo(icx,icy+s*0.8);ctx.stroke();break;}
+        case 'Flame':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.8);ctx.bezierCurveTo(icx+s*0.6,icy-s*0.3,icx+s*0.5,icy+s*0.4,icx,icy+s*0.7);ctx.bezierCurveTo(icx-s*0.5,icy+s*0.4,icx-s*0.6,icy-s*0.3,icx,icy-s*0.8);ctx.fill();break;}
+        case 'Target':{ctx.lineWidth=r*0.12;ctx.beginPath();ctx.arc(icx,icy,s*0.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy,s*0.4,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'AlertCircle':{ctx.lineWidth=r*0.12;ctx.beginPath();ctx.arc(icx,icy,s*0.7,0,Math.PI*2);ctx.stroke();ctx.fillRect(icx-s*0.07,icy-s*0.35,s*0.14,s*0.4);ctx.beginPath();ctx.arc(icx,icy+s*0.32,s*0.08,0,Math.PI*2);ctx.fill();break;}
+        case 'TrendingUp':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy+s*0.35);ctx.lineTo(icx-s*0.1,icy-s*0.15);ctx.lineTo(icx+s*0.2,icy+s*0.1);ctx.lineTo(icx+s*0.7,icy-s*0.4);ctx.stroke();ctx.beginPath();ctx.moveTo(icx+s*0.3,icy-s*0.4);ctx.lineTo(icx+s*0.7,icy-s*0.4);ctx.lineTo(icx+s*0.7,icy);ctx.stroke();break;}
+        case 'TrendingDown':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy-s*0.35);ctx.lineTo(icx-s*0.1,icy+s*0.15);ctx.lineTo(icx+s*0.2,icy-s*0.1);ctx.lineTo(icx+s*0.7,icy+s*0.4);ctx.stroke();ctx.beginPath();ctx.moveTo(icx+s*0.3,icy+s*0.4);ctx.lineTo(icx+s*0.7,icy+s*0.4);ctx.lineTo(icx+s*0.7,icy);ctx.stroke();break;}
+        case 'Fish':{ctx.beginPath();ctx.moveTo(icx+s*0.6,icy);ctx.quadraticCurveTo(icx,icy-s*0.5,icx-s*0.45,icy);ctx.quadraticCurveTo(icx,icy+s*0.5,icx+s*0.6,icy);ctx.fill();ctx.beginPath();ctx.moveTo(icx-s*0.45,icy);ctx.lineTo(icx-s*0.75,icy-s*0.3);ctx.lineTo(icx-s*0.75,icy+s*0.3);ctx.closePath();ctx.fill();break;}
+        case 'Diamond':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.7);ctx.lineTo(icx+s*0.5,icy);ctx.lineTo(icx,icy+s*0.7);ctx.lineTo(icx-s*0.5,icy);ctx.closePath();ctx.fill();break;}
+        case 'Gamepad2':{rr(icx-s*0.6,icy-s*0.25,s*1.2,s*0.5,s*0.15);ctx.fill();ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.arc(icx-s*0.28,icy,s*0.12,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx+s*0.28,icy,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'Star':{ctx.beginPath();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,rd=i%2===0?s*0.75:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+        case 'Trophy':{ctx.beginPath();ctx.moveTo(icx-s*0.45,icy-s*0.5);ctx.lineTo(icx+s*0.45,icy-s*0.5);ctx.lineTo(icx+s*0.3,icy+s*0.1);ctx.quadraticCurveTo(icx,icy+s*0.35,icx-s*0.3,icy+s*0.1);ctx.closePath();ctx.fill();ctx.fillRect(icx-s*0.07,icy+s*0.1,s*0.14,s*0.25);rr(icx-s*0.25,icy+s*0.35,s*0.5,s*0.12,2);ctx.fill();break;}
+        default:{ctx.beginPath();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,rd=i%2===0?s*0.75:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+      }
+      ctx.restore();
+    };
+
+    // Trophy card — flat dark cell style with trophy color accents
+    const drawTrophy = (x,y,size,t) => {
+      const tc=t.color||'#9ca3af';
+      // Dark fill base
+      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,size,size,12);ctx.fill();
+      // Colored gradient overlay (stronger tint so color is clearly visible)
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);
+      bg2.addColorStop(0,tc+'30');bg2.addColorStop(1,tc+'12');
+      ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
+      // Colored border
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
+      // Colored shimmer top line
+      const ss=ctx.createLinearGradient(x,0,x+size,0);
+      ss.addColorStop(0,'transparent');ss.addColorStop(0.5,tc+'60');ss.addColorStop(1,'transparent');
+      ctx.fillStyle=ss;ctx.fillRect(x+6,y,size-12,1.5);
+      // Icon — centered, with colored glow for premium look
+      const iconR=size*0.28;
+      ctx.save();
+      ctx.shadowColor=tc;ctx.shadowBlur=Math.max(12,size*0.1);
+      drawIconPath(x+size/2,y+size*0.38,iconR,t.icon,tc);
+      ctx.restore();
+      // Name — white bold, centered
+      const nameFontSize=Math.max(10,Math.floor(size*0.12));
+      ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
+      const maxW=size-14;
+      let nameText=t.name;
+      if(ctx.measureText(nameText).width>maxW){
+        while(nameText.length>1&&ctx.measureText(nameText+'..').width>maxW)nameText=nameText.slice(0,-1);
+        nameText=nameText+'..';
+      }
+      ctx.textAlign='center';ctx.fillText(nameText,x+size/2,y+size*0.78);
+      ctx.textAlign='left';
+    };
+
+    // Hero profile image — large, with collection-style framing and gradient fade
+    const drawHero = (x,y,w,h) => {
+      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,15);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;rr(x,y,w,h,15);ctx.stroke();
+      if(pImg){
+        ctx.save();rr(x+2,y+2,w-4,h-4,14);ctx.clip();
+        const f=picName?getImageFraming('collection-'+picName):{zoom:100,x:0,y:0};
+        const sc=f.zoom/100;
+        // Preserve aspect ratio (object-contain)
+        const imgAR=pImg.naturalWidth/pImg.naturalHeight;
+        const cellAR=w/h;
+        let bw2,bh2;
+        if(imgAR>cellAR){bw2=w;bh2=w/imgAR;}else{bh2=h;bw2=h*imgAR;}
+        const dw=bw2*sc,dh=bh2*sc;
+        const dx=x+(w-dw)/2-(f.x/100)*bw2*sc;
+        const dy=y+(h-dh)/2-(f.y/100)*bh2*sc;
+        ctx.drawImage(pImg,dx,dy,dw,dh);
+        ctx.restore();
+        const fade=ctx.createLinearGradient(0,y+h-90,0,y+h);
         fade.addColorStop(0,'rgba(8,12,18,0)');fade.addColorStop(1,'rgba(8,12,18,0.9)');
-        ctx.fillStyle=fade;ctx.fillRect(x+1,y+h-60,w-2,59);
+        ctx.fillStyle=fade;ctx.fillRect(x+2,y+h-90,w-4,88);
       } else if(appIco){
         const sz=Math.min(w,h)*0.3;ctx.globalAlpha=0.08;ctx.drawImage(appIco,x+(w-sz)/2,y+(h-sz)/2,sz,sz);ctx.globalAlpha=1;
       }
-      // Character name at bottom
-      if(picName){ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(picName,x+w/2,y+h-6);ctx.textAlign='left';}
+      if(picName){ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText(picName,x+w/2,y+h-9);ctx.textAlign='left';}
     };
 
     // Luck bar
     const drawLuck = (x,y,w) => {
       if(!lr)return 0;
-      rr(x,y,w,8,4);ctx.fillStyle='rgba(10,14,22,0.8)';ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;rr(x,y,w,8,4);ctx.stroke();
-      const fw=Math.max(4,Math.min(lr.percentile||50,100)/100*w);
-      ctx.save();rr(x,y,w,8,4);ctx.clip();
-      const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#fbbf24');g.addColorStop(1,'#34d399');
-      ctx.fillStyle=g;rr(x,y,fw,8,4);ctx.fill();ctx.restore();
-      // Tier badge
-      ctx.fillStyle='rgba(10,14,22,0.85)';rr(x+w+6,y-3,70,14,4);ctx.fill();
-      ctx.strokeStyle=(lr.color||'#fbbf24')+'60';ctx.lineWidth=1;rr(x+w+6,y-3,70,14,4);ctx.stroke();
-      ctx.fillStyle=lr.color||'#fbbf24';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+41,y+7);ctx.textAlign='left';
-      return 18;
+      rr(x,y,w,12,6);ctx.fillStyle='rgba(10,14,22,0.8)';ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;rr(x,y,w,12,6);ctx.stroke();
+      const fw=Math.max(6,Math.min(lr.percentile||50,100)/100*w);
+      ctx.save();rr(x,y,w,12,6);ctx.clip();
+      const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#edaf18');g.addColorStop(1,'#34d399');
+      ctx.fillStyle=g;rr(x,y,fw,12,6);ctx.fill();ctx.restore();
+      ctx.fillStyle='rgba(10,14,22,0.85)';rr(x+w+9,y-5,105,21,6);ctx.fill();
+      ctx.strokeStyle=(lr.color||'#edaf18')+'60';ctx.lineWidth=1;rr(x+w+9,y-5,105,21,6);ctx.stroke();
+      ctx.fillStyle=lr.color||'#edaf18';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+61,y+10);ctx.textAlign='left';
+      return 27;
     };
 
     // Stats grid 3x2
     const drawStats = (sx,sy,gw,ch2,fs) => {
-      const g2=5,cols=3,cw2=(gw-(cols-1)*g2)/cols;
+      const g2=8,cols=3,cw2=(gw-(cols-1)*g2)/cols;
       sts.forEach((s,i)=>{const col=i%cols,row=Math.floor(i/cols);drawStat(sx+col*(cw2+g2),sy+row*(ch2+g2),cw2,ch2,s.v,s.l,s.c,fs);});
       return (ch2+g2)*2-g2;
     };
 
-    // Resonator tags grid
+    // Resonator portraits grid — collection-panel style (tall cards, fills width)
     const drawResTags = (rx,ry,mw,cols,max) => {
       const ch2=newestRes.slice(0,max);if(!ch2.length)return 0;
-      const g2=5,th=28,tw=(mw-(cols-1)*g2)/cols;
-      ch2.forEach((n,i)=>{drawTag(rx+(i%cols)*(tw+g2),ry+Math.floor(i/cols)*(th+g2),tw,th,n);});
-      const rows=Math.ceil(ch2.length/cols);let h2=rows*(th+g2)-g2;
-      if(newestRes.length>max){ctx.fillStyle='#4b5563';ctx.font='9px sans-serif';ctx.fillText('+'+String(newestRes.length-max)+' more',rx,ry+h2+12);h2+=14;}
+      const g2=6,cellW=(mw-(cols-1)*g2)/cols,cellH=Math.round(cellW*1.6);
+      ch2.forEach((n,i)=>{drawResPortrait(rx+(i%cols)*(cellW+g2),ry+Math.floor(i/cols)*(cellH+g2),cellW,cellH,n,resImgs[n]);});
+      const rows=Math.ceil(ch2.length/cols);let h2=rows*(cellH+g2)-g2;
+      if(newestRes.length>max){ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.fillText('+'+String(newestRes.length-max)+' more',rx,ry+h2+18);h2+=21;}
       return h2;
     };
 
     // Collection row
     const drawColl = (cx2,cy2,cw2) => {
-      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#fbbf24'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#fbbf24'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
-      const g2=4,iw=(cw2-4*g2)/5;
-      items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,32,it.o+'/'+it.t,it.l,it.c,11);});
-      return 32;
+      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
+      const g2=6,iw=(cw2-4*g2)/5;
+      items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,48,it.o+'/'+it.t,it.l,it.c,16);});
+      return 48;
     };
 
-    // Mini histogram
+    // Mini histogram — neon glow style matching Stats tab
+    // Helper: draw bar path with only top corners rounded (flat bottom, like CSS rounded-t)
+    const barPath = (bx,by,bw,bh2,r) => {
+      ctx.beginPath();
+      ctx.moveTo(bx+r,by);ctx.lineTo(bx+bw-r,by);
+      ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+r);
+      ctx.lineTo(bx+bw,by+bh2);ctx.lineTo(bx,by+bh2);
+      ctx.lineTo(bx,by+r);
+      ctx.quadraticCurveTo(bx,by,bx+r,by);
+      ctx.closePath();
+    };
     const drawHisto = (hx,hy,hw,hh) => {
-      if(!hS||!hL.length)return;
-      const bg2=2,bw2=(hw-(hL.length-1)*bg2)/hL.length,area=hh-14;
-      hL.forEach((lab,i)=>{
-        const cnt=hB[lab]||0,bh=hS.max>0?Math.max(2,(cnt/hS.max)*area):2;
+      if(!histSummary||!histLabels.length)return;
+      const bg2=3,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
+      histLabels.forEach((lab,i)=>{
+        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
-        const bc=bucket<=20?'#34d399':bucket<=40?'#a3e635':bucket<=50?'#fbbf24':bucket<=60?'#fb923c':'#f87171';
-        ctx.fillStyle=bc;ctx.globalAlpha=0.7;rr(bx2,by2,bw2,bh,2);ctx.fill();
-        ctx.strokeStyle=bc;ctx.globalAlpha=0.3;ctx.lineWidth=1;rr(bx2,by2,bw2,bh,2);ctx.stroke();ctx.globalAlpha=1;
-        if(cnt>0){ctx.fillStyle=bc;ctx.font='bold 7px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-2);ctx.textAlign='left';}
-        ctx.fillStyle='#4b5563';ctx.font='6px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+9);ctx.textAlign='left';
+        const bc=bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
+        // Semi-transparent gradient fill with outer glow (single fill, no stacking)
+        ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;
+        const barGrad=ctx.createLinearGradient(0,by2+bh,0,by2);
+        barGrad.addColorStop(0,bc+'40');barGrad.addColorStop(1,bc+'20');
+        ctx.fillStyle=barGrad;barPath(bx2,by2,bw2,bh,3);ctx.fill();
+        ctx.restore();
+        // Border — top and sides only, no bottom (matches borderBottom: 'none')
+        ctx.strokeStyle=bc+'90';ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(bx2,by2+bh);ctx.lineTo(bx2,by2+3);
+        ctx.quadraticCurveTo(bx2,by2,bx2+3,by2);
+        ctx.lineTo(bx2+bw2-3,by2);
+        ctx.quadraticCurveTo(bx2+bw2,by2,bx2+bw2,by2+3);
+        ctx.lineTo(bx2+bw2,by2+bh);
+        ctx.stroke();
+        // Bottom glow line — full bar width (matches Stats tab bottom glow)
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;
+        ctx.fillRect(bx2,by2+bh-2,bw2,2);ctx.restore();}
+        // Count label with glow (matches textShadow: 0 0 8px ${color})
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.textAlign='left';ctx.restore();}
+        // Bottom label
+        ctx.fillStyle='#6b7280';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+15);ctx.textAlign='left';
       });
+    };
+
+    // Banner Breakdown — per-banner pull count + 5★ count row
+    const drawBannerRow = (bx2,by2,bw2,bh2) => {
+      const g2=6,iw=(bw2-4*g2)/5;
+      bannerStats.forEach((bs,i)=>{
+        const sx=bx2+i*(iw+g2);
+        // stat cell background
+        ctx.fillStyle='rgba(10,14,22,0.8)';rr(sx,by2,iw,bh2,12);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(sx,by2,iw,bh2,12);ctx.stroke();
+        const ss=ctx.createLinearGradient(sx,0,sx+iw,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
+        ctx.fillStyle=ss;ctx.fillRect(sx+6,by2,iw-12,1.5);
+        // Pull count (main value)
+        ctx.fillStyle=bs.c;ctx.font='bold 22px monospace';ctx.textAlign='center';
+        ctx.fillText(bs.v,sx+iw/2,by2+bh2*0.35);
+        // 5★ sub-value
+        ctx.fillStyle='#9ca3af';ctx.font='12px sans-serif';
+        ctx.fillText(bs.s,sx+iw/2,by2+bh2*0.58);
+        // Label
+        ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';
+        ctx.fillText(bs.l,sx+iw/2,by2+bh2*0.8);
+        ctx.textAlign='left';
+      });
+      return bh2;
     };
 
     // Footer
     const drawFooter = (x,y,w) => {
-      ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
-      ctx.fillStyle='#4b5563';ctx.font='9px monospace';ctx.fillText('Generated '+new Date().toLocaleDateString(),x,y+12);
-      ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w,y+12);ctx.textAlign='left';
+      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
+      ctx.fillStyle='#4b5563';ctx.font='14px monospace';ctx.fillText('Generated '+new Date().toLocaleDateString(),x,y+18);
+      ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w,y+18);ctx.textAlign='left';
     };
 
     // ═══ RENDER ═══
     ctx.fillStyle='#080810';ctx.fillRect(0,0,W,H);
     const bgG=ctx.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.4,W*0.5);
-    bgG.addColorStop(0,'rgba(251,191,36,0.008)');bgG.addColorStop(1,'transparent');
+    bgG.addColorStop(0,'rgba(237,175,24,0.008)');bgG.addColorStop(1,'transparent');
     ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
 
-    const M=12,ox=M,oy=M,ow=W-M*2,oh=H-M*2;
+    const M=18,ox=M,oy=M,ow=W-M*2,oh=H-M*2;
     drawShell(ox,oy,ow,oh);
     const hH=drawHeader(ox+1,oy+1,ow-2);
-    const P=10,bx=ox+P,bw=ow-P*2;
-    const footH=20;
+    const P=15,bx=ox+P,bw=ow-P*2;
+    const footH=30;
     let Y=oy+1+hH+P;
     const bottomY=oy+oh-footH-P;
 
     if(!isPortrait){
-      // ═══ LANDSCAPE 1280x720 — content-adaptive ═══
-      const gap=6;
-      const leftW=Math.floor(bw*0.3);
+      // ═══ LANDSCAPE 1920x1080 — content-adaptive ═══
+      const gap=9;
+      const leftW=Math.floor(bw*0.35);
       const rightX=bx+leftW+gap;
       const rightW=bw-leftW-gap;
       const contentH=bottomY-Y;
 
-      // Hero image takes most of left column
-      const heroH=Math.floor(contentH*0.55);
+      // Hero image takes top of left column
+      const heroH=Math.floor(contentH*0.32);
       drawHero(bx,Y,leftW,heroH);
 
-      // Identity below hero — fills rest of left
+      // Profile + Stats + Pity Distribution below hero — fills rest of left
       const idY=Y+heroH+gap;
       const idH=contentH-heroH-gap;
       const idOff=drawPanel(bx,idY,leftW,idH,'Profile');
-      ctx.fillStyle='#f1f5f9';ctx.font='bold 18px sans-serif';ctx.fillText(uname,bx+10,idY+idOff+14);
-      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('UID',bx+10,idY+idOff+30);
-      ctx.fillStyle='#e2e8f0';ctx.font='11px monospace';ctx.fillText(uid,bx+32,idY+idOff+30);
-      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('Server',bx+10,idY+idOff+44);
-      ctx.fillStyle='#fbbf24';ctx.font='11px monospace';ctx.fillText(svr,bx+48,idY+idOff+44);
-      if(lr)drawLuck(bx+10,idY+idOff+58,leftW-90);
-      const metaY=idY+idOff+(lr?78:60);
-      ctx.fillStyle='#6b7280';ctx.font='8px sans-serif';
-      if(tList.length>0)ctx.fillText(tList.length+' Trophies',bx+10,metaY);
-      if(impDate)ctx.fillText('Since '+impDate,bx+10+(tList.length>0?60:0),metaY);
-      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+10+(tList.length>0?60:0)+(impDate?80:0),metaY);
+      ctx.fillStyle='#f1f5f9';ctx.font='bold 30px sans-serif';ctx.fillText(uname,bx+15,idY+idOff+21);
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',bx+15,idY+idOff+45);
+      ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,bx+48,idY+idOff+45);
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',bx+15,idY+idOff+66);
+      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,bx+72,idY+idOff+66);
+      if(lr)drawLuck(bx+15,idY+idOff+87,leftW-135);
+      const metaY=idY+idOff+(lr?117:90);
+      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
+      let metaLine1='';
+      if(tList.length>0)metaLine1+=tList.length+' Trophies';
+      if(impDate)metaLine1+=(metaLine1?' · ':'')+impDate;
+      if(metaLine1)ctx.fillText(metaLine1,bx+15,metaY);
+      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+15,metaY+16);
+      // Convene Stats inside profile panel
+      const statCellH=36,statStartY=metaY+(overallStats?.totalAstrite?36:21);
+      drawStats(bx+9,statStartY,leftW-18,statCellH,16);
+      // Pity Distribution below stats inside profile panel
+      const histoY=statStartY+(statCellH+8)*2-8+15;
+      const histoH=idY+idH-histoY-9;
+      if(histSummary&&histoH>40){
+        ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+15,histoY-6);ctx.lineTo(bx+leftW-15,histoY-6);ctx.stroke();
+        ctx.fillStyle='#e2e8f0';ctx.font='600 13px sans-serif';ctx.fillText('Pity Distribution',bx+15,histoY+6);
+        drawHisto(bx+9,histoY+15,leftW-18,histoH-15);
+        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,bx+leftW-12,idY+idH-6);ctx.textAlign='left';
+      }
 
-      // ── Right column: content-adaptive heights ──
-      const statCellH=28,panelPad=26;
-      const statsContentH=panelPad+(statCellH+5)*2-5+4;
-      const statsW=Math.floor((rightW-gap)*0.5);
-      const collW=rightW-statsW-gap;
-      const r1H=Math.max(statsContentH,panelPad+32+50+4); // collection cells + histogram
+      // ── Right column: Collection → Resonators → Trophies → Banner Breakdown ──
+      const panelPad=39;
+      const collH=panelPad+48+6;
+      const trophyCols=Math.max(tList.length,1),trophyGap=8;
+      const trophyCellSize=Math.min(160,Math.floor((rightW-18-(trophyCols-1)*trophyGap)/trophyCols));
+      const trophyPanelH=panelPad+trophyCellSize+6;
+      const bannerH=panelPad+72+6; // banner breakdown panel height
 
-      const resTagH=28,resTagGap=5,resCols=5;
+      const resCols=10,resGap2=6;
       const resMax=Math.min(newestRes.length,20);
+      const resCellW=(rightW-18-(resCols-1)*resGap2)/resCols,resCellH=Math.round(resCellW*1.6);
       const resRows=Math.ceil(Math.max(resMax,1)/resCols);
-      const resContentH=panelPad+resRows*(resTagH+resTagGap)-resTagGap+4+(newestRes.length>resMax?14:0);
+      const resContentH=panelPad+resRows*(resCellH+resGap2)-resGap2+6+(newestRes.length>resMax?21:0);
 
-      const trophyY_start=Y+r1H+gap+resContentH+gap;
-      const r3H=bottomY-trophyY_start;
+      // Draw Row 1: Collection (full width)
+      const cp1o=drawPanel(rightX,Y,rightW,collH,'Collection');
+      drawColl(rightX+9,Y+cp1o,rightW-18);
 
-      // Draw Row 1: Stats + Collection
-      const sp1o=drawPanel(rightX,Y,statsW,r1H,'Convene Stats');
-      drawStats(rightX+6,Y+sp1o,statsW-12,statCellH,13);
-      const cp1o=drawPanel(rightX+statsW+gap,Y,collW,r1H,'Collection');
-      drawColl(rightX+statsW+gap+6,Y+cp1o,collW-12);
-      const hiY=Y+cp1o+36;
-      if(hS)drawHisto(rightX+statsW+gap+6,hiY,collW-12,r1H-cp1o-36-4);
-      if(hS){ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+hS.lo+' | Avg '+hS.avg+' | Hi '+hS.hi,rightX+statsW+gap+collW-8,Y+r1H-3);ctx.textAlign='left';}
-
-      // Draw Row 2: Resonators — sized to content
-      const r2Y=Y+r1H+gap;
+      // Draw Row 2: Resonators — sized to content, fills width
+      const r2Y=Y+collH+gap;
       const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
-      drawResTags(rightX+6,r2Y+rp1o,rightW-12,resCols,resMax);
+      drawResTags(rightX+9,r2Y+rp1o,rightW-18,10,resMax);
 
-      // Draw Row 3: Trophies — fills remaining
+      // Draw Row 3: Trophies — fixed height, centered
       const r3Y=r2Y+resContentH+gap;
-      if(tList.length>0&&r3H>40){
-        const tp1o=drawPanel(rightX,r3Y,rightW,r3H,'Trophies ('+tList.length+')');
-        const tCols=3,tGap=5;const tw=(rightW-12-(tCols-1)*tGap)/tCols;
-        const maxTrophyRows=Math.floor((r3H-tp1o-4)/(50+tGap));
-        const maxT=Math.min(tList.length,maxTrophyRows*tCols);
-        const showT=tList.slice(0,maxT);
-        const tH=Math.min(50,Math.floor((r3H-tp1o-4-(Math.ceil(showT.length/tCols)-1)*tGap)/Math.ceil(showT.length/tCols)));
-        showT.forEach((t,i)=>{drawTrophy(rightX+6+(i%tCols)*(tw+tGap),r3Y+tp1o+Math.floor(i/tCols)*(tH+tGap),tw,tH,t);});
-        if(tList.length>maxT){ctx.fillStyle='#4b5563';ctx.font='8px sans-serif';ctx.fillText('+'+String(tList.length-maxT)+' more',rightX+6,r3Y+r3H-5);}
+      if(tList.length>0){
+        const tp1o=drawPanel(rightX,r3Y,rightW,trophyPanelH,'Trophies ('+tList.length+')');
+        tList.forEach((t,i)=>{drawTrophy(rightX+9+i*(trophyCellSize+trophyGap),r3Y+tp1o,trophyCellSize,t);});
+      }
+
+      // Draw Row 4: Banner Breakdown — fills remaining
+      const r4Y=r3Y+(tList.length>0?trophyPanelH:0)+gap;
+      const r4H=bottomY-r4Y;
+      if(r4H>60){
+        const bp1o=drawPanel(rightX,r4Y,rightW,r4H,'Convene Breakdown');
+        drawBannerRow(rightX+9,r4Y+bp1o,rightW-18,r4H-bp1o-6);
       }
 
       drawFooter(bx,bottomY,bw);
 
     } else {
-      // ═══ PORTRAIT 720x1280 — content-adaptive ═══
-      const gap=6;
+      // ═══ PORTRAIT 1080x1920 — content-adaptive ═══
+      const gap=9;
       const contentH=bottomY-Y;
 
-      // ── Top: Hero + Identity side by side ──
-      const heroW=Math.floor(bw*0.4);
-      const heroH=Math.floor(contentH*0.24);
+      // ── Top: Hero + Profile (with stats inside) side by side ──
+      const heroW=Math.floor(bw*0.38);
+      // Profile needs: panelPad(39) + name(30) + UID(24) + Server(24) + luck(27+18) + meta(18) + stats(2 rows * (51+8) - 8) = ~280
+      const pStatCellH=51,pPad=39;
+      const profileMinH=pPad+30+24+24+(lr?45:0)+18+(pStatCellH+8)*2-8+15;
+      const heroH=Math.max(Math.floor(contentH*0.22),profileMinH);
       drawHero(bx,Y,heroW,heroH);
 
       const ix=bx+heroW+gap,iw=bw-heroW-gap;
       const idOff=drawPanel(ix,Y,iw,heroH,'Profile');
-      ctx.fillStyle='#f1f5f9';ctx.font='bold 20px sans-serif';ctx.fillText(uname,ix+10,Y+idOff+14);
-      const uidLY=Y+idOff+32;
-      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('UID',ix+10,uidLY);
-      ctx.fillStyle='#e2e8f0';ctx.font='11px monospace';ctx.fillText(uid,ix+32,uidLY);
-      ctx.fillStyle='#9ca3af';ctx.font='9px sans-serif';ctx.fillText('Server',ix+10,uidLY+16);
-      ctx.fillStyle='#fbbf24';ctx.font='11px monospace';ctx.fillText(svr,ix+48,uidLY+16);
-      if(lr)drawLuck(ix+10,uidLY+34,iw-90);
-      const metaY2=uidLY+(lr?56:38);
-      ctx.fillStyle='#6b7280';ctx.font='8px sans-serif';
-      if(tList.length>0)ctx.fillText(tList.length+' Trophies',ix+10,metaY2);
-      if(impDate)ctx.fillText('Since '+impDate,ix+10+(tList.length>0?60:0),metaY2);
-      if(overallStats?.totalAstrite){
-        ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',ix+10,metaY2+12);
-      }
+      ctx.fillStyle='#f1f5f9';ctx.font='bold 33px sans-serif';ctx.fillText(uname,ix+15,Y+idOff+21);
+      const uidLY=Y+idOff+48;
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',ix+15,uidLY);
+      ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,ix+48,uidLY);
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',ix+15,uidLY+24);
+      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,ix+72,uidLY+24);
+      if(lr)drawLuck(ix+15,uidLY+51,iw-135);
+      const metaY2=uidLY+(lr?84:57);
+      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
+      let metaLine='';
+      if(tList.length>0)metaLine+=tList.length+' Trophies';
+      if(impDate)metaLine+=(metaLine?' · ':'')+impDate;
+      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString()+' Astrite';
+      if(metaLine)ctx.fillText(metaLine,ix+15,metaY2);
+      // Convene Stats inside profile panel
+      const pStatY=metaY2+30;
+      drawStats(ix+9,pStatY,iw-18,pStatCellH,22);
 
       Y+=heroH+gap;
 
       // Pre-calculate content heights for adaptive layout
-      const pStatCellH=34,pPad=26;
-      const pStatsH=pPad+(pStatCellH+5)*2-5+4;
-      const pCollH=pPad+32+4;
-      const pHistoH=96;
-      const pResTagH=28,pResTagGap=5,pResCols=4;
+      const pCollH=pPad+48+6;
+      const pHistoH=144;
+      const pResCols=8,pResGap2=6;
       const pResMax=Math.min(newestRes.length,24);
+      const pResCellW=(bw-18-(pResCols-1)*pResGap2)/pResCols,pResCellH=Math.round(pResCellW*1.6);
       const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
-      const pResContentH=pPad+pResRows*(pResTagH+pResTagGap)-pResTagGap+4+(newestRes.length>pResMax?14:0);
+      const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+6+(newestRes.length>pResMax?21:0);
+      const pTrophyCols=Math.max(tList.length,1),pTrophyGap=8;
+      const pTrophySize=Math.min(200,Math.floor((bw-18-(pTrophyCols-1)*pTrophyGap)/pTrophyCols));
+      const pTrophyPanelH=pPad+pTrophySize+6;
+      const pBannerH=pPad+80+6; // banner breakdown
 
-      const fixedH=pStatsH+gap+pCollH+gap+pHistoH+gap+pResContentH+gap;
-      const pTrophyH=bottomY-Y-fixedH;
-
-      // ── Stats — sized to content ──
-      const sp2o=drawPanel(bx,Y,bw,pStatsH,'Convene Stats');
-      drawStats(bx+6,Y+sp2o,bw-12,pStatCellH,15);
-      Y+=pStatsH+gap;
-
-      // ── Collection — sized to content ──
-      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
-      drawColl(bx+6,Y+cp2o,bw-12);
-      Y+=pCollH+gap;
-
-      // ── Histogram — sized to content ──
+      // ── Pity Distribution ──
       const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
-      if(hS){drawHisto(bx+6,Y+hp2o,bw-12,pHistoH-hp2o-8);
-        ctx.fillStyle='#4b5563';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+hS.lo+' | Avg '+hS.avg+' | High '+hS.hi,bx+bw-8,Y+pHistoH-3);ctx.textAlign='left';}
+      if(histSummary){drawHisto(bx+9,Y+hp2o,bw-18,pHistoH-hp2o-12);
+        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-12,Y+pHistoH-5);ctx.textAlign='left';}
       Y+=pHistoH+gap;
 
-      // ── Resonators — sized to content ──
+      // ── Collection ──
+      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
+      drawColl(bx+9,Y+cp2o,bw-18);
+      Y+=pCollH+gap;
+
+      // ── Resonators — fills width ──
       const rp2o=drawPanel(bx,Y,bw,pResContentH,'Resonators ('+newestRes.length+')');
-      drawResTags(bx+6,Y+rp2o,bw-12,pResCols,pResMax);
+      drawResTags(bx+9,Y+rp2o,bw-18,8,pResMax);
       Y+=pResContentH+gap;
 
-      // ── Trophies — fills ALL remaining space ──
-      if(tList.length>0&&pTrophyH>40){
-        const tp2o=drawPanel(bx,Y,bw,pTrophyH,'Trophies ('+tList.length+')');
-        const tCols=2,tGap=5;const tw=(bw-12-(tCols-1)*tGap)/tCols;
-        const maxTRows=Math.floor((pTrophyH-tp2o-4)/(50+tGap));
-        const maxT=Math.min(tList.length,maxTRows*tCols);
-        const showT2=tList.slice(0,maxT);
-        const tH2=Math.min(50,Math.floor((pTrophyH-tp2o-4-(Math.ceil(showT2.length/tCols)-1)*tGap)/Math.ceil(showT2.length/tCols)));
-        showT2.forEach((t,i)=>{drawTrophy(bx+6+(i%tCols)*(tw+tGap),Y+tp2o+Math.floor(i/tCols)*(tH2+tGap),tw,tH2,t);});
-        if(tList.length>maxT){ctx.fillStyle='#4b5563';ctx.font='8px sans-serif';ctx.fillText('+'+String(tList.length-maxT)+' more',bx+6,Y+pTrophyH-5);}
+      // ── Trophies — fixed height, centered ──
+      if(tList.length>0){
+        const tp2o=drawPanel(bx,Y,bw,pTrophyPanelH,'Trophies ('+tList.length+')');
+        tList.forEach((t,i)=>{drawTrophy(bx+9+i*(pTrophySize+pTrophyGap),Y+tp2o,pTrophySize,t);});
+        Y+=pTrophyPanelH+gap;
+      }
+
+      // ── Banner Breakdown — fills remaining ──
+      const pRemaining=bottomY-Y;
+      if(pRemaining>60){
+        const bp2o=drawPanel(bx,Y,bw,pRemaining,'Convene Breakdown');
+        drawBannerRow(bx+9,Y+bp2o,bw-18,pRemaining-bp2o-6);
       }
 
       drawFooter(bx,bottomY,bw);
     }
 
-    canvas.toBlob(blob=>{
-      if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
-      a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
-      a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
-    },'image/png');
+    try {
+      canvas.toBlob(blob=>{
+        if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
+        a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
+      },'image/png');
+    } catch (e) {
+      console.error('ID card export failed (possible CORS tainted canvas):', e);
+      toast?.addToast?.('Failed to save ID card — try a different profile image', 'error');
+    }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies]);
 
   // Daily income calculation
@@ -2044,7 +2477,7 @@ function WhisperingWishesInner() {
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
     const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
-    const goalDaysNeeded = dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity;
+    const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
     const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
     return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress };
   }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
@@ -2075,8 +2508,11 @@ function WhisperingWishesInner() {
       }
       return arr;
     };
+    // Rover is a free starter character — always count as obtained (minimum 1 copy)
+    const chars5 = countItems(charHistory, 5, true);
+    if (!chars5['Rover']) chars5['Rover'] = 1;
     return {
-      chars5Counts: countItems(charHistory, 5, true), chars4Counts: countItems(charHistory, 4, true),
+      chars5Counts: chars5, chars4Counts: countItems(charHistory, 4, true),
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
       weaps3Counts: countItems(weapHistory, 3, false), sortItems
     };
@@ -2149,7 +2585,7 @@ function WhisperingWishesInner() {
     } : null;
     
     return { allHist, fiveStars, pullLogFiveStars, totalObtained, histogramBuckets, allBucketLabels, histogramStats };
-  }, [state.profile]);
+  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
 
   // Shared import processor for both file and paste methods
   // Name normalization: maps game API / tracker names to internal names used in this app
@@ -2197,6 +2633,12 @@ function WhisperingWishesInner() {
         throw new Error('No valid pull entries found — check data format');
       }
       
+      // Auto-save pre-import backup (mirrors restore flow) so users can recover if import corrupts data
+      try {
+        const preImportBackup = JSON.stringify({ timestamp: new Date().toISOString(), version: APP_VERSION, state: stateRef.current, _preImport: true });
+        localStorage.setItem('whispering-wishes-pre-import-backup', preImportBackup);
+      } catch {} // best-effort — don't block import if backup fails
+
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
           const poolType = p.cardPoolType ?? p.gachaType;
@@ -2215,12 +2657,13 @@ function WhisperingWishesInner() {
         
         return filtered.map((p, i) => {
           pityCounter++;
-          const rarity = Number(p.rarity ?? p.qualityLevel) || 4;
+          const rawRarity = parseInt(p.rarity ?? p.qualityLevel, 10);
+          const rarity = (rawRarity >= 3 && rawRarity <= 5) ? rawRarity : 4; // validate range
           const rawName = (p.name || p.resourceName || '').trim();
           const name = IMPORT_NAME_ALIASES[rawName] || rawName;
-          
+
           let won5050 = undefined;
-          let pity = pityCounter;
+          let pity = Math.min(pityCounter, HARD_PITY); // clamp to valid range
           
           if (rarity === 5) {
             if (type === 'featured') {
@@ -2233,25 +2676,25 @@ function WhisperingWishesInner() {
                 lastWasLost = isStandard;
               }
             } else if (type === 'weapon') {
-              const isStandard = STANDARD_5STAR_WEAPONS.has(name);
-              if (lastWasLost) {
-                won5050 = null;
-                lastWasLost = false;
-              } else {
-                won5050 = !isStandard;
-                lastWasLost = isStandard;
-              }
+              // Weapon Event Convene has NO 50/50 — every 5★ is always the featured weapon.
+              // won5050 is always null (not applicable) for weapon event banners.
+              won5050 = null;
             }
             pityCounter = 0;
           }
           
-          return { 
-            id: p.id || `imp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}_${i}`, 
-            name, 
-            rarity, 
-            pity: rarity === 5 ? pity : 0, 
-            won5050, 
-            timestamp: p.timestamp || p.time,
+          // Ensure timestamp is always a valid ISO string
+          const rawTs = p.timestamp || p.time;
+          const tsMs = rawTs ? new Date(rawTs).getTime() : NaN;
+          const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
+
+          return {
+            id: p.id || `imp_${generateUniqueId()}_${i}`,
+            name,
+            rarity,
+            pity: rarity === 5 ? pity : 0,
+            won5050,
+            timestamp: safeTimestamp,
             resourceType: p.resourceType || p.type || null
           };
         });
@@ -2273,7 +2716,8 @@ function WhisperingWishesInner() {
           }
           const fiveStars = history.filter(p => p.rarity === 5);
           const lastFive = fiveStars[fiveStars.length - 1];
-          const guaranteed = (type === 'featured' || type === 'weapon') && lastFive?.won5050 === false;
+          // Weapon Event Convene has no 50/50 — guaranteed is only relevant for character banners
+          const guaranteed = type === 'featured' && lastFive?.won5050 === false;
           dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
           totalImported += history.length;
         }
@@ -2290,13 +2734,13 @@ function WhisperingWishesInner() {
       if (sc + sw) parts.push(`${sc + sw} std`);
       if (bc) parts.push(`${bc} beg`);
       
-      toast?.addToast?.(`Imported ${totalImported} pulls! (${parts.join(', ')})`, 'success');
+      toast?.addToast?.(`Imported ${totalImported} Convenes! (${parts.join(', ')})`, 'success');
       
       // P12-FIX: Check storage capacity after import (Step 14 audit — LOW-10a)
       if (storageAvailable) {
         try {
           const currentSize = (localStorage.getItem(STORAGE_KEY) || '').length;
-          if (currentSize > 3.5 * 1024 * 1024) {
+          if (currentSize > STORAGE_WARNING_THRESHOLD) {
             toast?.addToast?.(`Storage at ${(currentSize / 1024 / 1024).toFixed(1)}MB of ~5MB. Consider exporting a backup.`, 'warning');
           }
         } catch {}
@@ -2318,13 +2762,19 @@ function WhisperingWishesInner() {
       e.target.value = '';
       return;
     }
+    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
     reader.onload = (ev) => {
       processImportData(ev.target.result);
+      setImportStatus(null);
+    };
+    reader.onerror = () => {
+      toast?.addToast?.('Failed to read file', 'error');
+      setImportStatus(null);
     };
     reader.readAsText(file);
     e.target.value = '';
-  }, [processImportData]);
+  }, [processImportData, toast]);
 
   // P8-FIX: MED — Drag-and-drop handler for file upload area
   const handleFileDrop = useCallback((e) => {
@@ -2342,8 +2792,10 @@ function WhisperingWishesInner() {
       toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
       return;
     }
+    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
-    reader.onload = (ev) => { processImportData(ev.target.result); };
+    reader.onload = (ev) => { processImportData(ev.target.result); setImportStatus(null); };
+    reader.onerror = () => { setImportStatus(null); };
     reader.readAsText(file);
   }, [processImportData, toast]);
 
@@ -2358,9 +2810,14 @@ function WhisperingWishesInner() {
     }
   }, [pasteJsonText, processImportData, toast]);
 
-  // Export data
+  // Export data — includes main state + auxiliary localStorage settings for full round-trip
   const handleExport = useCallback(() => {
-    const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state };
+    const aux = {};
+    try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+    const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state, ...(Object.keys(aux).length > 0 ? { aux } : {}) };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
@@ -2405,7 +2862,7 @@ function WhisperingWishesInner() {
       adminTapTimerRef.current = setTimeout(() => {
         adminTapCountRef.current = 0;
         setAdminTapCount(0);
-      }, 1500);
+      }, ADMIN_TAP_TIMEOUT_MS);
     }
   }, [toast]);
 
@@ -2425,11 +2882,38 @@ function WhisperingWishesInner() {
     }
   }, [toast]);
 
-  // Hash a password using SHA-256
-  const hashPassword = useCallback(async (password) => {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  // P13-FIX: CRITICAL-2 — Upgraded from plain SHA-256 to PBKDF2 with 100k iterations.
+  // SHA-256 is ~10B hashes/sec on GPU; PBKDF2-100k reduces throughput to ~100k/sec, making
+  // brute-force of passwords < 12 chars significantly harder (minutes → months).
+  // For true security, admin auth should move to a backend service with Argon2.
+  const hashPasswordPBKDF2 = useCallback(async (password, salt) => {
+    try {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+      const derivedBits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+        keyMaterial, 256
+      );
+      return Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle PBKDF2 unavailable:', e);
+      return null;
+    }
   }, []);
+  // Legacy SHA-256 hasher — kept for backward compatibility with existing ADMIN_HASH
+  const hashPasswordSHA256 = useCallback(async (password, salt = '') => {
+    try {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle unavailable (requires HTTPS):', e);
+      return null;
+    }
+  }, []);
+
+  // P13-FIX: HIGH-4 — Session-based lockout tracking (survives localStorage clearing / incognito)
+  const adminSessionFailsRef = useRef(0);
+  const adminSessionLockUntilRef = useRef(0);
 
   // Verify admin password (with failed attempt tracking → 5-min admin-only cooldown)
   const verifyAdminPassword = useCallback(async () => {
@@ -2437,42 +2921,72 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Password must be at least 4 characters', 'error');
       return;
     }
-    
-    // Check if admin is currently locked out
+
+    // P13-FIX: HIGH-4 — Check BOTH session-based and localStorage lockout (cannot bypass either)
+    const now = Date.now();
+    if (adminSessionLockUntilRef.current > now) {
+      const remaining = Math.ceil((adminSessionLockUntilRef.current - now) / 60000);
+      toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+      return;
+    }
     try {
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
-      if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
-        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - Date.now()) / 60000);
+      if (lockoutUntil && now < parseInt(lockoutUntil, 10)) {
+        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - now) / 60000);
         toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
         return;
       }
     } catch {}
-    
-    const hashedInput = await hashPassword(adminPassword);
-    if (hashedInput === ADMIN_HASH) {
+
+    // P13-FIX: CRITICAL-2 — Try PBKDF2 first, fall back to legacy SHA-256 for existing hash
+    const pbkdf2Hash = await hashPasswordPBKDF2(adminPassword, ADMIN_SALT);
+    const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
+    const legacyHash = await hashPasswordSHA256(adminPassword);
+    if (!saltedHash && !legacyHash && !pbkdf2Hash) {
+      toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
+      return;
+    }
+    // Constant-time comparison to prevent timing attacks on admin hash
+    const safeCompare = (a, b) => { if (!a || !b || a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; };
+    if (safeCompare(pbkdf2Hash, ADMIN_HASH) || safeCompare(saltedHash, ADMIN_HASH) || safeCompare(legacyHash, ADMIN_HASH)) {
       setAdminUnlocked(true);
+      setAdminPassword(''); // Clear plaintext password from React state after successful auth
+      adminSessionFailsRef.current = 0;
       setBannerForm(buildBannerForm(activeBanners));
       try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
     } else {
-      // Wrong password — increment fails, lock admin after 5 attempts for 5 minutes
+      // Wrong password — increment fails in BOTH session ref and localStorage
+      adminSessionFailsRef.current += 1;
+      const sessionFails = adminSessionFailsRef.current;
       try {
-        const fails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1; // P10-FIX: Radix was passed to getItem instead of parseInt (Step 6 audit)
-        localStorage.setItem('ww-admin-fails', fails.toString());
-        if (fails >= 5) {
-          const lockoutTime = Date.now() + (5 * 60 * 1000); // 5 minutes
+        const storageFails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1;
+        localStorage.setItem('ww-admin-fails', storageFails.toString());
+        // Lock if EITHER tracker exceeds limit
+        const totalFails = Math.max(sessionFails, storageFails);
+        if (totalFails >= MAX_ADMIN_ATTEMPTS) {
+          const lockoutTime = now + ADMIN_LOCKOUT_MS;
+          adminSessionLockUntilRef.current = lockoutTime;
           localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
           setAdminLockedUntil(lockoutTime);
           setShowAdminPanel(false);
           setAdminPassword('');
           toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
         } else {
-          toast?.addToast?.(`Incorrect password (${5 - fails} attempts remaining)`, 'error');
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - totalFails} attempts remaining)`, 'error');
         }
       } catch {
-        toast?.addToast?.('Incorrect password', 'error');
+        // localStorage unavailable — use session tracking only
+        if (sessionFails >= MAX_ADMIN_ATTEMPTS) {
+          adminSessionLockUntilRef.current = now + ADMIN_LOCKOUT_MS;
+          setShowAdminPanel(false);
+          setAdminPassword('');
+          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+        } else {
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - sessionFails} attempts remaining)`, 'error');
+        }
       }
     }
-  }, [adminPassword, toast, hashPassword]);
+  }, [adminPassword, toast, hashPasswordPBKDF2, hashPasswordSHA256]);
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
@@ -2498,38 +3012,43 @@ function WhisperingWishesInner() {
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
                 <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform">
-                  <img src={HEADER_ICON} alt="WW" className="w-full h-full object-cover" />
+                  <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
               </div>
               <div>
                 <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves Companion</p>
+                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-2 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
             </div>
           </div>
           <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
-              const tabs = ['tracker','events','calculator','planner','analytics','gathering','profile'];
+              const tabs = ['tracker','events','calculator','planner','analytics','gathering','teams','profile'];
               const idx = tabs.indexOf(activeTab);
-              if (e.key === 'ArrowRight') { e.preventDefault(); setActiveTab(tabs[(idx + 1) % tabs.length]); }
-              else if (e.key === 'ArrowLeft') { e.preventDefault(); setActiveTab(tabs[(idx - 1 + tabs.length) % tabs.length]); }
+              let newTab;
+              if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
+              else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
+              if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), FOCUS_DELAY_MS); }
             }}>
             <div className="tab-indicator" />
-            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker"><Sparkles size={16} /> Tracker</TabButton>
-            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events"><Calendar size={16} /> Events</TabButton>
-            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator"><Calculator size={16} /> Calc</TabButton>
-            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner"><TrendingUp size={16} /> Plan</TabButton>
-            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics"><BarChart3 size={16} /> Stats</TabButton>
-            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering"><Archive size={16} /> Collection</TabButton>
-            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={16} /> Profile</TabButton>
+            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker"><Sparkles size={18} /> Tracker</TabButton>
+            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events"><Calendar size={18} /> Events</TabButton>
+            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator"><Calculator size={18} /> Calc</TabButton>
+            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner"><TrendingUp size={18} /> Plan</TabButton>
+            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics"><BarChart3 size={18} /> Stats</TabButton>
+            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering"><Archive size={18} /> Collection</TabButton>
+            <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams"><Users size={18} /> Teams</TabButton>
+            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={18} /> Profile</TabButton>
           </nav>
+          {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
+          {visualSettings.swipeNavigation && <div className="text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
         </div>
       </header>
 
@@ -2545,8 +3064,15 @@ function WhisperingWishesInner() {
             {/* Category Tabs */}
             <Card>
               <CardBody>
-                <div className="flex gap-2" role="tablist" aria-label="Banner category">
-                  {[['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']].map(([key, label, color]) => (
+                <div className="flex gap-2" role="tablist" aria-label="Banner category" onKeyDown={(e) => {
+                    const keys = TRACKER_CATEGORIES.map(c => c[0]);
+                    const idx = keys.indexOf(trackerCategory);
+                    let next;
+                    if (e.key === 'ArrowRight') { e.preventDefault(); next = keys[(idx + 1) % keys.length]; }
+                    else if (e.key === 'ArrowLeft') { e.preventDefault(); next = keys[(idx - 1 + keys.length) % keys.length]; }
+                    if (next) { setTrackerCategory(next); const el = e.currentTarget; setTimeout(() => el.children[keys.indexOf(next)]?.focus(), FOCUS_DELAY_MS); }
+                  }}>
+                  {TRACKER_CATEGORIES.map(([key, label, color]) => (
                     <button key={key} onClick={() => setTrackerCategory(key)} role="tab" aria-selected={trackerCategory === key} tabIndex={trackerCategory === key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
                       {key === 'character' ? <Crown size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
                       {label}
@@ -2641,7 +3167,7 @@ function WhisperingWishesInner() {
                     <div key={`bh-${b.version}-${b.phase}`} className="p-2 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-white text-xs font-medium">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-500 text-[9px]">{b.startDate}</span>
+                        <span className="text-gray-400 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {b.characters.map(c => (
@@ -2799,7 +3325,7 @@ function WhisperingWishesInner() {
                       label="Featured Resonator" pity={state.calc.charPity} onPityChange={v => setCalc('charPity', v)}
                       copies={state.calc.charCopies} maxCopies={7} onCopiesChange={v => setCalc('charCopies', v)}
                       fourStarCopies={state.calc.char4StarCopies} maxFourStar={21} onFourStarChange={v => setCalc('char4StarCopies', v)}
-                      color="#fbbf24" softColor="#fb923c" softGlow="rgba(251,146,60,0.5)" sliderClass="" softPityClass="kuro-soft-pity" SoftPityIcon={Sparkles} ariaPrefix="Featured Resonator"
+                      color="#edaf18" softColor="#fb923c" softGlow="rgba(251,146,60,0.5)" sliderClass="" softPityClass="kuro-soft-pity" SoftPityIcon={Sparkles} ariaPrefix="Featured Resonator"
                     />
                   )}
 
@@ -2844,10 +3370,11 @@ function WhisperingWishesInner() {
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Astrite amount" />
                     <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL)} Convenes{Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL) > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS})</span> : ''}</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[[ASTRITE_PER_PULL,'1 pull'], [ASTRITE_PER_PULL*5,'5 pulls'], [ASTRITE_PER_PULL*10,'10 pulls'], [ASTRITE_PER_PULL*20,'20 pulls']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt} astrite (${tip})`}>+{amt}<span className="text-yellow-600 ml-0.5 text-[9px]">({tip.split(' ')[0]})</span></button>
+                      {/* AUDIT-FIX M32+L20: Use "Convene(s)" consistently, capitalize Astrite */}
+                      {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt} Astrite (${tip})`}>+{amt}<span className="text-yellow-600 ml-0.5 text-[9px]">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear astrite">Clear</button>
+                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
                     </div>
                   </div>
 
@@ -2857,10 +3384,10 @@ function WhisperingWishesInner() {
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-xs mb-1.5 block font-medium text-yellow-400">Radiant Tides</label>
-                          <input type="number" min="0" value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, +e.target.value || 0))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
+                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String((+state.calc.radiant || 0) + amt))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -2868,10 +3395,10 @@ function WhisperingWishesInner() {
                       {(state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-xs mb-1.5 block font-medium text-pink-400">Forging Tides</label>
-                          <input type="number" min="0" value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, +e.target.value || 0))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
+                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String((+state.calc.forging || 0) + amt))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -2883,10 +3410,10 @@ function WhisperingWishesInner() {
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
                       <label className="text-xs mb-1.5 block font-medium text-cyan-400">Lustrous Tides</label>
-                      <input type="number" min="0" value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, +e.target.value || 0))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
+                      <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String((+state.calc.lustrous || 0) + amt))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
                         ))}
                       </div>
                     </div>
@@ -2901,20 +3428,20 @@ function WhisperingWishesInner() {
                       <div className="kuro-label">Astrite Priority{state.calc.bannerCategory === 'standard' ? ' (Standard)' : ''}</div>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
-                          <Swords size={12} style={{ color: currentPriority <= 50 ? '#f472b6' : '#6b7280' }} />
-                          <span className="text-xs font-medium" style={{ color: currentPriority <= 50 ? '#f472b6' : '#6b7280' }}>Weapon {100 - currentPriority}%</span>
+                          <Crown size={12} style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }} />
+                          <span className="text-xs font-medium" style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }}>Resonator {currentPriority}%</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-medium" style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }}>Resonator {currentPriority}%</span>
-                          <Crown size={12} style={{ color: currentPriority >= 50 ? '#fbbf24' : '#6b7280' }} />
+                          <span className="text-xs font-medium" style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }}>Weapon {100 - currentPriority}%</span>
+                          <Swords size={12} style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }} />
                         </div>
                       </div>
-                      <input 
-                        type="range" min="0" max="100" step="10" value={currentPriority} 
-                        onChange={e => setCalc(priorityKey, +e.target.value)} 
-                        className="kuro-slider w-full" 
+                      <input
+                        type="range" min="0" max="100" step="10" value={currentPriority}
+                        onChange={e => setCalc(priorityKey, +e.target.value)}
+                        className="kuro-slider priority-slider w-full"
                         aria-label={`Astrite allocation: ${currentPriority}% Resonator, ${100 - currentPriority}% Weapon`}
-                        style={{ background: `linear-gradient(to right, #f472b6 0%, #f472b6 ${100 - currentPriority}%, #444 ${100 - currentPriority}%, #444 ${currentPriority}%, #fbbf24 ${currentPriority}%, #fbbf24 100%)` }}
+                        style={{ background: `linear-gradient(to right, #edaf18 0%, #edaf18 ${currentPriority}%, #ec4899 ${currentPriority}%, #ec4899 100%)` }}
                       />
                       {currentPriority !== 50 && (
                         <button 
@@ -2935,28 +3462,28 @@ function WhisperingWishesInner() {
                         <div className="text-center">
                           <div className="text-yellow-400 kuro-number text-xl">{charPulls}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-pink-400 kuro-number text-xl">{weapPulls}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-500 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -2964,7 +3491,8 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Results Cards */}
+            {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
+            <div aria-live="polite" aria-atomic="false">
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
               <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}
@@ -2980,6 +3508,7 @@ function WhisperingWishesInner() {
             {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
               <CalcResultsCard title="Standard Weapon Results" stats={stdWeapStats} accentStatClass="kuro-stat-cyan" copies={state.calc.stdWeapCopies} isFeatured={false} />
             )}
+            </div>
 
             {/* Combined Analysis */}
             {state.calc.selectedBanner === 'both' && combined && (
@@ -3055,7 +3584,7 @@ function WhisperingWishesInner() {
             </Card>
 
             <Card>
-              <div className="cursor-pointer" onClick={() => setShowIncomePanel(!showIncomePanel)}>
+              <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
                 <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
               </div>
               {showIncomePanel && (
@@ -3064,19 +3593,20 @@ function WhisperingWishesInner() {
                   <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={`Lunite Subscription: ${state.planner.luniteActive ? 'active' : 'inactive'}`} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
-                        <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : 'bg-neutral-700'}`}>
+                        <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
                           {state.planner.luniteActive && <Check size={10} />}
                         </span>
                         <div>
                           <div className={`text-xs font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
-                          <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Ast/day × {SUBSCRIPTIONS.lunite.duration}d</div>
+                          <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d</div>
                         </div>
                       </div>
                       <span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.lunite.price}/mo</span>
                     </div>
                   </button>
                   {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}
-                  <button onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } })} className="kuro-btn w-full text-left">
+                  {/* AUDIT-FIX L22: Toast feedback for purchases */}
+                  <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
                     <div className="flex items-center justify-between w-full">
                       <div>
                         <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
@@ -3086,7 +3616,7 @@ function WhisperingWishesInner() {
                     </div>
                   </button>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div>
                           <div className="text-gray-200 text-xs font-medium">{s.name}</div>
@@ -3098,7 +3628,7 @@ function WhisperingWishesInner() {
                   ))}
                   <div className="kuro-label mt-3">Direct Top-Ups</div>
                   {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-                    <button key={k} onClick={() => dispatch({ type: 'ADD_INCOME', income: { id: `inc_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } })} className="kuro-btn w-full text-left">
+                    <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                       <div className="flex items-center justify-between w-full">
                         <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
                         <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
@@ -3111,7 +3641,8 @@ function WhisperingWishesInner() {
 
             {state.planner.addedIncome.length > 0 && (
               <Card>
-                <CardHeader action={<button onClick={() => dispatch({ type: 'CLEAR_ALL_INCOME' })} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
+                {/* AUDIT-FIX H6: Confirm before clearing all purchases */}
+                <CardHeader action={<button onClick={() => { if (window.confirm('Remove all added purchases?')) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
                     <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
@@ -3120,7 +3651,8 @@ function WhisperingWishesInner() {
                         <span className="text-yellow-400">+{i.astrite}</span>
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
-                        <button onClick={() => dispatch({ type: 'REMOVE_INCOME', id: i.id })} className="text-red-400" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                        {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
+                        <button onClick={() => { if (window.confirm(`Remove "${i.label}"?`)) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -3146,15 +3678,15 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Total Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
-                      <div className="text-white kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
+                      <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Earned Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
-                      <div className="text-white kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
+                      <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
                       <div className="text-gray-400 text-[9px]">Total Astrite</div>
                     </div>
                   </div>
-                  <div className="text-gray-500 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+                  <div className="text-gray-400 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
                 </CardBody>
               </Card>
             )}
@@ -3168,7 +3700,7 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
                       <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Convenes</div>
-                      <div className="text-gray-500 text-[9px]">{(dailyIncome * days).toLocaleString()} Ast</div>
+                      <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
                     </div>
                   ))}
                 </div>
@@ -3205,12 +3737,12 @@ function WhisperingWishesInner() {
                 <div className="p-2 bg-white/5 rounded text-[10px] text-gray-400 text-center">
                   Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
                 </div>
-                <div className="p-3 bg-white/5 rounded-lg">
+                <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-400">Target</span>
-                    <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Ast)</span>
+                    <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Astrite)</span>
                   </div>
-                  <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }} role="progressbar" aria-valuenow={planData.goalProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Goal progress: ${planData.goalProgress.toFixed(1)}%`}>
                     <div className={`h-full transition-all ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
                   </div>
                   <div className="flex justify-between text-[10px] mt-1">
@@ -3237,25 +3769,27 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {state.bookmarks.length > 0 && (
-              <Card>
-                <CardHeader>Saved States</CardHeader>
-                <CardBody className="space-y-2">
-                  {state.bookmarks.map(b => (
-                    <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                      <div>
-                        <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                        <div className="text-gray-400 text-[10px]">{b.astrite} Ast • P{b.charPity}/{b.weapPity}</div>
-                      </div>
-                      <div className="flex gap-1">
-                        <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[36px]">Load</button>
-                        <button onClick={() => dispatch({ type: 'DELETE_BOOKMARK', id: b.id })} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[36px]">×</button>
-                      </div>
+            {/* AUDIT-FIX M21: Always show Saved States card with empty state message */}
+            <Card>
+              <CardHeader>Saved States</CardHeader>
+              <CardBody className="space-y-2">
+                {state.bookmarks.length === 0 ? (
+                  <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No states archived. Use Save Current State in the Calculator to bookmark your configuration.</p>
+                ) : state.bookmarks.map(b => (
+                  <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                    <div>
+                      <div className="text-gray-200 text-xs font-medium">{b.name}</div>
+                      <div className="text-gray-400 text-[10px]">{b.astrite} Astrite • P{b.charPity}/{b.weapPity}</div>
                     </div>
-                  ))}
-                </CardBody>
-              </Card>
-            )}
+                    <div className="flex gap-1">
+                      <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">Load</button>
+                      {/* AUDIT-FIX H6: Confirm before deleting bookmark */}
+                      <button onClick={() => { if (window.confirm(`Delete bookmark "${b.name}"?`)) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
+                    </div>
+                  </div>
+                ))}
+              </CardBody>
+            </Card>
           </div>
           </TabErrorBoundary>
           </div>
@@ -3271,9 +3805,10 @@ function WhisperingWishesInner() {
             {!overallStats ? (
               <Card>
                 <CardBody className="text-center py-8">
-                  <BarChart3 size={32} className="mx-auto mb-2 text-gray-500" />
-                  <p className="text-gray-400 text-sm">No data to analyze</p>
-                  <p className="text-gray-500 text-xs mt-1">Import your Convene history in Profile tab</p>
+                  <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
+                  <p className="text-gray-300 text-sm font-medium">Awaiting signal data</p>
+                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and pull analytics.</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
             ) : (
@@ -3286,8 +3821,8 @@ function WhisperingWishesInner() {
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
-                            <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color}}>{luckRating.tier}</div>
-                            <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`}}>{luckRating.rating}</div>
+                            <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-display)'}}>{luckRating.tier}</div>
+                            <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 space-y-2">
@@ -3295,12 +3830,12 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400 text-[10px]">Percentile</span>
                             <span className="text-white font-bold text-sm">Top {Math.max(1, 100 - luckRating.percentile)}%</span>
                           </div>
-                          <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
+                          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                             <div className="h-full rounded-full transition-all" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
                           </div>
                           <div className="flex items-baseline justify-between">
                             <span className="text-gray-400 text-[10px]">Avg Pity</span>
-                            <span className="text-gray-200 text-xs font-medium">{overallStats.avgPity}</span>
+                            <span className="text-gray-200 text-xs font-medium">{overallStats?.avgPity}</span>
                           </div>
                           <p className="text-[9px] text-center" style={{color: `${luckRating.color}90`}}>
                             {luckRating.percentile >= 80 ? `Luckier than ${luckRating.percentile}% of players — incredible!`
@@ -3308,15 +3843,39 @@ function WhisperingWishesInner() {
                               : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
+                          {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
+                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>
                   </Card>
                 )}
                 
+                {/* P13-FIX: MEDIUM-4 — Accessible consent modal (replaces window.confirm) */}
+                {showConsentModal && (
+                  <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Leaderboard consent">
+                    <div className="kuro-card w-full max-w-sm p-5 space-y-4">
+                      <h3 className="text-white font-bold text-sm">Leaderboard — Data Sharing Notice</h3>
+                      <div className="text-gray-300 text-xs space-y-2">
+                        <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
+                        <ul className="list-disc pl-4 space-y-1 text-gray-400">
+                          <li>Your player ID (<span className="text-cyan-400 font-mono">{effectiveLeaderboardId}</span>)</li>
+                          <li>Average pity, total Convenes, 50/50 win/loss stats</li>
+                          <li>Your owned 5★ characters and weapons</li>
+                        </ul>
+                        <p className="text-gray-500">This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).</p>
+                      </div>
+                      <div className="flex gap-3 pt-1">
+                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-white/5 hover:bg-white/10 text-gray-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
+                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Luck Leaderboard Modal */}
                 {showLeaderboard && (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
+                  <div ref={leaderboardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-busy={leaderboardLoading} aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
                     <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
                       <div className="p-4 pb-2 border-b border-white/10">
                         <div className="flex items-center justify-between mb-3">
@@ -3333,7 +3892,7 @@ function WhisperingWishesInner() {
                             Rankings
                           </button>
                           <button onClick={() => setLeaderboardTab('popular')} role="tab" aria-selected={leaderboardTab === 'popular'} className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'popular' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
-                            Most Pulled
+                            Most Convened
                           </button>
                         </div>
                       </div>
@@ -3341,18 +3900,27 @@ function WhisperingWishesInner() {
                         {leaderboardTab === 'rankings' ? (
                           <>
                             {leaderboardLoading ? (
-                              <div className="text-center py-8">
-                                <div className="text-gray-400 text-sm">Loading...</div>
+                              <div className="space-y-2 py-2" aria-label="Loading leaderboard">
+                                {[...Array(6)].map((_, i) => (
+                                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
+                                    <div className="kuro-skeleton kuro-skeleton-circle w-7 h-7 flex-shrink-0" />
+                                    <div className="flex-1 space-y-1.5">
+                                      <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
+                                      <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
+                                    </div>
+                                    <div className="kuro-skeleton kuro-skeleton-text w-10 h-4 flex-shrink-0" />
+                                  </div>
+                                ))}
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">No entries yet</div>
-                                <div className="text-gray-500 text-[10px]">Be the first to submit!</div>
+                                <div className="text-gray-500 text-sm mb-2">No signals received</div>
+                                <div className="text-gray-500 text-[10px]">Be the first to transmit</div>
                               </div>
                             ) : (
                               leaderboardData.map((entry, i) => {
-                                const isYou = entry.id === effectiveLeaderboardId || 
-                                  (entry.uid && entry.uid === state.profile.uid) ||
+                                const isYou = entry.id === effectiveLeaderboardId ||
+                                  (entry.uid && hashedProfileUid && entry.uid === hashedProfileUid) ||
                                   (!entry.uid && overallStats?.avgPity && entry.avgPity === parseFloat(overallStats.avgPity) && entry.totalPulls === (overallStats.totalPulls ?? 0) && entry.pulls === (overallStats.fiveStars ?? 0));
                                 return (
                                   <div 
@@ -3383,7 +3951,7 @@ function WhisperingWishesInner() {
                                       <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
                                         {entry.avgPity.toFixed(1)}
                                       </div>
-                                      <div className="text-[9px] text-gray-500">avg pity</div>
+                                      <div className="text-[9px] text-gray-400">avg pity</div>
                                     </div>
                                   </div>
                                 );
@@ -3393,13 +3961,23 @@ function WhisperingWishesInner() {
                         ) : (
                           <>
                             {!communityPulls ? (
-                              <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">No data yet</div>
-                                <div className="text-gray-500 text-[10px]">Submit your score to contribute!</div>
+                              <div className="space-y-1.5 py-2" aria-label="Loading community data">
+                                <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '40%' }} />
+                                <div className="kuro-skeleton kuro-skeleton-text w-24 mb-1.5" style={{ height: '8px' }} />
+                                {[...Array(5)].map((_, i) => (
+                                  <div key={i} className="flex items-center gap-2.5 py-1.5">
+                                    <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
+                                    <div className="kuro-skeleton w-7 h-7 rounded-md flex-shrink-0" />
+                                    <div className="flex-1 space-y-1">
+                                      <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
+                                      <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             ) : (
                               <>
-                                <p className="text-gray-500 text-[9px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
+                                <p className="text-gray-400 text-[9px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
                                 {communityPulls.chars.length > 0 && (
                                   <>
                                     <p className="text-[10px] text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
@@ -3409,13 +3987,13 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
                                               <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
-                                            <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
+                                            <div className="h-1 rounded-full mt-0.5 overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                                               <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
                                             </div>
                                           </div>
@@ -3433,13 +4011,13 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt="" className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
                                               <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
-                                            <div className="h-1 bg-neutral-800 rounded-full mt-0.5 overflow-hidden">
+                                            <div className="h-1 rounded-full mt-0.5 overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                                               <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
                                             </div>
                                           </div>
@@ -3458,25 +4036,25 @@ function WhisperingWishesInner() {
                         <div className="px-4 py-3 border-t border-white/10 space-y-2">
                           <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                             <BarChart3 size={10} /> Community Stats
-                            <span className="text-gray-600 font-normal">• {communityStats.totalPlayers} players</span>
+                            <span className="text-gray-500 font-normal">• {communityStats.totalPlayers} players</span>
                           </p>
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-yellow-400 font-bold text-xs">{communityStats.avgPityAll}</div>
-                              <div className="text-gray-500 text-[9px]">Global Avg Pity</div>
+                              <div className="text-gray-400 text-[9px]">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate ?? '—'}%</div>
-                              <div className="text-gray-500 text-[9px]">50/50 Win Rate</div>
+                              <div className="text-gray-400 text-[9px]">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-cyan-400 font-bold text-xs">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-500 text-[9px]">Total 5★</div>
+                              <div className="text-gray-400 text-[9px]">Total 5★</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
                             <div className="flex justify-between text-[9px]">
-                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total pulls tracked</span>
+                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
@@ -3489,22 +4067,22 @@ function WhisperingWishesInner() {
                         </div>
                       )}
                       <div className="p-4 border-t border-white/10 space-y-2">
-                        {effectiveLeaderboardId && overallStats?.avgPity && (
+                        {effectiveLeaderboardId && overallStats?.avgPity && overallStats.avgPity !== '—' ? (
                           <>
                             <div className="flex items-center justify-between text-[10px]">
-                              <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-600 ml-1">(UID)</span>}</span>
+                              <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-500 ml-1">(UID)</span>}</span>
                               <span className="text-gray-400">Your Avg: <span className="text-white font-bold">{overallStats.avgPity}</span></span>
                             </div>
                             <button
                               onClick={submitToLeaderboard}
-                              className="w-full kuro-btn active-cyan py-2 text-xs font-medium"
+                              disabled={leaderboardSubmitting}
+                              className={`w-full kuro-btn active-cyan py-2 text-xs font-medium ${leaderboardSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              Submit My Score
+                              {leaderboardSubmitting ? 'Submitting…' : 'Submit My Score'}
                             </button>
-                            <p className="text-gray-500 text-[9px] text-center">Pseudonymous • Your ID, avg pity & pull stats are shared publicly on the leaderboard</p>
+                            <p className="text-gray-400 text-[9px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
-                        )}
-                        {!overallStats?.avgPity && (
+                        ) : (
                           <p className="text-gray-500 text-[10px] text-center">Import convene history to participate</p>
                         )}
                       </div>
@@ -3526,10 +4104,12 @@ function WhisperingWishesInner() {
                         {trophies.list.map(trophy => {
                           const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                           return (
-                            <div 
-                              key={trophy.id} 
+                            <div
+                              key={trophy.id}
                               className="relative p-2.5 rounded-lg text-center transition-all active:scale-95 cursor-pointer"
+                              role="button" tabIndex={0} aria-label={`Trophy: ${trophy.name}`}
                               onClick={(e) => { e.stopPropagation(); setSelectedTrophy(trophy.id); }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTrophy(trophy.id); } }}
                               style={{
                                 background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`,
                                 border: `1px solid ${trophy.color}50`,
@@ -3557,7 +4137,8 @@ function WhisperingWishesInner() {
                         if (!t) return null;
                         const Icon = TROPHY_ICON_MAP[t.icon] || Star;
                         return (
-                          <div 
+                          <div
+                            ref={trophyTrapRef}
                             className="fixed inset-0 z-[100] flex items-center justify-center p-4"
                             onClick={() => setSelectedTrophy(null)}
                             onKeyDown={(e) => { if (e.key === 'Escape') setSelectedTrophy(null); }}
@@ -3589,7 +4170,7 @@ function WhisperingWishesInner() {
                               </div>
                               <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
                               <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-[9px] text-gray-500">tap outside or ✕ to close</div>
+                              <div className="mt-3 text-[9px] text-gray-400">tap outside or ✕ to close</div>
                             </div>
                           </div>
                         );
@@ -3619,23 +4200,24 @@ function WhisperingWishesInner() {
                   
                   // Color coding
                   const getBarColor = (label) => {
-                    const start = parseInt(label.split('-', 10)[0]);
+                    const start = parseInt(label.split('-')[0], 10);
                     if (start <= 20) return '#22c55e'; // Green - very lucky
                     if (start <= 40) return '#84cc16'; // Lime - lucky
-                    if (start <= 50) return '#fbbf24'; // Yellow - average
+                    if (start <= 50) return '#edaf18'; // Yellow - average
                     if (start <= 60) return '#f97316'; // Orange - unlucky
                     return '#ef4444'; // Red - soft pity / hard pity
                   };
                   
                   return (
                     <Card>
-                      <CardHeader action={<span className="text-gray-500 text-[10px]">{fiveStars.length} pulls</span>}>
+                      {/* AUDIT-FIX M32: Use "Convenes" consistently */}
+                      <CardHeader action={<span className="text-gray-500 text-[10px]">{fiveStars.length} Convenes</span>}>
                         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
                       </CardHeader>
                       <CardBody>
                         {/* Screen reader accessible summary */}
                         <div className="sr-only">
-                          Pity distribution: {allBuckets.map(label => `${label} pulls: ${buckets[label] || 0}`).join(', ')}. 
+                          Pity distribution: {allBuckets.map(label => `${label} Convenes: ${buckets[label] || 0}`).join(', ')}.
                           Average pity: {avgPity}, range: {minPity} to {maxPity}.
                         </div>
                         {/* Histogram bars - neon glow style */}
@@ -3650,11 +4232,12 @@ function WhisperingWishesInner() {
                                   {count > 0 && (
                                     <div 
                                       className="absolute left-0 right-0 text-[9px] text-center font-bold"
-                                      style={{ 
-                                        bottom: `${height}%`, 
+                                      style={{
+                                        bottom: `${height}%`,
                                         marginBottom: '4px',
                                         color: color,
-                                        textShadow: `0 0 8px ${color}`
+                                        textShadow: `0 0 8px ${color}`,
+                                        fontFamily: 'var(--font-data)'
                                       }}
                                     >
                                       {count}
@@ -3691,7 +4274,7 @@ function WhisperingWishesInner() {
                         {/* X-axis labels */}
                         <div className="flex gap-1.5">
                           {allBuckets.map(label => (
-                            <div key={label} className="flex-1 text-[9px] text-gray-500 text-center">
+                            <div key={label} className="flex-1 text-[9px] text-gray-400 text-center">
                               {label.split('-')[0]}
                             </div>
                           ))}
@@ -3700,16 +4283,16 @@ function WhisperingWishesInner() {
                         {/* Stats summary */}
                         <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
                           <div>
-                            <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{minPity}</div>
-                            <div className="text-gray-500 text-[9px]">Lowest</div>
+                            <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)', fontFamily: 'var(--font-data)' }}>{minPity}</div>
+                            <div className="text-gray-400 text-[9px]">Lowest</div>
                           </div>
                           <div>
-                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(251,191,36,0.5)' }}>{avgPity}</div>
-                            <div className="text-gray-500 text-[9px]">Average</div>
+                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(237,175,24,0.5)', fontFamily: 'var(--font-data)' }}>{avgPity}</div>
+                            <div className="text-gray-400 text-[9px]">Average</div>
                           </div>
                           <div>
-                            <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)' }}>{maxPity}</div>
-                            <div className="text-gray-500 text-[9px]">Highest</div>
+                            <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)', fontFamily: 'var(--font-data)' }}>{maxPity}</div>
+                            <div className="text-gray-400 text-[9px]">Highest</div>
                           </div>
                         </div>
                         
@@ -3724,7 +4307,7 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400">21-40</span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#fbbf24', boxShadow: '0 0 6px #fbbf24' }}></span> 
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#edaf18', boxShadow: '0 0 6px #edaf18' }}></span> 
                             <span className="text-gray-400">41-50</span>
                           </span>
                           <span className="flex items-center gap-1">
@@ -3750,7 +4333,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHist = statsTabData.allHist;
-                      if (allHist.length < 10) return <p className="text-gray-500 text-xs text-center py-4">Need more Convene data for trends</p>;
+                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Insufficient data for trend analysis</p>;
                       
                       const groupData = (range) => {
                         const grouped = {};
@@ -3784,11 +4367,11 @@ function WhisperingWishesInner() {
                       const formatLabel = (key, range) => {
                         if (range === 'daily') {
                           const d = new Date(key + 'T12:00:00'); // Avoid UTC midnight → local day shift
-                          return `${d.getDate()}/${d.getMonth()+1}`;
+                          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         } else if (range === 'weekly') {
                           return key.split('-')[1];
                         } else if (range === 'monthly') {
-                          return new Date(key + '-15T12:00:00').toLocaleString('default', { month: 'short' }); // Mid-month avoids day shift
+                          return new Date(key + '-15T12:00:00').toLocaleDateString('en-US', { month: 'short' }); // Mid-month avoids day shift
                         } else {
                           return key;
                         }
@@ -3804,7 +4387,7 @@ function WhisperingWishesInner() {
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="text-gray-500 text-xs text-center py-4">Need more data</p>;
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Insufficient signal data</p>;
                       
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
@@ -3847,27 +4430,29 @@ function WhisperingWishesInner() {
                             )}
                           </div>
                           <div className="h-32">
-                            <div className="sr-only">Pull history chart showing convene activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} pulls`).join(', ')}.</div>
+                            <div className="sr-only">Convene history chart showing activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} Convenes`).join(', ')}.</div>
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                   <linearGradient id="pullGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="rgba(251,191,36,0.22)" />
-                                    <stop offset="100%" stopColor="rgba(251,191,36,0)" />
+                                    <stop offset="0%" stopColor="rgba(237,175,24,0.22)" />
+                                    <stop offset="100%" stopColor="rgba(237,175,24,0)" />
                                   </linearGradient>
                                 </defs>
-                                <XAxis dataKey="label" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fill: '#4b5563', fontSize: 9 }} axisLine={false} tickLine={false} />
-                                <RechartsTooltip 
-                                  contentStyle={{ background: 'rgba(15,20,28,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', fontSize: '11px' }} 
-                                  labelStyle={{ color: '#e5e7eb' }}
+                                <XAxis dataKey="label" tick={{ fill: '#8892a4', fontSize: 10, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} />
+                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} />
+                                <RechartsTooltip
+                                  contentStyle={{ background: 'rgba(12,16,24,0.95)', border: '1px solid rgba(237,175,24,0.3)', borderRadius: '8px', fontSize: '11px', fontFamily: 'var(--font-data)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+                                  labelStyle={{ color: '#dfe5ef', fontFamily: 'var(--font-display)', fontWeight: 600 }}
+                                  itemStyle={{ color: '#bcc3d1' }}
+                                  cursor={{ stroke: 'rgba(237,175,24,0.2)' }}
                                 />
-                                <Area type="natural" dataKey="pulls" stroke="rgba(251,191,36,0.4)" fill="url(#pullGradient)" strokeWidth={1} name="Convenes" />
+                                <Area type="natural" dataKey="pulls" stroke="rgba(237,175,24,0.4)" fill="url(#pullGradient)" strokeWidth={1} name="Convenes" />
                               </AreaChart>
                             </ResponsiveContainer>
                           </div>
                           {allData.length > maxVisible && (
-                            <div className="text-center text-[9px] text-gray-500 mt-1">
+                            <div className="text-center text-[9px] text-gray-400 mt-1">
                               {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
                             </div>
                           )}
@@ -3882,7 +4467,7 @@ function WhisperingWishesInner() {
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls}</div><div className="text-gray-400 text-[9px]">Total Pulls</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Convenes</div></div>
                       <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -3896,29 +4481,29 @@ function WhisperingWishesInner() {
 
                 {/* 5★ Pull Log */}
                 <Card>
-                  <CardHeader>5★ Pull Log</CardHeader>
+                  <CardHeader>5★ Convene Log</CardHeader>
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="text-gray-500 text-xs text-center py-4">No 5★ pulls yet</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No 5★ signals detected</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto">
                           {fiveStars.map((p, i) => {
                             // P2-FIX: Unified pity color thresholds — matches histogram
-                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#fbbf24' : p.pity <= 60 ? '#f97316' : '#ef4444';
+                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
                             const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-lime-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
-                              <div key={p.id || `pull-${p.name}-${p.pity}-${i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-[9px] font-bold flex-shrink-0" aria-label="Won 50/50">W<span className="sr-only"> (Won 50/50)</span></span>}
                                   {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-[9px] font-bold flex-shrink-0" aria-label="Lost 50/50">L<span className="sr-only"> (Lost 50/50)</span></span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-500 text-[9px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[9px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-500 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-400 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );
@@ -3965,7 +4550,7 @@ function WhisperingWishesInner() {
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
                       const pity = state.profile[banner.key]?.pity5 ?? 0;
-                      const colorHex = { yellow: '#fbbf24', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
+                      const colorHex = { yellow: '#edaf18', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
                       return (
                         <div key={banner.name} className="p-2 bg-white/5 rounded">
                           <div className="flex justify-between items-center mb-1">
@@ -4000,8 +4585,8 @@ function WhisperingWishesInner() {
               <Card>
                 <CardBody className="text-center py-8">
                   <Archive size={32} className="mx-auto mb-2 text-gray-500" />
-                  <p className="text-gray-400 text-sm">No Convene data imported</p>
-                  <p className="text-gray-500 text-xs mt-1">Go to Profile tab to import your data</p>
+                  <p className="text-gray-400 text-sm">No Convene data on record</p>
+                  <p className="text-gray-500 text-xs mt-1">Import via Profile to initialize your archive</p>
                 </CardBody>
               </Card>
             ) : (
@@ -4023,10 +4608,10 @@ function WhisperingWishesInner() {
                         <span className="text-white text-xs font-medium">Collection Progress</span>
                         <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
                       </div>
-                      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden mb-3">
+                      <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-all" style={{width: `${pct}%`}} />
                       </div>
-                      <div className="grid grid-cols-5 gap-1 text-center text-[9px]">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center text-[9px]">
                         <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
                         <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
@@ -4047,7 +4632,8 @@ function WhisperingWishesInner() {
                       value={collectionSearch}
                       onChange={(e) => setCollectionSearch(e.target.value)}
                       placeholder="Search by name..."
-                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs bg-neutral-800/80 border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                      style={{ background: 'var(--bg-btn)' }}
                       aria-label="Search collection by name"
                     />
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -4065,7 +4651,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionElementFilter}
                         onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2 py-1.5 rounded text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by element"
                       >
                         <option value="all">All Elements</option>
@@ -4076,12 +4662,12 @@ function WhisperingWishesInner() {
                         <option value="Spectro">Spectro</option>
                         <option value="Havoc">Havoc</option>
                       </select>
-                      
+
                       {/* Weapon Filter */}
                       <select
                         value={collectionWeaponFilter}
                         onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2 py-1.5 rounded text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by weapon type"
                       >
                         <option value="all">All Weapons</option>
@@ -4091,12 +4677,12 @@ function WhisperingWishesInner() {
                         <option value="Gauntlets">Gauntlets</option>
                         <option value="Rectifier">Rectifier</option>
                       </select>
-                      
+
                       {/* Ownership Filter */}
                       <select
                         value={collectionOwnershipFilter}
                         onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2 py-1.5 rounded text-[10px] bg-neutral-800 text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[36px]"
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by ownership"
                       >
                         <option value="all">All Items</option>
@@ -4108,7 +4694,7 @@ function WhisperingWishesInner() {
                       {hasActiveFilters && (
                         <button
                           onClick={clearCollectionFilters}
-                          className="px-2 py-1 rounded text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                          className="px-2 py-1 rounded-lg text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
                         >
                           Clear
                         </button>
@@ -4119,22 +4705,30 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="px-2 py-1 rounded text-[10px] bg-neutral-800 text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        className="px-2 py-1 rounded-lg text-[10px] text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        style={{ background: 'var(--bg-btn)' }}
                         title="Refresh images if they don't load"
+                        aria-label="Refresh images"
                       >
                         <RefreshCcw size={10} />
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 border border-white/10'}`}
+                        style={collectionSort !== 'copies' ? { background: 'var(--bg-btn)' } : undefined}
                         title="Sort by copies"
+                        aria-label="Sort by copies"
+                        aria-pressed={collectionSort === 'copies'}
                       >
                         #
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`px-2 py-1 rounded text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'bg-neutral-800 text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 border border-white/10'}`}
+                        style={collectionSort !== 'release' ? { background: 'var(--bg-btn)' } : undefined}
                         title="Sort by release date"
+                        aria-label="Sort by release date"
+                        aria-pressed={collectionSort === 'release'}
                       >
                         <Calendar size={10} />
                       </button>
@@ -4253,6 +4847,584 @@ function WhisperingWishesInner() {
           </div>
         )}
 
+        {/* [SECTION:TAB-TEAMS] */}
+        {activeTab === 'teams' && (
+          <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
+          <TabErrorBoundary tabName="Teams">
+          <div className="kuro-calc space-y-3 tab-content">
+            <TabBackground id="teams" />
+
+            {(() => {
+              const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
+              const teamSlots = activeTeam.slots;
+              const openSelector = (slotIdx) => {
+                setTeamSelectorSlot(slotIdx);
+                setTeamSearch('');
+                setTeamElementFilter('all');
+                setTeamRarityFilter('all');
+                setTeamBuffFilter('all');
+                setTeamDebuffFilter('all');
+                setTeamDmgFilter('all');
+                setTeamSelectorOpen(true);
+                haptic.light();
+              };
+
+              const selectCharacter = (name) => {
+                dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: teamSelectorSlot, character: name });
+                setTeamSelectorOpen(false);
+                haptic.success();
+              };
+
+              const removeFromSlot = (slotIdx) => {
+                dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
+                haptic.light();
+              };
+
+              // All available characters for selection
+              const allCharNames = [...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS];
+
+              // Characters already in this team (excluding current slot)
+              const usedInTeam = new Set(teamSlots.filter((s, i) => s && i !== teamSelectorSlot));
+
+              // Compute recommended teammates from current team members' team suggestions
+              const recommendedNames = new Set();
+              teamSlots.filter(s => s).forEach(charInSlot => {
+                const d = CHARACTER_DATA[charInSlot];
+                if (!d?.teams) return;
+                d.teams.forEach(teamStr => {
+                  teamStr.split('+').map(m => m.trim()).forEach(m => {
+                    if (m !== charInSlot && !usedInTeam.has(m)) recommendedNames.add(m);
+                  });
+                });
+              });
+
+              // Filter characters for selector
+              const filteredChars = allCharNames.filter(name => {
+                if (usedInTeam.has(name)) return false;
+                if (teamSearch && !name.toLowerCase().includes(teamSearch.toLowerCase())) return false;
+                const data = CHARACTER_DATA[name];
+                if (!data) return false;
+                if (teamElementFilter !== 'all' && data.element !== teamElementFilter) return false;
+                if (teamRarityFilter !== 'all' && data.rarity !== Number(teamRarityFilter)) return false;
+                if (teamBuffFilter !== 'all' && !(data.buffs || []).some(b => b.includes(teamBuffFilter))) return false;
+                if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.includes(teamDebuffFilter))) return false;
+                if (teamDmgFilter !== 'all' && !(data.dmgFocus || []).includes(teamDmgFilter)) return false;
+                return true;
+              }).sort((a, b) => {
+                const aRec = recommendedNames.has(a) ? 0 : 1;
+                const bRec = recommendedNames.has(b) ? 0 : 1;
+                return aRec - bRec;
+              });
+
+              // Element color utilities
+              const getElementColor = (el) => {
+                const map = { Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' };
+                return map[el] || '#6b7280';
+              };
+              const getElementBg = (el) => {
+                const map = { Fusion: 'rgba(249,115,22,0.15)', Electro: 'rgba(168,85,247,0.15)', Aero: 'rgba(16,185,129,0.15)', Glacio: 'rgba(6,182,212,0.15)', Havoc: 'rgba(236,72,153,0.15)', Spectro: 'rgba(234,179,8,0.15)' };
+                return map[el] || 'rgba(107,114,128,0.15)';
+              };
+              const getElementBorder = (el) => {
+                const map = { Fusion: 'rgba(249,115,22,0.4)', Electro: 'rgba(168,85,247,0.4)', Aero: 'rgba(16,185,129,0.4)', Glacio: 'rgba(6,182,212,0.4)', Havoc: 'rgba(236,72,153,0.4)', Spectro: 'rgba(234,179,8,0.4)' };
+                return map[el] || 'rgba(107,114,128,0.4)';
+              };
+
+              return (
+                <div className="space-y-3">
+                  {/* Team Card — selector row + grid + stats all inside one Card */}
+                  <Card>
+                    <CardHeader action={
+                      <button
+                        onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                        className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                        style={{ background: 'var(--bg-btn)' }}
+                      >
+                        Clear
+                      </button>
+                    }>
+                      <Users size={14} className="text-yellow-400" /> Team Builder
+                    </CardHeader>
+                    <CardBody>
+                      {/* Team Selector Tabs */}
+                      <div className="flex gap-1 mb-3">
+                        {state.teams.map((team, idx) => {
+                          const hasChars = team.slots.some(s => s);
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
+                              className={`flex-1 min-w-0 px-1.5 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
+                                state.activeTeamIndex === idx
+                                  ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
+                                  : 'border-white/10 text-gray-400 hover:border-white/20 hover:text-gray-300'
+                              }`}
+                              style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
+                            >
+                              <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
+                              <span className="truncate">{team.name}</span>
+                              {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Character Cards Grid */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {teamSlots.map((charName, slotIdx) => {
+                          const charData = charName ? CHARACTER_DATA[charName] : null;
+                          const imgUrl = charName ? (collectionImages[charName] || '') : '';
+                          const framing = charName ? getImageFraming(`collection-${charName}`) : null;
+
+                          if (!charName) {
+                            return (
+                              <button
+                                key={slotIdx}
+                                onClick={() => openSelector(slotIdx)}
+                                className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                                style={{ height: '110px', contain: 'paint' }}
+                              >
+                                <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
+                                <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                              </button>
+                            );
+                          }
+
+                          const rarity5 = charData?.rarity === 5;
+                          return (
+                            <div
+                              key={slotIdx}
+                              className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              style={{ height: '110px', contain: 'paint' }}
+                              onClick={() => openSelector(slotIdx)}
+                            >
+                              {imgUrl && (
+                                <img
+                                  src={imgUrl}
+                                  alt={charName}
+                                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                                  style={{
+                                    transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+                                  }}
+                                  loading="lazy"
+                                  onError={hideOnError}
+                                />
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
+                                className="absolute top-1 right-1 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={10} />
+                              </button>
+                              <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                <div className="text-[9px] truncate text-gray-200">{charName}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Team Elements Summary */}
+                      {teamSlots.some(s => s) && (
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
+                          {teamSlots.filter(s => s).map((name, i) => {
+                            const d = CHARACTER_DATA[name];
+                            return d ? (
+                              <div key={i} className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium"
+                                style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                {d.element}
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </CardBody>
+                  </Card>
+
+                  {/* Character Stats & Info */}
+                  {teamSlots.some(s => s) && (
+                    <Card>
+                      <CardHeader><Info size={14} className="text-cyan-400" /> Team Overview</CardHeader>
+                      <CardBody>
+                        <div className="space-y-3">
+                          {teamSlots.filter(s => s).map((charName, i) => {
+                            const d = CHARACTER_DATA[charName];
+                            if (!d) return null;
+                            const rarity5 = d.rarity === 5;
+                            const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
+                            const rc = roleColors[d.role] || roleColors.Support;
+                            return (
+                              <div key={charName} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
+                                {/* Character header row */}
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
+                                    style={{ borderColor: getElementColor(d.element) }}>
+                                    {collectionImages[charName] ? (
+                                      <img src={collectionImages[charName]} alt={charName} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{charName[0]}</div>
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-white text-xs font-semibold truncate">{charName}</span>
+                                      <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{d.role}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                        style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                        {d.element}
+                                      </span>
+                                      <span className="text-[9px] text-gray-400">{d.weapon}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* Description */}
+                                <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{d.desc}</p>
+                                {/* Damage Focus */}
+                                <div className="mb-1.5">
+                                  <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                      style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                                      {d.element} DMG
+                                    </span>
+                                    {(d.dmgFocus || []).map((df, di) => (
+                                      <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                                {/* Buffs */}
+                                {d.buffs?.length > 0 && (
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {d.buffs.map((b, bi) => (
+                                        <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Debuffs */}
+                                {d.debuffs?.length > 0 && (
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {d.debuffs.map((db, di) => (
+                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Best Build */}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
+                                  {d.bestWeapon && (
+                                    <div className="text-[9px]">
+                                      <span className="text-gray-500">Weapon: </span>
+                                      <span className="text-yellow-400/80">{d.bestWeapon}</span>
+                                    </div>
+                                  )}
+                                  {d.bestEchoes && (
+                                    <div className="text-[9px]">
+                                      <span className="text-gray-500">Echoes: </span>
+                                      <span className="text-cyan-400/80">{d.bestEchoes.join(' + ')}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardBody>
+                    </Card>
+                  )}
+
+                  {/* Suggested Teams from Character Data */}
+                  <Card>
+                    <CardHeader><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
+                    <CardBody>
+                      <div className="space-y-2">
+                        {(() => {
+                          const ownedNames = new Set([
+                            ...Object.keys(collectionData.chars5Counts),
+                            ...Object.keys(collectionData.chars4Counts),
+                          ]);
+                          const suggestions = [];
+                          const seen = new Set();
+                          const orderedChars = [...RELEASE_ORDER].reverse();
+                          for (const name of orderedChars) {
+                            const d = CHARACTER_DATA[name];
+                            if (!d?.teams) continue;
+                            for (const t of d.teams) {
+                              if (seen.has(t)) continue;
+                              seen.add(t);
+                              const members = t.split('+').map(m => m.trim());
+                              if (members.length < 2) continue;
+                              const ownedCount = members.filter(m => ownedNames.has(m)).length;
+                              suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
+                            }
+                          }
+                          suggestions.sort((a, b) => {
+                            if (a.allOwned !== b.allOwned) return b.allOwned ? 1 : -1;
+                            return b.ownedCount - a.ownedCount;
+                          });
+                          if (suggestions.length === 0) {
+                            return <p className="text-gray-500 text-[10px] text-center py-2">No team suggestions available</p>;
+                          }
+                          return suggestions.slice(0, 10).map((s, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                s.members.slice(0, 3).forEach((m, idx) => {
+                                  dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: m });
+                                });
+                                haptic.success();
+                              }}
+                              className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <div className="flex gap-1 flex-shrink-0">
+                                {s.members.slice(0, 3).map((m, j) => {
+                                  const cd = CHARACTER_DATA[m];
+                                  const sf = getImageFraming(`collection-${m}`);
+                                  return (
+                                    <div key={j} className="w-10 h-10 rounded-lg border border-white/15 overflow-hidden flex-shrink-0 relative"
+                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint' }}>
+                                      {collectionImages[m] ? (
+                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400 font-medium">{m[0]}</div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <span className="text-[10px] text-gray-300 truncate flex-1">{s.text}</span>
+                              {s.allOwned ? (
+                                <span className="text-[8px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1 py-0.5 rounded flex-shrink-0">All owned</span>
+                              ) : (
+                                <span className="text-[8px] text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
+                              )}
+                            </button>
+                          ));
+                        })()}
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  {/* Character Selector Modal — FIX: pass isOpen prop */}
+                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)}>
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setTeamSelectorOpen(false)}>
+                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                      <div
+                        className="relative w-full max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
+                        style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-3 border-b border-white/10">
+                          <div>
+                            <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
+                            <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
+                          </div>
+                          <button onClick={() => setTeamSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                            <X size={18} />
+                          </button>
+                        </div>
+
+                        {/* Search & Filters */}
+                        <div className="p-3 space-y-2 border-b border-white/5">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={teamSearch}
+                              onChange={(e) => setTeamSearch(e.target.value)}
+                              placeholder="Search resonators..."
+                              className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                              style={{ background: 'var(--bg-btn)' }}
+                              autoFocus
+                            />
+                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            <select
+                              value={teamElementFilter}
+                              onChange={(e) => setTeamElementFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by element"
+                            >
+                              <option value="all">All Elements</option>
+                              <option value="Aero">Aero</option>
+                              <option value="Glacio">Glacio</option>
+                              <option value="Electro">Electro</option>
+                              <option value="Fusion">Fusion</option>
+                              <option value="Spectro">Spectro</option>
+                              <option value="Havoc">Havoc</option>
+                            </select>
+                            <select
+                              value={teamRarityFilter}
+                              onChange={(e) => setTeamRarityFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by rarity"
+                            >
+                              <option value="all">All Rarity</option>
+                              <option value="5">5★</option>
+                              <option value="4">4★</option>
+                            </select>
+                            <select
+                              value={teamDmgFilter}
+                              onChange={(e) => setTeamDmgFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by damage focus"
+                            >
+                              <option value="all">Dmg Focus</option>
+                              <option value="Normal ATK">Normal ATK</option>
+                              <option value="Heavy ATK">Heavy ATK</option>
+                              <option value="Res. Skill">Res. Skill</option>
+                              <option value="Liberation">Liberation</option>
+                              <option value="Echo Skill">Echo Skill</option>
+                              <option value="Coordinated ATK">Coordinated ATK</option>
+                            </select>
+                            <select
+                              value={teamBuffFilter}
+                              onChange={(e) => setTeamBuffFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">All Buffs</option>
+                              <option value="Heal">Heal</option>
+                              <option value="Shield">Shield</option>
+                              <option value="Coordinated ATK">Coordinated ATK</option>
+                              <option value="ATK Buff">ATK Buff</option>
+                              <option value="Crit">Crit</option>
+                              <option value="DMG">DMG Buff</option>
+                              <option value="Energy Regen">Energy Regen</option>
+                              <option value="Grouping">Grouping</option>
+                            </select>
+                            <select
+                              value={teamDebuffFilter}
+                              onChange={(e) => setTeamDebuffFilter(e.target.value)}
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              <option value="all">All Debuffs</option>
+                              <option value="Frazzle">Frazzle</option>
+                              <option value="Erosion">Erosion</option>
+                              <option value="Off-Tune">Off-Tune</option>
+                              <option value="DEF Shred">DEF Shred</option>
+                              <option value="RES Shred">RES Shred</option>
+                            </select>
+                          </div>
+                          {/* Recommended teammates indicator */}
+                          {recommendedNames.size > 0 && (
+                            <div className="flex items-center gap-1.5 text-[9px] text-orange-400">
+                              <Star size={10} className="text-orange-400" fill="currentColor" />
+                              <span>Orange glow = recommended teammate</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Character Grid */}
+                        <div className="flex-1 overflow-y-auto p-3">
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                            {filteredChars.map(name => {
+                              const cd = CHARACTER_DATA[name];
+                              const img = collectionImages[name] || '';
+                              const el = cd?.element;
+                              const owned = collectionData.chars5Counts[name] || collectionData.chars4Counts[name];
+                              const isInAnotherTeam = state.teams.some((t, ti) =>
+                                ti !== state.activeTeamIndex && t.slots.includes(name)
+                              );
+                              const isRecommended = recommendedNames.has(name);
+                              return (
+                                <button
+                                  key={name}
+                                  onClick={() => selectCharacter(name)}
+                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
+                                  style={{
+                                    height: '90px',
+                                    contain: 'paint',
+                                    opacity: owned ? 1 : 0.5,
+                                    ...(isRecommended ? { boxShadow: '0 0 28px rgba(251,146,60,0.65), 0 0 56px rgba(251,146,60,0.3), inset 0 0 20px rgba(251,146,60,0.2)', background: 'rgba(251,146,60,0.15)' } : {}),
+                                  }}
+                                >
+                                  {img && (() => {
+                                    const f = getImageFraming(`collection-${name}`);
+                                    return (
+                                    <img
+                                      src={img}
+                                      alt={name}
+                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                                      style={{
+                                        transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                                        filter: owned ? 'none' : 'grayscale(100%)',
+                                      }}
+                                      loading="lazy"
+                                      onError={hideOnError}
+                                    />
+                                    );
+                                  })()}
+                                  <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
+                                    background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
+                                  }} />
+                                  {/* Element dot */}
+                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[6px] font-bold text-white flex items-center justify-center"
+                                    style={{ background: getElementColor(el) }}>
+                                    {el?.[0]}
+                                  </div>
+                                  {/* Rarity */}
+                                  <div className="absolute top-1 right-1">
+                                    <Star size={8} className={cd?.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" />
+                                  </div>
+                                  {/* In another team */}
+                                  {isInAnotherTeam && (
+                                    <div className="absolute top-1 left-1 mt-4">
+                                      <Users size={7} className="text-cyan-400" />
+                                    </div>
+                                  )}
+                                  {/* Recommended badge */}
+                                  {isRecommended && (
+                                    <div className="absolute top-0.5 right-0.5 z-10">
+                                      <span className="text-[6px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>
+                                    </div>
+                                  )}
+                                  {/* Role tag */}
+                                  {cd?.role && (
+                                    <div className="absolute bottom-4 inset-x-0 flex justify-center">
+                                      <span className="text-[6px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-white/10">{cd.role}</span>
+                                    </div>
+                                  )}
+                                  {/* Name */}
+                                  <div className="absolute bottom-0 inset-x-0 p-1 z-10">
+                                    <div className="text-white text-[8px] font-medium truncate text-center leading-tight">{name}</div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {filteredChars.length === 0 && (
+                            <div className="text-center py-8">
+                              <Search size={24} className="mx-auto mb-2 text-gray-600" />
+                              <p className="text-gray-500 text-xs">No resonators match</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </FocusTrapModal>
+                </div>
+              );
+            })()}
+          </div>
+          </TabErrorBoundary>
+          </div>
+        )}
+
         {/* [SECTION:TAB-PROFILE] */}
         {activeTab === 'profile' && (
           <div role="tabpanel" id="tabpanel-profile" aria-labelledby="tab-profile" tabIndex="0">
@@ -4263,7 +5435,7 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader>Server Region</CardHeader>
               <CardBody>
-                <div className="grid grid-cols-5 gap-1">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
                   {Object.keys(SERVERS).map(s => (
                     <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
@@ -4278,16 +5450,18 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                 {/* Username */}
                 <div>
-                  <label className="text-gray-400 text-[10px] block mb-1">Display Name</label>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-1">Display Name</label>
                   <input
+                    id="profile-display-name"
                     type="text"
                     value={state.profile.username}
-                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, 24) })}
+                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
                     placeholder="Enter your name..."
-                    maxLength={24}
+                    maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />
-                  <p className="text-gray-600 text-[9px] mt-0.5 text-right">{state.profile.username.length}/24</p>
+                  {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
+                  <p className="text-gray-400 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -4297,14 +5471,14 @@ function WhisperingWishesInner() {
                     <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
+                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} />;
                       })() : (
-                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" />
+                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
-                      <p className="text-gray-500 text-[9px] mt-0.5">Tap the <Crown size={9} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      <p className="text-gray-400 text-[9px] mt-0.5">Tap the <Crown size={9} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
                       {state.profile.profilePic && (
                         <button
                           onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
@@ -4332,7 +5506,7 @@ function WhisperingWishesInner() {
                 {/* OLED Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'bg-neutral-800 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Monitor size={16} />
                     </div>
                     <div>
@@ -4340,14 +5514,16 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">True black (#000) for OLED screens</div>
                     </div>
                   </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.oledMode ? 'bg-white' : 'bg-neutral-700'}`}
+                    className="relative w-[52px] h-[24px] rounded-[3px] transition-colors"
+                    style={{ background: visualSettings.oledMode ? '#fff' : 'var(--bg-btn)' }}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
                     aria-label="Toggle OLED mode"
                   >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.oledMode ? 'left-6 bg-black' : 'left-1 bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.oledMode ? 'left-[32px] bg-black' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
@@ -4357,7 +5533,7 @@ function WhisperingWishesInner() {
                 {/* Swipe Navigation Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'bg-neutral-800 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
@@ -4365,14 +5541,16 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Swipe left/right to switch tabs</div>
                     </div>
                   </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : 'bg-neutral-700'}`}
+                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : ''}`}
+                    style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label="Toggle swipe navigation"
                   >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.swipeNavigation ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
@@ -4382,7 +5560,7 @@ function WhisperingWishesInner() {
                 {/* Animations Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'bg-neutral-800 text-gray-400'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -4390,18 +5568,20 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[9px]">Background effects, transitions & glow</div>
                     </div>
                   </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : 'bg-neutral-700'}`}
+                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : ''}`}
+                    style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled}
                     aria-label="Toggle animations"
                   >
-                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${visualSettings.animationsEnabled ? 'left-6 bg-white' : 'left-1 bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.animationsEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
-                  <p className="text-gray-500 text-[9px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
+                  <p className="text-gray-400 text-[9px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
                 )}
                 {visualSettings.animationsEnabled && (
                   <p className="text-purple-400 text-[9px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
@@ -4442,18 +5622,26 @@ function WhisperingWishesInner() {
                 
                 {/* File Upload Method — P8-FIX: Now supports drag-and-drop */}
                 {importMethod === 'file' && (
-                  <label 
+                  <label
                     className="block"
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
                     onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
                     onDrop={handleFileDrop}
                   >
+                    {importStatus ? (
+                      <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
+                        <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '60%', height: '12px' }} />
+                        <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
+                        <p className="text-gray-500 text-[9px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
+                      </div>
+                    ) : (
                     <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
                       <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
                       <p className={`text-[10px] ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
                         {isDragOver ? 'Drop JSON file here' : 'Upload or drag & drop JSON file from wuwatracker'}
                       </p>
                     </div>
+                    )}
                     <input type="file" accept=".json" onChange={handleFileImport} className="hidden" />
                   </label>
                 )}
@@ -4469,6 +5657,7 @@ function WhisperingWishesInner() {
 Example: {"pulls":[...]}'
                       className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
                       spellCheck={false}
+                      aria-label="Paste import JSON data"
                     />
                     <div className="flex gap-2">
                       <button 
@@ -4487,7 +5676,7 @@ Example: {"pulls":[...]}'
                         </button>
                       )}
                     </div>
-                    <p className="text-gray-500 text-[9px]">
+                    <p className="text-gray-400 text-[9px]">
                       💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
                     </p>
                   </div>
@@ -4501,7 +5690,7 @@ Example: {"pulls":[...]}'
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
-                  <p className="text-gray-500 text-[9px] mt-2">View detailed stats in the Stats tab</p>
+                  <p className="text-gray-400 text-[9px] mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
             )}
@@ -4538,25 +5727,25 @@ Example: {"pulls":[...]}'
                 
                 <div className="kuro-divider" />
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Disclaimer</p>
                   <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
-                  <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{new Date().getFullYear()}. All rights reserved.</p>
+                  <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{currentYear}. All rights reserved.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Data & Privacy</p>
                   <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
-                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, pull count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
+                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
                   <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Third-Party Services</p>
                   <p>This app recommends wuwatracker.com for data export. We are not affiliated with wuwatracker.com and are not responsible for their services, data handling, or availability.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
@@ -4566,12 +5755,12 @@ Example: {"pulls":[...]}'
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-500">
+                <div className="space-y-2 text-[9px] text-gray-400">
                   <p className="font-medium text-gray-400">License</p>
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
                 
-                <p className="text-center text-[8px] text-gray-500 pt-2">© {new Date().getFullYear()} Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
           </div>
@@ -4583,11 +5772,11 @@ Example: {"pulls":[...]}'
 
       {/* Bookmark Modal */}
       {showBookmarkModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
+        <div ref={bookmarkTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={30} className="kuro-input w-full" aria-label="Bookmark name" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
                 <p>Astrite: {state.calc.astrite || 0} • Char Pity: {state.calc.charPity} • Weap Pity: {state.calc.weapPity}</p>
                 <p>Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0}</p>
@@ -4600,16 +5789,17 @@ Example: {"pulls":[...]}'
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
+        <div ref={exportTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
           <Card className="w-full max-w-sm">
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
-              <textarea 
-                value={exportData} 
-                readOnly 
+              <textarea
+                value={exportData}
+                readOnly
                 className="kuro-input w-full h-24 text-[9px] font-mono"
                 onClick={e => e.target.select()}
+                aria-label="Export backup data"
               />
               <button 
                 onClick={async () => {
@@ -4634,15 +5824,16 @@ Example: {"pulls":[...]}'
               
               <div className="relative my-1">
                 <div className="kuro-divider" />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[9px] text-gray-500 uppercase tracking-wider">Restore</span>
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[9px] text-gray-400 uppercase tracking-wider">Restore</span>
               </div>
               
               <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
-              <textarea 
+              <textarea
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
                 placeholder="Paste backup JSON here..."
                 className="kuro-input w-full h-20 text-[9px] font-mono"
+                aria-label="Paste backup data to restore"
               />
               <button 
                 onClick={() => {
@@ -4677,7 +5868,7 @@ Example: {"pulls":[...]}'
                       return;
                     }
                     if (s.profile?.featured?.history && !Array.isArray(s.profile.featured.history)) {
-                      toast?.addToast?.('Invalid backup — pull history must be an array', 'error');
+                      toast?.addToast?.('Invalid backup — Convene history must be an array', 'error');
                       return;
                     }
                     
@@ -4685,37 +5876,66 @@ Example: {"pulls":[...]}'
                     const backupVersion = data.version || 'unknown';
                     const pullCount = (s.profile?.featured?.history?.length || 0) + (s.profile?.weapon?.history?.length || 0) + (s.profile?.standardChar?.history?.length || 0) + (s.profile?.standardWeap?.history?.length || 0);
                     
+                    // Auto-save pre-restore backup to localStorage for recovery
+                    try {
+                      const preRestoreBackup = JSON.stringify({ timestamp: new Date().toISOString(), version: APP_VERSION, state: stateRef.current, _preRestore: true });
+                      localStorage.setItem('whispering-wishes-pre-restore-backup', preRestoreBackup);
+                    } catch {} // best-effort — don't block restore if backup fails
+
                     // Confirmation dialog
                     const confirmed = window.confirm(
                       `Restore backup from v${backupVersion}?\n\n` +
                       `This will REPLACE all current data:\n` +
-                      `• ${pullCount} total pulls\n` +
+                      `• ${pullCount} total Convenes\n` +
                       `• ${s.bookmarks?.length || 0} bookmarks\n` +
                       `• All calculator & planner settings\n\n` +
-                      `This action cannot be undone. Continue?`
+                      `A pre-restore backup has been saved automatically.\n` +
+                      `Continue?`
                     );
                     if (!confirmed) return;
                     
+                    // P10-FIX: Sanitize all nested objects to prevent prototype pollution (matches loadFromStorage pattern)
+                    const safeParsed = sanitizeStateObj(s);
                     const restoredState = {
                       ...initialState,
-                      ...sanitizeImportedState(s), // P10-FIX: Sanitize imported keys (Step 6 audit)
-                      server: s.server || initialState.server,
-                      // P9-FIX: Deep merge profile sub-objects so missing fields get defaults (Step 4 audit)
-                      profile: { 
-                        ...initialState.profile, 
-                        ...s.profile,
-                        featured: { ...initialState.profile.featured, ...(s.profile?.featured || {}) },
-                        weapon: { ...initialState.profile.weapon, ...(s.profile?.weapon || {}) },
-                        standardChar: { ...initialState.profile.standardChar, ...(s.profile?.standardChar || {}) },
-                        standardWeap: { ...initialState.profile.standardWeap, ...(s.profile?.standardWeap || {}) },
-                        beginner: { ...initialState.profile.beginner, ...(s.profile?.beginner || {}) },
+                      ...sanitizeImportedState(safeParsed),
+                      server: safeParsed.server || initialState.server,
+                      profile: {
+                        ...initialState.profile,
+                        ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
+                        featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
+                        weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
+                        standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
+                        standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
+                        beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
                       },
-                      calc: { ...initialState.calc, ...s.calc },
-                      planner: { ...initialState.planner, ...s.planner },
-                      settings: { ...initialState.settings, ...s.settings },
-                      bookmarks: Array.isArray(s.bookmarks) ? s.bookmarks : [],
+                      calc: { ...initialState.calc, ...safeParsed.calc },
+                      planner: { ...initialState.planner, ...safeParsed.planner },
+                      settings: { ...initialState.settings, ...safeParsed.settings },
+                      bookmarks: Array.isArray(safeParsed.bookmarks) ? safeParsed.bookmarks : [],
                     };
                     dispatch({ type: 'LOAD_STATE', state: restoredState });
+                    // Restore auxiliary localStorage data if present in backup
+                    if (data.aux && typeof data.aux === 'object') {
+                      try {
+                        if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+                          localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+                          setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+                        }
+                        if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+                          localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+                          setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+                        }
+                        if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+                          localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+                          setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+                        }
+                        if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+                          localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+                          setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+                        }
+                      } catch {}
+                    }
                     toast?.addToast?.(`Backup restored! (v${backupVersion})`, 'success');
                     setRestoreText('');
                     setShowExportModal(false);
@@ -4728,6 +5948,28 @@ Example: {"pulls":[...]}'
               >
                 Restore Backup
               </button>
+              {/* P15-FIX: LOW-11 — UI to restore pre-import backup from localStorage */}
+              {(() => {
+                try { return !!localStorage.getItem('whispering-wishes-pre-import-backup'); } catch { return false; }
+              })() && (
+                <button
+                  onClick={() => {
+                    try {
+                      const raw = localStorage.getItem('whispering-wishes-pre-import-backup');
+                      if (!raw) { toast?.addToast?.('No pre-import backup found', 'error'); return; }
+                      const data = JSON.parse(raw);
+                      if (!data?.state || typeof data.state !== 'object') { toast?.addToast?.('Invalid pre-import backup', 'error'); return; }
+                      if (!window.confirm(`Restore pre-import backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown date'}?\n\nThis will revert to the state before your last import.`)) return;
+                      dispatch({ type: 'LOAD_STATE', state: data.state });
+                      toast?.addToast?.('Pre-import backup restored!', 'success');
+                      setShowExportModal(false);
+                    } catch (e) { toast?.addToast?.('Failed to restore: ' + e.message, 'error'); }
+                  }}
+                  className="kuro-btn w-full text-[10px] mt-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                >
+                  Restore Pre-Import Backup
+                </button>
+              )}
             </CardBody>
           </Card>
         </div>
@@ -4735,7 +5977,8 @@ Example: {"pulls":[...]}'
 
       {/* Resonator ID Card Modal */}
       {showIdCard && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
+        <div ref={idCardTrapRef} className="fixed inset-0 z-[100] overflow-y-auto p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
+          <div className="min-h-full flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }}>
           <div className="w-full max-w-md">
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
@@ -4745,91 +5988,227 @@ Example: {"pulls":[...]}'
                   <span className="text-gray-100 font-bold text-xs flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
                   <span className="text-gray-500 text-[10px]">Whispering Wishes</span>
                 </div>
-                
+
                 {/* Main content */}
-                <div className="kuro-body">
-                  {/* Top: Info left, Picture right */}
-                  <div className="flex gap-4">
-                    {/* Left: Name + details */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-bold text-lg truncate leading-tight">{state.profile.username || 'Resonator'}</h3>
-                      <div className="mt-2 space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 text-[10px] w-10 flex-shrink-0">UID</span>
-                          <span className="text-gray-200 text-xs font-mono">{state.profile.uid || '—'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 text-[10px] w-10 flex-shrink-0">Server</span>
-                          <span className="text-yellow-400 text-xs font-mono">{state.server}</span>
-                        </div>
-                      </div>
-                      {/* Luck rating */}
-                      {luckRating && (
-                        <div className="mt-3">
+                <div className="kuro-body" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                  {/* ═══ PROFILE PANEL ═══ */}
+                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '12px' }}>
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="flex gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-bold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
-                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #fbbf24, #34d399)' }} />
-                            </div>
-                            <span className="text-[10px] font-mono flex-shrink-0" style={{ color: luckRating.color || '#fbbf24' }}>{luckRating.tier} {luckRating.rating}</span>
+                            <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
+                            <span className="text-gray-200 text-xs font-mono">{state.profile.uid || '—'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
+                            <span className="text-xs font-mono" style={{ color: '#edaf18', textShadow: '0 0 8px rgba(237,175,24,0.3)' }}>{state.server}</span>
                           </div>
                         </div>
-                      )}
-                    </div>
-                    
-                    {/* Right: 1:1 Profile Picture — glass style */}
-                    <div className="flex-shrink-0 flex flex-col items-center">
-                      <div className="rounded-xl" style={{ width: '120px', height: '120px', flexShrink: 0, background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
-                        {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
-                          const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                          return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="object-contain" style={{ width: '120px', height: '120px', transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />;
-                        })() : (
-                          <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
-                            <img src={HEADER_ICON} alt="Default" className="w-14 h-14 object-contain opacity-70" />
+                        {luckRating && (
+                          <div className="mt-2.5 flex items-center gap-2">
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #edaf18, #34d399)', boxShadow: '0 0 6px rgba(237,175,24,0.4)' }} />
+                            </div>
+                            <span className="text-[9px] font-mono font-bold flex-shrink-0 px-1.5 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60`, fontFamily: 'var(--font-data)' }}>{luckRating.tier} {luckRating.rating}</span>
                           </div>
                         )}
                       </div>
-                      {state.profile.profilePic && (
-                        <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '8px', width: '120px' }}>{state.profile.profilePic}</p>
-                      )}
+                      <div className="flex-shrink-0 flex flex-col items-center">
+                        <div className="relative rounded-xl overflow-hidden" style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
+                          <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
+                          {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                            const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                            {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
+                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
+                          })() : (
+                            <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
+                              <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
+                            </div>
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }} />
+                        </div>
+                        {state.profile.profilePic && (
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '7px', width: '110px' }}>{state.profile.profilePic}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-1.5 mt-4">
+
+                  {/* ═══ CONVENE STATS PANEL ═══ */}
+                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.4), transparent)' }} />
+                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="flex items-center gap-2 mb-2">
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Convene Stats</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#fbbf24' },
-                      { label: 'Total Pulls', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb' },
-                      { label: '5★ Pulled', value: overallStats?.fiveStars ?? '—', color: '#a78bfa' },
-                      { label: '50/50 Win Rate', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e' },
-                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#22c55e' },
-                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171' },
+                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
+                      { label: 'Total Convenes', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
+                      { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a78bfa', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
+                      { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
+                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
+                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },
                     ].map((s, i) => (
-                      <div key={i} className="rounded-lg px-2 py-2 text-center" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div className="font-bold font-mono text-sm" style={{ color: s.color }}>{s.value}</div>
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '8px' }}>{s.label}</div>
+                      <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
+                        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
+                        <div className="font-bold text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30`, fontFamily: 'var(--font-data)' }}>{s.value}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '7px', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
+                    </div>
                   </div>
-                  
-                  {/* Owned Resonators */}
+
+                  {/* ═══ PITY DISTRIBUTION PANEL ═══ */}
+                  {(() => {
+                    const bgnHist = state.profile.beginner?.history||[];
+                    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...bgnHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+                    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...bgnHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
+                    const fsp = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
+                    if(fsp.length < 2) return null;
+                    const bk = {};
+                    fsp.forEach(p => { if(p.pity>80){bk['81+']=(bk['81+']||0)+1;} else {const b=Math.floor((p.pity-1)/10)*10+1;bk[`${b}-${b+9}`]=(bk[`${b}-${b+9}`]||0)+1;} });
+                    const labs = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`);
+                    if(bk['81+'])labs.push('81+');
+                    labs.forEach(b=>{if(!bk[b])bk[b]=0;});
+                    const mx = Math.max(...Object.values(bk),1);
+                    const avg = (fsp.reduce((s,p)=>s+p.pity,0)/fsp.length).toFixed(1);
+                    const lo = Math.min(...fsp.map(p=>p.pity));
+                    const hi = Math.max(...fsp.map(p=>p.pity));
+                    return (
+                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.35), transparent)' }} />
+                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Pity Distribution</span>
+                        </div>
+                        <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
+                          {labs.map((lab, i) => {
+                            const cnt = bk[lab]||0;
+                            const height = mx > 0 ? (cnt / mx) * 100 : 0;
+                            const bucket = parseInt(lab)||81;
+                            const color = bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center">
+                                <div className="w-full relative" style={{ height: '96px' }}>
+                                  {cnt > 0 && (
+                                    <div className="absolute left-0 right-0 text-center font-bold"
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
+                                      {cnt}
+                                    </div>
+                                  )}
+                                  <div className="absolute bottom-0 left-1 right-1 rounded-t"
+                                    style={{ height: `${height}%`, minHeight: cnt > 0 ? '8px' : '0',
+                                      background: `linear-gradient(to top, ${color}40, ${color}20)`,
+                                      border: cnt > 0 ? `1px solid ${color}90` : 'none', borderBottom: 'none',
+                                      boxShadow: cnt > 0 ? `0 0 12px ${color}50, inset 0 0 15px ${color}30` : 'none' }} />
+                                  {cnt > 0 && (
+                                    <div className="absolute bottom-0 left-1 right-1 rounded-full"
+                                      style={{ height: '2px', background: color, boxShadow: `0 0 8px ${color}, 0 0 16px ${color}80` }} />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="flex gap-1.5">
+                          {labs.map((lab, i) => (
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: '7px', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                          ))}
+                        </div>
+                        <div style={{ textAlign: 'right', marginTop: '4px' }}>
+                          <span style={{ fontSize: '8px', color: '#6b7280', fontFamily: 'var(--font-data)' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ═══ RESONATORS PANEL ═══ */}
                   {ownedCharNames.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-gray-500 mb-1" style={{ fontSize: '9px' }}>Resonators ({ownedCharNames.length})</p>
-                      <div className="flex flex-wrap gap-1">
-                        {ownedCharNames.slice(0, 16).map(name => (
-                          <span key={name} className="px-1.5 py-0.5 rounded text-gray-300" style={{ fontSize: '8px', background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.06)' }}>{name}</span>
-                        ))}
+                    <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                      <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent)' }} />
+                      <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                      <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                      <div className="flex items-center gap-2 mb-2">
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                        <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {ownedCharNames.slice(0, 16).map(name => {
+                          const imgUrl = collectionImages[name];
+                          const f = getImageFraming(`collection-${name}`);
+                          return (
+                            <div key={name} style={{ width: '46px' }}>
+                              <div className="relative rounded-lg overflow-hidden" style={{ width: '46px', height: '72px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
+                                <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+                                {imgUrl ? (
+                                  <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
+                                  </div>
+                                )}
+                                <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))' }}>
+                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                         {ownedCharNames.length > 16 && (
-                          <span className="px-1.5 py-0.5 text-gray-500" style={{ fontSize: '8px' }}>+{ownedCharNames.length - 16} more</span>
+                          <div className="flex items-center justify-center rounded-lg" style={{ width: '46px', height: '72px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <span className="text-gray-500 font-mono" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
+                          </div>
                         )}
                       </div>
                     </div>
                   )}
-                  
-                  {/* Footer line */}
-                  <div className="flex items-center justify-between mt-3 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                    <span className="text-gray-600 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
-                    <span className="text-gray-600" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
+
+                  {/* ═══ TROPHIES PANEL ═══ */}
+                  {(() => {
+                    const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
+                    if (!sorted.length) return null;
+                    return (
+                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.3), transparent)' }} />
+                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
+                        </div>
+                        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
+                          {sorted.map(trophy => {
+                            const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
+                            return (
+                              <div key={trophy.id} className="relative p-2.5 rounded-lg text-center overflow-hidden" style={{ aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
+                                <div className="rounded-full flex items-center justify-center mb-1.5" style={{ width: '36px', height: '36px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                  <IconComponent size={18} style={{ color: trophy.color }} />
+                                </div>
+                                <div className="text-[9px] font-bold text-white truncate w-full px-1">{trophy.name}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ═══ FOOTER ═══ */}
+                  <div className="relative flex items-center justify-between pt-1.5">
+                    <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+                    <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
+                    <span className="text-gray-500" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
                   </div>
                 </div>
               </div>
@@ -4842,7 +6221,7 @@ Example: {"pulls":[...]}'
                 <button
                   onClick={() => setIdCardFormat('landscape')}
                   className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
-                  style={idCardFormat === 'landscape' ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
                   title="Landscape 16:9"
                 >
                   <Monitor size={12} /> 16:9
@@ -4850,7 +6229,7 @@ Example: {"pulls":[...]}'
                 <button
                   onClick={() => setIdCardFormat('portrait')}
                   className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
-                  style={idCardFormat === 'portrait' ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' } : { color: '#6b7280' }}
+                  style={idCardFormat === 'portrait' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18' } : { color: '#6b7280' }}
                   title="Portrait 9:16"
                 >
                   <Smartphone size={12} /> 9:16
@@ -4872,12 +6251,13 @@ Example: {"pulls":[...]}'
               </button>
             </div>
           </div>
+          </div>
         </div>
       )}
 
       {/* Admin Panel Modal */}
       {showAdminPanel && !adminMiniMode && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
+        <div ref={adminTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
           <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
@@ -4932,6 +6312,12 @@ Example: {"pulls":[...]}'
                       Visual Settings
                     </button>
                     <button
+                      onClick={() => setAdminTab('trophies')}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                    >
+                      Trophies
+                    </button>
+                    <button
                       onClick={() => setAdminTab('players')}
                       className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
                     >
@@ -4957,7 +6343,7 @@ Example: {"pulls":[...]}'
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           
                           if (uniqueNames.length === 0) {
-                            return <p className="text-gray-500 text-xs text-center py-4">Import Convene data first to see your collection items</p>;
+                            return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data to populate your archive</p>;
                           }
                           
                           return (
@@ -4979,7 +6365,9 @@ Example: {"pulls":[...]}'
                                         const val = e.target.value.trim();
                                         const newCustom = { ...customCollectionImages };
                                         if (val) {
-                                          if (val.length > 5 && !/^https?:\/\//i.test(val)) return; // P7-FIX: URL validation (7B) — only enforce once user types a real URL
+                                          if (val.length > 5 && !/^https:\/\//i.test(val)) return; // Enforce HTTPS-only URLs
+                                          // P15-FIX: MEDIUM-3 — Validate against domain allowlist
+                                          if (val.length > 10) { try { const h = new URL(val).hostname; if (!ALLOWED_IMAGE_HOSTS.some(d => h === d || h.endsWith('.'+d))) return; } catch { return; } }
                                           newCustom[name] = val;
                                         } else {
                                           delete newCustom[name];
@@ -4989,11 +6377,12 @@ Example: {"pulls":[...]}'
                                       className={`kuro-input flex-1 text-[10px] py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
                                     />
                                     {displayUrl && (
-                                      <img 
-                                        src={displayUrl} 
+                                      <img
+                                        src={displayUrl}
                                         alt={name}
                                         className="w-8 h-8 object-cover rounded border border-purple-500/30"
-                                        onError={(e) => e.target.style.display = 'none'}
+                                        loading="lazy"
+                                        onError={hideOnError}
                                       />
                                     )}
                                   </div>
@@ -5047,7 +6436,7 @@ Example: {"pulls":[...]}'
                           🗗 Mini Window
                         </button>
                         <button
-                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
+                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
                           className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
                         >
                           Reset to Defaults
@@ -5070,10 +6459,10 @@ Example: {"pulls":[...]}'
                         <div className="text-gray-400 text-xs mt-1">
                           {activePlayersCount === 1 ? 'Open Session' : 'Open Sessions'}
                         </div>
-                        <div className="text-gray-500 text-[9px] mt-1 leading-relaxed">
+                        <div className="text-gray-400 text-[9px] mt-1 leading-relaxed">
                           Anyone browsing the app — includes visitors who haven't imported data or submitted to the leaderboard
                         </div>
-                        <div className="text-gray-600 text-[9px] mt-1">
+                        <div className="text-gray-400 text-[9px] mt-1">
                           Updates every 30s • Heartbeat: 60s • Timeout: 2min
                         </div>
                       </div>
@@ -5091,8 +6480,8 @@ Example: {"pulls":[...]}'
                                     <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
                                   </linearGradient>
                                 </defs>
-                                <XAxis dataKey="time" tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                                <YAxis tick={{ fill: '#6b7280', fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
+                                <XAxis dataKey="time" tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} interval="preserveStartEnd" />
+                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
                                 <Area type="monotone" dataKey="count" stroke="#34d399" strokeWidth={2} fill="url(#presenceGrad)" />
                               </AreaChart>
                             </ResponsiveContainer>
@@ -5112,32 +6501,40 @@ Example: {"pulls":[...]}'
                       <div className="bg-white/5 border border-white/10 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Registered Players</div>
-                          <div className="text-gray-500 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
+                          <div className="text-gray-400 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
                         </div>
                         {!adminPlayerList ? (
-                          <p className="text-gray-500 text-xs text-center py-4">Loading...</p>
+                          <div className="space-y-1.5 py-2" aria-label="Loading player list">
+                            {[...Array(4)].map((_, i) => (
+                              <div key={i} className="flex items-center gap-2 p-2 rounded bg-white/5">
+                                <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
+                                <div className="kuro-skeleton kuro-skeleton-text flex-1" style={{ width: `${60 + i * 5}%` }} />
+                                <div className="kuro-skeleton kuro-skeleton-text w-12 h-3 flex-shrink-0" />
+                              </div>
+                            ))}
+                          </div>
                         ) : adminPlayerList.length === 0 ? (
-                          <p className="text-gray-500 text-xs text-center py-4">No players yet</p>
+                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No operatives registered</p>
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (
                               <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded bg-white/5 hover:bg-white/10 transition-colors">
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-gray-500 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
+                                    <span className="text-gray-400 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
                                     <span className="text-white text-[11px] font-mono font-medium truncate">{p.uid || p.id}</span>
                                     {p.uid && p.id !== p.uid && (
-                                      <span className="text-gray-600 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
+                                      <span className="text-gray-500 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-3 ml-6 mt-0.5">
-                                    <span className="text-gray-500 text-[9px]">Avg: <span className="text-yellow-400">{p.avgPity}</span></span>
-                                    <span className="text-gray-500 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
-                                    <span className="text-gray-500 text-[9px]">Pulls: <span className="text-gray-300">{p.totalPulls}</span></span>
-                                    <span className="text-gray-500 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
+                                    <span className="text-gray-400 text-[9px]">Avg: <span className="text-yellow-400">{typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity}</span></span>
+                                    <span className="text-gray-400 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
+                                    <span className="text-gray-400 text-[9px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
+                                    <span className="text-gray-400 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                                   </div>
                                 </div>
-                                <div className="text-gray-600 text-[8px] text-right flex-shrink-0 ml-2">
+                                <div className="text-gray-500 text-[8px] text-right flex-shrink-0 ml-2">
                                   {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
                                 </div>
                               </div>
@@ -5147,7 +6544,7 @@ Example: {"pulls":[...]}'
                       </div>
                       
                       {/* Privacy Notice */}
-                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-500 space-y-1">
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-400 space-y-1">
                         <div className="text-gray-400 font-medium">🔒 Privacy</div>
                         <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
                         <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
@@ -5170,6 +6567,105 @@ Example: {"pulls":[...]}'
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Trophies Tab */}
+                  {adminTab === 'trophies' && (
+                    <div className="space-y-4">
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
+                        <h3 className="text-amber-400 text-sm font-medium mb-2">Trophy Name Editor</h3>
+                        <p className="text-gray-400 text-[10px] mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
+
+                        {/* Current trophies list — read-only reference */}
+                        <div className="mb-3">
+                          <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Current Trophies ({trophies?.list?.length || 0})</div>
+                          <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-white/10 p-2 space-y-0.5">
+                            {(trophies?.list || []).map(t => (
+                              <div key={t.id} className="flex items-center gap-2 py-0.5">
+                                <span className="text-[9px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
+                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                                <span className={`text-[10px] flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
+                                <span className="text-[8px] text-gray-500 flex-shrink-0">{t.name.length}ch</span>
+                              </div>
+                            ))}
+                            {(!trophies?.list || trophies.list.length === 0) && (
+                              <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Import Convene data to unlock achievements</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Export current as JSON */}
+                        <button
+                          onClick={() => {
+                            const data = {};
+                            (trophies?.list || []).forEach(t => { data[t.id] = { name: t.name, desc: t.desc }; });
+                            navigator.clipboard?.writeText(JSON.stringify(data, null, 2));
+                            toast?.addToast?.('Trophy data copied to clipboard', 'success');
+                          }}
+                          className="w-full mb-3 px-3 py-1.5 bg-white/5 border border-white/10 text-gray-300 rounded text-[10px] hover:bg-white/10 transition-colors"
+                        >
+                          Export Current Trophies as JSON
+                        </button>
+
+                        {/* JSON import textarea */}
+                        <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Import Overrides (JSON)</div>
+                        <textarea
+                          className="kuro-input w-full h-40 text-[9px] font-mono"
+                          value={trophyJsonInput}
+                          onChange={(e) => setTrophyJsonInput(e.target.value)}
+                          placeholder={'{\n  "pity1": { "name": "New Name Here", "desc": "New description" },\n  "win7": { "name": "Another Name" }\n}'}
+                          aria-label="Trophy overrides JSON input"
+                        />
+                        <p className="text-gray-400 text-[9px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              try {
+                                const parsed = JSON.parse(trophyJsonInput);
+                                if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Must be a JSON object');
+                                const cleaned = {};
+                                let count = 0;
+                                for (const [id, val] of Object.entries(parsed)) {
+                                  if (typeof val !== 'object' || !val) continue;
+                                  const entry = {};
+                                  if (val.name && typeof val.name === 'string') entry.name = val.name.trim();
+                                  if (val.desc && typeof val.desc === 'string') entry.desc = val.desc.trim();
+                                  if (Object.keys(entry).length > 0) { cleaned[id] = entry; count++; }
+                                }
+                                setTrophyOverrides(cleaned);
+                                try { localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(cleaned)); } catch {}
+                                toast?.addToast?.(`Applied ${count} trophy override${count !== 1 ? 's' : ''}`, 'success');
+                              } catch (e) {
+                                toast?.addToast?.('Invalid JSON: ' + e.message, 'error');
+                              }
+                            }}
+                            className="kuro-btn flex-1 text-xs"
+                          >
+                            Apply Overrides
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (!window.confirm('Clear all trophy name overrides?')) return;
+                              setTrophyOverrides({});
+                              setTrophyJsonInput('');
+                              try { localStorage.removeItem(TROPHY_OVERRIDES_KEY); } catch {}
+                              toast?.addToast?.('Trophy overrides cleared', 'success');
+                            }}
+                            className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+
+                        {/* Active overrides count */}
+                        {Object.keys(trophyOverrides).length > 0 && (
+                          <div className="mt-3 bg-amber-500/10 border border-amber-500/20 rounded p-2 text-[10px] text-amber-400">
+                            {Object.keys(trophyOverrides).length} active override{Object.keys(trophyOverrides).length !== 1 ? 's' : ''}: {Object.keys(trophyOverrides).join(', ')}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -5221,6 +6717,7 @@ Example: {"pulls":[...]}'
                       value={bannerForm.charsJson}
                       onChange={(e) => updateBannerForm('charsJson', e.target.value)}
                       placeholder="Paste characters array JSON"
+                      aria-label="Featured resonators JSON"
                     />
                   </div>
 
@@ -5231,6 +6728,7 @@ Example: {"pulls":[...]}'
                       value={bannerForm.weapsJson}
                       onChange={(e) => updateBannerForm('weapsJson', e.target.value)}
                       placeholder="Paste weapons array JSON"
+                      aria-label="Featured weapons JSON"
                     />
                   </div>
 
@@ -5246,6 +6744,16 @@ Example: {"pulls":[...]}'
                             value={bannerForm.charImages[i] ?? ''}
                             onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${c.name} image URL`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="center 20%"
+                            value={bannerForm.charImagePositions[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, charImagePositions: { ...prev.charImagePositions, [i]: e.target.value } }))}
+                            className="kuro-input w-24 text-[10px] py-1"
+                            aria-label={`${c.name} image position`}
+                            title="CSS object-position (e.g. center 20%)"
                           />
                         </div>
                       ))}
@@ -5264,6 +6772,16 @@ Example: {"pulls":[...]}'
                             value={bannerForm.weapImages[i] ?? ''}
                             onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))}
                             className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${w.name} image URL`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="center 30%"
+                            value={bannerForm.weapImagePositions[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, weapImagePositions: { ...prev.weapImagePositions, [i]: e.target.value } }))}
+                            className="kuro-input w-24 text-[10px] py-1"
+                            aria-label={`${w.name} image position`}
+                            title="CSS object-position (e.g. center 30%)"
                           />
                         </div>
                       ))}
@@ -5281,6 +6799,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.standardCharImg}
                           onChange={(e) => updateBannerForm('standardCharImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tidal Chorus banner image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5291,6 +6810,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.standardWeapImg}
                           onChange={(e) => updateBannerForm('standardWeapImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Winter Brume banner image URL"
                         />
                       </div>
                     </div>
@@ -5307,6 +6827,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.wwImg}
                           onChange={(e) => updateBannerForm('wwImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Whimpering Wastes image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5317,6 +6838,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.dpImg}
                           onChange={(e) => updateBannerForm('dpImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Doubled Pawns image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5327,6 +6849,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.toaImg}
                           onChange={(e) => updateBannerForm('toaImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tower of Adversity image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5337,6 +6860,7 @@ Example: {"pulls":[...]}'
                           value={bannerForm.irImg}
                           onChange={(e) => updateBannerForm('irImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Illusive Realm image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -5347,10 +6871,11 @@ Example: {"pulls":[...]}'
                           value={bannerForm.drImg}
                           onChange={(e) => updateBannerForm('drImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Daily Reset image URL"
                         />
                       </div>
                     </div>
-                    <p className="text-gray-500 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
+                    <p className="text-gray-400 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -5378,11 +6903,15 @@ Example: {"pulls":[...]}'
                             if (!c.id || !c.name) throw new Error(`Character ${i + 1} missing id or name`);
                             const img = (bannerForm.charImages[i] ?? '').trim();
                             if (img) { validateImgUrl(img, `Character ${i + 1} image`); c.imageUrl = img; }
+                            const pos = (bannerForm.charImagePositions[i] ?? '').trim();
+                            if (pos) c.imagePosition = pos;
                           });
                           weaps.forEach((w, i) => {
                             if (!w.id || !w.name) throw new Error(`Weapon ${i + 1} missing id or name`);
                             const img = (bannerForm.weapImages[i] ?? '').trim();
                             if (img) { validateImgUrl(img, `Weapon ${i + 1} image`); w.imageUrl = img; }
+                            const pos = (bannerForm.weapImagePositions[i] ?? '').trim();
+                            if (pos) w.imagePosition = pos;
                           });
                           const startDate = new Date(bannerForm.startDate);
                           const endDate = new Date(bannerForm.endDate);
@@ -5581,7 +7110,7 @@ Example: {"pulls":[...]}'
               <>
             {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
             <button 
-              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(defaultVisualSettings); }}
+              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
               className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
               ↻ Reset All to Defaults
@@ -5622,9 +7151,9 @@ Example: {"pulls":[...]}'
       )}
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: 'rgba(8,12,18,0.9)'}}>
+      <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
-          <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(251,191,36,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
+          <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>
       </footer>
     </div>

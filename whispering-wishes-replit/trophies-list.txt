@@ -1,0 +1,266 @@
+===========================================================
+  WHISPERING WISHES — ALL TROPHIES
+===========================================================
+  Format:  ID | Name | Description
+
+  Mark any trophy with * next to the name to indicate
+  you want it renamed. Edit the name/desc as you wish,
+  then give me the modified file or a JSON back.
+===========================================================
+
+
+--- COLLECTION ---
+
+all             | No Life Achievement            | Every Resonator and Weapon collected. go outside.
+5res            | Gotta Whale 'Em All            | All 5★ Resonators unlocked
+4res            | Sonata Effect                  | All 4★ Resonators in your roster
+5weap           | Forgemaster                    | All 5★ Weapons acquired
+4weap           | Armory of Jinzhou              | All 4★ Weapons in your arsenal
+3weap           | Data Bank: Full                | Every 3★ Weapon catalogued
+
+
+--- LUCK / EARLY PULLS ---
+
+pity1           | Pity 1. Screenshot or Fake.    | 5★ on the first pull. nobody believes you
+early10         | Dev Account?                   | 5★ at pity 10 — go buy a lottery ticket
+early20         | Disgusting Luck                | 5★ at pity 20
+early40         | Echo of Fortune                | 5★ at pity 40
+
+
+--- PITY & HARD PITY ---
+
+hard80          | Pity 80 Club                   | Went the full distance. pain.
+hard5           | Tacet Mark: Permanent          | Hit hard pity 5× — the Lament scarred your account
+hard3           | Frequent Flyer: Pity 80        | Hit hard pity 3× — you know the road to 80 by heart
+neverearly      | Waveplate Syndrome             | Never once got a 5★ before soft pity — always waiting, never winning
+dry150          | Huanglong's Desert             | 160 pulls between 5★ — the wasteland arc
+dry130          | Tacet Drought                  | 145 pulls between 5★ — silence from the banner
+
+
+--- SOFT PITY ---
+
+softpro2        | Soft Pity Landlord             | 10 five-stars from soft zone — you own property here
+softpro         | Soft Pity Merchant             | 5 five-stars from soft zone — never early, never late
+
+
+--- BACK TO BACK / EARLY ---
+
+b2b3            | Actual Hack                    | 3 five-stars within 15 pulls — how
+b2b             | Back to Back                   | 5★ within 15 pulls of the last — flexing is permitted
+early5x         | Rover's Plot Armor             | 5 five-stars within first 10 pity — protagonist luck is real
+early3x         | Resonance Beacon               | 3 five-stars within first 10 pity — they come to you
+speed           | Early Pity Any%                | Won 50/50 at pity 20 — frame-perfect gacha luck
+
+
+--- 50/50 WIN STREAKS ---
+
+win10           | Rover's Blessing               | 10× 50/50 wins — the Sentinel chose you
+win7            | Rigged (Positive)              | 7× 50/50 wins — actual witchcraft
+win5            | Main Character Energy           | 5× 50/50 wins in a row
+win4            | Resonance Chain                 | 4× 50/50 wins in a row — keep the chain going
+win3            | Casually Winning                | 3× 50/50 wins in a row
+noloss          | Literally Never Lost            | 3 50/50 wins, zero losses — touch grass
+
+
+--- 50/50 LOSS STREAKS ---
+
+loss10s         | Lament Never Ended             | 10× 50/50 losses — the catastrophe hit your account
+loss7           | Clinically Cursed              | 7× 50/50 losses — uninstall tbh
+loss5           | Kuro Hates You                 | 5× 50/50 losses in a row
+loss4           | Waveworn                       | 4× 50/50 losses in a row — eroded by RNG
+loss3           | Skill Issue (Gacha)            | 3× 50/50 losses in a row
+guar3           | Guarantee Gang                 | 3 guaranteed 5★ in a row — never won a 50/50 between them
+
+
+--- 50/50 FIRSTS ---
+
+first5050       | Beginner's Luck                | Won your very first 50/50
+firstloss       | First Time?                    | First 50/50 was a loss — it only gets worse
+redeem          | Copium Rewarded                | Lost 50/50, then won the next — anime protagonist arc
+odds            | Plot Armor Activated           | Won 50/50 after 3+ consecutive losses — anime comeback arc
+
+
+--- TOTAL PULLS ---
+
+mega            | Mortgage Status                | 2000+ Convenes — seek financial advice
+1500            | Astrite Overdose               | 1500+ Convenes — Kuro sends you a Christmas card
+whale           | Kuro Employee of the Month     | 1000+ Convenes — they know you by name
+750             | Terminal Stage                  | 750+ Convenes — the Lament hit your wallet
+500             | Down the Rabbit Hole           | 500+ Convenes — no turning back
+300             | Sunk Cost Fallacy              | 300+ Convenes — too deep to quit, too broke to continue
+200             | Rover's Allowance: Gone        | 200+ Convenes — emotionally and financially invested
+100             | First Steps                    | 100+ Convenes
+
+
+--- FIVE-STAR COUNT ---
+
+100stars        | Convene Printer Goes Brr       | 100 five-stars obtained — you ARE the banner
+75stars         | Resonance Overload             | 75 five-stars obtained — Sonata Effect: maxed
+50stars         | Addicted                       | 50 five-stars obtained — this is a problem
+35stars         | Tacet Discord Hoarder          | 35 five-stars obtained — your roster IS the Tacet Discord
+25stars         | Stargazer                      | 25 five-stars obtained
+15stars         | Sequence Node: Farming         | 15 five-stars obtained — the grind is real
+10stars         | Rising Star                    | 10 five-stars obtained
+5stars          | First Expedition               | 5 five-stars obtained — your team is forming
+first5          | Awakening                      | Obtained your first 5★
+
+
+--- BANNER DIVERSITY ---
+
+diverse         | Pioneer Podcast                | Convened on all banner types
+diverse3        | Pioneer Intern                 | Pulled on 3 different banner types — almost a real Pioneer
+
+
+--- UNIQUE 5★ RESONATORS OWNED ---
+
+own30           | Huanglong's Census             | 30 unique 5★ Resonators — Rover collected them all
+own25           | Sonata Library: Full           | 25 unique 5★ Resonators — you ARE the tier list
+own20           | Jinzhou Housing Crisis         | 20 unique 5★ Resonators — where do they all sleep
+own15           | Forte Circuit Overload         | 15 unique 5★ Resonators — too many builds to farm
+own10           | Union Level: Whale             | 10 unique 5★ Resonators — the roster is stacked
+own5            | First Expedition Team          | 5 unique 5★ Resonators — your party is forming
+
+
+--- UNIQUE 5★ WEAPONS OWNED ---
+
+weap20          | Forgery Domain Resident        | 20 unique 5★ Weapons — open a museum in Jinzhou
+weap15          | Sonance Casket: Stuffed        | 15 unique 5★ Weapons — inventory management simulator
+weap10          | Pioneer's Arsenal              | 10 unique 5★ Weapons — a blade for every occasion
+weap5           | Tacet Field Sweep              | 5 unique 5★ Weapons — the field has been cleared
+weap3           | First Forgery Run              | 3 unique 5★ Weapons — your collection begins
+
+
+--- S6 (MAX SEQUENCE) TROPHIES ---
+
+s6_all          | Gathering Wives: Complete      | Every 5★ at S6 — Rover's harem is full. seek help.
+s6_harem20      | Harem Protagonist EX           | 20/33 at S6 — your wallet is in critical condition
+s6_harem10      | Gathering Wives                | 10/33 at S6 — Rover didn't stutter
+s6_harem5       | Starting a Collection          | 5 at S6 — the harem arc is canon
+s6_other        | The Shaper                     | S6 [char name] — fully Sequenced
+
+  Per-character S6 trophies (33 characters):
+
+  s6_Jiyan            | Dragon Deez Nuts                | S6 Jiyan — 1.0 loyalty that costs more than rent
+  s6_Calcharo         | Sentence: S6                    | S6 Calcharo — guilty of whaling in the first degree
+  s6_Encore           | Woolies World Domination        | S6 Encore — Cosmos and Cloudy run this account now
+  s6_Jianxin          | Down Bad for Parry              | S6 Jianxin — "I'll take all the 50/50 losses" energy
+  s6_Lingyang         | You Actually S6'd HIM?!         | S6 Lingyang — built different or brain different
+  s6_Verina           | Lost 50/50 Seven Times          | S6 Verina — and every single one was a W
+  s6_Yinlin           | Down Catastrophic               | S6 Yinlin — she pulled your strings and your wallet
+  s6_Jinhsi           | Simp Magistrate                 | S6 Jinhsi — sold Jinzhou to fund this
+  s6_Changli          | Touch Grass? Touch Fire.        | S6 Changli — your savings went up in flames
+  s6_Zhezhi           | Drawing Bankruptcy              | S6 Zhezhi — her art costs more than actual art
+  s6_XiangliYao       | He Did The Math (x7)            | S6 Xiangli Yao — calculated your savings into Hypercubes
+  s6_Shorekeeper      | She Protecc (x7)                | S6 Shorekeeper — your team cannot die. ever.
+  s6_Camellya         | Dislocated But Worth It         | S6 Camellya — thumbs broken, damage beautiful
+  s6_Carlotta         | Wallet? Frozen.                 | S6 Carlotta — bank account colder than her kit
+  s6_Roccia           | Hard Carried (Literally)        | S6 Roccia — Mamma mia...who's the clown now?
+  s6_Phoebe           | Feebi Chupi Supremacy           | S6 Phoebe — max power cheek pinch unlocked
+  s6_Brant            | Burned Through Savings          | S6 Brant — fire DPS, fire wallet
+  s6_Cantarella       | Toxic Relationship              | S6 Cantarella — she's poison and you keep coming back
+  s6_Zani             | Frazzle Addict                  | S6 Zani — 19 stacks of Frazzle, zero stacks of savings
+  s6_Ciaccona         | Wind Main in 2026               | S6 Ciaccona — bold, delusional, committed
+  s6_Cartethyia       | Blessed Wallet Drain            | S6 Cartethyia — the Maiden blessed your poverty
+  s6_Lupa             | Awoo'd Too Hard                 | S6 Lupa — the wolf pack ate your bank account
+  s6_Phrolova         | Puppet? You're the Puppet.      | S6 Phrolova — she played you like her dolls
+  s6_Augusta          | Shocking Bill                   | S6 Augusta — electrifying damage, electrifying debt
+  s6_Iuno             | Tone Deaf Spending              | S6 Iuno — the melody was "swipe swipe swipe"
+  s6_Galbrena         | Witch Time: Maxed               | S6 Galbrena — she IS Bayonetta now
+  s6_Qiuyuan          | Echo Chamber                    | S6 Qiuyuan — he echoed "one more pull" seven times
+  s6_Chisa            | Cut Your Losses (Didn't)        | S6 Chisa — the blade cuts everything except your spending
+  s6_Lynae            | Lynae Impact                    | S6 Lynae — just rename the game already
+  s6_Mornye           | Rhythm of Regret                | S6 Mornye — the beat dropped and so did your balance
+  s6_LuukHerssen      | Fist Full of Debt               | S6 Luuk Herssen — punched his way through your wallet
+  s6_Aemeath          | Rode Into Bankruptcy            | S6 Aemeath — the Exostrider ran over your finances
+
+
+--- R5 (MAX REFINEMENT) WEAPONS ---
+
+r5three         | Forge of Impermanence          | 3 R5 weapons — your armory costs more than a car
+r5two           | Tuner Diff                     | 2 R5 weapons — one wasn't enough apparently
+r5              | Weapon Banner Victim           | R5 [weapon name] — financially irresponsible
+r3              | Halfway to Copium              | R3+ [weapon name] — too invested to stop, too broke to finish
+
+
+--- WEAPON BANNER VOLUME ---
+
+weapvol5        | Weapon Banner Prisoner         | 500 weapon banner pulls — this is a lifestyle choice
+weapvol2        | Signature Cope                 | 200 weapon banner pulls — "it's a DPS increase bro"
+weapsimp        | BiS or Bust                    | More weapon pulls than character pulls — priorities moment
+noweap          | Fists Only Challenge           | Zero weapon banner pulls — who needs signatures anyway
+
+
+--- AVERAGE PITY ---
+
+luckyavg2       | Edited Convene Log             | Avg pity 35 across 10 five-stars — has to be fake right??
+luckyavg        | Illegal Luck                   | Avg pity 45 across 10 five-stars — report this account
+unluckyavg      | Certified Unlucky              | Avg pity 70 — genuinely painful to look at
+unluckyavg2     | Soft Pity Squatter             | Avg pity 65 — you live in the soft zone rent-free
+
+
+--- WIN RATE ---
+
+highwr          | Account For Sale?              | 80% win rate across 5 flips — this isn't normal
+goodwr          | Jinzhou's Luckiest             | 65% win rate across 5 flips — the Magistrate blesses you
+balanced        | 50/50 at 50/50                 | 50% win rate across 10 flips — mathematically perfect copium
+lowwr           | Statistically Bullied          | 20% win rate across 5 flips — file a complaint
+badwr           | Tacet Field: Account           | 35% win rate across 5 flips — corrupted beyond repair
+
+
+--- TOTAL WINS / LOSSES ---
+
+wins20          | Shorekeeper's Chosen           | 20 50/50 wins — she protects your account too
+wins10          | Sonance Cascade                | 10 50/50 wins total — the echoes answer
+loss10          | Down Bad (Financially)         | 10 50/50 losses — at what point do you stop
+
+
+--- SPECIFIC CHARACTER LOSS TROPHIES ---
+
+tiger3          | Lingyang Main (Involuntary)    | Lost 50/50 to Lingyang 3× — he chose you
+tiger1          | Lingyang'd                     | Lost 50/50 to Lingyang — welcome to the club
+calch3          | Calcharo Stalker Victim        | Lost 50/50 to Calcharo 3× — restraining order when
+calch1          | Sentenced                      | Lost 50/50 to Calcharo — guilty as charged
+jianxin         | Parry This Casual              | Lost 50/50 to Jianxin 1×
+encore          | Woolie'd                       | Lost 50/50 to Encore 1× — Cosmos sends his regards
+verina          | W in Disguise                  | Lost 50/50 to Verina 1× — best L you ever took
+allstd          | Gotta Lose 'Em All             | Lost 50/50 to every standard character — completionist arc
+dup             | Hostage Situation              | [char] S[seq] from 50/50 losses alone — didn't even want them
+stdS6           | Accidental S6: Coping          | S6 [char] entirely from 50/50 losses — didn't even pull for them
+
+
+--- SIGNATURE WEAPON COMBOS ---
+
+sig10           | Tuning Complete                | 10 characters with their signature — peak Forte optimization
+sig5            | Forte Synergy                  | 5 characters with their signature weapon — built different
+sig3            | Echo Equipped                  | 3 characters with their signature weapon
+sig1            | Signature Acquired             | Pulled a character and their signature weapon — BiS secured
+
+
+--- TEAM COMP TROPHIES ---
+
+phrol           | Codependency                   | Phrolova + Cantarella — useless without each other, broken together
+zaphi           | Wheelchair                     | Phoebe + Zani — 19 Frazzle stacks, zero skill required
+lynmor          | Pay2Win Unlocked               | Lynae + Mornye — the game plays itself now
+monofusion      | Arsonist Squad                 | Changli + Brant + Lupa — everything burns, including your primos
+fusion          | Bayonetta at Home              | Galbrena + Qiuyuan + SK — Mom said we have Bayonetta at home
+jiyan           | Boomer Comp                    | Jiyan + Mortefi — 1.0 copium that refuses to retire
+heals           | Skill Issue Insurance          | SK + Verina — can't die even if you tried
+jinzhou         | Magistrate's Flame             | Jinhsi + Changli — Jinzhou's power duo
+rinascita       | Rinascita Familia              | Carlotta + Roccia — the ice queen and her ride
+stdall          | Losers Club                    | All standard 5★ Resonators — the "thanks for the 50/50 loss" squad
+
+
+--- META / MISC ---
+
+t0six           | Tower? Cleared.                | 6 T0 DPS — ToA is your personal playground
+t0three         | Meta Slave                     | 3 T0 DPS — tier list told you to pull
+onetrick        | Solo Resonator                 | Only [char] — loyalty or poverty?
+dry             | Down Horrendous                | 200 pulls, 2 five-stars — delete the app
+efficient       | F2P BTW                        | 5 five-stars in only 200 pulls — maximum Astrite efficiency
+
+
+===========================================================
+  TOTAL: 114 unique trophy definitions + 33 per-character S6
+
+  [char] / [weapon] / [seq] = player's actual value at runtime
+===========================================================

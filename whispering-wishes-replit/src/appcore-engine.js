@@ -92,10 +92,14 @@ const getNextDailyReset = (server) => {
     reset += 86400000; // Add 24 hours
   }
   
-  // P9-FIX: Use offset at the reset time for conversion, not current offset (MEDIUM-5c)
-  // This handles DST transitions between now and the next reset
-  const resetOffsetAtTarget = getServerOffset(server, reset - serverOffset * 3600000);
-  const resetUtc = reset - resetOffsetAtTarget * 3600000;
+  // Iterative DST correction: initial estimate may use wrong offset near DST transition
+  let resetOffsetAtTarget = getServerOffset(server, reset - serverOffset * 3600000);
+  let resetUtc = reset - resetOffsetAtTarget * 3600000;
+  // Second pass: verify offset at the corrected UTC (handles DST boundary ±1h)
+  const verifiedOffset = getServerOffset(server, resetUtc);
+  if (verifiedOffset !== resetOffsetAtTarget) {
+    resetUtc = reset - verifiedOffset * 3600000;
+  }
   return new Date(resetUtc).toISOString();
 };
 
@@ -130,9 +134,13 @@ const getNextWeeklyReset = (server) => {
   // Monday 04:00 in server local time
   const mondayLocal = Date.UTC(year, month, day + daysToMon, 4, 0, 0, 0);
   
-  // P9-FIX: Use offset at the reset time for conversion, not current offset (MEDIUM-5c)
-  const resetOffsetAtTarget = getServerOffset(server, mondayLocal - serverOffset * 3600000);
-  const mondayUtc = mondayLocal - resetOffsetAtTarget * 3600000;
+  // Iterative DST correction: verify offset at the estimated UTC time
+  let resetOffsetAtTarget = getServerOffset(server, mondayLocal - serverOffset * 3600000);
+  let mondayUtc = mondayLocal - resetOffsetAtTarget * 3600000;
+  const verifiedOffset = getServerOffset(server, mondayUtc);
+  if (verifiedOffset !== resetOffsetAtTarget) {
+    mondayUtc = mondayLocal - verifiedOffset * 3600000;
+  }
   return new Date(mondayUtc).toISOString();
 };
 
@@ -145,6 +153,9 @@ const MAX_PITY = HARD_PITY; // P7-FIX: Use single source of truth (7E)
 const GACHA_EPS = 1e-15;
 
 // Soft pity rate function: 0.8% base, linear ramp from SOFT_PITY_START to 100% at HARD_PITY
+// P15-FIX: MEDIUM-7 — pity=80 (MAX_PITY) is the absorbing state: the formula yields >1.0
+// before clamping, but Math.min ensures it returns exactly 1.0. The DP table accesses
+// getPullRate(80) via nextPity = Math.min(MAX_PITY, p+1), which is correct — pity 80 = guaranteed.
 const BASE_5STAR_RATE = 0.008; // 0.8%
 const SOFT_PITY_STEPS = MAX_PITY - SOFT_PITY_START; // 80 - 65 = 15 steps
 const getPullRate = (pity) => {
@@ -158,24 +169,24 @@ const getPullRate = (pity) => {
 const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10) => {
   // Clamp startPity to valid range
   const clampedPity = Math.max(0, Math.min(MAX_PITY, startPity));
-  
+
   // DP state: dp[pulls][pity][guar?][copies] = probability
-  // For weapon: no guarantee dimension
-  const dp = Array.from({length: N+1}, () => 
-    Array.from({length: MAX_PITY+1}, () => 
-      isWeapon ? 
+  // For weapon: no guarantee dimension (every 5★ is featured)
+  const dp = Array.from({length: N+1}, () =>
+    Array.from({length: MAX_PITY+1}, () =>
+      isWeapon ?
         Array(maxCopies+1).fill(0) :
         Array.from({length: 2}, () => Array(maxCopies+1).fill(0))
     )
   );
-  
+
   // Initial state
   if (isWeapon) {
     dp[0][clampedPity][0] = 1.0;
   } else {
     dp[0][clampedPity][startGuar][0] = 1.0;
   }
-  
+
   // Fill DP table
   for (let n = 0; n < N; n++) {
     for (let p = 0; p <= MAX_PITY; p++) {
@@ -184,17 +195,17 @@ const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10
         for (let k = 0; k <= maxCopies; k++) {
           const prob = isWeapon ? dp[n][p][k] : dp[n][p][g][k];
           if (prob < GACHA_EPS) continue;
-          
+
           const rate = getPullRate(p);
           const nextPity = Math.min(MAX_PITY, p + 1);
-          
+
           // Non-5★ outcome
           if (isWeapon) {
             dp[n+1][nextPity][k] += prob * (1 - rate);
           } else {
             dp[n+1][nextPity][g][k] += prob * (1 - rate);
           }
-          
+
           // 5★ outcome
           const pFeatured = (isWeapon || g === 1) ? 1.0 : 0.5;
           const nextK = Math.min(k + 1, maxCopies); // Absorb overflow into maxCopies bucket
@@ -211,7 +222,7 @@ const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10
       }
     }
   }
-  
+
   // Extract final distribution
   const dist = Array(maxCopies+1).fill(0);
   for (let p = 0; p <= MAX_PITY; p++) {
@@ -222,7 +233,7 @@ const computeDistDP = (N, isWeapon, startPity = 0, startGuar = 0, maxCopies = 10
       }
     }
   }
-  
+
   // Normalize
   const total = dist.reduce((a, b) => a + b, 0);
   return dist.map(x => total > 0 ? x / total : 0);
@@ -291,17 +302,19 @@ const computeGachaStats = (dist) => {
 };
 
 // Expected pulls to reach targetK copies (value iteration)
+// Note: startGuar is only used for character banners (50/50 system).
+// Weapon banners are always 100% featured — startGuar is accepted but ignored.
 const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) => {
   if (targetK <= 0) return 0;
   const clampedPity = Math.max(0, Math.min(MAX_PITY, startPity));
-  
+
   // v[pity][guar][copies] = expected remaining pulls
   const v = Array.from({length: MAX_PITY + 1}, () =>
     isWeapon ?
       Array(targetK).fill(0) :
       Array.from({length: 2}, () => Array(targetK).fill(0))
   );
-  
+
   // Solve backwards from copies = targetK-1 down to 0
   for (let c = targetK - 1; c >= 0; c--) {
     // FIX: g loop OUTSIDE p loop — v[*][1][c] must be fully computed before any v[*][0][c]
@@ -312,16 +325,16 @@ const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) 
         const rate = getPullRate(p);
         const nextPity = Math.min(MAX_PITY, p + 1);
         const pFeatured = (isWeapon || g === 1) ? 1 : 0.5;
-        
+
         let expected = 1; // This pull
-        
+
         // Non-5★: continue at next pity
         if (isWeapon) {
           expected += (1 - rate) * v[nextPity][c];
         } else {
           expected += (1 - rate) * v[nextPity][g][c];
         }
-        
+
         // 5★ featured: +1 copy
         const nextC = c + 1;
         if (nextC < targetK) {
@@ -331,7 +344,7 @@ const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) 
         if (!isWeapon && g === 0) {
           expected += rate * 0.5 * v[0][1][c];
         }
-        
+
         if (isWeapon) {
           v[p][c] = expected;
         } else {
@@ -340,7 +353,7 @@ const expectedPullsToTarget = (isWeapon, targetK, startPity = 0, startGuar = 0) 
       }
     }
   }
-  
+
   return isWeapon ? v[clampedPity][0] : v[clampedPity][startGuar][0];
 };
 
@@ -349,7 +362,7 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
   // Lower bound must be 1, not targetK*40, to handle high starting pity correctly
   let low = 1, high = Math.min(targetK * 200, 5000); // P12-FIX: Cap at 5000 to prevent extreme MC (Step 14 — MEDIUM-10e)
   let ans = high;
-  
+
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     // Use higher MC trials in binary search to reduce stochastic oscillation
@@ -357,7 +370,7 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
       ? computeDistDP(mid, isWeapon, startPity, startGuar, targetK)
       : computeDistMC(mid, isWeapon, startPity, startGuar, targetK, 200000);
     const pGeK = getCumulativeProb(dist, targetK) * 100;
-    
+
     if (pGeK >= minProb) {
       ans = mid;
       high = mid - 1;
@@ -365,8 +378,48 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
       low = mid + 1;
     }
   }
+  // P15-FIX: MEDIUM-8 — Widen MC verification window from ±2 to ±5 and increase trial count
+  // to reduce stochastic noise in binary search convergence near exact thresholds.
+  if (ans > DP_MAX_PULLS && ans > 1) {
+    for (let check = ans - 5; check <= ans + 5; check++) {
+      if (check < 1) continue;
+      const vDist = computeDistMC(check, isWeapon, startPity, startGuar, targetK, 500000);
+      if (getCumulativeProb(vDist, targetK) * 100 >= minProb) {
+        ans = Math.min(ans, check);
+        break;
+      }
+    }
+  }
   return ans;
 };
+
+// P15-FIX: MEDIUM-12 — Action type constants to prevent silent typo failures in dispatch calls
+const ACTION = Object.freeze({
+  SET_SERVER: 'SET_SERVER',
+  SET_CALC: 'SET_CALC',
+  SET_PLANNER: 'SET_PLANNER',
+  SET_SETTINGS: 'SET_SETTINGS',
+  SET_EVENT_STATUS: 'SET_EVENT_STATUS',
+  ADD_INCOME: 'ADD_INCOME',
+  REMOVE_INCOME: 'REMOVE_INCOME',
+  CLEAR_ALL_INCOME: 'CLEAR_ALL_INCOME',
+  ADD_DAILY_INCOME: 'ADD_DAILY_INCOME',
+  IMPORT_HISTORY: 'IMPORT_HISTORY',
+  SET_UID: 'SET_UID',
+  SET_USERNAME: 'SET_USERNAME',
+  SET_PROFILE_PIC: 'SET_PROFILE_PIC',
+  CLEAR_PROFILE: 'CLEAR_PROFILE',
+  SAVE_BOOKMARK: 'SAVE_BOOKMARK',
+  LOAD_BOOKMARK: 'LOAD_BOOKMARK',
+  DELETE_BOOKMARK: 'DELETE_BOOKMARK',
+  SET_ACTIVE_TEAM: 'SET_ACTIVE_TEAM',
+  SET_TEAM_SLOT: 'SET_TEAM_SLOT',
+  CLEAR_TEAM_SLOT: 'CLEAR_TEAM_SLOT',
+  CLEAR_TEAM: 'CLEAR_TEAM',
+  RENAME_TEAM: 'RENAME_TEAM',
+  LOAD_STATE: 'LOAD_STATE',
+  RESET: 'RESET',
+});
 
 // [SECTION:STATE]
 const initialState = {
@@ -401,6 +454,14 @@ const initialState = {
   },
   bookmarks: [],
   eventStatus: {},
+  teams: [
+    { name: 'Team 1', slots: [null, null, null] },
+    { name: 'Team 2', slots: [null, null, null] },
+    { name: 'Team 3', slots: [null, null, null] },
+    { name: 'Team 4', slots: [null, null, null] },
+    { name: 'Team 5', slots: [null, null, null] },
+  ],
+  activeTeamIndex: 0,
   settings: { showOnboarding: true },
 };
 
@@ -424,13 +485,19 @@ const isStorageAvailable = () => {
 const storageAvailable = isStorageAvailable();
 
 // P10-FIX: Sanitize imported state to prevent prototype pollution and reject unknown keys (Step 6 audit)
-const ALLOWED_STATE_KEYS = new Set(['server', 'profile', 'calc', 'planner', 'settings', 'bookmarks', 'eventStatus']);
+const ALLOWED_STATE_KEYS = new Set(['server', 'profile', 'calc', 'planner', 'settings', 'bookmarks', 'eventStatus', 'teams', 'activeTeamIndex']);
 const sanitizeStateObj = (obj) => {
-  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return obj;
+  if (typeof obj !== 'object' || obj === null) return obj;
+  // P14-FIX: MEDIUM-2 — Also recurse into array elements to sanitize objects inside arrays
+  // (e.g., [{__proto__: {isAdmin: true}}] would have passed through unsanitized)
+  if (Array.isArray(obj)) {
+    return obj.map(item => (typeof item === 'object' && item !== null) ? sanitizeStateObj(item) : item);
+  }
   const clean = {};
   for (const key of Object.keys(obj)) {
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    clean[key] = obj[key];
+    const val = obj[key];
+    clean[key] = (typeof val === 'object' && val !== null) ? sanitizeStateObj(val) : val;
   }
   return clean;
 };
@@ -471,6 +538,13 @@ const loadFromStorage = () => {
       settings: { ...initialState.settings, ...safeParsed.settings },
       bookmarks: safeParsed.bookmarks || [],
       eventStatus: safeParsed.eventStatus || {},
+      teams: Array.isArray(safeParsed.teams) && safeParsed.teams.length === 5
+        ? safeParsed.teams.map((t, i) => ({
+            name: (t && typeof t.name === 'string') ? t.name : initialState.teams[i].name,
+            slots: (t && Array.isArray(t.slots) && t.slots.length === 3) ? t.slots : [null, null, null],
+          }))
+        : initialState.teams,
+      activeTeamIndex: typeof safeParsed.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, safeParsed.activeTeamIndex)) : 0,
     };
   } catch (e) {
     console.error('Load failed:', e);
@@ -497,17 +571,20 @@ const saveToStorage = (state) => {
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'SET_SERVER': return { ...state, server: action.server };
-    case 'SET_CALC': return { ...state, calc: { ...state.calc, [action.field]: action.value } };
-    case 'SET_PLANNER': return { ...state, planner: { ...state.planner, [action.field]: action.value } };
-    case 'SET_SETTINGS': return { ...state, settings: { ...state.settings, [action.field]: action.value } };
-    case 'SET_EVENT_STATUS': {
+    case ACTION.SET_SERVER: return { ...state, server: action.server };
+    case ACTION.SET_CALC: return { ...state, calc: { ...state.calc, [action.field]: action.value } };
+    case ACTION.SET_PLANNER: return { ...state, planner: { ...state.planner, [action.field]: action.value } };
+    case ACTION.SET_SETTINGS: return { ...state, settings: { ...state.settings, [action.field]: action.value } };
+    case ACTION.SET_EVENT_STATUS: {
       const newStatus = { ...state.eventStatus };
       if (action.status === null) { delete newStatus[action.eventKey]; } 
       else { newStatus[action.eventKey] = action.status; }
       return { ...state, eventStatus: newStatus };
     }
-    case 'ADD_INCOME': {
+    case ACTION.ADD_INCOME: {
+      const incAst = Math.floor(+action.income.astrite || 0);
+      const incRad = Math.floor(+action.income.radiant || 0);
+      const incLus = Math.floor(+action.income.lustrous || 0);
       return {
         ...state,
         planner: {
@@ -516,13 +593,13 @@ const reducer = (state, action) => {
         },
         calc: {
           ...state.calc,
-          astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + action.income.astrite)), // P12-FIX: Cap at MAX_ASTRITE (Step 14 — MEDIUM-10e)
-          radiant: String((+state.calc.radiant || 0) + (action.income.radiant || 0)),
-          lustrous: String((+state.calc.lustrous || 0) + (action.income.lustrous || 0)),
+          astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + incAst)),
+          radiant: String((+state.calc.radiant || 0) + incRad),
+          lustrous: String((+state.calc.lustrous || 0) + incLus),
         },
       };
     }
-    case 'REMOVE_INCOME': {
+    case ACTION.REMOVE_INCOME: {
       const item = state.planner.addedIncome.find(i => i.id === action.id);
       if (!item) return state;
       return {
@@ -539,7 +616,7 @@ const reducer = (state, action) => {
         },
       };
     }
-    case 'CLEAR_ALL_INCOME': {
+    case ACTION.CLEAR_ALL_INCOME: {
       const totalAst = state.planner.addedIncome.reduce((s, i) => s + (i.astrite || 0), 0);
       const totalRad = state.planner.addedIncome.reduce((s, i) => s + (i.radiant || 0), 0);
       const totalLus = state.planner.addedIncome.reduce((s, i) => s + (i.lustrous || 0), 0);
@@ -554,14 +631,14 @@ const reducer = (state, action) => {
         },
       };
     }
-    case 'ADD_DAILY_INCOME': {
+    case ACTION.ADD_DAILY_INCOME: {
       const days = Math.max(0, Math.min(365, Number(action.days) || 0));
       const dailyTotal = (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
       const totalAstrite = dailyTotal * days;
       return { ...state, calc: { ...state.calc, astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + totalAstrite)) } }; // P12-FIX: Cap at MAX_ASTRITE (Step 14 — MEDIUM-10e)
     }
     // SYNC_PITY removed - calculator is fully independent from history
-    case 'IMPORT_HISTORY': {
+    case ACTION.IMPORT_HISTORY: {
       const newProfile = { ...state.profile, importedAt: new Date().toISOString(), uid: action.uid || state.profile.uid };
       
       // Deduplicate: merge new history with existing, filtering out entries that match by timestamp + name + rarity
@@ -622,30 +699,65 @@ const reducer = (state, action) => {
       }
       return { ...state, profile: newProfile };
     }
-    case 'SET_UID': return { ...state, profile: { ...state.profile, uid: action.uid } };
-    case 'SET_USERNAME': return { ...state, profile: { ...state.profile, username: action.value } };
-    case 'SET_PROFILE_PIC': return { ...state, profile: { ...state.profile, profilePic: action.value } };
-    case 'CLEAR_PROFILE': return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
-    case 'SAVE_BOOKMARK': return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
-    case 'LOAD_BOOKMARK': {
+    case ACTION.SET_UID: return { ...state, profile: { ...state.profile, uid: action.uid } };
+    case ACTION.SET_USERNAME: return { ...state, profile: { ...state.profile, username: action.value } };
+    case ACTION.SET_PROFILE_PIC: return { ...state, profile: { ...state.profile, profilePic: action.value } };
+    case ACTION.CLEAR_PROFILE: return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
+    case ACTION.SAVE_BOOKMARK: return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
+    case ACTION.LOAD_BOOKMARK: {
       const b = state.bookmarks.find(bm => bm.id === action.id);
       if (!b) return state;
       // P9-FIX: Restore ALL saved calc fields, not just a subset (Step 4 audit)
       // Bookmarks save ...state.calc, so we restore every calc field that was captured.
-      // Destructure out non-calc metadata, spread the rest as calc fields.
+      // Destructure out non-calc metadata, validate remaining fields against known calc keys.
       const { id: _id, name: _name, timestamp: _ts, ...savedCalc } = b;
+      // Only spread fields that exist in initialState.calc to prevent state pollution
+      const validCalc = {};
+      for (const key of Object.keys(savedCalc)) {
+        if (key in initialState.calc) validCalc[key] = savedCalc[key];
+      }
       return {
         ...state,
         calc: {
           ...state.calc,
-          ...savedCalc,
+          ...validCalc,
         },
       };
     }
-    case 'DELETE_BOOKMARK': return { ...state, bookmarks: state.bookmarks.filter(b => b.id !== action.id) };
+    case ACTION.DELETE_BOOKMARK: return { ...state, bookmarks: state.bookmarks.filter(b => b.id !== action.id) };
+    // Team builder actions
+    case ACTION.SET_ACTIVE_TEAM: return { ...state, activeTeamIndex: Math.max(0, Math.min(4, action.index)) };
+    case ACTION.SET_TEAM_SLOT: {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, slots: t.slots.map((s, j) => j === action.slotIndex ? action.character : s) }
+        : t
+      );
+      return { ...state, teams };
+    }
+    case ACTION.CLEAR_TEAM_SLOT: {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, slots: t.slots.map((s, j) => j === action.slotIndex ? null : s) }
+        : t
+      );
+      return { ...state, teams };
+    }
+    case ACTION.CLEAR_TEAM: {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, slots: [null, null, null] }
+        : t
+      );
+      return { ...state, teams };
+    }
+    case ACTION.RENAME_TEAM: {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, name: (action.name || '').slice(0, 20) || t.name }
+        : t
+      );
+      return { ...state, teams };
+    }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
-    case 'LOAD_STATE': return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
-    case 'RESET': return initialState;
+    case ACTION.LOAD_STATE: return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
+    case ACTION.RESET: return initialState;
     default: return state;
   }
 };
@@ -673,6 +785,7 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   
   // Worst case: hard pity every time, always losing 50/50 (subtract current pity progress)
   // Guarantee only applies to the FIRST copy — subsequent copies can still lose 50/50
+  // Weapon banners are 100% featured — no 50/50, so worst case is simply HARD_PITY * copies
   const worstCase = Math.max(0, isChar
     ? (HARD_PITY * 2 * safeCopies - (guaranteed ? HARD_PITY : 0) - safePity)
     : (HARD_PITY * safeCopies - safePity));
@@ -710,13 +823,10 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export {
-  getTimeRemaining, getEuropeOffset, getServerAdjustedEnd,
+  getTimeRemaining, getServerAdjustedEnd,
   getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset,
-  MAX_PITY, GACHA_EPS, BASE_5STAR_RATE, SOFT_PITY_STEPS,
-  getPullRate, computeDistDP, simulateOneRun, computeDistMC,
-  DP_MAX_PULLS, computeGachaDist, getCumulativeProb, computeGachaStats,
-  expectedPullsToTarget, minPullsForProb,
-  initialState, STORAGE_KEY, isStorageAvailable, storageAvailable,
-  ALLOWED_STATE_KEYS, sanitizeStateObj, sanitizeImportedState,
+  initialState, STORAGE_KEY, storageAvailable,
+  sanitizeStateObj, sanitizeImportedState,
   loadFromStorage, saveToStorage, reducer, calcStats,
+  ACTION, // P15-FIX: MEDIUM-12 — Exported for use in dispatch call sites
 };

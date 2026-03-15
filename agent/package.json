@@ -1,0 +1,20 @@
+{
+  "name": "ww-update-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Autonomous update agent for Whispering Wishes — fetches Wuthering Waves game data and updates the app",
+  "main": "index.js",
+  "scripts": {
+    "update": "node index.js",
+    "dry-run": "node index.js --dry-run",
+    "banners": "node index.js --only=banners",
+    "events": "node index.js --only=events",
+    "characters": "node index.js --only=characters"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
