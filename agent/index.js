@@ -29,7 +29,7 @@ import { loadMemory, saveMemory, recordRun, recordPatch, recordFailure, wasRecen
 import { extractImageUrls, checkUrls, identifyDeadUrlOwners } from './lib/health.js';
 import { loadSkills } from './lib/skills.js';
 import { findEmptyBannerImages, findBannerImages, applyBannerImages } from './lib/banner-images.js';
-import { runEvolution, applyEvolutionPatches } from './lib/evolution.js';
+import { runEvolution, applyEvolutionPatches, checkEvolutionHealth } from './lib/evolution.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -48,6 +48,9 @@ async function main() {
   // Load persistent memory and skills
   const memory = loadMemory();
   loadSkills();
+
+  // Check if previous evolution patches caused problems
+  checkEvolutionHealth(memory);
 
   const state = readCurrentState();
   if (!state.banners) { log.error('Failed to read state — aborting'); process.exit(1); }
@@ -306,17 +309,27 @@ async function doAudit(state, mode, memory = null) {
 async function doEvolution(state, memory) {
   if (DRY_RUN) { log.info('[DRY] Would run evolution cycle'); return; }
   try {
-    const { patches, growthPlan } = await runEvolution(askClaude, memory, state);
-    if (patches.length) {
-      const { applied } = applyEvolutionPatches(patches, THRESHOLDS.autoApplyConfidence);
-      if (memory) {
-        for (const p of applied) recordPatch(memory, `[evolution] ${p.description}`, p.file);
-      }
-      if (applied.length) log.ok(`Agent evolved: ${applied.length} improvement(s)`);
+    const results = await runEvolution(askClaude, memory, state);
+
+    if (results.patchesApplied) {
+      log.ok(`Agent evolved: ${results.patchesApplied} patch(es) applied`);
     }
-    if (growthPlan.length) log.ok(`Growth plan: ${growthPlan.length} future capability idea(s) logged`);
+    if (results.filesCreated) {
+      log.ok(`Agent grew: ${results.filesCreated} new file(s) created`);
+    }
+    if (results.growthItemsExecuted) {
+      log.ok(`Growth plan: ${results.growthItemsExecuted} idea(s) logged`);
+    }
+
+    // If evolution modified agent data files, reload the buffer
+    if (results.patchesApplied) {
+      try {
+        loadBuffer(readFileSync(PATHS.dataFile, 'utf-8'));
+      } catch { /* data file wasn't touched */ }
+    }
   } catch (err) {
     log.warn(`Evolution cycle error: ${err.message}`);
+    recordFailure(memory, 'evolution', err.message);
   }
 }
 
