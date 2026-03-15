@@ -7,23 +7,33 @@
 name: Auto-Update Game Data
 
 on:
-  # Run daily at 10:00 UTC (after typical banner rotations happen)
   schedule:
-    - cron: '0 10 * * *'
+    # ── FULL UPDATE: Daily at 00:00 UTC ──────────────────────────────
+    # Runs the complete pipeline: banners, events, characters, weapons,
+    # images, builds, self-audit, and app improvements.
+    - cron: '0 0 * * *'
+
+    # ── MICRO UPDATE: Every 6 hours (06:00, 12:00, 18:00 UTC) ───────
+    # Lightweight pass: event timers, banner expiry checks, quick fixes.
+    # Avoids big clumps of workload by spreading changes across the day.
+    - cron: '0 6,12,18 * * *'
 
   # Allow manual trigger from GitHub UI
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: 'Dry run (no file changes)'
+      mode:
+        description: 'Update mode'
         required: false
-        default: 'false'
+        default: 'full'
         type: choice
         options:
-          - 'false'
-          - 'true'
+          - 'full'
+          - 'micro'
+          - 'audit'
+          - 'images'
+          - 'dry-run'
       only:
-        description: 'Only update specific category'
+        description: 'Only update specific category (full mode)'
         required: false
         default: 'all'
         type: choice
@@ -32,11 +42,13 @@ on:
           - 'banners'
           - 'events'
           - 'characters'
+          - 'images'
+          - 'audit'
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     permissions:
       contents: write
@@ -58,20 +70,53 @@ jobs:
         working-directory: agent
         run: npm install
 
+      - name: Determine run mode
+        id: mode
+        run: |
+          # Manual trigger uses the input mode
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+          else
+            # Scheduled: check which cron triggered
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" = "00" ]; then
+              echo "mode=full" >> $GITHUB_OUTPUT
+            else
+              echo "mode=micro" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - name: Run update agent
         working-directory: agent
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
+          RUN_MODE: ${{ steps.mode.outputs.mode }}
         run: |
-          ARGS=""
-          if [ "$DRY_RUN" = "true" ]; then
-            ARGS="$ARGS --dry-run"
-          fi
+          ARGS="--no-git"
+
+          case "$RUN_MODE" in
+            "full")
+              ARGS="$ARGS --mode=full"
+              ;;
+            "micro")
+              ARGS="$ARGS --mode=micro"
+              ;;
+            "audit")
+              ARGS="$ARGS --mode=audit"
+              ;;
+            "images")
+              ARGS="$ARGS --only=images"
+              ;;
+            "dry-run")
+              ARGS="$ARGS --dry-run --mode=full"
+              ;;
+          esac
+
           if [ "${{ github.event.inputs.only }}" != "all" ] && [ "${{ github.event.inputs.only }}" != "" ]; then
             ARGS="$ARGS --only=${{ github.event.inputs.only }}"
           fi
-          ARGS="$ARGS --no-git"
+
           node index.js $ARGS
 
       - name: Check for changes
@@ -79,34 +124,39 @@ jobs:
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changed files:"
+            git status --porcelain
           else
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Pull Request
-        if: steps.check.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
+        if: steps.check.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "[auto-update] Game data update"
-          title: "[Auto-Update] Game Data Update"
+          commit-message: "[auto-update] ${{ steps.mode.outputs.mode }} update"
+          title: "[Auto-Update] ${{ steps.mode.outputs.mode }} — Game Data Update"
           body: |
-            ## Automated Game Data Update
+            ## Automated Game Data Update (${{ steps.mode.outputs.mode }} mode)
 
-            The WW Update Agent detected changes in Wuthering Waves game data and applied updates.
+            The WW Update Agent detected changes and applied updates.
 
-            **Please review the changes before merging.**
+            **Mode:** `${{ steps.mode.outputs.mode }}`
+            **Trigger:** ${{ github.event_name == 'schedule' && 'Scheduled cron' || 'Manual dispatch' }}
 
-            ### What to check:
+            ### Review checklist:
             - [ ] Banner characters and dates are correct
             - [ ] Event end dates match official schedule
             - [ ] New character/weapon data is accurate
+            - [ ] Images are correct format and quality
+            - [ ] Code changes (if any) don't break functionality
             - [ ] No data integrity issues
 
             ---
-            *Generated by WW Update Agent at ${{ github.event.repository.updated_at }}*
-          branch: auto-update/game-data
+            *Generated by WW Update Agent*
+          branch: auto-update/${{ steps.mode.outputs.mode }}
           delete-branch: true
           labels: |
             auto-update
-            game-data
+            ${{ steps.mode.outputs.mode }}
