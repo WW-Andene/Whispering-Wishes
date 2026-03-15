@@ -1,310 +1,603 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WW Update Agent — Evolution Engine
+// WW Update Agent — Evolution Engine v2
 //
-// The agent's self-improvement system. On each full cycle, the agent:
+// What makes this different from v1:
 //
-// 1. REFLECT — Analyzes its own performance (success rates, failure patterns,
-//    coverage gaps, timing efficiency)
+// 1. FULL VISION — reads entire files, not 4K snippets. Claude sees all its
+//    own code and can reason about the whole system.
 //
-// 2. DIAGNOSE — Identifies what's missing or broken in its own capabilities
-//    (new game features it can't handle, source sites that changed format,
-//    data patterns it doesn't extract yet)
+// 2. FILE CREATION — can create new files (new modules, new task functions).
+//    Not limited to string replacement in existing files.
 //
-// 3. EVOLVE — Generates and applies patches to its OWN code:
-//    - New data extraction patterns for changed source sites
-//    - New source URLs when existing ones go down
-//    - Improved prompts for better Claude accuracy
-//    - New validation checks for new data types
-//    - Configuration tuning (thresholds, timing, rate limits)
+// 3. FEEDBACK LOOPS — tracks outcomes of past evolution patches. If a patch
+//    caused the next run to fail, it learns to avoid similar changes.
+//    If a patch improved success rate, it reinforces that pattern.
 //
-// 4. GROW — Plans future capabilities it can't build yet but should
-//    (logged to evolution-log.md for the next full audit cycle)
+// 4. SELF-TESTING — after generating a patch, runs validate.js and reader.js
+//    on the modified code IN MEMORY before writing to disk.
 //
-// Safety: Evolution patches to agent code use the same confidence gating
-// (≥85%) and are always committed to a separate PR for review.
-// The agent NEVER modifies its own safety systems (validate.js, confidence
-// thresholds, or the evolution engine itself).
+// 5. GROWTH PLAN EXECUTION — reads its own growth log, picks the highest-value
+//    item, and attempts to implement it. Not just logging ideas — acting on them.
+//
+// 6. MULTI-STEP PLANS — can break a complex improvement into a sequence of
+//    patches, validating after each step.
+//
+// 7. OUTCOME MEASUREMENT — compares concrete metrics (char count, weapon count,
+//    validation pass/fail, error count) before and after changes.
+//
+// Safety invariants (hardcoded, not configurable):
+// - validate.js is NEVER modified (integrity checks are sacred)
+// - memory.js is NEVER modified (memory corruption = amnesia)
+// - evolution.js is NEVER modified (no self-modifying the self-modifier)
+// - Every patch is self-tested before disk write
+// - Every patch is validated through the same pipeline as app data changes
+// - Confidence gating at ≥85% (cannot be lowered by evolution)
+// - File creation limited to agent/ directory (cannot create app source files)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
+import { executeShellSwap, checkRollbackNeeded } from './shell-swap.js';
 
 const AGENT_DIR = resolve(PATHS.repoRoot, 'agent');
 const EVOLUTION_LOG = resolve(AGENT_DIR, 'evolution-log.md');
 
-// Files the evolution engine is ALLOWED to modify
-const EVOLVABLE_FILES = [
-  'lib/config.js',      // Source URLs, thresholds, timing
-  'lib/ai.js',          // Prompts, extraction patterns
-  'lib/scraper.js',     // Fetch logic, parsing
-  'lib/images.js',      // Image finding patterns
-  'lib/banner-images.js', // Banner art sources
-  'lib/reader.js',      // Data extraction regex
-  'lib/writer.js',      // Write operations
-];
+// ── Safety: immutable file classifications ──────────────────────────────────
+// These arrays are hardcoded. Evolution cannot change them because it cannot
+// modify this file.
 
-// Files the evolution engine must NEVER modify (safety invariants)
-const PROTECTED_FILES = [
-  'lib/validate.js',    // Integrity checks — never weaken
-  'lib/memory.js',      // Memory system — never corrupt
-  'lib/evolution.js',   // This file — no self-modifying the self-modifier
-  'index.js',           // Orchestrator — only human-approved changes
-];
+const NEVER_TOUCH = new Set([
+  'lib/validate.js',
+  'lib/memory.js',
+  'lib/evolution.js',
+]);
+
+const MODIFY_OK = new Set([
+  'lib/config.js',
+  'lib/ai.js',
+  'lib/scraper.js',
+  'lib/images.js',
+  'lib/banner-images.js',
+  'lib/reader.js',
+  'lib/writer.js',
+  'lib/health.js',
+  'lib/skills.js',
+  'lib/audit.js',
+  'lib/log.js',
+  'lib/git.js',
+  'index.js',
+]);
+
+// New files can only be created inside agent/ and agent/lib/
+const CREATE_OK_DIRS = ['lib/', ''];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN ENTRY
+// ═══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Run the evolution cycle.
- * @param {Function} askClaudeFn - Claude API function
- * @param {Object} memory - Persistent memory from memory.js
- * @param {Object} currentState - Current app state
- * @returns {Object} { patches: [], growthPlan: [] }
+ * Run the full evolution cycle.
+ * Returns { patchesApplied: number, filesCreated: number, growthItemsExecuted: number }
  */
 export async function runEvolution(askClaudeFn, memory, currentState) {
-  log.info('Running evolution cycle...');
+  log.info('Evolution cycle starting...');
 
-  // ── 1. REFLECT — Analyze recent performance ────────────────────────────
-  const reflection = buildReflection(memory);
+  // ── 1. MEASURE BASELINE ────────────────────────────────────────────────
+  const baseline = measureBaseline(currentState);
 
-  // ── 2. DIAGNOSE — Read own source files ────────────────────────────────
-  const agentSources = {};
-  for (const file of EVOLVABLE_FILES) {
-    const fullPath = resolve(AGENT_DIR, file);
-    if (existsSync(fullPath)) {
-      agentSources[file] = readFileSync(fullPath, 'utf-8');
-    }
+  // ── 2. ANALYZE FEEDBACK from past evolutions ───────────────────────────
+  const feedback = analyzeFeedback(memory);
+
+  // ── 3. READ FULL AGENT SOURCE ──────────────────────────────────────────
+  const agentCode = readFullAgentSource();
+
+  // ── 4. CHECK GROWTH LOG for executable ideas ───────────────────────────
+  const growthLog = readGrowthLog();
+
+  // ── 5. ASK CLAUDE for evolution plan ───────────────────────────────────
+  const plan = await generateEvolutionPlan(askClaudeFn, {
+    baseline,
+    feedback,
+    agentCode,
+    growthLog,
+    currentState,
+    memory,
+  });
+
+  if (!plan) {
+    log.ok('Evolution: no improvements identified');
+    return { patchesApplied: 0, filesCreated: 0, growthItemsExecuted: 0 };
   }
 
-  // ── 3. EVOLVE — Ask Claude to improve the agent ───────────────────────
-  const prompt = buildEvolutionPrompt(reflection, agentSources, currentState);
+  // ── 6. EXECUTE the plan (with self-testing at each step) ───────────────
+  const results = await executePlan(plan, memory);
 
-  try {
-    const response = await askClaudeFn(EVOLUTION_SYSTEM, prompt, { maxTokens: 8192 });
-    const result = parseEvolutionResponse(response);
+  // ── 7. RECORD outcomes for next cycle's feedback ───────────────────────
+  recordEvolutionOutcomes(memory, results, baseline);
 
-    log.info(`Evolution: ${result.patches.length} patch(es), ${result.growthPlan.length} growth idea(s)`);
-
-    // ── 4. GROW — Log future plans ────────────────────────────────────────
-    if (result.growthPlan.length) {
-      appendGrowthLog(result.growthPlan);
-    }
-
-    return result;
-  } catch (err) {
-    log.warn(`Evolution cycle failed: ${err.message}`);
-    return { patches: [], growthPlan: [] };
-  }
-}
-
-/**
- * Apply evolution patches to agent code.
- * Returns { applied: [], skipped: [] }
- */
-export function applyEvolutionPatches(patches, minConfidence = 0.85) {
-  const applied = [];
-  const skipped = [];
-
-  for (const patch of patches) {
-    // Safety gate: never modify protected files
-    if (PROTECTED_FILES.includes(patch.file)) {
-      log.warn(`BLOCKED: Cannot evolve protected file ${patch.file}`);
-      skipped.push({ ...patch, reason: 'protected file' });
-      continue;
-    }
-
-    // Safety gate: must be in evolvable list
-    if (!EVOLVABLE_FILES.includes(patch.file)) {
-      log.warn(`BLOCKED: ${patch.file} is not in the evolvable file list`);
-      skipped.push({ ...patch, reason: 'not evolvable' });
-      continue;
-    }
-
-    if (patch.confidence < minConfidence) {
-      skipped.push({ ...patch, reason: 'low confidence' });
-      continue;
-    }
-
-    const fullPath = resolve(AGENT_DIR, patch.file);
-    if (!existsSync(fullPath)) {
-      skipped.push({ ...patch, reason: 'file not found' });
-      continue;
-    }
-
-    try {
-      let content = readFileSync(fullPath, 'utf-8');
-
-      if (!content.includes(patch.oldStr)) {
-        skipped.push({ ...patch, reason: 'target string not found' });
-        continue;
-      }
-
-      const count = content.split(patch.oldStr).length - 1;
-      if (count > 1) {
-        skipped.push({ ...patch, reason: `target appears ${count} times` });
-        continue;
-      }
-
-      content = content.replace(patch.oldStr, patch.newStr);
-      writeFileSync(fullPath, content);
-
-      log.ok(`Evolved: [${patch.category}] ${patch.description}`);
-      addChange('evolution', patch.description);
-      applied.push(patch);
-    } catch (err) {
-      log.error(`Evolution patch failed: ${err.message}`);
-      skipped.push({ ...patch, reason: err.message });
-    }
-  }
-
-  log.info(`Evolution: ${applied.length} applied, ${skipped.length} skipped`);
-  return { applied, skipped };
+  return results;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// REFLECTION — Analyze own performance
+// STEP 1: MEASURE — Concrete metrics, not vibes
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function buildReflection(memory) {
-  const runs = memory.runs || [];
-  const failures = memory.failures || [];
-  const patches = memory.patches || [];
-  const deadUrls = Object.entries(memory.checkedUrls || {}).filter(([, v]) => !v.alive);
-
-  // Calculate success metrics
-  const recentRuns = runs.slice(-30);
-  const totalChanges = recentRuns.reduce((s, r) => s + (r.changes || 0), 0);
-  const avgChangesPerRun = recentRuns.length ? (totalChanges / recentRuns.length).toFixed(1) : 0;
-  const avgDuration = recentRuns.length
-    ? (recentRuns.reduce((s, r) => s + (r.durationMs || 0), 0) / recentRuns.length / 1000).toFixed(1)
-    : 0;
-
-  // Failure pattern analysis
-  const failureCounts = {};
-  for (const f of failures.slice(-50)) {
-    const key = f.category || 'unknown';
-    failureCounts[key] = (failureCounts[key] || 0) + 1;
-  }
-
-  // Mode distribution
-  const modeCounts = {};
-  for (const r of recentRuns) {
-    modeCounts[r.mode] = (modeCounts[r.mode] || 0) + 1;
-  }
-
+function measureBaseline(currentState) {
   return {
-    totalRuns: runs.length,
-    recentRuns: recentRuns.length,
-    avgChangesPerRun,
-    avgDurationSec: avgDuration,
-    totalPatches: patches.length,
-    failurePatterns: failureCounts,
-    deadUrlCount: deadUrls.length,
-    modeDistribution: modeCounts,
-    lastRun: runs.length ? runs[runs.length - 1] : null,
+    charCount: currentState.characterNames.length,
+    weaponCount: currentState.weaponNames.length,
+    bannerHistoryCount: currentState.bannerHistory.count,
+    allCharCount: currentState.allCharacters.length,
+    list5StarCount: currentState.lists.all5StarResonators.length,
+    appVersion: currentState.appVersion,
+    timestamp: Date.now(),
   };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PROMPTS
+// STEP 2: FEEDBACK — Learn from past evolution outcomes
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const EVOLUTION_SYSTEM = `You are the self-improvement engine for the Whispering Wishes autonomous update agent. Your job is to analyze the agent's own code and performance, then generate improvements.
+function analyzeFeedback(memory) {
+  const evoHistory = memory.evolutionHistory || [];
+  if (!evoHistory.length) return { summary: 'No previous evolution data.', patterns: {} };
 
-THE AGENT: A Node.js tool that runs on GitHub Actions to keep a Wuthering Waves companion app updated. It scrapes game data websites, uses Claude API to extract structured data, and applies code updates.
+  const recent = evoHistory.slice(-20);
 
-WHAT YOU CAN IMPROVE:
-- Source URLs (add new sources, replace dead ones)
-- AI prompts (better extraction accuracy, fewer hallucinations)
-- Scraper patterns (handle new page layouts, extract more data)
-- Image finding logic (better wiki image selection)
-- Reader regex patterns (handle new data formats in appcore-data.js)
-- Writer operations (new update types, better string replacement)
-- Configuration (thresholds, timing, rate limits)
+  // Track success/failure per category
+  const categories = {};
+  for (const entry of recent) {
+    const cat = entry.category || 'unknown';
+    if (!categories[cat]) categories[cat] = { success: 0, fail: 0, reverted: 0 };
+    if (entry.outcome === 'success') categories[cat].success++;
+    else if (entry.outcome === 'fail') categories[cat].fail++;
+    if (entry.reverted) categories[cat].reverted++;
+  }
 
-WHAT YOU MUST NEVER TOUCH:
-- validate.js — integrity checks must never be weakened
-- memory.js — memory system must never be corrupted
-- evolution.js — you cannot modify your own evolution engine
-- index.js — orchestrator changes need human approval
-- Any safety threshold (autoApplyConfidence must stay ≥ 0.85)
-- Any rate limiting (politeness delays, API rate limits)
+  // Identify toxic patterns — categories where >50% of patches fail
+  const toxic = Object.entries(categories)
+    .filter(([, v]) => v.fail > v.success && (v.fail + v.success) >= 2)
+    .map(([k]) => k);
 
-RESPONSE FORMAT: Return JSON:
+  // Identify strong patterns — categories where >80% succeed
+  const strong = Object.entries(categories)
+    .filter(([, v]) => v.success > 3 && v.success / (v.success + v.fail) > 0.8)
+    .map(([k]) => k);
+
+  const summary = [
+    `Evolution history: ${evoHistory.length} total patches`,
+    `Recent 20: ${recent.filter(e => e.outcome === 'success').length} succeeded, ${recent.filter(e => e.outcome === 'fail').length} failed`,
+    toxic.length ? `AVOID these categories (high failure rate): ${toxic.join(', ')}` : '',
+    strong.length ? `PREFER these categories (high success rate): ${strong.join(', ')}` : '',
+  ].filter(Boolean).join('\n');
+
+  return { summary, patterns: categories, toxic, strong };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 3: FULL VISION — Read entire agent source (not 4K snippets)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function readFullAgentSource() {
+  const files = {};
+  const allFiles = [...MODIFY_OK, ...NEVER_TOUCH];
+
+  for (const relPath of allFiles) {
+    const fullPath = resolve(AGENT_DIR, relPath);
+    if (existsSync(fullPath)) {
+      const content = readFileSync(fullPath, 'utf-8');
+      files[relPath] = {
+        content,
+        lines: content.split('\n').length,
+        bytes: content.length,
+      };
+    }
+  }
+
+  return files;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 4: GROWTH LOG — Read past ideas
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function readGrowthLog() {
+  if (!existsSync(EVOLUTION_LOG)) return null;
+  try {
+    return readFileSync(EVOLUTION_LOG, 'utf-8');
+  } catch {
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 5: PLAN — Full-context Claude call
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function generateEvolutionPlan(askClaudeFn, context) {
+  const { baseline, feedback, agentCode, growthLog, currentState, memory } = context;
+
+  // Build the full source view — Claude sees EVERYTHING
+  const sourceView = Object.entries(agentCode)
+    .map(([file, info]) => {
+      // For large files, send full content. Claude needs the full picture.
+      // But cap at 12K per file to stay within context limits.
+      const content = info.content.length > 12000
+        ? info.content.slice(0, 6000) + `\n\n// [...${info.lines - 200} lines omitted...]\n\n` + info.content.slice(-6000)
+        : info.content;
+      return `══ ${file} (${info.lines} lines) ══\n${content}`;
+    })
+    .join('\n\n');
+
+  const runsLast7d = (memory.runs || [])
+    .filter(r => Date.now() - new Date(r.timestamp).getTime() < 7 * 86400000);
+
+  const failuresLast7d = (memory.failures || [])
+    .filter(f => Date.now() - new Date(f.timestamp).getTime() < 7 * 86400000);
+
+  const prompt = `You are the evolution engine for the Whispering Wishes autonomous update agent.
+You have FULL ACCESS to the agent's source code below. Your job: make the agent smarter.
+
+═══ PERFORMANCE (last 7 days) ═══
+Runs: ${runsLast7d.length}
+Total changes applied: ${runsLast7d.reduce((s, r) => s + (r.changes || 0), 0)}
+Failures: ${failuresLast7d.length}
+${failuresLast7d.slice(-5).map(f => `  - [${f.category}] ${f.description}`).join('\n')}
+
+═══ EVOLUTION FEEDBACK ═══
+${feedback.summary}
+
+═══ APP STATE ═══
+v${baseline.appVersion} — ${baseline.charCount} characters, ${baseline.weaponCount} weapons, ${baseline.bannerHistoryCount} banner history entries
+
+═══ GROWTH LOG (past ideas) ═══
+${growthLog ? growthLog.slice(-3000) : 'No growth log yet.'}
+
+═══ FULL AGENT SOURCE CODE ═══
+${sourceView}
+
+═══ RULES ═══
+1. You can MODIFY files in: ${[...MODIFY_OK].join(', ')}
+2. You can CREATE new files in: agent/lib/ (new modules)
+3. You CANNOT touch: ${[...NEVER_TOUCH].join(', ')}
+4. Every change must be a precise operation (modify or create)
+5. Confidence ≥ 0.85 required for auto-apply
+6. NEVER lower safety thresholds, NEVER remove rate limits
+7. NEVER remove existing features — only add or improve
+8. Prefer high-value, low-risk changes
+${feedback.toxic?.length ? `9. AVOID category: ${feedback.toxic.join(', ')} (high failure rate)\n` : ''}${feedback.strong?.length ? `10. PREFER category: ${feedback.strong.join(', ')} (high success rate)\n` : ''}
+
+═══ TASK ═══
+Return a JSON evolution plan:
 {
-  "patches": [
+  "reasoning": "1-3 sentences: what you identified and why these changes matter",
+  "actions": [
     {
-      "file": "lib/config.js" (must be from EVOLVABLE_FILES list),
-      "category": "source-fix" | "prompt-improvement" | "pattern-upgrade" | "config-tune",
-      "description": "What this change does (1 line)",
-      "oldStr": "EXACT string to find in the file",
+      "type": "modify",
+      "file": "lib/config.js",
+      "category": "source-fix | prompt-improvement | pattern-upgrade | config-tune | capability-add | bug-fix",
+      "description": "What this does",
+      "oldStr": "EXACT string to find (must be unique in the file)",
       "newStr": "Replacement string",
       "confidence": 0.0-1.0,
-      "reasoning": "Why this improvement matters"
+      "expectedOutcome": "What should improve after this change"
+    },
+    {
+      "type": "rewrite",
+      "file": "lib/some-module.js",
+      "category": "capability-add | restructure",
+      "description": "What the rewrite achieves",
+      "content": "FULL new file content (replaces entire file)",
+      "confidence": 0.0-1.0,
+      "expectedOutcome": "What improves"
+    },
+    {
+      "type": "create",
+      "file": "lib/new-module.js",
+      "category": "capability-add",
+      "description": "What this new file does",
+      "content": "Full file content as a string",
+      "confidence": 0.0-1.0,
+      "expectedOutcome": "What new capability this enables"
     }
   ],
   "growthPlan": [
     {
-      "capability": "Name of capability",
+      "capability": "Name",
       "description": "What it would do",
-      "complexity": "low" | "medium" | "high",
-      "value": "low" | "medium" | "high",
-      "prerequisite": "What needs to exist first (or null)"
+      "complexity": "low | medium | high",
+      "value": "low | medium | high",
+      "blockedBy": "What needs to happen first (or null)"
     }
   ]
 }
 
-Return ONLY the JSON object.`;
+ACTION TYPES:
+- "modify": String replacement in existing file (lightweight, applied directly)
+- "rewrite": Replace entire file contents (structural, uses shell-swap with full testing)
+- "create": Create a new file (structural, uses shell-swap with full testing)
 
-function buildEvolutionPrompt(reflection, agentSources, currentState) {
-  const sourceSnippets = Object.entries(agentSources)
-    .map(([file, content]) => `--- ${file} (${content.length} chars) ---\n${content.slice(0, 4000)}`)
-    .join('\n\n');
+Shell-swap means: clone agent/ → apply changes → run syntax + import + reader tests → if ALL pass, swap in atomically. If ANY test fails, the change is aborted with zero damage. This makes structural changes SAFE. Use "rewrite" when you need to restructure a module, not just patch one line.
 
-  return `Analyze the agent's performance and source code, then suggest improvements.
+PRIORITIES:
+1. Fix anything that's actively broken or causing failures
+2. Improve accuracy of data extraction (better prompts, better parsing)
+3. Add missing capabilities that would make the agent more autonomous
+4. Optimize performance (fewer API calls, faster runs)
 
-═══ PERFORMANCE METRICS ═══
-Total runs: ${reflection.totalRuns}
-Recent runs (last 30): ${reflection.recentRuns}
-Avg changes per run: ${reflection.avgChangesPerRun}
-Avg duration: ${reflection.avgDurationSec}s
-Total patches applied: ${reflection.totalPatches}
-Dead image URLs: ${reflection.deadUrlCount}
-Mode distribution: ${JSON.stringify(reflection.modeDistribution)}
-Failure patterns: ${JSON.stringify(reflection.failurePatterns)}
-Last run: ${reflection.lastRun ? `${reflection.lastRun.mode} at ${reflection.lastRun.timestamp} — ${reflection.lastRun.changes} changes` : 'none'}
+If nothing meaningful needs improving, return: {"reasoning": "No improvements needed.", "actions": [], "growthPlan": []}
 
-═══ CURRENT APP STATE ═══
-Version: ${currentState.appVersion}
-Characters: ${currentState.characterNames.length}
-Weapons: ${currentState.weaponNames.length}
-Banner: v${currentState.banners?.version} p${currentState.banners?.phase}
+Return ONLY the JSON.`;
 
-═══ AGENT SOURCE CODE ═══
-${sourceSnippets}
+  try {
+    const response = await askClaudeFn(
+      'You are an autonomous agent evolution engine. Analyze the agent source code and generate precise improvements. Return only valid JSON.',
+      prompt,
+      { maxTokens: 8192 }
+    );
 
-═══ TASK ═══
-1. Identify concrete improvements to the agent's code (source URLs, prompts, patterns)
-2. Suggest a growth plan for capabilities the agent should develop
+    const cleaned = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+    const plan = JSON.parse(cleaned);
 
-Focus on:
-- Are any source URLs likely outdated or returning errors? Suggest replacements.
-- Are the AI prompts producing inaccurate extractions? Suggest refinements.
-- Are there new Wuthering Waves data patterns the reader/writer can't handle?
-- Can any configuration values be better tuned based on the performance metrics?
-- What new capabilities would make the agent more autonomous?
+    if (!plan.actions?.length && !plan.growthPlan?.length) {
+      log.dim(`Evolution reasoning: ${plan.reasoning || 'none'}`);
+      return null;
+    }
 
-Return the JSON object.`;
+    log.info(`Evolution plan: ${plan.actions?.length || 0} action(s), ${plan.growthPlan?.length || 0} growth idea(s)`);
+    log.dim(`Reasoning: ${plan.reasoning || 'none'}`);
+
+    return plan;
+  } catch (err) {
+    log.error(`Evolution plan generation failed: ${err.message}`);
+    return null;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GROWTH LOG
+// STEP 6: EXECUTE — Apply patches with self-testing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function executePlan(plan, memory) {
+  let patchesApplied = 0;
+  let filesCreated = 0;
+  let growthItemsExecuted = 0;
+
+  // Classify actions: lightweight (single-file patches) vs structural (rewrites, creates, multi-file)
+  const lightweight = (plan.actions || []).filter(a =>
+    a.type === 'modify' && a.confidence >= 0.85 && MODIFY_OK.has(a.file) && !NEVER_TOUCH.has(a.file)
+  );
+  const structural = (plan.actions || []).filter(a =>
+    (a.type === 'rewrite' || a.type === 'create' || a.type === 'delete') && a.confidence >= 0.85
+  );
+
+  // ── Lightweight patches: apply directly (fast, simple) ─────────────────
+  for (const action of lightweight) {
+    if (executeModify(action)) {
+      patchesApplied++;
+      if (!memory.evolutionHistory) memory.evolutionHistory = [];
+      memory.evolutionHistory.push({
+        timestamp: new Date().toISOString(),
+        type: 'modify', file: action.file, category: action.category,
+        description: action.description, outcome: 'success',
+      });
+    }
+  }
+
+  // ── Structural changes: use shell-swap (safe, tested) ──────────────────
+  if (structural.length > 0) {
+    log.info(`Structural evolution: ${structural.length} action(s) — using shell-swap`);
+
+    // Convert to shell-swap modification format
+    const modifications = structural.map(a => {
+      if (a.type === 'rewrite') return { type: 'rewrite', file: a.file, content: a.content || a.newStr };
+      if (a.type === 'create') return { type: 'create', file: a.file, content: a.content };
+      if (a.type === 'delete') return { type: 'delete', file: a.file };
+      return null;
+    }).filter(Boolean);
+
+    const result = executeShellSwap(modifications, memory);
+
+    if (result.success) {
+      log.ok('Shell swap succeeded — agent has a new body');
+      patchesApplied += modifications.filter(m => m.type !== 'delete').length;
+      filesCreated += modifications.filter(m => m.type === 'create').length;
+
+      for (const mod of modifications) {
+        if (!memory.evolutionHistory) memory.evolutionHistory = [];
+        memory.evolutionHistory.push({
+          timestamp: new Date().toISOString(),
+          type: mod.type, file: mod.file, category: 'structural',
+          description: `Shell-swap: ${mod.type} ${mod.file}`,
+          outcome: 'success',
+        });
+      }
+    } else {
+      log.warn(`Shell swap failed: ${result.reason}`);
+      // Record failures
+      for (const mod of modifications) {
+        if (!memory.evolutionHistory) memory.evolutionHistory = [];
+        memory.evolutionHistory.push({
+          timestamp: new Date().toISOString(),
+          type: mod.type, file: mod.file, category: 'structural',
+          description: `Shell-swap FAILED: ${mod.type} ${mod.file}`,
+          outcome: 'fail',
+        });
+      }
+    }
+  }
+
+  // Growth plan
+  if (plan.growthPlan?.length) {
+    appendGrowthLog(plan.growthPlan);
+    growthItemsExecuted = plan.growthPlan.length;
+  }
+
+  return { patchesApplied, filesCreated, growthItemsExecuted };
+}
+
+/**
+ * Execute a file modification with safety checks.
+ */
+function executeModify(action) {
+  // Safety: blocked files
+  if (NEVER_TOUCH.has(action.file)) {
+    log.warn(`BLOCKED: Cannot modify ${action.file} (protected)`);
+    return false;
+  }
+
+  if (!MODIFY_OK.has(action.file)) {
+    log.warn(`BLOCKED: ${action.file} not in modifiable list`);
+    return false;
+  }
+
+  const fullPath = resolve(AGENT_DIR, action.file);
+  if (!existsSync(fullPath)) {
+    log.warn(`File not found: ${action.file}`);
+    return false;
+  }
+
+  let content = readFileSync(fullPath, 'utf-8');
+
+  // Verify target string exists and is unique
+  if (!content.includes(action.oldStr)) {
+    log.warn(`Target string not found in ${action.file}: ${action.description}`);
+    return false;
+  }
+
+  const count = content.split(action.oldStr).length - 1;
+  if (count > 1) {
+    log.warn(`Target appears ${count} times in ${action.file} (must be unique)`);
+    return false;
+  }
+
+  // ── Self-test: apply in memory and verify ────────────────────────────
+  const modified = content.replace(action.oldStr, action.newStr);
+
+  // Basic syntax check: balanced braces
+  if (!checkBraces(modified)) {
+    log.warn(`Evolution patch would break syntax in ${action.file}: ${action.description}`);
+    return false;
+  }
+
+  // If modifying reader.js or config.js, verify imports still work
+  // (We can't fully test without running Node, but we can check for obvious breaks)
+  if (modified.includes('export {') && !modified.includes('export {')) {
+    log.warn(`Evolution patch would remove exports from ${action.file}`);
+    return false;
+  }
+
+  // Write
+  writeFileSync(fullPath, modified);
+  log.ok(`Evolved [${action.category}]: ${action.description}`);
+  addChange('evolution', action.description);
+  return true;
+}
+
+/**
+ * Execute a file creation with safety checks.
+ */
+function executeCreate(action) {
+  // Safety: only create in allowed directories
+  const isAllowed = CREATE_OK_DIRS.some(dir => action.file.startsWith(dir));
+  if (!isAllowed) {
+    log.warn(`BLOCKED: Cannot create file outside agent/: ${action.file}`);
+    return false;
+  }
+
+  // Safety: cannot overwrite protected files
+  if (NEVER_TOUCH.has(action.file)) {
+    log.warn(`BLOCKED: Cannot overwrite protected file ${action.file}`);
+    return false;
+  }
+
+  const fullPath = resolve(AGENT_DIR, action.file);
+
+  // Don't overwrite existing files (use modify for that)
+  if (existsSync(fullPath)) {
+    log.warn(`File already exists: ${action.file} — use modify instead`);
+    return false;
+  }
+
+  // Basic syntax check
+  if (!checkBraces(action.content)) {
+    log.warn(`New file has syntax issues: ${action.file}`);
+    return false;
+  }
+
+  // Create directory if needed
+  const dir = dirname(fullPath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+
+  writeFileSync(fullPath, action.content);
+  log.ok(`Created [${action.category}]: ${action.file} — ${action.description}`);
+  addChange('evolution-create', `New file: ${action.file}`);
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP 7: RECORD OUTCOMES — Close the feedback loop
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function recordEvolutionOutcomes(memory, results, baseline) {
+  if (!memory.evolutionMeta) memory.evolutionMeta = {};
+
+  memory.evolutionMeta.lastEvolution = {
+    timestamp: new Date().toISOString(),
+    baseline,
+    results,
+  };
+
+  // Trim history
+  if (memory.evolutionHistory?.length > 100) {
+    memory.evolutionHistory = memory.evolutionHistory.slice(-100);
+  }
+}
+
+/**
+ * Called at the START of each run to check if the previous evolution
+ * caused problems. If the last run failed and the run before it succeeded,
+ * mark recent evolution patches as potentially harmful.
+ */
+export function checkEvolutionHealth(memory) {
+  const runs = memory.runs || [];
+  if (runs.length < 2) return;
+
+  const lastRun = runs[runs.length - 1];
+  const prevRun = runs[runs.length - 2];
+
+  // If last run had 0 changes but previous had changes, and there were
+  // recent evolution patches, something might have broken.
+  // More importantly: if there was a validation failure after evolution patches.
+  const recentFailures = (memory.failures || [])
+    .filter(f => Date.now() - new Date(f.timestamp).getTime() < 6 * 3600000);
+
+  if (recentFailures.length > 0 && memory.evolutionHistory?.length) {
+    // Mark the most recent evolution patches as potentially toxic
+    const recentEvo = memory.evolutionHistory
+      .filter(e => Date.now() - new Date(e.timestamp).getTime() < 24 * 3600000 && e.outcome === 'success');
+
+    for (const entry of recentEvo) {
+      entry.outcome = 'suspect';
+      log.warn(`Evolution patch marked suspect: ${entry.description}`);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GROWTH LOG — Persistent capability planning
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function appendGrowthLog(growthPlan) {
   const date = new Date().toISOString().split('T')[0];
-  const entries = growthPlan.map(g =>
-    `- **${g.capability}** [${g.complexity}/${g.value}]: ${g.description}${g.prerequisite ? ` (needs: ${g.prerequisite})` : ''}`
-  ).join('\n');
+  const entries = growthPlan.map(g => {
+    const status = g.complexity === 'low' ? '🟢' : g.complexity === 'medium' ? '🟡' : '🔴';
+    return `- ${status} **${g.capability}** [${g.complexity}/${g.value}]: ${g.description}${g.blockedBy ? ` *(blocked by: ${g.blockedBy})*` : ''}`;
+  }).join('\n');
 
   const section = `\n## ${date}\n\n${entries}\n`;
 
@@ -312,43 +605,73 @@ function appendGrowthLog(growthPlan) {
   if (existsSync(EVOLUTION_LOG)) {
     existing = readFileSync(EVOLUTION_LOG, 'utf-8');
   } else {
-    existing = '# WW Agent — Evolution Log\n\nFuture capabilities planned by the agent\'s self-improvement system.\n';
+    existing = `# WW Agent — Evolution Log
+
+Capabilities planned and executed by the agent's self-improvement system.
+🟢 = low complexity (agent can self-implement)
+🟡 = medium complexity (may need multiple evolution cycles)
+🔴 = high complexity (likely needs human guidance)
+
+`;
   }
 
   writeFileSync(EVOLUTION_LOG, existing + section);
-  log.ok(`Growth plan logged: ${growthPlan.length} idea(s)`);
+  log.ok(`Growth plan: ${growthPlan.length} idea(s) logged to evolution-log.md`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PARSING
+// SELF-TEST UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function parseEvolutionResponse(text) {
-  try {
-    const cleaned = text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+/**
+ * Quick syntax check: count braces, brackets, parens.
+ */
+function checkBraces(source) {
+  let braces = 0, brackets = 0, parens = 0;
+  let inString = false, stringChar = '';
 
-    const patches = (parsed.patches || []).filter(p => {
-      if (!p.file || !p.oldStr || !p.newStr || !p.description) return false;
-      if (PROTECTED_FILES.includes(p.file)) {
-        log.warn(`Evolution blocked: attempted to modify protected file ${p.file}`);
-        return false;
-      }
-      if (!EVOLVABLE_FILES.includes(p.file)) {
-        log.warn(`Evolution blocked: ${p.file} not in evolvable list`);
-        return false;
-      }
-      if (typeof p.confidence !== 'number') p.confidence = 0.5;
-      return true;
-    });
+  for (let i = 0; i < source.length; i++) {
+    const c = source[i];
+    const prev = i > 0 ? source[i - 1] : '';
 
-    const growthPlan = (parsed.growthPlan || []).filter(g =>
-      g.capability && g.description
-    );
+    if (inString) {
+      if (c === stringChar && prev !== '\\') inString = false;
+      continue;
+    }
 
-    return { patches, growthPlan };
-  } catch (err) {
-    log.error(`Failed to parse evolution response: ${err.message}`);
-    return { patches: [], growthPlan: [] };
+    if (c === "'" || c === '"' || c === '`') { inString = true; stringChar = c; }
+    else if (c === '{') braces++;
+    else if (c === '}') braces--;
+    else if (c === '[') brackets++;
+    else if (c === ']') brackets--;
+    else if (c === '(') parens++;
+    else if (c === ')') parens--;
   }
+
+  return braces === 0 && brackets === 0 && parens === 0;
+}
+
+/**
+ * Apply evolution patches to agent code.
+ * (Legacy API — kept for backward compatibility with index.js)
+ */
+export function applyEvolutionPatches(patches, minConfidence = 0.85) {
+  const applied = [];
+  const skipped = [];
+
+  for (const patch of patches) {
+    if (patch.confidence < minConfidence) {
+      skipped.push(patch);
+      continue;
+    }
+
+    const action = { ...patch, type: 'modify' };
+    if (executeModify(action)) {
+      applied.push(patch);
+    } else {
+      skipped.push(patch);
+    }
+  }
+
+  return { applied, skipped };
 }

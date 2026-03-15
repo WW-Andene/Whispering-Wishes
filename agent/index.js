@@ -29,7 +29,13 @@ import { loadMemory, saveMemory, recordRun, recordPatch, recordFailure, wasRecen
 import { extractImageUrls, checkUrls, identifyDeadUrlOwners } from './lib/health.js';
 import { loadSkills } from './lib/skills.js';
 import { findEmptyBannerImages, findBannerImages, applyBannerImages } from './lib/banner-images.js';
-import { runEvolution, applyEvolutionPatches } from './lib/evolution.js';
+import { runEvolution, applyEvolutionPatches, checkEvolutionHealth } from './lib/evolution.js';
+import { checkRollbackNeeded } from './lib/shell-swap.js';
+import { selectCharactersForRefresh, refreshCharacterBuilds, applyMetaUpdates, recordRefresh } from './lib/meta-refresh.js';
+import { generateReport, recordApiCall } from './lib/run-report.js';
+import { checkStandardPool, applyStandardPoolUpdates } from './lib/standard-pool.js';
+import { closeStalePRs } from './lib/pr-cleanup.js';
+import { generateEntries, appendToChangelog, updateAppChangelog } from './lib/changelog.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -49,6 +55,18 @@ async function main() {
   const memory = loadMemory();
   loadSkills();
 
+  // Check if previous evolution patches caused problems
+  checkEvolutionHealth(memory);
+
+  // Check if a shell-swap needs rollback
+  const rollbackTo = checkRollbackNeeded(memory);
+  if (rollbackTo) {
+    log.warn(`Post-swap failure detected. Rollback to ${rollbackTo.slice(0, 8)} recommended.`);
+    log.warn('Run: git revert HEAD --no-edit && git push');
+    // Don't auto-revert — leave it for the PR review or manual action
+    addChange('rollback-warning', `Shell-swap may have caused failures. Known-good: ${rollbackTo.slice(0, 8)}`);
+  }
+
   const state = readCurrentState();
   if (!state.banners) { log.error('Failed to read state — aborting'); process.exit(1); }
   loadBuffer(state.source);
@@ -62,20 +80,34 @@ async function main() {
   else if (MODE === 'audit') hasChanges = await auditCycle(state, memory);
   else hasChanges = await fullCycle(state, hoursLeft, memory);
 
-  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - startTime); saveMemory(memory); process.exit(0); }
+  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - startTime); saveMemory(memory); generateReport(MODE, Date.now() - startTime, memory); process.exit(0); }
 
   if (!DRY_RUN) bumpVersion(state.appVersion);
   const v = validate(getBuffer());
   if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); saveMemory(memory); process.exit(1); }
+
+  // Generate changelog entries before flushing (needs change log)
+  const newVersion = getBuffer().match(/const APP_VERSION = '([^']+)'/)?.[1] || state.appVersion;
+  const changelogEntries = generateEntries(MODE, newVersion);
+  if (changelogEntries.length && !DRY_RUN) {
+    appendToChangelog(changelogEntries, newVersion);
+    updateAppChangelog(changelogEntries, getBuffer, loadBuffer);
+  }
+
   if (!DRY_RUN) flush();
+
   if (!DRY_RUN && !NO_GIT) {
+    // Clean up stale PRs before creating a new one
+    closeStalePRs();
+
     const summary = getChangeLog().slice(0, 3).map(c => c.description).join('; ').slice(0, 72);
     gitPublish(`${MODE}: ${summary}`);
   }
 
-  // Save memory
+  // Save memory and generate report
   recordRun(memory, MODE, getChangeLog().length, Date.now() - startTime);
   saveMemory(memory);
+  generateReport(MODE, Date.now() - startTime, memory);
 
   log.section('COMPLETE');
   getChangeLog().forEach(c => log.ok(`  [${c.category}] ${c.description}`));
@@ -89,15 +121,14 @@ async function fullCycle(state, hoursLeft, memory) {
   if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await doEvents(state)) c = true; }
   if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await doRoster(state)) c = true; }
   if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await doImages(state)) c = true; }
-  /* Banner art fills — check every cycle since art appears days after banners go live */
   if (!ONLY || ONLY === 'banners' || ONLY === 'images') {
-    log.section('BANNER IMAGES');
-    if (await doBannerImages(state)) c = true;
+    log.section('BANNER IMAGES');       if (await doBannerImages(state)) c = true;
   }
+  if (!ONLY)                          { log.section('STANDARD POOL');  if (await doStandardPool(state)) c = true; }
+  if (!ONLY)                          { log.section('META REFRESH');   if (await doMetaRefresh(state, memory)) c = true; }
   if (!ONLY)                          { log.section('HEALTH CHECK');   await doHealthCheck(state, memory); }
   if (!ONLY)                          { log.section('ENRICHMENT');     if (await doEnrich(state)) c = true; }
   if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await doAudit(state, 'full', memory)) c = true; }
-  /* Evolution — agent self-improvement (runs last, after all other changes) */
   if (!ONLY)                          { log.section('EVOLUTION');      await doEvolution(state, memory); }
   return c;
 }
@@ -259,6 +290,33 @@ async function doBannerImages(state) {
   return await applyBannerImages(found, getBuffer, loadBuffer);
 }
 
+async function doStandardPool(state) {
+  const src = await fetchAll(SOURCES.banners);
+  const ok = src.filter(s => s.ok);
+  if (!ok.length) { log.warn('No sources for standard pool check'); return false; }
+  const analysis = await checkStandardPool(ok, state.source, askClaude);
+  if (!analysis.standardCharsChanged && !analysis.standardWeaponsChanged) {
+    log.ok('Standard pool unchanged');
+    return false;
+  }
+  if (DRY_RUN) { log.json('[DRY] Standard pool', analysis); return false; }
+  return applyStandardPoolUpdates(analysis, getBuffer, loadBuffer);
+}
+
+async function doMetaRefresh(state, memory) {
+  const characters = selectCharactersForRefresh(state.characterNames, memory);
+  if (!characters.length) { log.ok('No characters due for refresh'); return false; }
+  const bs = await fetchAll(SOURCES.builds);
+  const ok = bs.filter(s => s.ok);
+  if (!ok.length) { log.warn('No build sources for meta refresh'); recordRefresh(memory, characters); return false; }
+  const updates = await refreshCharacterBuilds(characters, state.source, askClaude, ok);
+  recordRefresh(memory, characters);
+  if (!updates.length) { log.ok(`Meta check: ${characters.join(', ')} — no changes`); return false; }
+  log.info(`Meta refresh: ${updates.length} update(s) found`);
+  if (DRY_RUN) { log.json('[DRY] Meta updates', updates); return false; }
+  return applyMetaUpdates(updates, getBuffer, loadBuffer, memory);
+}
+
 async function doHealthCheck(state, memory) {
   const allUrls = extractImageUrls(state.source);
   // Only check URLs not recently verified
@@ -306,17 +364,27 @@ async function doAudit(state, mode, memory = null) {
 async function doEvolution(state, memory) {
   if (DRY_RUN) { log.info('[DRY] Would run evolution cycle'); return; }
   try {
-    const { patches, growthPlan } = await runEvolution(askClaude, memory, state);
-    if (patches.length) {
-      const { applied } = applyEvolutionPatches(patches, THRESHOLDS.autoApplyConfidence);
-      if (memory) {
-        for (const p of applied) recordPatch(memory, `[evolution] ${p.description}`, p.file);
-      }
-      if (applied.length) log.ok(`Agent evolved: ${applied.length} improvement(s)`);
+    const results = await runEvolution(askClaude, memory, state);
+
+    if (results.patchesApplied) {
+      log.ok(`Agent evolved: ${results.patchesApplied} patch(es) applied`);
     }
-    if (growthPlan.length) log.ok(`Growth plan: ${growthPlan.length} future capability idea(s) logged`);
+    if (results.filesCreated) {
+      log.ok(`Agent grew: ${results.filesCreated} new file(s) created`);
+    }
+    if (results.growthItemsExecuted) {
+      log.ok(`Growth plan: ${results.growthItemsExecuted} idea(s) logged`);
+    }
+
+    // If evolution modified agent data files, reload the buffer
+    if (results.patchesApplied) {
+      try {
+        loadBuffer(readFileSync(PATHS.dataFile, 'utf-8'));
+      } catch { /* data file wasn't touched */ }
+    }
   } catch (err) {
     log.warn(`Evolution cycle error: ${err.message}`);
+    recordFailure(memory, 'evolution', err.message);
   }
 }
 
