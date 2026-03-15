@@ -326,7 +326,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: ${oledMode ? '#000000' : '#0a0a0a'};
+      background: ${oledMode ? '#000000' : '#080c12'};
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
@@ -1358,6 +1358,7 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Root */
       .desktop-layout {
         display: block !important; min-height: 100vh;
+        
         background: inherit;
       }
       .desktop-layout > footer {
@@ -1434,6 +1435,7 @@ const KuroStyles = memo(({ oledMode }) => (
         margin-left: 72px !important; max-width: none !important;
         width: calc(100% - 72px) !important;
         min-height: 100vh !important;
+        overflow: visible !important;
         padding: 1rem 1.25rem !important; padding-right: 180px !important;
         box-sizing: border-box !important;
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
@@ -1496,7 +1498,10 @@ const KuroStyles = memo(({ oledMode }) => (
       }
 
       /* Hide inline footer on desktop */
-      .desktop-layout > .app-footer-mobile { display: none !important; }
+      .desktop-layout .app-footer-mobile { display: none !important; }
+      .desktop-layout > footer, .desktop-layout footer {
+        margin-bottom: 0 !important; padding-bottom: 0 !important;
+      }
 
       /* Background canvas */
       .desktop-layout > canvas { left: 72px !important; width: calc(100% - 72px) !important; }

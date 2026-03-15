@@ -3315,8 +3315,7 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Pity Counter + Resources — side by side on desktop */}
-            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
+            {/* Pity Counter */}
             <Card>
               <CardHeader>Pity Counter</CardHeader>
               <CardBody className="space-y-3">
@@ -3491,7 +3490,6 @@ function WhisperingWishesInner() {
                   </div>
               </CardBody>
             </Card>
-            </div>{/* end desktop-grid-2 */}
 
             {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
             <div aria-live="polite" aria-atomic="false" className="banner-grid space-y-3 lg:space-y-0">
@@ -3693,8 +3691,7 @@ function WhisperingWishesInner() {
               </Card>
             )}
 
-            {/* Income + Goal — side by side on desktop */}
-            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
+            {/* Income Projections */}
             <Card>
               <CardHeader>Income Projections</CardHeader>
               <CardBody>
@@ -3772,7 +3769,6 @@ function WhisperingWishesInner() {
                 )}
               </CardBody>
             </Card>
-            </div>{/* end desktop-grid-2 */}
 
             {/* AUDIT-FIX M21: Always show Saved States card with empty state message */}
             <Card>
