@@ -42,8 +42,8 @@ export const SOURCES = {
     'https://prydwen.gg/wuthering-waves/weapons',                      // Prydwen weapons
   ],
   events: [
-    'https://game8.co/games/Wuthering-Waves/archives/453303',         // Game8 (includes events)
-    'https://wuwatracker.com/timeline',                                // WuWa Tracker timeline
+    'https://game8.co/games/Wuthering-Waves/archives/453303',         // Game8 banners page (includes event info)
+    'https://game8.co/games/Wuthering-Waves/archives/582216',         // Game8 v3.2 page (latest events)
   ],
   builds: [
     'https://prydwen.gg/wuthering-waves/characters',                   // Prydwen builds

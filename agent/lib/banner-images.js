@@ -16,7 +16,7 @@ import { isProtectedImageField } from './protected.js';
 const BANNER_IMAGE_SOURCES = [
   'https://game8.co/games/Wuthering-Waves/archives/453303',
   'https://prydwen.gg/wuthering-waves/',
-  'https://wuwatracker.com/timeline',
+  'https://game8.co/games/Wuthering-Waves/archives/582216',
 ];
 
 /**
