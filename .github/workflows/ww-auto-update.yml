@@ -132,6 +132,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.check.outputs.has_changes == 'true'
+        id: create-pr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -160,3 +161,24 @@ jobs:
           labels: |
             auto-update
             ${{ steps.mode.outputs.mode }}
+
+      # ── Auto-merge micro PRs (low-risk: timer advances, quick fixes) ────
+      # Micro updates only touch event dates and minor CSS — safe to merge
+      # without manual review. Full/audit PRs still require human approval.
+      - name: Auto-merge micro PR
+        if: steps.mode.outputs.mode == 'micro' && steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.create-pr.outputs.pull-request-number }}
+          echo "Auto-merging micro PR #${PR_NUM}"
+          gh pr merge ${PR_NUM} --squash --auto --delete-branch || echo "Auto-merge not available (branch protection may require reviews)"
+
+      # Stage evolution log if it was generated
+      - name: Commit evolution log
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          if [ -f agent/evolution-log.md ]; then
+            git add agent/evolution-log.md
+            git diff --cached --quiet || git commit -m "[agent] Update evolution log"
+          fi

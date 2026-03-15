@@ -28,6 +28,8 @@ import { runSelfAudit, applyPatches, enrichData } from './lib/audit.js';
 import { loadMemory, saveMemory, recordRun, recordPatch, recordFailure, wasRecentlyPatched } from './lib/memory.js';
 import { extractImageUrls, checkUrls, identifyDeadUrlOwners } from './lib/health.js';
 import { loadSkills } from './lib/skills.js';
+import { findEmptyBannerImages, findBannerImages, applyBannerImages } from './lib/banner-images.js';
+import { runEvolution, applyEvolutionPatches } from './lib/evolution.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -83,13 +85,20 @@ async function main() {
 // ═══ FULL CYCLE (daily 00:00 UTC) ════════════════════════════════════════════
 async function fullCycle(state, hoursLeft, memory) {
   let c = false;
-  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');      if (await doBanners(state)) c = true; }
-  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');       if (await doEvents(state)) c = true; }
-  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');       if (await doRoster(state)) c = true; }
-  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');       if (await doImages(state)) c = true; }
-  if (!ONLY)                          { log.section('HEALTH CHECK'); await doHealthCheck(state, memory); }
-  if (!ONLY)                          { log.section('ENRICHMENT');   if (await doEnrich(state)) c = true; }
-  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');   if (await doAudit(state, 'full', memory)) c = true; }
+  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');        if (await doBanners(state)) c = true; }
+  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await doEvents(state)) c = true; }
+  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await doRoster(state)) c = true; }
+  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await doImages(state)) c = true; }
+  /* Banner art fills — check every cycle since art appears days after banners go live */
+  if (!ONLY || ONLY === 'banners' || ONLY === 'images') {
+    log.section('BANNER IMAGES');
+    if (await doBannerImages(state)) c = true;
+  }
+  if (!ONLY)                          { log.section('HEALTH CHECK');   await doHealthCheck(state, memory); }
+  if (!ONLY)                          { log.section('ENRICHMENT');     if (await doEnrich(state)) c = true; }
+  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await doAudit(state, 'full', memory)) c = true; }
+  /* Evolution — agent self-improvement (runs last, after all other changes) */
+  if (!ONLY)                          { log.section('EVOLUTION');      await doEvolution(state, memory); }
   return c;
 }
 
@@ -103,6 +112,9 @@ async function microCycle(state, hoursLeft, memory) {
     log.warn(`${hoursLeft.toFixed(0)}h until banner expires — checking`);
     if (await doBanners(state)) c = true;
   }
+  /* Banner art — also check in micro since art can appear at any time */
+  log.section('MICRO — BANNER IMAGES');
+  if (await doBannerImages(state)) c = true;
   log.section('MICRO — QUICK FIXES');
   if (await doAudit(state, 'micro', memory)) c = true;
   return c;
@@ -236,6 +248,17 @@ async function doEnrich(state) {
   return c;
 }
 
+async function doBannerImages(state) {
+  if (!process.env.IMGBB_API_KEY) { log.dim('IMGBB_API_KEY not set — skipping banner images'); return false; }
+  const emptySlots = findEmptyBannerImages(getBuffer());
+  if (!emptySlots.length) { log.ok('All banner images present'); return false; }
+  log.info(`Empty banner image slots: ${emptySlots.join(', ')}`);
+  if (DRY_RUN) { log.info('[DRY] Would search for banner images'); return false; }
+  const found = await findBannerImages(emptySlots, state.banners, askClaude, fetchPage);
+  if (!Object.keys(found).length) { log.dim('No banner images found yet — will retry next cycle'); return false; }
+  return await applyBannerImages(found, getBuffer, loadBuffer);
+}
+
 async function doHealthCheck(state, memory) {
   const allUrls = extractImageUrls(state.source);
   // Only check URLs not recently verified
@@ -278,6 +301,23 @@ async function doAudit(state, mode, memory = null) {
     loadBuffer(readFileSync(PATHS.dataFile, 'utf-8'));
   }
   return applied.length > 0;
+}
+
+async function doEvolution(state, memory) {
+  if (DRY_RUN) { log.info('[DRY] Would run evolution cycle'); return; }
+  try {
+    const { patches, growthPlan } = await runEvolution(askClaude, memory, state);
+    if (patches.length) {
+      const { applied } = applyEvolutionPatches(patches, THRESHOLDS.autoApplyConfidence);
+      if (memory) {
+        for (const p of applied) recordPatch(memory, `[evolution] ${p.description}`, p.file);
+      }
+      if (applied.length) log.ok(`Agent evolved: ${applied.length} improvement(s)`);
+    }
+    if (growthPlan.length) log.ok(`Growth plan: ${growthPlan.length} future capability idea(s) logged`);
+  } catch (err) {
+    log.warn(`Evolution cycle error: ${err.message}`);
+  }
 }
 
 main().catch(err => { log.error(`Fatal: ${err.message}`); if (err.stack) log.dim(err.stack); process.exit(1); });
