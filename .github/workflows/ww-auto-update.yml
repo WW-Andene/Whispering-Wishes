@@ -18,6 +18,11 @@ on:
     # Avoids big clumps of workload by spreading changes across the day.
     - cron: '0 6,12,18 * * *'
 
+    # ── ADAPTIVE: Every 2h (fills gaps for banner transitions) ───────
+    # During normal periods, the agent checks urgency and exits in <5s.
+    # During banner transitions (last 48h), these runs proceed as micro.
+    - cron: '0 2,4,8,10,14,16,20,22 * * *'
+
   # Allow manual trigger from GitHub UI
   workflow_dispatch:
     inputs:

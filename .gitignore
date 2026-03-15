@@ -5,3 +5,5 @@ dist/
 agent/.memory.json
 agent/node_modules/
 agent-next/
+agent/.checkpoint.json
+agent/.schedule-hint.json

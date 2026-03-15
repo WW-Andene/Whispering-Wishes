@@ -36,6 +36,11 @@ import { generateReport, recordApiCall } from './lib/run-report.js';
 import { checkStandardPool, applyStandardPoolUpdates } from './lib/standard-pool.js';
 import { closeStalePRs } from './lib/pr-cleanup.js';
 import { generateEntries, appendToChangelog, updateAppChangelog } from './lib/changelog.js';
+import { crossVerify, extractPerSource, adjustConfidence } from './lib/cross-verify.js';
+import { detectNewEvents, addNewEvent } from './lib/new-events.js';
+import { verifyDeployment } from './lib/deploy-check.js';
+import { shouldProceed, writeScheduleHint, calculateUrgency } from './lib/adaptive-schedule.js';
+import { withCheckpoint, clearCheckpoint, hasCheckpoint } from './lib/checkpoint.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -73,6 +78,25 @@ async function main() {
 
   const hoursLeft = (new Date(state.banners.endDate).getTime() - Date.now()) / 3600000;
   log.info(`Banner v${state.banners.version} p${state.banners.phase} — ${hoursLeft.toFixed(0)}h left`);
+
+  // Adaptive scheduling: check if this run should proceed
+  const schedule = shouldProceed(MODE, state.banners.endDate);
+  if (!schedule.proceed) {
+    log.info(`Skipping: ${schedule.reason}`);
+    process.exit(0);
+  }
+  if (schedule.reason.includes('urgency')) {
+    log.warn(`Adaptive scheduling: ${schedule.reason}`);
+  }
+  writeScheduleHint(state.banners.endDate);
+
+  // Deployment verification: check if previous changes deployed OK
+  await verifyDeployment(memory);
+
+  // Checkpoint: check if resuming from a crashed run
+  if (hasCheckpoint(MODE)) {
+    log.info('Checkpoint found — resuming from previous crashed run');
+  }
 
   let hasChanges = false;
 
@@ -117,19 +141,21 @@ async function main() {
 // ═══ FULL CYCLE (daily 00:00 UTC) ════════════════════════════════════════════
 async function fullCycle(state, hoursLeft, memory) {
   let c = false;
-  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');        if (await doBanners(state)) c = true; }
-  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await doEvents(state)) c = true; }
-  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await doRoster(state)) c = true; }
-  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await doImages(state)) c = true; }
+  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');        if (await withCheckpoint(MODE, 'banners', () => doBanners(state))) c = true; }
+  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await withCheckpoint(MODE, 'events', () => doEvents(state))) c = true; }
+  if (!ONLY || ONLY === 'events')     { log.section('NEW EVENTS');     if (await withCheckpoint(MODE, 'new-events', () => doNewEvents(state))) c = true; }
+  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await withCheckpoint(MODE, 'roster', () => doRoster(state))) c = true; }
+  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await withCheckpoint(MODE, 'images', () => doImages(state))) c = true; }
   if (!ONLY || ONLY === 'banners' || ONLY === 'images') {
-    log.section('BANNER IMAGES');       if (await doBannerImages(state)) c = true;
+    log.section('BANNER IMAGES');       if (await withCheckpoint(MODE, 'banner-images', () => doBannerImages(state))) c = true;
   }
-  if (!ONLY)                          { log.section('STANDARD POOL');  if (await doStandardPool(state)) c = true; }
-  if (!ONLY)                          { log.section('META REFRESH');   if (await doMetaRefresh(state, memory)) c = true; }
-  if (!ONLY)                          { log.section('HEALTH CHECK');   await doHealthCheck(state, memory); }
-  if (!ONLY)                          { log.section('ENRICHMENT');     if (await doEnrich(state)) c = true; }
-  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await doAudit(state, 'full', memory)) c = true; }
-  if (!ONLY)                          { log.section('EVOLUTION');      await doEvolution(state, memory); }
+  if (!ONLY)                          { log.section('STANDARD POOL');  if (await withCheckpoint(MODE, 'std-pool', () => doStandardPool(state))) c = true; }
+  if (!ONLY)                          { log.section('META REFRESH');   if (await withCheckpoint(MODE, 'meta-refresh', () => doMetaRefresh(state, memory))) c = true; }
+  if (!ONLY)                          { log.section('HEALTH CHECK');   await withCheckpoint(MODE, 'health', () => doHealthCheck(state, memory)); }
+  if (!ONLY)                          { log.section('ENRICHMENT');     if (await withCheckpoint(MODE, 'enrichment', () => doEnrich(state))) c = true; }
+  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'full', memory))) c = true; }
+  if (!ONLY)                          { log.section('EVOLUTION');      await withCheckpoint(MODE, 'evolution', () => doEvolution(state, memory)); }
+  clearCheckpoint(); // Success — no need to resume
   return c;
 }
 
@@ -137,17 +163,17 @@ async function fullCycle(state, hoursLeft, memory) {
 async function microCycle(state, hoursLeft, memory) {
   let c = false;
   log.section('MICRO — EVENTS');
-  if (await doEvents(state)) c = true;
+  if (await withCheckpoint(MODE, 'events', () => doEvents(state))) c = true;
   if (hoursLeft < THRESHOLDS.bannerExpiryBufferHours) {
     log.section('MICRO — BANNER EXPIRY');
     log.warn(`${hoursLeft.toFixed(0)}h until banner expires — checking`);
-    if (await doBanners(state)) c = true;
+    if (await withCheckpoint(MODE, 'banners', () => doBanners(state))) c = true;
   }
-  /* Banner art — also check in micro since art can appear at any time */
   log.section('MICRO — BANNER IMAGES');
-  if (await doBannerImages(state)) c = true;
+  if (await withCheckpoint(MODE, 'banner-images', () => doBannerImages(state))) c = true;
   log.section('MICRO — QUICK FIXES');
-  if (await doAudit(state, 'micro', memory)) c = true;
+  if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'micro', memory))) c = true;
+  clearCheckpoint();
   return c;
 }
 
@@ -186,6 +212,24 @@ async function doEvents(state) {
     }
   }
   if (!c) log.ok('Events current');
+  return c;
+}
+
+async function doNewEvents(state) {
+  const src = await fetchAll(SOURCES.events);
+  const ok = src.filter(s => s.ok);
+  if (!ok.length) { log.warn('No sources for new event detection'); return false; }
+  const { newEvents } = await detectNewEvents(ok, state.events, askClaude);
+  if (!newEvents.length) { log.ok('No new events detected'); return false; }
+  if (DRY_RUN) { log.json('[DRY] New events', newEvents); return false; }
+  let c = false;
+  for (const event of newEvents) {
+    if (event.confidence >= THRESHOLDS.autoApplyConfidence) {
+      if (addNewEvent(event, getBuffer, loadBuffer)) c = true;
+    } else {
+      log.warn(`New event "${event.name}" confidence ${(event.confidence * 100).toFixed(0)}% — skipping`);
+    }
+  }
   return c;
 }
 
