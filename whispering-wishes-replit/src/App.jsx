@@ -5779,6 +5779,20 @@ Example: {"pulls":[...]}'
           </div>
         )}
 
+        {/* Desktop ad area — sits in the natural right margin, hidden on mobile */}
+        <div className="desktop-ad-area" aria-label="Sponsored content">
+          <div className="ad-sticky">
+            <div className="ad-slot ad-slot-sky">
+              <div className="ad-placeholder">Ad 160×600</div>
+            </div>
+            <div className="ad-footer">
+              <p className="text-gray-600 text-[9px]">
+                {`v${APP_VERSION}`} • u/WW_Andene<br/>Not affiliated with Kuro Games
+              </p>
+            </div>
+          </div>
+        </div>
+
       </main>
 
       {/* Bookmark Modal */}

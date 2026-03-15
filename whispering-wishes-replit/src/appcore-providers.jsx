@@ -1463,7 +1463,7 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Hide swipe hint on desktop */
       .desktop-layout > header .swipe-hint { display: none !important; }
 
-      /* Main content — fills all space right of sidebar */
+      /* Main content — capped width, left-aligned, right margin = ad space */
       .desktop-layout > main {
         margin-left: 200px !important;
         max-width: none !important;
@@ -1472,14 +1472,70 @@ const KuroStyles = memo(({ oledMode }) => (
         box-sizing: border-box !important;
       }
 
-      /* Content fills the width — no narrow constraint */
+      /* Content tabs cap at readable width, left-aligned — right space is for ads */
       .desktop-layout > main > [role="tabpanel"] {
-        max-width: none;
+        max-width: calc(100% - 320px);
         width: 100%;
       }
       /* Inner content wrapper */
       .desktop-layout > main .tab-content {
         max-width: none !important;
+      }
+
+      /* Ad area — sits in the right margin, sticky as you scroll */
+      .desktop-layout > main {
+        position: relative !important;
+      }
+      .desktop-layout .desktop-ad-area {
+        position: absolute;
+        top: 1rem;
+        right: 0;
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .desktop-layout .desktop-ad-area .ad-sticky {
+        position: sticky;
+        top: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .desktop-ad-area .ad-slot {
+        width: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        flex-shrink: 0;
+      }
+      .desktop-ad-area .ad-slot-sky {
+        height: 600px;
+      }
+      .desktop-ad-area .ad-slot-rect {
+        height: 250px;
+        width: 300px;
+      }
+      .desktop-ad-area .ad-placeholder {
+        width: 100%;
+        height: 100%;
+        border: 1px dashed rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.06);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      .desktop-ad-area .ad-footer {
+        text-align: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.04);
+        width: 100%;
       }
 
       /* Card grids — 2 columns */
@@ -1581,17 +1637,12 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout .event-grid {
         grid-template-columns: repeat(3, 1fr) !important;
       }
-      .desktop-layout .stats-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-      }
     }
 
-    /* Ultra-wide (≥1800px) — add some max-width to prevent stretching too far */
-    @media (min-width: 1800px) {
-      .desktop-layout > main > [role="tabpanel"] {
-        max-width: 1600px;
-        margin: 0 auto;
-      }
+    /* Hide ad area on mobile */
+    .desktop-ad-area { display: none; }
+    @media (min-width: 1024px) {
+      .desktop-ad-area { display: flex; }
     }
 
   `}</style>
