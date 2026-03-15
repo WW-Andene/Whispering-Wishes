@@ -1487,6 +1487,7 @@ const KuroStyles = memo(({ oledMode }) => (
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.75rem !important;
+        align-items: start !important;
       }
       /* Reset vertical spacing inside grids */
       .desktop-layout .desktop-grid-2 > * {
@@ -1498,6 +1499,7 @@ const KuroStyles = memo(({ oledMode }) => (
         display: grid !important;
         grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
         gap: 0.75rem !important;
+        align-items: start !important;
       }
       .desktop-layout .banner-grid > * {
         margin-top: 0 !important;
@@ -1508,20 +1510,26 @@ const KuroStyles = memo(({ oledMode }) => (
         display: grid !important;
         grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
         gap: 0.75rem !important;
+        align-items: start !important;
       }
       .desktop-layout .event-grid > * {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
       }
 
-      /* Stats cards in 2-3 column grid */
+      /* Stats cards — fill width, top-aligned */
       .desktop-layout .stats-grid {
         display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)) !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.75rem !important;
+        align-items: start !important;
       }
       .desktop-layout .stats-grid > * {
         margin-top: 0 !important;
+      }
+      /* Full-width cards in stats (luck rating, chart) span both columns */
+      .desktop-layout .stats-grid > .stats-full-width {
+        grid-column: 1 / -1;
       }
 
       /* Remove space-y gap from grids (Tailwind space-y adds margin-top) */
@@ -1532,21 +1540,14 @@ const KuroStyles = memo(({ oledMode }) => (
         margin-top: 0 !important;
       }
 
-      /* Planner sections side by side */
-      .desktop-layout .planner-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+      /* Team suggestions list — 2 columns when many items */
+      .desktop-layout .team-suggestions-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
       }
-
-      /* Collection grid — wider items */
-      .desktop-layout .collection-grid-desktop {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      }
-
-      /* Wider modals on desktop */
-      .desktop-layout [class*="fixed inset-0"] > div {
-        max-width: 640px;
+      .desktop-layout .team-suggestions-grid > * {
+        margin-top: 0 !important;
       }
 
       /* Scrollbar visible on desktop for main content */

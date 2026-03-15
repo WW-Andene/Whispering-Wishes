@@ -4331,7 +4331,7 @@ function WhisperingWishesInner() {
 
                 {/* Convenes Chart with Time Range */}
                 {/* P2-FIX: Now reads from memoized statsTabData instead of recomputing allHist */}
-                <Card>
+                <Card className="stats-full-width">
                   <CardHeader>
                     <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
                   </CardHeader>
@@ -4544,7 +4544,7 @@ function WhisperingWishesInner() {
                 </Card>
 
                 {/* Per-Banner Stats */}
-                <Card>
+                <Card className="stats-full-width">
                   <CardHeader>Per-Banner Breakdown</CardHeader>
                   <CardBody className="space-y-2">
                     {[
@@ -5047,8 +5047,6 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
 
-                  {/* Team info cards — side by side on desktop */}
-                  <div className="desktop-grid-2 space-y-3 lg:space-y-0">
                   {/* Character Stats & Info */}
                   {teamSlots.some(s => s) && (
                     <Card>
@@ -5152,7 +5150,7 @@ function WhisperingWishesInner() {
                   <Card>
                     <CardHeader><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
                     <CardBody>
-                      <div className="space-y-2">
+                      <div className="space-y-2 team-suggestions-grid">
                         {(() => {
                           const ownedNames = new Set([
                             ...Object.keys(collectionData.chars5Counts),
@@ -5220,7 +5218,6 @@ function WhisperingWishesInner() {
                       </div>
                     </CardBody>
                   </Card>
-                  </div>{/* end desktop-grid-2 */}
 
                   {/* Character Selector Modal — FIX: pass isOpen prop */}
                   <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)}>
