@@ -19,6 +19,7 @@ export const PATHS = {
   dataFile: resolve(APP_SRC, 'appcore-data.js'),
   engineFile: resolve(APP_SRC, 'appcore-engine.js'),
   componentsFile: resolve(APP_SRC, 'appcore-components.jsx'),
+  providersFile: resolve(APP_SRC, 'appcore-providers.jsx'),
   appFile: resolve(APP_SRC, 'App.jsx'),
   packageJson: resolve(REPO_ROOT, 'whispering-wishes-replit/package.json'),
   swFile: resolve(REPO_ROOT, 'whispering-wishes-replit/public/sw.js'),
