@@ -78,8 +78,9 @@ export function applyStandardPoolUpdates(analysis, getBufferFn, loadBufferFn, mi
   // Add new standard characters
   if (analysis.newStandardChars?.length) {
     for (const name of analysis.newStandardChars) {
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       // Add to STANDARD_5STAR_CHARACTERS Set
-      if (!buf.includes(`'${name}'`) || !buf.match(new RegExp(`STANDARD_5STAR_CHARACTERS[\\s\\S]*?'${name}'`))) {
+      if (!buf.includes(`'${name}'`) || !buf.match(new RegExp(`STANDARD_5STAR_CHARACTERS[\\s\\S]*?'${escapedName}'`))) {
         const setMatch = buf.match(/(const STANDARD_5STAR_CHARACTERS = new Set\(\[[\s\S]*?)(]\))/);
         if (setMatch && !setMatch[1].includes(`'${name}'`)) {
           buf = buf.replace(setMatch[0], `${setMatch[1]}, '${name}'${setMatch[2]}`);

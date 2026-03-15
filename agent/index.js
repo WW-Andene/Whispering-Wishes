@@ -50,14 +50,34 @@ const NO_GIT = args.includes('--no-git');
 const MODE = args.find(a => a.startsWith('--mode='))?.split('=')[1] || 'full';
 const ONLY = args.find(a => a.startsWith('--only='))?.split('=')[1] || null;
 
+// Global state for cleanup on any exit path
+let _memory = null;
+let _startTime = Date.now();
+
+// BUG 11 FIX: Catch unhandled rejections
+process.on('unhandledRejection', (err) => {
+  log.error(`Unhandled rejection: ${err?.message || err}`);
+  safeExit(1);
+});
+
+/** Save memory and exit cleanly — used by every exit path */
+function safeExit(code) {
+  if (_memory) {
+    try { saveMemory(_memory); } catch {}
+    try { generateReport(MODE, Date.now() - _startTime, _memory); } catch {}
+  }
+  process.exit(code);
+}
+
 async function main() {
   log.section(`WW UPDATE AGENT v2 [${MODE.toUpperCase()}]`);
   log.info(`Mode: ${MODE} | Dry run: ${DRY_RUN} | Only: ${ONLY || 'all'}`);
   clearChangeLog();
-  const startTime = Date.now();
+  _startTime = Date.now();
 
   // Load persistent memory and skills
-  const memory = loadMemory();
+  _memory = loadMemory();
+  const memory = _memory;
   loadSkills();
 
   // Check if previous evolution patches caused problems
@@ -73,7 +93,7 @@ async function main() {
   }
 
   const state = readCurrentState();
-  if (!state.banners) { log.error('Failed to read state — aborting'); process.exit(1); }
+  if (!state.banners) { log.error('Failed to read state — aborting'); safeExit(1); }
   loadBuffer(state.source);
 
   const hoursLeft = (new Date(state.banners.endDate).getTime() - Date.now()) / 3600000;
@@ -83,7 +103,7 @@ async function main() {
   const schedule = shouldProceed(MODE, state.banners.endDate);
   if (!schedule.proceed) {
     log.info(`Skipping: ${schedule.reason}`);
-    process.exit(0);
+    safeExit(0);
   }
   if (schedule.reason.includes('urgency')) {
     log.warn(`Adaptive scheduling: ${schedule.reason}`);
@@ -104,11 +124,11 @@ async function main() {
   else if (MODE === 'audit') hasChanges = await auditCycle(state, memory);
   else hasChanges = await fullCycle(state, hoursLeft, memory);
 
-  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - startTime); saveMemory(memory); generateReport(MODE, Date.now() - startTime, memory); process.exit(0); }
+  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - _startTime); safeExit(0); }
 
   if (!DRY_RUN) bumpVersion(state.appVersion);
   const v = validate(getBuffer());
-  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); saveMemory(memory); process.exit(1); }
+  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); safeExit(1); }
 
   // Generate changelog entries before flushing (needs change log)
   const newVersion = getBuffer().match(/const APP_VERSION = '([^']+)'/)?.[1] || state.appVersion;
@@ -129,9 +149,9 @@ async function main() {
   }
 
   // Save memory and generate report
-  recordRun(memory, MODE, getChangeLog().length, Date.now() - startTime);
+  recordRun(memory, MODE, getChangeLog().length, Date.now() - _startTime);
   saveMemory(memory);
-  generateReport(MODE, Date.now() - startTime, memory);
+  generateReport(MODE, Date.now() - _startTime, memory);
 
   log.section('COMPLETE');
   getChangeLog().forEach(c => log.ok(`  [${c.category}] ${c.description}`));
@@ -185,9 +205,19 @@ async function auditCycle(state, memory) {
 
 // ═══ TASK FUNCTIONS ══════════════════════════════════════════════════════════
 
+// Cache fetched sources within a single run to avoid duplicate requests
+const _sourceCache = new Map();
+async function fetchCached(sourceKey) {
+  if (_sourceCache.has(sourceKey)) return _sourceCache.get(sourceKey);
+  const results = await fetchAll(SOURCES[sourceKey]);
+  const ok = results.filter(s => s.ok);
+  _sourceCache.set(sourceKey, ok);
+  return ok;
+}
+
 async function doBanners(state) {
-  const src = await fetchAll(SOURCES.banners);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('banners');
+  
   if (!ok.length) { log.warn('No banner sources'); return false; }
   const a = await analyzeBanners(ok, state.banners);
   if (!a.changed) { log.ok('Banners current'); return false; }
@@ -200,8 +230,7 @@ async function doBanners(state) {
 }
 
 async function doEvents(state) {
-  const src = await fetchAll(SOURCES.events);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('events');
   if (!ok.length) { log.warn('No event sources'); return false; }
   const a = await analyzeEvents(ok, state.events);
   let c = false;
@@ -216,8 +245,7 @@ async function doEvents(state) {
 }
 
 async function doNewEvents(state) {
-  const src = await fetchAll(SOURCES.events);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('events');
   if (!ok.length) { log.warn('No sources for new event detection'); return false; }
   const { newEvents } = await detectNewEvents(ok, state.events, askClaude);
   if (!newEvents.length) { log.ok('No new events detected'); return false; }
@@ -236,8 +264,7 @@ async function doNewEvents(state) {
 async function doRoster(state) {
   let c = false;
   // Characters
-  const cs = await fetchAll(SOURCES.characters);
-  const cOk = cs.filter(s => s.ok);
+  const cOk = await fetchCached('characters');
   if (cOk.length) {
     const ca = await analyzeNewCharacters(cOk, state.characterNames);
     for (const ch of (ca.newCharacters || [])) {
@@ -250,8 +277,7 @@ async function doRoster(state) {
     }
     if (c && !DRY_RUN) {
       try {
-        const bs = await fetchAll(SOURCES.builds);
-        const bOk = bs.filter(s => s.ok);
+        const bOk = await fetchCached('builds');
         if (bOk.length) {
           const hc = (ca.newCharacters||[]).filter(x=>x.confidence>=THRESHOLDS.autoApplyConfidence);
           const cd = await generateCombatData(hc, bOk);
@@ -261,8 +287,7 @@ async function doRoster(state) {
     }
   }
   // Weapons
-  const ws = await fetchAll(SOURCES.weapons);
-  const wOk = ws.filter(s => s.ok);
+  const wOk = await fetchCached('weapons');
   if (wOk.length) {
     const wa = await analyzeNewWeapons(wOk, state.weaponNames);
     for (const w of (wa.newWeapons || [])) {
@@ -309,8 +334,7 @@ async function doImages(state) {
 }
 
 async function doEnrich(state) {
-  const bs = await fetchAll(SOURCES.builds);
-  const ok = bs.filter(s => s.ok);
+  const ok = await fetchCached('builds');
   if (!ok.length) { log.warn('No build sources'); return false; }
   const updates = await enrichData(askClaude, state, ok);
   if (!updates.length) { log.ok('Data complete'); return false; }
@@ -347,8 +371,8 @@ async function doBannerImages(state) {
 }
 
 async function doStandardPool(state) {
-  const src = await fetchAll(SOURCES.banners);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('banners');
+  
   if (!ok.length) { log.warn('No sources for standard pool check'); return false; }
   const analysis = await checkStandardPool(ok, state.source, askClaude);
   if (!analysis.standardCharsChanged && !analysis.standardWeaponsChanged) {
@@ -362,8 +386,7 @@ async function doStandardPool(state) {
 async function doMetaRefresh(state, memory) {
   const characters = selectCharactersForRefresh(state.characterNames, memory);
   if (!characters.length) { log.ok('No characters due for refresh'); return false; }
-  const bs = await fetchAll(SOURCES.builds);
-  const ok = bs.filter(s => s.ok);
+  const ok = await fetchCached('builds');
   if (!ok.length) { log.warn('No build sources for meta refresh'); recordRefresh(memory, characters); return false; }
   const updates = await refreshCharacterBuilds(characters, state.source, askClaude, ok);
   recordRefresh(memory, characters);
@@ -375,7 +398,6 @@ async function doMetaRefresh(state, memory) {
 
 async function doHealthCheck(state, memory) {
   const allUrls = extractImageUrls(state.source);
-  // Only check URLs not recently verified
   const { getStaleUrls, recordUrlCheck } = await import('./lib/memory.js');
   const staleUrls = getStaleUrls(memory, allUrls);
   if (!staleUrls.length) { log.ok(`All ${allUrls.length} URLs checked recently`); return; }
@@ -444,4 +466,4 @@ async function doEvolution(state, memory) {
   }
 }
 
-main().catch(err => { log.error(`Fatal: ${err.message}`); if (err.stack) log.dim(err.stack); process.exit(1); });
+main().catch(err => { log.error(`Fatal: ${err.message}`); if (err.stack) log.dim(err.stack); safeExit(1); });

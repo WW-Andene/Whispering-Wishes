@@ -69,7 +69,7 @@ const MODIFY_OK = new Set([
   'lib/audit.js',
   'lib/log.js',
   'lib/git.js',
-  'index.js',
+  // index.js deliberately excluded — orchestrator changes need human review
 ]);
 
 // New files can only be created inside agent/ and agent/lib/

@@ -37,6 +37,7 @@ export const PROTECTED_IMAGE_FIELDS = [
   'standardCharBannerImage',
   'standardWeapBannerImage',
   'dailyResetImage',
+  'eventBannerImage',  // Protected once filled — custom event art
 ];
 
 // ── Content protection rules ─────────────────────────────────────────────────
