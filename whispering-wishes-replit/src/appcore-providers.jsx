@@ -330,6 +330,7 @@ const KuroStyles = memo(({ oledMode }) => (
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
+      min-height: 100vh;
       scrollbar-width: none;
       -ms-overflow-style: none;
       -webkit-font-smoothing: antialiased;
@@ -1352,300 +1353,167 @@ const KuroStyles = memo(({ oledMode }) => (
       border-width: 0;
     }
 
-    /* ══════════════════════════════════════════════════════════════════════
-       DESKTOP / LANDSCAPE MODE (≥1024px)
-       Sidebar nav + wide content area. Mobile layout untouched.
-       ══════════════════════════════════════════════════════════════════════ */
+    /* DESKTOP LAYOUT */
     @media (min-width: 1024px) {
-      /* Root layout: sidebar + content */
+      /* Root */
       .desktop-layout {
-        display: flex !important;
-        min-height: 100vh;
+        display: block !important; min-height: 100vh;
+        background: inherit;
+      }
+      .desktop-layout > footer {
+        margin-top: auto;
       }
 
-      /* Sidebar navigation */
+      /* LEFT SIDEBAR — narrow icon bar */
       .desktop-layout > header {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        bottom: 0 !important;
-        width: 200px !important;
-        min-width: 200px !important;
-        border-bottom: none !important;
-        border-right: 1px solid rgba(255,255,255,0.08) !important;
-        z-index: 50;
-        overflow-y: auto;
-        scrollbar-width: none;
+        position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important;
+        width: 72px !important; min-width: 72px !important;
+        border-bottom: none !important; border-right: 1px solid rgba(255,255,255,0.08) !important;
+        z-index: 50; overflow-y: auto; scrollbar-width: none;
+        background: rgba(8, 12, 18, 0.95) !important; backdrop-filter: blur(20px) !important;
       }
       .desktop-layout > header::-webkit-scrollbar { display: none; }
-
-      /* Header inner container — full width in sidebar mode */
       .desktop-layout > header > .header-inner {
-        max-width: none !important;
-        padding: 0.75rem !important;
-        margin: 0 !important;
-        height: 100%;
-        display: flex !important;
-        flex-direction: column !important;
+        max-width: none !important; padding: 0.5rem 0.375rem !important; margin: 0 !important;
+        height: 100%; display: flex !important; flex-direction: column !important; align-items: center !important;
       }
 
-      /* Logo/title area in sidebar — stack vertically */
+      /* Logo — small, centered, no text */
       .desktop-layout > header .header-top {
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.5rem;
-        gap: 0.5rem;
+        flex-direction: column !important; align-items: center !important;
+        padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.375rem; gap: 0;
       }
-      /* Center the logo + text group */
       .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 {
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 0.375rem !important;
+        flex-direction: column !important; align-items: center !important; gap: 0 !important;
       }
-      .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 > div:last-child {
-        text-align: center;
-      }
+      .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 > div:last-child { display: none !important; }
 
-      /* Server select + export in sidebar — horizontal row */
+      /* Server + export — stacked tiny */
       .desktop-layout > header .header-controls {
-        flex-direction: row !important;
-        gap: 0.375rem !important;
-        margin-bottom: 0.75rem;
+        flex-direction: column !important; gap: 0.25rem !important; margin-bottom: 0.5rem; width: 100%;
       }
       .desktop-layout > header .header-controls select {
-        flex: 1;
-        min-height: 32px !important;
-        font-size: 10px;
+        width: 100% !important; min-height: 28px !important; font-size: 8px !important;
+        padding: 0.25rem !important; text-align: center;
       }
       .desktop-layout > header .header-controls button {
-        min-width: 32px !important;
-        min-height: 32px !important;
-        padding: 0.375rem !important;
+        width: 100% !important; min-width: unset !important; min-height: 28px !important; padding: 0.25rem !important;
       }
 
-      /* Tab navigation — vertical in sidebar */
+      /* Nav — vertical icon buttons as cards */
       .desktop-layout > header nav {
-        flex-direction: column !important;
-        gap: 1px !important;
-        overflow-x: visible !important;
-        padding-bottom: 0 !important;
-        flex: 1;
+        flex-direction: column !important; gap: 4px !important; overflow-x: visible !important;
+        padding-bottom: 0 !important; flex: 1; width: 100%;
       }
-
-      /* Tab buttons — full width, left-aligned */
       .desktop-layout > header nav .kuro-tab {
-        width: 100% !important;
-        justify-content: flex-start !important;
-        padding: 0.5rem 0.625rem !important;
-        border-radius: 0.375rem !important;
-        white-space: nowrap;
-        font-size: 0.75rem;
-        gap: 0.5rem;
-        border-bottom: none !important;
-        transition: background 0.15s, color 0.15s;
+        width: 100% !important; flex-direction: column !important; align-items: center !important;
+        justify-content: center !important; padding: 0.5rem 0.25rem !important;
+        border-radius: 0.5rem !important; font-size: 0.5625rem !important; gap: 0.125rem !important;
+        border-bottom: none !important; border: 1px solid transparent !important;
+        background: rgba(255,255,255,0.02) !important;
+        transition: all 0.15s;
+        min-height: 52px !important;
       }
       .desktop-layout > header nav .kuro-tab:hover {
-        background: rgba(255,255,255,0.04);
+        background: rgba(255,255,255,0.06) !important;
+        border-color: rgba(255,255,255,0.08) !important;
       }
       .desktop-layout > header nav .kuro-tab[aria-selected="true"] {
-        background: rgba(237, 175, 24, 0.08) !important;
-        border-bottom: none !important;
+        background: rgba(237, 175, 24, 0.1) !important;
+        border-color: rgba(237, 175, 24, 0.3) !important;
         border-left: 2px solid #edaf18 !important;
-        padding-left: calc(0.625rem - 2px) !important;
+        color: #edaf18 !important;
       }
-
-      /* Hide the horizontal tab indicator on desktop */
+      .desktop-layout > header nav .kuro-tab svg { width: 18px !important; height: 18px !important; }
       .desktop-layout > header nav .tab-indicator { display: none !important; }
-
-      /* Hide swipe hint on desktop */
       .desktop-layout > header .swipe-hint { display: none !important; }
 
-      /* Main content — capped width, left-aligned, right margin = ad space */
+      /* MAIN CONTENT */
       .desktop-layout > main {
-        margin-left: 200px !important;
-        max-width: none !important;
-        width: calc(100% - 200px) !important;
-        padding: 1.25rem 2rem !important;
+        margin-left: 72px !important; max-width: none !important;
+        width: calc(100% - 72px) !important;
+        min-height: 100vh !important;
+        padding: 1rem 1.25rem !important; padding-right: 180px !important;
         box-sizing: border-box !important;
+        scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
       }
+      .desktop-layout > main::-webkit-scrollbar { width: 6px; }
+      .desktop-layout > main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+      .desktop-layout > main::-webkit-scrollbar-track { background: transparent; }
+      .desktop-layout > main > [role="tabpanel"] { max-width: none; width: 100%; }
+      .desktop-layout > main .tab-content { max-width: none !important; }
 
-      /* Content tabs cap at readable width, left-aligned — right space is for ads */
-      .desktop-layout > main > [role="tabpanel"] {
-        max-width: calc(100% - 320px);
-        width: 100%;
-      }
-      /* Inner content wrapper */
-      .desktop-layout > main .tab-content {
-        max-width: none !important;
-      }
-
-      /* Ad area — sits in the right margin, sticky as you scroll */
-      .desktop-layout > main {
-        position: relative !important;
-      }
-      .desktop-layout .desktop-ad-area {
-        position: absolute;
-        top: 1rem;
-        right: 0;
-        width: 300px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-      }
-      .desktop-layout .desktop-ad-area .ad-sticky {
-        position: sticky;
-        top: 1rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-      }
-      .desktop-ad-area .ad-slot {
-        width: 160px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.375rem;
-        flex-shrink: 0;
-      }
-      .desktop-ad-area .ad-slot-sky {
-        height: 600px;
-      }
-      .desktop-ad-area .ad-slot-rect {
-        height: 250px;
-        width: 300px;
-      }
-      .desktop-ad-area .ad-placeholder {
-        width: 100%;
-        height: 100%;
-        border: 1px dashed rgba(255,255,255,0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: rgba(255,255,255,0.06);
-        font-size: 9px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-      }
-      .desktop-ad-area .ad-footer {
-        text-align: center;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.04);
-        width: 100%;
-      }
-
-      /* Card grids — 2 columns */
+      /* GRIDS — align-items: start prevents vertical stretching */
       .desktop-layout .desktop-grid-2 {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      /* Reset vertical spacing inside grids */
-      .desktop-layout .desktop-grid-2 > * {
-        margin-top: 0 !important;
-      }
-
-      /* Banner cards in grid */
+      .desktop-layout .desktop-grid-2 > * { margin-top: 0 !important; }
       .desktop-layout .banner-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      .desktop-layout .banner-grid > * {
-        margin-top: 0 !important;
-      }
-
-      /* Event cards in grid */
+      .desktop-layout .banner-grid > * { margin-top: 0 !important; }
       .desktop-layout .event-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      .desktop-layout .event-grid > * {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-      }
-
-      /* Stats cards — fill width, top-aligned */
+      .desktop-layout .event-grid > * { margin-top: 0 !important; margin-bottom: 0 !important; }
       .desktop-layout .stats-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
-        align-items: start !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important; align-items: start !important;
       }
-      .desktop-layout .stats-grid > * {
-        margin-top: 0 !important;
-      }
-      /* Full-width cards in stats (luck rating, chart) span both columns */
-      .desktop-layout .stats-grid > .stats-full-width {
-        grid-column: 1 / -1;
-      }
-
-      /* Remove space-y gap from grids (Tailwind space-y adds margin-top) */
+      .desktop-layout .stats-grid > * { margin-top: 0 !important; }
+      .desktop-layout .stats-grid > .stats-full-width { grid-column: 1 / -1; }
       .desktop-layout .desktop-grid-2.space-y-3 > * + *,
       .desktop-layout .banner-grid.space-y-3 > * + *,
       .desktop-layout .banner-grid.space-y-2 > * + *,
-      .desktop-layout .event-grid.space-y-2 > * + * {
-        margin-top: 0 !important;
-      }
-
-      /* Team suggestions list — 2 columns when many items */
+      .desktop-layout .event-grid.space-y-2 > * + * { margin-top: 0 !important; }
       .desktop-layout .team-suggestions-grid {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.5rem !important;
+        display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important;
       }
-      .desktop-layout .team-suggestions-grid > * {
-        margin-top: 0 !important;
+      .desktop-layout .team-suggestions-grid > * { margin-top: 0 !important; }
+      .desktop-layout [class*="fixed inset-0"] > div { max-width: 640px; }
+
+      /* RIGHT AD MARGIN — absolute positioned in the right padding */
+      .desktop-layout > main { position: relative !important; }
+      .desktop-ad-margin {
+        position: fixed; top: 0; right: 0; bottom: 0; width: 160px;
+        display: flex; flex-direction: column; align-items: center;
+        padding-top: 1rem; gap: 1rem; z-index: 30;
+      }
+      .desktop-ad-margin .ad-slot {
+        width: 160px; height: 600px;
+        border: 1px dashed rgba(255,255,255,0.04);
+        display: flex; align-items: center; justify-content: center;
+        color: rgba(255,255,255,0.04); font-size: 8px;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        border-radius: 0.25rem; flex-shrink: 0;
+      }
+      .desktop-ad-margin .ad-margin-footer {
+        margin-top: auto; text-align: center; padding: 0.75rem 0.5rem;
       }
 
-      /* Scrollbar visible on desktop for main content */
-      .desktop-layout > main {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.1) transparent;
-      }
-      .desktop-layout > main::-webkit-scrollbar {
-        width: 6px;
-      }
-      .desktop-layout > main::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-      }
-      .desktop-layout > main::-webkit-scrollbar-track {
-        background: transparent;
-      }
+      /* Hide inline footer on desktop */
+      .desktop-layout > .app-footer-mobile { display: none !important; }
 
-      /* Background effects should span full width behind content */
-      .desktop-layout > canvas {
-        left: 200px !important;
-        width: calc(100% - 200px) !important;
-      }
+      /* Background canvas */
+      .desktop-layout > canvas { left: 72px !important; width: calc(100% - 72px) !important; }
     }
 
-    /* Extra-wide screens (≥1440px) */
     @media (min-width: 1440px) {
-      .desktop-layout > main {
-        padding: 1.5rem 3rem !important;
-      }
-      .desktop-layout .event-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-      }
+      .desktop-layout > main { padding-right: 200px !important; }
+      .desktop-ad-margin { width: 180px; }
+      .desktop-ad-margin .ad-slot { width: 160px; }
+      .desktop-layout .event-grid { grid-template-columns: repeat(3, 1fr) !important; }
     }
 
-    /* Hide ad area on mobile */
-    .desktop-ad-area { display: none; }
-    @media (min-width: 1024px) {
-      .desktop-ad-area { display: flex; }
-    }
+    /* Hide ad margin on mobile */
+    .desktop-ad-margin { display: none; }
+    @media (min-width: 1024px) { .desktop-ad-margin { display: flex; } }
 
-  `}</style>
+    `}</style>
 ));
 KuroStyles.displayName = 'KuroStyles';
 

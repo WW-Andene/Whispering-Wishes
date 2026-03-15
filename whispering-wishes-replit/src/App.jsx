@@ -5437,8 +5437,7 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 
-            {/* Server + Profile — side by side on desktop */}
-            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
+            {/* Server Region */}
             <Card>
               <CardHeader>Server Region</CardHeader>
               <CardBody>
@@ -5505,7 +5504,6 @@ function WhisperingWishesInner() {
                 </button>
               </CardBody>
             </Card>
-            </div>{/* end desktop-grid-2 */}
 
             {/* Settings + Import — side by side on desktop */}
             <div className="desktop-grid-2 space-y-3 lg:space-y-0">
@@ -5778,20 +5776,6 @@ Example: {"pulls":[...]}'
           </TabErrorBoundary>
           </div>
         )}
-
-        {/* Desktop ad area — sits in the natural right margin, hidden on mobile */}
-        <div className="desktop-ad-area" aria-label="Sponsored content">
-          <div className="ad-sticky">
-            <div className="ad-slot ad-slot-sky">
-              <div className="ad-placeholder">Ad 160×600</div>
-            </div>
-            <div className="ad-footer">
-              <p className="text-gray-600 text-[9px]">
-                {`v${APP_VERSION}`} • u/WW_Andene<br/>Not affiliated with Kuro Games
-              </p>
-            </div>
-          </div>
-        </div>
 
       </main>
 
@@ -7176,11 +7160,22 @@ Example: {"pulls":[...]}'
       )}
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
+      <footer className="app-footer-mobile relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
           <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>
       </footer>
+
+      {/* Desktop right margin — ad slot + footer text at bottom (hidden on mobile) */}
+      <div className="desktop-ad-margin">
+        <div className="ad-slot">160×600</div>
+        <div className="ad-margin-footer">
+          <p className="text-gray-600 text-[8px] leading-relaxed">
+            {`v${APP_VERSION}`} • u/WW_Andene<br/>Not affiliated with Kuro Games<br/>
+            <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-600 hover:text-yellow-400 transition-colors">Contact</a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
