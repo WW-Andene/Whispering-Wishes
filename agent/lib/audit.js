@@ -97,57 +97,67 @@ export function applyPatches(patches, minConfidence = 0.85) {
     }
 
     // ── CODE-LEVEL CONTENT PROTECTION ────────────────────────────────────
-    // These checks cannot be bypassed by prompt engineering.
+    // Three tiers:
+    //   HARD LOCK  — never touch (curated creative content, identity)
+    //   SOFT LOCK  — correct only at ≥0.92 confidence (factual game data)
+    //   OPEN       — fill freely (TBD/empty placeholders)
     if (patch.file === 'appcore-data.js') {
-      // BLOCK: replacing existing image URLs
+      // ── HARD LOCK: existing image URLs (curated artwork) ───────────────
       if (patch.oldStr.match(/https?:\/\/i\.ibb\.co[^'"]+/)) {
-        log.warn(`BLOCKED patch — would overwrite existing image URL: ${patch.description}`);
+        log.warn(`BLOCKED [HARD] — curated image URL: ${patch.description}`);
         skipped.push({ ...patch, reason: 'overwrites curated image URL' });
         continue;
       }
 
-      // BLOCK: replacing existing character descriptions (non-TBD)
-      // Catches both full desc: '...' and partial matches
+      // ── HARD LOCK: character descriptions (voice & style, not facts) ───
       if (patch.oldStr.match(/desc:\s*'(?!TBD)[^']{10,}/)) {
-        log.warn(`BLOCKED patch — would overwrite curated description: ${patch.description}`);
+        log.warn(`BLOCKED [HARD] — curated description: ${patch.description}`);
         skipped.push({ ...patch, reason: 'overwrites curated description' });
         continue;
       }
 
-      // BLOCK: replacing existing skills arrays (non-TBD)
-      if (patch.oldStr.match(/skills:\s*\[/) && !patch.oldStr.includes('TBD')) {
-        log.warn(`BLOCKED patch — would overwrite curated skills: ${patch.description}`);
-        skipped.push({ ...patch, reason: 'overwrites curated skills' });
-        continue;
-      }
-
-      // BLOCK: replacing existing ascension/material data (non-TBD)
-      if (patch.oldStr.match(/(?:ascension|skillMaterials):\s*\{/) && !patch.oldStr.includes('TBD')) {
-        log.warn(`BLOCKED patch — would overwrite curated material data: ${patch.description}`);
-        skipped.push({ ...patch, reason: 'overwrites curated materials' });
-        continue;
-      }
-
-      // BLOCK: replacing existing event image fields
+      // ── HARD LOCK: event images ────────────────────────────────────────
       if (patch.oldStr.match(/(?:whimpering|doubled|tower|illusive|tactical|weekly|standard|daily)\w*Image:\s*'https?:\/\//)) {
-        log.warn(`BLOCKED patch — would overwrite protected event image: ${patch.description}`);
+        log.warn(`BLOCKED [HARD] — protected event image: ${patch.description}`);
         skipped.push({ ...patch, reason: 'overwrites protected event image' });
         continue;
       }
 
-      // BLOCK: changing game constants (pity rates, astrite costs)
+      // ── HARD LOCK: game constants ──────────────────────────────────────
       if (patch.oldStr.match(/HARD_PITY|SOFT_PITY|BASE_5STAR_RATE|ASTRITE_PER_PULL/)) {
-        log.warn(`BLOCKED patch — would change game constants: ${patch.description}`);
+        log.warn(`BLOCKED [HARD] — game constant: ${patch.description}`);
         skipped.push({ ...patch, reason: 'modifies game constants' });
         continue;
+      }
+
+      // ── SOFT LOCK: skills, ascension, materials (factual game data) ────
+      // These CAN be corrected, but only at higher confidence (≥0.92).
+      // TBD values are always freely fillable at normal threshold.
+      const SOFT_LOCK_THRESHOLD = 0.92;
+
+      if (patch.oldStr.match(/skills:\s*\[/) && !patch.oldStr.includes('TBD')) {
+        if (patch.confidence < SOFT_LOCK_THRESHOLD) {
+          log.warn(`BLOCKED [SOFT] — skills correction needs ≥92% confidence (got ${(patch.confidence * 100).toFixed(0)}%): ${patch.description}`);
+          skipped.push({ ...patch, reason: `skills correction below ${SOFT_LOCK_THRESHOLD * 100}% threshold` });
+          continue;
+        }
+        log.info(`SOFT LOCK override — skills correction at ${(patch.confidence * 100).toFixed(0)}% confidence: ${patch.description}`);
+      }
+
+      if (patch.oldStr.match(/(?:ascension|skillMaterials):\s*\{/) && !patch.oldStr.includes('TBD')) {
+        if (patch.confidence < SOFT_LOCK_THRESHOLD) {
+          log.warn(`BLOCKED [SOFT] — material correction needs ≥92% confidence (got ${(patch.confidence * 100).toFixed(0)}%): ${patch.description}`);
+          skipped.push({ ...patch, reason: `material correction below ${SOFT_LOCK_THRESHOLD * 100}% threshold` });
+          continue;
+        }
+        log.info(`SOFT LOCK override — material correction at ${(patch.confidence * 100).toFixed(0)}% confidence: ${patch.description}`);
       }
     }
 
     // ── DESIGN LANGUAGE PROTECTION (providers, components) ──────────────
     if (patch.file === 'appcore-providers.jsx') {
-      // BLOCK: changing core design tokens (colors, fonts, identity)
       if (patch.oldStr.match(/#edaf18|#080c14|Rajdhani|JetBrains Mono|--color-gold|LAHAI-ROI/i)) {
-        log.warn(`BLOCKED patch — would change design identity: ${patch.description}`);
+        log.warn(`BLOCKED [HARD] — design identity token: ${patch.description}`);
         skipped.push({ ...patch, reason: 'modifies design identity tokens' });
         continue;
       }
