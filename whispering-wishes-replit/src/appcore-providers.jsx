@@ -1369,7 +1369,8 @@ const KuroStyles = memo(({ oledMode }) => (
         top: 0 !important;
         left: 0 !important;
         bottom: 0 !important;
-        width: 220px !important;
+        width: 200px !important;
+        min-width: 200px !important;
         border-bottom: none !important;
         border-right: 1px solid rgba(255,255,255,0.08) !important;
         z-index: 50;
@@ -1381,39 +1382,54 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Header inner container — full width in sidebar mode */
       .desktop-layout > header > .header-inner {
         max-width: none !important;
-        padding: 1rem 0.75rem !important;
+        padding: 0.75rem !important;
         margin: 0 !important;
         height: 100%;
         display: flex !important;
         flex-direction: column !important;
       }
 
-      /* Logo/title area in sidebar */
+      /* Logo/title area in sidebar — stack vertically */
       .desktop-layout > header .header-top {
-        flex-direction: row;
-        padding-bottom: 1rem;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center;
+        padding-bottom: 0.75rem;
         border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
+        gap: 0.5rem;
+      }
+      /* Center the logo + text group */
+      .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 0.375rem !important;
+      }
+      .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 > div:last-child {
+        text-align: center;
       }
 
-      /* Server select + export in sidebar */
+      /* Server select + export in sidebar — horizontal row */
       .desktop-layout > header .header-controls {
-        flex-direction: column !important;
-        gap: 0.5rem !important;
-        margin-bottom: 1rem;
+        flex-direction: row !important;
+        gap: 0.375rem !important;
+        margin-bottom: 0.75rem;
       }
       .desktop-layout > header .header-controls select {
-        width: 100%;
-        min-height: 36px;
+        flex: 1;
+        min-height: 32px !important;
+        font-size: 10px;
       }
       .desktop-layout > header .header-controls button {
-        width: 100%;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        padding: 0.375rem !important;
       }
 
       /* Tab navigation — vertical in sidebar */
       .desktop-layout > header nav {
         flex-direction: column !important;
-        gap: 2px !important;
+        gap: 1px !important;
         overflow-x: visible !important;
         padding-bottom: 0 !important;
         flex: 1;
@@ -1423,13 +1439,13 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > header nav .kuro-tab {
         width: 100% !important;
         justify-content: flex-start !important;
-        padding: 0.625rem 0.75rem !important;
-        border-radius: 0.5rem !important;
+        padding: 0.5rem 0.625rem !important;
+        border-radius: 0.375rem !important;
         white-space: nowrap;
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
         gap: 0.5rem;
         border-bottom: none !important;
-        transition: background 0.2s, color 0.2s;
+        transition: background 0.15s, color 0.15s;
       }
       .desktop-layout > header nav .kuro-tab:hover {
         background: rgba(255,255,255,0.04);
@@ -1438,7 +1454,7 @@ const KuroStyles = memo(({ oledMode }) => (
         background: rgba(237, 175, 24, 0.08) !important;
         border-bottom: none !important;
         border-left: 2px solid #edaf18 !important;
-        padding-left: calc(0.75rem - 2px) !important;
+        padding-left: calc(0.625rem - 2px) !important;
       }
 
       /* Hide the horizontal tab indicator on desktop */
@@ -1447,46 +1463,73 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Hide swipe hint on desktop */
       .desktop-layout > header .swipe-hint { display: none !important; }
 
-      /* Main content — offset by sidebar width */
+      /* Main content — fills all space right of sidebar */
       .desktop-layout > main {
-        margin-left: 220px !important;
+        margin-left: 200px !important;
         max-width: none !important;
-        width: calc(100% - 220px) !important;
-        padding: 1.5rem 2rem !important;
+        width: calc(100% - 200px) !important;
+        padding: 1.25rem 2rem !important;
+        box-sizing: border-box !important;
       }
 
-      /* Content constraint — readable line length */
+      /* Content fills the width — no narrow constraint */
       .desktop-layout > main > [role="tabpanel"] {
-        max-width: 1100px;
-        margin: 0 auto;
+        max-width: none;
+        width: 100%;
+      }
+      /* Inner content wrapper */
+      .desktop-layout > main .tab-content {
+        max-width: none !important;
       }
 
-      /* Card grids — 2 columns where appropriate */
+      /* Card grids — 2 columns */
       .desktop-layout .desktop-grid-2 {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+      }
+      /* Reset vertical spacing inside grids */
+      .desktop-layout .desktop-grid-2 > * {
+        margin-top: 0 !important;
       }
 
       /* Banner cards in grid */
       .desktop-layout .banner-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 0.75rem;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
+        gap: 0.75rem !important;
+      }
+      .desktop-layout .banner-grid > * {
+        margin-top: 0 !important;
       }
 
       /* Event cards in grid */
       .desktop-layout .event-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 0.75rem;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
+        gap: 0.75rem !important;
+      }
+      .desktop-layout .event-grid > * {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
       }
 
       /* Stats cards in 2-3 column grid */
       .desktop-layout .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 0.75rem;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)) !important;
+        gap: 0.75rem !important;
+      }
+      .desktop-layout .stats-grid > * {
+        margin-top: 0 !important;
+      }
+
+      /* Remove space-y gap from grids (Tailwind space-y adds margin-top) */
+      .desktop-layout .desktop-grid-2.space-y-3 > * + *,
+      .desktop-layout .banner-grid.space-y-3 > * + *,
+      .desktop-layout .banner-grid.space-y-2 > * + *,
+      .desktop-layout .event-grid.space-y-2 > * + * {
+        margin-top: 0 !important;
       }
 
       /* Planner sections side by side */
@@ -1506,11 +1549,6 @@ const KuroStyles = memo(({ oledMode }) => (
         max-width: 640px;
       }
 
-      /* Hide mobile-only scroll shadows */
-      .desktop-layout .scrollbar-hide {
-        overflow-x: visible;
-      }
-
       /* Scrollbar visible on desktop for main content */
       .desktop-layout > main {
         scrollbar-width: thin;
@@ -1526,23 +1564,35 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > main::-webkit-scrollbar-track {
         background: transparent;
       }
+
+      /* Background effects should span full width behind content */
+      .desktop-layout > canvas {
+        left: 200px !important;
+        width: calc(100% - 200px) !important;
+      }
     }
 
-    /* Extra-wide screens (≥1440px) — 3 column grids */
+    /* Extra-wide screens (≥1440px) */
     @media (min-width: 1440px) {
       .desktop-layout > main {
-        padding: 1.5rem 3rem;
-      }
-      .desktop-layout > main > [role="tabpanel"] {
-        max-width: 1400px;
+        padding: 1.5rem 3rem !important;
       }
       .desktop-layout .event-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr) !important;
       }
       .desktop-layout .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr) !important;
       }
     }
+
+    /* Ultra-wide (≥1800px) — add some max-width to prevent stretching too far */
+    @media (min-width: 1800px) {
+      .desktop-layout > main > [role="tabpanel"] {
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+    }
+
   `}</style>
 ));
 KuroStyles.displayName = 'KuroStyles';
