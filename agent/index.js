@@ -36,6 +36,11 @@ import { generateReport, recordApiCall } from './lib/run-report.js';
 import { checkStandardPool, applyStandardPoolUpdates } from './lib/standard-pool.js';
 import { closeStalePRs } from './lib/pr-cleanup.js';
 import { generateEntries, appendToChangelog, updateAppChangelog } from './lib/changelog.js';
+import { crossVerify, extractPerSource, adjustConfidence } from './lib/cross-verify.js';
+import { detectNewEvents, addNewEvent } from './lib/new-events.js';
+import { verifyDeployment } from './lib/deploy-check.js';
+import { shouldProceed, writeScheduleHint, calculateUrgency } from './lib/adaptive-schedule.js';
+import { withCheckpoint, clearCheckpoint, hasCheckpoint } from './lib/checkpoint.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -45,14 +50,34 @@ const NO_GIT = args.includes('--no-git');
 const MODE = args.find(a => a.startsWith('--mode='))?.split('=')[1] || 'full';
 const ONLY = args.find(a => a.startsWith('--only='))?.split('=')[1] || null;
 
+// Global state for cleanup on any exit path
+let _memory = null;
+let _startTime = Date.now();
+
+// BUG 11 FIX: Catch unhandled rejections
+process.on('unhandledRejection', (err) => {
+  log.error(`Unhandled rejection: ${err?.message || err}`);
+  safeExit(1);
+});
+
+/** Save memory and exit cleanly — used by every exit path */
+function safeExit(code) {
+  if (_memory) {
+    try { saveMemory(_memory); } catch {}
+    try { generateReport(MODE, Date.now() - _startTime, _memory); } catch {}
+  }
+  process.exit(code);
+}
+
 async function main() {
   log.section(`WW UPDATE AGENT v2 [${MODE.toUpperCase()}]`);
   log.info(`Mode: ${MODE} | Dry run: ${DRY_RUN} | Only: ${ONLY || 'all'}`);
   clearChangeLog();
-  const startTime = Date.now();
+  _startTime = Date.now();
 
   // Load persistent memory and skills
-  const memory = loadMemory();
+  _memory = loadMemory();
+  const memory = _memory;
   loadSkills();
 
   // Check if previous evolution patches caused problems
@@ -68,11 +93,30 @@ async function main() {
   }
 
   const state = readCurrentState();
-  if (!state.banners) { log.error('Failed to read state — aborting'); process.exit(1); }
+  if (!state.banners) { log.error('Failed to read state — aborting'); safeExit(1); }
   loadBuffer(state.source);
 
   const hoursLeft = (new Date(state.banners.endDate).getTime() - Date.now()) / 3600000;
   log.info(`Banner v${state.banners.version} p${state.banners.phase} — ${hoursLeft.toFixed(0)}h left`);
+
+  // Adaptive scheduling: check if this run should proceed
+  const schedule = shouldProceed(MODE, state.banners.endDate);
+  if (!schedule.proceed) {
+    log.info(`Skipping: ${schedule.reason}`);
+    safeExit(0);
+  }
+  if (schedule.reason.includes('urgency')) {
+    log.warn(`Adaptive scheduling: ${schedule.reason}`);
+  }
+  writeScheduleHint(state.banners.endDate);
+
+  // Deployment verification: check if previous changes deployed OK
+  await verifyDeployment(memory);
+
+  // Checkpoint: check if resuming from a crashed run
+  if (hasCheckpoint(MODE)) {
+    log.info('Checkpoint found — resuming from previous crashed run');
+  }
 
   let hasChanges = false;
 
@@ -80,11 +124,11 @@ async function main() {
   else if (MODE === 'audit') hasChanges = await auditCycle(state, memory);
   else hasChanges = await fullCycle(state, hoursLeft, memory);
 
-  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - startTime); saveMemory(memory); generateReport(MODE, Date.now() - startTime, memory); process.exit(0); }
+  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - _startTime); safeExit(0); }
 
   if (!DRY_RUN) bumpVersion(state.appVersion);
   const v = validate(getBuffer());
-  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); saveMemory(memory); process.exit(1); }
+  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); safeExit(1); }
 
   // Generate changelog entries before flushing (needs change log)
   const newVersion = getBuffer().match(/const APP_VERSION = '([^']+)'/)?.[1] || state.appVersion;
@@ -105,9 +149,9 @@ async function main() {
   }
 
   // Save memory and generate report
-  recordRun(memory, MODE, getChangeLog().length, Date.now() - startTime);
+  recordRun(memory, MODE, getChangeLog().length, Date.now() - _startTime);
   saveMemory(memory);
-  generateReport(MODE, Date.now() - startTime, memory);
+  generateReport(MODE, Date.now() - _startTime, memory);
 
   log.section('COMPLETE');
   getChangeLog().forEach(c => log.ok(`  [${c.category}] ${c.description}`));
@@ -117,19 +161,21 @@ async function main() {
 // ═══ FULL CYCLE (daily 00:00 UTC) ════════════════════════════════════════════
 async function fullCycle(state, hoursLeft, memory) {
   let c = false;
-  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');        if (await doBanners(state)) c = true; }
-  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await doEvents(state)) c = true; }
-  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await doRoster(state)) c = true; }
-  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await doImages(state)) c = true; }
+  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');        if (await withCheckpoint(MODE, 'banners', () => doBanners(state))) c = true; }
+  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await withCheckpoint(MODE, 'events', () => doEvents(state))) c = true; }
+  if (!ONLY || ONLY === 'events')     { log.section('NEW EVENTS');     if (await withCheckpoint(MODE, 'new-events', () => doNewEvents(state))) c = true; }
+  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await withCheckpoint(MODE, 'roster', () => doRoster(state))) c = true; }
+  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await withCheckpoint(MODE, 'images', () => doImages(state))) c = true; }
   if (!ONLY || ONLY === 'banners' || ONLY === 'images') {
-    log.section('BANNER IMAGES');       if (await doBannerImages(state)) c = true;
+    log.section('BANNER IMAGES');       if (await withCheckpoint(MODE, 'banner-images', () => doBannerImages(state))) c = true;
   }
-  if (!ONLY)                          { log.section('STANDARD POOL');  if (await doStandardPool(state)) c = true; }
-  if (!ONLY)                          { log.section('META REFRESH');   if (await doMetaRefresh(state, memory)) c = true; }
-  if (!ONLY)                          { log.section('HEALTH CHECK');   await doHealthCheck(state, memory); }
-  if (!ONLY)                          { log.section('ENRICHMENT');     if (await doEnrich(state)) c = true; }
-  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await doAudit(state, 'full', memory)) c = true; }
-  if (!ONLY)                          { log.section('EVOLUTION');      await doEvolution(state, memory); }
+  if (!ONLY)                          { log.section('STANDARD POOL');  if (await withCheckpoint(MODE, 'std-pool', () => doStandardPool(state))) c = true; }
+  if (!ONLY)                          { log.section('META REFRESH');   if (await withCheckpoint(MODE, 'meta-refresh', () => doMetaRefresh(state, memory))) c = true; }
+  if (!ONLY)                          { log.section('HEALTH CHECK');   await withCheckpoint(MODE, 'health', () => doHealthCheck(state, memory)); }
+  if (!ONLY)                          { log.section('ENRICHMENT');     if (await withCheckpoint(MODE, 'enrichment', () => doEnrich(state))) c = true; }
+  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'full', memory))) c = true; }
+  if (!ONLY)                          { log.section('EVOLUTION');      await withCheckpoint(MODE, 'evolution', () => doEvolution(state, memory)); }
+  clearCheckpoint(); // Success — no need to resume
   return c;
 }
 
@@ -137,17 +183,17 @@ async function fullCycle(state, hoursLeft, memory) {
 async function microCycle(state, hoursLeft, memory) {
   let c = false;
   log.section('MICRO — EVENTS');
-  if (await doEvents(state)) c = true;
+  if (await withCheckpoint(MODE, 'events', () => doEvents(state))) c = true;
   if (hoursLeft < THRESHOLDS.bannerExpiryBufferHours) {
     log.section('MICRO — BANNER EXPIRY');
     log.warn(`${hoursLeft.toFixed(0)}h until banner expires — checking`);
-    if (await doBanners(state)) c = true;
+    if (await withCheckpoint(MODE, 'banners', () => doBanners(state))) c = true;
   }
-  /* Banner art — also check in micro since art can appear at any time */
   log.section('MICRO — BANNER IMAGES');
-  if (await doBannerImages(state)) c = true;
+  if (await withCheckpoint(MODE, 'banner-images', () => doBannerImages(state))) c = true;
   log.section('MICRO — QUICK FIXES');
-  if (await doAudit(state, 'micro', memory)) c = true;
+  if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'micro', memory))) c = true;
+  clearCheckpoint();
   return c;
 }
 
@@ -159,9 +205,19 @@ async function auditCycle(state, memory) {
 
 // ═══ TASK FUNCTIONS ══════════════════════════════════════════════════════════
 
+// Cache fetched sources within a single run to avoid duplicate requests
+const _sourceCache = new Map();
+async function fetchCached(sourceKey) {
+  if (_sourceCache.has(sourceKey)) return _sourceCache.get(sourceKey);
+  const results = await fetchAll(SOURCES[sourceKey]);
+  const ok = results.filter(s => s.ok);
+  _sourceCache.set(sourceKey, ok);
+  return ok;
+}
+
 async function doBanners(state) {
-  const src = await fetchAll(SOURCES.banners);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('banners');
+  
   if (!ok.length) { log.warn('No banner sources'); return false; }
   const a = await analyzeBanners(ok, state.banners);
   if (!a.changed) { log.ok('Banners current'); return false; }
@@ -174,8 +230,7 @@ async function doBanners(state) {
 }
 
 async function doEvents(state) {
-  const src = await fetchAll(SOURCES.events);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('events');
   if (!ok.length) { log.warn('No event sources'); return false; }
   const a = await analyzeEvents(ok, state.events);
   let c = false;
@@ -189,11 +244,27 @@ async function doEvents(state) {
   return c;
 }
 
+async function doNewEvents(state) {
+  const ok = await fetchCached('events');
+  if (!ok.length) { log.warn('No sources for new event detection'); return false; }
+  const { newEvents } = await detectNewEvents(ok, state.events, askClaude);
+  if (!newEvents.length) { log.ok('No new events detected'); return false; }
+  if (DRY_RUN) { log.json('[DRY] New events', newEvents); return false; }
+  let c = false;
+  for (const event of newEvents) {
+    if (event.confidence >= THRESHOLDS.autoApplyConfidence) {
+      if (addNewEvent(event, getBuffer, loadBuffer)) c = true;
+    } else {
+      log.warn(`New event "${event.name}" confidence ${(event.confidence * 100).toFixed(0)}% — skipping`);
+    }
+  }
+  return c;
+}
+
 async function doRoster(state) {
   let c = false;
   // Characters
-  const cs = await fetchAll(SOURCES.characters);
-  const cOk = cs.filter(s => s.ok);
+  const cOk = await fetchCached('characters');
   if (cOk.length) {
     const ca = await analyzeNewCharacters(cOk, state.characterNames);
     for (const ch of (ca.newCharacters || [])) {
@@ -206,8 +277,7 @@ async function doRoster(state) {
     }
     if (c && !DRY_RUN) {
       try {
-        const bs = await fetchAll(SOURCES.builds);
-        const bOk = bs.filter(s => s.ok);
+        const bOk = await fetchCached('builds');
         if (bOk.length) {
           const hc = (ca.newCharacters||[]).filter(x=>x.confidence>=THRESHOLDS.autoApplyConfidence);
           const cd = await generateCombatData(hc, bOk);
@@ -217,8 +287,7 @@ async function doRoster(state) {
     }
   }
   // Weapons
-  const ws = await fetchAll(SOURCES.weapons);
-  const wOk = ws.filter(s => s.ok);
+  const wOk = await fetchCached('weapons');
   if (wOk.length) {
     const wa = await analyzeNewWeapons(wOk, state.weaponNames);
     for (const w of (wa.newWeapons || [])) {
@@ -250,16 +319,22 @@ async function doImages(state) {
     for (const [name, url] of Object.entries(urls)) {
       const buf = getBuffer();
       const esc = name.includes("'") ? `"${name}"` : `'${name}'`;
-      const pat = new RegExp(`${esc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*'[^']*'`);
-      if (buf.match(pat)) { loadBuffer(buf.replace(pat, `${esc}: '${url}'`)); c = true; }
+      const pat = new RegExp(`${esc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*'([^']*)'`);
+      const existing = buf.match(pat);
+      // PROTECTION: Only fill empty slots. Never overwrite existing URLs.
+      if (existing && (!existing[1] || existing[1] === '' || existing[1] === 'TBD')) {
+        loadBuffer(buf.replace(pat, `${esc}: '${url}'`));
+        c = true;
+      } else if (existing && existing[1]) {
+        log.dim(`Skipped ${name} — already has image: ${existing[1].slice(0, 50)}...`);
+      }
     }
   }
   return c;
 }
 
 async function doEnrich(state) {
-  const bs = await fetchAll(SOURCES.builds);
-  const ok = bs.filter(s => s.ok);
+  const ok = await fetchCached('builds');
   if (!ok.length) { log.warn('No build sources'); return false; }
   const updates = await enrichData(askClaude, state, ok);
   if (!updates.length) { log.ok('Data complete'); return false; }
@@ -267,6 +342,11 @@ async function doEnrich(state) {
   let c = false;
   for (const u of updates) {
     if (u.confidence < THRESHOLDS.autoApplyConfidence) continue;
+    // PROTECTION: Only fill TBD/empty placeholders, never overwrite real content
+    if (u.oldValue && u.oldValue !== 'TBD' && u.oldValue !== 'N/A' && u.oldValue !== '') {
+      log.dim(`Skipped enrichment for ${u.name}.${u.field} — existing value is not a placeholder`);
+      continue;
+    }
     const buf = getBuffer();
     const ci = buf.indexOf(`'${u.name}':`);
     if (ci === -1) continue;
@@ -291,8 +371,8 @@ async function doBannerImages(state) {
 }
 
 async function doStandardPool(state) {
-  const src = await fetchAll(SOURCES.banners);
-  const ok = src.filter(s => s.ok);
+  const ok = await fetchCached('banners');
+  
   if (!ok.length) { log.warn('No sources for standard pool check'); return false; }
   const analysis = await checkStandardPool(ok, state.source, askClaude);
   if (!analysis.standardCharsChanged && !analysis.standardWeaponsChanged) {
@@ -306,8 +386,7 @@ async function doStandardPool(state) {
 async function doMetaRefresh(state, memory) {
   const characters = selectCharactersForRefresh(state.characterNames, memory);
   if (!characters.length) { log.ok('No characters due for refresh'); return false; }
-  const bs = await fetchAll(SOURCES.builds);
-  const ok = bs.filter(s => s.ok);
+  const ok = await fetchCached('builds');
   if (!ok.length) { log.warn('No build sources for meta refresh'); recordRefresh(memory, characters); return false; }
   const updates = await refreshCharacterBuilds(characters, state.source, askClaude, ok);
   recordRefresh(memory, characters);
@@ -319,7 +398,6 @@ async function doMetaRefresh(state, memory) {
 
 async function doHealthCheck(state, memory) {
   const allUrls = extractImageUrls(state.source);
-  // Only check URLs not recently verified
   const { getStaleUrls, recordUrlCheck } = await import('./lib/memory.js');
   const staleUrls = getStaleUrls(memory, allUrls);
   if (!staleUrls.length) { log.ok(`All ${allUrls.length} URLs checked recently`); return; }
@@ -388,4 +466,4 @@ async function doEvolution(state, memory) {
   }
 }
 
-main().catch(err => { log.error(`Fatal: ${err.message}`); if (err.stack) log.dim(err.stack); process.exit(1); });
+main().catch(err => { log.error(`Fatal: ${err.message}`); if (err.stack) log.dim(err.stack); safeExit(1); });

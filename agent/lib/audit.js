@@ -18,6 +18,7 @@ import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { buildSkillsContext } from './skills.js';
 import { getRecentActivitySummary } from './memory.js';
+import { PROTECTION_RULES } from './protected.js';
 
 /**
  * Run a self-audit cycle. Claude reads the source code, identifies
@@ -95,6 +96,74 @@ export function applyPatches(patches, minConfidence = 0.85) {
       continue;
     }
 
+    // ── CODE-LEVEL CONTENT PROTECTION ────────────────────────────────────
+    // Three tiers:
+    //   HARD LOCK  — never touch (curated creative content, identity)
+    //   SOFT LOCK  — correct only at ≥0.92 confidence (factual game data)
+    //   OPEN       — fill freely (TBD/empty placeholders)
+    if (patch.file === 'appcore-data.js') {
+      // ── HARD LOCK: existing image URLs (curated artwork) ───────────────
+      if (patch.oldStr.match(/https?:\/\/i\.ibb\.co[^'"]+/)) {
+        log.warn(`BLOCKED [HARD] — curated image URL: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites curated image URL' });
+        continue;
+      }
+
+      // ── HARD LOCK: character descriptions (voice & style, not facts) ───
+      if (patch.oldStr.match(/desc:\s*'(?!TBD)[^']{10,}/)) {
+        log.warn(`BLOCKED [HARD] — curated description: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites curated description' });
+        continue;
+      }
+
+      // ── HARD LOCK: event images ────────────────────────────────────────
+      if (patch.oldStr.match(/(?:whimpering|doubled|tower|illusive|tactical|weekly|standard|daily)\w*Image:\s*'https?:\/\//)) {
+        log.warn(`BLOCKED [HARD] — protected event image: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'overwrites protected event image' });
+        continue;
+      }
+
+      // ── HARD LOCK: game constants ──────────────────────────────────────
+      if (patch.oldStr.match(/HARD_PITY|SOFT_PITY|BASE_5STAR_RATE|ASTRITE_PER_PULL/)) {
+        log.warn(`BLOCKED [HARD] — game constant: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'modifies game constants' });
+        continue;
+      }
+
+      // ── SOFT LOCK: skills, ascension, materials (factual game data) ────
+      // These CAN be corrected, but only at higher confidence (≥0.92).
+      // TBD values are always freely fillable at normal threshold.
+      const SOFT_LOCK_THRESHOLD = 0.92;
+
+      if (patch.oldStr.match(/skills:\s*\[/) && !patch.oldStr.includes('TBD')) {
+        if (patch.confidence < SOFT_LOCK_THRESHOLD) {
+          log.warn(`BLOCKED [SOFT] — skills correction needs ≥92% confidence (got ${(patch.confidence * 100).toFixed(0)}%): ${patch.description}`);
+          skipped.push({ ...patch, reason: `skills correction below ${SOFT_LOCK_THRESHOLD * 100}% threshold` });
+          continue;
+        }
+        log.info(`SOFT LOCK override — skills correction at ${(patch.confidence * 100).toFixed(0)}% confidence: ${patch.description}`);
+      }
+
+      if (patch.oldStr.match(/(?:ascension|skillMaterials):\s*\{/) && !patch.oldStr.includes('TBD')) {
+        if (patch.confidence < SOFT_LOCK_THRESHOLD) {
+          log.warn(`BLOCKED [SOFT] — material correction needs ≥92% confidence (got ${(patch.confidence * 100).toFixed(0)}%): ${patch.description}`);
+          skipped.push({ ...patch, reason: `material correction below ${SOFT_LOCK_THRESHOLD * 100}% threshold` });
+          continue;
+        }
+        log.info(`SOFT LOCK override — material correction at ${(patch.confidence * 100).toFixed(0)}% confidence: ${patch.description}`);
+      }
+    }
+
+    // ── DESIGN LANGUAGE PROTECTION (providers, components) ──────────────
+    if (patch.file === 'appcore-providers.jsx') {
+      if (patch.oldStr.match(/#edaf18|#080c14|Rajdhani|JetBrains Mono|--color-gold|LAHAI-ROI/i)) {
+        log.warn(`BLOCKED [HARD] — design identity token: ${patch.description}`);
+        skipped.push({ ...patch, reason: 'modifies design identity tokens' });
+        continue;
+      }
+    }
+
+    // ── APPLY PATCH ──────────────────────────────────────────────────────
     try {
       let content = readFileSync(filePath, 'utf-8');
 
@@ -225,6 +294,8 @@ RULES:
 6. Confidence below 0.85 = the change will be skipped
 7. Prefer small, targeted improvements over large refactors
 8. ${mode === 'micro' ? 'MICRO MODE: Only quick fixes — typos, broken URLs, stale dates, minor CSS polish. NO feature additions.' : 'FULL MODE: Can include feature improvements, UI polish, code quality, and data enrichment.'}
+
+${PROTECTION_RULES}
 
 RESPONSE FORMAT: Return a JSON array of patch objects:
 [

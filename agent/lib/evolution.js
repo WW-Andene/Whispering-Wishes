@@ -40,6 +40,7 @@ import { resolve, dirname } from 'path';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { executeShellSwap, checkRollbackNeeded } from './shell-swap.js';
+import { PROTECTION_RULES } from './protected.js';
 
 const AGENT_DIR = resolve(PATHS.repoRoot, 'agent');
 const EVOLUTION_LOG = resolve(AGENT_DIR, 'evolution-log.md');
@@ -52,6 +53,7 @@ const NEVER_TOUCH = new Set([
   'lib/validate.js',
   'lib/memory.js',
   'lib/evolution.js',
+  'lib/protected.js',  // Content protection rules — sacred
 ]);
 
 const MODIFY_OK = new Set([
@@ -67,7 +69,7 @@ const MODIFY_OK = new Set([
   'lib/audit.js',
   'lib/log.js',
   'lib/git.js',
-  'index.js',
+  // index.js deliberately excluded — orchestrator changes need human review
 ]);
 
 // New files can only be created inside agent/ and agent/lib/
@@ -267,6 +269,8 @@ ${sourceView}
 6. NEVER lower safety thresholds, NEVER remove rate limits
 7. NEVER remove existing features — only add or improve
 8. Prefer high-value, low-risk changes
+
+${PROTECTION_RULES}
 ${feedback.toxic?.length ? `9. AVOID category: ${feedback.toxic.join(', ')} (high failure rate)\n` : ''}${feedback.strong?.length ? `10. PREFER category: ${feedback.strong.join(', ')} (high success rate)\n` : ''}
 
 ═══ TASK ═══
@@ -460,6 +464,18 @@ function executeModify(action) {
   }
 
   let content = readFileSync(fullPath, 'utf-8');
+
+  // ── CODE-LEVEL CONTENT PROTECTION (same as audit.js) ──────────────────
+  // Evolution patches that target app data get the same guards.
+  if (action.file === 'lib/writer.js' || action.file === 'lib/reader.js') {
+    // These modify how we READ/WRITE the data file — extra scrutiny
+    // Block if the patch would remove safety checks
+    if (action.oldStr.includes('isExistingUrl') || action.oldStr.includes('isProtected') ||
+        action.oldStr.includes('PROTECTION') || action.oldStr.includes('BLOCKED')) {
+      log.warn(`BLOCKED: Evolution cannot remove safety checks from ${action.file}`);
+      return false;
+    }
+  }
 
   // Verify target string exists and is unique
   if (!content.includes(action.oldStr)) {

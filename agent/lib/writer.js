@@ -4,7 +4,7 @@
 // All writes are staged in memory and flushed once at the end.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync } from 'fs';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 
@@ -342,14 +342,23 @@ export function addCombatDataEntry(name, dmgFocus, buffs, debuffs) {
 }
 
 /**
- * Flush the buffer to disk.
+ * Flush the buffer to disk (atomic write: temp file → rename).
  */
 export function flush() {
   if (!buffer) {
     log.warn('No buffer to flush');
     return false;
   }
-  writeFileSync(PATHS.dataFile, buffer);
+  // Write to temp file first, then rename — prevents corruption if process dies mid-write
+  const tmpPath = PATHS.dataFile + '.tmp';
+  try {
+    writeFileSync(tmpPath, buffer);
+    renameSync(tmpPath, PATHS.dataFile);
+  } catch (err) {
+    // If rename fails, fall back to direct write
+    log.warn(`Atomic write failed, falling back to direct: ${err.message}`);
+    writeFileSync(PATHS.dataFile, buffer);
+  }
   log.ok(`Wrote updated appcore-data.js (${(buffer.length / 1024).toFixed(1)}KB)`);
   return true;
 }

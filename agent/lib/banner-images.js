@@ -11,6 +11,7 @@
 
 import { log, addChange } from './log.js';
 import { uploadToImgbb } from './images.js';
+import { isProtectedImageField } from './protected.js';
 
 const BANNER_IMAGE_SOURCES = [
   // Game8 banner pages (usually have the banner art first)
@@ -175,20 +176,44 @@ export async function applyBannerImages(foundImages, getBufferFn, loadBufferFn) 
   let changed = false;
 
   for (const [slot, sourceUrl] of Object.entries(foundImages)) {
-    // Generate a descriptive name for imgbb
-    const imgName = slot.replace(/[:/]/g, '-').replace(/\s+/g, '-');
+    const buf = getBufferFn();
 
-    // Upload to imgbb
+    // PROTECTION: Check if this slot already has a real URL
+    // If it does, a human put it there — don't touch it.
+    if (slot.startsWith('character:') || slot.startsWith('weapon:')) {
+      const itemName = slot.split(':')[1];
+      const escapedName = itemName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const existingMatch = buf.match(new RegExp(`name:\\s*['"]${escapedName}['"][\\s\\S]*?imageUrl:\\s*'([^']*)'`));
+      if (existingMatch && existingMatch[1] && existingMatch[1].startsWith('http')) {
+        log.dim(`Skipped ${slot} — already has image`);
+        continue;
+      }
+    } else {
+      // Top-level field (characterBannerImage, etc.)
+      // PROTECTION: Skip if it's a protected event image that already has a URL
+      if (isProtectedImageField(slot)) {
+        const existingMatch = buf.match(new RegExp(`${slot}:\\s*'([^']*)'`));
+        if (existingMatch && existingMatch[1] && existingMatch[1].startsWith('http')) {
+          log.dim(`Skipped protected field ${slot} — already has custom image`);
+          continue;
+        }
+      }
+      // Even for non-protected fields, check if already filled
+      const existingMatch = buf.match(new RegExp(`${slot}:\\s*'([^']*)'`));
+      if (existingMatch && existingMatch[1] && existingMatch[1].startsWith('http')) {
+        log.dim(`Skipped ${slot} — already has image`);
+        continue;
+      }
+    }
+
+    // Slot is empty — safe to fill
+    const imgName = slot.replace(/[:/]/g, '-').replace(/\s+/g, '-');
     const imgbbUrl = await uploadToImgbb(sourceUrl, imgName);
     if (!imgbbUrl) continue;
 
-    const buf = getBufferFn();
-
     if (slot.startsWith('character:') || slot.startsWith('weapon:')) {
-      // Individual character/weapon imageUrl inside CURRENT_BANNERS
       const itemName = slot.split(':')[1];
       const escapedName = itemName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // Find the imageUrl for this specific item
       const pattern = new RegExp(`(name:\\s*['"]${escapedName}['"][\\s\\S]*?imageUrl:\\s*)'([^']*)'`);
       const match = buf.match(pattern);
       if (match) {
@@ -198,7 +223,6 @@ export async function applyBannerImages(foundImages, getBufferFn, loadBufferFn) 
         changed = true;
       }
     } else {
-      // Top-level banner image field (characterBannerImage, weaponBannerImage, etc.)
       const pattern = new RegExp(`(${slot}:\\s*)'([^']*)'`);
       const match = buf.match(pattern);
       if (match) {

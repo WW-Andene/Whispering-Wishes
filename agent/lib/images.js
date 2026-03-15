@@ -14,6 +14,7 @@
 
 import { log, addChange } from './log.js';
 import { SCRAPER } from './config.js';
+import { isExistingUrl } from './protected.js';
 
 const IMGBB_API = 'https://api.imgbb.com/1/upload';
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -203,21 +204,27 @@ export function findMissingImages(source, characterNames, weaponNames) {
   const missing = { characters: [], weapons: [] };
 
   // Check for characters with empty image URLs
+  // PROTECTION: Only report truly empty slots — never report existing URLs
   for (const name of characterNames) {
     const pattern = new RegExp(`'${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'\\s*:\\s*'([^']*)'`);
     const match = source.match(pattern);
-    if (!match || !match[1] || match[1] === '') {
+    if (!match) {
+      // Key doesn't exist at all — truly missing
+      missing.characters.push(name);
+    } else if (!match[1] || match[1] === '' || match[1] === 'TBD') {
+      // Key exists but value is empty — safe to fill
       missing.characters.push(name);
     }
+    // If match[1] contains a real URL → SKIP. Human put it there.
   }
 
-  // Check for character banner images
+  // Only check banner image slots that are actually empty strings
   const charBannerImg = source.match(/characterBannerImage:\s*'([^']*)'/);
-  if (charBannerImg && !charBannerImg[1]) {
+  if (charBannerImg && charBannerImg[1] === '') {
     missing.characters.push('__characterBanner__');
   }
   const weapBannerImg = source.match(/weaponBannerImage:\s*'([^']*)'/);
-  if (weapBannerImg && !weapBannerImg[1]) {
+  if (weapBannerImg && weapBannerImg[1] === '') {
     missing.weapons.push('__weaponBanner__');
   }
 
