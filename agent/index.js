@@ -30,6 +30,7 @@ import { extractImageUrls, checkUrls, identifyDeadUrlOwners } from './lib/health
 import { loadSkills } from './lib/skills.js';
 import { findEmptyBannerImages, findBannerImages, applyBannerImages } from './lib/banner-images.js';
 import { runEvolution, applyEvolutionPatches, checkEvolutionHealth } from './lib/evolution.js';
+import { checkRollbackNeeded } from './lib/shell-swap.js';
 import { readFileSync } from 'fs';
 import { PATHS } from './lib/config.js';
 
@@ -51,6 +52,15 @@ async function main() {
 
   // Check if previous evolution patches caused problems
   checkEvolutionHealth(memory);
+
+  // Check if a shell-swap needs rollback
+  const rollbackTo = checkRollbackNeeded(memory);
+  if (rollbackTo) {
+    log.warn(`Post-swap failure detected. Rollback to ${rollbackTo.slice(0, 8)} recommended.`);
+    log.warn('Run: git revert HEAD --no-edit && git push');
+    // Don't auto-revert — leave it for the PR review or manual action
+    addChange('rollback-warning', `Shell-swap may have caused failures. Known-good: ${rollbackTo.slice(0, 8)}`);
+  }
 
   const state = readCurrentState();
   if (!state.banners) { log.error('Failed to read state — aborting'); process.exit(1); }

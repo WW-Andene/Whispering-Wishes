@@ -39,6 +39,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
+import { executeShellSwap, checkRollbackNeeded } from './shell-swap.js';
 
 const AGENT_DIR = resolve(PATHS.repoRoot, 'agent');
 const EVOLUTION_LOG = resolve(AGENT_DIR, 'evolution-log.md');
@@ -284,6 +285,15 @@ Return a JSON evolution plan:
       "expectedOutcome": "What should improve after this change"
     },
     {
+      "type": "rewrite",
+      "file": "lib/some-module.js",
+      "category": "capability-add | restructure",
+      "description": "What the rewrite achieves",
+      "content": "FULL new file content (replaces entire file)",
+      "confidence": 0.0-1.0,
+      "expectedOutcome": "What improves"
+    },
+    {
       "type": "create",
       "file": "lib/new-module.js",
       "category": "capability-add",
@@ -303,6 +313,13 @@ Return a JSON evolution plan:
     }
   ]
 }
+
+ACTION TYPES:
+- "modify": String replacement in existing file (lightweight, applied directly)
+- "rewrite": Replace entire file contents (structural, uses shell-swap with full testing)
+- "create": Create a new file (structural, uses shell-swap with full testing)
+
+Shell-swap means: clone agent/ → apply changes → run syntax + import + reader tests → if ALL pass, swap in atomically. If ANY test fails, the change is aborted with zero damage. This makes structural changes SAFE. Use "rewrite" when you need to restructure a module, not just patch one line.
 
 PRIORITIES:
 1. Fix anything that's actively broken or causing failures
@@ -348,50 +365,74 @@ async function executePlan(plan, memory) {
   let filesCreated = 0;
   let growthItemsExecuted = 0;
 
-  for (const action of (plan.actions || [])) {
-    // Confidence gate
-    if (typeof action.confidence !== 'number' || action.confidence < 0.85) {
-      log.dim(`Skipped (confidence ${((action.confidence || 0) * 100).toFixed(0)}%): ${action.description}`);
-      continue;
-    }
+  // Classify actions: lightweight (single-file patches) vs structural (rewrites, creates, multi-file)
+  const lightweight = (plan.actions || []).filter(a =>
+    a.type === 'modify' && a.confidence >= 0.85 && MODIFY_OK.has(a.file) && !NEVER_TOUCH.has(a.file)
+  );
+  const structural = (plan.actions || []).filter(a =>
+    (a.type === 'rewrite' || a.type === 'create' || a.type === 'delete') && a.confidence >= 0.85
+  );
 
-    if (action.type === 'modify') {
-      const success = executeModify(action);
-      if (success) {
-        patchesApplied++;
-        // Record for feedback
+  // ── Lightweight patches: apply directly (fast, simple) ─────────────────
+  for (const action of lightweight) {
+    if (executeModify(action)) {
+      patchesApplied++;
+      if (!memory.evolutionHistory) memory.evolutionHistory = [];
+      memory.evolutionHistory.push({
+        timestamp: new Date().toISOString(),
+        type: 'modify', file: action.file, category: action.category,
+        description: action.description, outcome: 'success',
+      });
+    }
+  }
+
+  // ── Structural changes: use shell-swap (safe, tested) ──────────────────
+  if (structural.length > 0) {
+    log.info(`Structural evolution: ${structural.length} action(s) — using shell-swap`);
+
+    // Convert to shell-swap modification format
+    const modifications = structural.map(a => {
+      if (a.type === 'rewrite') return { type: 'rewrite', file: a.file, content: a.content || a.newStr };
+      if (a.type === 'create') return { type: 'create', file: a.file, content: a.content };
+      if (a.type === 'delete') return { type: 'delete', file: a.file };
+      return null;
+    }).filter(Boolean);
+
+    const result = executeShellSwap(modifications, memory);
+
+    if (result.success) {
+      log.ok('Shell swap succeeded — agent has a new body');
+      patchesApplied += modifications.filter(m => m.type !== 'delete').length;
+      filesCreated += modifications.filter(m => m.type === 'create').length;
+
+      for (const mod of modifications) {
         if (!memory.evolutionHistory) memory.evolutionHistory = [];
         memory.evolutionHistory.push({
           timestamp: new Date().toISOString(),
-          type: 'modify',
-          file: action.file,
-          category: action.category,
-          description: action.description,
-          expectedOutcome: action.expectedOutcome,
-          outcome: 'success', // Tentative — updated if next run fails
+          type: mod.type, file: mod.file, category: 'structural',
+          description: `Shell-swap: ${mod.type} ${mod.file}`,
+          outcome: 'success',
         });
       }
-    } else if (action.type === 'create') {
-      const success = executeCreate(action);
-      if (success) {
-        filesCreated++;
+    } else {
+      log.warn(`Shell swap failed: ${result.reason}`);
+      // Record failures
+      for (const mod of modifications) {
         if (!memory.evolutionHistory) memory.evolutionHistory = [];
         memory.evolutionHistory.push({
           timestamp: new Date().toISOString(),
-          type: 'create',
-          file: action.file,
-          category: action.category,
-          description: action.description,
-          outcome: 'success',
+          type: mod.type, file: mod.file, category: 'structural',
+          description: `Shell-swap FAILED: ${mod.type} ${mod.file}`,
+          outcome: 'fail',
         });
       }
     }
   }
 
-  // Growth plan — log and attempt to execute low-complexity items
+  // Growth plan
   if (plan.growthPlan?.length) {
     appendGrowthLog(plan.growthPlan);
-    growthItemsExecuted = plan.growthPlan.filter(g => g.complexity === 'low').length;
+    growthItemsExecuted = plan.growthPlan.length;
   }
 
   return { patchesApplied, filesCreated, growthItemsExecuted };

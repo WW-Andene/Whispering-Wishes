@@ -4,3 +4,4 @@ dist/
 # Agent runtime memory (local to each environment)
 agent/.memory.json
 agent/node_modules/
+agent-next/
