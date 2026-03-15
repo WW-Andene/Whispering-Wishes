@@ -1359,19 +1359,19 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (min-width: 1024px) {
       /* Root layout: sidebar + content */
       .desktop-layout {
-        display: flex;
+        display: flex !important;
         min-height: 100vh;
       }
 
       /* Sidebar navigation */
       .desktop-layout > header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 220px;
-        border-bottom: none;
-        border-right: 1px solid rgba(255,255,255,0.08);
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 220px !important;
+        border-bottom: none !important;
+        border-right: 1px solid rgba(255,255,255,0.08) !important;
         z-index: 50;
         overflow-y: auto;
         scrollbar-width: none;
@@ -1380,15 +1380,17 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Header inner container — full width in sidebar mode */
       .desktop-layout > header > .header-inner {
-        max-width: none;
-        padding: 1rem 0.75rem;
+        max-width: none !important;
+        padding: 1rem 0.75rem !important;
+        margin: 0 !important;
         height: 100%;
-        display: flex;
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
       }
 
       /* Logo/title area in sidebar */
       .desktop-layout > header .header-top {
+        flex-direction: row;
         padding-bottom: 1rem;
         border-bottom: 1px solid rgba(255,255,255,0.06);
         margin-bottom: 0.75rem;
@@ -1396,58 +1398,61 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Server select + export in sidebar */
       .desktop-layout > header .header-controls {
-        flex-direction: column;
-        gap: 0.5rem;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
         margin-bottom: 1rem;
       }
       .desktop-layout > header .header-controls select {
         width: 100%;
         min-height: 36px;
       }
+      .desktop-layout > header .header-controls button {
+        width: 100%;
+      }
 
       /* Tab navigation — vertical in sidebar */
       .desktop-layout > header nav {
-        flex-direction: column;
-        gap: 2px;
-        overflow-x: visible;
-        padding-bottom: 0;
+        flex-direction: column !important;
+        gap: 2px !important;
+        overflow-x: visible !important;
+        padding-bottom: 0 !important;
         flex: 1;
       }
 
       /* Tab buttons — full width, left-aligned */
       .desktop-layout > header nav .kuro-tab {
-        width: 100%;
-        justify-content: flex-start;
-        padding: 0.625rem 0.75rem;
-        border-radius: 0.5rem;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        padding: 0.625rem 0.75rem !important;
+        border-radius: 0.5rem !important;
         white-space: nowrap;
         font-size: 0.8125rem;
         gap: 0.5rem;
-        border-bottom: none;
+        border-bottom: none !important;
         transition: background 0.2s, color 0.2s;
       }
       .desktop-layout > header nav .kuro-tab:hover {
         background: rgba(255,255,255,0.04);
       }
       .desktop-layout > header nav .kuro-tab[aria-selected="true"] {
-        background: rgba(237, 175, 24, 0.08);
-        border-bottom: none;
-        border-left: 2px solid #edaf18;
-        padding-left: calc(0.75rem - 2px);
+        background: rgba(237, 175, 24, 0.08) !important;
+        border-bottom: none !important;
+        border-left: 2px solid #edaf18 !important;
+        padding-left: calc(0.75rem - 2px) !important;
       }
 
       /* Hide the horizontal tab indicator on desktop */
-      .desktop-layout > header nav .tab-indicator { display: none; }
+      .desktop-layout > header nav .tab-indicator { display: none !important; }
 
       /* Hide swipe hint on desktop */
-      .desktop-layout > header .swipe-hint { display: none; }
+      .desktop-layout > header .swipe-hint { display: none !important; }
 
       /* Main content — offset by sidebar width */
       .desktop-layout > main {
-        margin-left: 220px;
-        max-width: none;
-        width: calc(100% - 220px);
-        padding: 1.5rem 2rem;
+        margin-left: 220px !important;
+        max-width: none !important;
+        width: calc(100% - 220px) !important;
+        padding: 1.5rem 2rem !important;
       }
 
       /* Content constraint — readable line length */
