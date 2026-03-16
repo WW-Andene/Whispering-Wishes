@@ -5522,29 +5522,31 @@ function WhisperingWishesInner() {
                                     {/* LEFT: header + description + damage focus + buffs */}
                                     <div className="flex-1 min-w-0">
                                   {/* Character header */}
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
-                                      style={{ background: 'rgba(0,0,0,0.3)' }}>
-                                      {collectionImages[m.name] ? (
-                                        <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{m.name[0]}</div>
-                                      )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-white text-xs font-semibold">{m.name}</span>
-                                        <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                  <div className="mb-2">
+                                    <div className="flex items-start gap-2 mb-1.5">
+                                      <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
+                                        style={{ background: 'rgba(0,0,0,0.3)' }}>
+                                        {collectionImages[m.name] ? (
+                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{m.name[0]}</div>
+                                        )}
                                       </div>
-                                      <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
-                                        <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
-                                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
-                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                                          {m.d.element}
-                                        </span>
-                                        <span className="text-[9px] text-gray-400">{m.d.weapon}</span>
+                                      <div>
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-white text-xs font-semibold">{m.name}</span>
+                                          <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                        </div>
+                                        <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
+                                          <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
+                                          <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                            style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                            {m.d.element}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
+                                    <span className="text-[9px] text-gray-400">{m.d.weapon}</span>
                                   </div>
                                   {/* Description */}
                                   <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
