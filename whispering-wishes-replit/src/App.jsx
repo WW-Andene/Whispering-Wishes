@@ -3191,7 +3191,7 @@ function WhisperingWishesInner() {
         {activeTab === 'events' && (
           <div role="tabpanel" id="tabpanel-events" aria-labelledby="tab-events" tabIndex="0">
           <TabErrorBoundary tabName="Events">
-          <div className="kuro-calc space-y-3 tab-content">
+          <div className="kuro-calc space-y-3 tab-content events-tab-content">
             <TabBackground id="events" />
 
             <div className="flex items-center justify-between content-layer">

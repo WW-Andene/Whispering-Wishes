@@ -1526,16 +1526,26 @@ const KuroStyles = memo(({ oledMode }) => (
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 50vh;
+        min-height: 60vh;
       }
       .desktop-layout .desktop-empty-state .kuro-card {
         max-width: 480px;
         width: 100%;
       }
+      .desktop-layout .desktop-empty-state .kuro-card .content-layer {
+        padding: 3rem 2rem !important;
+      }
 
-      /* Event cards — taller on desktop for visual presence */
-      .desktop-layout .event-grid .kuro-card .content-layer {
-        min-height: 160px;
+      /* Events tab — push reset text to bottom */
+      .desktop-layout .events-tab-content {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: calc(100vh - 2rem) !important;
+      }
+      .desktop-layout .events-tab-content > p:last-child {
+        margin-top: auto !important;
+        padding-top: 1.5rem;
+        padding-bottom: 0.5rem;
       }
 
       /* ── DESKTOP POLISH ──────────────────────────────────────────── */
