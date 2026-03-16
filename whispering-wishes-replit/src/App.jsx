@@ -3147,8 +3147,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'standard' && (
-              <div className="space-y-3 content-layer">
-                <div className="text-gray-300 text-xs uppercase tracking-wider content-layer">Permanent Banners</div>
+              <div className="space-y-2 banner-grid content-layer">
                 
                 {/* Standard Resonator Banner */}
                 <StandardBannerSection
