@@ -706,6 +706,238 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { totalMult, rotTime, onField });
 });
 
+// [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
+// Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
+// Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
+// stat types: atkPct, allDmg, elemDmg, skillDmg, basicDmg, heavyDmg, libDmg, echoDmg,
+//             critRate, critDmg, deepen, resShred, defShred, defIgnore, coordDmg
+const CHAR_BUFF_TABLE = {
+  // ── 5★ Supports / Sub DPS ──
+  'Verina': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 30 }],
+    libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 30 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% All DMG Deepen 30s. Lib: 20% ATK teamwide. Fatal blow protection.',
+  },
+  'Shorekeeper': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 24 }],
+    libBuffs: [
+      { stat: 'critRate', value: 12.8, target: 'team', duration: 25, condition: 'In Stellarealm field' },
+      { stat: 'critDmg', value: 25, target: 'team', duration: 25, condition: 'In Stellarealm field' },
+    ],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Lib field: +12.8% CR +25% CD while inside. Outro: 15% Deepen. Knockdown recovery.',
+  },
+  'Jianxin': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 15, duration: 10, condition: 'Shield active' }],
+    note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
+  },
+  'Lynae': {
+    outroBuffs: [
+      { stat: 'deepen', value: 15, target: 'next', duration: 14 },
+      { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
+    ],
+    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Lib: 24% All DMG Bonus teamwide 30s. Outro: 15% Deepen + 25% Lib DMG Amp (14s, swap cancels). Tune Break Boost +40.',
+  },
+  'Mornye': {
+    outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 14 }],
+    libBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [{ stat: 'offTune', value: 15, duration: 20, condition: 'Off-Tune buildup' }],
+    note: 'Outro: 25% Deepen. Lib: 15% All DMG. Off-Tune buildup amplifier. S0+Lynae = 40% DMG Bonus.',
+  },
+  'Roccia': {
+    outroBuffs: [
+      { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
+      { stat: 'atkPct', value: 12, target: 'team', duration: 20, condition: 'Weapon passive' },
+    ],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 25% Basic ATK DMG Amp. Weapon passive: 12% team ATK.',
+  },
+  'Changli': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'After 4 Resonance Skill casts' }],
+    debuffs: [],
+    note: 'Outro: 20% Fusion DMG Amp to next. Self ATK ramp.',
+  },
+  'Yinlin': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'resShred', value: 10, duration: 10, condition: 'Electro RES' }],
+    note: 'Outro: 20% Electro DMG Amp. Off-field Coordinated ATK. Electro RES Shred.',
+  },
+  'Zhezhi': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Off-field painter DMG. No team buffs.',
+  },
+  'Phoebe': {
+    outroBuffs: [
+      { stat: 'resShred', value: 10, target: 'enemy', duration: 14, condition: 'Spectro RES (Confession mode)' },
+      { stat: 'deepen', value: 100, target: 'next', duration: 14, condition: 'Spectro Frazzle DMG Amp (Confession)' },
+    ],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'frazzle', value: 18, duration: 15, condition: '18 stacks per rotation in Confession mode' }],
+    note: 'Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
+  },
+  'Cantarella': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Off-field Coordinated ATK. Outro: 15% Deepen. Heal.',
+  },
+  'Ciaccona': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Aero DMG Bonus' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' }],
+    note: 'Aero Erosion applier (3 stacks DOT). Outro: 20% Aero DMG. Weapon: Aero RES -16%.',
+  },
+  'Lupa': {
+    outroBuffs: [{ stat: 'deepen', value: 18, target: 'next', duration: 14 }],
+    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [{ stat: 'resShred', value: 15, duration: 10, condition: 'Fusion RES' }],
+    note: 'Outro: 18% Deepen. Lib: 15% ATK team. Fusion RES Shred 15%.',
+  },
+  'Iuno': {
+    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 50% Heavy ATK DMG Amp. Heal + Shield. Liberation DPS capable.',
+  },
+  'Qiuyuan': {
+    outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
+    libBuffs: [{ stat: 'echoDmg', value: 30, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 50% Echo Skill DMG Amp. Lib: 30% Echo DMG. Sig weapon: 20% Echo DMG.',
+  },
+  'Chisa': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 18, duration: 12 }],
+    note: 'DEF Shred 18% on skill. Quick swap support.',
+  },
+  // ── 5★ Main DPS (mostly self-buffs, less team contribution) ──
+  'Camellya': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 30, target: 'self', duration: 99, condition: 'Inherent: 2×15% Havoc DMG' },
+      { stat: 'critDmg', value: 28, target: 'self', duration: 18, condition: 'S1: After Intro' },
+    ],
+    debuffs: [],
+    note: 'Self-buffing Main DPS. Inherent: +30% Havoc DMG. S1: +28% CD after Intro.',
+  },
+  'Carlotta': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive' }],
+    debuffs: [],
+    note: 'Burst Glacio DPS. Weapon passive: 12% Glacio + 24% Charged ATK.',
+  },
+  'Jinhsi': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
+  },
+  'Xiangli Yao': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
+  },
+  'Zani': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'atkPct', value: 24, target: 'self', duration: 20, condition: 'Weapon R1' },
+      { stat: 'defIgnore', value: 16, target: 'self', duration: 14, condition: 'Weapon R1: During Lib + Frazzle Amp 50%' },
+    ],
+    debuffs: [],
+    note: 'Converts Frazzle→Heliacal Embers. Weapon: +24% ATK, 16% DEF Ignore, 50% Frazzle DMG in Lib.',
+  },
+  // ── 4★ ──
+  'Sanhua': {
+    outroBuffs: [{ stat: 'basicDmg', value: 38, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 38% Basic ATK DMG Amp (14s). Quick swap.',
+  },
+  'Mortefi': {
+    outroBuffs: [{ stat: 'heavyDmg', value: 38, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 38% Heavy ATK DMG Amp. Off-field Coordinated ATK on Heavy ATK.',
+  },
+  'Danjin': {
+    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Havoc DMG Bonus' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 23% Havoc DMG Bonus to next.',
+  },
+  'Baizhi': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 24 }],
+    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% Deepen. Lib: 15% ATK teamwide. Heal.',
+  },
+  'Taoqi': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 12, duration: 8, condition: 'Shield active' }],
+    note: 'Outro: 15% Deepen. Shield. DEF Shred 12% while shielded.',
+  },
+  'Yuanwu': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% Deepen. Coordinated ATK. Shield.',
+  },
+  'Yangyang': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Energy Regen support. Minimal direct DMG contribution.',
+  },
+  'Buling': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% Deepen. Heal. Res. Skill buff.',
+  },
+};
+
 // [SECTION:ECHO_SETS] — Sonata Effect set bonuses
 const ECHO_SETS = {
   'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 30 } },
@@ -1568,7 +1800,7 @@ export {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
   calculateLuckRating,
   SERVERS, getServerOffset,
-  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS,
+  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE,
   EVENTS,
   HARD_PITY, SOFT_PITY_START, LUNITE_DAILY_ASTRITE, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
   SUBSCRIPTIONS, MAX_ASTRITE, MAX_CALC_PULLS,

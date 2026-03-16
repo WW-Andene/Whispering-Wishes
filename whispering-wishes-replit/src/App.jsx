@@ -44,6 +44,7 @@ import {
   CHARACTER_DATA,
   WEAPON_DATA,
   ECHO_SETS,
+  CHAR_BUFF_TABLE,
   EVENTS,
   SUBSCRIPTIONS,
   HARD_PITY,
@@ -5151,58 +5152,88 @@ function WhisperingWishesInner() {
                         if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
                       }
 
-                      // ── Team buff contributions (real values from game data) ──
-                      allBuffs.forEach(({ buff: b, source }) => {
-                        const isSelf = source === mainDps.name;
-                        // ATK buffs
-                        if (b === 'ATK Buff') atkPct += 20; // Verina Outro
-                        else if (b === 'team ATK buff') atkPct += 20;
-                        // Crit buffs
-                        else if (b === 'Crit Buff') { cr += 12.8; cd += 25; } // Shorekeeper Stellarealm
-                        else if (b === 'Crit DMG Amp') cd += 36;
-                        // DMG amplification
-                        else if (b === 'DMG Deepen') deepen += 15; // Verina
-                        else if (b === 'DMG Buff') deepen += 15;
-                        else if (b === 'Fusion DMG Amp') elemDmg += 20;
-                        else if (b === 'Aero Buff') elemDmg += 20;
-                        // Skill type buffs
-                        else if (b === 'Basic ATK Amp') skillDmg += 25; // Sanhua, Roccia
-                        else if (b === 'Heavy ATK Buff' || b === 'Heavy ATK DMG Buff') skillDmg += 25; // Mortefi
-                        else if (b === 'Res. Skill DMG Deepen') deepen += 12;
-                        else if (b === 'Res. Skill DMG Amp') skillDmg += 20;
-                        else if (b === 'Res. Skill DMG Buff') skillDmg += 20;
-                        else if (b === 'Echo Skill DMG Buff') skillDmg += 15;
-                        else if (b === 'Tune Break DMG Buff') deepen += 18;
-                        else if (b === 'Coordinated ATK Amp') skillDmg += 15;
-                        // Coordinated ATK (off-field damage contribution)
-                        else if (b === 'Coordinated ATK' && !isSelf) deepen += 8;
-                        // Healing (less direct but relevant for sustain uptime)
-                        else if (b === 'Heal' || b === 'Self-heal') {} // survivability, not damage
-                        // Shield
-                        else if (b === 'Shield') {} // survivability
-                        else if (b === 'Grouping') deepen += 5; // AoE efficiency
-                        else if (b === 'Havoc DMG Bonus') elemDmg += 15;
-                        else if (b === 'Energy Regen') atkPct += 5; // faster rotations
+                      // ── Team buff contributions from CHAR_BUFF_TABLE (exact per-character values) ──
+                      let basicDmg = 0, heavyDmg = 0, libDmg = 0, echoDmg = 0;
+                      mems.forEach(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        if (!bt) return;
+                        const isMain = m.name === mainDps.name;
+
+                        // Outro buffs — applied to main DPS (target: 'next')
+                        if (!isMain) {
+                          (bt.outroBuffs || []).forEach(b => {
+                            if (b.target === 'next' || b.target === 'enemy') {
+                              if (b.stat === 'atkPct') atkPct += b.value;
+                              else if (b.stat === 'allDmg') elemDmg += b.value; // All DMG adds to DMG Bonus pool
+                              else if (b.stat === 'elemDmg') {
+                                // Only apply if element matches DPS, or if it's "All DMG"
+                                const buffEl = (b.condition || '').toLowerCase();
+                                const dpsEl = (mainDps.d.element || '').toLowerCase();
+                                if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += b.value;
+                              }
+                              else if (b.stat === 'deepen') deepen += b.value;
+                              else if (b.stat === 'basicDmg') basicDmg += b.value;
+                              else if (b.stat === 'heavyDmg') heavyDmg += b.value;
+                              else if (b.stat === 'libDmg') libDmg += b.value;
+                              else if (b.stat === 'echoDmg') echoDmg += b.value;
+                              else if (b.stat === 'critRate') cr += b.value;
+                              else if (b.stat === 'critDmg') cd += b.value;
+                              else if (b.stat === 'resShred') resShred += b.value;
+                              else if (b.stat === 'defShred') defShred += b.value;
+                              else if (b.stat === 'skillDmg') skillDmg += b.value;
+                            }
+                          });
+                        }
+
+                        // Liberation buffs — teamwide, apply to main DPS
+                        (bt.libBuffs || []).forEach(b => {
+                          if (b.target === 'team' || (!isMain && b.target === 'next')) {
+                            if (b.stat === 'atkPct') atkPct += b.value;
+                            else if (b.stat === 'allDmg') elemDmg += b.value;
+                            else if (b.stat === 'critRate') cr += b.value;
+                            else if (b.stat === 'critDmg') cd += b.value;
+                            else if (b.stat === 'echoDmg') echoDmg += b.value;
+                          }
+                        });
+
+                        // Self buffs — only for main DPS
+                        if (isMain) {
+                          (bt.selfBuffs || []).forEach(b => {
+                            if (b.stat === 'atkPct') atkPct += b.value;
+                            else if (b.stat === 'elemDmg') elemDmg += b.value;
+                            else if (b.stat === 'critRate') cr += b.value;
+                            else if (b.stat === 'critDmg') cd += b.value;
+                            else if (b.stat === 'defIgnore') defIgnore += b.value;
+                          });
+                        }
+
+                        // Debuffs — enemy-side, from any team member
+                        (bt.debuffs || []).forEach(db => {
+                          if (db.stat === 'defShred') defShred += db.value;
+                          else if (db.stat === 'resShred') resShred += db.value;
+                          else if (db.stat === 'frazzle') deepen += 10; // placeholder: Frazzle DOT adds ~10% effective (Level-based, not ATK-based — TODO: proper DOT calc)
+                          else if (db.stat === 'erosion') deepen += 10; // placeholder: Erosion DOT adds ~10% effective — TODO: proper DOT calc
+                          else if (db.stat === 'offTune') deepen += db.value;
+                        });
                       });
 
-                      // ── Debuff contributions (enemy-side) ──
-                      allDebuffs.forEach(({ debuff: db }) => {
-                        if (db === 'DEF Shred') defShred += 18;
-                        else if (db === 'Frazzle') deepen += 20; // Spectro Frazzle amplifies damage
-                        else if (db === 'Erosion') deepen += 18; // Aero Erosion
-                        else if (db === 'Off-Tune') deepen += 15; // reduces enemy resistance
-                        else if (db.includes('RES Shred')) {
-                          const m = db.match(/(\d+)/);
-                          resShred += m ? parseInt(m[1]) : 15;
-                        }
-                      });
+                      // Map DPS's dmgFocus to the right skill DMG bonus
+                      const focus = mainDps.d.dmgFocus || [];
+                      if (focus.includes('Normal ATK') || focus.includes('Basic ATK')) skillDmg += basicDmg;
+                      else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5; // partial benefit
+                      if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
+                      else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
+                      if (focus.includes('Liberation')) skillDmg += libDmg;
+                      else if (libDmg > 0) skillDmg += libDmg * 0.3; // partial — some rotation damage is Lib
+                      if (focus.includes('Echo Skill')) skillDmg += echoDmg;
 
                       // Support echo set contributions
                       mems.forEach(m => {
                         if (m.name === mainDps.name) return;
                         if (m.echoSetName === 'Rejuvenating Glow') atkPct += 15;
                         if (m.echoSetName === 'Moonlit Clouds') atkPct += 22.5;
-                        if (m.echoSetName === 'Empyrean Anthem') skillDmg += 10; // coordinated boost
+                        if (m.echoSetName === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
+                        if (m.echoSetName === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; } // assumes ≥250% ER
                       });
 
                       // ── Damage formula ──
@@ -5510,6 +5541,8 @@ function WhisperingWishesInner() {
                                 ))}
                               </div>
                             )}
+                            {/* Accuracy note */}
+                            <p className="text-[8px] text-gray-600 text-center mt-1">Excludes: DOT ticks (Frazzle/Erosion), Tune Break DMG, conditional uptimes, echo substats. S0 assumed.</p>
                           </div>
                         </CardBody>
                       </Card>
