@@ -5013,7 +5013,6 @@ function WhisperingWishesInner() {
                               }`}
                               style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
                             >
-                              <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
                               <span className="truncate">{team.name}</span>
                               {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
                             </button>
