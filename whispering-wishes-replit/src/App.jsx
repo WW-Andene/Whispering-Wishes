@@ -5517,6 +5517,10 @@ function WhisperingWishesInner() {
                               return (
                                 <div key={m.name} className="p-2.5 rounded-lg border hover:border-white/15 transition-colors"
                                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
+                                  {/* 2-col: Left=header+desc+focus+buffs, Right=stats+equipment */}
+                                  <div className="flex flex-col md:flex-row gap-3">
+                                    {/* LEFT: header + description + damage focus + buffs */}
+                                    <div className="flex-1 min-w-0">
                                   {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 rounded-lg overflow-hidden border-2 flex-shrink-0"
@@ -5542,10 +5546,6 @@ function WhisperingWishesInner() {
                                       </div>
                                     </div>
                                   </div>
-                                  {/* 2-col: Left=desc+buffs+focus, Right=stats+equipment */}
-                                  <div className="flex flex-col md:flex-row gap-3">
-                                    {/* LEFT: description + buffs + damage focus */}
-                                    <div className="flex-1 min-w-0">
                                   {/* Description */}
                                   <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
                                   {/* Damage Focus */}
