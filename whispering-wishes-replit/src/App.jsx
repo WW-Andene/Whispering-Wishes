@@ -5296,16 +5296,47 @@ function WhisperingWishesInner() {
                         return bt?.debuffs?.some(db => db.stat === 'erosion');
                       });
                       if (hasErosion) {
-                        // Erosion: 3 stacks default, ticks every 15s (much slower but higher per tick)
-                        // Ciaccona applies 3 stacks, Rover can push to 6
                         const erosionStacks = mems.some(m => m.name === 'Rover') ? 6 : 3;
-                        // In a 25s rotation, ~1-2 ticks at 3 stacks
                         const erosionTicks = Math.max(1, Math.floor(rotTime / 15));
                         let erosionTotal = 0;
                         for (let t = 0; t < erosionTicks; t++) {
-                          erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8); // Erosion has higher per-stack multiplier
+                          erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8);
                         }
                         dotDmgPerRotation += erosionTotal * defMult * resMult;
+                      }
+
+                      // Check if team has Fusion Burst appliers (Aemeath)
+                      const hasFusionBurst = mems.some(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        return bt?.debuffs?.some(db => db.stat === 'fusionBurst');
+                      });
+                      if (hasFusionBurst) {
+                        // Fusion Burst: stacks to 10 (Aemeath changes to 6 trigger), explodes for Fusion AoE
+                        // In Aemeath's case: enhanced skills use max stacks WITHOUT consuming + Fusion Trail (30 stacks = 300% mult)
+                        // ~2 explosions per rotation, each scaling off Level + stacks
+                        const burstExplosions = 2;
+                        const burstStacks = 10; // max stack damage even at 6 trigger
+                        const fusionTrailMult = 3.0; // 30 Fusion Trail stacks = 300% extra mult
+                        const burstDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (burstStacks * 0.5) * fusionTrailMult;
+                        dotDmgPerRotation += burstDmg * burstExplosions * defMult * resMult;
+                      }
+
+                      // Check if team has Electro Flare appliers
+                      const hasElectroFlare = mems.some(m => {
+                        return m.d.element === 'Electro' && (m.d.dmgFocus || []).length > 0;
+                      });
+                      if (hasElectroFlare) {
+                        // Electro Flare: periodic Electro DOT, loses half stacks per tick
+                        // Max 10 stacks → 5 → 2 → 1, each tick deals increasing DMG
+                        // Also generates Electro Rage at max for amplified next Flare
+                        const flareTicks = Math.min(4, Math.floor(rotTime / 4));
+                        let flareTotal = 0;
+                        let stacks = 10;
+                        for (let t = 0; t < flareTicks; t++) {
+                          flareTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * 0.12);
+                          stacks = Math.ceil(stacks / 2);
+                        }
+                        dotDmgPerRotation += flareTotal * defMult * resMult;
                       }
 
                       // ── Real DPS: skill multipliers × rotation timing + DOT ──
@@ -5350,7 +5381,7 @@ function WhisperingWishesInner() {
                       const els = new Set(mems.map(m => m.d.element));
                       if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
                       const dotDps = Math.round(dotDmgPerRotation / rotTime);
-                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, synergy: syn, warnings };
+                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
                     };
 
                     const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
@@ -5596,7 +5627,7 @@ function WhisperingWishesInner() {
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[8px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT (Frazzle/Erosion), DEF/RES shred. Excludes: Tune Break DMG, echo substats. S0 assumed (except noted self-buffs).</p>
+                            <p className="text-[8px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT (Frazzle/Erosion/Flare), Fusion Burst explosions, DEF/RES shred. Excludes: Tune Break DMG, echo substats. S0 assumed (except noted self-buffs).</p>
                           </div>
                         </CardBody>
                       </Card>

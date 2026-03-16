@@ -577,7 +577,7 @@ const CHARACTER_DATA = {
   ['Lynae',         [],                              ['Tune Break DMG Buff'],                 ['Off-Tune']],
   ['Mornye',        [],                              ['Heal'],                                ['Off-Tune']],
   ['Luuk Herssen',  ['Normal ATK'],                  [],                                      []],
-  ['Aemeath',       ['Res. Skill', 'Liberation'],    [],                                      []],
+  ['Aemeath',       ['Res. Skill', 'Liberation'],    [],                                      ['Fusion Burst']],
   // 4★
   ['Aalto',         [],                              [],                                      []],
   ['Baizhi',        [],                              ['Heal'],                                []],
@@ -667,7 +667,7 @@ const CHARACTER_DATA = {
   ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Normal ATK chains
-  ['Aemeath',       2700, 24, 15],  // Res. Skill + Liberation
+  ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
   // 5★ Sub DPS — moderate totalMult, short onField
   ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
   ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
@@ -935,6 +935,111 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [],
     debuffs: [],
     note: 'Outro: 15% Deepen. Heal. Res. Skill buff.',
+  },
+  // ── 5★ Main DPS missing from initial table ──
+  'Aemeath': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'critDmg', value: 60, target: 'self', duration: 30, condition: 'Tune Rupture/Fusion Burst mode: 30% per teammate (max 60%)' },
+      { stat: 'deepen', value: 25, target: 'self', duration: 20, condition: 'RL Finisher deepen amplification' },
+      { stat: 'defIgnore', value: 32, target: 'self', duration: 8, condition: 'Sig weapon: on Tune Rupture/Fusion Burst infliction' },
+      { stat: 'resShred', value: 10, target: 'self', duration: 8, condition: 'Sig weapon: Fusion RES ignore' },
+    ],
+    debuffs: [{ stat: 'fusionBurst', value: 10, duration: 30, condition: 'Fusion Burst mode: 10 stacks, enhanced skills use max stacks without consuming' }],
+    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced skills scale off Fusion Trail (30 stacks = 300% mult). Sig weapon: 32% DEF Ignore + 10% Fusion RES. Self-buff: 60% CD + 25% Deepen.',
+  },
+  'Jiyan': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Aero DMG +12%' }],
+    debuffs: [],
+    note: 'Heavy ATK DPS in Qingloong form. Weapon: Heavy ATK +20%.',
+  },
+  'Calcharo': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 12, target: 'self', duration: 10, condition: 'Weapon passive' }],
+    debuffs: [],
+    note: 'Liberation → Death Messenger combo. Electro DMG +12% from weapon.',
+  },
+  'Encore': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Cosmos Rampage mode Normal ATK DPS.',
+  },
+  'Lingyang': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Lion Form aerial Normal ATK DPS.',
+  },
+  'Cartethyia': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 20, target: 'self', duration: 20, condition: 'Erosion stacks on target: Aero DMG amp' }],
+    debuffs: [{ stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' }],
+    note: 'Top-tier Aero DPS. HP-scaling. Self-sufficient Erosion duo with Ciaccona.',
+  },
+  'Brant': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Fusion DMG +12%' }],
+    debuffs: [],
+    note: 'Fusion Normal ATK DPS. Self-heal. ATK speed +10% from weapon.',
+  },
+  'Augusta': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Heavy ATK AoE DPS. Shield. Outro: 15% All DMG Deepen.',
+  },
+  'Galbrena': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Echo Skill + Heavy ATK Fusion DPS.',
+  },
+  'Luuk Herssen': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Spectro Gauntlets DPS. Tune Strain focused.',
+  },
+  'Phrolova': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Echo Skill focused AoE DPS. One of strongest AoE in game.',
+  },
+  // ── Electro characters with Electro Flare ──
+  'Xiangli Yao': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Electro DMG +12%' }],
+    debuffs: [],
+    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
+  },
+  'Jinhsi': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
+  },
+  'Rover': {
+    outroBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Spectro RES Shred' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'frazzle', value: 10, duration: 15, condition: '10 stacks via Skill + Liberation. Shimmer prevents decay.' }],
+    note: 'Spectro Frazzle applier. Outro: Spectro RES -10% (S6). Shimmer prevents stack decay.',
   },
 };
 
