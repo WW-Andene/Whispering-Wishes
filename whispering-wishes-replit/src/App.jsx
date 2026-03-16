@@ -5160,39 +5160,45 @@ function WhisperingWishesInner() {
                         const isMain = m.name === mainDps.name;
 
                         // Outro buffs — applied to main DPS (target: 'next')
+                        // Scale by uptime: buff.duration / rotTime of team
                         if (!isMain) {
+                          const teamRotTime = mainDps.d.rotTime || 25;
                           (bt.outroBuffs || []).forEach(b => {
                             if (b.target === 'next' || b.target === 'enemy') {
-                              if (b.stat === 'atkPct') atkPct += b.value;
-                              else if (b.stat === 'allDmg') elemDmg += b.value; // All DMG adds to DMG Bonus pool
+                              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+                              const val = b.value * uptime;
+                              if (b.stat === 'atkPct') atkPct += val;
+                              else if (b.stat === 'allDmg') elemDmg += val;
                               else if (b.stat === 'elemDmg') {
-                                // Only apply if element matches DPS, or if it's "All DMG"
                                 const buffEl = (b.condition || '').toLowerCase();
                                 const dpsEl = (mainDps.d.element || '').toLowerCase();
-                                if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += b.value;
+                                if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
                               }
-                              else if (b.stat === 'deepen') deepen += b.value;
-                              else if (b.stat === 'basicDmg') basicDmg += b.value;
-                              else if (b.stat === 'heavyDmg') heavyDmg += b.value;
-                              else if (b.stat === 'libDmg') libDmg += b.value;
-                              else if (b.stat === 'echoDmg') echoDmg += b.value;
-                              else if (b.stat === 'critRate') cr += b.value;
-                              else if (b.stat === 'critDmg') cd += b.value;
-                              else if (b.stat === 'resShred') resShred += b.value;
-                              else if (b.stat === 'defShred') defShred += b.value;
-                              else if (b.stat === 'skillDmg') skillDmg += b.value;
+                              else if (b.stat === 'deepen') deepen += val;
+                              else if (b.stat === 'basicDmg') basicDmg += val;
+                              else if (b.stat === 'heavyDmg') heavyDmg += val;
+                              else if (b.stat === 'libDmg') libDmg += val;
+                              else if (b.stat === 'echoDmg') echoDmg += val;
+                              else if (b.stat === 'critRate') cr += val;
+                              else if (b.stat === 'critDmg') cd += val;
+                              else if (b.stat === 'resShred') resShred += val;
+                              else if (b.stat === 'defShred') defShred += val;
+                              else if (b.stat === 'skillDmg') skillDmg += val;
                             }
                           });
                         }
 
-                        // Liberation buffs — teamwide, apply to main DPS
+                        // Liberation buffs — teamwide, apply to main DPS (scaled by uptime)
                         (bt.libBuffs || []).forEach(b => {
                           if (b.target === 'team' || (!isMain && b.target === 'next')) {
-                            if (b.stat === 'atkPct') atkPct += b.value;
-                            else if (b.stat === 'allDmg') elemDmg += b.value;
-                            else if (b.stat === 'critRate') cr += b.value;
-                            else if (b.stat === 'critDmg') cd += b.value;
-                            else if (b.stat === 'echoDmg') echoDmg += b.value;
+                            const teamRotTime = mainDps.d.rotTime || 25;
+                            const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+                            const val = b.value * uptime;
+                            if (b.stat === 'atkPct') atkPct += val;
+                            else if (b.stat === 'allDmg') elemDmg += val;
+                            else if (b.stat === 'critRate') cr += val;
+                            else if (b.stat === 'critDmg') cd += val;
+                            else if (b.stat === 'echoDmg') echoDmg += val;
                           }
                         });
 
@@ -5211,9 +5217,10 @@ function WhisperingWishesInner() {
                         (bt.debuffs || []).forEach(db => {
                           if (db.stat === 'defShred') defShred += db.value;
                           else if (db.stat === 'resShred') resShred += db.value;
-                          else if (db.stat === 'frazzle') deepen += 10; // placeholder: Frazzle DOT adds ~10% effective (Level-based, not ATK-based — TODO: proper DOT calc)
-                          else if (db.stat === 'erosion') deepen += 10; // placeholder: Erosion DOT adds ~10% effective — TODO: proper DOT calc
+                          else if (db.stat === 'frazzle') {} // DOT computed separately below
+                          else if (db.stat === 'erosion') {} // DOT computed separately below
                           else if (db.stat === 'offTune') deepen += db.value;
+                          else if (db.stat === 'havocBane') defShred += db.value * 2; // 2% DEF reduction per stack
                         });
                       });
 
@@ -5255,7 +5262,53 @@ function WhisperingWishesInner() {
                       // Final score
                       const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
-                      // ── Real DPS: skill multipliers × rotation timing ──
+                      // ── DOT Damage: Frazzle & Erosion (Level-based, NOT ATK-based) ──
+                      // Formula: BaseDMG = LevelMult × 1.25078 × StackMult
+                      // Lv90 LevelMult = 3674. Ticks consume 1 stack.
+                      // Only affected by DEF, RES, and specific Amplify effects.
+                      const DOT_LEVEL_MULT = 3674; // Lv90
+                      const DOT_BASE_FACTOR = 1.25078;
+                      let dotDmgPerRotation = 0;
+
+                      // Check if team has Frazzle appliers
+                      const hasFrazzle = mems.some(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        return bt?.debuffs?.some(db => db.stat === 'frazzle');
+                      });
+                      if (hasFrazzle) {
+                        // Phoebe applies ~18 stacks in Confession, Rover ~10
+                        const frazzleStacks = mems.some(m => m.name === 'Phoebe') ? 18 : 10;
+                        // Ticks every 3s, each tick at current stack count then -1
+                        const numTicks = Math.min(Math.floor(rotTime / 3), frazzleStacks);
+                        let frazzleTotal = 0;
+                        for (let s = frazzleStacks; s > frazzleStacks - numTicks; s--) {
+                          frazzleTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15); // stack multiplier ~0.15 per stack at high stacks
+                        }
+                        // Phoebe Outro: 100% Frazzle DMG Amp (Confession mode) + Spectro RES -10% already in resShred
+                        const hasPhoebeAmp = mems.some(m => m.name === 'Phoebe');
+                        const frazzleAmpMult = hasPhoebeAmp ? 2.0 : 1.0; // 100% amp = 2x
+                        dotDmgPerRotation += frazzleTotal * frazzleAmpMult * defMult * resMult;
+                      }
+
+                      // Check if team has Erosion appliers
+                      const hasErosion = mems.some(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        return bt?.debuffs?.some(db => db.stat === 'erosion');
+                      });
+                      if (hasErosion) {
+                        // Erosion: 3 stacks default, ticks every 15s (much slower but higher per tick)
+                        // Ciaccona applies 3 stacks, Rover can push to 6
+                        const erosionStacks = mems.some(m => m.name === 'Rover') ? 6 : 3;
+                        // In a 25s rotation, ~1-2 ticks at 3 stacks
+                        const erosionTicks = Math.max(1, Math.floor(rotTime / 15));
+                        let erosionTotal = 0;
+                        for (let t = 0; t < erosionTicks; t++) {
+                          erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8); // Erosion has higher per-stack multiplier
+                        }
+                        dotDmgPerRotation += erosionTotal * defMult * resMult;
+                      }
+
+                      // ── Real DPS: skill multipliers × rotation timing + DOT ──
                       // Sum total rotation damage from all team members
                       let totalRotDmg = 0;
                       const rotTime = mainDps.d.rotTime || 25;
@@ -5280,7 +5333,7 @@ function WhisperingWishesInner() {
                           totalRotDmg += sAtk * (mult / 100) * sCrit * (1 + sElem / 100) * defMult * resMult;
                         }
                       });
-                      const realDps = Math.round(totalRotDmg / rotTime);
+                      const realDps = Math.round((totalRotDmg + dotDmgPerRotation) / rotTime);
 
                       // Synergy
                       let syn = 0;
@@ -5296,7 +5349,8 @@ function WhisperingWishesInner() {
                       if (mems.length < 3) warnings.push('Incomplete team');
                       const els = new Set(mems.map(m => m.d.element));
                       if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
-                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, synergy: syn, warnings };
+                      const dotDps = Math.round(dotDmgPerRotation / rotTime);
+                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, synergy: syn, warnings };
                     };
 
                     const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
@@ -5542,7 +5596,7 @@ function WhisperingWishesInner() {
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[8px] text-gray-600 text-center mt-1">Excludes: DOT ticks (Frazzle/Erosion), Tune Break DMG, conditional uptimes, echo substats. S0 assumed.</p>
+                            <p className="text-[8px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT (Frazzle/Erosion), DEF/RES shred. Excludes: Tune Break DMG, echo substats. S0 assumed (except noted self-buffs).</p>
                           </div>
                         </CardBody>
                       </Card>
