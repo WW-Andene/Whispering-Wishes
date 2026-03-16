@@ -326,7 +326,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: ${oledMode ? '#000000' : '#080c12'};
+      background: ${oledMode ? '#000000' : '#080c14'};
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
@@ -1357,7 +1357,7 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (min-width: 1024px) {
       /* Root */
       .desktop-layout {
-        display: block !important; min-height: 100vh;
+        min-height: 100vh;
         
         background: inherit;
       }
@@ -1435,7 +1435,6 @@ const KuroStyles = memo(({ oledMode }) => (
         margin-left: 72px !important; max-width: none !important;
         width: calc(100% - 72px) !important;
         min-height: 100vh !important;
-        overflow: visible !important;
         padding: 1rem 1.25rem !important; padding-right: 180px !important;
         box-sizing: border-box !important;
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
@@ -1503,8 +1502,6 @@ const KuroStyles = memo(({ oledMode }) => (
         margin-bottom: 0 !important; padding-bottom: 0 !important;
       }
 
-      /* Background canvas */
-      .desktop-layout > canvas { left: 72px !important; width: calc(100% - 72px) !important; }
     }
 
     @media (min-width: 1440px) {
@@ -1514,10 +1511,12 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout .event-grid { grid-template-columns: repeat(3, 1fr) !important; }
     }
 
-    /* Hide ad margin on mobile */
-    .desktop-ad-margin { display: none; }
-    @media (min-width: 1024px) { .desktop-ad-margin { display: flex; } }
 
+
+    /* Mobile: hide desktop-only elements */
+    @media (max-width: 1023px) {
+      .desktop-ad-margin { display: none !important; }
+    }
     `}</style>
 ));
 KuroStyles.displayName = 'KuroStyles';
