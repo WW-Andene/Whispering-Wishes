@@ -4944,53 +4944,7 @@ function WhisperingWishesInner() {
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
                             if (!slots.some(s => s)) return;
                             if (teamCompareEntries.length >= 5) return;
-                            // Snapshot current team into compare
-                            const members = slots.filter(s => s).map(name => {
-                              const d = CHARACTER_DATA[name];
-                              if (!d) return null;
-                              const weapon = WEAPON_DATA[d.bestWeapon] || null;
-                              const charAtk = d.baseAtk || 0;
-                              const weapAtk = weapon ? weapon.baseAtk : 0;
-                              let echoSetName = '';
-                              if (d.bestEchoes) {
-                                for (const e of d.bestEchoes) {
-                                  const setKey = Object.keys(ECHO_SETS).find(k => e.includes(k));
-                                  if (setKey) { echoSetName = setKey; break; }
-                                }
-                              }
-                              return { name, element: d.element, rarity: d.rarity, role: d.role, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, weapStat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', bestWeapon: d.bestWeapon || '', buffs: d.buffs || [], debuffs: d.debuffs || [], dmgFocus: d.dmgFocus || [], baseHp: d.baseHp || 0, baseDef: d.baseDef || 0 };
-                            }).filter(Boolean);
-                            if (!members.length) return;
-                            // Calculate DPS
-                            const mainDps = members.find(m => m.role === 'Main DPS') || members[0];
-                            let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, deepen = 0;
-                            if (mainDps.weapStat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
-                            if (mainDps.weapStat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
-                            if (mainDps.weapStat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
-                            const mainEcho = mainDps.echoSetName ? ECHO_SETS[mainDps.echoSetName] : null;
-                            if (mainEcho) {
-                              const p2 = mainEcho.p2val || {}, p5 = mainEcho.p5val || {};
-                              if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
-                              if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
-                              const ek = (mainDps.element || '').toLowerCase() + 'Dmg';
-                              if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
-                            }
-                            members.forEach(m => {
-                              (m.buffs || []).forEach(b => {
-                                if (b.includes('ATK Buff') || b.includes('ATK buff')) atkPct += 15;
-                                if (b.includes('Crit Buff') || b.includes('Crit DMG Amp')) cd += 15;
-                                if (b.includes('DMG Deepen') || b.includes('DMG Buff')) deepen += 15;
-                                if (b.includes('DMG Amp') || b.includes('Aero Buff') || b.includes('Havoc DMG') || b.includes('Spectro DMG')) elemDmg += 15;
-                                if (b.includes('Basic ATK Amp') || b.includes('Heavy ATK Buff') || b.includes('Res. Skill DMG')) deepen += 12;
-                              });
-                              if (m.role === 'Healer' && m.echoSetName === 'Rejuvenating Glow') atkPct += 15;
-                              if (m.name !== mainDps.name && m.echoSetName === 'Moonlit Clouds') atkPct += 22.5;
-                            });
-                            const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
-                            const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
-                            const dmgMult = (1 + elemDmg / 100) * (1 + deepen / 100);
-                            const dpsScore = Math.round(effAtk * avgCrit * dmgMult);
-                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), members, mainDpsName: mainDps.name, damageScore: dpsScore, effAtk, critRate: cr, critDmg: cd, elemDmg, deepen }]);
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice() }]);
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
@@ -5208,7 +5162,7 @@ function WhisperingWishesInner() {
 
                   {/* Team Damage Analysis + DPS Comparison */}
                   {(() => {
-                    // ── Reusable calculator ──
+                    // ── Reusable calculator with proper WuWa damage formula ──
                     const calcTeamStats = (slots) => {
                       const mems = slots.filter(s => s).map(name => {
                         const d = CHARACTER_DATA[name];
@@ -5224,30 +5178,142 @@ function WhisperingWishesInner() {
                       const allBuffs = [], allDebuffs = [];
                       mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
                       const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
-                      let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, deepen = 0;
+
+                      // ── Parse weapon passive for real values ──
+                      const parsePassive = (passive, element) => {
+                        const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0 };
+                        if (!passive) return r;
+                        const p = passive.toLowerCase();
+                        // ATK% from passive
+                        const atkMatch = p.match(/atk\s*\+(\d+)%/);
+                        if (atkMatch) r.atkPct += parseInt(atkMatch[1]);
+                        // Element DMG
+                        if (element) {
+                          const elLow = element.toLowerCase();
+                          const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
+                          if (elMatch) r.elemDmg += parseInt(elMatch[1]);
+                          // Also "attribute dmg"
+                          const attrMatch = p.match(/attribute\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
+                          if (attrMatch) r.elemDmg += parseInt(attrMatch[1]);
+                        }
+                        // Skill DMG variants
+                        const skillMatch = p.match(/(?:resonance\s*)?skill\s*dmg\s*\+?(\d+)%/);
+                        if (skillMatch) r.skillDmg += parseInt(skillMatch[1]);
+                        const libMatch = p.match(/liberation\s*dmg\s*\+?(\d+)%/);
+                        if (libMatch) r.skillDmg += parseInt(libMatch[1]);
+                        // Crit from passive
+                        const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
+                        if (crMatch) r.critRate += parseInt(crMatch[1]);
+                        // DEF Ignore
+                        const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
+                        if (defMatch) r.defIgnore += parseInt(defMatch[1]);
+                        // RES Shred
+                        const resMatch = p.match(/res\s*-(\d+)%/);
+                        if (resMatch) r.resShred += parseInt(resMatch[1]);
+                        return r;
+                      };
+
+                      // ── Base stats ──
+                      let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
+
+                      // Weapon substat
                       if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
                       if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
                       if (mainDps.weapSubstat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
+                      if (mainDps.weapSubstat === 'Energy Regen') atkPct += 5; // indirect contribution
+                      if (mainDps.weapSubstat === 'HP%') {} // HP scaling chars — simplified
+
+                      // Weapon passive (real parsed values)
+                      if (mainDps.weapon?.passive) {
+                        const wp = parsePassive(mainDps.weapon.passive, mainDps.d.element);
+                        atkPct += wp.atkPct; elemDmg += wp.elemDmg; skillDmg += wp.skillDmg;
+                        cr += wp.critRate; cd += wp.critDmg; defIgnore += wp.defIgnore; resShred += wp.resShred;
+                      }
+
+                      // Echo set bonuses (2pc + 5pc)
                       if (mainDps.echoSet) {
                         const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
                         if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
                         if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
+                        if (p2.skillDmg) skillDmg += p2.skillDmg; if (p5.skillDmg) skillDmg += p5.skillDmg;
                         const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
                         if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
                       }
-                      allBuffs.forEach(({ buff: b }) => {
-                        if (b.includes('ATK Buff') || b.includes('ATK buff')) atkPct += 15;
-                        if (b.includes('Crit Buff') || b.includes('Crit DMG Amp')) cd += 15;
-                        if (b.includes('DMG Deepen') || b.includes('DMG Buff')) deepen += 15;
-                        if (b.includes('DMG Amp') || b.includes('Aero Buff') || b.includes('Havoc DMG') || b.includes('Spectro DMG')) elemDmg += 15;
-                        if (b.includes('Basic ATK Amp') || b.includes('Heavy ATK Buff') || b.includes('Res. Skill DMG')) deepen += 12;
+
+                      // ── Team buff contributions (real values from game data) ──
+                      allBuffs.forEach(({ buff: b, source }) => {
+                        const isSelf = source === mainDps.name;
+                        // ATK buffs
+                        if (b === 'ATK Buff') atkPct += 20; // Verina Outro
+                        else if (b === 'team ATK buff') atkPct += 20;
+                        // Crit buffs
+                        else if (b === 'Crit Buff') { cr += 12.8; cd += 25; } // Shorekeeper Stellarealm
+                        else if (b === 'Crit DMG Amp') cd += 36;
+                        // DMG amplification
+                        else if (b === 'DMG Deepen') deepen += 15; // Verina
+                        else if (b === 'DMG Buff') deepen += 15;
+                        else if (b === 'Fusion DMG Amp') elemDmg += 20;
+                        else if (b === 'Aero Buff') elemDmg += 20;
+                        // Skill type buffs
+                        else if (b === 'Basic ATK Amp') skillDmg += 25; // Sanhua, Roccia
+                        else if (b === 'Heavy ATK Buff' || b === 'Heavy ATK DMG Buff') skillDmg += 25; // Mortefi
+                        else if (b === 'Res. Skill DMG Deepen') deepen += 12;
+                        else if (b === 'Res. Skill DMG Amp') skillDmg += 20;
+                        else if (b === 'Res. Skill DMG Buff') skillDmg += 20;
+                        else if (b === 'Echo Skill DMG Buff') skillDmg += 15;
+                        else if (b === 'Tune Break DMG Buff') deepen += 18;
+                        else if (b === 'Coordinated ATK Amp') skillDmg += 15;
+                        // Coordinated ATK (off-field damage contribution)
+                        else if (b === 'Coordinated ATK' && !isSelf) deepen += 8;
+                        // Healing (less direct but relevant for sustain uptime)
+                        else if (b === 'Heal' || b === 'Self-heal') {} // survivability, not damage
+                        // Shield
+                        else if (b === 'Shield') {} // survivability
+                        else if (b === 'Grouping') deepen += 5; // AoE efficiency
+                        else if (b === 'Havoc DMG Bonus') elemDmg += 15;
+                        else if (b === 'Energy Regen') atkPct += 5; // faster rotations
                       });
-                      if (mems.find(m => m.d.role === 'Healer' && m.echoSetName === 'Rejuvenating Glow')) atkPct += 15;
-                      if (mems.find(m => m.echoSetName === 'Moonlit Clouds' && m.name !== mainDps.name)) atkPct += 22.5;
+
+                      // ── Debuff contributions (enemy-side) ──
+                      allDebuffs.forEach(({ debuff: db }) => {
+                        if (db === 'DEF Shred') defShred += 18;
+                        else if (db === 'Frazzle') deepen += 20; // Spectro Frazzle amplifies damage
+                        else if (db === 'Erosion') deepen += 18; // Aero Erosion
+                        else if (db === 'Off-Tune') deepen += 15; // reduces enemy resistance
+                        else if (db.includes('RES Shred')) {
+                          const m = db.match(/(\d+)/);
+                          resShred += m ? parseInt(m[1]) : 15;
+                        }
+                      });
+
+                      // Support echo set contributions
+                      mems.forEach(m => {
+                        if (m.name === mainDps.name) return;
+                        if (m.echoSetName === 'Rejuvenating Glow') atkPct += 15;
+                        if (m.echoSetName === 'Moonlit Clouds') atkPct += 22.5;
+                        if (m.echoSetName === 'Empyrean Anthem') skillDmg += 10; // coordinated boost
+                      });
+
+                      // ── Damage formula ──
+                      // Total ATK = (charBaseATK + weapBaseATK) × (1 + ATK%)
                       const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
+                      // Avg Crit Multiplier
                       const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
-                      const dmgMult = (1 + elemDmg / 100) * (1 + deepen / 100);
-                      const score = Math.round(effAtk * avgCrit * dmgMult);
+                      // Damage Bonus = (1 + elemDMG%) × (1 + skillDMG%) × (1 + deepen%)
+                      const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
+                      // DEF multiplier: enemy DEF reduced by shred/ignore. Lv90 enemy base.
+                      // DEF reduction = 1 - (defShred + defIgnore)/100, capped
+                      const enemyDef = 792; // Lv90 standard enemy
+                      const effectiveDef = enemyDef * Math.max(0, 1 - (defShred + defIgnore) / 100);
+                      const defMult = 800 / (800 + effectiveDef); // WuWa DEF formula: charLevel constant ~800
+                      // RES multiplier: 10% base resistance, reduced by shred
+                      const baseRes = 10;
+                      const effectiveRes = Math.max(baseRes - resShred, -30); // can go negative
+                      const resMult = 1 - effectiveRes / 100;
+                      // Final score
+                      const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+
+                      // Synergy
                       let syn = 0;
                       if (mems.some(m => m.d.role === 'Healer')) syn += 25;
                       if (mems.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) syn += 25;
@@ -5261,12 +5327,12 @@ function WhisperingWishesInner() {
                       if (mems.length < 3) warnings.push('Incomplete team');
                       const els = new Set(mems.map(m => m.d.element));
                       if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
-                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, deepen, atkPct, avgCrit, score, synergy: syn, warnings };
+                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, synergy: syn, warnings };
                     };
 
                     const stats = calcTeamStats(teamSlots);
                     if (!stats) return null;
-                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, deepen, atkPct, avgCrit, score, synergy, warnings } = stats;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, synergy, warnings } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
                     return (
@@ -5330,8 +5396,12 @@ function WhisperingWishesInner() {
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                           {m.d.element} +{elemDmg.toFixed(0)}%
                                         </span>
+                                        {skillDmg > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
                                         {atkPct > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
                                         {deepen > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
+                                        {defShred > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {defShred}%</span>}
+                                        {resShred > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {resShred}%</span>}
+                                        {defIgnore > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
                                       </div>
                                     </div>
                                   )}
@@ -5409,8 +5479,15 @@ function WhisperingWishesInner() {
                         </CardBody>
                       </Card>
 
-                      {/* DPS Comparison — populated via "+ Compare" button */}
-                      {teamCompareEntries.length > 0 && (
+                      {/* DPS Comparison — computed from stored slots */}
+                      {teamCompareEntries.length > 0 && (() => {
+                        const computed = teamCompareEntries.map(entry => ({
+                          ...entry,
+                          stats: calcTeamStats(entry.slots),
+                        })).filter(e => e.stats);
+                        if (!computed.length) return null;
+                        const maxS = Math.max(...computed.map(e => e.stats.score), 1);
+                        return (
                         <Card>
                           <CardHeader action={
                             <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
@@ -5421,60 +5498,60 @@ function WhisperingWishesInner() {
                           }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
                           <CardBody>
                             <div className="space-y-3">
-                              {(() => {
-                                const maxS = Math.max(...teamCompareEntries.map(e => e.damageScore), 1);
-                                return teamCompareEntries.map((entry, idx) => {
-                                  const pct = maxS > 0 ? (entry.damageScore / maxS) * 100 : 0;
-                                  return (
-                                    <div key={entry.id} className="p-2.5 rounded-lg border border-white/8 relative" style={{ background: 'var(--bg-btn)' }}>
-                                      {/* Remove */}
-                                      <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                        className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
-                                        <X size={10} />
-                                      </button>
+                              {computed.map((entry) => {
+                                const s = entry.stats;
+                                const pct = maxS > 0 ? (s.score / maxS) * 100 : 0;
+                                return (
+                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/8 relative" style={{ background: 'var(--bg-btn)' }}>
+                                    <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
+                                      className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+                                      <X size={10} />
+                                    </button>
 
-                                      {/* Character cards — matches collection card style */}
-                                      <div className="flex gap-1.5 mb-2">
-                                        {entry.members.map((m, mi) => {
-                                          const rarity5 = m.rarity === 5;
-                                          const rc2 = roleColors[m.role] || roleColors.Support;
-                                          return (
-                                            <div key={mi} className={`flex-1 p-1.5 rounded-lg border text-center ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}>
-                                              <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.element) }}>{m.name}</div>
-                                              <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                                              <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.role}</span>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
+                                    {/* Character cards */}
+                                    <div className="flex gap-1.5 mb-2">
+                                      {s.members.map((m, mi) => {
+                                        const rarity5 = m.d.rarity === 5;
+                                        const rc2 = roleColors[m.d.role] || roleColors.Support;
+                                        return (
+                                          <div key={mi} className={`flex-1 p-1.5 rounded-lg border text-center ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}>
+                                            <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.d.element) }}>{m.name}</div>
+                                            <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                            <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
 
-                                      {/* Bar */}
-                                      <div className="h-7 rounded-lg overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
-                                        <div className="h-full rounded-lg transition-all duration-700"
-                                          style={{ width: Math.max(pct, 12) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                          <span className="text-xs font-bold text-yellow-400">{entry.damageScore.toLocaleString()}</span>
-                                        </div>
-                                      </div>
-
-                                      {/* Quick stats */}
-                                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
-                                        <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white">{entry.mainDpsName}</span></div>
-                                        <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400/80">{entry.effAtk}</span></div>
-                                        <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400/80">{entry.critRate.toFixed(0)}%</span></div>
-                                        <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400/80">{entry.critDmg.toFixed(0)}%</span></div>
+                                    {/* Bar */}
+                                    <div className="h-7 rounded-lg overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                      <div className="h-full rounded-lg transition-all duration-700"
+                                        style={{ width: Math.max(pct, 12) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-xs font-bold text-yellow-400">{s.score.toLocaleString()}</span>
                                       </div>
                                     </div>
-                                  );
-                                });
-                              })()}
+
+                                    {/* Quick stats */}
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
+                                      <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white">{s.mainDps.name}</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400/80">{s.effAtk}</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400/80">{s.critRate.toFixed(0)}%</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400/80">{s.critDmg.toFixed(0)}%</span></div>
+                                      {s.defShred > 0 && <div className="text-[9px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400/80">{s.defShred}%</span></div>}
+                                      {s.resShred > 0 && <div className="text-[9px]"><span className="text-gray-500">RES↓ </span><span className="text-red-400/80">{s.resShred}%</span></div>}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                             {teamCompareEntries.length < 5 && (
                               <p className="text-gray-500 text-[10px] text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
                             )}
                           </CardBody>
                         </Card>
-                      )}
+                        );
+                      })()}
                       </>
                     );
                   })()}
