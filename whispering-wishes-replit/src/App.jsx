@@ -3575,7 +3575,7 @@ function WhisperingWishesInner() {
                         <div className="text-gray-400 mt-0.5">Neither</div>
                       </div>
                     </div>
-                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
+                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                       <p className="text-emerald-400/80 text-[9px]">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
                     </div>
                 </CardBody>
@@ -3742,7 +3742,7 @@ function WhisperingWishesInner() {
                   ))}
                 </div>
                 {state.planner.luniteActive && (
-                  <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
+                  <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                     <span className="text-emerald-400 text-xs">Monthly Subscription Cost: </span>
                     <span className="text-emerald-400 font-bold text-xs">${SUBSCRIPTIONS.lunite.price}/month</span>
                   </div>
@@ -3771,7 +3771,7 @@ function WhisperingWishesInner() {
                     </select>
                   </div>
                 </div>
-                <div className="p-2 bg-white/5 rounded text-[10px] text-gray-400 text-center">
+                <div className="p-2 bg-white/5 rounded-lg text-[10px] text-gray-400 text-center">
                   Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
@@ -3798,7 +3798,7 @@ function WhisperingWishesInner() {
                   </div>
                 </div>
                 {planData.goalDaysNeeded !== Infinity && planData.goalDaysNeeded > 0 && (
-                  <div className="p-2 bg-white/5 rounded text-center">
+                  <div className="p-2 bg-white/5 rounded-lg text-center">
                     <span className="text-gray-400 text-[10px]">Estimated: </span>
                     <span className="text-yellow-400 text-xs font-medium">{new Date(Date.now() + planData.goalDaysNeeded * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                   </div>
@@ -3862,7 +3862,7 @@ function WhisperingWishesInner() {
                             <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
                           </div>
                         </div>
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-baseline justify-between">
                             <span className="text-gray-400 text-[10px]">Percentile</span>
                             <span className="text-white font-bold text-sm">Top {Math.max(1, 100 - luckRating.percentile)}%</span>
@@ -3941,7 +3941,7 @@ function WhisperingWishesInner() {
                                 {[...Array(6)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
                                     <div className="kuro-skeleton kuro-skeleton-circle w-7 h-7 flex-shrink-0" />
-                                    <div className="flex-1 space-y-1.5">
+                                    <div className="flex-1 min-w-0 space-y-1.5">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
                                     </div>
@@ -4005,7 +4005,7 @@ function WhisperingWishesInner() {
                                   <div key={i} className="flex items-center gap-2.5 py-1.5">
                                     <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
                                     <div className="kuro-skeleton w-7 h-7 rounded-md flex-shrink-0" />
-                                    <div className="flex-1 space-y-1">
+                                    <div className="flex-1 min-w-0 space-y-1">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
                                       <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
                                     </div>
@@ -4589,7 +4589,7 @@ function WhisperingWishesInner() {
                       const pity = state.profile[banner.key]?.pity5 ?? 0;
                       const colorHex = { yellow: '#edaf18', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
                       return (
-                        <div key={banner.name} className="p-2 bg-white/5 rounded">
+                        <div key={banner.name} className="p-2 bg-white/5 rounded-lg">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-xs font-medium" style={{color: colorHex}}>{banner.name}</span>
                             <span className="text-gray-400 text-[10px]">{hist.length} Convenes</span>
@@ -5534,7 +5534,7 @@ function WhisperingWishesInner() {
                                         <span className="text-white text-xs font-semibold truncate">{m.name}</span>
                                         <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                       </div>
-                                      <div className="flex items-center gap-1.5 mt-0.5">
+                                      <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
                                         <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
                                         <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
@@ -5837,7 +5837,7 @@ function WhisperingWishesInner() {
                                         const rarity5 = m.d.rarity === 5;
                                         const rc2 = roleColors[m.d.role] || roleColors.Support;
                                         return (
-                                          <div key={mi} className={`flex-1 p-1.5 rounded-lg border text-center ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}>
+                                          <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}>
                                             <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.d.element) }}>{m.name}</div>
                                             <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                             <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
@@ -6192,7 +6192,7 @@ function WhisperingWishesInner() {
                             value={weaponSearch}
                             onChange={e => setWeaponSearch(e.target.value)}
                             placeholder="Search weapons..."
-                            className="w-full text-xs"
+                            className="kuro-input w-full text-xs"
                           />
                         </div>
                         <div className="overflow-y-auto flex-1 p-2">
