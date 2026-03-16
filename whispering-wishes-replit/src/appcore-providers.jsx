@@ -1382,8 +1382,8 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Logo — small, centered, no text */
       .desktop-layout > header .header-top {
         flex-direction: column !important; align-items: center !important;
-        padding: 0.375rem 0 !important; border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.375rem; gap: 0;
+        padding: 0.5rem 0 !important; border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.5rem; gap: 0.5rem;
       }
       .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 {
         flex-direction: column !important; align-items: center !important; gap: 0 !important;
@@ -1392,7 +1392,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Server + export — stacked tiny */
       .desktop-layout > header .header-controls {
-        flex-direction: column !important; gap: 0.375rem !important; margin-bottom: 0.375rem; width: 100%;
+        flex-direction: column !important; gap: 3px !important; margin-bottom: 0; width: 100%;
       }
       .desktop-layout > header .header-controls select {
         width: 100% !important; min-height: 24px !important; max-height: 24px !important;
@@ -1409,17 +1409,17 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Nav — vertical icon buttons as cards */
       .desktop-layout > header nav {
-        flex-direction: column !important; gap: 0.375rem !important; overflow-x: visible !important;
-        padding-bottom: 0 !important; flex: 1; width: 100%;
+        flex-direction: column !important; gap: 3px !important; overflow-x: visible !important;
+        padding-bottom: 0 !important; flex: 0 !important; width: 100%;
       }
       .desktop-layout > header nav .kuro-tab {
         width: 100% !important; flex-direction: column !important; align-items: center !important;
-        justify-content: center !important; padding: 0.5rem 0.25rem !important;
-        border-radius: 0.5rem !important; font-size: 0.5625rem !important; gap: 0.125rem !important;
+        justify-content: center !important; padding: 0.25rem 0.125rem !important;
+        border-radius: 0.375rem !important; font-size: 0.5rem !important; gap: 1px !important;
         border-bottom: none !important; border: 1px solid transparent !important;
         background: rgba(255,255,255,0.02) !important;
         transition: all 0.15s;
-        min-height: 52px !important;
+        min-height: 36px !important;
       }
       .desktop-layout > header nav .kuro-tab:hover {
         background: rgba(255,255,255,0.06) !important;
@@ -1431,7 +1431,7 @@ const KuroStyles = memo(({ oledMode }) => (
         border-left: 2px solid #edaf18 !important;
         color: #edaf18 !important;
       }
-      .desktop-layout > header nav .kuro-tab svg { width: 18px !important; height: 18px !important; }
+      .desktop-layout > header nav .kuro-tab svg { width: 16px !important; height: 16px !important; }
       .desktop-layout > header nav .tab-indicator { display: none !important; }
       .desktop-layout > header .swipe-hint { display: none !important; }
 
