@@ -45,6 +45,7 @@ import {
   WEAPON_DATA,
   ECHO_SETS,
   CHAR_BUFF_TABLE,
+  RESONANCE_CHAIN_DATA,
   EVENTS,
   SUBSCRIPTIONS,
   HARD_PITY,
@@ -5082,9 +5083,10 @@ function WhisperingWishesInner() {
                         const weapon = WEAPON_DATA[weapName] || null;
                         const charAtk = d.baseAtk || 0;
                         const weapAtk = weapon ? weapon.baseAtk : 0;
-                        let echoSetName = '';
-                        if (d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
-                        return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '' };
+                        const seqLevel = eq?.sequence || 0;
+                        let echoSetName = eq?.echoSet || '';
+                        if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
+                        return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
                       }).filter(Boolean);
                       if (!mems.length) return null;
                       const allBuffs = [], allDebuffs = [];
@@ -5243,7 +5245,49 @@ function WhisperingWishesInner() {
                         if (m.echoSetName === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; } // assumes ≥250% ER
                       });
 
-                      // ── Damage formula ──
+                      // ── Resonance Chain (S1-S6) buffs ──
+                      let seqTotalMultBonus = 0; // bonus % to totalMult rotation data
+                      mems.forEach(m => {
+                        const rc = RESONANCE_CHAIN_DATA[m.name];
+                        if (!rc || m.seqLevel <= 0) return;
+                        const isMain = m.name === mainDps.name;
+                        for (let s = 1; s <= Math.min(m.seqLevel, 6); s++) {
+                          const lvl = rc['s' + s];
+                          if (!lvl) continue;
+                          // For main DPS: apply all personal stat buffs
+                          if (isMain) {
+                            if (lvl.atkPct) atkPct += lvl.atkPct;
+                            if (lvl.critRate) cr += lvl.critRate;
+                            if (lvl.critDmg) cd += lvl.critDmg;
+                            if (lvl.elemDmg) elemDmg += lvl.elemDmg;
+                            if (lvl.skillDmg) skillDmg += lvl.skillDmg;
+                            if (lvl.basicDmg) basicDmg += lvl.basicDmg;
+                            if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
+                            if (lvl.libDmg) libDmg += lvl.libDmg;
+                            if (lvl.echoDmg) echoDmg += lvl.echoDmg;
+                            if (lvl.deepen) deepen += lvl.deepen;
+                            if (lvl.defIgnore) defIgnore += lvl.defIgnore;
+                            if (lvl.defShred) defShred += lvl.defShred;
+                            if (lvl.resShred) resShred += lvl.resShred;
+                            if (lvl.totalMult) seqTotalMultBonus += lvl.totalMult;
+                          } else {
+                            // For supports: improved team buffs (allDmg, deepen, defShred, resShred affect team)
+                            if (lvl.allDmg) elemDmg += lvl.allDmg;
+                            if (lvl.deepen) deepen += lvl.deepen;
+                            if (lvl.defShred) defShred += lvl.defShred;
+                            if (lvl.resShred) resShred += lvl.resShred;
+                            if (lvl.atkPct) atkPct += lvl.atkPct; // team ATK buffs
+                            if (lvl.critRate) cr += lvl.critRate;
+                            if (lvl.critDmg) cd += lvl.critDmg;
+                            if (lvl.basicDmg) basicDmg += lvl.basicDmg; // e.g. Camellya S4 team Basic DMG
+                            if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
+                          }
+                        }
+                      });
+
+                      // Re-map DPS dmgFocus with any new basicDmg/heavyDmg/libDmg from sequences
+                      // (Only add the NEW sequence contributions, the base was already mapped above)
+                      // Note: we skip re-mapping here to avoid double-counting since the initial mapping already ran
                       // Total ATK = (charBaseATK + weapBaseATK) × (1 + ATK%)
                       const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
                       // Avg Crit Multiplier

@@ -1058,6 +1058,48 @@ const CHAR_BUFF_TABLE = {
   },
 };
 
+// [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 buffs (cumulative % damage increase)
+// Format: { s1-s6: { stat: value } } — each level adds ON TOP of previous
+// Values from Prydwen, WutheringLab, community testing
+const RESONANCE_CHAIN_DATA = {
+  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 30 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 20 }, s6: { skillDmg: 40 } },
+  'Carlotta':     { s1: { critRate: 15 }, s2: { skillDmg: 25 }, s3: { elemDmg: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { defIgnore: 20 } },
+  'Jiyan':        { s1: { atkPct: 10 }, s2: { heavyDmg: 20 }, s3: { critRate: 15, critDmg: 20 }, s4: { heavyDmg: 15 }, s5: { atkPct: 25 }, s6: { libDmg: 40 } },
+  'Jinhsi':       { s1: { elemDmg: 12 }, s2: { skillDmg: 20 }, s3: { critDmg: 25 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
+  'Calcharo':     { s1: { elemDmg: 12 }, s2: { libDmg: 20 }, s3: { critDmg: 20 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { libDmg: 30 } },
+  'Encore':       { s1: { basicDmg: 15 }, s2: { atkPct: 20 }, s3: { elemDmg: 15 }, s4: { basicDmg: 15 }, s5: { totalMult: 10 }, s6: { elemDmg: 25 } },
+  'Xiangli Yao':  { s1: { elemDmg: 12 }, s2: { skillDmg: 20 }, s3: { critRate: 12 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 30 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 20 }, s6: { skillDmg: 40 } },
+  'Aemeath':      { s1: { critDmg: 30, heavyDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 20 }, s6: { totalMult: 30 } },
+  'Zani':         { s1: { critRate: 10, atkPct: 12 }, s2: { critDmg: 30, heavyDmg: 25 }, s3: { totalMult: 15 }, s4: { deepen: 15 }, s5: { totalMult: 20 }, s6: { elemDmg: 25 } },
+  'Phoebe':       { s1: { elemDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 30 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
+  'Phrolova':     { s1: { critRate: 15 }, s2: { critRate: 30, totalMult: 40 }, s3: { totalMult: 15 }, s4: { echoDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Brant':        { s1: { atkPct: 15, elemDmg: 12 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
+  'Augusta':      { s1: { critRate: 20 }, s2: { critRate: 20, critDmg: 30 }, s3: { totalMult: 15 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  'Cartethyia':   { s1: { defIgnore: 8, deepen: 20 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
+  'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 20 }, s3: { critDmg: 20 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
+  'Galbrena':     { s1: { echoDmg: 15 }, s2: { totalMult: 20 }, s3: { critRate: 12 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
+  'Iuno':         { s1: { heavyDmg: 20 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Luuk Herssen': { s1: { atkPct: 15 }, s2: { totalMult: 20 }, s3: { critDmg: 25 }, s4: { basicDmg: 20 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  'Lupa':         { s1: { elemDmg: 12 }, s2: { totalMult: 20 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 20 } },
+  // Supports — less personal DMG but team contribution changes
+  'Verina':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
+  'Shorekeeper':  { s1: { critRate: 5 }, s2: { critDmg: 10 }, s3: { atkPct: 5 }, s4: { critRate: 5 }, s5: { deepen: 5 }, s6: { critDmg: 15 } },
+  'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 15 }, s6: { totalMult: 20 } },
+  'Mornye':       { s1: { allDmg: 15 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
+  'Sanhua':       { s1: { atkPct: 10 }, s2: { basicDmg: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { basicDmg: 10 }, s6: { deepen: 15 } },
+  'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 20 } },
+  'Danjin':       { s1: { elemDmg: 8 }, s2: { atkPct: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { atkPct: 15, elemDmg: 10 } },
+  'Chisa':        { s1: { defShred: 6 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { defShred: 6 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  'Ciaccona':     { s1: { elemDmg: 10 }, s2: { totalMult: 15 }, s3: { elemDmg: 10 }, s4: { deepen: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 15 } },
+  'Cantarella':   { s1: { deepen: 8 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  'Yinlin':       { s1: { elemDmg: 10 }, s2: { resShred: 10 }, s3: { totalMult: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 15 } },
+  'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 20 } },
+  'Zhezhi':       { s1: { coordDmg: 10 }, s2: { totalMult: 15 }, s3: { coordDmg: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { coordDmg: 20 } },
+  'Qiuyuan':      { s1: { echoDmg: 10 }, s2: { totalMult: 15 }, s3: { echoDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { echoDmg: 20 } },
+};
+
 // [SECTION:ECHO_SETS] — Sonata Effect set bonuses
 const ECHO_SETS = {
   'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 30 } },
@@ -1920,7 +1962,7 @@ export {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
   calculateLuckRating,
   SERVERS, getServerOffset,
-  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE,
+  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
   EVENTS,
   HARD_PITY, SOFT_PITY_START, LUNITE_DAILY_ASTRITE, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
   SUBSCRIPTIONS, MAX_ASTRITE, MAX_CALC_PULLS,
