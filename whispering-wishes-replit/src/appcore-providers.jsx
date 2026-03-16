@@ -1574,7 +1574,7 @@ const KuroStyles = memo(({ oledMode }) => (
       /* Banner card images — different positioning per type */
       /* Characters: head slightly below the top edge, centered */
       .desktop-layout .banner-card-character img.absolute {
-        object-position: center 15% !important;
+        object-position: center 60% !important;
       }
       /* Weapons: treat object as square, center it in the card */
       .desktop-layout .banner-card-weapon img.absolute {
@@ -1582,7 +1582,7 @@ const KuroStyles = memo(({ oledMode }) => (
       }
       /* Standard banners: center the pool art */
       .desktop-layout .standard-banner-grid img.absolute {
-        object-position: center 30% !important;
+        object-position: center 50% !important;
       }
 
       /* ── DESKTOP POLISH ──────────────────────────────────────────── */
