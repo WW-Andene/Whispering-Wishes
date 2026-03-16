@@ -1515,6 +1515,78 @@ const KuroStyles = memo(({ oledMode }) => (
         border-top-color: rgba(255,255,255,0.04) !important;
       }
 
+      /* ── DESKTOP POLISH ──────────────────────────────────────────── */
+
+      /* Smooth tab transitions on sidebar */
+      .desktop-layout > header nav .kuro-tab {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      .desktop-layout > header nav .kuro-tab[aria-selected="true"] svg {
+        filter: drop-shadow(0 0 4px rgba(237, 175, 24, 0.4));
+      }
+
+      /* Cards — subtle hover lift on desktop */
+      .desktop-layout .kuro-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      }
+      .desktop-layout .kuro-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      }
+
+      /* Faster card entrance on desktop (no stagger needed) */
+      .desktop-layout .tab-content > .kuro-card,
+      .desktop-layout .tab-content > div > .kuro-card {
+        animation-delay: 0s !important;
+        animation-duration: 0.2s !important;
+      }
+
+      /* Inputs — wider on desktop */
+      .desktop-layout .kuro-input {
+        min-height: 38px !important;
+      }
+
+      /* Buttons — proper hover cursor */
+      .desktop-layout .kuro-btn {
+        cursor: pointer;
+      }
+
+      /* Ad column — subtle separator line */
+      .desktop-ad-margin::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        left: 0;
+        bottom: 1rem;
+        width: 1px;
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent);
+      }
+
+      /* Collection grid items — hover effect on desktop */
+      .desktop-layout .grid > div {
+        transition: transform 0.15s ease !important;
+      }
+      .desktop-layout .grid > div:hover {
+        transform: scale(1.02);
+      }
+
+      /* Wider modals on desktop — more breathing room */
+      .desktop-layout [class*="fixed inset-0"] [class*="max-w-lg"] {
+        max-width: 560px !important;
+      }
+
+      /* Version text in sidebar — subtle at bottom */
+      .desktop-layout > header::after {
+        content: 'WW';
+        display: block;
+        text-align: center;
+        font-size: 8px;
+        color: rgba(255,255,255,0.08);
+        padding: 0.5rem 0;
+        letter-spacing: 0.2em;
+        font-weight: 600;
+      }
+
     }
 
     @media (min-width: 1440px) {
