@@ -1435,7 +1435,7 @@ const KuroStyles = memo(({ oledMode }) => (
         margin-left: 72px !important; max-width: none !important;
         width: calc(100% - 72px) !important;
         min-height: 100vh !important;
-        padding: 1rem 1.25rem !important; padding-right: 180px !important;
+        padding: 1rem 1.25rem !important; padding-right: calc(160px + 1.25rem) !important;
         box-sizing: border-box !important;
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
       }
@@ -1510,7 +1510,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     @media (min-width: 1440px) {
-      .desktop-layout > main { padding-right: 200px !important; }
+      .desktop-layout > main { padding-right: calc(160px + 1.25rem) !important; }
       .desktop-ad-margin { width: 180px; }
       .desktop-ad-margin .ad-slot { width: 160px; }
       .desktop-layout .event-grid { grid-template-columns: repeat(3, 1fr) !important; }
