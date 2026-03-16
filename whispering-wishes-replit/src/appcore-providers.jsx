@@ -1443,7 +1443,7 @@ const KuroStyles = memo(({ oledMode }) => (
         margin-left: 72px !important; max-width: none !important;
         width: calc(100% - 72px) !important;
         min-height: 100vh !important;
-        padding: 1rem 0.625rem !important; padding-right: calc(160px + 1rem) !important;
+        padding: 1rem !important; padding-right: calc(160px + 1rem) !important;
         box-sizing: border-box !important;
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
       }
