@@ -1375,15 +1375,15 @@ const KuroStyles = memo(({ oledMode }) => (
       }
       .desktop-layout > header::-webkit-scrollbar { display: none; }
       .desktop-layout > header > .header-inner {
-        max-width: none !important; padding: 0.25rem 0.25rem !important; margin: 0 !important;
+        max-width: none !important; padding: 0.375rem !important; margin: 0 !important;
         height: 100%; display: flex !important; flex-direction: column !important; align-items: center !important;
       }
 
       /* Logo — small, centered, no text */
       .desktop-layout > header .header-top {
         flex-direction: column !important; align-items: center !important;
-        padding: 0.25rem 0 0.375rem 0 !important; border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.25rem; gap: 0;
+        padding: 0.375rem 0 !important; border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.375rem; gap: 0;
       }
       .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 {
         flex-direction: column !important; align-items: center !important; gap: 0 !important;
@@ -1392,7 +1392,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Server + export — stacked tiny */
       .desktop-layout > header .header-controls {
-        flex-direction: column !important; gap: 0.125rem !important; margin-bottom: 0.25rem; width: 100%;
+        flex-direction: column !important; gap: 0.375rem !important; margin-bottom: 0.375rem; width: 100%;
       }
       .desktop-layout > header .header-controls select {
         width: 100% !important; min-height: 24px !important; max-height: 24px !important;
