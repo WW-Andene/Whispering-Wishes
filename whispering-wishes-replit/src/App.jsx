@@ -5845,28 +5845,51 @@ function WhisperingWishesInner() {
                                       })}
                                     </div>
 
-                                    {/* Raw bar */}
-                                    {/* Raw score */}
-                                    <div className="mb-1.5">
-                                      <div className="flex items-baseline justify-between mb-0.5">
+                                    {/* Raw score — neon glow style matching histogram */}
+                                    <div className="mb-2">
+                                      <div className="flex items-baseline justify-between mb-1">
                                         <span className="text-gray-400 text-[10px]">Raw Score</span>
-                                        <span className="text-yellow-400 font-bold text-sm kuro-number">{s.score.toLocaleString()}</span>
+                                        <span className="text-yellow-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(234,179,8,0.6)' }}>{s.score.toLocaleString()}</span>
                                       </div>
-                                      <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
-                                        <div className="h-full rounded-full transition-all duration-700"
-                                          style={{ width: Math.max(rawPct, 4) + '%', background: `linear-gradient(90deg, rgba(234,179,8,0.4), rgba(234,179,8,1))` }} />
+                                      <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
+                                        <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
+                                          style={{
+                                            width: Math.max(rawPct, 6) + '%',
+                                            background: 'linear-gradient(90deg, #edaf1840, #edaf1820)',
+                                            border: '1px solid #edaf1890',
+                                            borderLeft: 'none',
+                                            boxShadow: '0 0 12px #edaf1850, inset 0 0 15px #edaf1830'
+                                          }} />
+                                        <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
+                                          style={{
+                                            left: 0,
+                                            background: '#edaf18',
+                                            boxShadow: '0 0 8px #edaf18, 0 0 16px #edaf1880'
+                                          }} />
                                       </div>
                                     </div>
 
-                                    {/* Full DPS */}
+                                    {/* Full DPS — neon glow style matching histogram */}
                                     <div className="mb-1.5">
-                                      <div className="flex items-baseline justify-between mb-0.5">
+                                      <div className="flex items-baseline justify-between mb-1">
                                         <span className="text-gray-400 text-[10px]">Full DPS</span>
-                                        <span className="text-cyan-400 font-bold text-sm kuro-number">{s.realDps.toLocaleString()} /s</span>
+                                        <span className="text-cyan-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(6,182,212,0.6)' }}>{s.realDps.toLocaleString()} /s</span>
                                       </div>
-                                      <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
-                                        <div className="h-full rounded-full transition-all duration-700"
-                                          style={{ width: Math.max(fullPct, 4) + '%', background: `linear-gradient(90deg, rgba(6,182,212,0.4), rgba(6,182,212,1))` }} />
+                                      <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
+                                        <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
+                                          style={{
+                                            width: Math.max(fullPct, 6) + '%',
+                                            background: 'linear-gradient(90deg, #06b6d440, #06b6d420)',
+                                            border: '1px solid #06b6d490',
+                                            borderLeft: 'none',
+                                            boxShadow: '0 0 12px #06b6d450, inset 0 0 15px #06b6d430'
+                                          }} />
+                                        <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
+                                          style={{
+                                            left: 0,
+                                            background: '#06b6d4',
+                                            boxShadow: '0 0 8px #06b6d4, 0 0 16px #06b6d480'
+                                          }} />
                                       </div>
                                     </div>
 
