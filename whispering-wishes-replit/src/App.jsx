@@ -3292,7 +3292,7 @@ function WhisperingWishesInner() {
                 ));
               })()}
             </div>
-            <p className="text-gray-500 text-[10px] text-center content-layer">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+            <p className="text-gray-500 text-[10px] text-center content-layer sticky bottom-0 py-2" style={{ background: 'linear-gradient(to top, rgba(8,12,20,0.95) 60%, transparent)' }}>Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
           </div>
           </TabErrorBoundary>
           </div>
