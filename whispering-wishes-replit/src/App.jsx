@@ -3147,8 +3147,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'standard' && (
-              <div className="space-y-3 content-layer">
-                <div className="text-gray-300 text-xs uppercase tracking-wider content-layer">Permanent Banners</div>
+              <div className="space-y-2 banner-grid content-layer">
                 
                 {/* Standard Resonator Banner */}
                 <StandardBannerSection
@@ -3172,21 +3171,55 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader><Archive size={14} className="text-purple-400" /> Banner History</CardHeader>
               <CardBody>
-                <div className="max-h-64 overflow-y-auto kuro-scroll space-y-1.5">
+                <div className="space-y-2">
                   {BANNER_HISTORY.map((b, i) => (
-                    <div key={`bh-${b.version}-${b.phase}`} className="p-2 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-white text-xs font-medium">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-400 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
+                    <div key={`bh-${b.version}-${b.phase}`} className="p-2.5 rounded-lg border border-white/8 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-white text-xs font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-gray-500 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        {b.characters.map(c => (
-                          <span key={c} className="text-[9px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">{c}</span>
-                        ))}
-                        {b.weapons.map(w => (
-                          <span key={w} className="text-[9px] px-1.5 py-0.5 bg-pink-500/20 text-pink-400 rounded">{w}</span>
-                        ))}
-                      </div>
+                      {/* Characters row with portraits */}
+                      {b.characters.length > 0 && (
+                        <div className="flex gap-2 mb-1.5">
+                          {b.characters.map(c => {
+                            const cd = CHARACTER_DATA[c];
+                            const img = collectionImages[c];
+                            return (
+                              <div key={c} className="flex items-center gap-1.5">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0 bg-black/30"
+                                  style={{ borderColor: cd ? getElementColor(cd.element) : 'rgba(237,175,24,0.5)' }}>
+                                  {img ? (
+                                    <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-[8px] text-yellow-400">{c[0]}</div>
+                                  )}
+                                </div>
+                                <span className="text-[9px] text-yellow-400 font-medium">{c}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {/* Weapons row with images */}
+                      {b.weapons.length > 0 && (
+                        <div className="flex gap-2">
+                          {b.weapons.map(w => {
+                            const img = collectionImages[w];
+                            return (
+                              <div key={w} className="flex items-center gap-1.5">
+                                <div className="w-8 h-8 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-pink-500/30">
+                                  {img ? (
+                                    <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center"><Sword size={12} className="text-pink-400" /></div>
+                                  )}
+                                </div>
+                                <span className="text-[9px] text-pink-400 font-medium">{w}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
