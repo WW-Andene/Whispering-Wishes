@@ -5598,10 +5598,10 @@ function WhisperingWishesInner() {
                                     const eqKey = state.activeTeamIndex + ':' + m.name;
                                     const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
                                     const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
-                                    const slotStyle = 'w-11 h-11 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
+                                    const slotStyle = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
                                     return (
-                                      <div>
-                                        <div className="text-[9px] text-gray-400 font-medium mb-1.5">Equipment</div>
+                                      <div className="space-y-1.5">
+                                        {/* 3x2 equipment grid */}
                                         <div className="grid grid-cols-3 gap-1">
                                           {/* Weapon slot */}
                                           <div
@@ -5639,35 +5639,32 @@ function WhisperingWishesInner() {
                                             </div>
                                           ))}
                                         </div>
-                                        {/* Sequence Level (S0-S6) + Echo Set selector */}
-                                        <div className="flex gap-2 mt-2">
-                                          {/* S0-S6 toggle */}
-                                          <div className="flex-1">
-                                            <div className="text-[8px] text-gray-500 mb-1">Sequence</div>
-                                            <div className="flex gap-0.5">
-                                              {[0,1,2,3,4,5,6].map(s => {
-                                                const isActive = (eq.sequence || 0) === s;
-                                                return (
-                                                  <button key={s}
-                                                    className={`flex-1 py-1 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/8 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
-                                                    onClick={() => {
-                                                      setTeamEquipment(prev => {
-                                                        const n = { ...prev };
-                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                                        return n;
-                                                      });
-                                                      haptic.light();
-                                                    }}
-                                                  >S{s}</button>
-                                                );
-                                              })}
-                                            </div>
+                                        {/* S0-S6 toggle */}
+                                        <div>
+                                          <div className="text-[8px] text-gray-500 mb-0.5">Sequence</div>
+                                          <div className="flex gap-px">
+                                            {[0,1,2,3,4,5,6].map(s => {
+                                              const isActive = (eq.sequence || 0) === s;
+                                              return (
+                                                <button key={s}
+                                                  className={`flex-1 py-0.5 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/8 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                  onClick={() => {
+                                                    setTeamEquipment(prev => {
+                                                      const n = { ...prev };
+                                                      n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                      try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                      return n;
+                                                    });
+                                                    haptic.light();
+                                                  }}
+                                                >S{s}</button>
+                                              );
+                                            })}
                                           </div>
                                         </div>
-                                        {/* Echo Set selector */}
-                                        <div className="mt-1.5">
-                                          <div className="text-[8px] text-gray-500 mb-1">Sonata Set</div>
+                                        {/* Sonata Set selector */}
+                                        <div>
+                                          <div className="text-[8px] text-gray-500 mb-0.5">Sonata Set</div>
                                           <select
                                             value={eq.echoSet || ''}
                                             onChange={e => {
@@ -5679,36 +5676,32 @@ function WhisperingWishesInner() {
                                               });
                                               haptic.light();
                                             }}
-                                            className="w-full text-[9px] text-gray-300 rounded-lg border border-white/10 px-2 py-1.5 focus:border-cyan-500/50 focus:outline-none transition-all"
+                                            className="w-full text-[8px] text-gray-300 rounded border border-white/10 px-1.5 py-1 focus:border-cyan-500/50 focus:outline-none transition-all"
                                             style={{ background: 'var(--bg-btn)' }}
                                           >
                                             <option value="">Auto (from recommended)</option>
                                             {Object.keys(ECHO_SETS).map(setName => (
-                                              <option key={setName} value={setName}>{setName} — {ECHO_SETS[setName].p2}</option>
+                                              <option key={setName} value={setName}>{setName}</option>
                                             ))}
                                           </select>
                                         </div>
-                                        {/* Show equipped weapon stats */}
+                                        {/* Weapon info */}
                                         {equippedWeap && (
-                                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-                                            <div className="text-[9px]">
-                                              <span className="text-gray-500">Weapon: </span>
-                                              <span className="text-yellow-400/80">{eq.weapon}</span>
-                                              <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
-                                            </div>
+                                          <div className="text-[8px]">
+                                            <span className="text-gray-500">Weapon: </span>
+                                            <span className="text-yellow-400/80">{eq.weapon}</span>
+                                            <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
                                           </div>
                                         )}
                                         {!equippedWeap && m.d.bestWeapon && (
-                                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-                                            <div className="text-[9px]">
-                                              <span className="text-gray-500">Recommended: </span>
-                                              <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
-                                            </div>
+                                          <div className="text-[8px]">
+                                            <span className="text-gray-500">Rec: </span>
+                                            <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
                                             {m.d.bestEchoes && (
-                                              <div className="text-[9px]">
-                                                <span className="text-gray-500">Echoes: </span>
-                                                <span className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</span>
-                                              </div>
+                                              <span className="text-gray-500"> · </span>
+                                            )}
+                                            {m.d.bestEchoes && (
+                                              <span className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</span>
                                             )}
                                           </div>
                                         )}
