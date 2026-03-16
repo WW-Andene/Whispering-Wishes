@@ -5548,17 +5548,6 @@ function WhisperingWishesInner() {
                                     <div className="flex-1 min-w-0">
                                   {/* Description */}
                                   <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
-                                  {/* Buffs */}
-                                  {m.d.buffs?.length > 0 && (
-                                    <div className="mb-1.5">
-                                      <div className="kuro-label">Buffs</div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {m.d.buffs.map((b, bi) => (
-                                          <span key={bi} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
                                   {/* Damage Focus */}
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Damage Focus</div>
@@ -5572,6 +5561,17 @@ function WhisperingWishesInner() {
                                       ))}
                                     </div>
                                   </div>
+                                  {/* Buffs */}
+                                  {m.d.buffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="kuro-label">Buffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.buffs.map((b, bi) => (
+                                          <span key={bi} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                   {/* Debuffs */}
                                   {m.d.debuffs?.length > 0 && (
                                     <div className="mb-1.5">
