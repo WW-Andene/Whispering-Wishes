@@ -3186,7 +3186,7 @@ function WhisperingWishesInner() {
                           return (
                             <div key={c} className="flex items-center gap-1.5">
                               <div className="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 bg-black/30"
-                                style={{ borderColor: cd ? getElementColor(cd.element) : 'rgba(237,175,24,0.5)' }}>
+                                style={{ borderColor: cd ? ({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280') : 'rgba(237,175,24,0.5)' }}>
                                 {img ? (
                                   <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                 ) : (
