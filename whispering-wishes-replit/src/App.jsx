@@ -5523,8 +5523,8 @@ function WhisperingWishesInner() {
                                     <div className="flex-1 min-w-0">
                                   {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-lg overflow-hidden border-2 flex-shrink-0"
-                                      style={{ borderColor: getElementColor(m.d.element), boxShadow: `0 0 8px ${getElementColor(m.d.element)}40` }}>
+                                    <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
+                                      style={{ background: 'rgba(0,0,0,0.3)' }}>
                                       {collectionImages[m.name] ? (
                                         <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                       ) : (
@@ -5533,7 +5533,7 @@ function WhisperingWishesInner() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <span className="text-white text-xs font-semibold truncate">{m.name}</span>
+                                        <span className="text-white text-xs font-semibold">{m.name}</span>
                                         <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                       </div>
                                       <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
