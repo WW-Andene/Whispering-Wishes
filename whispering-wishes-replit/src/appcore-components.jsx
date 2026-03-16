@@ -1066,7 +1066,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   
   return (
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className={`relative overflow-hidden rounded-xl border banner-card-${type}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <img
           src={imgUrl}
