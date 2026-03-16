@@ -330,7 +330,8 @@ const KuroStyles = memo(({ oledMode }) => (
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
-      min-height: 100vh;
+      min-height: 100%;
+      height: 100%;
       scrollbar-width: none;
       -ms-overflow-style: none;
       -webkit-font-smoothing: antialiased;
@@ -1357,9 +1358,8 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (min-width: 1024px) {
       /* Root */
       .desktop-layout {
+        display: block !important;
         min-height: 100vh;
-        
-        background: inherit;
       }
       .desktop-layout > footer {
         margin-top: auto;
@@ -1481,25 +1481,30 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > main { position: relative !important; }
       .desktop-ad-margin {
         position: fixed; top: 0; right: 0; bottom: 0; width: 160px;
-        display: flex; flex-direction: column; align-items: center;
+        display: flex !important; flex-direction: column; align-items: center;
         padding-top: 1rem; gap: 1rem; z-index: 30;
+        border-left: 1px solid rgba(255,255,255,0.06);
+        background: rgba(8, 12, 18, 0.6);
       }
       .desktop-ad-margin .ad-slot {
         width: 160px; height: 600px;
-        border: 1px dashed rgba(255,255,255,0.04);
+        border: 1px dashed rgba(255,255,255,0.08);
         display: flex; align-items: center; justify-content: center;
-        color: rgba(255,255,255,0.04); font-size: 8px;
+        color: rgba(255,255,255,0.08); font-size: 8px;
         text-transform: uppercase; letter-spacing: 0.1em;
         border-radius: 0.25rem; flex-shrink: 0;
       }
       .desktop-ad-margin .ad-margin-footer {
         margin-top: auto; text-align: center; padding: 0.75rem 0.5rem;
+        width: 100%;
       }
 
       /* Hide inline footer on desktop */
       .desktop-layout .app-footer-mobile { display: none !important; }
       .desktop-layout > footer, .desktop-layout footer {
         margin-bottom: 0 !important; padding-bottom: 0 !important;
+        background: transparent !important;
+        border-top-color: rgba(255,255,255,0.04) !important;
       }
 
     }
