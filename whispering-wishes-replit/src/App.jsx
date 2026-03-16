@@ -3680,7 +3680,7 @@ function WhisperingWishesInner() {
                 <CardHeader action={<button onClick={() => { if (window.confirm('Remove all added purchases?')) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
-                    <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
+                    <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
                       <span className="text-gray-200">{i.label}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-yellow-400">+{i.astrite}</span>
@@ -3812,7 +3812,7 @@ function WhisperingWishesInner() {
                 {state.bookmarks.length === 0 ? (
                   <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No states archived. Use Save Current State in the Calculator to bookmark your configuration.</p>
                 ) : state.bookmarks.map(b => (
-                  <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                  <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
                     <div>
                       <div className="text-gray-200 text-xs font-medium">{b.name}</div>
                       <div className="text-gray-400 text-[10px]">{b.astrite} Astrite • P{b.charPity}/{b.weapPity}</div>
@@ -5517,7 +5517,7 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
+                                <div key={m.name} className="p-2.5 rounded-lg border border-white/10" style={{ background: 'var(--bg-btn)' }}>
                                   {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
@@ -5588,9 +5588,9 @@ function WhisperingWishesInner() {
                                   <div className="mb-1.5">
                                     <div className="text-[9px] text-gray-400 font-medium mb-1">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">ATK {m.charAtk}</span>
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">ATK {m.charAtk}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
                                       <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
                                     </div>
                                   </div>
@@ -5656,7 +5656,7 @@ function WhisperingWishesInner() {
                                           {/* 5 Echo slots (placeholder) */}
                                           {[0, 1, 2, 3, 4].map(ei => (
                                             <div key={ei}
-                                              className={`${slotStyle} border-dashed border-white/10 opacity-50 cursor-default`}
+                                              className={`${slotStyle} border-dashed border-white/10 opacity-60 cursor-default`}
                                               title={'Echo slot ' + (ei + 1) + ' — coming soon'}
                                             >
                                               <Diamond size={12} className="text-gray-600" />
@@ -5767,7 +5767,7 @@ function WhisperingWishesInner() {
 
                             {/* Damage Score: Raw + Full DPS — single row */}
                             <div className="flex gap-2">
-                              <div className="flex-1 p-2.5 rounded-lg border border-white/8 text-center" style={{ background: 'var(--bg-btn)' }}>
+                              <div className="flex-1 p-2.5 rounded-lg border border-white/10 text-center" style={{ background: 'var(--bg-btn)' }}>
                                 <div className="text-[9px] text-gray-400 font-medium">Raw Power</div>
                                 <div className="text-lg font-bold text-yellow-400">{score.toLocaleString()}</div>
                                 <div className="text-[8px] text-gray-500">stat multipliers</div>
@@ -5777,7 +5777,7 @@ function WhisperingWishesInner() {
                                 <div className="text-lg font-bold text-cyan-400">{realDps.toLocaleString()}</div>
                                 <div className="text-[8px] text-gray-500">dmg/sec with rotation</div>
                               </div>
-                              <div className="w-20 p-2.5 rounded-lg border border-white/8 text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-btn)' }}>
+                              <div className="w-20 p-2.5 rounded-lg border border-white/10 text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-btn)' }}>
                                 <div className="text-[9px] text-gray-400 font-medium">Synergy</div>
                                 <div className={`text-lg font-bold ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{synergy}</div>
                               </div>
@@ -5824,7 +5824,7 @@ function WhisperingWishesInner() {
                                 const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
                                 const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
                                 return (
-                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/8 relative" style={{ background: 'var(--bg-btn)' }}>
+                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/10 relative" style={{ background: 'var(--bg-btn)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
                                       className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
                                       <X size={10} />
@@ -5853,7 +5853,7 @@ function WhisperingWishesInner() {
                                           <div className="h-full rounded-md transition-all duration-700"
                                             style={{ width: Math.max(rawPct, 8) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
                                           <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="text-[10px] font-bold text-yellow-400">{s.score.toLocaleString()}</span>
+                                            <span className="text-[10px] font-bold text-yellow-400" style={{ fontFamily: "var(--font-data)" }}>{s.score.toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -5867,7 +5867,7 @@ function WhisperingWishesInner() {
                                           <div className="h-full rounded-md transition-all duration-700"
                                             style={{ width: Math.max(fullPct, 8) + '%', background: 'linear-gradient(90deg, rgba(6,182,212,0.15), rgba(6,182,212,0.5))' }} />
                                           <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="text-[10px] font-bold text-cyan-400">{s.realDps.toLocaleString()} /s</span>
+                                            <span className="text-[10px] font-bold text-cyan-400" style={{ fontFamily: "var(--font-data)" }}>{s.realDps.toLocaleString()} /s</span>
                                           </div>
                                         </div>
                                       </div>
@@ -7367,7 +7367,7 @@ Example: {"pulls":[...]}'
                         {!adminPlayerList ? (
                           <div className="space-y-1.5 py-2" aria-label="Loading player list">
                             {[...Array(4)].map((_, i) => (
-                              <div key={i} className="flex items-center gap-2 p-2 rounded bg-white/5">
+                              <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
                                 <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
                                 <div className="kuro-skeleton kuro-skeleton-text flex-1" style={{ width: `${60 + i * 5}%` }} />
                                 <div className="kuro-skeleton kuro-skeleton-text w-12 h-3 flex-shrink-0" />
@@ -7379,7 +7379,7 @@ Example: {"pulls":[...]}'
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (
-                              <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded bg-white/5 hover:bg-white/10 transition-colors">
+                              <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="text-gray-400 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>

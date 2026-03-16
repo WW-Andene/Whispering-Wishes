@@ -1713,7 +1713,7 @@ const ImportGuide = memo(({ platform }) => {
   const guide = IMPORT_GUIDE_DATA[platform];
   if (!guide) return null;
   return (
-    <div className="p-3 bg-white/5 border border-white/10 rounded text-[10px] text-gray-200 space-y-2">
+    <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-[10px] text-gray-200 space-y-2">
       <p className="text-gray-100 font-medium text-xs">{guide.title}</p>
       {guide.steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
