@@ -1069,7 +1069,6 @@ const RESONANCE_CHAIN_DATA = {
   'Calcharo':     { s1: { elemDmg: 12 }, s2: { libDmg: 20 }, s3: { critDmg: 20 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { libDmg: 30 } },
   'Encore':       { s1: { basicDmg: 15 }, s2: { atkPct: 20 }, s3: { elemDmg: 15 }, s4: { basicDmg: 15 }, s5: { totalMult: 10 }, s6: { elemDmg: 25 } },
   'Xiangli Yao':  { s1: { elemDmg: 12 }, s2: { skillDmg: 20 }, s3: { critRate: 12 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
-  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 30 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 20 }, s6: { skillDmg: 40 } },
   'Aemeath':      { s1: { critDmg: 30, heavyDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 20 }, s6: { totalMult: 30 } },
   'Zani':         { s1: { critRate: 10, atkPct: 12 }, s2: { critDmg: 30, heavyDmg: 25 }, s3: { totalMult: 15 }, s4: { deepen: 15 }, s5: { totalMult: 20 }, s6: { elemDmg: 25 } },
   'Phoebe':       { s1: { elemDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 30 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },

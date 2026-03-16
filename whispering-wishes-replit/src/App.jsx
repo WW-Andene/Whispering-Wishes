@@ -5310,6 +5310,7 @@ function WhisperingWishesInner() {
                       // Formula: BaseDMG = LevelMult × 1.25078 × StackMult
                       // Lv90 LevelMult = 3674. Ticks consume 1 stack.
                       // Only affected by DEF, RES, and specific Amplify effects.
+                      const rotTime = mainDps.d.rotTime || 25;
                       const DOT_LEVEL_MULT = 3674; // Lv90
                       const DOT_BASE_FACTOR = 1.25078;
                       let dotDmgPerRotation = 0;
@@ -5433,7 +5434,6 @@ function WhisperingWishesInner() {
                       // ── Real DPS: skill multipliers × rotation timing + DOT ──
                       // Sum total rotation damage from all team members
                       let totalRotDmg = 0;
-                      const rotTime = mainDps.d.rotTime || 25;
                       mems.forEach(m => {
                         let mult = m.d.totalMult || 0;
                         if (mult === 0) return;
