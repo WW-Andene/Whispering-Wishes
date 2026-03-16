@@ -326,11 +326,12 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: ${oledMode ? '#000000' : '#0a0a0a'};
+      background: ${oledMode ? '#000000' : '#080c14'};
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
-      min-height: 100vh;
+      min-height: 100%;
+      height: 100%;
       scrollbar-width: none;
       -ms-overflow-style: none;
       -webkit-font-smoothing: antialiased;
@@ -1357,8 +1358,8 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (min-width: 1024px) {
       /* Root */
       .desktop-layout {
-        display: block !important; min-height: 100vh;
-        background: inherit;
+        display: block !important;
+        min-height: 100vh;
       }
       .desktop-layout > footer {
         margin-top: auto;
@@ -1429,12 +1430,20 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > header nav .tab-indicator { display: none !important; }
       .desktop-layout > header .swipe-hint { display: none !important; }
 
+      /* Logo — scale down in narrow sidebar */
+      .desktop-layout > header .header-top .group {
+        transform: scale(0.85);
+      }
+      .desktop-layout > header .header-top .group .blur-md {
+        opacity: 0.3 !important;
+      }
+
       /* MAIN CONTENT */
       .desktop-layout > main {
         margin-left: 72px !important; max-width: none !important;
         width: calc(100% - 72px) !important;
         min-height: 100vh !important;
-        padding: 1rem 1.25rem !important; padding-right: 180px !important;
+        padding: 1rem !important; padding-right: calc(160px + 1rem) !important;
         box-sizing: border-box !important;
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
       }
@@ -1480,39 +1489,119 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > main { position: relative !important; }
       .desktop-ad-margin {
         position: fixed; top: 0; right: 0; bottom: 0; width: 160px;
-        display: flex; flex-direction: column; align-items: center;
+        display: flex !important; flex-direction: column; align-items: center;
         padding-top: 1rem; gap: 1rem; z-index: 30;
+        border-left: 1px solid rgba(255,255,255,0.06);
+        background: rgba(8, 12, 18, 0.6);
       }
       .desktop-ad-margin .ad-slot {
         width: 160px; height: 600px;
-        border: 1px dashed rgba(255,255,255,0.04);
+        border: 1px dashed rgba(255,255,255,0.08);
         display: flex; align-items: center; justify-content: center;
-        color: rgba(255,255,255,0.04); font-size: 8px;
+        color: rgba(255,255,255,0.08); font-size: 8px;
         text-transform: uppercase; letter-spacing: 0.1em;
         border-radius: 0.25rem; flex-shrink: 0;
       }
       .desktop-ad-margin .ad-margin-footer {
         margin-top: auto; text-align: center; padding: 0.75rem 0.5rem;
+        width: 100%;
       }
 
       /* Hide inline footer on desktop */
-      .desktop-layout > .app-footer-mobile { display: none !important; }
+      .desktop-layout .app-footer-mobile { display: none !important; }
+      .desktop-layout > footer, .desktop-layout footer {
+        margin-bottom: 0 !important; padding-bottom: 0 !important;
+        background: transparent !important;
+        border-top-color: rgba(255,255,255,0.04) !important;
+      }
 
-      /* Background canvas */
-      .desktop-layout > canvas { left: 72px !important; width: calc(100% - 72px) !important; }
+      /* ── DESKTOP POLISH ──────────────────────────────────────────── */
+
+      /* Smooth tab transitions on sidebar */
+      .desktop-layout > header nav .kuro-tab {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      .desktop-layout > header nav .kuro-tab[aria-selected="true"] svg {
+        filter: drop-shadow(0 0 4px rgba(237, 175, 24, 0.4));
+      }
+
+      /* Cards — subtle hover lift on desktop */
+      .desktop-layout .kuro-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      }
+      .desktop-layout .kuro-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      }
+
+      /* Faster card entrance on desktop (no stagger needed) */
+      .desktop-layout .tab-content > .kuro-card,
+      .desktop-layout .tab-content > div > .kuro-card {
+        animation-delay: 0s !important;
+        animation-duration: 0.2s !important;
+      }
+
+      /* Inputs — wider on desktop */
+      .desktop-layout .kuro-input {
+        min-height: 38px !important;
+      }
+
+      /* Buttons — proper hover cursor */
+      .desktop-layout .kuro-btn {
+        cursor: pointer;
+      }
+
+      /* Ad column — subtle separator line */
+      .desktop-ad-margin::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        left: 0;
+        bottom: 1rem;
+        width: 1px;
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent);
+      }
+
+      /* Collection grid items — hover effect on desktop */
+      .desktop-layout .grid > div {
+        transition: transform 0.15s ease !important;
+      }
+      .desktop-layout .grid > div:hover {
+        transform: scale(1.02);
+      }
+
+      /* Wider modals on desktop — more breathing room */
+      .desktop-layout [class*="fixed inset-0"] [class*="max-w-lg"] {
+        max-width: 560px !important;
+      }
+
+      /* Version text in sidebar — subtle at bottom */
+      .desktop-layout > header::after {
+        content: 'WW';
+        display: block;
+        text-align: center;
+        font-size: 8px;
+        color: rgba(255,255,255,0.08);
+        padding: 0.5rem 0;
+        letter-spacing: 0.2em;
+        font-weight: 600;
+      }
+
     }
 
     @media (min-width: 1440px) {
-      .desktop-layout > main { padding-right: 200px !important; }
+      .desktop-layout > main { padding-right: calc(160px + 1rem) !important; }
       .desktop-ad-margin { width: 180px; }
       .desktop-ad-margin .ad-slot { width: 160px; }
       .desktop-layout .event-grid { grid-template-columns: repeat(3, 1fr) !important; }
     }
 
-    /* Hide ad margin on mobile */
-    .desktop-ad-margin { display: none; }
-    @media (min-width: 1024px) { .desktop-ad-margin { display: flex; } }
 
+
+    /* Mobile: hide desktop-only elements */
+    @media (max-width: 1023px) {
+      .desktop-ad-margin { display: none !important; }
+    }
     `}</style>
 ));
 KuroStyles.displayName = 'KuroStyles';

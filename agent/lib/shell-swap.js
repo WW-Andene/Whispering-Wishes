@@ -298,7 +298,9 @@ export function testShell() {
   }
 
   // ── Verdict ────────────────────────────────────────────────────────────
-  const criticalTests = results.filter(r => ['syntax', 'node-check'].includes(r.test));
+  // Only node-check, imports, and reader are critical.
+  // The brace counter produces false positives on template literals — advisory only.
+  const criticalTests = results.filter(r => ['node-check', 'imports', 'reader'].includes(r.test));
   const allCriticalPass = criticalTests.every(r => r.passed);
   const allPass = results.every(r => r.passed);
 
