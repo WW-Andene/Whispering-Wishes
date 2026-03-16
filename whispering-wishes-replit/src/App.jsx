@@ -5009,7 +5009,7 @@ function WhisperingWishesInner() {
                                 key={slotIdx}
                                 onClick={() => openSelector(slotIdx)}
                                 className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
-                                style={{ height: '110px', contain: 'paint' }}
+                                style={{ height: '160px', contain: 'paint' }}
                               >
                                 <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
                                 <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
@@ -5022,7 +5022,7 @@ function WhisperingWishesInner() {
                             <div
                               key={slotIdx}
                               className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
-                              style={{ height: '110px', contain: 'paint' }}
+                              style={{ height: '160px', contain: 'paint' }}
                               onClick={() => openSelector(slotIdx)}
                             >
                               {imgUrl && (
