@@ -5008,7 +5008,7 @@ function WhisperingWishesInner() {
                                 <img
                                   src={imgUrl}
                                   alt={charName}
-                                  className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                  className="absolute inset-0 w-full h-full object-contain sm:object-cover pointer-events-none"
                                   style={{
                                     transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
                                   }}
@@ -5199,7 +5199,7 @@ function WhisperingWishesInner() {
                                     <div key={j} className="w-10 h-10 rounded-lg border border-white/15 overflow-hidden flex-shrink-0 relative"
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint' }}>
                                       {collectionImages[m] ? (
-                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
+                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain sm:object-cover pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
                                         <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400 font-medium">{m[0]}</div>
                                       )}
@@ -5365,7 +5365,7 @@ function WhisperingWishesInner() {
                                     <img
                                       src={img}
                                       alt={name}
-                                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                      className="absolute inset-0 w-full h-full object-contain sm:object-cover pointer-events-none"
                                       style={{
                                         transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
                                         filter: owned ? 'none' : 'grayscale(100%)',
