@@ -5435,12 +5435,12 @@ function WhisperingWishesInner() {
                       let totalRotDmg = 0;
                       const rotTime = mainDps.d.rotTime || 25;
                       mems.forEach(m => {
-                        const mult = m.d.totalMult || 0;
+                        let mult = m.d.totalMult || 0;
                         if (mult === 0) return;
                         const mAtk = m.totalBaseAtk;
-                        // Each member's damage uses their own ATK but benefits from shared team buffs
                         const isMain = m.name === mainDps.name;
-                        // Main DPS gets all the calculated bonuses; supports get base bonuses only
+                        // Main DPS: apply resonance chain totalMult bonus
+                        if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
                         if (isMain) {
                           totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
                         } else {
@@ -5631,6 +5631,55 @@ function WhisperingWishesInner() {
                                               <span className="text-[7px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
                                             </div>
                                           ))}
+                                        </div>
+                                        {/* Sequence Level (S0-S6) + Echo Set selector */}
+                                        <div className="flex gap-2 mt-2">
+                                          {/* S0-S6 toggle */}
+                                          <div className="flex-1">
+                                            <div className="text-[8px] text-gray-500 mb-1">Sequence</div>
+                                            <div className="flex gap-0.5">
+                                              {[0,1,2,3,4,5,6].map(s => {
+                                                const isActive = (eq.sequence || 0) === s;
+                                                return (
+                                                  <button key={s}
+                                                    className={`flex-1 py-1 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/8 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    onClick={() => {
+                                                      setTeamEquipment(prev => {
+                                                        const n = { ...prev };
+                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                        return n;
+                                                      });
+                                                      haptic.light();
+                                                    }}
+                                                  >S{s}</button>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        {/* Echo Set selector */}
+                                        <div className="mt-1.5">
+                                          <div className="text-[8px] text-gray-500 mb-1">Sonata Set</div>
+                                          <select
+                                            value={eq.echoSet || ''}
+                                            onChange={e => {
+                                              setTeamEquipment(prev => {
+                                                const n = { ...prev };
+                                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: e.target.value || '' };
+                                                try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                return n;
+                                              });
+                                              haptic.light();
+                                            }}
+                                            className="w-full text-[9px] text-gray-300 rounded-lg border border-white/10 px-2 py-1.5 focus:border-cyan-500/50 focus:outline-none transition-all"
+                                            style={{ background: 'var(--bg-btn)' }}
+                                          >
+                                            <option value="">Auto (from recommended)</option>
+                                            {Object.keys(ECHO_SETS).map(setName => (
+                                              <option key={setName} value={setName}>{setName} — {ECHO_SETS[setName].p2}</option>
+                                            ))}
+                                          </select>
                                         </div>
                                         {/* Show equipped weapon stats */}
                                         {equippedWeap && (

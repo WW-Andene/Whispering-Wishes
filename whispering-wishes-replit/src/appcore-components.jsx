@@ -8,6 +8,7 @@ import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X,
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
+  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
@@ -228,6 +229,62 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             )}
           </div>
+
+          {/* Base Stats (Lv.90) */}
+          {data.baseAtk && (
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">HP</div>
+                  <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString()}</div>
+                </div>
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">ATK</div>
+                  <div className="text-sm font-bold text-white">{data.baseAtk}</div>
+                </div>
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">DEF</div>
+                  <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString()}</div>
+                </div>
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">Energy</div>
+                  <div className="text-sm font-bold text-white">{data.maxEnergy || '?'}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Resonance Chain (S1-S6) */}
+          {RESONANCE_CHAIN_DATA[name] && (
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
+              <div className="space-y-1.5">
+                {[1,2,3,4,5,6].map(s => {
+                  const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
+                  if (!lvl) return null;
+                  const stats = Object.entries(lvl).map(([k, v]) => {
+                    const labels = { atkPct: 'ATK%', critRate: 'Crit Rate', critDmg: 'Crit DMG', elemDmg: 'Elem DMG', skillDmg: 'Skill DMG', basicDmg: 'Basic DMG', heavyDmg: 'Heavy DMG', libDmg: 'Lib DMG', echoDmg: 'Echo DMG', deepen: 'Deepen', defIgnore: 'DEF Ignore', defShred: 'DEF Shred', resShred: 'RES Shred', totalMult: 'Total Mult', allDmg: 'All DMG', coordDmg: 'Coord DMG' };
+                    return (labels[k] || k) + ' +' + v + '%';
+                  }).join(', ');
+                  return (
+                    <div key={s} className="flex items-center gap-2 text-[10px]">
+                      <span className={`w-7 text-center font-bold rounded py-0.5 ${s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
+                      <span className="text-gray-300 flex-1">{stats}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
+          {CHAR_BUFF_TABLE[name]?.note && (
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
+              <p className="text-[10px] text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
+            </div>
+          )}
 
           {/* BUILD GUIDE SECTION */}
           <div className="space-y-1">
