@@ -5206,286 +5206,275 @@ function WhisperingWishesInner() {
                     </Card>
                   )}
 
-                  {/* Team Damage Calculation Card + Comparison */}
+                  {/* Team Damage Analysis + DPS Comparison */}
                   {(() => {
-                    // ── Reusable calculator for any team ──
+                    // ── Reusable calculator ──
                     const calcTeamStats = (slots) => {
-                      const members = slots.filter(s => s).map(name => {
+                      const mems = slots.filter(s => s).map(name => {
                         const d = CHARACTER_DATA[name];
                         if (!d) return null;
                         const weapon = WEAPON_DATA[d.bestWeapon] || null;
                         const charAtk = d.baseAtk || 0;
                         const weapAtk = weapon ? weapon.baseAtk : 0;
-                        let echoSetName = '', echoSet = null;
-                        if (d.bestEchoes) {
-                          for (const e of d.bestEchoes) {
-                            const setKey = Object.keys(ECHO_SETS).find(k => e.includes(k));
-                            if (setKey) { echoSetName = setKey; echoSet = ECHO_SETS[setKey]; break; }
-                          }
-                        }
-                        return { name, d, weapon, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '' };
+                        let echoSetName = '';
+                        if (d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
+                        return { name, d, weapon, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '' };
                       }).filter(Boolean);
-                      if (!members.length) return null;
-
-                      const allBuffs = [];
-                      const allDebuffs = [];
-                      members.forEach(m => {
-                        (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b }));
-                        (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b }));
-                      });
-
-                      const mainDps = members.find(m => m.d.role === 'Main DPS') || members[0];
-                      let atkPctBonus = 0, critRate = 5, critDmg = 150, elemDmgBonus = 0, dmgDeepen = 0;
-
-                      if (mainDps.weapSubstat === 'Crit Rate') critRate += parseFloat(mainDps.weapSubVal) || 0;
-                      if (mainDps.weapSubstat === 'Crit DMG') critDmg += parseFloat(mainDps.weapSubVal) || 0;
-                      if (mainDps.weapSubstat === 'ATK%') atkPctBonus += parseFloat(mainDps.weapSubVal) || 0;
-
+                      if (!mems.length) return null;
+                      const allBuffs = [], allDebuffs = [];
+                      mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
+                      const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
+                      let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, deepen = 0;
+                      if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
+                      if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
+                      if (mainDps.weapSubstat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
                       if (mainDps.echoSet) {
                         const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
-                        if (p2.atkPct) atkPctBonus += p2.atkPct;
-                        if (p5.atkPct) atkPctBonus += p5.atkPct;
-                        if (p2.critRate) critRate += p2.critRate;
-                        if (p5.critRate) critRate += p5.critRate;
-                        const elemKey = (mainDps.d.element || '').toLowerCase() + 'Dmg';
-                        if (p2[elemKey]) elemDmgBonus += p2[elemKey];
-                        if (p5[elemKey]) elemDmgBonus += p5[elemKey];
+                        if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
+                        if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
+                        const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
+                        if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
                       }
-
-                      allBuffs.forEach(({ buff }) => {
-                        if (buff.includes('ATK Buff') || buff.includes('ATK buff')) atkPctBonus += 15;
-                        if (buff.includes('Crit Buff') || buff.includes('Crit DMG Amp')) critDmg += 15;
-                        if (buff.includes('DMG Deepen') || buff.includes('DMG Buff')) dmgDeepen += 15;
-                        if (buff.includes('Fusion DMG Amp') || buff.includes('Aero Buff') || buff.includes('Havoc DMG') || buff.includes('Spectro DMG')) elemDmgBonus += 15;
-                        if (buff.includes('Basic ATK Amp') || buff.includes('Heavy ATK Buff') || buff.includes('Res. Skill DMG')) dmgDeepen += 12;
-                        if (buff.includes('Coordinated ATK') && mainDps.d.dmgFocus?.includes('Coordinated ATK')) dmgDeepen += 10;
+                      allBuffs.forEach(({ buff: b }) => {
+                        if (b.includes('ATK Buff') || b.includes('ATK buff')) atkPct += 15;
+                        if (b.includes('Crit Buff') || b.includes('Crit DMG Amp')) cd += 15;
+                        if (b.includes('DMG Deepen') || b.includes('DMG Buff')) deepen += 15;
+                        if (b.includes('DMG Amp') || b.includes('Aero Buff') || b.includes('Havoc DMG') || b.includes('Spectro DMG')) elemDmg += 15;
+                        if (b.includes('Basic ATK Amp') || b.includes('Heavy ATK Buff') || b.includes('Res. Skill DMG')) deepen += 12;
                       });
-
-                      const healer = members.find(m => m.d.role === 'Healer');
-                      if (healer?.echoSetName === 'Rejuvenating Glow') atkPctBonus += 15;
-                      const moonlit = members.find(m => m.echoSetName === 'Moonlit Clouds' && m.name !== mainDps.name);
-                      if (moonlit) atkPctBonus += 22.5;
-
-                      const effectiveAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPctBonus / 100));
-                      const avgCritMult = 1 + (Math.min(critRate, 100) / 100) * (critDmg / 100 - 1);
-                      const dmgMult = (1 + elemDmgBonus / 100) * (1 + dmgDeepen / 100);
-                      const damageScore = Math.round(effectiveAtk * avgCritMult * dmgMult);
-
-                      let synergy = 0;
-                      if (members.some(m => m.d.role === 'Healer')) synergy += 25;
-                      if (members.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) synergy += 25;
-                      if (allBuffs.length >= 2) synergy += 15;
-                      if (allDebuffs.length >= 1) synergy += 10;
-                      if (allBuffs.some(b => b.buff.includes(mainDps.d.element))) synergy += 15;
-                      if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) synergy += 10;
-                      synergy = Math.min(synergy, 100);
-
+                      if (mems.find(m => m.d.role === 'Healer' && m.echoSetName === 'Rejuvenating Glow')) atkPct += 15;
+                      if (mems.find(m => m.echoSetName === 'Moonlit Clouds' && m.name !== mainDps.name)) atkPct += 22.5;
+                      const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
+                      const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
+                      const dmgMult = (1 + elemDmg / 100) * (1 + deepen / 100);
+                      const score = Math.round(effAtk * avgCrit * dmgMult);
+                      let syn = 0;
+                      if (mems.some(m => m.d.role === 'Healer')) syn += 25;
+                      if (mems.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) syn += 25;
+                      if (allBuffs.length >= 2) syn += 15;
+                      if (allDebuffs.length >= 1) syn += 10;
+                      if (allBuffs.some(b => b.buff.includes(mainDps.d.element))) syn += 15;
+                      if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) syn += 10;
+                      syn = Math.min(syn, 100);
                       const warnings = [];
-                      if (!healer) warnings.push('No healer');
-                      if (members.length < 3) warnings.push('Incomplete team');
-                      const elements = new Set(members.map(m => m.d.element));
-                      if (elements.size === members.length && members.length >= 3) warnings.push('No element resonance');
-
-                      return { members, mainDps, allBuffs, allDebuffs, effectiveAtk, critRate, critDmg, elemDmgBonus, dmgDeepen, atkPctBonus, avgCritMult, dmgMult, damageScore, synergy, warnings };
+                      if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
+                      if (mems.length < 3) warnings.push('Incomplete team');
+                      const els = new Set(mems.map(m => m.d.element));
+                      if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
+                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, deepen, atkPct, avgCrit, score, synergy: syn, warnings };
                     };
 
-                    const activeStats = calcTeamStats(teamSlots);
-                    if (!activeStats) return null;
-
-                    const { members, mainDps, allBuffs, allDebuffs, effectiveAtk, critRate, critDmg, elemDmgBonus, dmgDeepen, atkPctBonus, avgCritMult, damageScore, synergy, warnings } = activeStats;
-                    const synergyColor = synergy >= 75 ? '#48b088' : synergy >= 50 ? '#e8a94a' : '#e05468';
-                    const synergyLabel = synergy >= 75 ? 'Excellent' : synergy >= 50 ? 'Good' : 'Needs work';
-                    const barColors = ['#e8a94a', '#a78bfa', '#34d399', '#f472b6', '#60a5fa'];
+                    const stats = calcTeamStats(teamSlots);
+                    if (!stats) return null;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, deepen, atkPct, avgCrit, score, synergy, warnings } = stats;
+                    const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
                     return (
                       <>
                       <Card>
-                        <CardHeader><Zap size={14} className="text-yellow-400" /> Team Damage Analysis</CardHeader>
+                        <CardHeader><Zap size={14} className="text-yellow-400" /> Damage Analysis</CardHeader>
                         <CardBody>
-                          {/* Synergy Score */}
-                          <div className="flex items-center gap-3 mb-3 p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
-                            <div className="relative w-12 h-12 flex-shrink-0">
-                              <svg viewBox="0 0 36 36" className="w-12 h-12 -rotate-90">
-                                <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
-                                <circle cx="18" cy="18" r="15.5" fill="none" stroke={synergyColor} strokeWidth="3"
-                                  strokeDasharray={`${synergy * 0.974} 100`} strokeLinecap="round" />
-                              </svg>
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-[11px] font-bold" style={{ color: synergyColor }}>{synergy}</span>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-xs font-semibold text-white">Synergy: <span style={{ color: synergyColor }}>{synergyLabel}</span></div>
-                              <div className="text-[10px] text-gray-400">Role coverage, buff alignment, element matching</div>
-                            </div>
-                          </div>
+                          <div className="space-y-3">
+                            {/* Per-member damage breakdown — same style as Team Overview */}
+                            {members.map((m) => {
+                              const rarity5 = m.d.rarity === 5;
+                              const rc = roleColors[m.d.role] || roleColors.Support;
+                              const isMain = m.name === mainDps.name;
+                              return (
+                                <div key={m.name} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
+                                  {/* Header — matches Team Overview exactly */}
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
+                                      style={{ borderColor: getElementColor(m.d.element) }}>
+                                      {collectionImages[m.name] ? (
+                                        <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{m.name[0]}</div>
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-white text-xs font-semibold truncate">{m.name}</span>
+                                        <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 mt-0.5">
+                                        <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                          {m.d.element}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
 
-                          {/* Main DPS Full Stats */}
-                          <div className="mb-3 p-2.5 rounded-lg border border-yellow-500/20 bg-yellow-500/5">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[10px] font-bold text-yellow-400">{mainDps.name}</span>
-                              <span className="text-[8px] px-1.5 py-0.5 rounded bg-yellow-500/15 border border-yellow-500/30 text-yellow-400">Main DPS</span>
-                              <span className="text-[9px] ml-auto" style={{ color: getElementColor(mainDps.d.element) }}>{mainDps.d.element}</span>
-                            </div>
-                            <div className="grid grid-cols-4 gap-1.5 text-[9px] mb-2">
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">HP</div>
-                                <div className="text-white font-bold">{(mainDps.d.baseHp || 0).toLocaleString()}</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">ATK</div>
-                                <div className="text-white font-bold">{mainDps.charAtk}</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">DEF</div>
-                                <div className="text-white font-bold">{(mainDps.d.baseDef || 0).toLocaleString()}</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">Energy</div>
-                                <div className="text-white font-bold">{mainDps.d.maxEnergy || '?'}</div>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 text-[9px] mb-2">
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">Eff. ATK</div>
-                                <div className="text-yellow-400 font-bold text-xs">{effectiveAtk.toLocaleString()}</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">Crit Rate</div>
-                                <div className="text-cyan-400 font-bold text-xs">{critRate.toFixed(1)}%</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">Crit DMG</div>
-                                <div className="text-cyan-400 font-bold text-xs">{critDmg.toFixed(1)}%</div>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 text-[9px]">
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">{mainDps.d.element} DMG</div>
-                                <div className="font-bold" style={{ color: getElementColor(mainDps.d.element) }}>+{elemDmgBonus.toFixed(1)}%</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">ATK Buff</div>
-                                <div className="text-emerald-400 font-bold">+{atkPctBonus.toFixed(1)}%</div>
-                              </div>
-                              <div className="p-1.5 rounded bg-black/20 text-center">
-                                <div className="text-gray-400">DMG Deepen</div>
-                                <div className="text-violet-400 font-bold">+{dmgDeepen.toFixed(1)}%</div>
-                              </div>
-                            </div>
-                            <div className="flex gap-1 mt-2 flex-wrap">
-                              {mainDps.weapon && <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">{mainDps.d.bestWeapon} — {mainDps.weapon.stat} {mainDps.weapSubVal}</span>}
-                              {mainDps.echoSetName && <span className="text-[8px] px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{mainDps.echoSetName} 5pc</span>}
-                            </div>
-                          </div>
+                                  {/* Stats grid */}
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Base Stats (Lv.90)</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">ATK {m.charAtk}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
+                                    </div>
+                                  </div>
 
-                          {/* Support/healer member stats */}
-                          {members.filter(m => m.name !== mainDps.name).map(m => (
-                            <div key={m.name} className="mb-2 p-2 rounded-lg border border-white/6" style={{ background: 'var(--bg-btn)' }}>
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <span className="text-[10px] font-bold" style={{ color: getElementColor(m.d.element) }}>{m.name}</span>
-                                <span className="text-[9px] text-gray-400 ml-auto">{m.d.role}</span>
-                              </div>
-                              <div className="grid grid-cols-4 gap-1 text-[8px]">
-                                <div className="p-1 rounded bg-black/20 text-center"><div className="text-gray-500">HP</div><div className="text-gray-300">{(m.d.baseHp || 0).toLocaleString()}</div></div>
-                                <div className="p-1 rounded bg-black/20 text-center"><div className="text-gray-500">ATK</div><div className="text-gray-300">{m.charAtk}</div></div>
-                                <div className="p-1 rounded bg-black/20 text-center"><div className="text-gray-500">DEF</div><div className="text-gray-300">{(m.d.baseDef || 0).toLocaleString()}</div></div>
-                                <div className="p-1 rounded bg-black/20 text-center"><div className="text-gray-500">ATK+W</div><div className="text-gray-300">{m.totalBaseAtk}</div></div>
-                              </div>
-                              <div className="flex gap-1 mt-1.5 flex-wrap">
-                                {m.weapon && <span className="text-[7px] px-1 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">{m.d.bestWeapon}</span>}
-                                {m.echoSetName && <span className="text-[7px] px-1 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400">{m.echoSetName}</span>}
-                                {(m.d.buffs || []).map((b, i) => <span key={i} className="text-[7px] px-1 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">{b}</span>)}
-                              </div>
-                            </div>
-                          ))}
+                                  {/* Main DPS: expanded damage stats */}
+                                  {isMain && (
+                                    <div className="mb-1.5">
+                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Stats (with team buffs)</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded font-medium"
+                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                          {m.d.element} +{elemDmg.toFixed(0)}%
+                                        </span>
+                                        {atkPct > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
+                                        {deepen > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
+                                      </div>
+                                    </div>
+                                  )}
 
-                          {/* Damage Score */}
-                          <div className="p-2.5 rounded-lg bg-black/30 text-center mb-3 border border-yellow-500/15">
-                            <div className="text-[9px] text-gray-400">Damage Score</div>
-                            <div className="text-2xl font-bold text-yellow-400">{damageScore.toLocaleString()}</div>
-                            <div className="text-[8px] text-gray-500">ATK × crit × element × deepen</div>
-                          </div>
-
-                          {/* Warnings */}
-                          {warnings.length > 0 && (
-                            <div className="space-y-1 mb-2">
-                              {warnings.map((w, i) => (
-                                <div key={i} className="flex items-center gap-1.5 text-[9px] text-amber-400 bg-amber-500/8 px-2 py-1.5 rounded border border-amber-500/15">
-                                  <AlertTriangle size={10} className="flex-shrink-0" /> {w}
+                                  {/* Build info — same style as Team Overview */}
+                                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
+                                    {m.d.bestWeapon && (
+                                      <div className="text-[9px]">
+                                        <span className="text-gray-500">Weapon: </span>
+                                        <span className="text-yellow-400/80">{m.d.bestWeapon}</span>
+                                        {m.weapon && <span className="text-gray-500"> ({m.weapon.stat} {m.weapSubVal})</span>}
+                                      </div>
+                                    )}
+                                    {m.echoSetName && (
+                                      <div className="text-[9px]">
+                                        <span className="text-gray-500">Echoes: </span>
+                                        <span className="text-cyan-400/80">{m.echoSetName}</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              ))}
+                              );
+                            })}
+
+                            {/* Aggregated buffs/debuffs */}
+                            {allBuffs.length > 0 && (
+                              <div>
+                                <div className="text-[9px] text-gray-400 font-medium mb-1">Team Buffs</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {allBuffs.map((b, i) => (
+                                    <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                                      {b.buff} <span className="text-gray-500">({b.source})</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {allDebuffs.length > 0 && (
+                              <div>
+                                <div className="text-[9px] text-gray-400 font-medium mb-1">Enemy Debuffs</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {allDebuffs.map((b, i) => (
+                                    <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                                      {b.debuff} <span className="text-gray-500">({b.source})</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Damage Score + Synergy — single row */}
+                            <div className="flex gap-2">
+                              <div className="flex-1 p-2.5 rounded-lg border border-white/8 text-center" style={{ background: 'var(--bg-btn)' }}>
+                                <div className="text-[9px] text-gray-400 font-medium">Damage Score</div>
+                                <div className="text-lg font-bold text-yellow-400">{score.toLocaleString()}</div>
+                                <div className="text-[8px] text-gray-500">ATK×crit×elem×deepen</div>
+                              </div>
+                              <div className="w-20 p-2.5 rounded-lg border border-white/8 text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-btn)' }}>
+                                <div className="text-[9px] text-gray-400 font-medium">Synergy</div>
+                                <div className={`text-lg font-bold ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{synergy}</div>
+                              </div>
                             </div>
-                          )}
+
+                            {/* Warnings */}
+                            {warnings.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {warnings.map((w, i) => (
+                                  <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
+                                    <AlertTriangle size={9} /> {w}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </CardBody>
                       </Card>
 
-                      {/* Team Comparison — populated via the "+ Compare" button */}
-                      {teamCompareEntries.length > 0 && (() => {
-                        const maxCmpScore = Math.max(...teamCompareEntries.map(e => e.damageScore), 1);
-                        return (
+                      {/* DPS Comparison — populated via "+ Compare" button */}
+                      {teamCompareEntries.length > 0 && (
                         <Card>
                           <CardHeader action={
                             <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
-                              className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear All</button>
-                          }><BarChart3 size={14} className="text-violet-400" /> DPS Comparison</CardHeader>
+                              className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                              style={{ background: 'var(--bg-btn)' }}>
+                              Clear All
+                            </button>
+                          }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
                           <CardBody>
-                            <div className="space-y-4">
-                              {teamCompareEntries.map((entry, idx) => {
-                                const pct = maxCmpScore > 0 ? (entry.damageScore / maxCmpScore) * 100 : 0;
-                                const color = barColors[idx % barColors.length];
-                                return (
-                                  <div key={entry.id} className="relative">
-                                    {/* Remove button */}
-                                    <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                      className="absolute top-0 right-0 z-10 w-5 h-5 rounded-full bg-red-500/60 text-white flex items-center justify-center text-[10px] hover:bg-red-500 transition-colors">
-                                      <X size={10} />
-                                    </button>
+                            <div className="space-y-3">
+                              {(() => {
+                                const maxS = Math.max(...teamCompareEntries.map(e => e.damageScore), 1);
+                                return teamCompareEntries.map((entry, idx) => {
+                                  const pct = maxS > 0 ? (entry.damageScore / maxS) * 100 : 0;
+                                  return (
+                                    <div key={entry.id} className="p-2.5 rounded-lg border border-white/8 relative" style={{ background: 'var(--bg-btn)' }}>
+                                      {/* Remove */}
+                                      <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
+                                        className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+                                        <X size={10} />
+                                      </button>
 
-                                    {/* Character cards row */}
-                                    <div className="flex gap-1.5 mb-1.5">
-                                      {entry.members.map((m, mi) => (
-                                        <div key={mi} className="flex-1 p-1.5 rounded-lg border text-center"
-                                          style={{
-                                            borderColor: m.rarity === 5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)',
-                                            background: m.rarity === 5 ? 'rgba(234,179,8,0.05)' : 'rgba(168,85,247,0.05)',
-                                          }}>
-                                          <div className="text-[9px] font-bold truncate" style={{ color: getElementColor(m.element) }}>{m.name}</div>
-                                          <div className="text-[7px] text-gray-500">{m.role}</div>
+                                      {/* Character cards — matches collection card style */}
+                                      <div className="flex gap-1.5 mb-2">
+                                        {entry.members.map((m, mi) => {
+                                          const rarity5 = m.rarity === 5;
+                                          const rc2 = roleColors[m.role] || roleColors.Support;
+                                          return (
+                                            <div key={mi} className={`flex-1 p-1.5 rounded-lg border text-center ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}>
+                                              <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.element) }}>{m.name}</div>
+                                              <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                              <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.role}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+
+                                      {/* Bar */}
+                                      <div className="h-7 rounded-lg overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                        <div className="h-full rounded-lg transition-all duration-700"
+                                          style={{ width: Math.max(pct, 12) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                          <span className="text-xs font-bold text-yellow-400">{entry.damageScore.toLocaleString()}</span>
                                         </div>
-                                      ))}
-                                    </div>
-
-                                    {/* Bar */}
-                                    <div className="h-8 rounded-lg overflow-hidden bg-black/30 relative">
-                                      <div className="h-full rounded-lg transition-all duration-700 flex items-center justify-end px-3"
-                                        style={{ width: Math.max(pct, 15) + '%', background: `linear-gradient(90deg, ${color}22, ${color}99)`, borderRight: `3px solid ${color}` }}>
                                       </div>
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-[11px] font-bold text-white drop-shadow-lg">{entry.damageScore.toLocaleString()}</span>
+
+                                      {/* Quick stats */}
+                                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
+                                        <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white">{entry.mainDpsName}</span></div>
+                                        <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400/80">{entry.effAtk}</span></div>
+                                        <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400/80">{entry.critRate.toFixed(0)}%</span></div>
+                                        <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400/80">{entry.critDmg.toFixed(0)}%</span></div>
                                       </div>
                                     </div>
-
-                                    {/* DPS value + quick stats */}
-                                    <div className="flex items-center gap-3 mt-1 text-[8px] text-gray-400">
-                                      <span>DPS: <span className="text-white font-medium">{entry.mainDpsName}</span></span>
-                                      <span>ATK <span className="text-yellow-400">{entry.effAtk}</span></span>
-                                      <span>CR <span className="text-cyan-400">{entry.critRate.toFixed(0)}%</span></span>
-                                      <span>CD <span className="text-cyan-400">{entry.critDmg.toFixed(0)}%</span></span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                                  );
+                                });
+                              })()}
                             </div>
                             {teamCompareEntries.length < 5 && (
-                              <div className="mt-3 text-center text-[9px] text-gray-500">
-                                Tap <span className="text-yellow-400 font-medium">+ Compare</span> in Team Builder to add more ({5 - teamCompareEntries.length} slots left)
-                              </div>
+                              <p className="text-gray-500 text-[10px] text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
                             )}
                           </CardBody>
                         </Card>
-                        );
-                      })()}
+                      )}
                       </>
                     );
                   })()}
