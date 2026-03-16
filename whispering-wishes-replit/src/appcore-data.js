@@ -745,14 +745,29 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Lib: 24% All DMG Bonus teamwide 30s. Outro: 15% Deepen + 25% Lib DMG Amp (14s, swap cancels). Tune Break Boost +40.',
+    tuneBreak: {
+      boostToTeam: 40, // Visual Impact grants +40 Tune Break Boost teamwide
+      baseTuneBreakBoost: 10, // 3.x char base stat
+      ruptureDmgMult: 350, // Tune Rupture Response — Spectral Analysis: ~350% ATK Level-scaled
+      strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
+      maxStrainStacks: 3, // base 2 + 1 from Lynae
+    },
+    note: 'Lib: 24% All DMG (30s). Outro: 15% Deepen + 25% Lib Amp (14s). Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
   },
   'Mornye': {
     outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 14 }],
     libBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [{ stat: 'offTune', value: 15, duration: 20, condition: 'Off-Tune buildup' }],
-    note: 'Outro: 25% Deepen. Lib: 15% All DMG. Off-Tune buildup amplifier. S0+Lynae = 40% DMG Bonus.',
+    tuneBreak: {
+      boostToTeam: 0,
+      baseTuneBreakBoost: 10,
+      ruptureDmgMult: 300, // Tune Rupture Response — Particle Jet
+      strainDmgPerStack: 0.12,
+      maxStrainStacks: 3, // base 2 + 1 from Mornye
+      interferedDmgAmp: 40, // targets with Interfered Marker take up to 40% more DMG (0.25% per 1% ER over 100%)
+    },
+    note: 'Outro: 25% Deepen. Lib: 15% All DMG. Interfered Marker: up to 40% DMG Amp on target. Rupture Response. Off-Tune buildup amplifier.',
   },
   'Roccia': {
     outroBuffs: [

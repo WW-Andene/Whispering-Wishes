@@ -5339,6 +5339,53 @@ function WhisperingWishesInner() {
                         dotDmgPerRotation += flareTotal * defMult * resMult;
                       }
 
+                      // ── Tune Break damage layer (v3.0+) ──
+                      let tuneBreakDmg = 0;
+                      let tuneBreakAmp = 0;
+                      let tuneBreakDeepenMult = 1;
+                      const tuneBreakMembers = mems.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
+                      if (tuneBreakMembers.length > 0) {
+                        // Sum Tune Break Boost from all members
+                        let totalTuneBreakBoost = 0;
+                        tuneBreakMembers.forEach(m => {
+                          const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+                          totalTuneBreakBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
+                        });
+
+                        // ~1 Tune Break per rotation on endgame bosses
+                        const tuneBreaksPerRotation = 1;
+
+                        // Base Tune Break DMG: scales off Tune Break Boost (Physical, flat)
+                        const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.02);
+                        tuneBreakDmg += baseTuneBreakDmg * tuneBreaksPerRotation * defMult;
+
+                        // Tune Rupture Response: extra DMG instance from each responder per Break
+                        tuneBreakMembers.forEach(m => {
+                          const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+                          if (tb.ruptureDmgMult) {
+                            const responseDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100);
+                            tuneBreakDmg += responseDmg * tuneBreaksPerRotation * defMult * resMult;
+                          }
+                        });
+
+                        // Mornye Interfered Marker: up to 40% more DMG on target
+                        const mornyeMem = tuneBreakMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
+                        if (mornyeMem) {
+                          tuneBreakAmp = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
+                          const interferedUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
+                          tuneBreakDeepenMult *= 1 + (tuneBreakAmp / 100) * interferedUptime;
+                        }
+
+                        // Tune Strain: per stack × Boost × 0.12% total DMG increase
+                        const maxStrain = Math.max(...tuneBreakMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
+                        if (maxStrain > 0 && totalTuneBreakBoost > 0) {
+                          const strainDmgPct = maxStrain * totalTuneBreakBoost * 0.12;
+                          const strainUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
+                          tuneBreakDeepenMult *= 1 + (strainDmgPct / 100) * strainUptime;
+                        }
+                      }
+                      dotDmgPerRotation += tuneBreakDmg;
+
                       // ── Real DPS: skill multipliers × rotation timing + DOT ──
                       // Sum total rotation damage from all team members
                       let totalRotDmg = 0;
@@ -5364,7 +5411,7 @@ function WhisperingWishesInner() {
                           totalRotDmg += sAtk * (mult / 100) * sCrit * (1 + sElem / 100) * defMult * resMult;
                         }
                       });
-                      const realDps = Math.round((totalRotDmg + dotDmgPerRotation) / rotTime);
+                      const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
 
                       // Synergy
                       let syn = 0;
@@ -5627,7 +5674,7 @@ function WhisperingWishesInner() {
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[8px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT (Frazzle/Erosion/Flare), Fusion Burst explosions, DEF/RES shred. Excludes: Tune Break DMG, echo substats. S0 assumed (except noted self-buffs).</p>
+                            <p className="text-[8px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats, Resonance Chain (S1-S6). S0 assumed.</p>
                           </div>
                         </CardBody>
                       </Card>
