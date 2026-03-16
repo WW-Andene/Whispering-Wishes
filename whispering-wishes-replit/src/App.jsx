@@ -5849,9 +5849,9 @@ function WhisperingWishesInner() {
                                     <div className="mb-1">
                                       <div className="flex items-center gap-2 mb-0.5">
                                         <span className="text-[8px] text-gray-500 w-8">Raw</span>
-                                        <div className="flex-1 h-5 rounded-full overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                        <div className="flex-1 h-5 rounded-full overflow-hidden relative" style={{ background: 'var(--bg-stat)' }}>
                                           <div className="h-full rounded-full transition-all duration-700"
-                                            style={{ width: Math.max(rawPct, 8) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
+                                            style={{ width: Math.max(rawPct, 8) + '%', background: `linear-gradient(90deg, rgba(234,179,8,0.25), rgba(234,179,8,0.9))` }} />
                                           <div className="absolute inset-0 flex items-center justify-center">
                                             <span className="text-[10px] font-bold text-yellow-400 kuro-number">{s.score.toLocaleString()}</span>
                                           </div>
@@ -5863,9 +5863,9 @@ function WhisperingWishesInner() {
                                     <div className="mb-1.5">
                                       <div className="flex items-center gap-2 mb-0.5">
                                         <span className="text-[8px] text-gray-500 w-8">Full</span>
-                                        <div className="flex-1 h-5 rounded-full overflow-hidden border border-cyan-500/10 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                        <div className="flex-1 h-5 rounded-full overflow-hidden relative" style={{ background: 'var(--bg-stat)' }}>
                                           <div className="h-full rounded-full transition-all duration-700"
-                                            style={{ width: Math.max(fullPct, 8) + '%', background: 'linear-gradient(90deg, rgba(6,182,212,0.15), rgba(6,182,212,0.5))' }} />
+                                            style={{ width: Math.max(fullPct, 8) + '%', background: 'linear-gradient(90deg, rgba(6,182,212,0.25), rgba(6,182,212,0.9))' }} />
                                           <div className="absolute inset-0 flex items-center justify-center">
                                             <span className="text-[10px] font-bold text-cyan-400 kuro-number">{s.realDps.toLocaleString()} /s</span>
                                           </div>
