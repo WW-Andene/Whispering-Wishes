@@ -1430,6 +1430,14 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > header nav .tab-indicator { display: none !important; }
       .desktop-layout > header .swipe-hint { display: none !important; }
 
+      /* Logo — scale down in narrow sidebar */
+      .desktop-layout > header .header-top .group {
+        transform: scale(0.85);
+      }
+      .desktop-layout > header .header-top .group .blur-md {
+        opacity: 0.3 !important;
+      }
+
       /* MAIN CONTENT */
       .desktop-layout > main {
         margin-left: 72px !important; max-width: none !important;
