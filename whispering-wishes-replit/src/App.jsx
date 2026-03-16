@@ -5517,11 +5517,12 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className="p-2.5 rounded-lg border border-white/10 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                                <div key={m.name} className="p-2.5 rounded-lg border hover:border-white/15 transition-colors"
+                                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
                                   {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
-                                      style={{ borderColor: getElementColor(m.d.element) }}>
+                                      style={{ borderColor: getElementColor(m.d.element), boxShadow: `0 0 8px ${getElementColor(m.d.element)}40` }}>
                                       {collectionImages[m.name] ? (
                                         <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                       ) : (
@@ -5558,7 +5559,7 @@ function WhisperingWishesInner() {
                                         {m.d.element} DMG
                                       </span>
                                       {(m.d.dmgFocus || []).map((df, di) => (
-                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                                        <span key={di} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
                                       ))}
                                     </div>
                                   </div>
@@ -5568,7 +5569,7 @@ function WhisperingWishesInner() {
                                       <div className="kuro-label">Buffs</div>
                                       <div className="flex flex-wrap gap-1">
                                         {m.d.buffs.map((b, bi) => (
-                                          <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                                          <span key={bi} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
                                         ))}
                                       </div>
                                     </div>
@@ -5579,7 +5580,7 @@ function WhisperingWishesInner() {
                                       <div className="kuro-label">Debuffs</div>
                                       <div className="flex flex-wrap gap-1">
                                         {m.d.debuffs.map((db, di) => (
-                                          <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                                          <span key={di} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 6px rgba(239,68,68,0.12)" }}>{db}</span>
                                         ))}
                                       </div>
                                     </div>
@@ -5588,10 +5589,10 @@ function WhisperingWishesInner() {
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">ATK {m.charAtk}</span>
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
-                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
                                     </div>
                                   </div>
                                   {/* Main DPS: expanded damage stats */}
@@ -5599,19 +5600,19 @@ function WhisperingWishesInner() {
                                     <div className="mb-1.5">
                                       <div className="kuro-label">Damage Stats (with team buffs)</div>
                                       <div className="flex flex-wrap gap-1">
-                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.ATK {effAtk.toLocaleString()}</span>
-                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
-                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400" style={{ boxShadow: "0 0 8px rgba(234,179,8,0.15)" }}>Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CR {cr.toFixed(1)}%</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CD {cd.toFixed(1)}%</span>
                                         <span className="text-[8px] px-1.5 py-0.5 rounded font-medium"
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                           {m.d.element} +{elemDmg.toFixed(0)}%
                                         </span>
-                                        {skillDmg > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
-                                        {atkPct > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
-                                        {deepen > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
-                                        {defShred > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {defShred}%</span>}
-                                        {resShred > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {resShred}%</span>}
-                                        {defIgnore > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
+                                        {skillDmg > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 8px rgba(245,158,11,0.15)" }}>Skill +{skillDmg.toFixed(0)}%</span>}
+                                        {atkPct > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 8px rgba(34,197,94,0.15)" }}>ATK% +{atkPct.toFixed(0)}%</span>}
+                                        {deepen > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400" style={{ boxShadow: "0 0 8px rgba(168,85,247,0.15)" }}>Deepen +{deepen.toFixed(0)}%</span>}
+                                        {defShred > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Shred {defShred}%</span>}
+                                        {resShred > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>RES Shred {resShred}%</span>}
+                                        {defIgnore > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Ignore {defIgnore}%</span>}
                                       </div>
                                     </div>
                                   )}
@@ -5745,7 +5746,7 @@ function WhisperingWishesInner() {
                                 <div className="kuro-label">Team Buffs</div>
                                 <div className="flex flex-wrap gap-1">
                                   {allBuffs.map((b, i) => (
-                                    <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
                                       {b.buff} <span className="text-gray-500">({b.source})</span>
                                     </span>
                                   ))}
@@ -5757,7 +5758,7 @@ function WhisperingWishesInner() {
                                 <div className="kuro-label">Enemy Debuffs</div>
                                 <div className="flex flex-wrap gap-1">
                                   {allDebuffs.map((b, i) => (
-                                    <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
                                       {b.debuff} <span className="text-gray-500">({b.source})</span>
                                     </span>
                                   ))}
@@ -5766,20 +5767,20 @@ function WhisperingWishesInner() {
                             )}
 
                             {/* Damage Score: Raw + Full DPS — single row */}
-                            <div className="flex gap-2">
-                              <div className="flex-1 p-2.5 rounded-lg border border-white/10 text-center" style={{ background: 'var(--bg-btn)' }}>
-                                <div className="text-[9px] text-gray-400 font-medium">Raw Power</div>
-                                <div className="text-lg font-bold text-yellow-400 kuro-number">{score.toLocaleString()}</div>
-                                <div className="text-[8px] text-gray-500">stat multipliers</div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="kuro-stat kuro-stat-gold p-2 text-center">
+                                <div className="text-gray-400 text-[9px]">Raw Power</div>
+                                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{score.toLocaleString()}</div>
+                                <div className="text-gray-500 text-[8px]">stat multipliers</div>
                               </div>
-                              <div className="flex-1 p-2.5 rounded-lg border border-cyan-500/20 text-center" style={{ background: 'rgba(6,182,212,0.03)' }}>
-                                <div className="text-[9px] text-cyan-400 font-medium">Full DPS</div>
-                                <div className="text-lg font-bold text-cyan-400 kuro-number">{realDps.toLocaleString()}</div>
-                                <div className="text-[8px] text-gray-500">dmg/sec with rotation</div>
+                              <div className="kuro-stat kuro-stat-cyan p-2 text-center">
+                                <div className="text-gray-400 text-[9px]">Full DPS</div>
+                                <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString()}</div>
+                                <div className="text-gray-500 text-[8px]">dmg/sec</div>
                               </div>
-                              <div className="w-20 p-2.5 rounded-lg border border-white/10 text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-btn)' }}>
-                                <div className="text-[9px] text-gray-400 font-medium">Synergy</div>
-                                <div className={`text-lg font-bold ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{synergy}</div>
+                              <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
+                                <div className="text-gray-400 text-[9px]">Synergy</div>
+                                <div className={`text-lg font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}</div>
                               </div>
                             </div>
 
@@ -5787,14 +5788,14 @@ function WhisperingWishesInner() {
                             {warnings.length > 0 && (
                               <div className="flex flex-wrap gap-1">
                                 {warnings.map((w, i) => (
-                                  <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
+                                  <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
                                     <AlertTriangle size={9} /> {w}
                                   </span>
                                 ))}
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[8px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats, Resonance Chain (S1-S6). S0 assumed.</p>
+                            <p className="text-[9px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats, Resonance Chain (S1-S6). S0 assumed.</p>
                           </div>
                         </CardBody>
                       </Card>
@@ -5824,7 +5825,7 @@ function WhisperingWishesInner() {
                                 const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
                                 const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
                                 return (
-                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/10 relative" style={{ background: 'var(--bg-btn)' }}>
+                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/10 relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
                                       className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
                                       <X size={10} />
@@ -5836,8 +5837,12 @@ function WhisperingWishesInner() {
                                         const rarity5 = m.d.rarity === 5;
                                         const rc2 = roleColors[m.d.role] || roleColors.Support;
                                         return (
-                                          <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}>
-                                            <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.d.element) }}>{m.name}</div>
+                                          <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'border-yellow-500/50' : 'border-purple-500/50'}`}
+                                            style={{
+                                              background: rarity5 ? 'linear-gradient(to top, rgba(237,175,24,0.15), rgba(237,175,24,0.05))' : 'linear-gradient(to top, rgba(168,85,247,0.15), rgba(168,85,247,0.05))',
+                                              boxShadow: rarity5 ? '0 0 12px rgba(237,175,24,0.15), inset 0 0 10px rgba(237,175,24,0.05)' : '0 0 12px rgba(168,85,247,0.15), inset 0 0 10px rgba(168,85,247,0.05)'
+                                            }}>
+                                            <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
                                             <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                             <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
                                           </div>
@@ -5894,13 +5899,13 @@ function WhisperingWishesInner() {
                                     </div>
 
                                     {/* Quick stats */}
-                                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-white/5">
-                                      <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white">{s.mainDps.name}</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400/80">{s.effAtk}</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400/80">{s.critRate.toFixed(0)}%</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400/80">{s.critDmg.toFixed(0)}%</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300">{s.mainDps.d.rotTime || 25}s</span></div>
-                                      {s.defShred > 0 && <div className="text-[9px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400/80">{s.defShred}%</span></div>}
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-white/10">
+                                      <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
+                                      {s.defShred > 0 && <div className="text-[9px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{s.defShred}%</span></div>}
                                     </div>
                                   </div>
                                 );
@@ -5959,15 +5964,15 @@ function WhisperingWishesInner() {
                                 haptic.success();
                               }}
                               className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
-                              style={{ background: 'var(--bg-btn)' }}
+                              style={{ background: 'var(--bg-stat)' }}
                             >
                               <div className="flex gap-1 flex-shrink-0">
                                 {s.members.slice(0, 3).map((m, j) => {
                                   const cd = CHARACTER_DATA[m];
                                   const sf = getImageFraming(`collection-${m}`);
                                   return (
-                                    <div key={j} className="w-10 h-10 rounded-lg border border-white/15 overflow-hidden flex-shrink-0 relative"
-                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint' }}>
+                                    <div key={j} className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative"
+                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280')}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280')}30` : 'none' }}>
                                       {collectionImages[m] ? (
                                         <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
