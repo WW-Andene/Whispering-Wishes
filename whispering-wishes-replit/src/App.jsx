@@ -5519,7 +5519,7 @@ function WhisperingWishesInner() {
                                     </div>
                                   </div>
                                   {/* 2-col: Left=info, Right=equipment */}
-                                  <div className="flex gap-3">
+                                  <div className="flex flex-col md:flex-row gap-3">
                                     {/* LEFT: description + tags + stats (unchanged) */}
                                     <div className="flex-1 min-w-0">
                                   {/* Description */}
