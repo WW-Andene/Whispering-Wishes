@@ -1562,6 +1562,12 @@ const KuroStyles = memo(({ oledMode }) => (
         align-items: start !important;
       }
 
+      /* Banner card images — center on character torso on desktop */
+      .desktop-layout .banner-grid img.absolute,
+      .desktop-layout .standard-banner-grid img.absolute {
+        object-position: center 20% !important;
+      }
+
       /* ── DESKTOP POLISH ──────────────────────────────────────────── */
 
       /* Smooth tab transitions on sidebar */
