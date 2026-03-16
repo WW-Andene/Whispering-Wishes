@@ -5061,106 +5061,7 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
 
-                  {/* Character Stats & Info */}
-                  {teamSlots.some(s => s) && (
-                    <Card>
-                      <CardHeader><Info size={14} className="text-cyan-400" /> Team Overview</CardHeader>
-                      <CardBody>
-                        <div className="space-y-3">
-                          {teamSlots.filter(s => s).map((charName, i) => {
-                            const d = CHARACTER_DATA[charName];
-                            if (!d) return null;
-                            const rarity5 = d.rarity === 5;
-                            const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
-                            const rc = roleColors[d.role] || roleColors.Support;
-                            return (
-                              <div key={charName} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
-                                {/* Character header row */}
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
-                                    style={{ borderColor: getElementColor(d.element) }}>
-                                    {collectionImages[charName] ? (
-                                      <img src={collectionImages[charName]} alt={charName} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{charName[0]}</div>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-white text-xs font-semibold truncate">{charName}</span>
-                                      <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{d.role}</span>
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
-                                        style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                        {d.element}
-                                      </span>
-                                      <span className="text-[9px] text-gray-400">{d.weapon}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                {/* Description */}
-                                <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{d.desc}</p>
-                                {/* Damage Focus */}
-                                <div className="mb-1.5">
-                                  <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
-                                  <div className="flex flex-wrap gap-1">
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
-                                      style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                      {d.element} DMG
-                                    </span>
-                                    {(d.dmgFocus || []).map((df, di) => (
-                                      <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                                {/* Buffs */}
-                                {d.buffs?.length > 0 && (
-                                  <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {d.buffs.map((b, bi) => (
-                                        <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Debuffs */}
-                                {d.debuffs?.length > 0 && (
-                                  <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {d.debuffs.map((db, di) => (
-                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Best Build */}
-                                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
-                                  {d.bestWeapon && (
-                                    <div className="text-[9px]">
-                                      <span className="text-gray-500">Weapon: </span>
-                                      <span className="text-yellow-400/80">{d.bestWeapon}</span>
-                                    </div>
-                                  )}
-                                  {d.bestEchoes && (
-                                    <div className="text-[9px]">
-                                      <span className="text-gray-500">Echoes: </span>
-                                      <span className="text-cyan-400/80">{d.bestEchoes.join(' + ')}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </CardBody>
-                    </Card>
-                  )}
-
-                  {/* Team Damage Analysis + DPS Comparison */}
+                  {/* Team Overview + Damage Analysis (merged) */}
                   {(() => {
                     // ── Reusable calculator with proper WuWa damage formula ──
                     const calcTeamStats = (slots) => {
@@ -5338,17 +5239,17 @@ function WhisperingWishesInner() {
                     return (
                       <>
                       <Card>
-                        <CardHeader><Zap size={14} className="text-yellow-400" /> Damage Analysis</CardHeader>
+                        <CardHeader><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
                         <CardBody>
                           <div className="space-y-3">
-                            {/* Per-member damage breakdown — same style as Team Overview */}
+                            {/* Per-member: overview + damage breakdown */}
                             {members.map((m) => {
                               const rarity5 = m.d.rarity === 5;
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
                                 <div key={m.name} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
-                                  {/* Header — matches Team Overview exactly */}
+                                  {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
                                       style={{ borderColor: getElementColor(m.d.element) }}>
@@ -5369,11 +5270,48 @@ function WhisperingWishesInner() {
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                           {m.d.element}
                                         </span>
+                                        <span className="text-[9px] text-gray-400">{m.d.weapon}</span>
                                       </div>
                                     </div>
                                   </div>
-
-                                  {/* Stats grid */}
+                                  {/* Description */}
+                                  <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
+                                  {/* Damage Focus */}
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                        style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                        {m.d.element} DMG
+                                      </span>
+                                      {(m.d.dmgFocus || []).map((df, di) => (
+                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  {/* Buffs */}
+                                  {m.d.buffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.buffs.map((b, bi) => (
+                                          <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Debuffs */}
+                                  {m.d.debuffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.debuffs.map((db, di) => (
+                                          <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Base Stats */}
                                   <div className="mb-1.5">
                                     <div className="text-[9px] text-gray-400 font-medium mb-1">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
@@ -5383,7 +5321,6 @@ function WhisperingWishesInner() {
                                       <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
                                     </div>
                                   </div>
-
                                   {/* Main DPS: expanded damage stats */}
                                   {isMain && (
                                     <div className="mb-1.5">
@@ -5405,8 +5342,7 @@ function WhisperingWishesInner() {
                                       </div>
                                     </div>
                                   )}
-
-                                  {/* Build info — same style as Team Overview */}
+                                  {/* Build info */}
                                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
                                     {m.d.bestWeapon && (
                                       <div className="text-[9px]">
@@ -5415,10 +5351,10 @@ function WhisperingWishesInner() {
                                         {m.weapon && <span className="text-gray-500"> ({m.weapon.stat} {m.weapSubVal})</span>}
                                       </div>
                                     )}
-                                    {m.echoSetName && (
+                                    {m.d.bestEchoes && (
                                       <div className="text-[9px]">
                                         <span className="text-gray-500">Echoes: </span>
-                                        <span className="text-cyan-400/80">{m.echoSetName}</span>
+                                        <span className="text-cyan-400/80">{m.d.bestEchoes.join(' + ')}</span>
                                       </div>
                                     )}
                                   </div>
