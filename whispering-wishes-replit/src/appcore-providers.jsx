@@ -1409,7 +1409,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Nav — vertical icon buttons as cards */
       .desktop-layout > header nav {
-        flex-direction: column !important; gap: 4px !important; overflow-x: visible !important;
+        flex-direction: column !important; gap: 0.375rem !important; overflow-x: visible !important;
         padding-bottom: 0 !important; flex: 1; width: 100%;
       }
       .desktop-layout > header nav .kuro-tab {
