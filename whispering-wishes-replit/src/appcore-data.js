@@ -647,6 +647,65 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { baseHp: hp, baseAtk: atk, baseDef: def, maxEnergy });
 });
 
+// [SECTION:ROTATION_DATA] — Skill multipliers & rotation timing per character
+// totalMult: sum of ATK% multipliers in one full rotation (all skills used)
+// rotTime: full team rotation duration in seconds
+// onField: character's on-field time in seconds
+// Sources: Prydwen, WutheringLab, community rotation testing
+[
+  // 5★ Main DPS — high totalMult, long onField
+  ['Jiyan',         2850, 22, 16],  // Heavy ATK burst in Qingloong
+  ['Calcharo',      2600, 24, 17],  // Liberation → Death Messenger combo
+  ['Encore',        2400, 22, 15],  // Cosmos Rampage mode
+  ['Lingyang',      2200, 24, 16],  // Lion Form aerials
+  ['Jinhsi',        3200, 25, 12],  // Incarnation nuke (front-loaded burst)
+  ['Xiangli Yao',   2900, 25, 17],  // Mech form Liberation
+  ['Camellya',      3100, 26, 19],  // Budding + Blossom full rotation
+  ['Carlotta',      3400, 23, 14],  // Burst gunslinger, fast rotation
+  ['Brant',         2700, 24, 17],  // Normal ATK chains + self-heal
+  ['Cartethyia',    2500, 25, 16],  // HP scaling + Erosion
+  ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
+  ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
+  ['Luuk Herssen',  2400, 23, 16],  // Normal ATK chains
+  ['Aemeath',       2700, 24, 15],  // Res. Skill + Liberation
+  // 5★ Sub DPS — moderate totalMult, short onField
+  ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
+  ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
+  ['Changli',       2000, 22, 8],   // Fast Fusion combos
+  ['Zhezhi',        1400, 25, 5],   // Off-field painter
+  ['Roccia',        1200, 25, 7],   // Support sub DPS
+  ['Phoebe',        2200, 24, 10],  // Card skills burst
+  ['Cantarella',    1300, 25, 5],   // Off-field Coordinated
+  ['Zani',          2600, 24, 14],  // Res. Skill + Heavy ATK
+  ['Ciaccona',      1100, 25, 6],   // Aero support
+  ['Lupa',          2000, 24, 10],  // Liberation burst + team buff
+  ['Phrolova',      1800, 24, 8],   // Echo Skill focused
+  ['Iuno',          1500, 25, 8],   // Heavy ATK buff + heal
+  ['Qiuyuan',       1200, 25, 6],   // Echo Skill DMG buff
+  ['Chisa',         1100, 25, 6],   // DEF Shred support
+  ['Lynae',         1300, 25, 6],   // Tune Break support
+  ['Mornye',        800,  25, 5],   // Healer + Off-Tune
+  // 5★ Healers/Support — low totalMult
+  ['Verina',        600,  25, 4],   // Quick heal + ATK buff + deepen
+  ['Jianxin',       800,  25, 6],   // Shield + grouping
+  ['Shorekeeper',   500,  25, 3],   // Stellarealm crit buff + heal
+  // 4★
+  ['Aalto',         900,  25, 7],
+  ['Baizhi',        400,  25, 3],
+  ['Chixia',        1600, 24, 12],
+  ['Danjin',        1400, 24, 8],
+  ['Yangyang',      800,  25, 5],
+  ['Sanhua',        1000, 25, 5],   // Quick swap Basic ATK Amp
+  ['Taoqi',         600,  25, 5],
+  ['Yuanwu',        700,  25, 5],   // Coordinated ATK
+  ['Mortefi',       900,  25, 5],   // Heavy ATK buff + Coordinated
+  ['Youhu',         700,  25, 5],
+  ['Lumi',          1100, 25, 7],
+  ['Buling',        600,  25, 4],
+].forEach(([name, totalMult, rotTime, onField]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { totalMult, rotTime, onField });
+});
+
 // [SECTION:ECHO_SETS] — Sonata Effect set bonuses
 const ECHO_SETS = {
   'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 30 } },

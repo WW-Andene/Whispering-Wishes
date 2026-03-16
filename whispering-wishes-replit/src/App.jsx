@@ -5214,6 +5214,33 @@ function WhisperingWishesInner() {
                       // Final score
                       const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
+                      // ── Real DPS: skill multipliers × rotation timing ──
+                      // Sum total rotation damage from all team members
+                      let totalRotDmg = 0;
+                      const rotTime = mainDps.d.rotTime || 25;
+                      mems.forEach(m => {
+                        const mult = m.d.totalMult || 0;
+                        if (mult === 0) return;
+                        const mAtk = m.totalBaseAtk;
+                        // Each member's damage uses their own ATK but benefits from shared team buffs
+                        const isMain = m.name === mainDps.name;
+                        // Main DPS gets all the calculated bonuses; supports get base bonuses only
+                        if (isMain) {
+                          totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
+                        } else {
+                          // Support/sub DPS: own weapon substat + basic element bonus, reduced crit
+                          let sElem = 10; // 2pc echo bonus
+                          if (m.echoSet) {
+                            const ek2 = (m.d.element || '').toLowerCase() + 'Dmg';
+                            sElem += (m.echoSet.p2val?.[ek2] || 0) + (m.echoSet.p5val?.[ek2] || 0);
+                          }
+                          const sAtk = mAtk * 1.15; // ~15% ATK from substats
+                          const sCrit = 1 + (0.05) * (0.5); // minimal crit contribution
+                          totalRotDmg += sAtk * (mult / 100) * sCrit * (1 + sElem / 100) * defMult * resMult;
+                        }
+                      });
+                      const realDps = Math.round(totalRotDmg / rotTime);
+
                       // Synergy
                       let syn = 0;
                       if (mems.some(m => m.d.role === 'Healer')) syn += 25;
@@ -5228,12 +5255,12 @@ function WhisperingWishesInner() {
                       if (mems.length < 3) warnings.push('Incomplete team');
                       const els = new Set(mems.map(m => m.d.element));
                       if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
-                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, synergy: syn, warnings };
+                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, synergy: syn, warnings };
                     };
 
                     const stats = calcTeamStats(teamSlots);
                     if (!stats) return null;
-                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, synergy, warnings } = stats;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, realDps, synergy, warnings } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
                     return (
@@ -5388,12 +5415,17 @@ function WhisperingWishesInner() {
                               </div>
                             )}
 
-                            {/* Damage Score + Synergy — single row */}
+                            {/* Damage Score: Raw + Full DPS — single row */}
                             <div className="flex gap-2">
                               <div className="flex-1 p-2.5 rounded-lg border border-white/8 text-center" style={{ background: 'var(--bg-btn)' }}>
-                                <div className="text-[9px] text-gray-400 font-medium">Damage Score</div>
+                                <div className="text-[9px] text-gray-400 font-medium">Raw Power</div>
                                 <div className="text-lg font-bold text-yellow-400">{score.toLocaleString()}</div>
-                                <div className="text-[8px] text-gray-500">ATK×crit×elem×deepen</div>
+                                <div className="text-[8px] text-gray-500">stat multipliers</div>
+                              </div>
+                              <div className="flex-1 p-2.5 rounded-lg border border-cyan-500/20 text-center" style={{ background: 'rgba(6,182,212,0.03)' }}>
+                                <div className="text-[9px] text-cyan-400 font-medium">Full DPS</div>
+                                <div className="text-lg font-bold text-cyan-400">{realDps.toLocaleString()}</div>
+                                <div className="text-[8px] text-gray-500">dmg/sec with rotation</div>
                               </div>
                               <div className="w-20 p-2.5 rounded-lg border border-white/8 text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-btn)' }}>
                                 <div className="text-[9px] text-gray-400 font-medium">Synergy</div>
@@ -5423,6 +5455,7 @@ function WhisperingWishesInner() {
                         })).filter(e => e.stats);
                         if (!computed.length) return null;
                         const maxS = Math.max(...computed.map(e => e.stats.score), 1);
+                        const maxDps = Math.max(...computed.map(e => e.stats.realDps), 1);
                         return (
                         <Card>
                           <CardHeader action={
@@ -5436,7 +5469,8 @@ function WhisperingWishesInner() {
                             <div className="space-y-3">
                               {computed.map((entry) => {
                                 const s = entry.stats;
-                                const pct = maxS > 0 ? (s.score / maxS) * 100 : 0;
+                                const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
+                                const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
                                 return (
                                   <div key={entry.id} className="p-2.5 rounded-lg border border-white/8 relative" style={{ background: 'var(--bg-btn)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
@@ -5459,23 +5493,42 @@ function WhisperingWishesInner() {
                                       })}
                                     </div>
 
-                                    {/* Bar */}
-                                    <div className="h-7 rounded-lg overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
-                                      <div className="h-full rounded-lg transition-all duration-700"
-                                        style={{ width: Math.max(pct, 12) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-xs font-bold text-yellow-400">{s.score.toLocaleString()}</span>
+                                    {/* Raw bar */}
+                                    <div className="mb-1">
+                                      <div className="flex items-center gap-2 mb-0.5">
+                                        <span className="text-[8px] text-gray-500 w-8">Raw</span>
+                                        <div className="flex-1 h-5 rounded-md overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                          <div className="h-full rounded-md transition-all duration-700"
+                                            style={{ width: Math.max(rawPct, 8) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
+                                          <div className="absolute inset-0 flex items-center justify-center">
+                                            <span className="text-[10px] font-bold text-yellow-400">{s.score.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Full DPS bar */}
+                                    <div className="mb-1.5">
+                                      <div className="flex items-center gap-2 mb-0.5">
+                                        <span className="text-[8px] text-gray-500 w-8">Full</span>
+                                        <div className="flex-1 h-5 rounded-md overflow-hidden border border-cyan-500/10 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                          <div className="h-full rounded-md transition-all duration-700"
+                                            style={{ width: Math.max(fullPct, 8) + '%', background: 'linear-gradient(90deg, rgba(6,182,212,0.15), rgba(6,182,212,0.5))' }} />
+                                          <div className="absolute inset-0 flex items-center justify-center">
+                                            <span className="text-[10px] font-bold text-cyan-400">{s.realDps.toLocaleString()} /s</span>
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
 
                                     {/* Quick stats */}
-                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-white/5">
                                       <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white">{s.mainDps.name}</span></div>
                                       <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400/80">{s.effAtk}</span></div>
                                       <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400/80">{s.critRate.toFixed(0)}%</span></div>
                                       <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400/80">{s.critDmg.toFixed(0)}%</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300">{s.mainDps.d.rotTime || 25}s</span></div>
                                       {s.defShred > 0 && <div className="text-[9px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400/80">{s.defShred}%</span></div>}
-                                      {s.resShred > 0 && <div className="text-[9px]"><span className="text-gray-500">RES↓ </span><span className="text-red-400/80">{s.resShred}%</span></div>}
                                     </div>
                                   </div>
                                 );
