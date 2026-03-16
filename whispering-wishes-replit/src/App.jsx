@@ -5853,22 +5853,22 @@ function WhisperingWishesInner() {
                                     <div className="mb-2">
                                       <div className="flex items-baseline justify-between mb-1">
                                         <span className="text-gray-400 text-[10px]">Raw Score</span>
-                                        <span className="text-yellow-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(234,179,8,0.6)' }}>{s.score.toLocaleString()}</span>
+                                        <span className="text-emerald-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(34,197,94,0.6)' }}>{s.score.toLocaleString()}</span>
                                       </div>
                                       <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
                                         <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
                                           style={{
-                                            width: Math.max(rawPct, 6) + '%',
-                                            background: 'linear-gradient(90deg, #edaf1840, #edaf1820)',
-                                            border: '1px solid #edaf1890',
+                                            width: Math.max(rawPct * 0.85, 6) + '%',
+                                            background: 'linear-gradient(90deg, #22c55e40, #22c55e20)',
+                                            border: '1px solid #22c55e90',
                                             borderLeft: 'none',
-                                            boxShadow: '0 0 12px #edaf1850, inset 0 0 15px #edaf1830'
+                                            boxShadow: '0 0 12px #22c55e50, inset 0 0 15px #22c55e30'
                                           }} />
                                         <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
                                           style={{
                                             left: 0,
-                                            background: '#edaf18',
-                                            boxShadow: '0 0 8px #edaf18, 0 0 16px #edaf1880'
+                                            background: '#22c55e',
+                                            boxShadow: '0 0 8px #22c55e, 0 0 16px #22c55e80'
                                           }} />
                                       </div>
                                     </div>
@@ -5882,7 +5882,7 @@ function WhisperingWishesInner() {
                                       <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
                                         <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
                                           style={{
-                                            width: Math.max(fullPct, 6) + '%',
+                                            width: Math.max(fullPct * 0.85, 6) + '%',
                                             background: 'linear-gradient(90deg, #06b6d440, #06b6d420)',
                                             border: '1px solid #06b6d490',
                                             borderLeft: 'none',
