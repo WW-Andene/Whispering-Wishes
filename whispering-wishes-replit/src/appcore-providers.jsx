@@ -1548,6 +1548,20 @@ const KuroStyles = memo(({ oledMode }) => (
         padding-bottom: 0.5rem;
       }
 
+      /* Banner History — expand on desktop */
+      .desktop-layout .kuro-scroll.banner-history-scroll {
+        max-height: none !important;
+        overflow-y: visible !important;
+      }
+
+      /* Standard banners — use banner-grid like featured */
+      .desktop-layout .standard-banner-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+        align-items: start !important;
+      }
+
       /* ── DESKTOP POLISH ──────────────────────────────────────────── */
 
       /* Smooth tab transitions on sidebar */

@@ -3139,7 +3139,7 @@ function WhisperingWishesInner() {
             {trackerCategory === 'standard' && (
               <div className="space-y-3 content-layer">
                 <div className="text-gray-300 text-xs uppercase tracking-wider content-layer">Permanent Banners</div>
-                
+                <div className="standard-banner-grid">
                 {/* Standard Resonator Banner */}
                 <StandardBannerSection
                   bannerImage={activeBanners.standardCharBannerImage}
@@ -3155,6 +3155,7 @@ function WhisperingWishesInner() {
                   items={activeBanners.standardWeapons} itemKey="name"
                   profileData={state.profile.standardWeap} visualSettings={visualSettings}
                 />
+                </div>
               </div>
             )}
 
@@ -3162,7 +3163,7 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader><Archive size={14} className="text-purple-400" /> Banner History</CardHeader>
               <CardBody>
-                <div className="max-h-64 overflow-y-auto kuro-scroll space-y-1.5">
+                <div className="max-h-64 overflow-y-auto kuro-scroll banner-history-scroll space-y-1.5">
                   {BANNER_HISTORY.map((b, i) => (
                     <div key={`bh-${b.version}-${b.phase}`} className="p-2 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors">
                       <div className="flex justify-between items-center mb-1">
