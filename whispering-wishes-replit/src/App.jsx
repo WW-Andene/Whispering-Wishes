@@ -5494,7 +5494,7 @@ function WhisperingWishesInner() {
                               return (
                                 <div key={m.name} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
                                   {/* Character header */}
-                                  <div className="flex items-center gap-2 mb-1.5">
+                                  <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
                                       style={{ borderColor: getElementColor(m.d.element) }}>
                                       {collectionImages[m.name] ? (
@@ -5508,138 +5508,166 @@ function WhisperingWishesInner() {
                                         <span className="text-white text-xs font-semibold truncate">{m.name}</span>
                                         <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                       </div>
-                                      <div className="flex items-center gap-1 mt-0.5">
-                                        <span className={`text-[8px] px-1 py-px rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
-                                        <span className="text-[8px] px-1 py-px rounded font-medium"
+                                      <div className="flex items-center gap-1.5 mt-0.5">
+                                        <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                           {m.d.element}
                                         </span>
-                                        <span className="text-[8px] text-gray-500">{m.d.weapon}</span>
+                                        <span className="text-[9px] text-gray-400">{m.d.weapon}</span>
                                       </div>
                                     </div>
                                   </div>
-                                  {/* 2-column: Left=info Right=equipment */}
-                                  <div className="flex gap-2">
-                                    {/* LEFT: tags + stats */}
-                                    <div className="flex-1 min-w-0 space-y-1">
-                                      {/* Damage Focus + Buffs + Debuffs — inline */}
-                                      <div className="flex flex-wrap gap-1">
-                                        <span className="text-[7px] px-1 py-px rounded font-medium"
-                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                                          {m.d.element} DMG
-                                        </span>
-                                        {(m.d.dmgFocus || []).map((df, di) => (
-                                          <span key={di} className="text-[7px] px-1 py-px rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
-                                        ))}
-                                        {(m.d.buffs || []).map((b, bi) => (
-                                          <span key={'b'+bi} className="text-[7px] px-1 py-px rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
-                                        ))}
-                                        {(m.d.debuffs || []).map((db, di) => (
-                                          <span key={'d'+di} className="text-[7px] px-1 py-px rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
-                                        ))}
-                                      </div>
-                                      {/* Base Stats — single line */}
-                                      <div className="flex flex-wrap gap-1">
-                                        <span className="text-[7px] px-1 py-px rounded bg-white/5 border border-white/8 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                        <span className="text-[7px] px-1 py-px rounded bg-white/5 border border-white/8 text-gray-300">ATK {m.charAtk}</span>
-                                        <span className="text-[7px] px-1 py-px rounded bg-white/5 border border-white/8 text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
-                                        <span className="text-[7px] px-1 py-px rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+W {m.weapAtk}</span>
-                                      </div>
-                                      {/* Main DPS: damage stats */}
-                                      {isMain && (
-                                        <div className="flex flex-wrap gap-1">
-                                          <span className="text-[7px] px-1 py-px rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">ATK {effAtk.toLocaleString()}</span>
-                                          <span className="text-[7px] px-1 py-px rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
-                                          <span className="text-[7px] px-1 py-px rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
-                                          <span className="text-[7px] px-1 py-px rounded font-medium"
-                                            style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                                            {m.d.element} +{elemDmg.toFixed(0)}%
-                                          </span>
-                                          {skillDmg > 0 && <span className="text-[7px] px-1 py-px rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
-                                          {deepen > 0 && <span className="text-[7px] px-1 py-px rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deep +{deepen.toFixed(0)}%</span>}
-                                          {defIgnore > 0 && <span className="text-[7px] px-1 py-px rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ign {defIgnore}%</span>}
-                                          {defShred > 0 && <span className="text-[7px] px-1 py-px rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shd {defShred}%</span>}
-                                          {resShred > 0 && <span className="text-[7px] px-1 py-px rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shd {resShred}%</span>}
-                                        </div>
-                                      )}
-                                      {/* Weapon info line */}
-                                      {(() => {
-                                        const eqKey = state.activeTeamIndex + ':' + m.name;
-                                        const eq = teamEquipment[eqKey] || {};
-                                        const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
-                                        return equippedWeap ? (
-                                          <div className="text-[8px]">
-                                            <span className="text-gray-500">Weapon: </span>
-                                            <span className="text-yellow-400/80 font-medium">{eq.weapon}</span>
-                                            <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
-                                          </div>
-                                        ) : m.d.bestWeapon ? (
-                                          <div className="text-[8px]">
-                                            <span className="text-gray-500">Rec: </span>
-                                            <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
-                                          </div>
-                                        ) : null;
-                                      })()}
+                                  {/* 2-col: Left=info, Right=equipment */}
+                                  <div className="flex gap-3">
+                                    {/* LEFT: description + tags + stats (unchanged) */}
+                                    <div className="flex-1 min-w-0">
+                                  {/* Description */}
+                                  <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
+                                  {/* Damage Focus */}
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                        style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                        {m.d.element} DMG
+                                      </span>
+                                      {(m.d.dmgFocus || []).map((df, di) => (
+                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                                      ))}
                                     </div>
+                                  </div>
+                                  {/* Buffs */}
+                                  {m.d.buffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.buffs.map((b, bi) => (
+                                          <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Debuffs */}
+                                  {m.d.debuffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.debuffs.map((db, di) => (
+                                          <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Base Stats */}
+                                  <div className="mb-1.5">
+                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Base Stats (Lv.90)</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">ATK {m.charAtk}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/8 text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
+                                    </div>
+                                  </div>
+                                  {/* Main DPS: expanded damage stats */}
+                                  {isMain && (
+                                    <div className="mb-1.5">
+                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Stats (with team buffs)</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded font-medium"
+                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                          {m.d.element} +{elemDmg.toFixed(0)}%
+                                        </span>
+                                        {skillDmg > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
+                                        {atkPct > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
+                                        {deepen > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
+                                        {defShred > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {defShred}%</span>}
+                                        {resShred > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {resShred}%</span>}
+                                        {defIgnore > 0 && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
+                                      </div>
+                                    </div>
+                                  )}
+                                    </div>{/* end LEFT */}
                                     {/* RIGHT: equipment grid */}
-                                    {(() => {
-                                      const eqKey = state.activeTeamIndex + ':' + m.name;
-                                      const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
-                                      const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
-                                      const slotSz = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
-                                      return (
-                                        <div className="flex-shrink-0" style={{ width: '140px' }}>
-                                          {/* 3×2 grid: weapon + 5 echoes */}
-                                          <div className="grid grid-cols-3 gap-1">
-                                            <div
-                                              className={`${slotSz} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
-                                              onClick={() => {
-                                                setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
-                                                setWeaponSearch('');
-                                                setWeaponSelectorOpen(true);
-                                                haptic.light();
-                                              }}
-                                              title={eq.weapon || 'Select weapon'}
+                                    <div className="flex-shrink-0">
+                                  {/* Equipment slots: 1 weapon + 5 echoes */}
+                                  {(() => {
+                                    const eqKey = state.activeTeamIndex + ':' + m.name;
+                                    const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                                    const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
+                                    const slotStyle = 'w-11 h-11 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
+                                    return (
+                                      <div>
+                                        <div className="text-[9px] text-gray-400 font-medium mb-1.5">Equipment</div>
+                                        <div className="grid grid-cols-3 gap-1">
+                                          {/* Weapon slot */}
+                                          <div
+                                            className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                            onClick={() => {
+                                              setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
+                                              setWeaponSearch('');
+                                              setWeaponSelectorOpen(true);
+                                              haptic.light();
+                                            }}
+                                            title={eq.weapon || 'Select weapon'}
+                                          >
+                                            {equippedWeap && collectionImages[eq.weapon] ? (
+                                              <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                            ) : equippedWeap ? (
+                                              <>
+                                                <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                                <span className="text-[7px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Sword size={14} className="text-gray-500" />
+                                                <span className="text-[7px] text-gray-500">Weapon</span>
+                                              </>
+                                            )}
+                                          </div>
+                                          {/* 5 Echo slots (placeholder) */}
+                                          {[0, 1, 2, 3, 4].map(ei => (
+                                            <div key={ei}
+                                              className={`${slotStyle} border-dashed border-white/10 opacity-50 cursor-default`}
+                                              title={'Echo slot ' + (ei + 1) + ' — coming soon'}
                                             >
-                                              {equippedWeap && collectionImages[eq.weapon] ? (
-                                                <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
-                                              ) : equippedWeap ? (
-                                                <Sword size={12} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
-                                              ) : (
-                                                <Sword size={12} className="text-gray-500" />
-                                              )}
+                                              <Diamond size={12} className="text-gray-600" />
+                                              <span className="text-[7px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
                                             </div>
-                                            {[0, 1, 2, 3, 4].map(ei => (
-                                              <div key={ei}
-                                                className={`${slotSz} border-dashed border-white/10 opacity-50 cursor-default`}
-                                                title={'Echo ' + (ei + 1) + ' — coming soon'}
-                                              >
-                                                <Diamond size={10} className="text-gray-600" />
-                                                <span className="text-[6px] text-gray-600">{ei === 0 ? '4C' : ei < 3 ? '3C' : '1C'}</span>
-                                              </div>
-                                            ))}
+                                          ))}
+                                        </div>
+                                        {/* Sequence Level (S0-S6) + Echo Set selector */}
+                                        <div className="flex gap-2 mt-2">
+                                          {/* S0-S6 toggle */}
+                                          <div className="flex-1">
+                                            <div className="text-[8px] text-gray-500 mb-1">Sequence</div>
+                                            <div className="flex gap-0.5">
+                                              {[0,1,2,3,4,5,6].map(s => {
+                                                const isActive = (eq.sequence || 0) === s;
+                                                return (
+                                                  <button key={s}
+                                                    className={`flex-1 py-1 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/8 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    onClick={() => {
+                                                      setTeamEquipment(prev => {
+                                                        const n = { ...prev };
+                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                        return n;
+                                                      });
+                                                      haptic.light();
+                                                    }}
+                                                  >S{s}</button>
+                                                );
+                                              })}
+                                            </div>
                                           </div>
-                                          {/* S0-S6 compact toggle */}
-                                          <div className="flex gap-px mt-1.5">
-                                            {[0,1,2,3,4,5,6].map(s => {
-                                              const isActive = (eq.sequence || 0) === s;
-                                              return (
-                                                <button key={s}
-                                                  className={`flex-1 py-0.5 rounded text-[7px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/8 text-gray-600 hover:text-gray-400'}`}
-                                                  onClick={() => {
-                                                    setTeamEquipment(prev => {
-                                                      const n = { ...prev };
-                                                      n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                      try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                                      return n;
-                                                    });
-                                                    haptic.light();
-                                                  }}
-                                                >{s}</button>
-                                              );
-                                            })}
-                                          </div>
-                                          {/* Sonata set compact */}
+                                        </div>
+                                        {/* Echo Set selector */}
+                                        <div className="mt-1.5">
+                                          <div className="text-[8px] text-gray-500 mb-1">Sonata Set</div>
                                           <select
                                             value={eq.echoSet || ''}
                                             onChange={e => {
@@ -5651,18 +5679,44 @@ function WhisperingWishesInner() {
                                               });
                                               haptic.light();
                                             }}
-                                            className="w-full text-[7px] text-gray-400 rounded border border-white/10 px-1 py-0.5 mt-1 focus:border-cyan-500/50 focus:outline-none"
+                                            className="w-full text-[9px] text-gray-300 rounded-lg border border-white/10 px-2 py-1.5 focus:border-cyan-500/50 focus:outline-none transition-all"
                                             style={{ background: 'var(--bg-btn)' }}
                                           >
-                                            <option value="">Auto</option>
+                                            <option value="">Auto (from recommended)</option>
                                             {Object.keys(ECHO_SETS).map(setName => (
-                                              <option key={setName} value={setName}>{setName}</option>
+                                              <option key={setName} value={setName}>{setName} — {ECHO_SETS[setName].p2}</option>
                                             ))}
                                           </select>
                                         </div>
-                                      );
-                                    })()}
-                                  </div>
+                                        {/* Show equipped weapon stats */}
+                                        {equippedWeap && (
+                                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                                            <div className="text-[9px]">
+                                              <span className="text-gray-500">Weapon: </span>
+                                              <span className="text-yellow-400/80">{eq.weapon}</span>
+                                              <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
+                                            </div>
+                                          </div>
+                                        )}
+                                        {!equippedWeap && m.d.bestWeapon && (
+                                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                                            <div className="text-[9px]">
+                                              <span className="text-gray-500">Recommended: </span>
+                                              <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
+                                            </div>
+                                            {m.d.bestEchoes && (
+                                              <div className="text-[9px]">
+                                                <span className="text-gray-500">Echoes: </span>
+                                                <span className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                    </div>{/* end RIGHT */}
+                                  </div>{/* end flex row */}
                                 </div>
                               );
                             })}
