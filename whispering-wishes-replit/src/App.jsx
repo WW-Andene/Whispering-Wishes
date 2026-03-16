@@ -752,6 +752,7 @@ function WhisperingWishesInner() {
   const [teamBuffFilter, setTeamBuffFilter] = useState('all');
   const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
   const [teamDmgFilter, setTeamDmgFilter] = useState('all');
+  const [teamCompareEntries, setTeamCompareEntries] = useState([]); // [{slots: [name,name,name], damageScore, members, mainDpsName}]
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -4937,13 +4938,75 @@ function WhisperingWishesInner() {
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <button
-                        onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
-                        className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                        style={{ background: 'var(--bg-btn)' }}
-                      >
-                        Clear
-                      </button>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
+                            if (!slots.some(s => s)) return;
+                            if (teamCompareEntries.length >= 5) return;
+                            // Snapshot current team into compare
+                            const members = slots.filter(s => s).map(name => {
+                              const d = CHARACTER_DATA[name];
+                              if (!d) return null;
+                              const weapon = WEAPON_DATA[d.bestWeapon] || null;
+                              const charAtk = d.baseAtk || 0;
+                              const weapAtk = weapon ? weapon.baseAtk : 0;
+                              let echoSetName = '';
+                              if (d.bestEchoes) {
+                                for (const e of d.bestEchoes) {
+                                  const setKey = Object.keys(ECHO_SETS).find(k => e.includes(k));
+                                  if (setKey) { echoSetName = setKey; break; }
+                                }
+                              }
+                              return { name, element: d.element, rarity: d.rarity, role: d.role, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, weapStat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', bestWeapon: d.bestWeapon || '', buffs: d.buffs || [], debuffs: d.debuffs || [], dmgFocus: d.dmgFocus || [], baseHp: d.baseHp || 0, baseDef: d.baseDef || 0 };
+                            }).filter(Boolean);
+                            if (!members.length) return;
+                            // Calculate DPS
+                            const mainDps = members.find(m => m.role === 'Main DPS') || members[0];
+                            let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, deepen = 0;
+                            if (mainDps.weapStat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
+                            if (mainDps.weapStat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
+                            if (mainDps.weapStat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
+                            const mainEcho = mainDps.echoSetName ? ECHO_SETS[mainDps.echoSetName] : null;
+                            if (mainEcho) {
+                              const p2 = mainEcho.p2val || {}, p5 = mainEcho.p5val || {};
+                              if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
+                              if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
+                              const ek = (mainDps.element || '').toLowerCase() + 'Dmg';
+                              if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
+                            }
+                            members.forEach(m => {
+                              (m.buffs || []).forEach(b => {
+                                if (b.includes('ATK Buff') || b.includes('ATK buff')) atkPct += 15;
+                                if (b.includes('Crit Buff') || b.includes('Crit DMG Amp')) cd += 15;
+                                if (b.includes('DMG Deepen') || b.includes('DMG Buff')) deepen += 15;
+                                if (b.includes('DMG Amp') || b.includes('Aero Buff') || b.includes('Havoc DMG') || b.includes('Spectro DMG')) elemDmg += 15;
+                                if (b.includes('Basic ATK Amp') || b.includes('Heavy ATK Buff') || b.includes('Res. Skill DMG')) deepen += 12;
+                              });
+                              if (m.role === 'Healer' && m.echoSetName === 'Rejuvenating Glow') atkPct += 15;
+                              if (m.name !== mainDps.name && m.echoSetName === 'Moonlit Clouds') atkPct += 22.5;
+                            });
+                            const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
+                            const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
+                            const dmgMult = (1 + elemDmg / 100) * (1 + deepen / 100);
+                            const dpsScore = Math.round(effAtk * avgCrit * dmgMult);
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), members, mainDpsName: mainDps.name, damageScore: dpsScore, effAtk, critRate: cr, critDmg: cd, elemDmg, deepen }]);
+                            haptic.success();
+                          }}
+                          disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
+                          className="px-2 py-1 rounded-lg text-[9px] text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ background: 'var(--bg-btn)' }}
+                        >
+                          + Compare
+                        </button>
+                        <button
+                          onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                          className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                          style={{ background: 'var(--bg-btn)' }}
+                        >
+                          Clear
+                        </button>
+                      </div>
                     }>
                       <Users size={14} className="text-yellow-400" /> Team Builder
                     </CardHeader>
@@ -5232,14 +5295,7 @@ function WhisperingWishesInner() {
                     const { members, mainDps, allBuffs, allDebuffs, effectiveAtk, critRate, critDmg, elemDmgBonus, dmgDeepen, atkPctBonus, avgCritMult, damageScore, synergy, warnings } = activeStats;
                     const synergyColor = synergy >= 75 ? '#48b088' : synergy >= 50 ? '#e8a94a' : '#e05468';
                     const synergyLabel = synergy >= 75 ? 'Excellent' : synergy >= 50 ? 'Good' : 'Needs work';
-
-                    // Compute stats for all 5 teams for comparison
-                    const allTeamStats = state.teams.map((team, idx) => {
-                      const stats = calcTeamStats(team.slots);
-                      return { idx, name: team.name, hasChars: team.slots.some(s => s), stats };
-                    });
-                    const maxScore = Math.max(...allTeamStats.filter(t => t.stats).map(t => t.stats.damageScore), 1);
-                    const teamColors = ['#e8a94a', '#a78bfa', '#34d399', '#f472b6', '#60a5fa'];
+                    const barColors = ['#e8a94a', '#a78bfa', '#34d399', '#f472b6', '#60a5fa'];
 
                     return (
                       <>
@@ -5364,55 +5420,72 @@ function WhisperingWishesInner() {
                         </CardBody>
                       </Card>
 
-                      {/* 5-Team Comparison Bar Chart */}
-                      {allTeamStats.filter(t => t.stats).length >= 2 && (
+                      {/* Team Comparison — populated via the "+ Compare" button */}
+                      {teamCompareEntries.length > 0 && (() => {
+                        const maxCmpScore = Math.max(...teamCompareEntries.map(e => e.damageScore), 1);
+                        return (
                         <Card>
-                          <CardHeader><BarChart3 size={14} className="text-violet-400" /> Team Comparison</CardHeader>
+                          <CardHeader action={
+                            <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
+                              className="text-red-400 text-[10px] hover:text-red-300 transition-colors">Clear All</button>
+                          }><BarChart3 size={14} className="text-violet-400" /> DPS Comparison</CardHeader>
                           <CardBody>
-                            <div className="space-y-2.5">
-                              {allTeamStats.map((t) => {
-                                const isActive = t.idx === state.activeTeamIndex;
-                                const score = t.stats ? t.stats.damageScore : 0;
-                                const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
-                                const dps = t.stats?.mainDps;
-                                const memberNames = t.stats ? t.stats.members.map(m => m.name).join(' + ') : '';
-                                const synergyVal = t.stats ? t.stats.synergy : 0;
-                                const sc = synergyVal >= 75 ? '#48b088' : synergyVal >= 50 ? '#e8a94a' : '#e05468';
+                            <div className="space-y-4">
+                              {teamCompareEntries.map((entry, idx) => {
+                                const pct = maxCmpScore > 0 ? (entry.damageScore / maxCmpScore) * 100 : 0;
+                                const color = barColors[idx % barColors.length];
                                 return (
-                                  <div key={t.idx} className={`p-2 rounded-lg border transition-all cursor-pointer ${isActive ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-white/6 hover:border-white/12'}`}
-                                    style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                                    onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: t.idx }); haptic.light(); }}>
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                      <span className="text-[10px] font-bold" style={{ color: teamColors[t.idx] }}>{t.name}</span>
-                                      {isActive && <span className="text-[7px] px-1 py-0.5 rounded bg-yellow-500/15 border border-yellow-500/30 text-yellow-400">Active</span>}
-                                      {t.stats && <span className="text-[8px] text-gray-500 ml-auto">{memberNames}</span>}
+                                  <div key={entry.id} className="relative">
+                                    {/* Remove button */}
+                                    <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
+                                      className="absolute top-0 right-0 z-10 w-5 h-5 rounded-full bg-red-500/60 text-white flex items-center justify-center text-[10px] hover:bg-red-500 transition-colors">
+                                      <X size={10} />
+                                    </button>
+
+                                    {/* Character cards row */}
+                                    <div className="flex gap-1.5 mb-1.5">
+                                      {entry.members.map((m, mi) => (
+                                        <div key={mi} className="flex-1 p-1.5 rounded-lg border text-center"
+                                          style={{
+                                            borderColor: m.rarity === 5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)',
+                                            background: m.rarity === 5 ? 'rgba(234,179,8,0.05)' : 'rgba(168,85,247,0.05)',
+                                          }}>
+                                          <div className="text-[9px] font-bold truncate" style={{ color: getElementColor(m.element) }}>{m.name}</div>
+                                          <div className="text-[7px] text-gray-500">{m.role}</div>
+                                        </div>
+                                      ))}
                                     </div>
-                                    {t.stats ? (
-                                      <>
-                                        <div className="h-6 rounded-md overflow-hidden bg-black/30 relative mb-1.5">
-                                          <div className="h-full rounded-md transition-all duration-500 flex items-center px-2"
-                                            style={{ width: pct + '%', background: `linear-gradient(90deg, ${teamColors[t.idx]}33, ${teamColors[t.idx]}88)`, minWidth: '40px' }}>
-                                            <span className="text-[10px] font-bold text-white drop-shadow">{score.toLocaleString()}</span>
-                                          </div>
-                                        </div>
-                                        <div className="flex gap-2 text-[8px]">
-                                          <span className="text-gray-400">DPS: <span className="text-white font-medium">{dps?.name}</span></span>
-                                          <span className="text-gray-400">ATK: <span className="text-yellow-400">{t.stats.effectiveAtk}</span></span>
-                                          <span className="text-gray-400">CR: <span className="text-cyan-400">{t.stats.critRate.toFixed(0)}%</span></span>
-                                          <span className="text-gray-400">CD: <span className="text-cyan-400">{t.stats.critDmg.toFixed(0)}%</span></span>
-                                          <span style={{ color: sc }}>S{synergyVal}</span>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <div className="text-[9px] text-gray-500 py-1">Empty — tap to select</div>
-                                    )}
+
+                                    {/* Bar */}
+                                    <div className="h-8 rounded-lg overflow-hidden bg-black/30 relative">
+                                      <div className="h-full rounded-lg transition-all duration-700 flex items-center justify-end px-3"
+                                        style={{ width: Math.max(pct, 15) + '%', background: `linear-gradient(90deg, ${color}22, ${color}99)`, borderRight: `3px solid ${color}` }}>
+                                      </div>
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-[11px] font-bold text-white drop-shadow-lg">{entry.damageScore.toLocaleString()}</span>
+                                      </div>
+                                    </div>
+
+                                    {/* DPS value + quick stats */}
+                                    <div className="flex items-center gap-3 mt-1 text-[8px] text-gray-400">
+                                      <span>DPS: <span className="text-white font-medium">{entry.mainDpsName}</span></span>
+                                      <span>ATK <span className="text-yellow-400">{entry.effAtk}</span></span>
+                                      <span>CR <span className="text-cyan-400">{entry.critRate.toFixed(0)}%</span></span>
+                                      <span>CD <span className="text-cyan-400">{entry.critDmg.toFixed(0)}%</span></span>
+                                    </div>
                                   </div>
                                 );
                               })}
                             </div>
+                            {teamCompareEntries.length < 5 && (
+                              <div className="mt-3 text-center text-[9px] text-gray-500">
+                                Tap <span className="text-yellow-400 font-medium">+ Compare</span> in Team Builder to add more ({5 - teamCompareEntries.length} slots left)
+                              </div>
+                            )}
                           </CardBody>
                         </Card>
-                      )}
+                        );
+                      })()}
                       </>
                     );
                   })()}
