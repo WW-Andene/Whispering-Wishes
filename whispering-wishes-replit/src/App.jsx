@@ -5519,7 +5519,7 @@ function WhisperingWishesInner() {
                                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
                                   {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
+                                    <div className="w-8 h-8 rounded-lg overflow-hidden border-2 flex-shrink-0"
                                       style={{ borderColor: getElementColor(m.d.element), boxShadow: `0 0 8px ${getElementColor(m.d.element)}40` }}>
                                       {collectionImages[m.name] ? (
                                         <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
@@ -5542,12 +5542,23 @@ function WhisperingWishesInner() {
                                       </div>
                                     </div>
                                   </div>
-                                  {/* 2-col: Left=info, Right=equipment */}
+                                  {/* 2-col: Left=desc+buffs+focus, Right=stats+equipment */}
                                   <div className="flex flex-col md:flex-row gap-3">
-                                    {/* LEFT: description + tags + stats (unchanged) */}
+                                    {/* LEFT: description + buffs + damage focus */}
                                     <div className="flex-1 min-w-0">
                                   {/* Description */}
                                   <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
+                                  {/* Buffs */}
+                                  {m.d.buffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="kuro-label">Buffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.buffs.map((b, bi) => (
+                                          <span key={bi} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                   {/* Damage Focus */}
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Damage Focus</div>
@@ -5561,17 +5572,6 @@ function WhisperingWishesInner() {
                                       ))}
                                     </div>
                                   </div>
-                                  {/* Buffs */}
-                                  {m.d.buffs?.length > 0 && (
-                                    <div className="mb-1.5">
-                                      <div className="kuro-label">Buffs</div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {m.d.buffs.map((b, bi) => (
-                                          <span key={bi} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
                                   {/* Debuffs */}
                                   {m.d.debuffs?.length > 0 && (
                                     <div className="mb-1.5">
@@ -5583,16 +5583,6 @@ function WhisperingWishesInner() {
                                       </div>
                                     </div>
                                   )}
-                                  {/* Base Stats */}
-                                  <div className="mb-1.5">
-                                    <div className="kuro-label">Base Stats (Lv.90)</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
-                                    </div>
-                                  </div>
                                   {/* Main DPS: expanded damage stats */}
                                   {isMain && (
                                     <div className="mb-1.5">
@@ -5615,8 +5605,18 @@ function WhisperingWishesInner() {
                                     </div>
                                   )}
                                     </div>{/* end LEFT */}
-                                    {/* RIGHT: equipment grid */}
+                                    {/* RIGHT: base stats + equipment grid */}
                                     <div className="flex-shrink-0">
+                                  {/* Base Stats */}
+                                  <div className="mb-1.5">
+                                    <div className="kuro-label">Base Stats (Lv.90)</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
+                                    </div>
+                                  </div>
                                   {/* Equipment slots: 1 weapon + 5 echoes */}
                                   {(() => {
                                     const eqKey = state.activeTeamIndex + ':' + m.name;
