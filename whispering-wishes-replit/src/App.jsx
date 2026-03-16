@@ -3173,7 +3173,7 @@ function WhisperingWishesInner() {
               <CardBody>
                 <div className="space-y-2">
                   {BANNER_HISTORY.map((b, i) => (
-                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-white/8 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-white/10 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
@@ -5517,7 +5517,7 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className="p-2.5 rounded-lg border border-white/10" style={{ background: 'var(--bg-btn)' }}>
+                                <div key={m.name} className="p-2.5 rounded-lg border border-white/10 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                                   {/* Character header */}
                                   <div className="flex items-center gap-2 mb-2">
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
@@ -5551,7 +5551,7 @@ function WhisperingWishesInner() {
                                   <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
                                   {/* Damage Focus */}
                                   <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
+                                    <div className="kuro-label">Damage Focus</div>
                                     <div className="flex flex-wrap gap-1">
                                       <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
                                         style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
@@ -5565,7 +5565,7 @@ function WhisperingWishesInner() {
                                   {/* Buffs */}
                                   {m.d.buffs?.length > 0 && (
                                     <div className="mb-1.5">
-                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
+                                      <div className="kuro-label">Buffs</div>
                                       <div className="flex flex-wrap gap-1">
                                         {m.d.buffs.map((b, bi) => (
                                           <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
@@ -5576,7 +5576,7 @@ function WhisperingWishesInner() {
                                   {/* Debuffs */}
                                   {m.d.debuffs?.length > 0 && (
                                     <div className="mb-1.5">
-                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
+                                      <div className="kuro-label">Debuffs</div>
                                       <div className="flex flex-wrap gap-1">
                                         {m.d.debuffs.map((db, di) => (
                                           <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
@@ -5586,7 +5586,7 @@ function WhisperingWishesInner() {
                                   )}
                                   {/* Base Stats */}
                                   <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Base Stats (Lv.90)</div>
+                                    <div className="kuro-label">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
                                       <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
                                       <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">ATK {m.charAtk}</span>
@@ -5597,7 +5597,7 @@ function WhisperingWishesInner() {
                                   {/* Main DPS: expanded damage stats */}
                                   {isMain && (
                                     <div className="mb-1.5">
-                                      <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Stats (with team buffs)</div>
+                                      <div className="kuro-label">Damage Stats (with team buffs)</div>
                                       <div className="flex flex-wrap gap-1">
                                         <span className="text-[8px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.ATK {effAtk.toLocaleString()}</span>
                                         <span className="text-[8px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
@@ -5666,13 +5666,13 @@ function WhisperingWishesInner() {
                                         </div>
                                         {/* S0-S6 toggle */}
                                         <div>
-                                          <div className="text-[8px] text-gray-500 mb-0.5">Sequence</div>
+                                          <div className="text-[9px] text-gray-400 mb-0.5">Sequence</div>
                                           <div className="flex gap-px">
                                             {[0,1,2,3,4,5,6].map(s => {
                                               const isActive = (eq.sequence || 0) === s;
                                               return (
                                                 <button key={s}
-                                                  className={`flex-1 py-0.5 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/8 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                  className={`flex-1 py-0.5 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                                   onClick={() => {
                                                     setTeamEquipment(prev => {
                                                       const n = { ...prev };
@@ -5689,7 +5689,7 @@ function WhisperingWishesInner() {
                                         </div>
                                         {/* Sonata Set selector */}
                                         <div>
-                                          <div className="text-[8px] text-gray-500 mb-0.5">Sonata Set</div>
+                                          <div className="text-[9px] text-gray-400 mb-0.5">Sonata Set</div>
                                           <select
                                             value={eq.echoSet || ''}
                                             onChange={e => {
@@ -5712,14 +5712,14 @@ function WhisperingWishesInner() {
                                         </div>
                                         {/* Weapon info */}
                                         {equippedWeap && (
-                                          <div className="text-[8px]">
+                                          <div className="text-[9px]">
                                             <span className="text-gray-500">Weapon: </span>
                                             <span className="text-yellow-400/80">{eq.weapon}</span>
                                             <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
                                           </div>
                                         )}
                                         {!equippedWeap && m.d.bestWeapon && (
-                                          <div className="text-[8px]">
+                                          <div className="text-[9px]">
                                             <span className="text-gray-500">Rec: </span>
                                             <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
                                             {m.d.bestEchoes && (
@@ -5742,7 +5742,7 @@ function WhisperingWishesInner() {
                             {/* Aggregated buffs/debuffs */}
                             {allBuffs.length > 0 && (
                               <div>
-                                <div className="text-[9px] text-gray-400 font-medium mb-1">Team Buffs</div>
+                                <div className="kuro-label">Team Buffs</div>
                                 <div className="flex flex-wrap gap-1">
                                   {allBuffs.map((b, i) => (
                                     <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
@@ -5754,7 +5754,7 @@ function WhisperingWishesInner() {
                             )}
                             {allDebuffs.length > 0 && (
                               <div>
-                                <div className="text-[9px] text-gray-400 font-medium mb-1">Enemy Debuffs</div>
+                                <div className="kuro-label">Enemy Debuffs</div>
                                 <div className="flex flex-wrap gap-1">
                                   {allDebuffs.map((b, i) => (
                                     <span key={i} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
@@ -5769,12 +5769,12 @@ function WhisperingWishesInner() {
                             <div className="flex gap-2">
                               <div className="flex-1 p-2.5 rounded-lg border border-white/10 text-center" style={{ background: 'var(--bg-btn)' }}>
                                 <div className="text-[9px] text-gray-400 font-medium">Raw Power</div>
-                                <div className="text-lg font-bold text-yellow-400">{score.toLocaleString()}</div>
+                                <div className="text-lg font-bold text-yellow-400 kuro-number">{score.toLocaleString()}</div>
                                 <div className="text-[8px] text-gray-500">stat multipliers</div>
                               </div>
                               <div className="flex-1 p-2.5 rounded-lg border border-cyan-500/20 text-center" style={{ background: 'rgba(6,182,212,0.03)' }}>
                                 <div className="text-[9px] text-cyan-400 font-medium">Full DPS</div>
-                                <div className="text-lg font-bold text-cyan-400">{realDps.toLocaleString()}</div>
+                                <div className="text-lg font-bold text-cyan-400 kuro-number">{realDps.toLocaleString()}</div>
                                 <div className="text-[8px] text-gray-500">dmg/sec with rotation</div>
                               </div>
                               <div className="w-20 p-2.5 rounded-lg border border-white/10 text-center flex flex-col items-center justify-center" style={{ background: 'var(--bg-btn)' }}>
@@ -5849,11 +5849,11 @@ function WhisperingWishesInner() {
                                     <div className="mb-1">
                                       <div className="flex items-center gap-2 mb-0.5">
                                         <span className="text-[8px] text-gray-500 w-8">Raw</span>
-                                        <div className="flex-1 h-5 rounded-md overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
-                                          <div className="h-full rounded-md transition-all duration-700"
+                                        <div className="flex-1 h-5 rounded-full overflow-hidden border border-white/5 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                          <div className="h-full rounded-full transition-all duration-700"
                                             style={{ width: Math.max(rawPct, 8) + '%', background: 'linear-gradient(90deg, rgba(234,179,8,0.15), rgba(234,179,8,0.5))' }} />
                                           <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="text-[10px] font-bold text-yellow-400" style={{ fontFamily: "var(--font-data)" }}>{s.score.toLocaleString()}</span>
+                                            <span className="text-[10px] font-bold text-yellow-400 kuro-number">{s.score.toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -5863,11 +5863,11 @@ function WhisperingWishesInner() {
                                     <div className="mb-1.5">
                                       <div className="flex items-center gap-2 mb-0.5">
                                         <span className="text-[8px] text-gray-500 w-8">Full</span>
-                                        <div className="flex-1 h-5 rounded-md overflow-hidden border border-cyan-500/10 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
-                                          <div className="h-full rounded-md transition-all duration-700"
+                                        <div className="flex-1 h-5 rounded-full overflow-hidden border border-cyan-500/10 relative" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                          <div className="h-full rounded-full transition-all duration-700"
                                             style={{ width: Math.max(fullPct, 8) + '%', background: 'linear-gradient(90deg, rgba(6,182,212,0.15), rgba(6,182,212,0.5))' }} />
                                           <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="text-[10px] font-bold text-cyan-400" style={{ fontFamily: "var(--font-data)" }}>{s.realDps.toLocaleString()} /s</span>
+                                            <span className="text-[10px] font-bold text-cyan-400 kuro-number">{s.realDps.toLocaleString()} /s</span>
                                           </div>
                                         </div>
                                       </div>
@@ -7127,7 +7127,7 @@ Example: {"pulls":[...]}'
             <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
               {!adminUnlocked ? (
                 <div className="space-y-3">
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
                     <p className="text-yellow-400 text-sm font-medium">Admin Access Required</p>
                     <p className="text-gray-400 text-[10px] mt-1">Enter admin password to continue</p>
                   </div>
@@ -7148,7 +7148,7 @@ Example: {"pulls":[...]}'
                 </div>
               ) : (
                 <>
-                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-2 text-center">
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
                     <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
                   </div>
 
@@ -7189,7 +7189,7 @@ Example: {"pulls":[...]}'
                   {/* Collection Tab */}
                   {adminTab === 'collection' && (
                     <div className="space-y-4">
-                      <div className="bg-purple-500/10 border border-purple-500/30 rounded p-3">
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
                         <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
                         <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Add custom URLs to override or add missing ones.</p>
                         
@@ -7434,7 +7434,7 @@ Example: {"pulls":[...]}'
                   {/* Trophies Tab */}
                   {adminTab === 'trophies' && (
                     <div className="space-y-4">
-                      <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
                         <h3 className="text-amber-400 text-sm font-medium mb-2">Trophy Name Editor</h3>
                         <p className="text-gray-400 text-[10px] mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
 
