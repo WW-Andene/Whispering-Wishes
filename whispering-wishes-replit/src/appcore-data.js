@@ -595,6 +595,79 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs });
 });
 
+// [SECTION:BASE_STATS] — Level 90 base stats from Prydwen.gg (HP, ATK, DEF, maxEnergy)
+[
+  ['Rover',         11400, 375, 1369, 125],
+  ['Jiyan',         10488, 438, 1185, 125],
+  ['Calcharo',      10500, 438, 1185, 125],
+  ['Encore',        10513, 425, 1246, 125],
+  ['Jianxin',       14113, 338, 1124, 150],
+  ['Lingyang',      10388, 438, 1210, 125],
+  ['Verina',        14238, 338, 1100, 175],
+  ['Yinlin',        11000, 400, 1283, 125],
+  ['Jinhsi',        10825, 413, 1259, 125],
+  ['Changli',       10388, 463, 1100, 125],
+  ['Zhezhi',        12250, 375, 1198, 125],
+  ['Xiangli Yao',   10625, 425, 1222, 125],
+  ['Shorekeeper',   16713, 288, 1100, 125],
+  ['Camellya',      10325, 450, 1161, 125],
+  ['Carlotta',      12450, 463, 1198, 125],
+  ['Roccia',        12250, 375, 1198, 125],
+  ['Phoebe',        10825, 413, 1259, 125],
+  ['Brant',         11675, 375, 1308, 125],
+  ['Cantarella',    11600, 400, 1100, 125],
+  ['Zani',          10775, 438, 1136, 125],
+  ['Ciaccona',      12238, 375, 1198, 125],
+  ['Cartethyia',    14800, 313, 611,  125],
+  ['Lupa',          11913, 388, 1185, 125],
+  ['Phrolova',      10775, 438, 1136, 125],
+  ['Augusta',       10300, 463, 1112, 125],
+  ['Iuno',          10525, 450, 1124, 125],
+  ['Galbrena',      10300, 463, 1112, 125],
+  ['Qiuyuan',       12238, 375, 1198, 125],
+  ['Chisa',         10775, 438, 1136, 125],
+  ['Lynae',         12238, 375, 1198, 125],
+  ['Mornye',        15375, 288, 1356, 125],
+  ['Luuk Herssen',  10300, 463, 1112, 125],
+  ['Aemeath',       11025, 425, 1149, 125],
+  // 4★
+  ['Aalto',         9850,  263, 1075, 150],
+  ['Baizhi',        12813, 213, 1002, 175],
+  ['Chixia',        9088,  300, 953,  150],
+  ['Danjin',        9438,  263, 1149, 100],
+  ['Yangyang',      10200, 250, 1100, 100],
+  ['Sanhua',        10063, 275, 941,  100],
+  ['Taoqi',         8950,  225, 1564, 125],
+  ['Yuanwu',        8525,  225, 1637, 125],
+  ['Mortefi',       10025, 250, 1136, 125],
+  ['Youhu',         9975,  263, 1051, 125],
+  ['Lumi',          8500,  338, 880,  125],
+  ['Buling',        10625, 225, 1259, 125],
+].forEach(([name, hp, atk, def, maxEnergy]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { baseHp: hp, baseAtk: atk, baseDef: def, maxEnergy });
+});
+
+// [SECTION:ECHO_SETS] — Sonata Effect set bonuses
+const ECHO_SETS = {
+  'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 30 } },
+  'Molten Rift':          { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Res. Skill → +30% Fusion DMG', p5val: { fusionDmg: 30 } },
+  'Void Thunder':         { element: 'Electro', p2: '+10% Electro DMG', p2val: { electroDmg: 10 }, p5: 'Heavy/Skill → +15% Electro DMG (max x2)', p5val: { electroDmg: 30 } },
+  'Sierra Gale':          { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Intro Skill → +30% Aero DMG', p5val: { aeroDmg: 30 } },
+  'Celestial Light':      { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Intro Skill → +30% Spectro DMG', p5val: { spectroDmg: 30 } },
+  'Havoc Eclipse':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Basic/Heavy → +7.5% Havoc DMG (max x4)', p5val: { havocDmg: 30 } },
+  'Sun-Sinking Eclipse':  { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Basic/Heavy → +7.5% Havoc DMG (max x4)', p5val: { havocDmg: 30 } },
+  'Rejuvenating Glow':    { element: 'Heal',    p2: '+10% Healing',     p2val: { healBonus: 10 },   p5: 'Heal ally → +15% ATK for team', p5val: { teamAtk: 15 } },
+  'Moonlit Clouds':       { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Outro → +22.5% ATK for next', p5val: { nextAtk: 22.5 } },
+  'Lingering Tunes':      { element: 'ATK',     p2: '+10% ATK',         p2val: { atkPct: 10 },      p5: 'ATK +5%/1.5s (max x4), Outro +60%', p5val: { atkPct: 20, outroDmg: 60 } },
+  'Frosty Resolve':       { element: 'Glacio',  p2: '+12% Res. Skill DMG', p2val: { skillDmg: 12 }, p5: 'Skill → +22.5% Glacio; Lib → +18% Skill (x2)', p5val: { glacioDmg: 22.5, skillDmg: 36 } },
+  'Eternal Radiance':     { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Frazzle → +20% Crit Rate; 10 stacks → +15% Spectro', p5val: { critRate: 20, spectroDmg: 15 } },
+  'Midnight Veil':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Outro → 480% Havoc + 15% Havoc for next', p5val: { havocDmg: 15, outroDmg: 480 } },
+  'Empyrean Anthem':      { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Coord ATK +80%; on crit → +20% ATK', p5val: { coordDmg: 80, atkPct: 20 } },
+  'Tidebreaking Courage': { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: '+15% ATK; ≥250% ER → +30% all DMG', p5val: { atkPct: 15, allDmg: 30 } },
+  'Gusts of Welkin':      { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Erosion → +15% Aero team + extra 15%', p5val: { aeroDmg: 30 } },
+  'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
+};
+
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
   // 5★ Weapons
@@ -1436,7 +1509,7 @@ export {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
   calculateLuckRating,
   SERVERS, getServerOffset,
-  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA,
+  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS,
   EVENTS,
   HARD_PITY, SOFT_PITY_START, LUNITE_DAILY_ASTRITE, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
   SUBSCRIPTIONS, MAX_ASTRITE, MAX_CALC_PULLS,
