@@ -1375,15 +1375,15 @@ const KuroStyles = memo(({ oledMode }) => (
       }
       .desktop-layout > header::-webkit-scrollbar { display: none; }
       .desktop-layout > header > .header-inner {
-        max-width: none !important; padding: 0.5rem 0.375rem !important; margin: 0 !important;
+        max-width: none !important; padding: 0.375rem !important; margin: 0 !important;
         height: 100%; display: flex !important; flex-direction: column !important; align-items: center !important;
       }
 
       /* Logo — small, centered, no text */
       .desktop-layout > header .header-top {
         flex-direction: column !important; align-items: center !important;
-        padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.375rem; gap: 0;
+        padding: 0.5rem 0 !important; border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.5rem; gap: 0.5rem;
       }
       .desktop-layout > header .header-top > .flex.items-center.gap-2\\.5 {
         flex-direction: column !important; align-items: center !important; gap: 0 !important;
@@ -1392,29 +1392,34 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Server + export — stacked tiny */
       .desktop-layout > header .header-controls {
-        flex-direction: column !important; gap: 0.25rem !important; margin-bottom: 0.5rem; width: 100%;
+        flex-direction: column !important; gap: 3px !important; margin-bottom: 0; width: 100%;
       }
       .desktop-layout > header .header-controls select {
-        width: 100% !important; min-height: 28px !important; font-size: 8px !important;
-        padding: 0.25rem !important; text-align: center;
+        width: 100% !important; min-height: 24px !important; max-height: 24px !important;
+        font-size: 8px !important; padding: 0.125rem 0.25rem !important; text-align: center;
       }
       .desktop-layout > header .header-controls button {
-        width: 100% !important; min-width: unset !important; min-height: 28px !important; padding: 0.25rem !important;
+        width: 100% !important; min-width: unset !important;
+        min-height: 24px !important; max-height: 24px !important;
+        padding: 0.125rem !important;
+      }
+      .desktop-layout > header .header-controls button svg {
+        width: 12px !important; height: 12px !important;
       }
 
       /* Nav — vertical icon buttons as cards */
       .desktop-layout > header nav {
-        flex-direction: column !important; gap: 4px !important; overflow-x: visible !important;
-        padding-bottom: 0 !important; flex: 1; width: 100%;
+        flex-direction: column !important; gap: 3px !important; overflow-x: visible !important;
+        padding-bottom: 0 !important; flex: 0 !important; width: 100%;
       }
       .desktop-layout > header nav .kuro-tab {
         width: 100% !important; flex-direction: column !important; align-items: center !important;
-        justify-content: center !important; padding: 0.5rem 0.25rem !important;
-        border-radius: 0.5rem !important; font-size: 0.5625rem !important; gap: 0.125rem !important;
+        justify-content: center !important; padding: 0.25rem 0.125rem !important;
+        border-radius: 0.375rem !important; font-size: 0.5rem !important; gap: 1px !important;
         border-bottom: none !important; border: 1px solid transparent !important;
         background: rgba(255,255,255,0.02) !important;
         transition: all 0.15s;
-        min-height: 52px !important;
+        min-height: 36px !important;
       }
       .desktop-layout > header nav .kuro-tab:hover {
         background: rgba(255,255,255,0.06) !important;
@@ -1426,13 +1431,14 @@ const KuroStyles = memo(({ oledMode }) => (
         border-left: 2px solid #edaf18 !important;
         color: #edaf18 !important;
       }
-      .desktop-layout > header nav .kuro-tab svg { width: 18px !important; height: 18px !important; }
+      .desktop-layout > header nav .kuro-tab svg { width: 16px !important; height: 16px !important; }
       .desktop-layout > header nav .tab-indicator { display: none !important; }
       .desktop-layout > header .swipe-hint { display: none !important; }
 
       /* Logo — scale down in narrow sidebar */
       .desktop-layout > header .header-top .group {
-        transform: scale(0.85);
+        transform: scale(0.7);
+        margin: -4px 0;
       }
       .desktop-layout > header .header-top .group .blur-md {
         opacity: 0.3 !important;
