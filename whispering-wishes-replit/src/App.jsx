@@ -4950,7 +4950,7 @@ function WhisperingWishesInner() {
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
                             if (!slots.some(s => s)) return;
                             if (teamCompareEntries.length >= 5) return;
-                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice() }]);
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), teamIdx: state.activeTeamIndex }]);
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
@@ -5070,16 +5070,20 @@ function WhisperingWishesInner() {
                   {/* Team Overview + Damage Analysis (merged) */}
                   {(() => {
                     // ── Reusable calculator with proper WuWa damage formula ──
-                    const calcTeamStats = (slots) => {
+                    const calcTeamStats = (slots, teamIdx) => {
                       const mems = slots.filter(s => s).map(name => {
                         const d = CHARACTER_DATA[name];
                         if (!d) return null;
-                        const weapon = WEAPON_DATA[d.bestWeapon] || null;
+                        // Use equipped weapon if set, otherwise fall back to bestWeapon
+                        const eqKey = teamIdx + ':' + name;
+                        const eq = teamEquipment[eqKey];
+                        const weapName = (eq?.weapon) || d.bestWeapon;
+                        const weapon = WEAPON_DATA[weapName] || null;
                         const charAtk = d.baseAtk || 0;
                         const weapAtk = weapon ? weapon.baseAtk : 0;
                         let echoSetName = '';
                         if (d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
-                        return { name, d, weapon, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '' };
+                        return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '' };
                       }).filter(Boolean);
                       if (!mems.length) return null;
                       const allBuffs = [], allDebuffs = [];
@@ -5264,7 +5268,7 @@ function WhisperingWishesInner() {
                       return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, synergy: syn, warnings };
                     };
 
-                    const stats = calcTeamStats(teamSlots);
+                    const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
                     if (!stats) return null;
                     const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, realDps, synergy, warnings } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
@@ -5396,7 +5400,9 @@ function WhisperingWishesInner() {
                                             }}
                                             title={eq.weapon || 'Select weapon'}
                                           >
-                                            {equippedWeap ? (
+                                            {equippedWeap && collectionImages[eq.weapon] ? (
+                                              <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                            ) : equippedWeap ? (
                                               <>
                                                 <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
                                                 <span className="text-[7px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
@@ -5512,7 +5518,7 @@ function WhisperingWishesInner() {
                       {teamCompareEntries.length > 0 && (() => {
                         const computed = teamCompareEntries.map(entry => ({
                           ...entry,
-                          stats: calcTeamStats(entry.slots),
+                          stats: calcTeamStats(entry.slots, entry.teamIdx ?? 0),
                         })).filter(e => e.stats);
                         if (!computed.length) return null;
                         const maxS = Math.max(...computed.map(e => e.stats.score), 1);
@@ -5955,7 +5961,13 @@ function WhisperingWishesInner() {
                                       className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${rarity5 ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10' : 'border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10'}`}
                                     >
                                       <div className="flex items-center gap-2">
-                                        <Sword size={14} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                        {collectionImages[name] ? (
+                                          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border" style={{ borderColor: rarity5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)', background: rarity5 ? 'rgba(234,179,8,0.08)' : 'rgba(168,85,247,0.08)' }}>
+                                            <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                          </div>
+                                        ) : (
+                                          <Sword size={14} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                        )}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-[11px] font-semibold truncate">{name}</span>
