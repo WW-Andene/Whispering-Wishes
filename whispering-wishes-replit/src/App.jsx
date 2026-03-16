@@ -753,6 +753,12 @@ function WhisperingWishesInner() {
   const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
   const [teamDmgFilter, setTeamDmgFilter] = useState('all');
   const [teamCompareEntries, setTeamCompareEntries] = useState([]); // [{slots: [name,name,name], damageScore, members, mainDpsName}]
+  const [teamEquipment, setTeamEquipment] = useState(() => {
+    try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  }); // { "teamIdx:charName": { weapon: "name"|null, echoes: [null,null,null,null,null] } }
+  const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false);
+  const [weaponSelectorTarget, setWeaponSelectorTarget] = useState({ teamIdx: 0, charName: '' });
+  const [weaponSearch, setWeaponSearch] = useState('');
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -5369,22 +5375,77 @@ function WhisperingWishesInner() {
                                       </div>
                                     </div>
                                   )}
-                                  {/* Build info */}
-                                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
-                                    {m.d.bestWeapon && (
-                                      <div className="text-[9px]">
-                                        <span className="text-gray-500">Weapon: </span>
-                                        <span className="text-yellow-400/80">{m.d.bestWeapon}</span>
-                                        {m.weapon && <span className="text-gray-500"> ({m.weapon.stat} {m.weapSubVal})</span>}
+                                  {/* Equipment slots: 1 weapon + 5 echoes */}
+                                  {(() => {
+                                    const eqKey = state.activeTeamIndex + ':' + m.name;
+                                    const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                                    const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
+                                    const slotStyle = 'w-12 h-12 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
+                                    return (
+                                      <div className="mt-2 pt-2 border-t border-white/5">
+                                        <div className="text-[9px] text-gray-400 font-medium mb-1.5">Equipment</div>
+                                        <div className="flex gap-1.5 flex-wrap">
+                                          {/* Weapon slot */}
+                                          <div
+                                            className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                            onClick={() => {
+                                              setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
+                                              setWeaponSearch('');
+                                              setWeaponSelectorOpen(true);
+                                              haptic.light();
+                                            }}
+                                            title={eq.weapon || 'Select weapon'}
+                                          >
+                                            {equippedWeap ? (
+                                              <>
+                                                <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                                <span className="text-[7px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Sword size={14} className="text-gray-500" />
+                                                <span className="text-[7px] text-gray-500">Weapon</span>
+                                              </>
+                                            )}
+                                          </div>
+                                          {/* 5 Echo slots (placeholder) */}
+                                          {[0, 1, 2, 3, 4].map(ei => (
+                                            <div key={ei}
+                                              className={`${slotStyle} border-dashed border-white/10 opacity-50 cursor-default`}
+                                              title={'Echo slot ' + (ei + 1) + ' — coming soon'}
+                                            >
+                                              <Diamond size={12} className="text-gray-600" />
+                                              <span className="text-[7px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        {/* Show equipped weapon stats */}
+                                        {equippedWeap && (
+                                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                                            <div className="text-[9px]">
+                                              <span className="text-gray-500">Weapon: </span>
+                                              <span className="text-yellow-400/80">{eq.weapon}</span>
+                                              <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
+                                            </div>
+                                          </div>
+                                        )}
+                                        {!equippedWeap && m.d.bestWeapon && (
+                                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                                            <div className="text-[9px]">
+                                              <span className="text-gray-500">Recommended: </span>
+                                              <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
+                                            </div>
+                                            {m.d.bestEchoes && (
+                                              <div className="text-[9px]">
+                                                <span className="text-gray-500">Echoes: </span>
+                                                <span className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                    {m.d.bestEchoes && (
-                                      <div className="text-[9px]">
-                                        <span className="text-gray-500">Echoes: </span>
-                                        <span className="text-cyan-400/80">{m.d.bestEchoes.join(' + ')}</span>
-                                      </div>
-                                    )}
-                                  </div>
+                                    );
+                                  })()}
                                 </div>
                               );
                             })}
@@ -5817,6 +5878,101 @@ function WhisperingWishesInner() {
                               <p className="text-gray-500 text-xs">No resonators match</p>
                             </div>
                           )}
+                        </div>
+                      </div>
+                    </div>
+                  </FocusTrapModal>
+
+                  {/* Weapon Selector Modal */}
+                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)}>
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWeaponSelectorOpen(false)} />
+                      <div className="relative w-full max-w-md max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-white/10 flex flex-col" style={{ background: 'var(--bg-card, #101218)' }}>
+                        <div className="p-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+                          <div>
+                            <h3 className="text-white font-bold text-sm">Select Weapon</h3>
+                            <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
+                          </div>
+                          <button onClick={() => setWeaponSelectorOpen(false)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X size={16} className="text-gray-400" /></button>
+                        </div>
+                        <div className="p-2 border-b border-white/5 flex-shrink-0">
+                          <input
+                            value={weaponSearch}
+                            onChange={e => setWeaponSearch(e.target.value)}
+                            placeholder="Search weapons..."
+                            className="w-full text-xs"
+                          />
+                        </div>
+                        <div className="overflow-y-auto flex-1 p-2">
+                          <div className="space-y-1">
+                            {/* Unequip option */}
+                            <button
+                              onClick={() => {
+                                const eqKey = weaponSelectorTarget.teamIdx + ':' + weaponSelectorTarget.charName;
+                                setTeamEquipment(prev => {
+                                  const n = { ...prev };
+                                  if (n[eqKey]) n[eqKey] = { ...n[eqKey], weapon: null };
+                                  else n[eqKey] = { weapon: null, echoes: [null, null, null, null, null] };
+                                  try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                  return n;
+                                });
+                                setWeaponSelectorOpen(false);
+                                haptic.light();
+                              }}
+                              className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              ✕ Unequip weapon
+                            </button>
+                            {/* Filtered weapons */}
+                            {(() => {
+                              const charWeapType = CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon;
+                              return Object.entries(WEAPON_DATA)
+                                .filter(([name, w]) => {
+                                  if (charWeapType && w.type !== charWeapType) return false;
+                                  if (weaponSearch && !name.toLowerCase().includes(weaponSearch.toLowerCase())) return false;
+                                  return true;
+                                })
+                                .sort((a, b) => b[1].rarity - a[1].rarity || b[1].baseAtk - a[1].baseAtk)
+                                .map(([name, w]) => {
+                                  const rarity5 = w.rarity === 5;
+                                  const isBest = name === CHARACTER_DATA[weaponSelectorTarget.charName]?.bestWeapon;
+                                  return (
+                                    <button
+                                      key={name}
+                                      onClick={() => {
+                                        const eqKey = weaponSelectorTarget.teamIdx + ':' + weaponSelectorTarget.charName;
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          if (n[eqKey]) n[eqKey] = { ...n[eqKey], weapon: name };
+                                          else n[eqKey] = { weapon: name, echoes: [null, null, null, null, null] };
+                                          try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                          return n;
+                                        });
+                                        setWeaponSelectorOpen(false);
+                                        haptic.success();
+                                      }}
+                                      className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${rarity5 ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10' : 'border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10'}`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Sword size={14} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-white text-[11px] font-semibold truncate">{name}</span>
+                                            <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                            {isBest && <span className="text-[7px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                          </div>
+                                          <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[9px] text-gray-400">ATK {w.baseAtk}</span>
+                                            <span className="text-[9px] text-cyan-400/80">{w.stat} {w.subStatValue}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                });
+                            })()}
+                          </div>
                         </div>
                       </div>
                     </div>
