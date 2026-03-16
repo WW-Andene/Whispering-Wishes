@@ -4976,7 +4976,7 @@ function WhisperingWishesInner() {
                       </div>
 
                       {/* Character Cards Grid */}
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-2 max-w-[380px]">
                         {teamSlots.map((charName, slotIdx) => {
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
@@ -4987,8 +4987,8 @@ function WhisperingWishesInner() {
                               <button
                                 key={slotIdx}
                                 onClick={() => openSelector(slotIdx)}
-                                className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group aspect-[3/4]"
-                                style={{ contain: 'paint' }}
+                                className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                                style={{ height: '140px', contain: 'paint' }}
                               >
                                 <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
                                 <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
@@ -5000,8 +5000,8 @@ function WhisperingWishesInner() {
                           return (
                             <div
                               key={slotIdx}
-                              className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group aspect-[3/4] ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
-                              style={{ contain: 'paint' }}
+                              className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              style={{ height: '140px', contain: 'paint' }}
                               onClick={() => openSelector(slotIdx)}
                             >
                               {imgUrl && (
@@ -5351,8 +5351,9 @@ function WhisperingWishesInner() {
                                 <button
                                   key={name}
                                   onClick={() => selectCharacter(name)}
-                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card aspect-[3/4] ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
+                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
                                   style={{
+                                    height: '100px',
                                     contain: 'paint',
                                     opacity: owned ? 1 : 0.5,
                                     ...(isRecommended ? { boxShadow: '0 0 28px rgba(251,146,60,0.65), 0 0 56px rgba(251,146,60,0.3), inset 0 0 20px rgba(251,146,60,0.2)', background: 'rgba(251,146,60,0.15)' } : {}),
