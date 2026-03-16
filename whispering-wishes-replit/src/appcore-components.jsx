@@ -8,6 +8,7 @@ import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X,
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
+  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
@@ -228,6 +229,62 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             )}
           </div>
+
+          {/* Base Stats (Lv.90) */}
+          {data.baseAtk && (
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">HP</div>
+                  <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString()}</div>
+                </div>
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">ATK</div>
+                  <div className="text-sm font-bold text-white">{data.baseAtk}</div>
+                </div>
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">DEF</div>
+                  <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString()}</div>
+                </div>
+                <div className="p-2 rounded-lg bg-black/20">
+                  <div className="text-[9px] text-gray-500">Energy</div>
+                  <div className="text-sm font-bold text-white">{data.maxEnergy || '?'}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Resonance Chain (S1-S6) */}
+          {RESONANCE_CHAIN_DATA[name] && (
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
+              <div className="space-y-1.5">
+                {[1,2,3,4,5,6].map(s => {
+                  const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
+                  if (!lvl) return null;
+                  const stats = Object.entries(lvl).map(([k, v]) => {
+                    const labels = { atkPct: 'ATK%', critRate: 'Crit Rate', critDmg: 'Crit DMG', elemDmg: 'Elem DMG', skillDmg: 'Skill DMG', basicDmg: 'Basic DMG', heavyDmg: 'Heavy DMG', libDmg: 'Lib DMG', echoDmg: 'Echo DMG', deepen: 'Deepen', defIgnore: 'DEF Ignore', defShred: 'DEF Shred', resShred: 'RES Shred', totalMult: 'Total Mult', allDmg: 'All DMG', coordDmg: 'Coord DMG' };
+                    return (labels[k] || k) + ' +' + v + '%';
+                  }).join(', ');
+                  return (
+                    <div key={s} className="flex items-center gap-2 text-[10px]">
+                      <span className={`w-7 text-center font-bold rounded py-0.5 ${s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
+                      <span className="text-gray-300 flex-1">{stats}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
+          {CHAR_BUFF_TABLE[name]?.note && (
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
+              <p className="text-[10px] text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
+            </div>
+          )}
 
           {/* BUILD GUIDE SECTION */}
           <div className="space-y-1">
@@ -1071,7 +1128,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <img
           src={imgUrl}
           alt={item.name}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           style={{
             zIndex: 1,
             opacity: pictureOpacity,
@@ -1079,7 +1136,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             WebkitMaskImage: maskGradient
           }}
           loading="eager"
-
           onError={hideOnError}
         />
       )}
@@ -1567,13 +1623,14 @@ CalcResultsCard.displayName = 'CalcResultsCard';
 const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
+  const hasStats = profileData?.history?.length > 0;
   return (
-    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5 }}>
+    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {bannerImage && (
         <img
           src={bannerImage}
           alt={altText}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           style={{ zIndex: 1, opacity: stdOpacity, maskImage: stdMask, WebkitMaskImage: stdMask }}
           loading="eager"
           onError={hideOnError}
@@ -1581,36 +1638,38 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
       )}
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="font-bold text-sm text-cyan-400">{title}</h3>
-            <span className="text-gray-200 text-[10px]">{subtitle}</span>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-[10px] px-2 py-0.5 rounded text-cyan-400 border border-cyan-500/40" style={{ backgroundColor: 'rgba(0,200,255,0.1)' }}>{subtitle}</span>
           </div>
-          <div className="text-gray-300 text-[9px] mb-1 uppercase tracking-wider">Available 5★</div>
+          <h4 className="font-bold text-base text-white leading-tight">{title}</h4>
+        </div>
+        <div className={hasStats ? 'mb-14' : ''}>
+          <div className="text-gray-300 text-[9px] mb-0.5 uppercase tracking-wider">Available 5★</div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-            {items.map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-[9px] text-cyan-400 bg-cyan-500/20 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{typeof item === 'string' ? item : item[itemKey]}</span>)}
+            {items.map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-[9px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
           </div>
         </div>
-        {profileData?.history?.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-white/15 rounded-b-xl" style={{background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px'}}>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 flex items-center gap-3">
-                <div className="text-center">
-                  <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
-                  <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[9px]">/10</span></div>
-                  <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white font-bold text-sm">{profileData.history.length}</div>
-                  <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
-                </div>
+      </div>
+      {hasStats && (
+        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15" style={BANNER_CARD_OVERLAY_STYLE}>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-3">
+              <div className="text-center">
+                <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
+                <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
+              </div>
+              <div className="text-center">
+                <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[9px]">/10</span></div>
+                <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white font-bold text-sm">{profileData.history.length}</div>
+                <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 });
@@ -1654,7 +1713,7 @@ const ImportGuide = memo(({ platform }) => {
   const guide = IMPORT_GUIDE_DATA[platform];
   if (!guide) return null;
   return (
-    <div className="p-3 bg-white/5 border border-white/10 rounded text-[10px] text-gray-200 space-y-2">
+    <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-[10px] text-gray-200 space-y-2">
       <p className="text-gray-100 font-medium text-xs">{guide.title}</p>
       {guide.steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">

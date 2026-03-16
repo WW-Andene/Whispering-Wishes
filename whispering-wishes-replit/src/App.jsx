@@ -19,8 +19,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { AlertCircle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
-import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
+import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 import {
   APP_VERSION,
   MAX_IMPORT_SIZE_MB,
@@ -43,6 +43,9 @@ import {
   BANNER_HISTORY,
   CHARACTER_DATA,
   WEAPON_DATA,
+  ECHO_SETS,
+  CHAR_BUFF_TABLE,
+  RESONANCE_CHAIN_DATA,
   EVENTS,
   SUBSCRIPTIONS,
   HARD_PITY,
@@ -751,6 +754,13 @@ function WhisperingWishesInner() {
   const [teamBuffFilter, setTeamBuffFilter] = useState('all');
   const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
   const [teamDmgFilter, setTeamDmgFilter] = useState('all');
+  const [teamCompareEntries, setTeamCompareEntries] = useState([]); // [{slots: [name,name,name], damageScore, members, mainDpsName}]
+  const [teamEquipment, setTeamEquipment] = useState(() => {
+    try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  }); // { "teamIdx:charName": { weapon: "name"|null, echoes: [null,null,null,null,null] } }
+  const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false);
+  const [weaponSelectorTarget, setWeaponSelectorTarget] = useState({ teamIdx: 0, charName: '' });
+  const [weaponSearch, setWeaponSearch] = useState('');
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -3137,8 +3147,7 @@ function WhisperingWishesInner() {
             )}
 
             {trackerCategory === 'standard' && (
-              <div className="space-y-3 content-layer">
-                <div className="text-gray-300 text-xs uppercase tracking-wider content-layer">Permanent Banners</div>
+              <div className="space-y-2 banner-grid content-layer">
                 
                 {/* Standard Resonator Banner */}
                 <StandardBannerSection
@@ -3162,20 +3171,45 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader><Archive size={14} className="text-purple-400" /> Banner History</CardHeader>
               <CardBody>
-                <div className="max-h-64 overflow-y-auto kuro-scroll space-y-1.5">
+                <div className="space-y-2">
                   {BANNER_HISTORY.map((b, i) => (
-                    <div key={`bh-${b.version}-${b.phase}`} className="p-2 bg-white/5 rounded border border-white/10 hover:border-white/20 transition-colors">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-white text-xs font-medium">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-400 text-[9px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
+                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-white/10 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        {b.characters.map(c => (
-                          <span key={c} className="text-[9px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">{c}</span>
-                        ))}
-                        {b.weapons.map(w => (
-                          <span key={w} className="text-[9px] px-1.5 py-0.5 bg-pink-500/20 text-pink-400 rounded">{w}</span>
-                        ))}
+                      <div className="flex flex-wrap gap-2">
+                        {b.characters.map(c => {
+                          const cd = CHARACTER_DATA[c];
+                          const img = collectionImages[c];
+                          return (
+                            <div key={c} className="flex items-center gap-1.5">
+                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                {img ? (
+                                  <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-yellow-400">{c[0]}</div>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
+                            </div>
+                          );
+                        })}
+                        {b.weapons.map(w => {
+                          const img = collectionImages[w];
+                          return (
+                            <div key={w} className="flex items-center gap-1.5">
+                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                {img ? (
+                                  <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-pink-400 font-medium">{w}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
@@ -3257,7 +3291,7 @@ function WhisperingWishesInner() {
                 ));
               })()}
             </div>
-            <p className="text-gray-500 text-[10px] text-center content-layer">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+            <p className="text-gray-500 text-[10px] text-center content-layer sticky bottom-0 py-2" style={{ background: 'linear-gradient(to top, rgba(8,12,20,0.95) 60%, transparent)' }}>Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
           </div>
           </TabErrorBoundary>
           </div>
@@ -3539,7 +3573,7 @@ function WhisperingWishesInner() {
                         <div className="text-gray-400 mt-0.5">Neither</div>
                       </div>
                     </div>
-                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
+                    <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                       <p className="text-emerald-400/80 text-[9px]">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
                     </div>
                 </CardBody>
@@ -3645,7 +3679,7 @@ function WhisperingWishesInner() {
                 <CardHeader action={<button onClick={() => { if (window.confirm('Remove all added purchases?')) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
-                    <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded text-xs">
+                    <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
                       <span className="text-gray-200">{i.label}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-yellow-400">+{i.astrite}</span>
@@ -3706,7 +3740,7 @@ function WhisperingWishesInner() {
                   ))}
                 </div>
                 {state.planner.luniteActive && (
-                  <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-center">
+                  <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                     <span className="text-emerald-400 text-xs">Monthly Subscription Cost: </span>
                     <span className="text-emerald-400 font-bold text-xs">${SUBSCRIPTIONS.lunite.price}/month</span>
                   </div>
@@ -3735,7 +3769,7 @@ function WhisperingWishesInner() {
                     </select>
                   </div>
                 </div>
-                <div className="p-2 bg-white/5 rounded text-[10px] text-gray-400 text-center">
+                <div className="p-2 bg-white/5 rounded-lg text-[10px] text-gray-400 text-center">
                   Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
@@ -3762,7 +3796,7 @@ function WhisperingWishesInner() {
                   </div>
                 </div>
                 {planData.goalDaysNeeded !== Infinity && planData.goalDaysNeeded > 0 && (
-                  <div className="p-2 bg-white/5 rounded text-center">
+                  <div className="p-2 bg-white/5 rounded-lg text-center">
                     <span className="text-gray-400 text-[10px]">Estimated: </span>
                     <span className="text-yellow-400 text-xs font-medium">{new Date(Date.now() + planData.goalDaysNeeded * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                   </div>
@@ -3777,7 +3811,7 @@ function WhisperingWishesInner() {
                 {state.bookmarks.length === 0 ? (
                   <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No states archived. Use Save Current State in the Calculator to bookmark your configuration.</p>
                 ) : state.bookmarks.map(b => (
-                  <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                  <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
                     <div>
                       <div className="text-gray-200 text-xs font-medium">{b.name}</div>
                       <div className="text-gray-400 text-[10px]">{b.astrite} Astrite • P{b.charPity}/{b.weapPity}</div>
@@ -3826,7 +3860,7 @@ function WhisperingWishesInner() {
                             <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
                           </div>
                         </div>
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-baseline justify-between">
                             <span className="text-gray-400 text-[10px]">Percentile</span>
                             <span className="text-white font-bold text-sm">Top {Math.max(1, 100 - luckRating.percentile)}%</span>
@@ -3905,7 +3939,7 @@ function WhisperingWishesInner() {
                                 {[...Array(6)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
                                     <div className="kuro-skeleton kuro-skeleton-circle w-7 h-7 flex-shrink-0" />
-                                    <div className="flex-1 space-y-1.5">
+                                    <div className="flex-1 min-w-0 space-y-1.5">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
                                     </div>
@@ -3969,7 +4003,7 @@ function WhisperingWishesInner() {
                                   <div key={i} className="flex items-center gap-2.5 py-1.5">
                                     <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
                                     <div className="kuro-skeleton w-7 h-7 rounded-md flex-shrink-0" />
-                                    <div className="flex-1 space-y-1">
+                                    <div className="flex-1 min-w-0 space-y-1">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
                                       <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
                                     </div>
@@ -4553,7 +4587,7 @@ function WhisperingWishesInner() {
                       const pity = state.profile[banner.key]?.pity5 ?? 0;
                       const colorHex = { yellow: '#edaf18', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
                       return (
-                        <div key={banner.name} className="p-2 bg-white/5 rounded">
+                        <div key={banner.name} className="p-2 bg-white/5 rounded-lg">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-xs font-medium" style={{color: colorHex}}>{banner.name}</span>
                             <span className="text-gray-400 text-[10px]">{hist.length} Convenes</span>
@@ -4936,13 +4970,29 @@ function WhisperingWishesInner() {
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <button
-                        onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
-                        className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                        style={{ background: 'var(--bg-btn)' }}
-                      >
-                        Clear
-                      </button>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
+                            if (!slots.some(s => s)) return;
+                            if (teamCompareEntries.length >= 5) return;
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), teamIdx: state.activeTeamIndex }]);
+                            haptic.success();
+                          }}
+                          disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
+                          className="px-2 py-1 rounded-lg text-[9px] text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ background: 'var(--bg-btn)' }}
+                        >
+                          + Compare
+                        </button>
+                        <button
+                          onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                          className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                          style={{ background: 'var(--bg-btn)' }}
+                        >
+                          Clear
+                        </button>
+                      </div>
                     }>
                       <Users size={14} className="text-yellow-400" /> Team Builder
                     </CardHeader>
@@ -4962,7 +5012,6 @@ function WhisperingWishesInner() {
                               }`}
                               style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
                             >
-                              <span className="opacity-60">{String(idx + 1).padStart(2, '0')}</span>
                               <span className="truncate">{team.name}</span>
                               {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
                             </button>
@@ -4983,7 +5032,7 @@ function WhisperingWishesInner() {
                                 key={slotIdx}
                                 onClick={() => openSelector(slotIdx)}
                                 className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
-                                style={{ height: '110px', contain: 'paint' }}
+                                style={{ height: '160px', contain: 'paint' }}
                               >
                                 <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
                                 <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
@@ -4996,7 +5045,7 @@ function WhisperingWishesInner() {
                             <div
                               key={slotIdx}
                               className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
-                              style={{ height: '110px', contain: 'paint' }}
+                              style={{ height: '160px', contain: 'paint' }}
                               onClick={() => openSelector(slotIdx)}
                             >
                               {imgUrl && (
@@ -5043,104 +5092,835 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
 
-                  {/* Character Stats & Info */}
-                  {teamSlots.some(s => s) && (
-                    <Card>
-                      <CardHeader><Info size={14} className="text-cyan-400" /> Team Overview</CardHeader>
-                      <CardBody>
-                        <div className="space-y-3">
-                          {teamSlots.filter(s => s).map((charName, i) => {
-                            const d = CHARACTER_DATA[charName];
-                            if (!d) return null;
-                            const rarity5 = d.rarity === 5;
-                            const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
-                            const rc = roleColors[d.role] || roleColors.Support;
-                            return (
-                              <div key={charName} className="p-2.5 rounded-lg border border-white/8" style={{ background: 'var(--bg-btn)' }}>
-                                {/* Character header row */}
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0"
-                                    style={{ borderColor: getElementColor(d.element) }}>
-                                    {collectionImages[charName] ? (
-                                      <img src={collectionImages[charName]} alt={charName} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{charName[0]}</div>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-white text-xs font-semibold truncate">{charName}</span>
-                                      <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                  {/* Team Overview + Damage Analysis (merged) */}
+                  {(() => {
+                    // ── Reusable calculator with proper WuWa damage formula ──
+                    const calcTeamStats = (slots, teamIdx) => {
+                      const mems = slots.filter(s => s).map(name => {
+                        const d = CHARACTER_DATA[name];
+                        if (!d) return null;
+                        // Use equipped weapon if set, otherwise fall back to bestWeapon
+                        const eqKey = teamIdx + ':' + name;
+                        const eq = teamEquipment[eqKey];
+                        const weapName = (eq?.weapon) || d.bestWeapon;
+                        const weapon = WEAPON_DATA[weapName] || null;
+                        const charAtk = d.baseAtk || 0;
+                        const weapAtk = weapon ? weapon.baseAtk : 0;
+                        const seqLevel = eq?.sequence || 0;
+                        let echoSetName = eq?.echoSet || '';
+                        if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
+                        return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
+                      }).filter(Boolean);
+                      if (!mems.length) return null;
+                      const allBuffs = [], allDebuffs = [];
+                      mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
+                      const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
+
+                      // ── Parse weapon passive for real values ──
+                      const parsePassive = (passive, element) => {
+                        const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0 };
+                        if (!passive) return r;
+                        const p = passive.toLowerCase();
+                        // ATK% from passive
+                        const atkMatch = p.match(/atk\s*\+(\d+)%/);
+                        if (atkMatch) r.atkPct += parseInt(atkMatch[1]);
+                        // Element DMG
+                        if (element) {
+                          const elLow = element.toLowerCase();
+                          const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
+                          if (elMatch) r.elemDmg += parseInt(elMatch[1]);
+                          // Also "attribute dmg"
+                          const attrMatch = p.match(/attribute\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
+                          if (attrMatch) r.elemDmg += parseInt(attrMatch[1]);
+                        }
+                        // Skill DMG variants
+                        const skillMatch = p.match(/(?:resonance\s*)?skill\s*dmg\s*\+?(\d+)%/);
+                        if (skillMatch) r.skillDmg += parseInt(skillMatch[1]);
+                        const libMatch = p.match(/liberation\s*dmg\s*\+?(\d+)%/);
+                        if (libMatch) r.skillDmg += parseInt(libMatch[1]);
+                        // Crit from passive
+                        const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
+                        if (crMatch) r.critRate += parseInt(crMatch[1]);
+                        // DEF Ignore
+                        const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
+                        if (defMatch) r.defIgnore += parseInt(defMatch[1]);
+                        // RES Shred
+                        const resMatch = p.match(/res\s*-(\d+)%/);
+                        if (resMatch) r.resShred += parseInt(resMatch[1]);
+                        return r;
+                      };
+
+                      // ── Base stats ──
+                      let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
+
+                      // Weapon substat
+                      if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
+                      if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
+                      if (mainDps.weapSubstat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
+                      if (mainDps.weapSubstat === 'Energy Regen') atkPct += 5; // indirect contribution
+                      if (mainDps.weapSubstat === 'HP%') {} // HP scaling chars — simplified
+
+                      // Weapon passive (real parsed values)
+                      if (mainDps.weapon?.passive) {
+                        const wp = parsePassive(mainDps.weapon.passive, mainDps.d.element);
+                        atkPct += wp.atkPct; elemDmg += wp.elemDmg; skillDmg += wp.skillDmg;
+                        cr += wp.critRate; cd += wp.critDmg; defIgnore += wp.defIgnore; resShred += wp.resShred;
+                      }
+
+                      // Echo set bonuses (2pc + 5pc)
+                      if (mainDps.echoSet) {
+                        const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
+                        if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
+                        if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
+                        if (p2.skillDmg) skillDmg += p2.skillDmg; if (p5.skillDmg) skillDmg += p5.skillDmg;
+                        const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
+                        if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
+                      }
+
+                      // ── Team buff contributions from CHAR_BUFF_TABLE (exact per-character values) ──
+                      let basicDmg = 0, heavyDmg = 0, libDmg = 0, echoDmg = 0;
+                      mems.forEach(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        if (!bt) return;
+                        const isMain = m.name === mainDps.name;
+
+                        // Outro buffs — applied to main DPS (target: 'next')
+                        // Scale by uptime: buff.duration / rotTime of team
+                        if (!isMain) {
+                          const teamRotTime = mainDps.d.rotTime || 25;
+                          (bt.outroBuffs || []).forEach(b => {
+                            if (b.target === 'next' || b.target === 'enemy') {
+                              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+                              const val = b.value * uptime;
+                              if (b.stat === 'atkPct') atkPct += val;
+                              else if (b.stat === 'allDmg') elemDmg += val;
+                              else if (b.stat === 'elemDmg') {
+                                const buffEl = (b.condition || '').toLowerCase();
+                                const dpsEl = (mainDps.d.element || '').toLowerCase();
+                                if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
+                              }
+                              else if (b.stat === 'deepen') deepen += val;
+                              else if (b.stat === 'basicDmg') basicDmg += val;
+                              else if (b.stat === 'heavyDmg') heavyDmg += val;
+                              else if (b.stat === 'libDmg') libDmg += val;
+                              else if (b.stat === 'echoDmg') echoDmg += val;
+                              else if (b.stat === 'critRate') cr += val;
+                              else if (b.stat === 'critDmg') cd += val;
+                              else if (b.stat === 'resShred') resShred += val;
+                              else if (b.stat === 'defShred') defShred += val;
+                              else if (b.stat === 'skillDmg') skillDmg += val;
+                            }
+                          });
+                        }
+
+                        // Liberation buffs — teamwide, apply to main DPS (scaled by uptime)
+                        (bt.libBuffs || []).forEach(b => {
+                          if (b.target === 'team' || (!isMain && b.target === 'next')) {
+                            const teamRotTime = mainDps.d.rotTime || 25;
+                            const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+                            const val = b.value * uptime;
+                            if (b.stat === 'atkPct') atkPct += val;
+                            else if (b.stat === 'allDmg') elemDmg += val;
+                            else if (b.stat === 'critRate') cr += val;
+                            else if (b.stat === 'critDmg') cd += val;
+                            else if (b.stat === 'echoDmg') echoDmg += val;
+                          }
+                        });
+
+                        // Self buffs — only for main DPS
+                        if (isMain) {
+                          (bt.selfBuffs || []).forEach(b => {
+                            if (b.stat === 'atkPct') atkPct += b.value;
+                            else if (b.stat === 'elemDmg') elemDmg += b.value;
+                            else if (b.stat === 'critRate') cr += b.value;
+                            else if (b.stat === 'critDmg') cd += b.value;
+                            else if (b.stat === 'defIgnore') defIgnore += b.value;
+                          });
+                        }
+
+                        // Debuffs — enemy-side, from any team member
+                        (bt.debuffs || []).forEach(db => {
+                          if (db.stat === 'defShred') defShred += db.value;
+                          else if (db.stat === 'resShred') resShred += db.value;
+                          else if (db.stat === 'frazzle') {} // DOT computed separately below
+                          else if (db.stat === 'erosion') {} // DOT computed separately below
+                          else if (db.stat === 'offTune') deepen += db.value;
+                          else if (db.stat === 'havocBane') defShred += db.value * 2; // 2% DEF reduction per stack
+                        });
+                      });
+
+                      // Map DPS's dmgFocus to the right skill DMG bonus
+                      const focus = mainDps.d.dmgFocus || [];
+                      if (focus.includes('Normal ATK') || focus.includes('Basic ATK')) skillDmg += basicDmg;
+                      else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5; // partial benefit
+                      if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
+                      else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
+                      if (focus.includes('Liberation')) skillDmg += libDmg;
+                      else if (libDmg > 0) skillDmg += libDmg * 0.3; // partial — some rotation damage is Lib
+                      if (focus.includes('Echo Skill')) skillDmg += echoDmg;
+
+                      // Support echo set contributions
+                      mems.forEach(m => {
+                        if (m.name === mainDps.name) return;
+                        if (m.echoSetName === 'Rejuvenating Glow') atkPct += 15;
+                        if (m.echoSetName === 'Moonlit Clouds') atkPct += 22.5;
+                        if (m.echoSetName === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
+                        if (m.echoSetName === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; } // assumes ≥250% ER
+                      });
+
+                      // ── Resonance Chain (S1-S6) buffs ──
+                      let seqTotalMultBonus = 0; // bonus % to totalMult rotation data
+                      mems.forEach(m => {
+                        const rc = RESONANCE_CHAIN_DATA[m.name];
+                        if (!rc || m.seqLevel <= 0) return;
+                        const isMain = m.name === mainDps.name;
+                        for (let s = 1; s <= Math.min(m.seqLevel, 6); s++) {
+                          const lvl = rc['s' + s];
+                          if (!lvl) continue;
+                          // For main DPS: apply all personal stat buffs
+                          if (isMain) {
+                            if (lvl.atkPct) atkPct += lvl.atkPct;
+                            if (lvl.critRate) cr += lvl.critRate;
+                            if (lvl.critDmg) cd += lvl.critDmg;
+                            if (lvl.elemDmg) elemDmg += lvl.elemDmg;
+                            if (lvl.skillDmg) skillDmg += lvl.skillDmg;
+                            if (lvl.basicDmg) basicDmg += lvl.basicDmg;
+                            if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
+                            if (lvl.libDmg) libDmg += lvl.libDmg;
+                            if (lvl.echoDmg) echoDmg += lvl.echoDmg;
+                            if (lvl.deepen) deepen += lvl.deepen;
+                            if (lvl.defIgnore) defIgnore += lvl.defIgnore;
+                            if (lvl.defShred) defShred += lvl.defShred;
+                            if (lvl.resShred) resShred += lvl.resShred;
+                            if (lvl.totalMult) seqTotalMultBonus += lvl.totalMult;
+                          } else {
+                            // For supports: improved team buffs (allDmg, deepen, defShred, resShred affect team)
+                            if (lvl.allDmg) elemDmg += lvl.allDmg;
+                            if (lvl.deepen) deepen += lvl.deepen;
+                            if (lvl.defShred) defShred += lvl.defShred;
+                            if (lvl.resShred) resShred += lvl.resShred;
+                            if (lvl.atkPct) atkPct += lvl.atkPct; // team ATK buffs
+                            if (lvl.critRate) cr += lvl.critRate;
+                            if (lvl.critDmg) cd += lvl.critDmg;
+                            if (lvl.basicDmg) basicDmg += lvl.basicDmg; // e.g. Camellya S4 team Basic DMG
+                            if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
+                          }
+                        }
+                      });
+
+                      // Re-map DPS dmgFocus with any new basicDmg/heavyDmg/libDmg from sequences
+                      // (Only add the NEW sequence contributions, the base was already mapped above)
+                      // Note: we skip re-mapping here to avoid double-counting since the initial mapping already ran
+                      // Total ATK = (charBaseATK + weapBaseATK) × (1 + ATK%)
+                      const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
+                      // Avg Crit Multiplier
+                      const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
+                      // Damage Bonus = (1 + elemDMG%) × (1 + skillDMG%) × (1 + deepen%)
+                      const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
+                      // DEF multiplier: enemy DEF reduced by shred/ignore. Lv90 enemy base.
+                      // DEF reduction = 1 - (defShred + defIgnore)/100, capped
+                      const enemyDef = 792; // Lv90 standard enemy
+                      const effectiveDef = enemyDef * Math.max(0, 1 - (defShred + defIgnore) / 100);
+                      const defMult = 800 / (800 + effectiveDef); // WuWa DEF formula: charLevel constant ~800
+                      // RES multiplier: 10% base resistance, reduced by shred
+                      const baseRes = 10;
+                      const effectiveRes = Math.max(baseRes - resShred, -30); // can go negative
+                      const resMult = 1 - effectiveRes / 100;
+                      // Final score
+                      const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+
+                      // ── DOT Damage: Frazzle & Erosion (Level-based, NOT ATK-based) ──
+                      // Formula: BaseDMG = LevelMult × 1.25078 × StackMult
+                      // Lv90 LevelMult = 3674. Ticks consume 1 stack.
+                      // Only affected by DEF, RES, and specific Amplify effects.
+                      const rotTime = mainDps.d.rotTime || 25;
+                      const DOT_LEVEL_MULT = 3674; // Lv90
+                      const DOT_BASE_FACTOR = 1.25078;
+                      let dotDmgPerRotation = 0;
+
+                      // Check if team has Frazzle appliers
+                      const hasFrazzle = mems.some(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        return bt?.debuffs?.some(db => db.stat === 'frazzle');
+                      });
+                      if (hasFrazzle) {
+                        // Phoebe applies ~18 stacks in Confession, Rover ~10
+                        const frazzleStacks = mems.some(m => m.name === 'Phoebe') ? 18 : 10;
+                        // Ticks every 3s, each tick at current stack count then -1
+                        const numTicks = Math.min(Math.floor(rotTime / 3), frazzleStacks);
+                        let frazzleTotal = 0;
+                        for (let s = frazzleStacks; s > frazzleStacks - numTicks; s--) {
+                          frazzleTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15); // stack multiplier ~0.15 per stack at high stacks
+                        }
+                        // Phoebe Outro: 100% Frazzle DMG Amp (Confession mode) + Spectro RES -10% already in resShred
+                        const hasPhoebeAmp = mems.some(m => m.name === 'Phoebe');
+                        const frazzleAmpMult = hasPhoebeAmp ? 2.0 : 1.0; // 100% amp = 2x
+                        dotDmgPerRotation += frazzleTotal * frazzleAmpMult * defMult * resMult;
+                      }
+
+                      // Check if team has Erosion appliers
+                      const hasErosion = mems.some(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        return bt?.debuffs?.some(db => db.stat === 'erosion');
+                      });
+                      if (hasErosion) {
+                        const erosionStacks = mems.some(m => m.name === 'Rover') ? 6 : 3;
+                        const erosionTicks = Math.max(1, Math.floor(rotTime / 15));
+                        let erosionTotal = 0;
+                        for (let t = 0; t < erosionTicks; t++) {
+                          erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8);
+                        }
+                        dotDmgPerRotation += erosionTotal * defMult * resMult;
+                      }
+
+                      // Check if team has Fusion Burst appliers (Aemeath)
+                      const hasFusionBurst = mems.some(m => {
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        return bt?.debuffs?.some(db => db.stat === 'fusionBurst');
+                      });
+                      if (hasFusionBurst) {
+                        // Fusion Burst: stacks to 10 (Aemeath changes to 6 trigger), explodes for Fusion AoE
+                        // In Aemeath's case: enhanced skills use max stacks WITHOUT consuming + Fusion Trail (30 stacks = 300% mult)
+                        // ~2 explosions per rotation, each scaling off Level + stacks
+                        const burstExplosions = 2;
+                        const burstStacks = 10; // max stack damage even at 6 trigger
+                        const fusionTrailMult = 3.0; // 30 Fusion Trail stacks = 300% extra mult
+                        const burstDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (burstStacks * 0.5) * fusionTrailMult;
+                        dotDmgPerRotation += burstDmg * burstExplosions * defMult * resMult;
+                      }
+
+                      // Check if team has Electro Flare appliers
+                      const hasElectroFlare = mems.some(m => {
+                        return m.d.element === 'Electro' && (m.d.dmgFocus || []).length > 0;
+                      });
+                      if (hasElectroFlare) {
+                        // Electro Flare: periodic Electro DOT, loses half stacks per tick
+                        // Max 10 stacks → 5 → 2 → 1, each tick deals increasing DMG
+                        // Also generates Electro Rage at max for amplified next Flare
+                        const flareTicks = Math.min(4, Math.floor(rotTime / 4));
+                        let flareTotal = 0;
+                        let stacks = 10;
+                        for (let t = 0; t < flareTicks; t++) {
+                          flareTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * 0.12);
+                          stacks = Math.ceil(stacks / 2);
+                        }
+                        dotDmgPerRotation += flareTotal * defMult * resMult;
+                      }
+
+                      // ── Tune Break damage layer (v3.0+) ──
+                      let tuneBreakDmg = 0;
+                      let tuneBreakAmp = 0;
+                      let tuneBreakDeepenMult = 1;
+                      const tuneBreakMembers = mems.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
+                      if (tuneBreakMembers.length > 0) {
+                        // Sum Tune Break Boost from all members
+                        let totalTuneBreakBoost = 0;
+                        tuneBreakMembers.forEach(m => {
+                          const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+                          totalTuneBreakBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
+                        });
+
+                        // ~1 Tune Break per rotation on endgame bosses
+                        const tuneBreaksPerRotation = 1;
+
+                        // Base Tune Break DMG: scales off Tune Break Boost (Physical, flat)
+                        const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.02);
+                        tuneBreakDmg += baseTuneBreakDmg * tuneBreaksPerRotation * defMult;
+
+                        // Tune Rupture Response: extra DMG instance from each responder per Break
+                        tuneBreakMembers.forEach(m => {
+                          const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+                          if (tb.ruptureDmgMult) {
+                            const responseDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100);
+                            tuneBreakDmg += responseDmg * tuneBreaksPerRotation * defMult * resMult;
+                          }
+                        });
+
+                        // Mornye Interfered Marker: up to 40% more DMG on target
+                        const mornyeMem = tuneBreakMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
+                        if (mornyeMem) {
+                          tuneBreakAmp = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
+                          const interferedUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
+                          tuneBreakDeepenMult *= 1 + (tuneBreakAmp / 100) * interferedUptime;
+                        }
+
+                        // Tune Strain: per stack × Boost × 0.12% total DMG increase
+                        const maxStrain = Math.max(...tuneBreakMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
+                        if (maxStrain > 0 && totalTuneBreakBoost > 0) {
+                          const strainDmgPct = maxStrain * totalTuneBreakBoost * 0.12;
+                          const strainUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
+                          tuneBreakDeepenMult *= 1 + (strainDmgPct / 100) * strainUptime;
+                        }
+                      }
+                      dotDmgPerRotation += tuneBreakDmg;
+
+                      // ── Real DPS: skill multipliers × rotation timing + DOT ──
+                      // Sum total rotation damage from all team members
+                      let totalRotDmg = 0;
+                      mems.forEach(m => {
+                        let mult = m.d.totalMult || 0;
+                        if (mult === 0) return;
+                        const mAtk = m.totalBaseAtk;
+                        const isMain = m.name === mainDps.name;
+                        // Main DPS: apply resonance chain totalMult bonus
+                        if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
+                        if (isMain) {
+                          totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
+                        } else {
+                          // Support/sub DPS: own weapon substat + basic element bonus, reduced crit
+                          let sElem = 10; // 2pc echo bonus
+                          if (m.echoSet) {
+                            const ek2 = (m.d.element || '').toLowerCase() + 'Dmg';
+                            sElem += (m.echoSet.p2val?.[ek2] || 0) + (m.echoSet.p5val?.[ek2] || 0);
+                          }
+                          const sAtk = mAtk * 1.15; // ~15% ATK from substats
+                          const sCrit = 1 + (0.05) * (0.5); // minimal crit contribution
+                          totalRotDmg += sAtk * (mult / 100) * sCrit * (1 + sElem / 100) * defMult * resMult;
+                        }
+                      });
+                      const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
+
+                      // Synergy
+                      let syn = 0;
+                      if (mems.some(m => m.d.role === 'Healer')) syn += 25;
+                      if (mems.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) syn += 25;
+                      if (allBuffs.length >= 2) syn += 15;
+                      if (allDebuffs.length >= 1) syn += 10;
+                      if (allBuffs.some(b => b.buff.includes(mainDps.d.element))) syn += 15;
+                      if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) syn += 10;
+                      syn = Math.min(syn, 100);
+                      const warnings = [];
+                      if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
+                      if (mems.length < 3) warnings.push('Incomplete team');
+                      const els = new Set(mems.map(m => m.d.element));
+                      if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
+                      const dotDps = Math.round(dotDmgPerRotation / rotTime);
+                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
+                    };
+
+                    const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
+                    if (!stats) return null;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, realDps, synergy, warnings } = stats;
+                    const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
+
+                    return (
+                      <>
+                      <Card>
+                        <CardHeader><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
+                        <CardBody>
+                          <div className="space-y-3">
+                            {/* Per-member: overview + damage breakdown */}
+                            {members.map((m) => {
+                              const rarity5 = m.d.rarity === 5;
+                              const rc = roleColors[m.d.role] || roleColors.Support;
+                              const isMain = m.name === mainDps.name;
+                              return (
+                                <div key={m.name} className="p-2.5 rounded-lg border hover:border-white/15 transition-colors"
+                                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
+                                  {/* 2-col: Left=header+desc+focus+buffs, Right=stats+equipment */}
+                                  <div className="flex flex-row gap-3">
+                                    {/* LEFT: header + description + damage focus + buffs */}
+                                    <div className="flex-1 min-w-0">
+                                  {/* Character header */}
+                                  <div className="mb-2">
+                                    <div className="flex items-start gap-2 mb-1.5">
+                                      <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
+                                        style={{ background: 'rgba(0,0,0,0.3)' }}>
+                                        {collectionImages[m.name] ? (
+                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{m.name[0]}</div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-white text-xs font-semibold">{m.name}</span>
+                                          <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                        </div>
+                                        <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
+                                          <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
+                                          <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                                            style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                            {m.d.element}
+                                          </span>
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{d.role}</span>
+                                    <span className="text-[9px] text-gray-400">{m.d.weapon}</span>
+                                  </div>
+                                  {/* Description */}
+                                  <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
+                                  {/* Damage Focus */}
+                                  <div className="mb-1.5">
+                                    <div className="kuro-label">Damage Focus</div>
+                                    <div className="flex flex-wrap gap-1">
                                       <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
-                                        style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                        {d.element}
+                                        style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                        {m.d.element} DMG
                                       </span>
-                                      <span className="text-[9px] text-gray-400">{d.weapon}</span>
+                                      {(m.d.dmgFocus || []).map((df, di) => (
+                                        <span key={di} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
+                                      ))}
                                     </div>
                                   </div>
+                                  {/* Buffs */}
+                                  {m.d.buffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="kuro-label">Buffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.buffs.map((b, bi) => (
+                                          <span key={bi} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Debuffs */}
+                                  {m.d.debuffs?.length > 0 && (
+                                    <div className="mb-1.5">
+                                      <div className="kuro-label">Debuffs</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {m.d.debuffs.map((db, di) => (
+                                          <span key={di} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 6px rgba(239,68,68,0.12)" }}>{db}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Main DPS: expanded damage stats */}
+                                  {isMain && (
+                                    <div className="mb-1.5">
+                                      <div className="kuro-label">Damage Stats (with team buffs)</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400" style={{ boxShadow: "0 0 8px rgba(234,179,8,0.15)" }}>Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CR {cr.toFixed(1)}%</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CD {cd.toFixed(1)}%</span>
+                                        <span className="text-[8px] px-1.5 py-0.5 rounded font-medium"
+                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                          {m.d.element} +{elemDmg.toFixed(0)}%
+                                        </span>
+                                        {skillDmg > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 8px rgba(245,158,11,0.15)" }}>Skill +{skillDmg.toFixed(0)}%</span>}
+                                        {atkPct > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 8px rgba(34,197,94,0.15)" }}>ATK% +{atkPct.toFixed(0)}%</span>}
+                                        {deepen > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400" style={{ boxShadow: "0 0 8px rgba(168,85,247,0.15)" }}>Deepen +{deepen.toFixed(0)}%</span>}
+                                        {defShred > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Shred {defShred}%</span>}
+                                        {resShred > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>RES Shred {resShred}%</span>}
+                                        {defIgnore > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Ignore {defIgnore}%</span>}
+                                      </div>
+                                    </div>
+                                  )}
+                                    </div>{/* end LEFT */}
+                                    {/* RIGHT: base stats + equipment grid */}
+                                    <div className="flex-shrink-0">
+                                  {/* Base Stats */}
+                                  <div className="mb-1.5">
+                                    <div className="kuro-label">Base Stats (Lv.90)</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
+                                    </div>
+                                  </div>
+                                  {/* Equipment slots: 1 weapon + 5 echoes */}
+                                  {(() => {
+                                    const eqKey = state.activeTeamIndex + ':' + m.name;
+                                    const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                                    const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
+                                    const slotStyle = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
+                                    return (
+                                      <div className="space-y-1.5">
+                                        {/* 3x2 equipment grid */}
+                                        <div className="grid grid-cols-3 gap-1">
+                                          {/* Weapon slot */}
+                                          <div
+                                            className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                            onClick={() => {
+                                              setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
+                                              setWeaponSearch('');
+                                              setWeaponSelectorOpen(true);
+                                              haptic.light();
+                                            }}
+                                            title={eq.weapon || 'Select weapon'}
+                                          >
+                                            {equippedWeap && collectionImages[eq.weapon] ? (
+                                              <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                            ) : equippedWeap ? (
+                                              <>
+                                                <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                                <span className="text-[7px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Sword size={14} className="text-gray-500" />
+                                                <span className="text-[7px] text-gray-500">Weapon</span>
+                                              </>
+                                            )}
+                                          </div>
+                                          {/* 5 Echo slots (placeholder) */}
+                                          {[0, 1, 2, 3, 4].map(ei => (
+                                            <div key={ei}
+                                              className={`${slotStyle} border-dashed border-white/10 opacity-60 cursor-default`}
+                                              title={'Echo slot ' + (ei + 1) + ' — coming soon'}
+                                            >
+                                              <Diamond size={12} className="text-gray-600" />
+                                              <span className="text-[7px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        {/* S0-S6 toggle */}
+                                        <div>
+                                          <div className="text-[9px] text-gray-400 mb-0.5">Sequence</div>
+                                          <div className="flex gap-px">
+                                            {[0,1,2,3,4,5,6].map(s => {
+                                              const isActive = (eq.sequence || 0) === s;
+                                              return (
+                                                <button key={s}
+                                                  className={`flex-1 py-0.5 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                  onClick={() => {
+                                                    setTeamEquipment(prev => {
+                                                      const n = { ...prev };
+                                                      n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                      try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                      return n;
+                                                    });
+                                                    haptic.light();
+                                                  }}
+                                                >S{s}</button>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                        {/* Sonata Set selector */}
+                                        <div>
+                                          <div className="text-[9px] text-gray-400 mb-0.5">Sonata Set</div>
+                                          <select
+                                            value={eq.echoSet || ''}
+                                            onChange={e => {
+                                              setTeamEquipment(prev => {
+                                                const n = { ...prev };
+                                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: e.target.value || '' };
+                                                try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                return n;
+                                              });
+                                              haptic.light();
+                                            }}
+                                            className="w-full text-[8px] text-gray-300 rounded border border-white/10 px-1.5 py-1 focus:border-cyan-500/50 focus:outline-none transition-all"
+                                            style={{ background: 'var(--bg-btn)' }}
+                                          >
+                                            <option value="">Auto (from recommended)</option>
+                                            {Object.keys(ECHO_SETS).map(setName => (
+                                              <option key={setName} value={setName}>{setName}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        {/* Weapon info */}
+                                        {equippedWeap && (
+                                          <div className="text-[9px]">
+                                            <span className="text-gray-500">Weapon: </span>
+                                            <span className="text-yellow-400/80">{eq.weapon}</span>
+                                            <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
+                                          </div>
+                                        )}
+                                        {!equippedWeap && m.d.bestWeapon && (
+                                          <div className="text-[9px]">
+                                            <span className="text-gray-500">Rec: </span>
+                                            <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
+                                            {m.d.bestEchoes && (
+                                              <span className="text-gray-500"> · </span>
+                                            )}
+                                            {m.d.bestEchoes && (
+                                              <span className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</span>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+                                    </div>{/* end RIGHT */}
+                                  </div>{/* end flex row */}
                                 </div>
-                                {/* Description */}
-                                <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{d.desc}</p>
-                                {/* Damage Focus */}
-                                <div className="mb-1.5">
-                                  <div className="text-[9px] text-gray-400 font-medium mb-1">Damage Focus</div>
-                                  <div className="flex flex-wrap gap-1">
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded font-medium"
-                                      style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                      {d.element} DMG
+                              );
+                            })}
+
+                            {/* Aggregated buffs/debuffs */}
+                            {allBuffs.length > 0 && (
+                              <div>
+                                <div className="kuro-label">Team Buffs</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {allBuffs.map((b, i) => (
+                                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                                      {b.buff} <span className="text-gray-500">({b.source})</span>
                                     </span>
-                                    {(d.dmgFocus || []).map((df, di) => (
-                                      <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                                {/* Buffs */}
-                                {d.buffs?.length > 0 && (
-                                  <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Buffs</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {d.buffs.map((b, bi) => (
-                                        <span key={bi} className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Debuffs */}
-                                {d.debuffs?.length > 0 && (
-                                  <div className="mb-1.5">
-                                    <div className="text-[9px] text-gray-400 font-medium mb-1">Debuffs</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {d.debuffs.map((db, di) => (
-                                        <span key={di} className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {/* Best Build */}
-                                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-white/5">
-                                  {d.bestWeapon && (
-                                    <div className="text-[9px]">
-                                      <span className="text-gray-500">Weapon: </span>
-                                      <span className="text-yellow-400/80">{d.bestWeapon}</span>
-                                    </div>
-                                  )}
-                                  {d.bestEchoes && (
-                                    <div className="text-[9px]">
-                                      <span className="text-gray-500">Echoes: </span>
-                                      <span className="text-cyan-400/80">{d.bestEchoes.join(' + ')}</span>
-                                    </div>
-                                  )}
+                                  ))}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </CardBody>
-                    </Card>
-                  )}
+                            )}
+                            {allDebuffs.length > 0 && (
+                              <div>
+                                <div className="kuro-label">Enemy Debuffs</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {allDebuffs.map((b, i) => (
+                                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                                      {b.debuff} <span className="text-gray-500">({b.source})</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Damage Score: Raw + Full DPS — single row */}
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="kuro-stat kuro-stat-gold p-2 text-center">
+                                <div className="text-gray-400 text-[9px]">Raw Power</div>
+                                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{score.toLocaleString()}</div>
+                                <div className="text-gray-500 text-[8px]">stat multipliers</div>
+                              </div>
+                              <div className="kuro-stat kuro-stat-cyan p-2 text-center">
+                                <div className="text-gray-400 text-[9px]">Full DPS</div>
+                                <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString()}</div>
+                                <div className="text-gray-500 text-[8px]">dmg/sec</div>
+                              </div>
+                              <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
+                                <div className="text-gray-400 text-[9px]">Synergy</div>
+                                <div className={`text-lg font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}</div>
+                              </div>
+                            </div>
+
+                            {/* Warnings */}
+                            {warnings.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {warnings.map((w, i) => (
+                                  <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
+                                    <AlertTriangle size={9} /> {w}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {/* Accuracy note */}
+                            <p className="text-[9px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats, Resonance Chain (S1-S6). S0 assumed.</p>
+                          </div>
+                        </CardBody>
+                      </Card>
+
+                      {/* DPS Comparison — computed from stored slots */}
+                      {teamCompareEntries.length > 0 && (() => {
+                        const computed = teamCompareEntries.map(entry => ({
+                          ...entry,
+                          stats: calcTeamStats(entry.slots, entry.teamIdx ?? 0),
+                        })).filter(e => e.stats);
+                        if (!computed.length) return null;
+                        const maxS = Math.max(...computed.map(e => e.stats.score), 1);
+                        const maxDps = Math.max(...computed.map(e => e.stats.realDps), 1);
+                        return (
+                        <Card>
+                          <CardHeader action={
+                            <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
+                              className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                              style={{ background: 'var(--bg-btn)' }}>
+                              Clear All
+                            </button>
+                          }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
+                          <CardBody>
+                            <div className="space-y-3">
+                              {computed.map((entry) => {
+                                const s = entry.stats;
+                                const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
+                                const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
+                                return (
+                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/10 relative" style={{ background: 'var(--bg-stat)' }}>
+                                    <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
+                                      className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
+                                      <X size={10} />
+                                    </button>
+
+                                    {/* Character cards */}
+                                    <div className="flex gap-1.5 mb-2">
+                                      {s.members.map((m, mi) => {
+                                        const rarity5 = m.d.rarity === 5;
+                                        const rc2 = roleColors[m.d.role] || roleColors.Support;
+                                        return (
+                                          <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'border-yellow-500/50' : 'border-purple-500/50'}`}
+                                            style={{
+                                              background: rarity5 ? 'linear-gradient(to top, rgba(237,175,24,0.15), rgba(237,175,24,0.05))' : 'linear-gradient(to top, rgba(168,85,247,0.15), rgba(168,85,247,0.05))',
+                                              boxShadow: rarity5 ? '0 0 12px rgba(237,175,24,0.15), inset 0 0 10px rgba(237,175,24,0.05)' : '0 0 12px rgba(168,85,247,0.15), inset 0 0 10px rgba(168,85,247,0.05)'
+                                            }}>
+                                            <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
+                                            <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                            <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {/* Raw score — neon glow style matching histogram */}
+                                    <div className="mb-2">
+                                      <div className="flex items-baseline justify-between mb-1">
+                                        <span className="text-gray-400 text-[10px]">Raw Score</span>
+                                        <span className="text-emerald-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(34,197,94,0.6)' }}>{s.score.toLocaleString()}</span>
+                                      </div>
+                                      <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
+                                        <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
+                                          style={{
+                                            width: Math.max(rawPct * 0.85, 6) + '%',
+                                            background: 'linear-gradient(90deg, #22c55e40, #22c55e20)',
+                                            border: '1px solid #22c55e90',
+                                            borderLeft: 'none',
+                                            boxShadow: '0 0 12px #22c55e50, inset 0 0 15px #22c55e30'
+                                          }} />
+                                        <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
+                                          style={{
+                                            left: 0,
+                                            background: '#22c55e',
+                                            boxShadow: '0 0 8px #22c55e, 0 0 16px #22c55e80'
+                                          }} />
+                                      </div>
+                                    </div>
+
+                                    {/* Full DPS — neon glow style matching histogram */}
+                                    <div className="mb-1.5">
+                                      <div className="flex items-baseline justify-between mb-1">
+                                        <span className="text-gray-400 text-[10px]">Full DPS</span>
+                                        <span className="text-cyan-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(6,182,212,0.6)' }}>{s.realDps.toLocaleString()} /s</span>
+                                      </div>
+                                      <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
+                                        <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
+                                          style={{
+                                            width: Math.max(fullPct * 0.85, 6) + '%',
+                                            background: 'linear-gradient(90deg, #06b6d440, #06b6d420)',
+                                            border: '1px solid #06b6d490',
+                                            borderLeft: 'none',
+                                            boxShadow: '0 0 12px #06b6d450, inset 0 0 15px #06b6d430'
+                                          }} />
+                                        <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
+                                          style={{
+                                            left: 0,
+                                            background: '#06b6d4',
+                                            boxShadow: '0 0 8px #06b6d4, 0 0 16px #06b6d480'
+                                          }} />
+                                      </div>
+                                    </div>
+
+                                    {/* Quick stats */}
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-white/10">
+                                      <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
+                                      <div className="text-[9px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
+                                      {s.defShred > 0 && <div className="text-[9px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{s.defShred}%</span></div>}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {teamCompareEntries.length < 5 && (
+                              <p className="text-gray-500 text-[10px] text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
+                            )}
+                          </CardBody>
+                        </Card>
+                        );
+                      })()}
+                      </>
+                    );
+                  })()}
 
                   {/* Suggested Teams from Character Data */}
                   <Card>
@@ -5184,15 +5964,15 @@ function WhisperingWishesInner() {
                                 haptic.success();
                               }}
                               className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
-                              style={{ background: 'var(--bg-btn)' }}
+                              style={{ background: 'var(--bg-stat)' }}
                             >
                               <div className="flex gap-1 flex-shrink-0">
                                 {s.members.slice(0, 3).map((m, j) => {
                                   const cd = CHARACTER_DATA[m];
                                   const sf = getImageFraming(`collection-${m}`);
                                   return (
-                                    <div key={j} className="w-10 h-10 rounded-lg border border-white/15 overflow-hidden flex-shrink-0 relative"
-                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint' }}>
+                                    <div key={j} className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative"
+                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280')}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280')}30` : 'none' }}>
                                       {collectionImages[m] ? (
                                         <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
@@ -5414,6 +6194,107 @@ function WhisperingWishesInner() {
                               <p className="text-gray-500 text-xs">No resonators match</p>
                             </div>
                           )}
+                        </div>
+                      </div>
+                    </div>
+                  </FocusTrapModal>
+
+                  {/* Weapon Selector Modal */}
+                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)}>
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWeaponSelectorOpen(false)} />
+                      <div className="relative w-full max-w-md max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-white/10 flex flex-col" style={{ background: 'var(--bg-card, #101218)' }}>
+                        <div className="p-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+                          <div>
+                            <h3 className="text-white font-bold text-sm">Select Weapon</h3>
+                            <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
+                          </div>
+                          <button onClick={() => setWeaponSelectorOpen(false)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X size={16} className="text-gray-400" /></button>
+                        </div>
+                        <div className="p-2 border-b border-white/5 flex-shrink-0">
+                          <input
+                            value={weaponSearch}
+                            onChange={e => setWeaponSearch(e.target.value)}
+                            placeholder="Search weapons..."
+                            className="kuro-input w-full text-xs"
+                          />
+                        </div>
+                        <div className="overflow-y-auto flex-1 p-2">
+                          <div className="space-y-1">
+                            {/* Unequip option */}
+                            <button
+                              onClick={() => {
+                                const eqKey = weaponSelectorTarget.teamIdx + ':' + weaponSelectorTarget.charName;
+                                setTeamEquipment(prev => {
+                                  const n = { ...prev };
+                                  if (n[eqKey]) n[eqKey] = { ...n[eqKey], weapon: null };
+                                  else n[eqKey] = { weapon: null, echoes: [null, null, null, null, null] };
+                                  try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                  return n;
+                                });
+                                setWeaponSelectorOpen(false);
+                                haptic.light();
+                              }}
+                              className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              ✕ Unequip weapon
+                            </button>
+                            {/* Filtered weapons */}
+                            {(() => {
+                              const charWeapType = CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon;
+                              return Object.entries(WEAPON_DATA)
+                                .filter(([name, w]) => {
+                                  if (charWeapType && w.type !== charWeapType) return false;
+                                  if (weaponSearch && !name.toLowerCase().includes(weaponSearch.toLowerCase())) return false;
+                                  return true;
+                                })
+                                .sort((a, b) => b[1].rarity - a[1].rarity || b[1].baseAtk - a[1].baseAtk)
+                                .map(([name, w]) => {
+                                  const rarity5 = w.rarity === 5;
+                                  const isBest = name === CHARACTER_DATA[weaponSelectorTarget.charName]?.bestWeapon;
+                                  return (
+                                    <button
+                                      key={name}
+                                      onClick={() => {
+                                        const eqKey = weaponSelectorTarget.teamIdx + ':' + weaponSelectorTarget.charName;
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          if (n[eqKey]) n[eqKey] = { ...n[eqKey], weapon: name };
+                                          else n[eqKey] = { weapon: name, echoes: [null, null, null, null, null] };
+                                          try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                          return n;
+                                        });
+                                        setWeaponSelectorOpen(false);
+                                        haptic.success();
+                                      }}
+                                      className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${rarity5 ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10' : 'border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10'}`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        {collectionImages[name] ? (
+                                          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border" style={{ borderColor: rarity5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)', background: rarity5 ? 'rgba(234,179,8,0.08)' : 'rgba(168,85,247,0.08)' }}>
+                                            <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                          </div>
+                                        ) : (
+                                          <Sword size={14} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-white text-[11px] font-semibold truncate">{name}</span>
+                                            <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                            {isBest && <span className="text-[7px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                          </div>
+                                          <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[9px] text-gray-400">ATK {w.baseAtk}</span>
+                                            <span className="text-[9px] text-cyan-400/80">{w.stat} {w.subStatValue}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                });
+                            })()}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -6271,7 +7152,7 @@ Example: {"pulls":[...]}'
             <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
               {!adminUnlocked ? (
                 <div className="space-y-3">
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
                     <p className="text-yellow-400 text-sm font-medium">Admin Access Required</p>
                     <p className="text-gray-400 text-[10px] mt-1">Enter admin password to continue</p>
                   </div>
@@ -6292,7 +7173,7 @@ Example: {"pulls":[...]}'
                 </div>
               ) : (
                 <>
-                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-2 text-center">
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
                     <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
                   </div>
 
@@ -6333,7 +7214,7 @@ Example: {"pulls":[...]}'
                   {/* Collection Tab */}
                   {adminTab === 'collection' && (
                     <div className="space-y-4">
-                      <div className="bg-purple-500/10 border border-purple-500/30 rounded p-3">
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
                         <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
                         <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Add custom URLs to override or add missing ones.</p>
                         
@@ -6511,7 +7392,7 @@ Example: {"pulls":[...]}'
                         {!adminPlayerList ? (
                           <div className="space-y-1.5 py-2" aria-label="Loading player list">
                             {[...Array(4)].map((_, i) => (
-                              <div key={i} className="flex items-center gap-2 p-2 rounded bg-white/5">
+                              <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
                                 <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
                                 <div className="kuro-skeleton kuro-skeleton-text flex-1" style={{ width: `${60 + i * 5}%` }} />
                                 <div className="kuro-skeleton kuro-skeleton-text w-12 h-3 flex-shrink-0" />
@@ -6523,7 +7404,7 @@ Example: {"pulls":[...]}'
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (
-                              <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded bg-white/5 hover:bg-white/10 transition-colors">
+                              <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="text-gray-400 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
@@ -6578,7 +7459,7 @@ Example: {"pulls":[...]}'
                   {/* Trophies Tab */}
                   {adminTab === 'trophies' && (
                     <div className="space-y-4">
-                      <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
                         <h3 className="text-amber-400 text-sm font-medium mb-2">Trophy Name Editor</h3>
                         <p className="text-gray-400 text-[10px] mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
 

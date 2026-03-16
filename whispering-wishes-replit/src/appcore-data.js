@@ -577,7 +577,7 @@ const CHARACTER_DATA = {
   ['Lynae',         [],                              ['Tune Break DMG Buff'],                 ['Off-Tune']],
   ['Mornye',        [],                              ['Heal'],                                ['Off-Tune']],
   ['Luuk Herssen',  ['Normal ATK'],                  [],                                      []],
-  ['Aemeath',       ['Res. Skill', 'Liberation'],    [],                                      []],
+  ['Aemeath',       ['Res. Skill', 'Liberation'],    [],                                      ['Fusion Burst']],
   // 4★
   ['Aalto',         [],                              [],                                      []],
   ['Baizhi',        [],                              ['Heal'],                                []],
@@ -594,6 +594,531 @@ const CHARACTER_DATA = {
 ].forEach(([name, dmgFocus, buffs, debuffs]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs });
 });
+
+// [SECTION:BASE_STATS] — Level 90 base stats from Prydwen.gg (HP, ATK, DEF, maxEnergy)
+[
+  ['Rover',         11400, 375, 1369, 125],
+  ['Jiyan',         10488, 438, 1185, 125],
+  ['Calcharo',      10500, 438, 1185, 125],
+  ['Encore',        10513, 425, 1246, 125],
+  ['Jianxin',       14113, 338, 1124, 150],
+  ['Lingyang',      10388, 438, 1210, 125],
+  ['Verina',        14238, 338, 1100, 175],
+  ['Yinlin',        11000, 400, 1283, 125],
+  ['Jinhsi',        10825, 413, 1259, 125],
+  ['Changli',       10388, 463, 1100, 125],
+  ['Zhezhi',        12250, 375, 1198, 125],
+  ['Xiangli Yao',   10625, 425, 1222, 125],
+  ['Shorekeeper',   16713, 288, 1100, 125],
+  ['Camellya',      10325, 450, 1161, 125],
+  ['Carlotta',      12450, 463, 1198, 125],
+  ['Roccia',        12250, 375, 1198, 125],
+  ['Phoebe',        10825, 413, 1259, 125],
+  ['Brant',         11675, 375, 1308, 125],
+  ['Cantarella',    11600, 400, 1100, 125],
+  ['Zani',          10775, 438, 1136, 125],
+  ['Ciaccona',      12238, 375, 1198, 125],
+  ['Cartethyia',    14800, 313, 611,  125],
+  ['Lupa',          11913, 388, 1185, 125],
+  ['Phrolova',      10775, 438, 1136, 125],
+  ['Augusta',       10300, 463, 1112, 125],
+  ['Iuno',          10525, 450, 1124, 125],
+  ['Galbrena',      10300, 463, 1112, 125],
+  ['Qiuyuan',       12238, 375, 1198, 125],
+  ['Chisa',         10775, 438, 1136, 125],
+  ['Lynae',         12238, 375, 1198, 125],
+  ['Mornye',        15375, 288, 1356, 125],
+  ['Luuk Herssen',  10300, 463, 1112, 125],
+  ['Aemeath',       11025, 425, 1149, 125],
+  // 4★
+  ['Aalto',         9850,  263, 1075, 150],
+  ['Baizhi',        12813, 213, 1002, 175],
+  ['Chixia',        9088,  300, 953,  150],
+  ['Danjin',        9438,  263, 1149, 100],
+  ['Yangyang',      10200, 250, 1100, 100],
+  ['Sanhua',        10063, 275, 941,  100],
+  ['Taoqi',         8950,  225, 1564, 125],
+  ['Yuanwu',        8525,  225, 1637, 125],
+  ['Mortefi',       10025, 250, 1136, 125],
+  ['Youhu',         9975,  263, 1051, 125],
+  ['Lumi',          8500,  338, 880,  125],
+  ['Buling',        10625, 225, 1259, 125],
+].forEach(([name, hp, atk, def, maxEnergy]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { baseHp: hp, baseAtk: atk, baseDef: def, maxEnergy });
+});
+
+// [SECTION:ROTATION_DATA] — Skill multipliers & rotation timing per character
+// totalMult: sum of ATK% multipliers in one full rotation (all skills used)
+// rotTime: full team rotation duration in seconds
+// onField: character's on-field time in seconds
+// Sources: Prydwen, WutheringLab, community rotation testing
+[
+  // 5★ Main DPS — high totalMult, long onField
+  ['Jiyan',         2850, 22, 16],  // Heavy ATK burst in Qingloong
+  ['Calcharo',      2600, 24, 17],  // Liberation → Death Messenger combo
+  ['Encore',        2400, 22, 15],  // Cosmos Rampage mode
+  ['Lingyang',      2200, 24, 16],  // Lion Form aerials
+  ['Jinhsi',        3200, 25, 12],  // Incarnation nuke (front-loaded burst)
+  ['Xiangli Yao',   2900, 25, 17],  // Mech form Liberation
+  ['Camellya',      3100, 26, 19],  // Budding + Blossom full rotation
+  ['Carlotta',      3400, 23, 14],  // Burst gunslinger, fast rotation
+  ['Brant',         2700, 24, 17],  // Normal ATK chains + self-heal
+  ['Cartethyia',    2500, 25, 16],  // HP scaling + Erosion
+  ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
+  ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
+  ['Luuk Herssen',  2400, 23, 16],  // Normal ATK chains
+  ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
+  // 5★ Sub DPS — moderate totalMult, short onField
+  ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
+  ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
+  ['Changli',       2000, 22, 8],   // Fast Fusion combos
+  ['Zhezhi',        1400, 25, 5],   // Off-field painter
+  ['Roccia',        1200, 25, 7],   // Support sub DPS
+  ['Phoebe',        2200, 24, 10],  // Card skills burst
+  ['Cantarella',    1300, 25, 5],   // Off-field Coordinated
+  ['Zani',          2600, 24, 14],  // Res. Skill + Heavy ATK
+  ['Ciaccona',      1100, 25, 6],   // Aero support
+  ['Lupa',          2000, 24, 10],  // Liberation burst + team buff
+  ['Phrolova',      1800, 24, 8],   // Echo Skill focused
+  ['Iuno',          1500, 25, 8],   // Heavy ATK buff + heal
+  ['Qiuyuan',       1200, 25, 6],   // Echo Skill DMG buff
+  ['Chisa',         1100, 25, 6],   // DEF Shred support
+  ['Lynae',         1300, 25, 6],   // Tune Break support
+  ['Mornye',        800,  25, 5],   // Healer + Off-Tune
+  // 5★ Healers/Support — low totalMult
+  ['Verina',        600,  25, 4],   // Quick heal + ATK buff + deepen
+  ['Jianxin',       800,  25, 6],   // Shield + grouping
+  ['Shorekeeper',   500,  25, 3],   // Stellarealm crit buff + heal
+  // 4★
+  ['Aalto',         900,  25, 7],
+  ['Baizhi',        400,  25, 3],
+  ['Chixia',        1600, 24, 12],
+  ['Danjin',        1400, 24, 8],
+  ['Yangyang',      800,  25, 5],
+  ['Sanhua',        1000, 25, 5],   // Quick swap Basic ATK Amp
+  ['Taoqi',         600,  25, 5],
+  ['Yuanwu',        700,  25, 5],   // Coordinated ATK
+  ['Mortefi',       900,  25, 5],   // Heavy ATK buff + Coordinated
+  ['Youhu',         700,  25, 5],
+  ['Lumi',          1100, 25, 7],
+  ['Buling',        600,  25, 4],
+].forEach(([name, totalMult, rotTime, onField]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { totalMult, rotTime, onField });
+});
+
+// [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
+// Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
+// Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
+// stat types: atkPct, allDmg, elemDmg, skillDmg, basicDmg, heavyDmg, libDmg, echoDmg,
+//             critRate, critDmg, deepen, resShred, defShred, defIgnore, coordDmg
+const CHAR_BUFF_TABLE = {
+  // ── 5★ Supports / Sub DPS ──
+  'Verina': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 30 }],
+    libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 30 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% All DMG Deepen 30s. Lib: 20% ATK teamwide. Fatal blow protection.',
+  },
+  'Shorekeeper': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 24 }],
+    libBuffs: [
+      { stat: 'critRate', value: 12.8, target: 'team', duration: 25, condition: 'In Stellarealm field' },
+      { stat: 'critDmg', value: 25, target: 'team', duration: 25, condition: 'In Stellarealm field' },
+    ],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Lib field: +12.8% CR +25% CD while inside. Outro: 15% Deepen. Knockdown recovery.',
+  },
+  'Jianxin': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 15, duration: 10, condition: 'Shield active' }],
+    note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
+  },
+  'Lynae': {
+    outroBuffs: [
+      { stat: 'deepen', value: 15, target: 'next', duration: 14 },
+      { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
+    ],
+    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30 }],
+    selfBuffs: [],
+    debuffs: [],
+    tuneBreak: {
+      boostToTeam: 40, // Visual Impact grants +40 Tune Break Boost teamwide
+      baseTuneBreakBoost: 10, // 3.x char base stat
+      ruptureDmgMult: 350, // Tune Rupture Response — Spectral Analysis: ~350% ATK Level-scaled
+      strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
+      maxStrainStacks: 3, // base 2 + 1 from Lynae
+    },
+    note: 'Lib: 24% All DMG (30s). Outro: 15% Deepen + 25% Lib Amp (14s). Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
+  },
+  'Mornye': {
+    outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 14 }],
+    libBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [{ stat: 'offTune', value: 15, duration: 20, condition: 'Off-Tune buildup' }],
+    tuneBreak: {
+      boostToTeam: 0,
+      baseTuneBreakBoost: 10,
+      ruptureDmgMult: 300, // Tune Rupture Response — Particle Jet
+      strainDmgPerStack: 0.12,
+      maxStrainStacks: 3, // base 2 + 1 from Mornye
+      interferedDmgAmp: 40, // targets with Interfered Marker take up to 40% more DMG (0.25% per 1% ER over 100%)
+    },
+    note: 'Outro: 25% Deepen. Lib: 15% All DMG. Interfered Marker: up to 40% DMG Amp on target. Rupture Response. Off-Tune buildup amplifier.',
+  },
+  'Roccia': {
+    outroBuffs: [
+      { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
+      { stat: 'atkPct', value: 12, target: 'team', duration: 20, condition: 'Weapon passive' },
+    ],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 25% Basic ATK DMG Amp. Weapon passive: 12% team ATK.',
+  },
+  'Changli': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'After 4 Resonance Skill casts' }],
+    debuffs: [],
+    note: 'Outro: 20% Fusion DMG Amp to next. Self ATK ramp.',
+  },
+  'Yinlin': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'resShred', value: 10, duration: 10, condition: 'Electro RES' }],
+    note: 'Outro: 20% Electro DMG Amp. Off-field Coordinated ATK. Electro RES Shred.',
+  },
+  'Zhezhi': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Off-field painter DMG. No team buffs.',
+  },
+  'Phoebe': {
+    outroBuffs: [
+      { stat: 'resShred', value: 10, target: 'enemy', duration: 14, condition: 'Spectro RES (Confession mode)' },
+      { stat: 'deepen', value: 100, target: 'next', duration: 14, condition: 'Spectro Frazzle DMG Amp (Confession)' },
+    ],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'frazzle', value: 18, duration: 15, condition: '18 stacks per rotation in Confession mode' }],
+    note: 'Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
+  },
+  'Cantarella': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Off-field Coordinated ATK. Outro: 15% Deepen. Heal.',
+  },
+  'Ciaccona': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Aero DMG Bonus' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' }],
+    note: 'Aero Erosion applier (3 stacks DOT). Outro: 20% Aero DMG. Weapon: Aero RES -16%.',
+  },
+  'Lupa': {
+    outroBuffs: [{ stat: 'deepen', value: 18, target: 'next', duration: 14 }],
+    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [{ stat: 'resShred', value: 15, duration: 10, condition: 'Fusion RES' }],
+    note: 'Outro: 18% Deepen. Lib: 15% ATK team. Fusion RES Shred 15%.',
+  },
+  'Iuno': {
+    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 50% Heavy ATK DMG Amp. Heal + Shield. Liberation DPS capable.',
+  },
+  'Qiuyuan': {
+    outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
+    libBuffs: [{ stat: 'echoDmg', value: 30, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 50% Echo Skill DMG Amp. Lib: 30% Echo DMG. Sig weapon: 20% Echo DMG.',
+  },
+  'Chisa': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 18, duration: 12 }],
+    note: 'DEF Shred 18% on skill. Quick swap support.',
+  },
+  // ── 5★ Main DPS (mostly self-buffs, less team contribution) ──
+  'Camellya': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 30, target: 'self', duration: 99, condition: 'Inherent: 2×15% Havoc DMG' },
+      { stat: 'critDmg', value: 28, target: 'self', duration: 18, condition: 'S1: After Intro' },
+    ],
+    debuffs: [],
+    note: 'Self-buffing Main DPS. Inherent: +30% Havoc DMG. S1: +28% CD after Intro.',
+  },
+  'Carlotta': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive' }],
+    debuffs: [],
+    note: 'Burst Glacio DPS. Weapon passive: 12% Glacio + 24% Charged ATK.',
+  },
+  'Jinhsi': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
+  },
+  'Xiangli Yao': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
+  },
+  'Zani': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'atkPct', value: 24, target: 'self', duration: 20, condition: 'Weapon R1' },
+      { stat: 'defIgnore', value: 16, target: 'self', duration: 14, condition: 'Weapon R1: During Lib + Frazzle Amp 50%' },
+    ],
+    debuffs: [],
+    note: 'Converts Frazzle→Heliacal Embers. Weapon: +24% ATK, 16% DEF Ignore, 50% Frazzle DMG in Lib.',
+  },
+  // ── 4★ ──
+  'Sanhua': {
+    outroBuffs: [{ stat: 'basicDmg', value: 38, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 38% Basic ATK DMG Amp (14s). Quick swap.',
+  },
+  'Mortefi': {
+    outroBuffs: [{ stat: 'heavyDmg', value: 38, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 38% Heavy ATK DMG Amp. Off-field Coordinated ATK on Heavy ATK.',
+  },
+  'Danjin': {
+    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Havoc DMG Bonus' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 23% Havoc DMG Bonus to next.',
+  },
+  'Baizhi': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 24 }],
+    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% Deepen. Lib: 15% ATK teamwide. Heal.',
+  },
+  'Taoqi': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 12, duration: 8, condition: 'Shield active' }],
+    note: 'Outro: 15% Deepen. Shield. DEF Shred 12% while shielded.',
+  },
+  'Yuanwu': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% Deepen. Coordinated ATK. Shield.',
+  },
+  'Yangyang': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Energy Regen support. Minimal direct DMG contribution.',
+  },
+  'Buling': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 15% Deepen. Heal. Res. Skill buff.',
+  },
+  // ── 5★ Main DPS missing from initial table ──
+  'Aemeath': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'critDmg', value: 60, target: 'self', duration: 30, condition: 'Tune Rupture/Fusion Burst mode: 30% per teammate (max 60%)' },
+      { stat: 'deepen', value: 25, target: 'self', duration: 20, condition: 'RL Finisher deepen amplification' },
+      { stat: 'defIgnore', value: 32, target: 'self', duration: 8, condition: 'Sig weapon: on Tune Rupture/Fusion Burst infliction' },
+      { stat: 'resShred', value: 10, target: 'self', duration: 8, condition: 'Sig weapon: Fusion RES ignore' },
+    ],
+    debuffs: [{ stat: 'fusionBurst', value: 10, duration: 30, condition: 'Fusion Burst mode: 10 stacks, enhanced skills use max stacks without consuming' }],
+    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced skills scale off Fusion Trail (30 stacks = 300% mult). Sig weapon: 32% DEF Ignore + 10% Fusion RES. Self-buff: 60% CD + 25% Deepen.',
+  },
+  'Jiyan': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Aero DMG +12%' }],
+    debuffs: [],
+    note: 'Heavy ATK DPS in Qingloong form. Weapon: Heavy ATK +20%.',
+  },
+  'Calcharo': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 12, target: 'self', duration: 10, condition: 'Weapon passive' }],
+    debuffs: [],
+    note: 'Liberation → Death Messenger combo. Electro DMG +12% from weapon.',
+  },
+  'Encore': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Cosmos Rampage mode Normal ATK DPS.',
+  },
+  'Lingyang': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Lion Form aerial Normal ATK DPS.',
+  },
+  'Cartethyia': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 20, target: 'self', duration: 20, condition: 'Erosion stacks on target: Aero DMG amp' }],
+    debuffs: [{ stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' }],
+    note: 'Top-tier Aero DPS. HP-scaling. Self-sufficient Erosion duo with Ciaccona.',
+  },
+  'Brant': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Fusion DMG +12%' }],
+    debuffs: [],
+    note: 'Fusion Normal ATK DPS. Self-heal. ATK speed +10% from weapon.',
+  },
+  'Augusta': {
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Heavy ATK AoE DPS. Shield. Outro: 15% All DMG Deepen.',
+  },
+  'Galbrena': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Echo Skill + Heavy ATK Fusion DPS.',
+  },
+  'Luuk Herssen': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Spectro Gauntlets DPS. Tune Strain focused.',
+  },
+  'Phrolova': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Echo Skill focused AoE DPS. One of strongest AoE in game.',
+  },
+  // ── Electro characters with Electro Flare ──
+  'Xiangli Yao': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Electro DMG +12%' }],
+    debuffs: [],
+    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
+  },
+  'Jinhsi': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
+  },
+  'Rover': {
+    outroBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Spectro RES Shred' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'frazzle', value: 10, duration: 15, condition: '10 stacks via Skill + Liberation. Shimmer prevents decay.' }],
+    note: 'Spectro Frazzle applier. Outro: Spectro RES -10% (S6). Shimmer prevents stack decay.',
+  },
+};
+
+// [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 buffs (cumulative % damage increase)
+// Format: { s1-s6: { stat: value } } — each level adds ON TOP of previous
+// Values from Prydwen, WutheringLab, community testing
+const RESONANCE_CHAIN_DATA = {
+  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 30 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 20 }, s6: { skillDmg: 40 } },
+  'Carlotta':     { s1: { critRate: 15 }, s2: { skillDmg: 25 }, s3: { elemDmg: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { defIgnore: 20 } },
+  'Jiyan':        { s1: { atkPct: 10 }, s2: { heavyDmg: 20 }, s3: { critRate: 15, critDmg: 20 }, s4: { heavyDmg: 15 }, s5: { atkPct: 25 }, s6: { libDmg: 40 } },
+  'Jinhsi':       { s1: { elemDmg: 12 }, s2: { skillDmg: 20 }, s3: { critDmg: 25 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
+  'Calcharo':     { s1: { elemDmg: 12 }, s2: { libDmg: 20 }, s3: { critDmg: 20 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { libDmg: 30 } },
+  'Encore':       { s1: { basicDmg: 15 }, s2: { atkPct: 20 }, s3: { elemDmg: 15 }, s4: { basicDmg: 15 }, s5: { totalMult: 10 }, s6: { elemDmg: 25 } },
+  'Xiangli Yao':  { s1: { elemDmg: 12 }, s2: { skillDmg: 20 }, s3: { critRate: 12 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  'Aemeath':      { s1: { critDmg: 30, heavyDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 20 }, s6: { totalMult: 30 } },
+  'Zani':         { s1: { critRate: 10, atkPct: 12 }, s2: { critDmg: 30, heavyDmg: 25 }, s3: { totalMult: 15 }, s4: { deepen: 15 }, s5: { totalMult: 20 }, s6: { elemDmg: 25 } },
+  'Phoebe':       { s1: { elemDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 30 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
+  'Phrolova':     { s1: { critRate: 15 }, s2: { critRate: 30, totalMult: 40 }, s3: { totalMult: 15 }, s4: { echoDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Brant':        { s1: { atkPct: 15, elemDmg: 12 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
+  'Augusta':      { s1: { critRate: 20 }, s2: { critRate: 20, critDmg: 30 }, s3: { totalMult: 15 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  'Cartethyia':   { s1: { defIgnore: 8, deepen: 20 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
+  'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 20 }, s3: { critDmg: 20 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
+  'Galbrena':     { s1: { echoDmg: 15 }, s2: { totalMult: 20 }, s3: { critRate: 12 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
+  'Iuno':         { s1: { heavyDmg: 20 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Luuk Herssen': { s1: { atkPct: 15 }, s2: { totalMult: 20 }, s3: { critDmg: 25 }, s4: { basicDmg: 20 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  'Lupa':         { s1: { elemDmg: 12 }, s2: { totalMult: 20 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 20 } },
+  // Supports — less personal DMG but team contribution changes
+  'Verina':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
+  'Shorekeeper':  { s1: { critRate: 5 }, s2: { critDmg: 10 }, s3: { atkPct: 5 }, s4: { critRate: 5 }, s5: { deepen: 5 }, s6: { critDmg: 15 } },
+  'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 15 }, s6: { totalMult: 20 } },
+  'Mornye':       { s1: { allDmg: 15 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
+  'Sanhua':       { s1: { atkPct: 10 }, s2: { basicDmg: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { basicDmg: 10 }, s6: { deepen: 15 } },
+  'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 20 } },
+  'Danjin':       { s1: { elemDmg: 8 }, s2: { atkPct: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { atkPct: 15, elemDmg: 10 } },
+  'Chisa':        { s1: { defShred: 6 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { defShred: 6 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  'Ciaccona':     { s1: { elemDmg: 10 }, s2: { totalMult: 15 }, s3: { elemDmg: 10 }, s4: { deepen: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 15 } },
+  'Cantarella':   { s1: { deepen: 8 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  'Yinlin':       { s1: { elemDmg: 10 }, s2: { resShred: 10 }, s3: { totalMult: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 15 } },
+  'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 20 } },
+  'Zhezhi':       { s1: { coordDmg: 10 }, s2: { totalMult: 15 }, s3: { coordDmg: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { coordDmg: 20 } },
+  'Qiuyuan':      { s1: { echoDmg: 10 }, s2: { totalMult: 15 }, s3: { echoDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { echoDmg: 20 } },
+};
+
+// [SECTION:ECHO_SETS] — Sonata Effect set bonuses
+const ECHO_SETS = {
+  'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 30 } },
+  'Molten Rift':          { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Res. Skill → +30% Fusion DMG', p5val: { fusionDmg: 30 } },
+  'Void Thunder':         { element: 'Electro', p2: '+10% Electro DMG', p2val: { electroDmg: 10 }, p5: 'Heavy/Skill → +15% Electro DMG (max x2)', p5val: { electroDmg: 30 } },
+  'Sierra Gale':          { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Intro Skill → +30% Aero DMG', p5val: { aeroDmg: 30 } },
+  'Celestial Light':      { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Intro Skill → +30% Spectro DMG', p5val: { spectroDmg: 30 } },
+  'Havoc Eclipse':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Basic/Heavy → +7.5% Havoc DMG (max x4)', p5val: { havocDmg: 30 } },
+  'Sun-Sinking Eclipse':  { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Basic/Heavy → +7.5% Havoc DMG (max x4)', p5val: { havocDmg: 30 } },
+  'Rejuvenating Glow':    { element: 'Heal',    p2: '+10% Healing',     p2val: { healBonus: 10 },   p5: 'Heal ally → +15% ATK for team', p5val: { teamAtk: 15 } },
+  'Moonlit Clouds':       { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Outro → +22.5% ATK for next', p5val: { nextAtk: 22.5 } },
+  'Lingering Tunes':      { element: 'ATK',     p2: '+10% ATK',         p2val: { atkPct: 10 },      p5: 'ATK +5%/1.5s (max x4), Outro +60%', p5val: { atkPct: 20, outroDmg: 60 } },
+  'Frosty Resolve':       { element: 'Glacio',  p2: '+12% Res. Skill DMG', p2val: { skillDmg: 12 }, p5: 'Skill → +22.5% Glacio; Lib → +18% Skill (x2)', p5val: { glacioDmg: 22.5, skillDmg: 36 } },
+  'Eternal Radiance':     { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Frazzle → +20% Crit Rate; 10 stacks → +15% Spectro', p5val: { critRate: 20, spectroDmg: 15 } },
+  'Midnight Veil':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Outro → 480% Havoc + 15% Havoc for next', p5val: { havocDmg: 15, outroDmg: 480 } },
+  'Empyrean Anthem':      { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Coord ATK +80%; on crit → +20% ATK', p5val: { coordDmg: 80, atkPct: 20 } },
+  'Tidebreaking Courage': { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: '+15% ATK; ≥250% ER → +30% all DMG', p5val: { atkPct: 15, allDmg: 30 } },
+  'Gusts of Welkin':      { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Erosion → +15% Aero team + extra 15%', p5val: { aeroDmg: 30 } },
+  'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
+};
 
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
@@ -1436,7 +1961,7 @@ export {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
   calculateLuckRating,
   SERVERS, getServerOffset,
-  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA,
+  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
   EVENTS,
   HARD_PITY, SOFT_PITY_START, LUNITE_DAILY_ASTRITE, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
   SUBSCRIPTIONS, MAX_ASTRITE, MAX_CALC_PULLS,
