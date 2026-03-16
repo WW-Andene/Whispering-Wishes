@@ -1562,6 +1562,15 @@ const KuroStyles = memo(({ oledMode }) => (
         align-items: start !important;
       }
 
+      /* Banner cards — taller on desktop to show more art */
+      .desktop-layout .banner-card-character,
+      .desktop-layout .banner-card-weapon {
+        height: 260px !important;
+      }
+      .desktop-layout .standard-banner-grid .relative.overflow-hidden {
+        height: 240px !important;
+      }
+
       /* Banner card images — different positioning per type */
       /* Characters: head slightly below the top edge, centered */
       .desktop-layout .banner-card-character img.absolute {
