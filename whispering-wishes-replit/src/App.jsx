@@ -3026,7 +3026,7 @@ function WhisperingWishesInner() {
                 </div>
               </div>
               <div>
-                <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
+                <h1 className="text-white font-bold text-sm tracking-wide">I'm wrong 🤖</h1>
                 <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
