@@ -35,8 +35,9 @@
 // - File creation limited to agent/ directory (cannot create app source files)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
 import { resolve, dirname } from 'path';
+import { execSync } from 'child_process';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { executeShellSwap, checkRollbackNeeded } from './shell-swap.js';
@@ -269,6 +270,13 @@ ${sourceView}
 6. NEVER lower safety thresholds, NEVER remove rate limits
 7. NEVER remove existing features — only add or improve
 8. Prefer high-value, low-risk changes
+9. CRITICAL: Every code patch MUST be syntactically valid JavaScript.
+   - The oldStr must EXACTLY match existing code (copy it character-for-character)
+   - The newStr must be complete — no missing closing braces, brackets, or parens
+   - If you cannot write a correct patch, use confidence 0 to skip it
+   - config-tune patches (changing a string/number value) are safest — prefer these
+   - Do NOT attempt large multi-line rewrites — they almost always break syntax
+10. Shell-swap patches (type: "create") must be COMPLETE, working files
 
 ${PROTECTION_RULES}
 ${feedback.toxic?.length ? `9. AVOID category: ${feedback.toxic.join(', ')} (high failure rate)\n` : ''}${feedback.strong?.length ? `10. PREFER category: ${feedback.strong.join(', ')} (high success rate)\n` : ''}
@@ -492,18 +500,17 @@ function executeModify(action) {
   // ── Self-test: apply in memory and verify ────────────────────────────
   const modified = content.replace(action.oldStr, action.newStr);
 
-  // Basic syntax check: balanced braces
-  if (!checkBraces(modified)) {
+  // Syntax check: write to temp file and use node --check
+  const tmpPath = fullPath + '.evolve-test';
+  try {
+    writeFileSync(tmpPath, modified);
+    execSync(`node --check "${tmpPath}"`, { stdio: 'pipe', timeout: 5000 });
+  } catch (err) {
     log.warn(`Evolution patch would break syntax in ${action.file}: ${action.description}`);
+    try { unlinkSync(tmpPath); } catch {}
     return false;
   }
-
-  // If modifying reader.js or config.js, verify imports still work
-  // (We can't fully test without running Node, but we can check for obvious breaks)
-  if (modified.includes('export {') && !modified.includes('export {')) {
-    log.warn(`Evolution patch would remove exports from ${action.file}`);
-    return false;
-  }
+  try { unlinkSync(tmpPath); } catch {}
 
   // Write
   writeFileSync(fullPath, modified);
