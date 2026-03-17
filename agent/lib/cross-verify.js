@@ -125,10 +125,13 @@ export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
  * Higher agreement → higher confidence.
  */
 export function adjustConfidence(baseConfidence, agreement, sourceCount) {
-  if (sourceCount <= 1) return baseConfidence * 0.8; // Single source penalty
-  if (agreement >= 1.0) return Math.min(1.0, baseConfidence * 1.1); // Full agreement bonus
-  if (agreement >= 0.66) return baseConfidence; // 2/3 agree — neutral
-  return baseConfidence * 0.7; // Majority disagree — penalty
+  const base = Math.max(0, Math.min(1, baseConfidence));
+  let adjusted;
+  if (sourceCount <= 1) adjusted = base * 0.8;
+  else if (agreement >= 1.0) adjusted = base * 1.1;
+  else if (agreement >= 0.66) adjusted = base;
+  else adjusted = base * 0.7;
+  return Math.max(0, Math.min(1, adjusted));
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

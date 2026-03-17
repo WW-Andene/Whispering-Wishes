@@ -31,7 +31,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { existsSync, mkdirSync, rmSync, renameSync, readdirSync, readFileSync, writeFileSync, copyFileSync, statSync } from 'fs';
-import { resolve, join, relative } from 'path';
+import { resolve, join, relative, extname } from 'path';
 import { execSync } from 'child_process';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
@@ -84,6 +84,50 @@ function copyDirRecursive(src, dest, exclude = []) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
+ * Validate that a modification path is safe and stays inside NEXT_DIR.
+ * @param {string} filePath - The relative path from the modification
+ * @param {string} type - The modification type (rewrite, patch, create, delete)
+ * @returns {{ valid: boolean, fullPath: string, reason?: string }}
+ */
+function validatePath(filePath, type) {
+  // Block path traversal sequences
+  if (filePath.includes('..')) {
+    return { valid: false, fullPath: '', reason: 'path contains ".." traversal' };
+  }
+
+  // Block absolute paths
+  if (filePath.startsWith('/')) {
+    return { valid: false, fullPath: '', reason: 'absolute paths are not allowed' };
+  }
+
+  // Block home directory references
+  if (filePath.includes('~')) {
+    return { valid: false, fullPath: '', reason: 'path contains "~" home reference' };
+  }
+
+  // Resolve and verify the path stays inside NEXT_DIR
+  const fullPath = resolve(NEXT_DIR, filePath);
+  const rel = relative(NEXT_DIR, fullPath);
+  if (rel.startsWith('..') || rel === '') {
+    return { valid: false, fullPath, reason: 'resolved path escapes target directory' };
+  }
+
+  // For 'create' type: restrict to lib/ subdirectory and allowed extensions
+  if (type === 'create') {
+    if (!rel.startsWith('lib/') && !rel.startsWith('lib\\')) {
+      return { valid: false, fullPath, reason: 'new files may only be created in the lib/ subdirectory' };
+    }
+    const ALLOWED_EXTENSIONS = ['.js', '.mjs', '.json', '.md'];
+    const ext = extname(filePath).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return { valid: false, fullPath, reason: `extension "${ext}" is not allowed (permitted: ${ALLOWED_EXTENSIONS.join(', ')})` };
+    }
+  }
+
+  return { valid: true, fullPath };
+}
+
+/**
  * Apply a set of modifications to agent-next/.
  * Each modification can be: rewrite (full file replace), patch (string replace),
  * or create (new file).
@@ -98,7 +142,14 @@ export function modifyShell(modifications) {
   const results = { applied: 0, failed: 0, details: [] };
 
   for (const mod of modifications) {
-    const fullPath = resolve(NEXT_DIR, mod.file);
+    // Validate path before any file operations
+    const validation = validatePath(mod.file, mod.type);
+    if (!validation.valid) {
+      results.details.push({ file: mod.file, status: 'fail', reason: `path rejected: ${validation.reason}` });
+      results.failed++;
+      continue;
+    }
+    const fullPath = validation.fullPath;
 
     try {
       switch (mod.type) {

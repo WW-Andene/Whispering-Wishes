@@ -78,7 +78,14 @@ export async function findBannerImages(emptySlots, bannerData, askClaudeFn, fetc
 
   for (const url of BANNER_IMAGE_SOURCES) {
     const page = await fetchPageFn(url, { extractText: false });
-    if (page.ok) pages.push(page);
+    if (page.ok) {
+      const MAX_PAGE_SIZE = 2 * 1024 * 1024; // 2MB
+      if (page.content.length > MAX_PAGE_SIZE) {
+        log.warn(`Page ${url} exceeds 2MB — truncating`);
+        page.content = page.content.slice(0, MAX_PAGE_SIZE);
+      }
+      pages.push(page);
+    }
   }
 
   if (!pages.length) {

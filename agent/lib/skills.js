@@ -148,7 +148,7 @@ export function loadSkills() {
   const appAuditRaw = loadSkillFile(SKILL_PATHS.appAudit);
   const designRaw = loadSkillFile(SKILL_PATHS.designAesthetic);
   const scopeRaw = loadSkillFile(SKILL_PATHS.scopeContext);
-  const aestheticAuditRaw = loadSkillFile(SKILL_PATHS.scopeContext); // AUDIT-AESTHETIC.md
+  const aestheticAuditRaw = scopeRaw; // Same file — reuse instead of reading twice
 
   _cache = {
     available: {

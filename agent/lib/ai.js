@@ -51,25 +51,46 @@ async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, r
         .map(b => b.text)
         .join('\n');
 
+      if (!text || !text.trim()) {
+        throw new Error('Claude returned empty text response');
+      }
+
       return text;
 
     } catch (err) {
       if (attempt === retries) {
-        log.error(`Claude API failed after ${retries + 1} attempts: ${err.message}`);
-        throw err;
+        const safeMessage = (err.message || 'Unknown error').slice(0, 200);
+        log.error(`Claude API failed after ${retries + 1} attempts: ${safeMessage}`);
+        const sanitized = new Error(`Claude API failed after ${retries + 1} attempts: ${safeMessage}`);
+        sanitized.code = err.code || 'API_FAILURE';
+        sanitized.status = err.status;
+        throw sanitized;
       }
       log.warn(`Claude API attempt ${attempt + 1} failed: ${err.message}`);
       await sleep(3000 * (attempt + 1));
     }
   }
+
+  throw new Error('Claude API: exhausted all retries without response');
 }
 
 /**
  * Extract JSON from Claude's response (handles markdown code fences)
  */
 function extractJSON(text) {
-  // Try direct parse first
-  try { return JSON.parse(text); } catch {}
+  if (!text || typeof text !== 'string') {
+    throw new Error('extractJSON: input must be a non-empty string');
+  }
+  if (text.length > 512 * 1024) {
+    throw new Error('extractJSON: input exceeds 512 KB size limit');
+  }
+
+  const trimmed = text.trim();
+
+  // Try direct parse first (only when it looks like raw JSON)
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try { return JSON.parse(trimmed); } catch {}
+  }
 
   // Try extracting from code fence
   const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -77,13 +98,15 @@ function extractJSON(text) {
     try { return JSON.parse(fenceMatch[1].trim()); } catch {}
   }
 
-  // Try finding first { or [ to last } or ]
+  // Try finding first { or [ and match to correct closing delimiter
   const jsonStart = text.search(/[\[{]/);
-  const jsonEndBrace = text.lastIndexOf('}');
-  const jsonEndBracket = text.lastIndexOf(']');
-  const jsonEnd = Math.max(jsonEndBrace, jsonEndBracket);
-  if (jsonStart >= 0 && jsonEnd > jsonStart) {
-    try { return JSON.parse(text.slice(jsonStart, jsonEnd + 1)); } catch {}
+  if (jsonStart >= 0) {
+    const opener = text[jsonStart];
+    const closer = opener === '{' ? '}' : ']';
+    const jsonEnd = text.lastIndexOf(closer);
+    if (jsonEnd > jsonStart) {
+      try { return JSON.parse(text.slice(jsonStart, jsonEnd + 1)); } catch {}
+    }
   }
 
   throw new Error('Could not extract valid JSON from AI response');

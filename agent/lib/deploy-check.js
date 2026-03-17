@@ -40,17 +40,14 @@ export async function checkDeploymentStatus() {
   const fallbackUrl = 'https://whispering-wishes.vercel.app';
 
   for (const url of [productionUrl, fallbackUrl]) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
-
       const res = await fetch(url, {
         method: 'HEAD',
         signal: controller.signal,
         headers: { 'User-Agent': 'WhisperingWishes-DeployCheck/1.0' },
       });
-
-      clearTimeout(timeout);
 
       if (res.ok) {
         log.ok(`Deployment healthy: ${url} (${res.status})`);
@@ -62,6 +59,8 @@ export async function checkDeploymentStatus() {
     } catch (err) {
       log.dim(`Could not reach ${url}: ${err.message}`);
       continue;
+    } finally {
+      clearTimeout(timeout);
     }
   }
 

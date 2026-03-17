@@ -170,6 +170,12 @@ export async function processMissingImages(names, type, askClaudeFn, fetchPageFn
       continue;
     }
 
+    const MAX_PAGE_SIZE = 2 * 1024 * 1024; // 2MB
+    if (page.content.length > MAX_PAGE_SIZE) {
+      log.warn(`Wiki page for ${name} exceeds 2MB — truncating`);
+      page.content = page.content.slice(0, MAX_PAGE_SIZE);
+    }
+
     // Extract image URLs from HTML (src attributes)
     const imgUrls = [...page.content.matchAll(/(?:src|data-src)="(https?:\/\/[^"]+\.(?:webp|png|jpg|jpeg)[^"]*)"/gi)]
       .map(m => m[1])
