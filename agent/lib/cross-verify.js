@@ -91,9 +91,7 @@ export function crossVerify(extractions, fields, quorum = 2) {
  * @returns {Object[]} — [{ source: 'game8.co', data: {...} }]
  */
 export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
-  const results = [];
-
-  for (const source of sources) {
+  const results = await Promise.all(sources.map(async (source) => {
     const domain = getDomain(source.url);
     const prompt = extractionPrompt.replace('{SOURCE_CONTENT}', source.content.slice(0, 20000));
 
@@ -110,12 +108,12 @@ export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
         jsonStr = jsonMatch[1];
       }
       const data = JSON.parse(jsonStr);
-      results.push({ source: domain, data, url: source.url });
+      return { source: domain, data, url: source.url };
     } catch (err) {
       log.dim(`Extraction failed for ${domain}: ${err.message}`);
-      results.push({ source: domain, data: {}, url: source.url });
+      return { source: domain, data: {}, url: source.url };
     }
-  }
+  }));
 
   return results;
 }

@@ -118,7 +118,11 @@ export function writeScheduleHint(bannerEndDate) {
 export function readScheduleHint() {
   if (!existsSync(SCHEDULE_FILE)) return null;
   try {
-    return JSON.parse(readFileSync(SCHEDULE_FILE, 'utf-8'));
+    const hint = JSON.parse(readFileSync(SCHEDULE_FILE, 'utf-8'));
+    if (!hint || typeof hint.urgency !== 'string' || typeof hint.hoursLeft !== 'number') {
+      return null;
+    }
+    return hint;
   } catch {
     return null;
   }

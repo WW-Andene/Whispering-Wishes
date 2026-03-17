@@ -17,6 +17,10 @@ import { log, addChange, getChangeLog } from './log.js';
 const CHANGELOG_FILE = resolve(PATHS.repoRoot, 'agent/CHANGELOG.md');
 const MAX_APP_ENTRIES = 15; // Show last 15 entries in the app
 
+function escapeForJsString(str) {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/[\x00-\x1f]/g, '').slice(0, 300);
+}
+
 /**
  * Generate changelog entries from the current run's changes.
  * Returns human-readable entries.
@@ -111,7 +115,7 @@ export function updateAppChangelog(entries, getBufferFn, loadBufferFn) {
 
   // Build new entries
   const newEntries = entries.map(e =>
-    `  { date: '${e.date}', category: '${e.category}', text: '${e.description.replace(/'/g, "\\'")}' }`
+    `  { date: '${escapeForJsString(e.date)}', category: '${escapeForJsString(e.category)}', text: '${escapeForJsString(e.description)}' }`
   );
 
   // Check if CHANGELOG constant exists

@@ -99,12 +99,36 @@ export async function fetchAll(urls) {
   await Promise.all(
     [...byDomain.values()].map(async (group) => {
       for (const { url, index } of group) {
-        results[index] = await fetchPage(url);
+        try {
+          results[index] = await fetchPage(url);
+        } catch (err) {
+          log.error(`Unexpected error fetching ${url}: ${err.message}`);
+          results[index] = { ok: false, content: '', url, error: err.message };
+        }
       }
     })
   );
 
   return results;
+}
+
+/**
+ * Remove all occurrences of a given HTML tag (and its content) using
+ * indexOf instead of regex to avoid O(n²) backtracking.
+ */
+function removeTagBlocks(html, tagName) {
+  const open = `<${tagName}`;
+  const close = `</${tagName}>`;
+  let result = '', from = 0;
+  while (from < html.length) {
+    const oi = html.toLowerCase().indexOf(open, from);
+    if (oi === -1) { result += html.slice(from); break; }
+    result += html.slice(from, oi);
+    const ci = html.toLowerCase().indexOf(close, oi);
+    if (ci === -1) break;
+    from = ci + close.length;
+  }
+  return result;
 }
 
 /**
@@ -115,9 +139,9 @@ function htmlToText(html) {
   let text = html;
 
   // Remove script and style blocks entirely
-  text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
-  text = text.replace(/<style[\s\S]*?<\/style>/gi, '');
-  text = text.replace(/<noscript[\s\S]*?<\/noscript>/gi, '');
+  text = removeTagBlocks(text, 'script');
+  text = removeTagBlocks(text, 'style');
+  text = removeTagBlocks(text, 'noscript');
 
   // Remove HTML comments
   text = text.replace(/<!--[\s\S]*?-->/g, '');

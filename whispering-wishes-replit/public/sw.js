@@ -41,12 +41,19 @@ self.addEventListener('activate', (event) => {
 });
 
 // Trim image cache to MAX_IMG_ENTRIES (LRU by insertion order)
+let _trimPending = false;
 async function trimCache(cacheName, maxEntries) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  if (keys.length > maxEntries) {
-    await Promise.all(keys.slice(0, keys.length - maxEntries).map(k => cache.delete(k)));
-  }
+  if (_trimPending) return;
+  _trimPending = true;
+  await new Promise(r => setTimeout(r, 2000));
+  _trimPending = false;
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length > maxEntries) {
+      await Promise.all(keys.slice(0, keys.length - maxEntries).map(k => cache.delete(k)));
+    }
+  } catch {}
 }
 
 // Strategy: Cache-first (for CDN assets)

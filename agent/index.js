@@ -15,7 +15,7 @@
 // Environment: ANTHROPIC_API_KEY (required), IMGBB_API_KEY (for images)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { SOURCES, THRESHOLDS } from './lib/config.js';
+import { SOURCES, THRESHOLDS, PATHS } from './lib/config.js';
 import { log, addChange, getChangeLog, clearChangeLog } from './lib/log.js';
 import { fetchPage, fetchAll } from './lib/scraper.js';
 import { analyzeBanners, analyzeEvents, analyzeNewCharacters, analyzeNewWeapons, generateCombatData, askClaude } from './lib/ai.js';
@@ -42,7 +42,6 @@ import { verifyDeployment } from './lib/deploy-check.js';
 import { shouldProceed, writeScheduleHint, calculateUrgency } from './lib/adaptive-schedule.js';
 import { withCheckpoint, clearCheckpoint, hasCheckpoint } from './lib/checkpoint.js';
 import { readFileSync } from 'fs';
-import { PATHS } from './lib/config.js';
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run') || process.env.DRY_RUN === 'true';
@@ -160,6 +159,8 @@ async function main() {
   recordRun(memory, MODE, getChangeLog().length, Date.now() - _startTime);
   saveMemory(memory);
   generateReport(MODE, Date.now() - _startTime, memory);
+
+  _sourceCache.clear();
 
   log.section('COMPLETE');
   getChangeLog().forEach(c => log.ok(`  [${c.category}] ${c.description}`));

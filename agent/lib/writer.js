@@ -129,6 +129,9 @@ export function updateCurrentBanners(bannerData) {
       `characters: [\n${charEntries}\n  ],\n  weapons:`,
       `Update featured characters: ${bannerData.characters.map(c => c.name).join(', ')}`
     );
+  } else {
+    log.error('Could not match characters array in CURRENT_BANNERS');
+    return false;
   }
 
   // Replace weapons array
@@ -139,6 +142,9 @@ export function updateCurrentBanners(bannerData) {
       `weapons: [\n${weapEntries}\n  ],\n  // Standard`,
       `Update featured weapons: ${bannerData.weapons.map(w => w.name).join(', ')}`
     );
+  } else {
+    log.error('Could not match weapons array in CURRENT_BANNERS');
+    return false;
   }
 
   addChange('banners', `Updated to v${bannerData.version} Phase ${bannerData.phase}: ${bannerData.characters.map(c => c.name).join(', ')}`);
@@ -295,7 +301,7 @@ export function addWeaponEntry(name, data) {
  * Add a name to a list array (ALL_5STAR_RESONATORS, RELEASE_ORDER, etc.)
  */
 export function addToList(listName, name) {
-  const pattern = new RegExp(`(const ${listName}\\s*=\\s*\\[[\\s\\S]*?)(\\];)`);
+  const pattern = new RegExp(`(const ${escapeRegex(listName)}\\s*=\\s*\\[[\\s\\S]*?)(\\];)`);
   const match = buffer.match(pattern);
   if (!match) {
     log.warn(`Could not find list: ${listName}`);
@@ -368,6 +374,10 @@ export function flush() {
     log.warn('No buffer to flush');
     return false;
   }
+  if (buffer.length < 1000 || !buffer.includes('APP_VERSION')) {
+    log.error('Buffer appears corrupt or empty — refusing to flush');
+    return false;
+  }
   // Write to temp file first, then rename — prevents corruption if process dies mid-write
   const tmpPath = PATHS.dataFile + '.tmp';
   try {
@@ -380,6 +390,11 @@ export function flush() {
   }
   log.ok(`Wrote updated appcore-data.js (${(buffer.length / 1024).toFixed(1)}KB)`);
   return true;
+}
+
+// Utility: escape a string for safe use inside a RegExp
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Utility: escape strings for safe JS string interpolation

@@ -6,7 +6,7 @@
 // Uses GitHub CLI (gh) which is pre-installed on GitHub Actions runners.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { PATHS } from './config.js';
 import { log } from './log.js';
 
@@ -40,12 +40,16 @@ export function closeStalePRs() {
 
       // Close PRs older than 12 hours — they're stale
       if (ageHours > 12) {
+        const prNumber = pr.number;
+        if (!Number.isInteger(prNumber) || prNumber <= 0) {
+          log.warn(`Invalid PR number: ${prNumber} — skipping`);
+          continue;
+        }
         try {
-          execSync(
-            `gh pr close ${pr.number} --comment "Superseded by newer auto-update. Closing stale PR."`,
-            { cwd: PATHS.repoRoot, encoding: 'utf-8', stdio: 'pipe', timeout: 10000 }
-          );
-          log.ok(`Closed stale PR #${pr.number}: ${pr.title} (${ageHours.toFixed(0)}h old)`);
+          execFileSync('gh', ['pr', 'close', String(prNumber), '--comment', 'Superseded by newer auto-update. Closing stale PR.'], {
+            cwd: PATHS.repoRoot, encoding: 'utf-8', stdio: 'pipe', timeout: 10000
+          });
+          log.ok(`Closed stale PR #${prNumber}: ${pr.title} (${ageHours.toFixed(0)}h old)`);
           closed++;
         } catch (err) {
           log.warn(`Could not close PR #${pr.number}: ${err.message}`);

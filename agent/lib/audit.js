@@ -82,6 +82,9 @@ export function applyPatches(patches, minConfidence = 0.85) {
   const applied = [];
   const skipped = [];
 
+  // ── PHASE 1: Validate & group patches by file ──────────────────────────
+  const fileGroups = new Map(); // filePath → { fileRef, patches[] }
+
   for (const patch of patches) {
     if (patch.confidence < minConfidence) {
       log.warn(`Skipping low-confidence patch: ${patch.description} (${(patch.confidence * 100).toFixed(0)}%)`);
@@ -163,10 +166,29 @@ export function applyPatches(patches, minConfidence = 0.85) {
       }
     }
 
-    // ── APPLY PATCH ──────────────────────────────────────────────────────
-    try {
-      let content = readFileSync(filePath, 'utf-8');
+    // ── Group validated patch by file ────────────────────────────────────
+    if (!fileGroups.has(filePath)) {
+      fileGroups.set(filePath, { fileRef: patch.file, patches: [] });
+    }
+    fileGroups.get(filePath).patches.push(patch);
+  }
 
+  // ── PHASE 2: Apply patches per file (read once, apply all, write once) ─
+  for (const [filePath, group] of fileGroups) {
+    let original;
+    try {
+      original = readFileSync(filePath, 'utf-8');
+    } catch (err) {
+      log.error(`Could not read ${group.fileRef}: ${err.message}`);
+      for (const p of group.patches) skipped.push(p);
+      continue;
+    }
+
+    let content = original;
+    const fileApplied = [];
+    let aborted = false;
+
+    for (const patch of group.patches) {
       if (!content.includes(patch.oldStr)) {
         log.warn(`Patch target not found in ${patch.file}: ${patch.description}`);
         skipped.push(patch);
@@ -182,22 +204,42 @@ export function applyPatches(patches, minConfidence = 0.85) {
       }
 
       content = content.replace(patch.oldStr, patch.newStr);
-      const tmpPath = filePath + '.audit-tmp';
-      try {
-        writeFileSync(tmpPath, content);
-        renameSync(tmpPath, filePath);
-      } catch (writeErr) {
-        log.warn(`Atomic write failed for ${patch.file}, falling back to direct: ${writeErr.message}`);
-        writeFileSync(filePath, content);
-        try { unlinkSync(tmpPath); } catch {}
-      }
+      fileApplied.push(patch);
+    }
 
-      log.ok(`Applied patch: [${patch.category}] ${patch.description}`);
-      addChange(patch.category, patch.description, patch.confidence >= 0.95 ? 'HIGH' : 'MEDIUM');
-      applied.push(patch);
-    } catch (err) {
-      log.error(`Failed to apply patch "${patch.description}": ${err.message}`);
-      skipped.push(patch);
+    // Nothing applied for this file — skip write
+    if (fileApplied.length === 0) continue;
+
+    // ── Write to disk (atomic with rollback) ─────────────────────────────
+    const tmpPath = filePath + '.audit-tmp';
+    try {
+      writeFileSync(tmpPath, content);
+      renameSync(tmpPath, filePath);
+    } catch (writeErr) {
+      log.warn(`Atomic write failed for ${group.fileRef}, falling back to direct: ${writeErr.message}`);
+      try {
+        writeFileSync(filePath, content);
+      } catch (directErr) {
+        // ── ROLLBACK: restore original content ───────────────────────────
+        log.error(`Write failed for ${group.fileRef} — rolling back: ${directErr.message}`);
+        try {
+          writeFileSync(filePath, original);
+          log.ok(`Rollback succeeded for ${group.fileRef}`);
+        } catch (rollbackErr) {
+          log.error(`Rollback also failed for ${group.fileRef}: ${rollbackErr.message}`);
+        }
+        for (const p of fileApplied) skipped.push(p);
+        aborted = true;
+      }
+      try { unlinkSync(tmpPath); } catch {}
+    }
+
+    if (!aborted) {
+      for (const patch of fileApplied) {
+        log.ok(`Applied patch: [${patch.category}] ${patch.description}`);
+        addChange(patch.category, patch.description, patch.confidence >= 0.95 ? 'HIGH' : 'MEDIUM');
+        applied.push(patch);
+      }
     }
   }
 

@@ -189,6 +189,13 @@ const MAX_TOASTS = 5;
 
 const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
+  const timerRefs = useRef(new Map());
+  useEffect(() => {
+    return () => {
+      timerRefs.current.forEach(timer => clearTimeout(timer));
+      timerRefs.current.clear();
+    };
+  }, []);
 
   const addToast = useCallback((message, type = 'info', duration = 3000) => {
     const id = generateUniqueId();
@@ -196,7 +203,11 @@ const ToastProvider = ({ children }) => {
       const next = [...prev, { id, message, type }];
       return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next;
     });
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
+    const timer = setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+      timerRefs.current.delete(id);
+    }, duration);
+    timerRefs.current.set(id, timer);
     // Haptic feedback per toast type
     if (type === 'success') haptic.success();
     else if (type === 'error') haptic.error();
@@ -322,14 +333,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
 const OnboardingModal = ({ onComplete }) => {
   const [step, setStep] = useState(0);
   // P12-FIX: Add focus trapping and escape key support to onboarding modal (Step 11 audit — MEDIUM-6a)
-  const focusTrapRef = useFocusTrap(true);
-  useEscapeKey(true, onComplete);
-  // Prevent body scroll while onboarding modal is open
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = originalOverflow; };
-  }, []);
+  // Refactored to use FocusTrapModal wrapper (handles focus trap, escape key, and scroll lock)
   const steps = [
     { title: "Welcome to Whispering Wishes!", icon: <Sparkles size={32} />, desc: "Your companion for Wuthering Waves Convene planning.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#edaf18' },
     { title: "Import Your History", icon: <Upload size={32} />, desc: "Go to the Profile tab and import data from wuwatracker.com.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20', color: '#22d3ee' },
@@ -343,7 +347,7 @@ const OnboardingModal = ({ onComplete }) => {
   const s = steps[step];
   
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-black/90" role="dialog" aria-modal="true" aria-label="Welcome to Whispering Wishes" ref={focusTrapRef}>
+    <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel="Welcome to Whispering Wishes" className="bg-black/90">
       <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient} w-full max-w-xs`} style={{ backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
         {/* Decorative gradient circles */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none" aria-hidden="true">
@@ -386,7 +390,7 @@ const OnboardingModal = ({ onComplete }) => {
           </div>
         </div>
       </div>
-    </div>
+    </FocusTrapModal>
   );
 };
 

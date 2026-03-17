@@ -13,7 +13,7 @@
                       && newData.child('pulls').val() <= 9999
                       && newData.child('totalPulls').isNumber()
                       && newData.child('totalPulls').val() >= 0
-                      && newData.child('totalPulls').val() <= 999999
+                      && newData.child('totalPulls').val() <= 50000
                       && newData.child('timestamp').isNumber()
                       && newData.child('timestamp').val() <= now + 60000
                       && newData.child('id').isString()
@@ -26,7 +26,8 @@
         ".write": "auth != null && (!data.exists() || data.child('timestamp').val() + 10000 < now)",
         ".validate": "newData.hasChildren(['timestamp'])
                       && newData.child('timestamp').isNumber()
-                      && newData.child('timestamp').val() <= now + 60000"
+                      && newData.child('timestamp').val() <= now + 60000
+                      && newData.children().count() <= 10"
       }
     },
     "presence": {

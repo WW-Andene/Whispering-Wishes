@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  #root {
+    contain: layout style;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    WHISPERING WISHES — Base Styles
    Applied immediately to prevent flash of white on dark-themed app

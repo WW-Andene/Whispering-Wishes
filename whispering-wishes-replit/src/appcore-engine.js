@@ -565,6 +565,9 @@ const saveToStorage = (state) => {
   } catch (e) {
     // QuotaExceededError — storage is full
     console.error('Save failed (storage full?):', e);
+    window.dispatchEvent(new CustomEvent('ww-storage-error', {
+      detail: { type: e.name, message: 'Your data could not be saved. Storage may be full.' }
+    }));
     return false; // P12-FIX: Return false on failure so UI can notify user (Step 14 — MEDIUM-10a)
   }
 };
@@ -758,7 +761,12 @@ const reducer = (state, action) => {
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
     case ACTION.LOAD_STATE: return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
     case ACTION.RESET: return initialState;
-    default: return state;
+    default: {
+      if (typeof action.type === 'string' && !Object.values(ACTION).includes(action.type)) {
+        console.warn(`[WW] Unknown action type: "${action.type}"`);
+      }
+      return state;
+    }
   }
 };
 

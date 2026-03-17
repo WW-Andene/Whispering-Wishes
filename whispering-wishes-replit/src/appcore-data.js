@@ -86,6 +86,15 @@ const SERVERS = {
   'HMT': { name: 'HMT', timezone: 'Asia/Hong_Kong', utcOffset: 8, resetHour: 4, hasDST: false },
 };
 
+// Intl.DateTimeFormat cache — avoids re-creating formatters on every getServerOffset call
+const _dtfCache = new Map();
+const getCachedFormatter = (tz) => {
+  if (_dtfCache.has(tz)) return _dtfCache.get(tz);
+  const f = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
+  _dtfCache.set(tz, f);
+  return f;
+};
+
 // Get UTC offset for a server at a specific date (DST-aware)
 // P9-FIX: Accept optional date parameter for future-date DST correctness (MEDIUM-5a)
 const getServerOffset = (server, atDate) => {
@@ -100,10 +109,7 @@ const getServerOffset = (server, atDate) => {
   try {
     const date = atDate ? new Date(atDate) : new Date();
     if (isNaN(date.getTime())) return serverData.utcOffset; // P9-FIX: guard NaN dates (LOW-5a)
-    const formatter = new Intl.DateTimeFormat('en-US', { 
-      timeZone: serverData.timezone, 
-      timeZoneName: 'shortOffset' 
-    });
+    const formatter = getCachedFormatter(serverData.timezone);
     const parts = formatter.formatToParts(date);
     const tzPart = parts.find(p => p.type === 'timeZoneName');
     if (tzPart) {
@@ -202,7 +208,7 @@ const BANNER_HISTORY = [
   // Version 2.0
   { id: 'v2.0-p2', version: '2.0', phase: 2, characters: ['Roccia', 'Jinhsi'], weapons: ['Tragicomedy', 'Ages of Harvest'], startDate: '2025-01-23', endDate: '2025-02-12' },
   { id: 'v2.0-p1', version: '2.0', phase: 1, characters: ['Carlotta', 'Zhezhi'], weapons: ['The Last Dance', 'Rime-Draped Sprouts'], startDate: '2025-01-02', endDate: '2025-01-23' },
-  // Version 1.4.1
+  // Version 1.4
   { id: 'v1.4-p2', version: '1.4', phase: 2, characters: ['Yinlin', 'Xiangli Yao'], weapons: ['Stringmaster', "Verity's Handle"], startDate: '2024-12-12', endDate: '2025-01-01' },
   { id: 'v1.4-p1', version: '1.4', phase: 1, characters: ['Camellya'], weapons: ['Red Spring'], startDate: '2024-11-14', endDate: '2024-12-12' },
   // Version 1.3

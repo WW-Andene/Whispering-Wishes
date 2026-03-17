@@ -17,8 +17,12 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
  * Extract all external image URLs from appcore-data.js source.
  */
 export function extractImageUrls(source) {
+  // Strip comments to avoid matching URLs in commented-out code
+  const stripped = source.replace(/\/\/[^\n]*/g, '');
+  const cleaned = stripped.replace(/\/\*[\s\S]*?\*\//g, '');
+
   const urls = new Set();
-  const matches = source.matchAll(/https?:\/\/[^'"\s,;)]+\.(?:webp|png|jpg|jpeg|avif|gif)(?:\?[^'"\s)]*)?/gi);
+  const matches = cleaned.matchAll(/https?:\/\/[^'"\s,;)]+\.(?:webp|png|jpg|jpeg|avif|gif)(?:\?[^'"\s)]*)?/gi);
   for (const m of matches) {
     let url = m[0].replace(/[,;]+$/, '');
     urls.add(url);

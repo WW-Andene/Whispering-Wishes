@@ -61,9 +61,17 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Cache agent dependencies
+        uses: actions/cache@v4
+        with:
+          path: agent/node_modules
+          key: agent-deps-${{ hashFiles('agent/package-lock.json') }}
+          restore-keys: |
+            agent-deps-
+
       - name: Install agent dependencies
         working-directory: agent
-        run: npm install
+        run: npm ci
 
       - name: Determine run mode
         id: mode
@@ -110,8 +118,8 @@ jobs:
       - name: Check for changes
         id: check
         run: |
-          # Stage agent report files that may have been generated
-          git add agent/run-report.md agent/CHANGELOG.md 2>/dev/null || true
+          # Stage all changed files
+          git add -A
           if [ -n "$(git status --porcelain)" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changed files:"

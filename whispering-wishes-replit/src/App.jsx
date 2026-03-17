@@ -131,6 +131,15 @@ const MAX_USERNAME_LENGTH = 24;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
 const LEADERBOARD_DISPLAY_LIMIT = 20;
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
+const constantTimeCompare = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+};
 const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
@@ -144,7 +153,7 @@ const FIREBASE_AVAILABLE = !!(FIREBASE_DB && FIREBASE_API_KEY);
 const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
 const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
-const DEFAULT_VISUAL_SETTINGS = {
+const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   fadePosition: 50,
   fadeIntensity: 100,
   pictureOpacity: 100,
@@ -162,12 +171,12 @@ const DEFAULT_VISUAL_SETTINGS = {
   oledMode: false,
   swipeNavigation: false,
   animationsEnabled: true // default; overridden at mount via matchMedia listener
-};
-const TRACKER_CATEGORIES = [
-  { key: 'character', label: 'Resonators', color: 'yellow' },
-  { key: 'weapon', label: 'Weapons', color: 'pink' },
-  { key: 'standard', label: 'Standard', color: 'cyan' },
-];
+});
+const TRACKER_CATEGORIES = Object.freeze([
+  Object.freeze({ key: 'character', label: 'Resonators', color: 'yellow' }),
+  Object.freeze({ key: 'weapon', label: 'Weapons', color: 'pink' }),
+  Object.freeze({ key: 'standard', label: 'Standard', color: 'cyan' }),
+]);
 // P15-FIX: MEDIUM-3 — Domain allowlist for custom image URLs (single source of truth)
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 const isAllowedImageUrl = (url) => {
@@ -201,7 +210,15 @@ const hashUidForStorage = async (uid) => {
     try {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ww-uid-' + uid));
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-    } catch (err) { silentCatch(err, 'hashUidForStorage crypto.subtle'); }
+    } catch {
+      // Sync fallback — don't expose raw UID
+      const str = 'ww-uid-' + uid;
+      let hash = 5381;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) + hash + str.charCodeAt(i)) >>> 0;
+      }
+      return hash.toString(16).padStart(8, '0') + str.length.toString(16).padStart(4, '0');
+    }
   }
 
   // Fallback: FNV-1a hash (not cryptographic, but better than raw UID)
@@ -281,7 +298,19 @@ function WhisperingWishesInner() {
   const [adminTapCount, setAdminTapCount] = useState(0);
   const adminTapTimerRef = useRef(null);
   const adminTapCountRef = useRef(0);
-  const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
+  const [activeBanners, setActiveBanners] = useState(() => {
+    try {
+      const banners = getActiveBanners();
+      if (!banners || !banners.endDate) {
+        console.error('[WW] getActiveBanners() returned invalid data');
+        return CURRENT_BANNERS;
+      }
+      return banners;
+    } catch (err) {
+      console.error('[WW] getActiveBanners() threw:', err);
+      return CURRENT_BANNERS;
+    }
+  });
   // Banner ends at server-specific time (e.g., 11:59 local for each server)
   const bannerEndDate = useMemo(() => {
     if (!activeBanners?.endDate) return null;
@@ -3076,8 +3105,7 @@ function WhisperingWishesInner() {
       return;
     }
     // Constant-time comparison to prevent timing attacks on admin hash
-    const safeCompare = (a, b) => { if (!a || !b || a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; };
-    if (safeCompare(pbkdf2Hash, ADMIN_HASH) || safeCompare(saltedHash, ADMIN_HASH) || safeCompare(legacyHash, ADMIN_HASH)) {
+    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH) || constantTimeCompare(saltedHash, ADMIN_HASH) || constantTimeCompare(legacyHash, ADMIN_HASH)) {
       setAdminUnlocked(true);
       setAdminPassword(''); // Clear plaintext password from React state after successful auth
       adminSessionFailsRef.current = 0;
