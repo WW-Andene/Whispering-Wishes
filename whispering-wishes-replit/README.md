@@ -1,4 +1,4 @@
-# Whispering Wishes v2.1.0
+# Whispering Wishes v3.2.3
 
 A Wuthering Waves Convene (gacha) companion app.
 
@@ -28,7 +28,7 @@ src/
 
 ## Game Constants
 - Hard Pity: 80 pulls
-- Soft Pity Start: 66 pulls
+- Soft Pity Start: 65 pulls
 - Base 5★ Rate: 0.8%
 - Soft Pity Increase: +5.5% per pull after 66
 - Character Banner: 50/50 system
@@ -39,4 +39,4 @@ src/
 - Use "Convenes" not "pulls" in UI text
 - Use "Resonators" not "characters" (capitalized)
 - Don't change gacha rate calculations
-- Storage key: `whispering-wishes-v2.0` (keep for compatibility)
+- Storage key: `whispering-wishes-v2.2` (legacy v2.0 and v2.1 are auto-migrated)

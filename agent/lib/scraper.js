@@ -125,7 +125,7 @@ function htmlToText(html) {
   text = text.replace(/<\/?(?:div|p|br|hr|h[1-6]|li|tr|td|th|table|section|article|header|footer|nav|main|blockquote|pre)[^>]*>/gi, '\n');
 
   // Convert links to text with URL hint
-  text = text.replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '$2');
+  text = text.replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '$2 ($1)');
 
   // Remove all remaining HTML tags
   text = text.replace(/<[^>]+>/g, ' ');

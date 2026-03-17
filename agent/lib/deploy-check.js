@@ -24,7 +24,7 @@ export async function checkDeploymentStatus() {
   // Method 1: GitHub CLI (works in Actions)
   try {
     const result = execSync(
-      'gh api repos/{owner}/{repo}/deployments --jq ".[0] | {state: .statuses_url, env: .environment, created: .created_at}" 2>/dev/null',
+      'gh api repos/:owner/:repo/deployments --jq ".[0] | {state: .statuses_url, env: .environment, created: .created_at}" 2>/dev/null',
       { cwd: PATHS.repoRoot, encoding: 'utf-8', stdio: 'pipe', timeout: 10000 }
     );
     if (result.trim()) {

@@ -40,12 +40,6 @@ export function calculateUrgency(bannerEndDate, memory) {
     return { urgency: 'elevated', hoursLeft, shouldRun: true };
   }
 
-  // Post-transition: banner just ended (within last 6 hours)
-  // New banner data should be available — important to catch it
-  if (hoursLeft <= 0 && hoursLeft > -6) {
-    return { urgency: 'critical', hoursLeft, shouldRun: true };
-  }
-
   // Normal: no urgency
   return { urgency: 'normal', hoursLeft, shouldRun: true };
 }

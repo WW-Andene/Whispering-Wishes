@@ -14,7 +14,7 @@
 
 import { log, addChange } from './log.js';
 import { SCRAPER } from './config.js';
-import { isExistingUrl } from './protected.js';
+
 
 const IMGBB_API = 'https://api.imgbb.com/1/upload';
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));

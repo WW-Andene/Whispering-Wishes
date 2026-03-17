@@ -18,9 +18,10 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
  */
 export function extractImageUrls(source) {
   const urls = new Set();
-  const matches = source.matchAll(/https?:\/\/[^'"\s]+\.(?:webp|png|jpg|jpeg|avif|gif)/gi);
+  const matches = source.matchAll(/https?:\/\/[^'"\s,;)]+\.(?:webp|png|jpg|jpeg|avif|gif)(?:\?[^'"\s)]*)?/gi);
   for (const m of matches) {
-    urls.add(m[0]);
+    let url = m[0].replace(/[,;]+$/, '');
+    urls.add(url);
   }
   return [...urls];
 }

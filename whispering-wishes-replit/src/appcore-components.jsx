@@ -177,8 +177,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
     return () => { document.body.style.overflow = originalOverflow; };
   }, []);
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
-  const weaponData = WEAPON_DATA[data.bestWeapon];
-  const weaponImg = DEFAULT_COLLECTION_IMAGES[data.bestWeapon];
+  const bestWeapon = data.bestWeapon || null;
+  const weaponData = bestWeapon ? WEAPON_DATA[bestWeapon] : null;
+  const weaponImg = bestWeapon ? DEFAULT_COLLECTION_IMAGES[bestWeapon] : null;
   
   // Info framing: use info-specific framing, falling back to collection framing offset
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
@@ -671,13 +672,17 @@ class AppErrorBoundary extends React.Component {
             <p style={{ color: '#9ca3af', fontSize: 14, marginBottom: 24 }}>Something unexpected went wrong. Your data is safe in local storage.</p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
-              style={{ padding: '10px 24px', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee', borderRadius: 8, cursor: 'pointer', fontSize: 14, marginRight: 8 }}
+              style={{ padding: '10px 24px', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee', borderRadius: 8, cursor: 'pointer', fontSize: 14, marginRight: 8, outline: 'none' }}
+              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(6,182,212,0.5)'; }}
+              onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             >
               Try Again
             </button>
             <button
               onClick={() => window.location.reload()}
-              style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#d1d5db', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}
+              style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#d1d5db', borderRadius: 8, cursor: 'pointer', fontSize: 14, outline: 'none' }}
+              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.3)'; }}
+              onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             >
               Reload Page
             </button>

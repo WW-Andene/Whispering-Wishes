@@ -30,6 +30,9 @@ export function getBuffer() {
  * Throws if oldStr is not found (prevents silent failures).
  */
 function safeReplace(oldStr, newStr, description) {
+  if (!oldStr || oldStr.length === 0) {
+    throw new Error(`WRITE FAILED — empty search string for: ${description}`);
+  }
   if (!buffer.includes(oldStr)) {
     throw new Error(`WRITE FAILED — could not find target string for: ${description}\nSearching for:\n${oldStr.slice(0, 200)}...`);
   }
@@ -50,7 +53,8 @@ function safeReplace(oldStr, newStr, description) {
  */
 export function bumpVersion(currentVersion) {
   const parts = currentVersion.split('.');
-  parts[2] = String(parseInt(parts[2] || '0') + 1);
+  while (parts.length < 3) parts.push('0');
+  parts[2] = String(parseInt(parts[2], 10) + 1);
   const newVersion = parts.join('.');
 
   safeReplace(
@@ -100,7 +104,7 @@ export function updateCurrentBanners(bannerData) {
   // Build weapon entries
   const weapEntries = bannerData.weapons.map(w => {
     const featured4 = w.featured4Stars ? `[${w.featured4Stars.map(s => `'${s}'`).join(', ')}]` : "['TBD', 'TBD', 'TBD']";
-    return `    { id: '${w.id}', name: '${escapeSingleQuote(w.name)}', title: '${w.title || ''}', type: '${w.type}', forCharacter: '${w.forCharacter}', element: '${w.element}', isNew: ${w.isNew || false}, featured4Stars: ${featured4}, imageUrl: '' }`;
+    return `    { id: '${w.id}', name: '${escapeForJSString(w.name)}', title: '${w.title || ''}', type: '${w.type}', forCharacter: '${w.forCharacter}', element: '${w.element}', isNew: ${w.isNew || false}, featured4Stars: ${featured4}, imageUrl: '' }`;
   }).join(',\n');
 
   // Find and replace the version/phase/dates block
@@ -147,7 +151,7 @@ export function updateCurrentBanners(bannerData) {
 export function addBannerHistoryEntry(entry) {
   const versionComment = `  // Version ${entry.version}`;
   const chars = entry.characters.map(c => `'${c}'`).join(', ');
-  const weaps = entry.weapons.map(w => `'${escapeSingleQuote(w)}'`).join(', ');
+  const weaps = entry.weapons.map(w => `'${escapeForJSString(w)}'`).join(', ');
   const newEntry = `  { version: '${entry.version}', phase: ${entry.phase}, characters: [${chars}], weapons: [${weaps}], startDate: '${entry.startDate}', endDate: '${entry.endDate}' },`;
 
   // Find the start of BANNER_HISTORY array
@@ -186,6 +190,11 @@ export function addBannerHistoryEntry(entry) {
  * Update an event's currentEnd date.
  */
 export function updateEventDate(eventKey, newEndDate) {
+  if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(eventKey)) {
+    log.warn(`Invalid event key format: ${eventKey}`);
+    return false;
+  }
+
   // Find the event block and its currentEnd
   const pattern = new RegExp(
     `(${eventKey}:\\s*\\{[\\s\\S]*?currentEnd:\\s*)'([^']+)'`,
@@ -234,12 +243,12 @@ export function addCharacterEntry(name, data) {
   const bestEchoes = data.bestEchoes?.map(e => `'${e}'`).join(', ') || "'TBD', 'TBD'";
   const teams = data.teams?.map(t => `'${t}'`).join(', ') || "'TBD'";
 
-  const entry = `  '${name}': { rarity: ${data.rarity}, element: '${data.element}', weapon: '${data.weapon}', role: '${data.role}',
-    desc: '${escapeSingleQuote(data.desc || '')}',
+  const entry = `  '${escapeForJSString(name)}': { rarity: ${data.rarity}, element: '${escapeForJSString(data.element)}', weapon: '${escapeForJSString(data.weapon)}', role: '${escapeForJSString(data.role)}',
+    desc: '${escapeForJSString(data.desc || '')}',
     skills: [${skills}],
-    ascension: { boss: '${data.ascension?.boss || 'TBD'}', common: '${data.ascension?.common || 'TBD'}', specialty: '${data.ascension?.specialty || 'TBD'}' },
-    skillMaterials: { weeklyDrop: '${data.skillMaterials?.weeklyDrop || 'TBD'}', forgery: '${data.skillMaterials?.forgery || 'TBD'}' },
-    bestEchoes: [${bestEchoes}], bestWeapon: '${data.bestWeapon || 'TBD'}',
+    ascension: { boss: '${escapeForJSString(data.ascension?.boss || 'TBD')}', common: '${escapeForJSString(data.ascension?.common || 'TBD')}', specialty: '${escapeForJSString(data.ascension?.specialty || 'TBD')}' },
+    skillMaterials: { weeklyDrop: '${escapeForJSString(data.skillMaterials?.weeklyDrop || 'TBD')}', forgery: '${escapeForJSString(data.skillMaterials?.forgery || 'TBD')}' },
+    bestEchoes: [${bestEchoes}], bestWeapon: '${escapeForJSString(data.bestWeapon || 'TBD')}',
     teams: [${teams}] },\n`;
 
   const insertBefore = isNew5Star ? marker : marker;
@@ -267,13 +276,13 @@ export function addWeaponEntry(name, data) {
     return false;
   }
 
-  const bestFor = data.bestFor?.map(b => `'${b}'`).join(', ') || `'${data.signatureFor || 'TBD'}'`;
+  const bestFor = data.bestFor?.map(b => `'${escapeForJSString(b)}'`).join(', ') || `'${escapeForJSString(data.signatureFor || 'TBD')}'`;
   const qName = name.includes("'") ? `"${name}"` : `'${name}'`;
 
-  const entry = `  ${qName}: { rarity: ${data.rarity}, type: '${data.type}', stat: '${data.stat}', baseAtk: ${data.baseAtk || 587}, subStatValue: '${data.subStatValue || 'TBD'}',
-    desc: '${escapeSingleQuote(data.desc || '')}',
-    passive: '${escapeSingleQuote(data.passive || '')}', bestFor: [${bestFor}],
-    ascensionMaterials: { forgery: '${data.ascensionMaterials?.forgery || 'TBD'}', common: '${data.ascensionMaterials?.common || 'TBD'}' } },\n`;
+  const entry = `  ${qName}: { rarity: ${data.rarity}, type: '${escapeForJSString(data.type)}', stat: '${escapeForJSString(data.stat)}', baseAtk: ${data.baseAtk || 587}, subStatValue: '${escapeForJSString(data.subStatValue || 'TBD')}',
+    desc: '${escapeForJSString(data.desc || '')}',
+    passive: '${escapeForJSString(data.passive || '')}', bestFor: [${bestFor}],
+    ascensionMaterials: { forgery: '${escapeForJSString(data.ascensionMaterials?.forgery || 'TBD')}', common: '${escapeForJSString(data.ascensionMaterials?.common || 'TBD')}' } },\n`;
 
   buffer = buffer.replace(marker, entry + marker);
 
@@ -331,13 +340,10 @@ export function addToAllCharacters(name) {
 /**
  * Add combat data entry for a new character.
  */
-export function addCombatDataEntry(name, dmgFocus, buffs, debuffs) {
+export function addCombatDataEntry(name, dmgFocus, buffs, debuffs, rarity = 5) {
   // Find the combat data forEach call
   const marker5Star = "  // 4★\n";
   const marker4Star = "].forEach(";
-
-  const rarity = dmgFocus._rarity || 5;
-  delete dmgFocus._rarity;
 
   const marker = rarity === 5 ? marker5Star : marker4Star;
   const dmgArr = (Array.isArray(dmgFocus) ? dmgFocus : []).map(d => `'${d}'`).join(', ');
@@ -376,7 +382,16 @@ export function flush() {
   return true;
 }
 
-// Utility: escape single quotes in strings
-function escapeSingleQuote(str) {
-  return str.replace(/'/g, "\\'");
+// Utility: escape strings for safe JS string interpolation
+function escapeForJSString(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/\\/g, '\\\\')     // Backslashes first
+    .replace(/'/g, "\\'")       // Single quotes
+    .replace(/\n/g, '\\n')      // Newlines
+    .replace(/\r/g, '\\r')      // Carriage returns
+    .replace(/\t/g, '\\t')      // Tabs
+    .replace(/\0/g, '\\0')      // Null bytes
+    .replace(/`/g, '\\`')       // Backticks
+    .replace(/\$/g, '\\$');     // Dollar sign
 }

@@ -97,7 +97,7 @@ async function networkFirst(request, cacheName) {
     const cached = await caches.match(request);
     if (cached) return cached;
     if (request.mode === 'navigate') {
-      const fallback = await caches.match('/');
+      const fallback = await caches.match('/index.html') || await caches.match('/');
       if (fallback) return fallback;
       // Last resort — styled offline message
       return new Response(

@@ -120,10 +120,11 @@ export function applyMetaUpdates(updates, getBufferFn, loadBufferFn, memory, min
     const escaped = update.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     if (update.field === 'bestWeapon' && typeof update.newValue === 'string') {
-      const pattern = new RegExp(`('${escaped}':[\\s\\S]*?bestWeapon:\\s*)'[^']*'`);
+      const pattern = new RegExp(`('${escaped}':\\s*\\{[^}]{0,2000}?bestWeapon:\\s*)'[^']*'`);
       const match = buf.match(pattern);
       if (match) {
-        loadBufferFn(buf.replace(match[0], `${match[1]}'${update.newValue}'`));
+        const safeValue = update.newValue.replace(/'/g, "\\'");
+        loadBufferFn(buf.replace(match[0], `${match[1]}'${safeValue}'`));
         addChange('meta-refresh', `${update.name} bestWeapon → ${update.newValue}`);
         changed = true;
       }

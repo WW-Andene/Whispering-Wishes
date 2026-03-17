@@ -95,30 +95,49 @@ Return ONLY the JSON.`;
 export function addNewEvent(eventData, getBufferFn, loadBufferFn) {
   const buf = getBufferFn();
 
-  // Find the end of the EVENTS object
-  const eventsEnd = buf.match(/(\n\};\s*\n\s*\/\/ \[SECTION:)/);
-  if (!eventsEnd) {
-    // Try alternative pattern
-    const alt = buf.match(/(\n\};\s*\n\s*const (?:BANNER_HISTORY|SUBSCRIPTION))/);
-    if (!alt) {
-      log.warn(`Could not find EVENTS object end marker for new event "${eventData.name}"`);
-      return false;
+  // Validate event key is a safe identifier
+  if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(eventData.key)) {
+    log.warn(`Invalid event key format: ${eventData.key}`);
+    return false;
+  }
+
+  // Find the EVENTS object's closing brace using balanced brace matching
+  const eventsStart = buf.indexOf('const EVENTS = {');
+  if (eventsStart === -1) {
+    log.warn(`Could not find EVENTS object for new event "${eventData.name}"`);
+    return false;
+  }
+
+  let depth = 0;
+  let closingIndex = -1;
+  let inStr = false, strCh = '';
+  for (let i = buf.indexOf('{', eventsStart); i < buf.length; i++) {
+    const c = buf[i];
+    if (inStr) {
+      let bs = 0;
+      for (let j = i - 1; j >= 0 && buf[j] === '\\'; j--) bs++;
+      if (c === strCh && bs % 2 === 0) inStr = false;
+      continue;
+    }
+    if (c === "'" || c === '"' || c === '`') { inStr = true; strCh = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) { closingIndex = i; break; }
     }
   }
 
-  const marker = (eventsEnd || buf.match(/(\n\};\s*\n\s*const (?:BANNER_HISTORY|SUBSCRIPTION))/))?.[0];
-  if (!marker) return false;
+  if (closingIndex === -1) {
+    log.warn(`Could not find EVENTS closing brace for new event "${eventData.name}"`);
+    return false;
+  }
 
-  const currentEnd = eventData.currentEnd ? `'${eventData.currentEnd}'` : 'null';
-  const entry = `  ${eventData.key}: {
-    name: '${eventData.name}', subtitle: '${(eventData.subtitle || '').replace(/'/g, "\\'")}',
-    description: '${(eventData.description || '').replace(/'/g, "\\'")}',
-    resetType: '${eventData.resetType}', color: '${eventData.color || 'cyan'}',
-    currentEnd: ${currentEnd},
-    rewards: '${(eventData.rewards || '').replace(/'/g, "\\'")}',
-    imageUrl: '' },\n`;
+  const esc = (s) => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const currentEnd = eventData.currentEnd ? `'${esc(eventData.currentEnd)}'` : 'null';
+  const entry = `  ${eventData.key}: {\n    name: '${esc(eventData.name)}', subtitle: '${esc(eventData.subtitle)}',\n    description: '${esc(eventData.description)}',\n    resetType: '${esc(eventData.resetType)}', color: '${esc(eventData.color || 'cyan')}',\n    currentEnd: ${currentEnd},\n    rewards: '${esc(eventData.rewards)}',\n    imageUrl: '' },\n`;
 
-  const newBuf = buf.replace(marker, entry + marker);
+  // Insert before the closing brace of EVENTS
+  const newBuf = buf.slice(0, closingIndex) + entry + buf.slice(closingIndex);
   loadBufferFn(newBuf);
 
   log.ok(`Added new event: ${eventData.key} ("${eventData.name}")`);

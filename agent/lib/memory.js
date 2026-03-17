@@ -86,9 +86,14 @@ export function recordFailure(memory, category, description) {
  */
 export function wasRecentlyPatched(memory, description) {
   const cutoff = Date.now() - 48 * 3600000;
-  return memory.patches.some(p =>
-    p.description === description && new Date(p.timestamp).getTime() > cutoff
-  );
+  const normalizedDesc = description.toLowerCase().trim();
+  return memory.patches.some(p => {
+    if (new Date(p.timestamp).getTime() <= cutoff) return false;
+    const normalizedPatch = p.description.toLowerCase().trim();
+    return normalizedPatch === normalizedDesc
+      || normalizedPatch.includes(normalizedDesc)
+      || normalizedDesc.includes(normalizedPatch);
+  });
 }
 
 /**

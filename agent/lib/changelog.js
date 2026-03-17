@@ -119,10 +119,10 @@ export function updateAppChangelog(entries, getBufferFn, loadBufferFn) {
     const allEntries = newEntries.join(',\n') + (existingEntries ? ',\n' + existingEntries : '');
 
     // Trim to MAX_APP_ENTRIES
-    const trimmed = allEntries.split('\n')
-      .filter(l => l.trim().startsWith('{'))
-      .slice(0, MAX_APP_ENTRIES)
-      .join(',\n');
+    const entryPattern = /\s*\{[^}]+\}/g;
+    const allMatches = [...allEntries.matchAll(entryPattern)];
+    const trimmedEntries = allMatches.slice(0, MAX_APP_ENTRIES).map(m => m[0].trim());
+    const trimmed = trimmedEntries.map(e => `  ${e}`).join(',\n');
 
     const newBlock = `const CHANGELOG = [\n${trimmed}\n];\n`;
     buf = buf.replace(existingMatch[0], newBlock);

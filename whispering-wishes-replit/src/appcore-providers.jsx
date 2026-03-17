@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 — appcore-providers.jsx
+// WHISPERING WISHES v3.2.3 — appcore-providers.jsx
 // PWA infrastructure, toast system, a11y hooks, onboarding, KuroStyles.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -214,7 +214,7 @@ const ToastProvider = ({ children }) => {
         {toasts.map(toast => (
           <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
             animation: 'slideUp 0.2s ease-out',
-            background: toast.type === 'success' ? 'rgba(16,185,129,0.9)' : toast.type === 'error' ? 'rgba(239,68,68,0.9)' : toast.type === 'warning' ? 'rgba(245,158,11,0.9)' : 'rgba(59,130,246,0.9)',
+            background: toast.type === 'success' ? 'rgba(34,197,94,0.9)' : toast.type === 'error' ? 'rgba(248,113,113,0.9)' : toast.type === 'warning' ? 'rgba(237,175,24,0.9)' : 'rgba(56,189,248,0.9)',
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
@@ -287,9 +287,25 @@ const useEscapeKey = (isOpen, onClose) => {
 const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick }) => {
   const focusTrapRef = useFocusTrap(isOpen);
   useEscapeKey(isOpen, onClose);
+  // Prevent background scroll when modal is open (fixes iOS Safari scroll bleed)
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
   if (!isOpen) return null;
   return (
-    <div 
+    <div
       ref={focusTrapRef}
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
       role="dialog"
@@ -418,10 +434,10 @@ const KuroStyles = memo(({ oledMode }) => (
       --color-purple: 168, 85, 247;
       --color-emerald: 34, 197, 94;
       --color-red: 248, 113, 113;
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-      --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.6);
+      --shadow-sm: 0 1px 2px rgba(6, 10, 24, 0.4);
+      --shadow-md: 0 4px 12px rgba(6, 10, 24, 0.5);
+      --shadow-lg: 0 8px 24px rgba(6, 10, 24, 0.6);
+      --shadow-xl: 0 12px 40px rgba(6, 10, 24, 0.7);
       --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -695,19 +711,19 @@ const KuroStyles = memo(({ oledMode }) => (
       overflow: visible;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      box-shadow: 
-        0 4px 24px rgba(0, 0, 0, 0.5),
+      box-shadow:
+        0 4px 24px rgba(6, 10, 24, 0.6),
         0 0 0 1px rgba(255, 255, 255, 0.03),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
+
     @media (hover: hover) {
       .kuro-card:hover {
         border-color: var(--border-hover);
         transform: translateY(-2px);
-        box-shadow: 
-          0 8px 32px rgba(0, 0, 0, 0.6),
+        box-shadow:
+          0 8px 32px rgba(6, 10, 24, 0.7),
           0 0 0 1px rgba(255, 255, 255, 0.06),
           0 0 40px rgba(var(--color-gold), 0.03),
           inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -1399,7 +1415,15 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
        when prefers-reduced-motion: reduce) which adds .no-animations class above.
-       No separate @media rule needed — it was overriding the app toggle with !important. */
+       CSS-level fallback for cases where JS hasn't loaded yet. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
     /* Screen reader only utility */
     .sr-only {
       position: absolute;

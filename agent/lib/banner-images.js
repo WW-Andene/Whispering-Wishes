@@ -212,6 +212,11 @@ export async function applyBannerImages(foundImages, getBufferFn, loadBufferFn) 
       const pattern = new RegExp(`(name:\\s*['"]${escapedName}['"][\\s\\S]*?imageUrl:\\s*)'([^']*)'`);
       const match = buf.match(pattern);
       if (match) {
+        const occurrences = buf.split(match[0]).length - 1;
+        if (occurrences > 1) {
+          log.warn(`Banner image slot matched ${occurrences} times — skipping to avoid corruption`);
+          continue;
+        }
         loadBufferFn(buf.replace(match[0], `${match[1]}'${imgbbUrl}'`));
         log.ok(`Banner image: ${slot} → ${imgbbUrl}`);
         addChange('banner-images', `Filled ${slot} image`);
@@ -221,6 +226,11 @@ export async function applyBannerImages(foundImages, getBufferFn, loadBufferFn) 
       const pattern = new RegExp(`(${slot}:\\s*)'([^']*)'`);
       const match = buf.match(pattern);
       if (match) {
+        const occurrences = buf.split(match[0]).length - 1;
+        if (occurrences > 1) {
+          log.warn(`Banner image slot matched ${occurrences} times — skipping to avoid corruption`);
+          continue;
+        }
         loadBufferFn(buf.replace(match[0], `${match[1]}'${imgbbUrl}'`));
         log.ok(`Banner image: ${slot} → ${imgbbUrl}`);
         addChange('banner-images', `Filled ${slot}`);

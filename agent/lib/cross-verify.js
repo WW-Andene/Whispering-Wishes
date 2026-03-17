@@ -104,7 +104,12 @@ export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
         { maxTokens: 2048 }
       );
 
-      const data = JSON.parse(response.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+      let jsonStr = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+      const jsonMatch = jsonStr.match(/(\{[\s\S]*\})/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1];
+      }
+      const data = JSON.parse(jsonStr);
       results.push({ source: domain, data, url: source.url });
     } catch (err) {
       log.dim(`Extraction failed for ${domain}: ${err.message}`);
