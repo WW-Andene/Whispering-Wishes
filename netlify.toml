@@ -4,6 +4,11 @@
   publish = "dist"
 
 [[redirects]]
-  from = "/*"
+  from = "/"
   to = "/index.html"
   status = 200
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://i.ibb.co https://ibb.co https://i.imgur.com https://cdn.discordapp.com https://media.discordapp.net https://pbs.twimg.com https://raw.githubusercontent.com"
