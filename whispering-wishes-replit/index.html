@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
     <meta name="description" content="Whispering Wishes — Wuthering Waves gacha calculator, planner & collection tracker. Probability engine, pity tracking, and resource planning." />
     <meta name="theme-color" content="#080c14" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -21,15 +22,26 @@
     <!-- P14-FIX: LOW-14 — Add favicon and apple-touch-icon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
     <!-- D-TYPE-1: Display fonts — Rajdhani (headings/UI) + JetBrains Mono (data numerals) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </noscript>
+    <style>html,body{background:#080c14;color:#e2e8f0;margin:0}</style>
     <title>Whispering Wishes | Wuthering Waves Companion</title>
   </head>
   <body>
-    <div id="root"></div>
-    <noscript><p style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif">Whispering Wishes requires JavaScript to run.</p></noscript>
+    <!-- Skip navigation for keyboard users (WCAG 2.1 AA) -->
+    <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
+      Skip to main content
+    </a>
+    <div id="root" role="main" aria-label="Whispering Wishes application"></div>
+    <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

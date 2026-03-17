@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 — appcore-components.jsx
+// WHISPERING WISHES — appcore-components.jsx
 // All React UI components: cards, modals, banners, backgrounds, collection grid.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,11 @@ import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 // AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
-const hideOnError = (e) => { e.target.style.visibility = 'hidden'; };
+const hideOnError = (e) => {
+  e.target.style.visibility = 'hidden';
+  e.target.setAttribute('aria-hidden', 'true');
+  e.target.alt = '';
+};
 
 // Material item display helper — shows [icon] name ×qty
 const MaterialItem = ({ name, qty }) => {
@@ -44,45 +48,67 @@ const MaterialItem = ({ name, qty }) => {
 // Trophy icon mapping — hoisted to module scope to avoid recreation on every render
 const TROPHY_ICON_MAP = { Crown, Sparkles, Heart, Swords, Sword, Shield, Gift, Zap, Clover, Flame, Target, AlertCircle, TrendingDown, TrendingUp, Fish, Diamond, Gamepad2, Star, Trophy };
 
+// Simple memo cache for mask gradients — avoids recreating identical strings
+const _maskCache = new Map();
 const generateMaskGradient = (fadePos, fadeIntensity) => {
+  const key = `h-${fadePos}-${fadeIntensity}`;
+  if (_maskCache.has(key)) return _maskCache.get(key);
+
+  let result;
   if (fadePos === undefined || fadeIntensity === undefined) {
-    return 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0.9) 100%)';
+    result = 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0.9) 100%)';
+  } else {
+    const maxOpacity = fadeIntensity / 100;
+    const endPos = fadePos;
+    if (endPos <= 10) {
+      result = `linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
+    } else {
+      const steps = [`rgba(0,0,0,0) 0%`];
+      const fadeStart = Math.max(0, endPos - 40);
+      if (fadeStart > 0) steps.push(`rgba(0,0,0,0) ${fadeStart}%`);
+      for (let i = 1; i <= 5; i++) {
+        const pos = fadeStart + (endPos - fadeStart) * (i / 5);
+        const opacity = maxOpacity * (i / 5);
+        steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
+      }
+      steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
+      result = `linear-gradient(to right, ${steps.join(', ')})`;
+    }
   }
-  const maxOpacity = fadeIntensity / 100;
-  const endPos = fadePos;
-  if (endPos <= 10) {
-    return `linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
-  }
-  const steps = [`rgba(0,0,0,0) 0%`];
-  const fadeStart = Math.max(0, endPos - 40);
-  if (fadeStart > 0) steps.push(`rgba(0,0,0,0) ${fadeStart}%`);
-  for (let i = 1; i <= 5; i++) {
-    const pos = fadeStart + (endPos - fadeStart) * (i / 5);
-    const opacity = maxOpacity * (i / 5);
-    steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
-  }
-  steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
-  return `linear-gradient(to right, ${steps.join(', ')})`;
+
+  if (_maskCache.size > 200) _maskCache.clear();
+  _maskCache.set(key, result);
+  return result;
 };
 
 // Unified vertical mask gradient generator (for collection)
+const _vertMaskCache = new Map();
 const generateVerticalMaskGradient = (fadePos, fadeIntensity, direction = 'bottom') => {
+  const key = `v-${fadePos}-${fadeIntensity}-${direction}`;
+  if (_vertMaskCache.has(key)) return _vertMaskCache.get(key);
+
   const maxOpacity = fadeIntensity / 100;
   const endPos = fadePos;
   const dir = direction === 'top' ? 'to top' : 'to bottom';
+  let result;
   if (endPos <= 10) {
-    return `linear-gradient(${dir}, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
+    result = `linear-gradient(${dir}, rgba(0,0,0,0) 0%, rgba(0,0,0,${maxOpacity}) ${endPos}%, rgba(0,0,0,${maxOpacity}) 100%)`;
+  } else {
+    const steps = [`rgba(0,0,0,0) 0%`];
+    const fadeStart = Math.max(0, endPos - 40);
+    if (fadeStart > 0) steps.push(`rgba(0,0,0,0) ${fadeStart}%`);
+    for (let i = 1; i <= 5; i++) {
+      const pos = fadeStart + (endPos - fadeStart) * (i / 5);
+      const opacity = maxOpacity * (i / 5);
+      steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
+    }
+    steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
+    result = `linear-gradient(${dir}, ${steps.join(', ')})`;
   }
-  const steps = [`rgba(0,0,0,0) 0%`];
-  const fadeStart = Math.max(0, endPos - 40);
-  if (fadeStart > 0) steps.push(`rgba(0,0,0,0) ${fadeStart}%`);
-  for (let i = 1; i <= 5; i++) {
-    const pos = fadeStart + (endPos - fadeStart) * (i / 5);
-    const opacity = maxOpacity * (i / 5);
-    steps.push(`rgba(0,0,0,${opacity.toFixed(2)}) ${pos.toFixed(0)}%`);
-  }
-  steps.push(`rgba(0,0,0,${maxOpacity}) 100%`);
-  return `linear-gradient(${dir}, ${steps.join(', ')})`;
+
+  if (_vertMaskCache.size > 200) _vertMaskCache.clear();
+  _vertMaskCache.set(key, result);
+  return result;
 };
 
 // Shared element color maps (extracted to avoid recreation per render)
@@ -110,6 +136,8 @@ const EVENT_ACCENT_COLORS = {
   orange: { text: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-500/20' },
   purple: { text: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/20' },
   yellow: { text: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20' },
+  emerald: { text: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/20' },
+  red: { text: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/20' },
 };
 
 // Tab background component - eliminates ~400 lines of duplication across 6 tabs
@@ -132,24 +160,28 @@ CardHeader.displayName = 'CardHeader';
 const CardBody = memo(({ children, className = '', style }) => <div className={`kuro-body ${className}`} style={style}>{children}</div>);
 CardBody.displayName = 'CardBody';
 
+// Hoisted team parsing helper — avoids recreation per render
+const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
+
 // Character Detail Modal
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming }) => {
   const data = CHARACTER_DATA[name];
   if (!data) return null;
-  
+
   const focusTrapRef = useFocusTrap(true);
   useEscapeKey(true, onClose);
+  // Prevent body scroll while modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = originalOverflow; };
+  }, []);
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const weaponData = WEAPON_DATA[data.bestWeapon];
   const weaponImg = DEFAULT_COLLECTION_IMAGES[data.bestWeapon];
   
   // Info framing: use info-specific framing, falling back to collection framing offset
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
-  
-  // Parse team strings into character names
-  const parseTeamMembers = (teamStr) => {
-    return teamStr.split('+').map(s => s.trim()).filter(Boolean);
-  };
   
   return (
     <div 
@@ -294,6 +326,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           </div>
 
           {/* Best Weapon - with image and stats */}
+          {data.bestWeapon && (
           <div className={`p-3 rounded-xl border ${colors.border} bg-gradient-to-r ${colors.bg} from-transparent`}>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
@@ -311,6 +344,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             </div>
           </div>
+          )}
 
           {/* Best Echoes - enhanced */}
           <div className="p-3 rounded-xl bg-white/5 border border-white/10">
@@ -454,9 +488,15 @@ const WEAPON_RARITY_COLORS = {
 const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   const data = WEAPON_DATA[name];
   if (!data) return null;
-  
+
   const focusTrapRef = useFocusTrap(true);
   useEscapeKey(true, onClose);
+  // Prevent body scroll while modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = originalOverflow; };
+  }, []);
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
   
   return (
@@ -561,10 +601,17 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
 class TabErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, prevTabName: props.tabName };
   }
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
+  }
+  static getDerivedStateFromProps(nextProps, prevState) {
+    // Reset error when tab changes (tabName prop changes)
+    if (prevState.prevTabName !== undefined && prevState.prevTabName !== nextProps.tabName) {
+      return { hasError: false, error: null, prevTabName: nextProps.tabName };
+    }
+    return { prevTabName: nextProps.tabName };
   }
   componentDidCatch(error, info) {
     console.error(`[${this.props.tabName || 'Tab'}] Crash:`, error, info?.componentStack);
@@ -655,9 +702,10 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
   const btnRef = useRef(null);
   
   useEffect(() => {
+    let rafId = null;
     try {
       if (active && btnRef.current && tabRef?.current) {
-        requestAnimationFrame(() => {
+        rafId = requestAnimationFrame(() => {
           const btn = btnRef.current;
           const nav = tabRef?.current;
           if (!btn || !nav) return;
@@ -671,6 +719,7 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
         });
       }
     } catch (e) { /* ignore indicator errors */ }
+    return () => { if (rafId !== null) cancelAnimationFrame(rafId); };
   }, [active, tabRef]);
   
   return (

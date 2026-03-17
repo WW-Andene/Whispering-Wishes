@@ -5,14 +5,15 @@
 // proper SW update lifecycle. A static file fixes all three issues.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '3.2.3';
-const APP_CACHE = `ww-app-v${APP_VERSION}`;
-const IMG_CACHE = `ww-images-v${APP_VERSION}`;
-const CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
+let APP_VERSION = '3.2.3'; // Fallback — can be overridden by app via message
+let APP_CACHE = `ww-app-v${APP_VERSION}`;
+let IMG_CACHE = `ww-images-v${APP_VERSION}`;
+let CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
 const MAX_IMG_ENTRIES = 250;
 
 // Core app shell to precache
-const PRECACHE = ['/', '/index.html'];
+// NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
+const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg'];
 
 // CDN domains — cache-first (these rarely change)
 const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
@@ -96,7 +97,20 @@ async function networkFirst(request, cacheName) {
     const cached = await caches.match(request);
     if (cached) return cached;
     if (request.mode === 'navigate') {
-      return caches.match('/');
+      const fallback = await caches.match('/');
+      if (fallback) return fallback;
+      // Last resort — styled offline message
+      return new Response(
+        `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Offline — Whispering Wishes</title>
+        <style>body{background:#080c14;color:#e2e8f0;font-family:'Rajdhani',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
+        .box{max-width:400px;padding:2rem}h1{font-size:1.5rem;margin-bottom:1rem}p{opacity:0.7;line-height:1.6}
+        button{margin-top:1.5rem;padding:0.75rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-family:inherit}
+        button:hover{background:#3b82f6}</style></head>
+        <body><div class="box"><h1>You're Offline</h1><p>Whispering Wishes needs an internet connection to load. Please check your connection and try again.</p>
+        <button onclick="location.reload()">Retry</button></div></body></html>`,
+        { status: 503, statusText: 'Offline', headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      );
     }
     return new Response('Offline', { status: 503 });
   }
@@ -132,5 +146,12 @@ self.addEventListener('message', (event) => {
     caches.delete(IMG_CACHE).then(() => {
       event.source?.postMessage('imageCacheCleared');
     });
+  }
+  // Version sync from app — keeps cache names aligned with app version
+  if (event.data?.type === 'SET_VERSION' && event.data.version) {
+    APP_VERSION = event.data.version;
+    APP_CACHE = `ww-app-v${APP_VERSION}`;
+    IMG_CACHE = `ww-images-v${APP_VERSION}`;
+    CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
   }
 });

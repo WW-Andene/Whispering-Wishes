@@ -92,8 +92,9 @@ const PWAProvider = ({ children }) => {
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      // Clean up only our injected DOM elements
+      // Clean up only our injected DOM elements — except viewport which is critical
       metaTags.forEach(({ name }) => {
+        if (name === 'viewport') return; // Never remove viewport meta
         const el = document.querySelector(`meta[name="${name}"][data-ww="true"]`);
         if (el) el.remove();
       });
@@ -184,12 +185,17 @@ const PWAProvider = ({ children }) => {
 const ToastContext = createContext(null);
 
 
+const MAX_TOASTS = 5;
+
 const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
-  
+
   const addToast = useCallback((message, type = 'info', duration = 3000) => {
     const id = generateUniqueId();
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => {
+      const next = [...prev, { id, message, type }];
+      return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next;
+    });
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
     // Haptic feedback per toast type
     if (type === 'success') haptic.success();
@@ -252,12 +258,28 @@ const useFocusTrap = (isOpen) => {
   }, [isOpen]);
   return ref;
 };
+// Modal stack prevents multiple modals from all closing on a single Escape press.
+// Only the most recently opened (topmost) modal responds to Escape.
+const _modalStack = [];
 const useEscapeKey = (isOpen, onClose) => {
+  const idRef = useRef(null);
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
+    const id = Symbol('modal');
+    idRef.current = id;
+    _modalStack.push({ id, onClose });
+    const handler = (e) => {
+      if (e.key === 'Escape' && _modalStack.length > 0 && _modalStack[_modalStack.length - 1].id === id) {
+        e.stopPropagation();
+        onClose();
+      }
+    };
     document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      const idx = _modalStack.findIndex(m => m.id === id);
+      if (idx !== -1) _modalStack.splice(idx, 1);
+    };
   }, [isOpen, onClose]);
 };
 
@@ -286,6 +308,12 @@ const OnboardingModal = ({ onComplete }) => {
   // P12-FIX: Add focus trapping and escape key support to onboarding modal (Step 11 audit — MEDIUM-6a)
   const focusTrapRef = useFocusTrap(true);
   useEscapeKey(true, onComplete);
+  // Prevent body scroll while onboarding modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = originalOverflow; };
+  }, []);
   const steps = [
     { title: "Welcome to Whispering Wishes!", icon: <Sparkles size={32} />, desc: "Your companion for Wuthering Waves Convene planning.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30', border: 'border-yellow-500/30', bg: 'bg-yellow-500/20', color: '#edaf18' },
     { title: "Import Your History", icon: <Upload size={32} />, desc: "Go to the Profile tab and import data from wuwatracker.com.", gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30', border: 'border-cyan-500/30', bg: 'bg-cyan-500/20', color: '#22d3ee' },

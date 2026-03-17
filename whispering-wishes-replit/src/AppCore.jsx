@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 — AppCore.jsx (Barrel)
+// WHISPERING WISHES — AppCore.jsx (Barrel)
 // Thin re-export layer. App.jsx imports from here — no changes needed.
 // Split into: appcore-data.js, appcore-engine.js, appcore-providers.jsx,
 //             appcore-components.jsx

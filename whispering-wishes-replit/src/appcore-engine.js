@@ -553,7 +553,7 @@ const loadFromStorage = () => {
 };
 
 const saveToStorage = (state) => {
-  if (!storageAvailable) return true; // P12-FIX: Return success status (Step 14 — MEDIUM-10a)
+  if (!storageAvailable) return false; // Storage unavailable — save did not happen
   try {
     const data = JSON.stringify(state);
     // Warn if approaching 5MB localStorage limit (~80% = 4MB)
@@ -644,8 +644,8 @@ const reducer = (state, action) => {
       // Deduplicate: merge new history with existing, filtering out entries that match by timestamp + name + rarity
       // P9-FIX: Added rarity and id to dedup key to reduce collision risk for duplicate 3★ weapons (Step 4 audit)
       const deduplicateMerge = (existing, incoming) => {
-        if (!incoming || incoming.length === 0) return existing || []; // P12-FIX: Guard empty incoming (Step 14 — LOW-10a)
-        if (!existing || existing.length === 0) return incoming;
+        if (!Array.isArray(incoming) || incoming.length === 0) return existing || [];
+        if (!Array.isArray(existing) || existing.length === 0) return incoming;
         const makeKey = (p) => `${p.timestamp || ''}|${p.name || ''}|${p.rarity || ''}|${p.id || ''}`;
         const existingKeys = new Set(existing.map(makeKey));
         const newEntries = incoming.filter(p => !existingKeys.has(makeKey(p)));

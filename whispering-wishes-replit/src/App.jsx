@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 - App (Main Application Component)
+// WHISPERING WISHES v3.2.3 - App (Main Application Component)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Main app module — WhisperingWishesInner + default export with providers.
@@ -111,7 +111,14 @@ const FETCH_TIMEOUT_MS = 10000;
 const fetchWithTimeout = (url, options = {}) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+  return fetch(url, { ...options, signal: controller.signal })
+    .catch((err) => {
+      if (err.name === 'AbortError') {
+        throw new Error(`[WW] Request to ${new URL(url).hostname} timed out after ${FETCH_TIMEOUT_MS}ms`);
+      }
+      throw err;
+    })
+    .finally(() => clearTimeout(timeoutId));
 };
 const DEBOUNCE_MS = 300;
 const FOCUS_DELAY_MS = 50;
@@ -128,10 +135,12 @@ const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
 // P13-FIX: CRITICAL-1 — Read Firebase config from env vars (set in .env or Vercel dashboard).
-// Fallbacks ensure the app still works without env vars, but production should always use env vars
-// so credentials aren't grep-able in source. The real protection is Firebase Security Rules (see database.rules.json).
-const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || 'https://whispering-wishes-default-rtdb.firebaseio.com';
-const FIREBASE_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyWhisperingWishes';
+// No hardcoded fallbacks — Firebase features are disabled when env vars are missing.
+const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || null;
+const FIREBASE_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || null;
+const FIREBASE_AVAILABLE = !!(FIREBASE_DB && FIREBASE_API_KEY);
+// localStorage keys — bump the suffix when the schema changes
+// v3 = visual settings were restructured in app v3.0; others haven't changed since v1
 const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
 const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
@@ -152,31 +161,83 @@ const DEFAULT_VISUAL_SETTINGS = {
   collectionZoom: 120,
   oledMode: false,
   swipeNavigation: false,
-  animationsEnabled: typeof window !== 'undefined' && window.matchMedia ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : true
+  animationsEnabled: true // default; overridden at mount via matchMedia listener
 };
-const TRACKER_CATEGORIES = [['character', 'Resonators', 'yellow'], ['weapon', 'Weapons', 'pink'], ['standard', 'Standard', 'cyan']];
+const TRACKER_CATEGORIES = [
+  { key: 'character', label: 'Resonators', color: 'yellow' },
+  { key: 'weapon', label: 'Weapons', color: 'pink' },
+  { key: 'standard', label: 'Standard', color: 'cyan' },
+];
 // P15-FIX: MEDIUM-3 — Domain allowlist for custom image URLs (single source of truth)
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
+const isAllowedImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    return ALLOWED_IMAGE_HOSTS.some(host =>
+      parsed.hostname === host || parsed.hostname.endsWith('.' + host)
+    );
+  } catch {
+    return false;
+  }
+};
+const sanitizeImageUrl = (url, fallback = '') => isAllowedImageUrl(url) ? url : fallback;
+
+// Utility for silent-in-prod, logged-in-dev error handling
+const silentCatch = (err, context = '') => {
+  if (import.meta.env?.DEV) {
+    console.warn(`[WW] Silent catch${context ? ` in ${context}` : ''}:`, err);
+  }
+};
 
 // P13-FIX: HIGH-5 — Hash UIDs before writing to Firebase to protect player privacy.
 // Game UIDs can potentially be correlated to real identities; hashing makes stored data pseudonymous.
 const hashUidForStorage = async (uid) => {
   if (!uid) return null;
-  try {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ww-uid-' + uid));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-  } catch { return uid; } // fallback if crypto unavailable (HTTP)
+
+  // Try Web Crypto first (HTTPS only)
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    try {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ww-uid-' + uid));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+    } catch (err) { silentCatch(err, 'hashUidForStorage crypto.subtle'); }
+  }
+
+  // Fallback: FNV-1a hash (not cryptographic, but better than raw UID)
+  let hash = 0x811c9dc5;
+  const str = 'ww-uid-' + uid;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  const h1 = (hash >>> 0).toString(16).padStart(8, '0');
+  let hash2 = 0x1a2b3c4d;
+  for (let i = 0; i < str.length; i++) {
+    hash2 ^= str.charCodeAt(i);
+    hash2 = Math.imul(hash2, 0x01000193);
+  }
+  const h2 = (hash2 >>> 0).toString(16).padStart(8, '0');
+  return (h1 + h2 + h1.split('').reverse().join('') + h2.split('').reverse().join('')).slice(0, 32);
 };
 
 // P13-FIX: HIGH-2 — Client-side rate limiter for Firebase writes.
 // Prevents runaway writes from bugs or abuse. Firebase Security Rules handle server-side enforcement.
 const firebaseWriteTimestamps = new Map(); // key → last write timestamp
 const FIREBASE_WRITE_COOLDOWN_MS = 5000; // 5 seconds between writes to the same path
+const FIREBASE_RATE_LIMIT_MAX_ENTRIES = 100;
 const checkFirebaseRateLimit = (pathKey) => {
   const now = Date.now();
   const lastWrite = firebaseWriteTimestamps.get(pathKey) || 0;
   if (now - lastWrite < FIREBASE_WRITE_COOLDOWN_MS) return false; // rate-limited
   firebaseWriteTimestamps.set(pathKey, now);
+  // Prune old entries if map grows too large
+  if (firebaseWriteTimestamps.size > FIREBASE_RATE_LIMIT_MAX_ENTRIES) {
+    const staleThreshold = now - FIREBASE_WRITE_COOLDOWN_MS * 10;
+    for (const [key, ts] of firebaseWriteTimestamps) {
+      if (ts < staleThreshold) firebaseWriteTimestamps.delete(key);
+    }
+  }
   return true; // allowed
 };
 
@@ -185,16 +246,22 @@ function WhisperingWishesInner() {
   // Check admin-only lockout (5-min cooldown after 5 failed attempts — does NOT lock the app)
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
-      // P14-FIX: MEDIUM-15 — Removed legacy localStorage key cleanup (whispering-wishes-admin-pass, ww-app-lockout).
-      // These were removed in P8; cleanup code is no longer needed after sufficient migration period.
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
+      const failCount = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10);
       if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
         return parseInt(lockoutUntil, 10);
       }
-      // Clear expired lockout
-      if (lockoutUntil) localStorage.removeItem('ww-admin-lockout');
-      localStorage.removeItem('ww-admin-fails');
-    } catch {}
+      if (lockoutUntil) {
+        localStorage.removeItem('ww-admin-lockout');
+        localStorage.removeItem('ww-admin-fails');
+      }
+      // Progressive lockout: extended lockout after repeated failure sets
+      if (failCount >= MAX_ADMIN_ATTEMPTS * 3) {
+        const extendedLockout = Date.now() + ADMIN_LOCKOUT_MS * 4;
+        localStorage.setItem('ww-admin-lockout', String(extendedLockout));
+        return extendedLockout;
+      }
+    } catch (err) { silentCatch(err, 'admin lockout init'); }
     return false;
   });
   
@@ -216,11 +283,21 @@ function WhisperingWishesInner() {
   const adminTapCountRef = useRef(0);
   const [activeBanners, setActiveBanners] = useState(() => getActiveBanners());
   // Banner ends at server-specific time (e.g., 11:59 local for each server)
-  const bannerEndDate = useMemo(() => getServerAdjustedEnd(activeBanners.endDate, state.server), [activeBanners.endDate, state.server]);
+  const bannerEndDate = useMemo(() => {
+    if (!activeBanners?.endDate) return null;
+    return getServerAdjustedEnd(activeBanners.endDate, state.server);
+  }, [activeBanners?.endDate, state.server]);
+  // Validate server name — surface warning if corrupted
+  useEffect(() => {
+    if (state.server && !SERVERS[state.server]) {
+      toast?.(`Unknown server "${state.server}" — defaulting to Europe. Please update in Settings.`, 'warning');
+      dispatch({ type: 'SET_SERVER', server: 'Europe' });
+    }
+  }, [state.server, toast]);
   const [adminTab, setAdminTab] = useState('banners'); // 'banners', 'collection', 'visuals', 'trophies', or 'players'
   const [adminMiniMode, setAdminMiniMode] = useState(false);
   const [trophyOverrides, setTrophyOverrides] = useState(() => {
-    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch { return {}; }
+    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch (err) { silentCatch(err, 'trophy overrides init'); return {}; }
   });
   const [trophyJsonInput, setTrophyJsonInput] = useState('');
   
@@ -232,27 +309,44 @@ function WhisperingWishesInner() {
   const presenceSessionId = useRef('s_' + generateUniqueId().replace(/-/g, '').slice(0, 12));
   
   // P6-FIX: Controlled admin banner form state — replaces all document.getElementById calls (HIGH-17/18)
-  const buildBannerForm = useCallback((banners) => ({
-    version: banners.version || '1.0',
-    phase: String(banners.phase ?? 1),
-    startDate: banners.startDate?.slice(0, 16) || '',
-    endDate: banners.endDate?.slice(0, 16) || '',
-    charsJson: JSON.stringify(banners.characters, null, 2),
-    weapsJson: JSON.stringify(banners.weapons, null, 2),
-    charImages: Object.fromEntries((banners.characters || []).map((c, i) => [i, c.imageUrl || ''])),
-    charImagePositions: Object.fromEntries((banners.characters || []).map((c, i) => [i, c.imagePosition || ''])),
-    weapImages: Object.fromEntries((banners.weapons || []).map((w, i) => [i, w.imageUrl || ''])),
-    weapImagePositions: Object.fromEntries((banners.weapons || []).map((w, i) => [i, w.imagePosition || ''])),
-    standardCharImg: banners.standardCharBannerImage || '',
-    standardWeapImg: banners.standardWeapBannerImage || '',
-    wwImg: banners.whimperingWastesImage || '',
-    dpImg: banners.doubledPawnsImage || '',
-    toaImg: banners.towerOfAdversityImage || '',
-    irImg: banners.illusiveRealmImage || '',
-    drImg: banners.dailyResetImage || '',
-  }), []);
+  const buildBannerForm = useCallback((banners) => {
+    const b = banners || {};
+    const chars = b.characters || [];
+    const weaps = b.weapons || [];
+    return {
+      version: b.version || '1.0',
+      phase: String(b.phase ?? 1),
+      startDate: b.startDate?.slice(0, 16) || '',
+      endDate: b.endDate?.slice(0, 16) || '',
+      charsJson: JSON.stringify(chars, null, 2),
+      weapsJson: JSON.stringify(weaps, null, 2),
+      charImages: Object.fromEntries(chars.map((c, i) => [i, c.imageUrl || ''])),
+      charImagePositions: Object.fromEntries(chars.map((c, i) => [i, c.imagePosition || ''])),
+      weapImages: Object.fromEntries(weaps.map((w, i) => [i, w.imageUrl || ''])),
+      weapImagePositions: Object.fromEntries(weaps.map((w, i) => [i, w.imagePosition || ''])),
+      standardCharImg: b.standardCharBannerImage || '',
+      standardWeapImg: b.standardWeapBannerImage || '',
+      wwImg: b.whimperingWastesImage || '',
+      dpImg: b.doubledPawnsImage || '',
+      toaImg: b.towerOfAdversityImage || '',
+      irImg: b.illusiveRealmImage || '',
+      drImg: b.dailyResetImage || '',
+      thImg: b.tacticalHologramImage || '',
+      wbImg: b.weeklyBossImage || '',
+    };
+  }, []);
   const [bannerForm, setBannerForm] = useState(() => buildBannerForm(activeBanners));
-  const updateBannerForm = useCallback((field, value) => setBannerForm(prev => ({ ...prev, [field]: value })), []);
+  const updateBannerForm = useCallback((field, value) => {
+    // Validate image URL fields against allowlist
+    const imageFields = ['standardCharImg', 'standardWeapImg', 'wwImg', 'dpImg', 'toaImg', 'irImg', 'drImg', 'thImg', 'wbImg'];
+    if (imageFields.includes(field) || field.startsWith('charImages.') || field.startsWith('weapImages.')) {
+      if (value && !isAllowedImageUrl(value)) {
+        // Allow empty values (clearing), reject invalid URLs silently during typing
+        return;
+      }
+    }
+    setBannerForm(prev => ({ ...prev, [field]: value }));
+  }, []);
   
   // Banner visual settings - v3 forces fresh defaults
   // Always start with defaults - localStorage can override but we validate each property
@@ -275,10 +369,31 @@ function WhisperingWishesInner() {
           for (const key of Object.keys(prev)) {
             if (parsed[key] !== undefined && parsed[key] !== null) merged[key] = parsed[key];
           }
+          // Clamp numeric values to valid ranges
+          merged.collectionZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, merged.collectionZoom || 120));
+          for (const key of ['fadePosition', 'fadeIntensity', 'pictureOpacity',
+            'standardFadePosition', 'standardFadeIntensity', 'standardOpacity',
+            'shadowFadePosition', 'shadowFadeIntensity', 'shadowOpacity',
+            'collectionFadePosition', 'collectionFadeIntensity', 'collectionOpacity']) {
+            if (typeof merged[key] === 'number') merged[key] = Math.min(100, Math.max(0, merged[key]));
+          }
           return merged;
         });
       }
-    } catch {}
+    } catch (err) { silentCatch(err, 'visual settings load'); }
+  }, []);
+
+  // Respect prefers-reduced-motion and listen for changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e) => {
+      setVisualSettings(prev => ({ ...prev, animationsEnabled: !e.matches }));
+    };
+    // Set initial value from OS preference
+    setVisualSettings(prev => ({ ...prev, animationsEnabled: !mql.matches }));
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
   }, []);
   
   // Custom app icon for home screen
@@ -1062,6 +1177,10 @@ function WhisperingWishesInner() {
   // All Firebase requests work with or without auth (unauthenticated if token is empty).
   const firebaseAuthRef = useRef({ idToken: null, expiresAt: 0 });
   const getFirebaseAuth = useCallback(async () => {
+    if (!FIREBASE_AVAILABLE) {
+      console.warn('[WW] Firebase config missing — online features disabled.');
+      return null;
+    }
     const now = Date.now();
     if (firebaseAuthRef.current.idToken && firebaseAuthRef.current.expiresAt > now + 60000) {
       return firebaseAuthRef.current.idToken;
@@ -3075,17 +3194,17 @@ function WhisperingWishesInner() {
             <Card>
               <CardBody>
                 <div className="flex gap-2" role="tablist" aria-label="Banner category" onKeyDown={(e) => {
-                    const keys = TRACKER_CATEGORIES.map(c => c[0]);
+                    const keys = TRACKER_CATEGORIES.map(c => c.key);
                     const idx = keys.indexOf(trackerCategory);
                     let next;
                     if (e.key === 'ArrowRight') { e.preventDefault(); next = keys[(idx + 1) % keys.length]; }
                     else if (e.key === 'ArrowLeft') { e.preventDefault(); next = keys[(idx - 1 + keys.length) % keys.length]; }
                     if (next) { setTrackerCategory(next); const el = e.currentTarget; setTimeout(() => el.children[keys.indexOf(next)]?.focus(), FOCUS_DELAY_MS); }
                   }}>
-                  {TRACKER_CATEGORIES.map(([key, label, color]) => (
-                    <button key={key} onClick={() => setTrackerCategory(key)} role="tab" aria-selected={trackerCategory === key} tabIndex={trackerCategory === key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === key ? (color === 'yellow' ? 'active-gold' : color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
-                      {key === 'character' ? <Crown size={12} className="inline mr-1" /> : key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
-                      {label}
+                  {TRACKER_CATEGORIES.map((cat) => (
+                    <button key={cat.key} onClick={() => setTrackerCategory(cat.key)} role="tab" aria-selected={trackerCategory === cat.key} tabIndex={trackerCategory === cat.key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === cat.key ? (cat.color === 'yellow' ? 'active-gold' : cat.color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
+                      {cat.key === 'character' ? <Crown size={12} className="inline mr-1" /> : cat.key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
+                      {cat.label}
                     </button>
                   ))}
                 </div>
