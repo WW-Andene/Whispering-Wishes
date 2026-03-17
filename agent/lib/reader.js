@@ -55,7 +55,7 @@ export function extractCurrentBanners(source) {
     }
 
     // Extract weapon names
-    const weapBlock = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?weapons:\s*\[([\s\S]*?)\]\s*,\s*\/\//);
+    const weapBlock = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?weapons:\s*\[([\s\S]*?)\](?:\s*,|\s*\})/);
     const weapNames = [];
     if (weapBlock) {
       const nameMatches = weapBlock[1].matchAll(/name:\s*['"]([^'"]+)['"]/g);

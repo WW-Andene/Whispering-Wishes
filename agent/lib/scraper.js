@@ -76,6 +76,7 @@ export async function fetchPage(url, { retries = 2, extractText = true } = {}) {
       await sleep(2000 * (attempt + 1));
     }
   }
+  return { ok: false, content: '', url, error: 'Exhausted retries without result' };
 }
 
 /**

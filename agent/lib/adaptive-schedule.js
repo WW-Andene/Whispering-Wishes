@@ -28,19 +28,32 @@ const SCHEDULE_FILE = resolve(PATHS.repoRoot, 'agent/.schedule-hint.json');
  * @returns {{ urgency: 'normal'|'elevated'|'critical', hoursLeft: number, shouldRun: boolean }}
  */
 export function calculateUrgency(bannerEndDate, memory) {
-  const hoursLeft = (new Date(bannerEndDate).getTime() - Date.now()) / 3600000;
+  const endTime = new Date(bannerEndDate).getTime();
 
-  // Critical: within 6 hours of banner end (transition imminent)
-  if (hoursLeft <= 6 && hoursLeft > -6) {
+  // Guard against invalid dates
+  if (isNaN(endTime)) {
+    log.warn(`Invalid banner end date: ${bannerEndDate}`);
+    return { urgency: 'normal', hoursLeft: Infinity, shouldRun: true };
+  }
+
+  const hoursLeft = (endTime - Date.now()) / 3600000;
+
+  // Post-transition: banner ended within the last 6 hours — new data available
+  if (hoursLeft <= 0 && hoursLeft > -6) {
+    return { urgency: 'critical', hoursLeft, shouldRun: true };
+  }
+
+  // Pre-transition: within 6 hours of banner end
+  if (hoursLeft > 0 && hoursLeft <= 6) {
     return { urgency: 'critical', hoursLeft, shouldRun: true };
   }
 
   // Elevated: within 48 hours of banner end
-  if (hoursLeft <= 48 && hoursLeft > 0) {
+  if (hoursLeft > 6 && hoursLeft <= 48) {
     return { urgency: 'elevated', hoursLeft, shouldRun: true };
   }
 
-  // Normal: no urgency
+  // Normal: more than 48 hours or banner ended >6h ago
   return { urgency: 'normal', hoursLeft, shouldRun: true };
 }
 

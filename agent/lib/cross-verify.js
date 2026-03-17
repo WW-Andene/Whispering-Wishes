@@ -134,9 +134,19 @@ export function adjustConfidence(baseConfidence, agreement, sourceCount) {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function normalize(value) {
-  if (typeof value === 'string') return value.trim().toLowerCase();
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    // Try to normalize as a date
+    const dateAttempt = new Date(trimmed);
+    if (!isNaN(dateAttempt.getTime()) && trimmed.length >= 8) {
+      if (/\d{4}[-/]?\d{2}[-/]?\d{2}/.test(trimmed) || /\w+ \d{1,2},? \d{4}/.test(trimmed)) {
+        return dateAttempt.toISOString();
+      }
+    }
+    return trimmed.toLowerCase();
+  }
   if (typeof value === 'number') return String(value);
-  if (Array.isArray(value)) return value.map(normalize).join(',');
+  if (Array.isArray(value)) return value.map(normalize).sort().join(',');
   if (value && typeof value === 'object') return JSON.stringify(value);
   return String(value);
 }

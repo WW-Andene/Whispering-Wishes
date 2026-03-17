@@ -13,7 +13,7 @@
 // string-replacement patches to apply.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, renameSync, unlinkSync } from 'fs';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { buildSkillsContext } from './skills.js';
@@ -182,7 +182,15 @@ export function applyPatches(patches, minConfidence = 0.85) {
       }
 
       content = content.replace(patch.oldStr, patch.newStr);
-      writeFileSync(filePath, content);
+      const tmpPath = filePath + '.audit-tmp';
+      try {
+        writeFileSync(tmpPath, content);
+        renameSync(tmpPath, filePath);
+      } catch (writeErr) {
+        log.warn(`Atomic write failed for ${patch.file}, falling back to direct: ${writeErr.message}`);
+        writeFileSync(filePath, content);
+        try { unlinkSync(tmpPath); } catch {}
+      }
 
       log.ok(`Applied patch: [${patch.category}] ${patch.description}`);
       addChange(patch.category, patch.description, patch.confidence >= 0.95 ? 'HIGH' : 'MEDIUM');

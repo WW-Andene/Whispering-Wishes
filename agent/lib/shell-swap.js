@@ -485,10 +485,15 @@ function checkBalanced(source) {
 
   for (let i = 0; i < source.length; i++) {
     const c = source[i];
-    const prev = i > 0 ? source[i - 1] : '';
 
     if (inString) {
-      if (c === stringChar && prev !== '\\') inString = false;
+      let backslashes = 0;
+      for (let j = i - 1; j >= 0 && source[j] === '\\'; j--) {
+        backslashes++;
+      }
+      if (c === stringChar && backslashes % 2 === 0) {
+        inString = false;
+      }
       continue;
     }
 

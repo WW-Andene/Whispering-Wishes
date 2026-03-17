@@ -162,5 +162,11 @@ export function applyStandardPoolUpdates(analysis, getBufferFn, loadBufferFn, mi
 function extractSet(source, varName) {
   const m = source.match(new RegExp(`const ${varName}\\s*=\\s*new Set\\(\\[([\\s\\S]*?)\\]\\)`));
   if (!m) return [];
-  return [...m[1].matchAll(/(?:'([^']+)'|"([^"]+)")/g)].map(x => x[1] || x[2]);
+  const items = [];
+  const pattern = /(?:'((?:[^'\\]|\\.)+)'|"((?:[^"\\]|\\.)+)")/g;
+  for (const match of m[1].matchAll(pattern)) {
+    const raw = match[1] || match[2];
+    items.push(raw.replace(/\\'/g, "'").replace(/\\"/g, '"'));
+  }
+  return items;
 }
