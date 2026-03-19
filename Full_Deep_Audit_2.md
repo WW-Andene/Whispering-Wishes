@@ -3257,3 +3257,530 @@ Anti-slop: any §DETECT violations?                    ✅ No anti-slop violatio
 ```
 
 **Step 6 complete. All cross-verifications pass.**
+
+---
+
+# STEP 7 — §DI1-DI3 (Iconography)
+
+---
+
+## §DI1 — ICON SYSTEM & CONSISTENCY
+
+### 1.1 Icon Library Assessment
+
+```
+ICON LIBRARY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Library: Lucide React (lucide-react)
+  Style: Stroke-based, 24×24 viewBox, 2px stroke default
+  License: ISC (open source, commercial-friendly)
+  Total imported: 42 icons
+  Actually used: 34 icons
+  Unused imports: 8 (AlertCircle, Fish, Flame, Gamepad2,
+                     Gift, Heart, Info, Shield)
+
+  §DI1 ASSESSMENT:
+    Single-library approach ✅
+    Lucide is:
+      ✅ Consistent stroke weight (2px default)
+      ✅ Consistent grid (24×24)
+      ✅ Open-source with active maintenance
+      ✅ React-native integration (tree-shakeable)
+      ✅ Geometric design language matches Rajdhani (§DT1)
+
+  FINDING: DI1-01 — 8 unused icon imports exist in the import
+  statement. These are dead imports that bloat the bundle
+  (though tree-shaking may remove them at build time).
+  AlertCircle, Fish, Flame, Gamepad2, Gift, Heart, Info, Shield
+  are imported but never referenced in JSX.
+  SEVERITY: Low — tree-shaking likely eliminates them, but
+  keeping dead imports reduces code clarity.
+```
+
+### 1.2 Non-Lucide Icon Sources
+
+```
+NON-LUCIDE ICONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SOURCE 1: Inline SVG (1 instance)
+    Location: Line ~8042 (Admin mini-mode expand button)
+    Design: Corner-expand icon, 12×12, stroke-based
+    Match to Lucide: Visually similar stroke weight (2px)
+    Purpose: Custom expand/fullscreen action
+    ASSESSMENT: ✅ Matches Lucide stroke style — acceptable
+    custom icon for a niche action not in Lucide library.
+
+  SOURCE 2: TROPHY_ICON_MAP (dynamic icon mapping)
+    Location: Imported from AppCore modules
+    Design: Maps trophy types to Lucide icons dynamically
+    Fallback: Star (if icon not found in map)
+    Sizes used: 18 (grid), 28 (detail modal)
+    ASSESSMENT: ✅ Still uses Lucide icons — just maps
+    them dynamically. Not a separate icon source.
+
+  SOURCE 3: Unicode/Emoji
+    NOT USED in the UI ✅
+    No emoji icons detected in button or label contexts.
+
+  VERDICT: Effectively single-source iconography ✅
+  The one custom SVG is style-matched to Lucide.
+```
+
+### 1.3 Icon Semantic Mapping
+
+```
+CONCEPT-TO-ICON MAPPING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CONCEPT              ICON(S) USED        CONSISTENT?   NOTES
+  ──────────────────────────────────────────────────────────────────────
+  Close/Dismiss        X                   ✅ 15/15     Perfect consistency
+  Refresh/Reset        RefreshCcw          ✅ 6/6       Perfect consistency
+  Add/Create           Plus                ✅ 4/4       Perfect consistency
+  Remove/Delete        Minus               ✅ 1/1       Single use
+  Search               Search              ✅ 3/3       Perfect consistency
+  Settings/Config      Settings            ✅ 3/3       Perfect consistency
+  Download/Export      Download            ✅ 3/3       Perfect consistency
+  Upload/Import        Upload              ✅ 2/2       Perfect consistency
+  Expand/Collapse      ChevronDown         ✅ 4/4       With rotate-180
+  Statistics/Charts    BarChart3           ✅ 6/6       Perfect consistency
+  Calendar/Time        Calendar            ✅ 3/3       Perfect consistency
+  Trend Up             TrendingUp          ✅ 3/3       Perfect consistency
+  Trend Down           TrendingDown        ✅ 1/1       Single use
+  User/Profile         User                ✅ 5/5       Perfect consistency
+  Users/Community      Users               ✅ context   Groups/teams
+  Achievement/Trophy   Trophy              ✅ 1/1       + TROPHY_ICON_MAP
+  Save/Bookmark        BookmarkPlus        ✅ 1/1       Single use
+  Star/Rarity          Star                ✅ 4/4       With fill variant
+  Confirmation         Check               ✅ 3/3       Active/valid state
+  Warning              AlertTriangle       ✅ 1/1       Single use
+  Special/Premium      Sparkles            ✅ 2/2       Enhancement indicator
+  Luck                 Clover              ✅ 1/1       Unique, appropriate
+  Energy/Power         Zap                 ✅ 1/1       Team overview
+  Resonator/Character  Crown               ✅ 5/5       Game-appropriate
+  Display modes        Monitor/Smartphone  ✅ 2/2       16:9 vs 9:16
+
+  CHARACTER CATEGORY:
+    Crown               = Character/Resonator  ✅
+    Swords (plural)      = Weapon category     ✅
+    Star                 = Standard/Other       ✅
+
+  WEAPON DISPLAY:
+    Sword (singular)     = Single weapon item   ⚠️ MIXED
+    Swords (plural)      = Weapon category      ⚠️ MIXED
+
+  FINDING: DI1-02 — Sword vs Swords inconsistency for weapons.
+  `Sword` (singular) is used for individual weapon display and
+  weapon slots. `Swords` (plural, crossed) is used for weapon
+  CATEGORY labels. One instance has `Sword` rotated 45° for
+  visual distinction.
+  This is a SEMANTIC distinction (singular item vs category)
+  but the visual difference between Sword and Swords is subtle
+  at small sizes (12-14px).
+  SEVERITY: Low — the distinction is intentional but may not
+  read clearly at icon sizes.
+```
+
+### 1.4 Icon Coverage Assessment
+
+```
+DOES EVERY INTERACTIVE ELEMENT HAVE AN ICON?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  TAB NAVIGATION: 8 tabs × 1 icon each = 8 icons ✅
+    Every tab has an icon + text label
+
+  MODAL ACTIONS: X close buttons on every modal ✅
+
+  FORM ACTIONS:
+    Submit: Check icon ✅
+    Clear: X icon ✅
+    Refresh: RefreshCcw icon ✅
+    Add: Plus icon ✅
+    Remove: Minus icon ✅
+
+  EMPTY STATES:
+    Collection empty: BarChart3 (size 32) ✅
+    Banner history empty: Archive (size 32) ✅
+    Other empties: text-only ⚠️
+
+  FINDING: DI1-03 — Some empty states use only text without
+  an icon (e.g., team builder empty, DPS comparison empty).
+  The main empty states (collection, history) DO have icons.
+  SEVERITY: Advisory — empty states without icons still
+  communicate via text, but icons would add visual polish.
+
+  VERDICT: Icon coverage is thorough for primary actions ✅
+```
+
+**§DI1 Score: 9.4/10** — Single-source Lucide system with excellent semantic consistency. 34/42 imports used. Minor Sword/Swords ambiguity. Dead imports present.
+
+---
+
+## §DI2 — ICON SIZING & OPTICAL BALANCE
+
+### 2.1 Complete Size Inventory
+
+```
+EVERY ICON SIZE USED (pixel values via size= prop):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SIZE    COUNT   CONTEXT                           ON SCALE?
+  ──────────────────────────────────────────────────────────────────────
+  7px     1       Team member count indicator        OFF-SCALE
+  8px     1       Star fill in search results        OFF-SCALE
+  9px     2       AlertTriangle, weapon type badge   OFF-SCALE
+  10px    7       Small stats, community labels      ON-SCALE (×1)
+  12px    27      Buttons, badges, category icons    ON-SCALE (×1.2)
+  14px    34      Medium buttons, card headers       ON-SCALE (×1.17)
+  16px    14      Close buttons, settings icons      ON-SCALE (×1.14)
+  18px    8       Tab navigation (primary nav)       ON-SCALE (×1.125)
+  20px    1       Upload drag-drop zone              ON-SCALE (×1.11)
+  24px    1       Large search icon                  ON-SCALE (×1.2)
+  28px    1       Trophy detail modal                ON-SCALE (×1.17)
+  32px    2       Empty state placeholders           ON-SCALE (×1.14)
+
+  Total unique sizes: 12
+  Sizes on recognizable scale: 8 (10, 12, 14, 16, 18, 20, 24, 32)
+  Sizes off-scale: 3 (7, 8, 9)
+  Missing jump: 28px (one-off) — breaks 24→32 progression
+```
+
+### 2.2 Size-to-Context Mapping
+
+```
+ICON SIZE HIERARCHY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ROLE                    SIZE       §DI2 RECOMMENDATION   VERDICT
+  ──────────────────────────────────────────────────────────────────────
+  Inline micro-icons      7-9px      8-10px minimum        ⚠️ 7px TOO SMALL
+  Small badges/labels     10px       10-12px               ✅ CORRECT
+  Action buttons          12px       12-14px               ✅ CORRECT
+  Card headers            14px       14-16px               ✅ CORRECT
+  Close/dismiss buttons   16px       14-16px               ✅ CORRECT
+  Tab navigation          18px       16-20px               ✅ CORRECT
+  Upload/import zones     20px       20-24px               ✅ CORRECT
+  Search modal            24px       24-32px               ✅ CORRECT
+  Trophy detail           28px       24-32px               ✅ CORRECT
+  Empty state focal       32px       32-48px               ✅ CORRECT
+
+  FINDING: DI2-01 — Icon at 7px is below minimum legible size.
+  At 7px, a stroke-based Lucide icon (2px stroke on 24px viewBox)
+  has an effective stroke width of ~0.58px — below 1 CSS pixel.
+  This renders as anti-aliased blur on standard displays.
+  On 2× Retina displays, it renders as ~1.17 physical pixels
+  (marginally legible). On 1× displays: illegible.
+  LOCATION: Team member count indicator (Users icon, size={7})
+  SEVERITY: Medium — icon may be invisible on low-DPI screens.
+
+  FINDING: DI2-02 — 12 unique icon sizes is HIGH.
+  §DI2 recommends 4-6 size tiers for consistency:
+    Recommended: 10, 14, 18, 24, 32 (5 tiers)
+    Current: 7, 8, 9, 10, 12, 14, 16, 18, 20, 24, 28, 32 (12 tiers)
+  The sub-10px sizes (7, 8, 9) could consolidate to 10px.
+  The 12/14/16 range could consolidate to 12 and 16.
+  20/24/28 could consolidate to 24.
+  SEVERITY: Low — the granularity exists for practical layout
+  reasons (dense data grids), similar to §DT2 text sizes.
+```
+
+### 2.3 Icon-to-Text Optical Alignment
+
+```
+ICON + TEXT LABEL SIZING PAIRS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CONTEXT           ICON SIZE   TEXT SIZE   RATIO    OPTICALLY MATCHED?
+  ──────────────────────────────────────────────────────────────────────
+  Tab navigation     18px        ~11px      1.64     ✅ Icon leads visually
+  Card headers       14px        14px       1.00     ✅ Equal weight
+  Button labels      12px        11px       1.09     ✅ Near-equal
+  Small labels       10px        10px       1.00     ✅ Equal weight
+  Category badges    12px        9-10px     1.20-1.33 ✅ Icon slightly larger
+  Empty state        32px        13px       2.46     ✅ Icon is focal point
+
+  §DI2 OPTICAL BALANCE RULE:
+    "Icon should be ~110-130% of adjacent text x-height for
+    optical balance. Icons appear smaller than text at same
+    nominal size due to negative space within the glyph."
+
+  ASSESSMENT:
+    Tab navigation (18px icon / 11px text = 164%) is ABOVE
+    the guideline range. The icon is visually dominant over
+    the text label. However, this is APPROPRIATE for bottom
+    tab bars where the icon IS the primary affordance and
+    the text is secondary labeling ✅
+
+    Card headers (14px/14px = 100%) are AT the lower end.
+    Lucide icons at 14px may appear optically SMALLER than
+    14px Rajdhani text because the icon has more whitespace
+    within its bounding box. This is a MINOR concern.
+
+  VERDICT: Optical balance is generally good ✅
+  Tab bar ratio is deliberately icon-dominant.
+```
+
+### 2.4 Touch Target Assessment
+
+```
+ICON BUTTON TOUCH TARGETS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  §DI2 MINIMUM: 44×44px touch target (WCAG 2.5.5 Level AAA)
+  §DI2 MINIMUM: 24×24px touch target (WCAG 2.5.8 Level AA)
+
+  CONTEXT              ICON SIZE   TOUCH TARGET          MEETS AA?  MEETS AAA?
+  ──────────────────────────────────────────────────────────────────────────────
+  Modal close (X)       16px       p-2 → ~32×32px          ✅        ⚠️
+  Remove purchase       12px       min-w-[44px] min-h-[44px] ✅      ✅
+  Refresh buttons       10-12px    p-1 → ~26×26px          ✅        ⚠️
+  Tab navigation        18px       flex-1 → full width     ✅        ✅
+  Settings toggles      varies     w-[56px] h-[28px]       ✅        ⚠️
+  Inline stat icons     7-10px     No explicit padding     ⚠️        ❌
+
+  FINDING: DI2-03 — Inline stat icons (7-10px) in dense data
+  grids have NO touch target padding. These are NOT interactive
+  (display-only indicators), so touch target requirements do
+  not apply. However, if any become interactive in the future,
+  they would need padding.
+
+  The Remove purchase button (min-w-[44px]) shows that the
+  developer IS aware of touch target requirements and applies
+  them where needed ✅
+
+  VERDICT: Interactive elements meet AA; most meet AAA ✅
+  Non-interactive icons correctly skip touch target sizing.
+```
+
+**§DI2 Score: 9.2/10** — Good size hierarchy and optical balance. 7px icon is below legibility threshold. 12 size tiers is high but practical. Touch targets are compliant for interactive elements.
+
+---
+
+## §DI3 — ICON SEMANTICS & ACCESSIBILITY
+
+### 3.1 Icon Accessibility Audit
+
+```
+ICON ACCESSIBILITY PATTERNS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Lucide React icons render as inline <svg> elements.
+  By default, Lucide sets:
+    - aria-hidden="true" (when no title/label provided)
+    - role="img" (when title provided)
+
+  ICON-ONLY BUTTONS (require aria-label):
+  ──────────────────────────────────────────────────────────────────────
+
+  ELEMENT                ICON    HAS ARIA-LABEL?   SCREEN READER?
+  ──────────────────────────────────────────────────────────────────────
+  Modal close buttons    X       ⚠️ NOT EXPLICIT    Button text empty
+  Input clear buttons    X       ⚠️ NOT EXPLICIT    Button text empty
+  Refresh buttons        RefreshCcw ⚠️ NOT EXPLICIT Button text empty
+  Remove buttons         Minus   ⚠️ NOT EXPLICIT    Button text empty
+
+  §DI3 SAYS:
+    "Every icon-only button MUST have aria-label or
+    aria-labelledby for screen reader accessibility."
+
+  FINDING: DI3-01 — Icon-only buttons lack aria-label attributes.
+  Approximately 20+ icon-only buttons exist without text
+  alternatives. Screen readers announce these as empty buttons:
+    "button" (no description)
+  instead of:
+    "Close dialog" or "Clear search" or "Refresh data"
+  SEVERITY: High for accessibility compliance (WCAG 2.1 SC 1.1.1,
+  4.1.2). However, this app is a gaming companion tool where
+  screen reader usage is extremely rare. Still, best practice
+  demands these labels.
+
+  ICON + TEXT BUTTONS (icon is decorative):
+  ──────────────────────────────────────────────────────────────────────
+  Tab navigation icons ARE paired with visible text labels.
+  In this case, the icon should be aria-hidden="true" (Lucide
+  default) and the text provides the accessible name.
+  ASSESSMENT: ✅ Correct by default (Lucide's aria-hidden)
+
+  CARD HEADER ICONS (decorative context):
+  ──────────────────────────────────────────────────────────────────────
+  Header icons like Archive + "Banner History" are decorative.
+  The text provides meaning. Icon should be aria-hidden="true".
+  ASSESSMENT: ✅ Correct by default (Lucide's aria-hidden)
+```
+
+### 3.2 Icon Color Contrast
+
+```
+ICON COLOR CONTRAST ON BACKGROUNDS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ICON COLOR          BACKGROUND              CONTRAST RATIO   WCAG 1.4.11?
+  ──────────────────────────────────────────────────────────────────────────
+  text-gray-400       bg-gray-800/900         ~4.5:1            ✅ (3:1 needed)
+  (#9ca3af)           (#1f2937/#111827)
+
+  text-gray-500       bg-gray-800/900         ~3.4:1            ✅ (3:1 needed)
+  (#6b7280)           (#1f2937/#111827)
+
+  text-gray-600       bg-gray-800             ~2.2:1            ⚠️ BELOW 3:1
+  (#4b5563)           (#1f2937)
+
+  text-yellow-400     bg-gray-800/900         ~8.5:1            ✅
+  (#facc15)           (#1f2937/#111827)
+
+  text-cyan-400       bg-gray-800/900         ~7.2:1            ✅
+  (#22d3ee)           (#1f2937/#111827)
+
+  text-emerald-400    bg-gray-800/900         ~6.8:1            ✅
+  (#34d399)           (#1f2937/#111827)
+
+  text-red-400        bg-gray-800/900         ~4.8:1            ✅
+  (#f87171)           (#1f2937/#111827)
+
+  WCAG 2.1 SC 1.4.11: Non-text contrast requires 3:1 minimum
+  for UI components and graphical objects.
+
+  FINDING: DI3-02 — text-gray-600 icons on gray-800 backgrounds
+  fall below the 3:1 minimum contrast ratio (~2.2:1). These are
+  used sparingly (4 instances) for very low-priority decorative
+  indicators. If these icons are purely decorative, the contrast
+  requirement doesn't apply. If they convey meaning, they need
+  upgrading to text-gray-500 minimum.
+  SEVERITY: Low — only 4 instances, likely decorative context.
+```
+
+### 3.3 Icon State Communication
+
+```
+ICON STATE VARIANTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  STATE          HOW COMMUNICATED                    ASSESSMENT
+  ──────────────────────────────────────────────────────────────────────
+  Active tab     Icon color: yellow-400 (active)     ✅ Color + text
+                 vs gray-500 (inactive)              differentiate
+  Hover          transition-colors on parent         ✅ Color shift
+  Disabled       text-gray-600, pointer-events-none  ✅ Visual dimming
+  Loading        kuroShimmer skeleton replaces icon  ✅ Icon hidden
+  Error/Warning  AlertTriangle + red-400/orange-400  ✅ Icon + color
+  Success        Check + emerald-400                 ✅ Icon + color
+  Selected       border-yellow-400 + Check overlay   ✅ Multiple signals
+
+  DOES STATE RELY ON COLOR ALONE?
+    Tab active/inactive: ⚠️ Yes — only color differentiates
+    the icon between active and inactive states. However,
+    the TEXT LABEL below the icon also changes color, and
+    the active tab has an underline indicator (border-bottom).
+    So color is NOT the sole differentiator ✅
+
+  VERDICT: State communication is multi-channel ✅
+  No state relies on color as the SOLE differentiator.
+```
+
+### 3.4 Icon Fill vs Stroke Consistency
+
+```
+FILL MODE AUDIT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DEFAULT: All Lucide icons render as STROKE (outline) icons.
+  This is the library default and creates a consistent visual.
+
+  FILL OVERRIDE:
+    Star icon: fill="currentColor" used for FILLED stars
+    indicating rarity levels (4★, 5★ display).
+
+  WHERE: Lines ~6261, ~6317 — collection grid rarity indicators
+
+  §DI3 ASSESSMENT:
+    Using fill="currentColor" on Star to show a SOLID star
+    is a standard pattern. The filled star conveys "achieved/
+    earned" vs the outline star "empty/unearned."
+
+    CONSISTENCY: Only Star uses fill. No other icon switches
+    between fill and stroke. This is CORRECT — the fill/stroke
+    distinction on Star carries specific semantic meaning ✅
+
+  VERDICT: Fill usage is intentional and semantically correct ✅
+```
+
+**§DI3 Score: 9.0/10** — Strong semantic consistency and multi-channel state communication. Missing aria-labels on icon-only buttons is the primary accessibility gap. One low-contrast icon color.
+
+---
+
+## STEP 7 — FINDINGS SUMMARY
+
+### Score Card
+
+| Section | Score | Notes |
+|---------|-------|-------|
+| §DI1 Icon System & Consistency | 9.4/10 | Single-source Lucide, excellent semantic mapping, dead imports |
+| §DI2 Icon Sizing & Optical Balance | 9.2/10 | Good hierarchy, 7px below threshold, 12 size tiers |
+| §DI3 Icon Semantics & Accessibility | 9.0/10 | Multi-channel states, missing aria-labels, one contrast gap |
+| **Step 7 Weighted Average** | **9.20/10** | |
+
+### Findings Register (Step 7)
+
+| ID | Section | Severity | Title | Score Impact |
+|----|---------|----------|-------|-------------|
+| DI1-01 | §DI1.1 | Low | 8 unused icon imports (AlertCircle, Fish, Flame, Gamepad2, Gift, Heart, Info, Shield) | −0.05 |
+| DI1-02 | §DI1.3 | Low | Sword vs Swords ambiguity — singular item vs category uses different icon | −0.1 |
+| DI1-03 | §DI1.4 | Advisory | Some empty states lack icons (text-only) | −0.0 |
+| DI2-01 | §DI2.2 | Medium | 7px icon (Users) below minimum legible size — stroke <1px at standard DPI | −0.2 |
+| DI2-02 | §DI2.2 | Low | 12 unique icon sizes (recommended 4-6 tiers) | −0.1 |
+| DI2-03 | §DI2.4 | Advisory | Inline stat icons (7-10px) have no touch padding — acceptable since non-interactive | −0.0 |
+| DI3-01 | §DI3.1 | High | ~20+ icon-only buttons lack aria-label — screen readers announce "button" with no description | −0.3 |
+| DI3-02 | §DI3.2 | Low | text-gray-600 icons on gray-800 fall below 3:1 contrast (4 instances, likely decorative) | −0.05 |
+
+### Solutions Summary (Step 7)
+
+| ID | Recommended Solution | Alternative |
+|----|---------------------|-------------|
+| DI1-01 | Remove unused imports: `AlertCircle, Fish, Flame, Gamepad2, Gift, Heart, Info, Shield`. One-line cleanup. | Keep as-is — tree-shaking likely eliminates at build time |
+| DI1-02 | Standardize to `Swords` for ALL weapon contexts (both category and individual items). The crossed-swords design reads as "weapon" at any scale. | Keep split — if the singular/plural distinction is intentional game terminology |
+| DI1-03 | Add icons to text-only empty states: Swords for team builder, BarChart3 for DPS comparison (reuse existing icons). | Keep as-is — text communicates sufficiently |
+| DI2-01 | Replace `size={7}` with `size={10}` minimum on the Users icon in team member count. At 10px, Lucide stroke renders at ~0.83px — marginally legible. Better: `size={12}`. | Remove icon entirely and use text-only count at this scale |
+| DI2-02 | Consolidate to 6 tiers: 10, 12, 16, 20, 24, 32. Map current 7→10, 8→10, 9→10, 14→12 or 16, 18→16 or 20, 28→24. | Keep granularity — layout density justifies it (same rationale as §DT2) |
+| DI2-03 | N/A — non-interactive icons don't need touch targets. | If any become interactive, add `p-2` padding minimum |
+| DI3-01 | Add `aria-label` to every icon-only button. Pattern: `<button aria-label="Close dialog">`, `<button aria-label="Clear search">`, `<button aria-label="Refresh data">`, `<button aria-label="Remove item">`. Estimated: ~20 buttons need labels. | Use `title` attribute for tooltip + accessibility (less clean but simpler) |
+| DI3-02 | Upgrade 4 instances of `text-gray-600` icons to `text-gray-500` (contrast ~3.4:1, above 3:1 minimum). | If decorative, add `aria-hidden="true"` explicitly and keep current color |
+
+### Cross-Verification (Step 7 ↔ Steps 1-6)
+
+```
+CHECK                                                RESULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+§DI1 Lucide system ↔ §DT1 Rajdhani personality?       ✅ Lucide's geometric stroke
+                                                      design matches Rajdhani's
+                                                      angular geometry — same
+                                                      design language family
+§DI2 icon sizes ↔ §DT2 text sizes?                    ✅ PARALLEL finding — both
+                                                      have 12 unique sizes driven
+                                                      by data density needs
+                                                      (DI2-02 mirrors DT2-01)
+§DI2 7px icon ↔ §DT2 text-[6px]?                     ✅ Both push below
+                                                      legibility thresholds for
+                                                      the same reason (dense grids)
+§DI3 icon contrast ↔ §DC1 color palette?              ✅ Gray-600 contrast issue
+                                                      (DI3-02) connects to the
+                                                      same gray palette assessed
+                                                      in Step 3
+§DI3 aria-labels ↔ §DM5 reduced-motion?               ✅ Both are accessibility
+                                                      concerns — app excels at
+                                                      motion a11y (DM5: 9.6) but
+                                                      has gap in semantic a11y
+                                                      (DI3-01)
+DI3-01 (aria-labels) ↔ Steps 1-6?                     ✅ First HIGH severity
+                                                      finding — unique to Step 7
+Step 7 (9.20) coherent with Steps 1-6?                ✅ Consistent with motion
+                                                      step (also 9.20) — icon and
+                                                      motion are "craft detail"
+                                                      areas vs visual foundation
+Running average (Steps 1-7):                          9.35/10 — stable trend
+Anti-slop: any §DETECT violations?                    ✅ No anti-slop violations
+```
+
+**Step 7 complete. All cross-verifications pass.**
