@@ -2419,3 +2419,307 @@ The desktop layout disables swipe hints and the horizontal tab indicator. Tab st
 **Overall Compatibility Assessment:** Excellent. The PWA implementation is production-quality with proper caching strategies, offline support, and install prompts. Mobile optimization is thorough (safe areas, touch targets, responsive grids). Desktop layout provides a dedicated sidebar experience. Cross-browser compatibility uses proper feature detection and CSS fallbacks. This is one of the strongest aspects of the application.
 
 *End of P9. Commit and push follows.*
+
+---
+
+## PART 10 — CODE QUALITY & ARCHITECTURE
+
+### §I1. Architecture Pattern
+
+#### F-P10-001 — Monolithic Component: Primary Architectural Debt
+**Severity:** MEDIUM (repeated from P5 for architectural context)
+**Confidence:** [CODE: App.jsx — 8,218 lines, 91+ useState]
+
+The entire application lives in one component (`WhisperingWishesInner`). This is the single largest architectural issue:
+- 91+ `useState` hooks + 1 `useReducer`
+- 8 tab panels as inline JSX blocks
+- All callbacks defined in one scope
+- All derived computations in one scope
+
+**Why this matters architecturally:**
+1. **Cognitive load:** New developers must understand 8,218 lines to change anything
+2. **Merge conflicts:** Any two features touching App.jsx will conflict
+3. **Testing:** Impossible to unit-test individual tabs in isolation
+4. **Code splitting:** Cannot lazy-load tabs without extracting them
+
+**Current mitigations:**
+- Well-commented section markers (`[TAB-TRACKER]`, `[TAB-EVENTS]`, etc.)
+- State logic centralized in `useReducer` with action types
+- Memoized callbacks prevent unnecessary child re-renders
+- Modular supporting files (engine, data, components, providers)
+
+**Recommended decomposition:**
+```
+App.jsx (shell, routing, providers)
+├── TrackerTab.jsx (pity tracking, pull logging)
+├── EventsTab.jsx (countdown timers, daily/weekly)
+├── CalcTab.jsx (DP calculator, resource planner)
+├── PlannerTab.jsx (banner planner, bookmarks)
+├── StatsTab.jsx (charts, leaderboard) ← lazy-load Recharts
+├── CollectionTab.jsx (grid, detail modals)
+├── TeamsTab.jsx (team builder)
+└── ProfileTab.jsx (settings, data management)
+```
+
+#### F-P10-002 — Module Separation: Good ✅
+**Severity:** N/A (PASS)
+
+Supporting modules are well-separated:
+
+| Module | Lines | Responsibility | Coupling |
+|--------|-------|---------------|----------|
+| `appcore-data.js` | 1,983 | Static data, constants, type maps | Zero dependencies |
+| `appcore-engine.js` | 840 | Pure functions, time utils, state persistence | Depends on data |
+| `appcore-components.jsx` | 1,825 | UI components, error boundaries, backgrounds | Depends on data + engine |
+| `appcore-providers.jsx` | 1,706 | Context providers, hooks, styles, onboarding | Depends on data |
+| `main.jsx` | ~30 | Entry point, SW registration | Depends on App |
+
+This is a clean dependency graph with no circular imports.
+
+---
+
+### §I2. Error Handling
+
+#### F-P10-003 — Error Boundaries: Two-Tier ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-components.jsx:602-680]
+
+| Boundary | Scope | Recovery |
+|----------|-------|----------|
+| `TabErrorBoundary` | Per-tab crash isolation | "Retry" button re-renders tab |
+| `AppErrorBoundary` | Entire app crash | "Reload" button refreshes page |
+
+Both log to `console.error` with component stack. Each tab is wrapped in its own `TabErrorBoundary`, so a crash in the Collection tab doesn't take down the Tracker.
+
+#### F-P10-004 — Console Logging: Appropriate ✅
+**Severity:** N/A (PASS)
+
+25 `console.*` calls across the codebase:
+- `console.error`: Crash handlers, load failures, API errors (14 calls)
+- `console.warn`: Silent catches, config warnings, storage limits (9 calls)
+- `console.log`: Only 1 instance (SW version update notification)
+- No debug/info noise
+
+The `silentCatch` pattern (App.jsx:199) provides centralized warning logging for non-critical errors.
+
+#### F-P10-005 — No Type System
+**Severity:** LOW (observation)
+
+No TypeScript, PropTypes, or JSDoc type annotations. All components use plain JavaScript with no compile-time type checking.
+
+**Impact:**
+- Runtime type errors possible (e.g., passing wrong props)
+- No IDE autocompletion for component props
+- Refactoring risk: renaming a prop won't catch all usages
+
+**Mitigating factors:**
+- The app is solo-developed with deep familiarity
+- `displayName` set on 19 memo'd components (helps React DevTools)
+- Consistent prop naming conventions
+
+---
+
+### §I3. Code Conventions
+
+#### F-P10-006 — Naming Conventions: Consistent ✅
+**Severity:** N/A (PASS)
+
+- Components: PascalCase (`BackgroundGlow`, `PityRing`, `TabButton`)
+- Hooks: camelCase with `use` prefix (`useFocusTrap`, `useEscapeKey`)
+- Constants: SCREAMING_SNAKE_CASE (`MAX_IMPORT_SIZE_MB`, `HARD_PITY`, `CALC_DEFER_MS`)
+- State: camelCase (`activeTab`, `showLeaderboard`, `trackerCategory`)
+- Action types: SCREAMING_SNAKE_CASE (`SET_SERVER`, `CLEAR_PROFILE`, `LOG_PULL`)
+- CSS classes: kebab-case (`kuro-card`, `pity-ring-fill`, `tab-indicator`)
+- Private/internal: underscore prefix (`_wf1`, `_maskCache`, `_trimPending`)
+
+#### F-P10-007 — Comment Quality: Excellent ✅
+**Severity:** N/A (PASS)
+
+Comments are structured and informative:
+- Section markers: `// [SECTION:BACKGROUND]`, `// [TAB-TRACKER]`
+- Audit fix references: `// P11-FIX: MEDIUM-4 — ...`
+- Design decisions: `// D-HIERARCHY-2: Enhanced glow for 5★`
+- Token documentation: `// D-TOKEN-1: Border opacity tokens`
+- Z-index scale documented in CSS comment
+- Negative margin/padding coupling documented with `NOTE:`
+
+#### F-P10-008 — Magic Numbers: Mostly Named ✅
+**Severity:** N/A (PASS)
+
+Key constants are named:
+- `HARD_PITY = 80`, `SOFT_PITY_START = 65`
+- `MAX_IMPORT_SIZE_MB = 10`
+- `MAX_ADMIN_ATTEMPTS = 5`
+- `CALC_DEFER_MS = 150`
+- `MAX_IMG_ENTRIES = 250`
+- `BLUR_SCALE = 0.08`
+
+Some inline numbers remain (e.g., animation delays, grid column counts) but these are self-evident in context.
+
+---
+
+### P10 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P10-001 | §I1 | **MEDIUM** | **Monolithic 8,218-line component** |
+| F-P10-002 | §I1 | ✅ PASS | Supporting modules well-separated |
+| F-P10-003 | §I2 | ✅ PASS | Two-tier error boundaries |
+| F-P10-004 | §I2 | ✅ PASS | Console logging appropriate (25 calls) |
+| F-P10-005 | §I2 | LOW | No type system (TypeScript/PropTypes) |
+| F-P10-006 | §I3 | ✅ PASS | Naming conventions consistent |
+| F-P10-007 | §I3 | ✅ PASS | Comment quality excellent |
+| F-P10-008 | §I3 | ✅ PASS | Magic numbers mostly named |
+
+**Critical: 0 | High: 0 | Medium: 1 | Low: 1 | Pass: 6**
+
+---
+
+## PART 11 — AI/LLM INTEGRATION
+
+### §J1. AI Integration Assessment
+
+#### F-P11-001 — No AI/LLM Integration Present ✅
+**Severity:** N/A (NOT APPLICABLE)
+
+The application does not use any AI/LLM APIs, embeddings, prompt engineering, or ML models. All calculations are deterministic (DP probability engine). All data is static or user-provided.
+
+No OpenAI, Anthropic, HuggingFace, or other AI SDK imports detected.
+
+**Assessment:** This section is not applicable. No AI integration risks exist.
+
+---
+
+## PART 12 — i18n & LOCALIZATION
+
+### §K1. Internationalization Assessment
+
+#### F-P12-001 — English Only: No i18n Framework
+**Severity:** LOW (observation — depends on target audience)
+
+All user-facing strings are hardcoded in English throughout JSX. No i18n library (react-intl, i18next, etc.) is used. No string extraction or translation keys.
+
+**Impact:**
+- Adding additional language support would require significant refactoring
+- Game-specific terminology (Convene, Resonance, Echo) is already English-localized from the game
+
+**Mitigating factors:**
+- Wuthering Waves' international community primarily uses English
+- The app's target audience reads English game UI
+- Game-specific terms don't translate well (pity, soft pity, banner)
+
+#### F-P12-002 — `lang="en"` Set ✅
+**Severity:** N/A (PASS)
+
+`<html lang="en">` correctly declares the page language for screen readers and search engines.
+
+#### F-P12-003 — Number Formatting: `toLocaleString()` Used ✅
+**Severity:** N/A (PASS)
+
+Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically formats with locale-appropriate separators. Date formatting uses `toLocaleDateString()` with explicit options.
+
+---
+
+## PART 13 — DEVELOPMENT SCENARIO PROJECTIONS
+
+### §L1. Scalability Scenarios
+
+#### Scenario 1: Game Adds 50+ New Characters
+**Current capacity:** The character data structure (CHAR_DATA) is a flat object. Adding 50 characters means ~50 new entries in appcore-data.js.
+**Impact:** LOW — Collection grid handles 100+ items already. Data file grows but is tree-shaken by Vite. No architectural changes needed.
+**Risk:** Image cache (250 entries) may need increase. Collection grid may benefit from virtualization at 200+ items.
+
+#### Scenario 2: Adding Multi-Language Support
+**Current capacity:** Zero i18n infrastructure.
+**Impact:** HIGH — Every hardcoded string in JSX would need extraction. ~500+ strings estimated across App.jsx and components. Would require: i18n library, translation files, RTL support for Arabic.
+**Recommendation:** If planned, adopt i18next early. The longer this is deferred, the more painful extraction becomes.
+
+#### Scenario 3: Adding Server-Side State (Accounts/Cloud Sync)
+**Current capacity:** Firebase Realtime Database already provides partial cloud sync (leaderboard, presence, admin).
+**Impact:** MEDIUM — localStorage→cloud migration would require conflict resolution strategy. The existing `storage` event listener pattern would need to become a real-time sync listener. The `appcore-engine.js` save/load functions provide a clean abstraction point for this change.
+**Risk:** Race conditions between multiple devices. Current design assumes single-device primary.
+
+#### Scenario 4: Team Grows to 3+ Developers
+**Current capacity:** Solo developer workflow (no TypeScript, no tests, monolithic component).
+**Impact:** HIGH — The 8,218-line App.jsx would cause constant merge conflicts. No CI/CD pipeline detected. No automated tests to prevent regressions.
+**Recommendation:** Priority order: (1) Extract tab components, (2) Add TypeScript, (3) Add Vitest unit tests for engine functions, (4) Add Playwright E2E for critical flows.
+
+---
+
+### §L2. Technical Debt Register
+
+| Debt Item | Severity | Effort to Fix | Priority |
+|-----------|----------|--------------|----------|
+| Monolithic App.jsx (8,218 lines) | MEDIUM | Large (2-3 days) | **P1** — Blocks code splitting, testing, and team scaling |
+| 14 `window.confirm()` calls | MEDIUM | Small (2-3 hours) | **P2** — Custom ConsentModal already exists |
+| `text-gray-500` contrast failure | MEDIUM | Small (1-2 hours) | **P2** — Find-replace to `text-gray-400` |
+| Dual canvas performance on low-end | MEDIUM | Medium (1 day) | **P3** — Consider single canvas or worker |
+| No code splitting (Recharts) | MEDIUM | Small (1-2 hours) | **P2** — `React.lazy()` wrap |
+| Hardcoded color values | LOW | Medium (half day) | **P3** — Mechanical token migration |
+| No TypeScript | LOW | Large (ongoing) | **P4** — Gradual adoption with strict mode |
+| No automated tests | LOW | Medium (1-2 days) | **P3** — Start with engine unit tests |
+
+*End of P10-P13. Final summary follows.*
+
+---
+
+## FINAL SUMMARY DASHBOARD
+
+### Overall Findings by Severity
+
+| Severity | Count | Findings |
+|----------|-------|----------|
+| **CRITICAL** | **0** | — |
+| **HIGH** | **0** | — |
+| **MEDIUM** | **8** | Listed below |
+| **LOW** | **18** | See individual parts |
+| **PASS** | **82** | — |
+
+### All MEDIUM Findings
+
+| ID | Part | Finding | Fix Effort |
+|----|------|---------|-----------|
+| F-P2-004 | P2 | Potential negative pity on manual reset (floor at 0 needed) | 15 min |
+| F-P3-003 | P3 | Admin password stored as SHA-256 without salt/KDF | 2-3 hours |
+| F-P5-001 | P5 | Two full-screen canvas animations running simultaneously | 1 day |
+| F-P5-003 | P5 | No code splitting — Recharts (~70KB) always loaded | 1-2 hours |
+| F-P5-004 | P5 | 91+ useState in monolithic component (= P10-001) | 2-3 days |
+| F-P7-005 | P7 | 14 `window.confirm()` calls inconsistent with custom modal | 2-3 hours |
+| F-P8-009 | P8 | text-gray-500 fails WCAG AA contrast (3.6:1, 40+ instances) | 1-2 hours |
+| F-P10-001 | P10 | Monolithic 8,218-line App.jsx (= P5-004) | 2-3 days |
+
+*Note: F-P5-004 and F-P10-001 are the same underlying issue (monolithic component) counted once.*
+
+### Scoring by Domain
+
+| Domain | Part(s) | Score | Grade |
+|--------|---------|-------|-------|
+| Architecture & Inventory | P1 | Modular support files, monolithic main | B+ |
+| Domain Logic & Business Rules | P2 | Accurate probability engine, correct pity mechanics | A |
+| Security & Privacy | P3 | XSS-safe, validated imports, weak admin hash | B |
+| State & Data Integrity | P4 | Defensive reducer, versioned migration, quota-aware | A |
+| Performance | P5 | Good optimizations, dual canvas tax, no code splitting | B |
+| Visual Design & Polish | P6 | Premium glassmorphic design, strong identity (9/10) | **A+** |
+| UX & Information Architecture | P7 | Logical IA, streamlined core flow, overloaded Profile | A- |
+| Accessibility | P8 | 142 aria-labels, correct ARIA, contrast gap | A- |
+| Compatibility & PWA | P9 | Production-quality SW, responsive, desktop layout | **A+** |
+| Code Quality | P10 | Good conventions, no types, monolith | B |
+| AI Integration | P11 | N/A | — |
+| i18n | P12 | English only (appropriate for audience) | B- |
+| Future-proofing | P13 | Scalable data model, needs decomposition for team growth | B |
+
+### Overall Application Grade: **A-**
+
+### Top 3 Strengths
+1. **Visual Design (P6):** A premium, distinctive UI with a coherent design system, glassmorphic cards, procedural backgrounds, and strong brand identity. Design maturity 9/10.
+2. **PWA & Compatibility (P9):** Production-quality service worker with 3-strategy caching, offline support, install prompts, safe area handling, and a dedicated desktop sidebar layout.
+3. **Domain Accuracy (P2):** The DP probability engine is mathematically correct, matching community-verified pity curves. The dual-zone soft pity model is accurately implemented.
+
+### Top 3 Improvement Priorities
+1. **Decompose App.jsx** (MEDIUM, 2-3 days): Extract 8 tab components. Unlocks code splitting, testing, and team collaboration. Single highest-impact change.
+2. **Replace `window.confirm()` + fix contrast** (MEDIUM, 3-4 hours combined): Use existing ConsentModal for destructive actions. Upgrade `text-gray-500` → `text-gray-400`.
+3. **Lazy-load Recharts** (MEDIUM, 1-2 hours): Wrap Stats tab in `React.lazy()` + `Suspense`. Saves ~70KB for users who never visit Stats.
+
+---
+
+> **Audit complete.** 108 findings evaluated across 13 domains. 0 critical, 0 high, 8 medium (7 unique), 18 low, 82 pass. This application demonstrates exceptional craft for a single-developer project — the visual design, PWA infrastructure, and accessibility investment are all well above typical standards for a hobbyist game companion tool.
