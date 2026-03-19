@@ -881,3 +881,295 @@ Not applicable — this is a web PWA, not a native mobile app.
 **Overall Security Assessment:** The app demonstrates strong security awareness with multiple layers of defense. The codebase shows evidence of 40+ prior security fixes (P2-FIX through P15-FIX). For a client-side hobby tool with LOW stakes, the security posture is **above average**. The main gaps are compliance-related (attribution, disclaimers, privacy policy) rather than technical vulnerabilities.
 
 *End of P3. Commit and push follows.*
+
+---
+
+## PART 4 — STATE & DATA INTEGRITY
+
+### §B1. State Architecture
+
+#### F-P4-001 — State Schema: Well-Defined with Defaults ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:425-466]
+
+`initialState` is comprehensive and well-structured:
+- `server` (string, default 'Asia')
+- `profile` with 5 banner sub-objects (featured, weapon, standardChar, standardWeap, beginner), each with `history[]`, `pity5`, `pity4`, and `guaranteed` (featured only)
+- `calc` with 18+ fields for calculator inputs (all string/number with safe defaults)
+- `planner` with daily income, goal settings, and `addedIncome[]`
+- `bookmarks[]`, `eventStatus{}`, `teams[5]`, `activeTeamIndex`, `settings`
+
+All fields have explicit types and defaults. No `undefined` values in initial state.
+
+#### F-P4-002 — Calculator State Deliberately Transient ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:536]
+
+`calc: { ...initialState.calc }` — calculator state always starts fresh on page load, never persisted from storage. This is intentional: resources change frequently, and stale calculator state would mislead users.
+
+#### F-P4-003 — Derived State: Mostly Computed On-Demand ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — useMemo hooks]
+
+Stats, trophies, luck ratings, and collection data are all derived via `useMemo` from the source state. No stale cached derived values.
+
+#### F-P4-004 — Reset Completeness ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:763]
+
+`ACTION.RESET` returns `initialState` directly — a complete, clean reset. `CLEAR_PROFILE` preserves username and profilePic while resetting all pull history and pity counters.
+
+---
+
+### §B2. Persistence & Storage
+
+#### F-P4-005 — Schema Versioning: Key Name Only, No Migration Logic
+**Severity:** MEDIUM ⏱ COMPOUNDS
+**Confidence:** [CODE: appcore-engine.js:470-471]
+
+`STORAGE_KEY = 'whispering-wishes-v2.2'` — the storage key acts as the version. The comment says "If schema changes require migration, add a migration function here." However, **no migration function exists.** If a future update changes the state schema, users with existing `v2.2` data will either:
+1. Get their data merged with `initialState` (current behavior — missing fields filled from defaults)
+2. Lose data if field names change or types change
+
+The current merge strategy (`{ ...initialState, ...savedState }`) handles **additive** schema changes well (new fields get defaults). It does NOT handle **rename, removal, or type changes**.
+
+**Solution:** Add a `SCHEMA_VERSION` number inside the stored data, and a migration function chain:
+```js
+const migrations = {
+  1: (state) => ({ ...state, newField: defaultValue }),
+  2: (state) => ({ ...state, renamedField: state.oldField }),
+};
+```
+This is LOW urgency now but COMPOUNDS over time as the schema evolves.
+
+#### F-P4-006 — Quota Management: Well-Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:555-572, App.jsx:825, 2900]
+
+- `saveToStorage` warns at 4MB (80% of 5MB limit)
+- `QuotaExceededError` caught and dispatched as custom event
+- App.jsx listens for `ww-storage-error` and shows toast
+- Profile tab shows current storage size with color-coded indicator
+- Save failure counter prevents toast spam (P12-FIX)
+
+#### F-P4-007 — Concurrent Tab Safety: Handled via StorageEvent ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:855]
+
+The app listens for `storage` events (fired when another tab writes to localStorage). When the main storage key changes in another tab, the app reloads state from storage. This prevents the "last tab wins" data loss scenario.
+
+#### F-P4-008 — Cold Start Validation: Deep Merge with Defaults ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:515-553]
+
+`loadFromStorage` performs a deep merge:
+- Each profile sub-object merged with its initialState counterpart
+- Teams array validated (must be exactly 5 entries, each with `name` string and `slots[3]`)
+- `activeTeamIndex` clamped to [0,4]
+- Calculator always fresh (not loaded from storage)
+- Planner, settings, bookmarks, eventStatus all merged with defaults
+
+This handles schema additions gracefully. Corrupted state falls through to `catch` → returns `null` → app uses `initialState`.
+
+#### F-P4-009 — Multiple localStorage Keys: Auxiliary Data Scattered
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx — multiple localStorage keys]
+
+The app uses 8+ localStorage keys:
+- `whispering-wishes-v2.2` — main state
+- `whispering-wishes-visual-settings-v3` — fade/opacity settings
+- `whispering-wishes-image-framing-v1` — image pan/zoom
+- `whispering-wishes-trophy-overrides-v1` — admin trophy customization
+- `ww-team-equipment` — weapon/echo loadouts
+- `ww-leaderboard-id` — session ID
+- `ww-leaderboard-consent` — consent flag
+- `ww-admin-lockout` / `ww-admin-fails` — admin security
+- `whispering-wishes-admin-banners` — custom banners
+- `whispering-wishes-pre-import-backup` / `whispering-wishes-pre-restore-backup`
+
+**Impact:** Clearing "the app's data" requires knowing all these keys. The export function captures auxiliary data (visual settings, framing, collection images, trophy overrides) in the `aux` field — good. But team equipment (`ww-team-equipment`) is NOT included in exports.
+
+**Solution:** Include `ww-team-equipment` in the export `aux` field for complete round-trip fidelity. Document all localStorage keys in a single constant registry.
+
+---
+
+### §B3. Input Validation & Sanitization
+
+#### F-P4-010 — Calculator Input Validation: Implicit via Coercion
+**Severity:** LOW
+**Confidence:** [CODE: appcore-engine.js:776-778, 588-599]
+
+Calculator inputs are stored as strings and converted via `+value || 0` (unary plus with fallback). This silently converts invalid inputs to 0 without user feedback. Pity values are clamped in `calcStats`: `Math.max(0, Math.min(MAX_PITY, Math.floor(pity) || 0))`.
+
+The reducer's `ADD_INCOME` uses `Math.floor(+action.income.astrite || 0)` — safe but silent.
+
+**Solution:** Consider showing a brief validation message when a non-numeric value is entered, rather than silently zeroing.
+
+#### F-P4-011 — Team Name Length Validation ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:755-756]
+
+`RENAME_TEAM` uses `(action.name || '').slice(0, 20)` — caps team names at 20 characters. Falls back to current name if empty.
+
+#### F-P4-012 — Username Length Validation
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx — MAX_USERNAME_LENGTH = 24]
+
+Username length is enforced at 24 characters. However, the enforcement happens in the UI input (`maxLength`), not in the reducer. A manually crafted dispatch could bypass this.
+
+**Solution:** Add `.slice(0, 24)` in the `SET_USERNAME` reducer case for defense-in-depth.
+
+#### F-P4-013 — Bookmark Name Length Validation ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — MAX_BOOKMARK_NAME_LENGTH = 30]
+
+Bookmarks enforce a 30-character limit via UI input.
+
+---
+
+### §B4. Import & Export Integrity
+
+#### F-P4-014 — Pre-Import/Pre-Restore Backup: Excellent ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:2794-2798, 6912-6916]
+
+Before any import or restore operation, the app automatically saves the current state to localStorage as a pre-import/pre-restore backup. This provides rollback capability:
+- `whispering-wishes-pre-import-backup` (for wuwatracker imports)
+- `whispering-wishes-pre-restore-backup` (for backup restores)
+- UI button to restore pre-import backup (P15-FIX)
+
+#### F-P4-015 — Import Validation: Schema Checked ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:504-513, 762]
+
+Imported state goes through:
+1. `sanitizeStateObj()` — strips prototype pollution keys recursively
+2. `sanitizeImportedState()` — validates against `ALLOWED_STATE_KEYS` whitelist
+3. `{ ...initialState, ...sanitizeImportedState(action.state) }` — merges with defaults
+
+This prevents unknown keys from entering state and ensures all required fields exist.
+
+#### F-P4-016 — Export Includes Auxiliary Data ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:2971-2982]
+
+Export JSON includes: `timestamp`, `version`, `state`, and `aux` (visualSettings, imageFraming, collectionImages, trophyOverrides). Restore properly re-applies auxiliary data to their respective localStorage keys.
+
+#### F-P4-017 — Team Equipment Not Included in Export
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:2971-2982]
+
+`ww-team-equipment` (weapon/echo loadouts per team slot) is NOT included in the export `aux` field. A full export → import round-trip on a new device would lose team equipment data.
+
+**Solution:** Add `ww-team-equipment` to the export `aux` object alongside other auxiliary data.
+
+#### F-P4-018 — Import Size Limit Enforced ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-data.js:7 — MAX_IMPORT_SIZE_MB = 5]
+
+Import file size is limited to 5MB before parsing begins.
+
+#### F-P4-019 — History Deduplication: Well-Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:649-658]
+
+`deduplicateMerge` in `IMPORT_HISTORY` uses a composite key (`timestamp|name|rarity|id`) to prevent duplicate entries when re-importing. Merged results are re-sorted by timestamp. Pity values are only updated when new entries were actually merged (P9-FIX).
+
+---
+
+### §B5. Data Flow Map
+
+```
+USER INPUT                    VALIDATION                STATE                     COMPUTATION              DISPLAY
+─────────────                ──────────────            ─────────                ─────────────            ─────────
+Calculator inputs      →  +value||0 coercion    →  calc state (useReducer)  →  calcStats()         →  Success rate %
+  (astrite, pity, copies)   Math.floor, Math.min     (transient, not saved)     (DP/MC engine)         Probability bars
+                                                                                                        Missing pulls
+
+Planner inputs         →  Math.max/min clamps   →  planner state            →  Daily projection    →  Expected date
+  (daily astrite, goals)    Number() || 0            (persisted)                 useMemo                Pull forecast
+
+Import JSON            →  JSON.parse in try     →  sanitizeStateObj()       →  merge with          →  Profile/Stats
+  (from wuwatracker)        size limit check         sanitizeImportedState       initialState           Collection grid
+                            prototype filter         deduplicateMerge                                   Pity rings
+
+Team Builder           →  Character lookup      →  teams[] in state         →  Buff calculations   →  Team damage score
+  (select characters)       validated names          (persisted)                 useMemo from            Buff breakdowns
+                                                                                CHAR_BUFF_TABLE
+
+Server selection       →  SERVERS[key] lookup   →  server state             →  getServerOffset()   →  Countdown timers
+                            fallback to default      (persisted)                 getServerAdjustedEnd    Event times
+
+GAPS:
+  → Calculator: silent coercion on invalid input (no user feedback)
+  → Team equipment: not in export/import flow (data loss risk on device switch)
+  → Username: length enforcement in UI only, not in reducer
+```
+
+---
+
+### §B6. Mutation & Reference Integrity
+
+#### F-P4-020 — Reducer Immutability: Correctly Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:575-771]
+
+The reducer produces new state via spread operators throughout:
+- `{ ...state, server: action.server }`
+- `{ ...state, calc: { ...state.calc, [action.field]: action.value } }`
+- `teams: state.teams.map(...)` (creates new array)
+- `addedIncome: [...state.planner.addedIncome, action.income]` (new array)
+- `bookmarks: [...state.bookmarks, { ...newBookmark }]` (new array)
+
+No direct mutation of state objects. All arrays created via spread or `.map()/.filter()`.
+
+#### F-P4-021 — Sort on New Arrays: Safe ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:657, App.jsx:1268,2079,2708,5095,7212]
+
+All `.sort()` calls operate on newly created arrays:
+- `[...existing, ...newEntries].sort(...)` — new array via spread
+- `Object.entries(...).sort(...)` — new array from Object.entries
+- `[...(trophies?.list || [])].sort(...)` — spread before sort
+- `[...new Set(...)].sort()` — new array from Set
+
+No mutation of source arrays through sort.
+
+#### F-P4-022 — Bookmark Load: Validated Key Whitelist ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:716-728]
+
+`LOAD_BOOKMARK` only spreads keys that exist in `initialState.calc`, preventing bookmark data from introducing unknown state properties.
+
+---
+
+### P4 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P4-001 | §B1 | ✅ PASS | State schema well-defined with defaults |
+| F-P4-002 | §B1 | ✅ PASS | Calculator state deliberately transient |
+| F-P4-005 | §B2 | **MEDIUM** ⏱ | **No schema migration logic (compounds over time)** |
+| F-P4-006 | §B2 | ✅ PASS | Quota management well-implemented |
+| F-P4-007 | §B2 | ✅ PASS | Concurrent tab safety via StorageEvent |
+| F-P4-008 | §B2 | ✅ PASS | Cold start deep merge with defaults |
+| F-P4-009 | §B2 | LOW | Team equipment not in export (scattered keys) |
+| F-P4-010 | §B3 | LOW | Silent coercion on invalid calculator input |
+| F-P4-012 | §B3 | LOW | Username length enforced in UI only |
+| F-P4-014 | §B4 | ✅ PASS | Pre-import/pre-restore backup |
+| F-P4-015 | §B4 | ✅ PASS | Import validation with schema whitelist |
+| F-P4-016 | §B4 | ✅ PASS | Export includes auxiliary data |
+| F-P4-017 | §B4 | LOW | Team equipment not in export aux |
+| F-P4-019 | §B4 | ✅ PASS | History deduplication well-implemented |
+| F-P4-020 | §B6 | ✅ PASS | Reducer immutability correct |
+| F-P4-021 | §B6 | ✅ PASS | Sort on new arrays only |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 1** (no schema migration — compounds over time)
+**Low findings: 4**
+**Pass: 11**
+
+**Overall State/Data Assessment:** The state management is well-architected for a localStorage-only app. The reducer maintains immutability correctly, the import/export system is robust with pre-operation backups, and prototype pollution is thoroughly guarded. The main gap is the lack of schema migration logic, which becomes increasingly costly as the app evolves.
+
+*End of P4. Commit and push follows.*
