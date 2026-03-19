@@ -1667,28 +1667,215 @@ Actual usage follows this hierarchy consistently. Canvas backgrounds at z:1-2, c
 
 ---
 
-### §E10. Design Issues & Opportunities
+### §E10. Spacing & Spatial Rhythm (§ADE §TOKENS, §COMPOSITION)
 
-#### F-P6-023 — Inconsistent Border Radius
+#### F-P6-023 — Kuro-Card Baseline Padding Breaks 4px Grid
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-providers.jsx:807,850]
+
+`.kuro-header` and `.kuro-body` both use `padding: 14px`. 14px is 3.5× the 4px base — it doesn't align with Tailwind's 4px grid or any standard spatial rhythm. This is the **foundation-level card padding** used by every card in the app.
+
+**Impact:** Every card header and body is 2px misaligned with Tailwind-spaced internal elements (which use `p-2` = 8px, `p-3` = 12px, `p-4` = 16px). Creates subtle visual jitter between card chrome and card content.
+
+**Solution:** Change to `padding: 12px` (p-3) or `padding: 16px` (p-4).
+
+#### F-P6-024 — ~25% of Spacing Values Break the 4px Grid
+**Severity:** MEDIUM
+**Confidence:** [CODE: throughout src/]
+
+Complete spacing audit reveals:
+
+| Value | Grid Multiple | Occurrences | Grid-Aligned? |
+|-------|-------------|-------------|---------------|
+| 4px | 1× | 167 | ✅ |
+| 8px | 2× | 178 | ✅ |
+| 12px | 3× | 121 | ✅ |
+| 16px | 4× | 47 | ✅ |
+| **6px** | **1.5×** | **88** | **❌** |
+| **10px** | **2.5×** | **50** | **❌** |
+| **14px** | **3.5×** | **8** | **❌** |
+| **2px** | **0.5×** | **60** | **❌** |
+| **1.5px** | **0.375×** | **1** | **❌** |
+
+~75% of spacing follows a clean 4px grid, but **~25% uses fractional values** (6px via `p-1.5`/`gap-1.5`, 10px via `p-2.5`, 14px inline, 2px via `py-0.5`) that create inconsistent rhythm.
+
+**Key violations:**
+- `p-2.5` (10px): 16 occurrences — badges, overlays
+- `py-0.5` (2px): 54 occurrences — ultra-tight text containers
+- `gap-1.5` (6px): 38 occurrences — component internal gaps
+- ID card inner sections: `padding: '10px'` (4 instances at App.jsx:7077-7215) while outer uses 12px
+- Tooltip styling: `padding: 1.5px` — extreme grid breakage
+
+**Solution:** Document which fractional values are intentional "half-step" design decisions vs. accidental. Standardize ID card sections to 12px. The 6px (`p-1.5`) usage may be a deliberate "dense" semantic — if so, document it as `--space-dense`.
+
+#### F-P6-025 — Gold Color Inconsistency
 **Severity:** LOW
 
-Cards use `rounded-2xl` (16px), buttons use `rounded-xl` (12px), badges use `rounded-lg` (8px), pills use `rounded-full`. While this creates implicit hierarchy, some collection grid items use `rounded-lg` while others use `rounded-xl` inconsistently.
-
-**Solution:** Document the radius scale: `full` → `2xl` → `xl` → `lg` → `md` and ensure consistent usage per component type.
-
-#### F-P6-024 — Gold Color Inconsistency
-**Severity:** LOW
-
-Three gold tones are used interchangeably:
+Three gold tones used interchangeably:
 - `#edaf18` — Primary gold (CSS token, pity ring, card glow)
 - `#fbbf24` — Tailwind `amber-400` (some badges, counters)
 - `#fef08a` — Tailwind `yellow-200` (active button text, some labels)
 
-These serve slightly different purposes (base, accent, highlight) but aren't documented as a deliberate scale. Adding `--color-gold-light` and `--color-gold-bright` tokens would formalize the intent.
+Not documented as a deliberate scale. Adding `--color-gold-light` and `--color-gold-bright` tokens would formalize the intent.
 
 ---
 
-### P6 Summary
+### §E11. Shadow & Elevation Craft (§ADE §DEPTH, §DSA2)
+
+#### F-P6-026 — 17 Instances of Pure Black Shadows
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-providers.jsx:603-1627, appcore-components.jsx:1180,1682, App.jsx:4627]
+
+The shadow tokens correctly use palette-derived color `rgba(6, 10, 24, ...)` (dark blue-gray), but **17 inline shadow values bypass the tokens and use `rgba(0,0,0,...)`** — pure black. The art-direction-engine (§DEPTH) explicitly states: *"Shadow hue matches palette's dark tone. Never `rgba(0,0,0,...)`."*
+
+**Affected elements:**
+- `.glow-gold`, `.glow-purple` (and hover states) — 4 instances
+- `.kuro-btn.active-gold/pink/cyan/purple/emerald` — 5 instances
+- `.kuro-stat:hover` — 1 instance
+- `.collection-card:hover` — 1 instance
+- `.desktop-layout .kuro-card:hover` — 1 instance
+- Priority slider thumbs (Webkit + Firefox) — 4 instances
+- BannerCard inline styles — 2 instances
+- Chart tooltip contentStyle — 1 instance
+
+**Solution:** Replace all `rgba(0,0,0,...)` with `rgba(6,10,24,...)` to match the token palette. This is a mechanical find-replace.
+
+#### F-P6-027 — Shadow Token Adoption Rate: 12%
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-providers.jsx:441-444, 870, 891]
+
+4 shadow tokens defined (`--shadow-sm/md/lg/xl`) but only **2 locations** reference them (`.kuro-btn` default and hover states). All other 15+ shadow definitions use hardcoded inline values.
+
+**Impact:** Changing the shadow scale requires editing 15+ locations instead of 4 tokens. The shadow system is defined but not adopted.
+
+**Solution:** Create additional semantic tokens (`--shadow-glow-gold`, `--shadow-card-hover`) or at minimum use the existing scale tokens where sizes match.
+
+#### F-P6-028 — Shadow Direction: Consistent ✅
+**Severity:** N/A (PASS)
+
+All shadows use consistent top-light direction: `0 Ypx blur` with positive Y offset. No mixed directions. Backdrop-filter blur scales with elevation (4px cards → 8px buttons → 20px sidebar). Drop-shadows all use palette/dynamic colors correctly.
+
+---
+
+### §E12. Typography Depth (§DT2, §DT3)
+
+#### F-P6-029 — 434 Instances of Sub-12px Type
+**Severity:** MEDIUM
+**Confidence:** [CODE: 434 matches across 3 files]
+
+The original P6 understated this. Full count:
+
+| Size | Occurrences | Usage |
+|------|------------|-------|
+| `text-[7px]` | ~2 | Team builder weapon labels |
+| `text-[8px]` | ~15 | Timer sub-labels (Hr/Min/Sec), desktop nav, admin footer |
+| `text-[9px]` | ~180 | Section labels, material names, badge text, slider labels, sublabels |
+| `text-[10px]` | ~237 | Tags, badges, combat profiles, stat labels, dates, button text |
+
+**434 total** sub-12px type instances. `text-[9px]` and `text-[10px]` account for the vast majority of label/secondary text in the app.
+
+**Desktop concern:** At 1024px+ (desktop layout), these micro-sizes are **not scaled up**. The desktop layout CSS uses `font-size: 8px !important` for sidebar nav labels and `font-size: 0.5rem` (8px) for tab labels — even smaller than mobile.
+
+**Solution:** Add a responsive type scale at the desktop breakpoint. At minimum: `text-[9px]` → `text-[10px]` and `text-[10px]` → `text-xs` (12px) on `min-width: 1024px`. Desktop users sit further from screens and need slightly larger text.
+
+#### F-P6-030 — Tabular Numerals Only on 3 Elements
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:1047,1285,1293]
+
+`font-variant-numeric: tabular-nums` is applied to `.kuro-stat`, `.kuro-number`, and pity ring text. But many numeric displays **lack it**:
+- Pull log counts
+- Calculator DP table values
+- Timer digit displays (countdown boxes)
+- Stat grid numbers in character detail modals
+- Leaderboard scores
+
+**Impact:** Proportional numeral widths cause column misalignment in data-dense views. JetBrains Mono has tabular figures by default, but elements using Rajdhani (the display font) do not.
+
+**Solution:** Add `font-variant-numeric: tabular-nums` to any container displaying columnar numbers in Rajdhani.
+
+#### F-P6-031 — Tracking on Uppercase Labels: Correct ✅
+**Severity:** N/A (PASS)
+
+All `uppercase` labels use `tracking-wider` (0.05em) or `tracking-widest` (0.1em). Letter-spacing is also intentionally applied:
+- Card headers: `letter-spacing: 0.03em`
+- Buttons: `letter-spacing: 0.02em`
+- Pity ring text: `letter-spacing: -0.02em` (tight for data)
+- Desktop nav active: `letter-spacing: 0.2em` (very wide for tiny text)
+
+This shows deliberate typographic craft per §DT2 tracking norms.
+
+---
+
+### §E13. Desktop Responsive Character (§DRC1-DRC3)
+
+#### F-P6-032 — Desktop Sidebar Uses Extreme Micro-Typography
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-providers.jsx:1486,1505]
+
+The desktop sidebar (72px wide, `min-width: 1024px`) uses:
+- Server select: `font-size: 8px !important` with `min-height: 24px`
+- Tab labels: `font-size: 0.5rem` (8px) with `gap: 1px`
+- Export button icon: `12px × 12px`
+- Inner padding: `0.375rem` (6px) → `0.25rem 0.125rem` (4px × 2px)
+
+8px text is **below the absolute minimum** for any readable UI element. At typical desktop viewing distances (50-70cm), 8px text requires squinting.
+
+**Solution:** Either widen the sidebar to 88-96px and use 10px minimum text, or switch to icon-only navigation (no text labels) at this width and show labels on hover/tooltip.
+
+#### F-P6-033 — Desktop Layout Uses 30+ `!important` Overrides
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:1445-1564]
+
+The desktop media query uses `!important` on virtually every property override. This indicates the base styles have high specificity that the responsive layer can't override cleanly.
+
+**Impact:** Fragile — any future style change to the base component may not propagate to desktop without adding another `!important`. Makes debugging layout issues difficult.
+
+**Solution:** Refactor desktop styles to use a dedicated class-based approach (e.g., `.desktop-sidebar` applied via JS on breakpoint detection) rather than media query overrides on the same selectors.
+
+#### F-P6-034 — Desktop Content Area Has Unexplained Right Padding
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:1539]
+
+```css
+.desktop-layout > main {
+  padding-right: calc(160px + 1rem) !important;
+}
+```
+
+160px of dead space on the right side of the content area. No visible element occupies this space. This wastes ~10% of screen width on a 1440px monitor.
+
+**Solution:** Remove or reduce to standard `1rem` padding unless this space is reserved for a planned feature.
+
+---
+
+### §E14. Border Radius (§ADE §SHAPE)
+
+#### F-P6-035 — Border Radius Hierarchy: Sound ✅
+**Severity:** N/A (PASS)
+
+Deep audit confirms a consistent, intentional radius scale:
+
+```
+Modals/Cards (outer): 16px (rounded-2xl)
+Card inner:           15px (16px - 1px border — math correct ✅)
+Card sections:        12px (rounded-xl)
+Buttons (.kuro-btn):  12px
+Stats (.kuro-stat):   10px
+Inputs (.kuro-input): 8px (rounded-lg)
+Collection items:     8px (rounded-lg)
+Timer boxes:          8px (rounded-lg)
+Skeletons:            Match their target components ✅
+Badges (pill):        50% (rounded-full)
+Type badges:          4px (rounded)
+Slider track:         3px
+Tab indicator:        1px
+```
+
+Skeleton loaders mirror real component radii. Inner/outer card math is correct. No arbitrary one-off radius values found.
+
+---
+
+### P6 Summary (Revised)
 
 | ID | Category | Severity | Finding |
 |----|----------|----------|---------|
@@ -1714,16 +1901,27 @@ These serve slightly different purposes (base, accent, highlight) but aren't doc
 | F-P6-020 | §E8 | ✅ PASS | z-index architecture documented and structured |
 | F-P6-021 | §E9 | ✅ PASS | Multiple polish signals (loading states, error handling, PWA) |
 | F-P6-022 | §E9 | ✅ PASS | Strong anti-genericness (8/10) |
-| F-P6-023 | §E10 | LOW | Inconsistent border radius across similar components |
-| F-P6-024 | §E10 | LOW | Three gold tones used without documented scale |
+| F-P6-023 | §E10 | **MEDIUM** | **Kuro-card 14px padding breaks 4px grid** |
+| F-P6-024 | §E10 | **MEDIUM** | **~25% of spacing values (206 instances) break 4px grid** |
+| F-P6-025 | §E10 | LOW | Three gold tones used without documented scale |
+| F-P6-026 | §E11 | **MEDIUM** | **17 pure black `rgba(0,0,0,...)` shadows bypass palette tokens** |
+| F-P6-027 | §E11 | **MEDIUM** | **Shadow token adoption rate only 12% (2 of 17 definitions)** |
+| F-P6-028 | §E11 | ✅ PASS | Shadow direction consistent (top-light, no mixed angles) |
+| F-P6-029 | §E12 | **MEDIUM** | **434 sub-12px type instances, not scaled up on desktop** |
+| F-P6-030 | §E12 | LOW | Tabular numerals only on 3 elements, missing on many numeric displays |
+| F-P6-031 | §E12 | ✅ PASS | Tracking on uppercase labels correct |
+| F-P6-032 | §E13 | **MEDIUM** | **Desktop sidebar uses 8px text — below minimum readability** |
+| F-P6-033 | §E13 | LOW | Desktop layout uses 30+ `!important` overrides (fragile) |
+| F-P6-034 | §E13 | LOW | Unexplained 160px right padding on desktop content area |
+| F-P6-035 | §E14 | ✅ PASS | Border radius hierarchy sound, card math correct |
 
 **Critical findings: 0**
 **High findings: 0**
-**Medium findings: 0**
-**Low findings: 5**
-**Pass: 19**
+**Medium findings: 6** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text)
+**Low findings: 7**
+**Pass: 22**
 
-**Overall Visual Design Assessment:** This is an exceptionally well-crafted visual design for a tracker/toolkit web app. The glassmorphic card system, dual-canvas background, pity ring visualizations, and overall dark sci-fi aesthetic create a premium feel that matches the source game's visual language. The design token system is nearly complete — the main gap is adopting the tokens more consistently in inline styles. Typography is intentionally small for density, which suits the mobile-first gacha audience. The animation system is respectful of user preferences and technically sound. **Design maturity: 9/10.**
+**Overall Visual Design Assessment (Revised):** The app has an exceptionally strong visual *identity* — the glassmorphic cards, dual-canvas backgrounds, pity rings, and conic-gradient badges are distinctive and premium. However, the deep audit reveals significant **craft-layer debt**: the spacing system drifts from its own 4px grid in ~25% of values, the shadow token system is defined but barely adopted (12%), pure black shadows bypass the carefully calibrated palette, and the desktop responsive layer uses extreme micro-typography without scaling. The surface design is 9/10; the spatial and token **discipline** is 6/10. The gap between identity quality and implementation consistency is the primary design debt. **Design maturity: 7.5/10.**
 
 *End of P6. Commit and push follows.*
 
@@ -2651,11 +2849,18 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | Debt Item | Severity | Effort to Fix | Priority |
 |-----------|----------|--------------|----------|
 | Monolithic App.jsx (8,218 lines) | MEDIUM | Large (2-3 days) | **P1** — Blocks code splitting, testing, and team scaling |
+| 17 pure black shadows bypass palette | MEDIUM | Small (2 hours) | **P2** — Mechanical find-replace `rgba(0,0,0` → `rgba(6,10,24` |
+| Shadow token adoption (12%) | MEDIUM | Small (2 hours) | **P2** — Migrate inline shadows to `--shadow-*` vars |
+| Kuro-card 14px padding + grid drift | MEDIUM | Medium (1 day) | **P2** — Standardize to 12px/16px, audit fractional values |
+| 434 sub-12px type, no desktop scaling | MEDIUM | Medium (half day) | **P2** — Add responsive type scale at 1024px+ |
+| Desktop sidebar 8px text | MEDIUM | Small (2 hours) | **P2** — Widen sidebar or switch to icon-only |
 | 14 `window.confirm()` calls | MEDIUM | Small (2-3 hours) | **P2** — Custom ConsentModal already exists |
 | `text-gray-500` contrast failure | MEDIUM | Small (1-2 hours) | **P2** — Find-replace to `text-gray-400` |
 | Dual canvas performance on low-end | MEDIUM | Medium (1 day) | **P3** — Consider single canvas or worker |
 | No code splitting (Recharts) | MEDIUM | Small (1-2 hours) | **P2** — `React.lazy()` wrap |
-| Hardcoded color values | LOW | Medium (half day) | **P3** — Mechanical token migration |
+| Hardcoded color values (40+) | LOW | Medium (half day) | **P3** — Mechanical token migration |
+| 30+ `!important` in desktop CSS | LOW | Medium (half day) | **P3** — Refactor to class-based approach |
+| 160px unexplained right padding (desktop) | LOW | Small (15 min) | **P3** — Remove or document |
 | No TypeScript | LOW | Large (ongoing) | **P4** — Gradual adoption with strict mode |
 | No automated tests | LOW | Medium (1-2 days) | **P3** — Start with engine unit tests |
 
@@ -2671,9 +2876,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 |----------|-------|----------|
 | **CRITICAL** | **0** | — |
 | **HIGH** | **0** | — |
-| **MEDIUM** | **8** | Listed below |
-| **LOW** | **18** | See individual parts |
-| **PASS** | **82** | — |
+| **MEDIUM** | **14** | Listed below |
+| **LOW** | **20** | See individual parts |
+| **PASS** | **85** | — |
 
 ### All MEDIUM Findings
 
@@ -2684,6 +2889,12 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | F-P5-001 | P5 | Two full-screen canvas animations running simultaneously | 1 day |
 | F-P5-003 | P5 | No code splitting — Recharts (~70KB) always loaded | 1-2 hours |
 | F-P5-004 | P5 | 91+ useState in monolithic component (= P10-001) | 2-3 days |
+| F-P6-023 | P6 | Kuro-card 14px padding breaks 4px grid (foundation-level) | 1 hour |
+| F-P6-024 | P6 | ~25% of spacing values (206 instances) break 4px grid | 1 day |
+| F-P6-026 | P6 | 17 pure black `rgba(0,0,0,...)` shadows bypass palette tokens | 2 hours |
+| F-P6-027 | P6 | Shadow token adoption only 12% (2 of 17 definitions) | 2 hours |
+| F-P6-029 | P6 | 434 sub-12px type instances, not scaled up on desktop | half day |
+| F-P6-032 | P6 | Desktop sidebar uses 8px text — below minimum readability | 2 hours |
 | F-P7-005 | P7 | 14 `window.confirm()` calls inconsistent with custom modal | 2-3 hours |
 | F-P8-009 | P8 | text-gray-500 fails WCAG AA contrast (3.6:1, 40+ instances) | 1-2 hours |
 | F-P10-001 | P10 | Monolithic 8,218-line App.jsx (= P5-004) | 2-3 days |
@@ -2699,7 +2910,7 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | Security & Privacy | P3 | XSS-safe, validated imports, weak admin hash | B |
 | State & Data Integrity | P4 | Defensive reducer, versioned migration, quota-aware | A |
 | Performance | P5 | Good optimizations, dual canvas tax, no code splitting | B |
-| Visual Design & Polish | P6 | Premium glassmorphic design, strong identity (9/10) | **A+** |
+| Visual Design & Polish | P6 | Strong identity but craft-layer debt: spacing grid, shadow tokens, desktop type (7.5/10) | B+ |
 | UX & Information Architecture | P7 | Logical IA, streamlined core flow, overloaded Profile | A- |
 | Accessibility | P8 | 142 aria-labels, correct ARIA, contrast gap | A- |
 | Compatibility & PWA | P9 | Production-quality SW, responsive, desktop layout | **A+** |
@@ -2708,18 +2919,20 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | i18n | P12 | English only (appropriate for audience) | B- |
 | Future-proofing | P13 | Scalable data model, needs decomposition for team growth | B |
 
-### Overall Application Grade: **A-**
+### Overall Application Grade: **B+**
 
 ### Top 3 Strengths
-1. **Visual Design (P6):** A premium, distinctive UI with a coherent design system, glassmorphic cards, procedural backgrounds, and strong brand identity. Design maturity 9/10.
+1. **Visual Identity (P6 §E4-E9):** Distinctive glassmorphic cards, dual-canvas procedural backgrounds, pity ring visualizations, conic-gradient luck badges — strong anti-genericness (8/10). The *identity* is premium.
 2. **PWA & Compatibility (P9):** Production-quality service worker with 3-strategy caching, offline support, install prompts, safe area handling, and a dedicated desktop sidebar layout.
 3. **Domain Accuracy (P2):** The DP probability engine is mathematically correct, matching community-verified pity curves. The dual-zone soft pity model is accurately implemented.
 
-### Top 3 Improvement Priorities
+### Top 5 Improvement Priorities
 1. **Decompose App.jsx** (MEDIUM, 2-3 days): Extract 8 tab components. Unlocks code splitting, testing, and team collaboration. Single highest-impact change.
-2. **Replace `window.confirm()` + fix contrast** (MEDIUM, 3-4 hours combined): Use existing ConsentModal for destructive actions. Upgrade `text-gray-500` → `text-gray-400`.
-3. **Lazy-load Recharts** (MEDIUM, 1-2 hours): Wrap Stats tab in `React.lazy()` + `Suspense`. Saves ~70KB for users who never visit Stats.
+2. **Fix shadow palette + token adoption** (MEDIUM, 3-4 hours): Replace 17 `rgba(0,0,0,...)` with `rgba(6,10,24,...)` and migrate inline shadows to token variables.
+3. **Standardize spacing grid** (MEDIUM, 1 day): Fix kuro-card 14px→12px, audit fractional spacing values, document intentional half-steps.
+4. **Desktop typography scaling** (MEDIUM, half day): Scale up sub-12px text at 1024px+ breakpoint. Fix 8px sidebar labels.
+5. **Replace `window.confirm()` + fix contrast** (MEDIUM, 3-4 hours): Use existing ConsentModal for destructive actions. Upgrade `text-gray-500` → `text-gray-400`.
 
 ---
 
-> **Audit complete.** 108 findings evaluated across 13 domains. 0 critical, 0 high, 8 medium (7 unique), 18 low, 82 pass. This application demonstrates exceptional craft for a single-developer project — the visual design, PWA infrastructure, and accessibility investment are all well above typical standards for a hobbyist game companion tool.
+> **Audit complete.** 119 findings evaluated across 13 domains. 0 critical, 0 high, 14 medium (13 unique), 20 low, 85 pass. This application demonstrates strong craft for a single-developer project — the visual identity, PWA infrastructure, and accessibility investment are well above typical standards. The main debt is craft-layer consistency: the design *identity* is 9/10 but the spacing grid discipline, shadow token adoption, and desktop responsive typography need tightening to match the surface quality.
