@@ -1726,3 +1726,234 @@ These serve slightly different purposes (base, accent, highlight) but aren't doc
 **Overall Visual Design Assessment:** This is an exceptionally well-crafted visual design for a tracker/toolkit web app. The glassmorphic card system, dual-canvas background, pity ring visualizations, and overall dark sci-fi aesthetic create a premium feel that matches the source game's visual language. The design token system is nearly complete — the main gap is adopting the tokens more consistently in inline styles. Typography is intentionally small for density, which suits the mobile-first gacha audience. The animation system is respectful of user preferences and technically sound. **Design maturity: 9/10.**
 
 *End of P6. Commit and push follows.*
+
+---
+
+## PART 7 — UX & INFORMATION ARCHITECTURE
+
+### §F1. Navigation Architecture
+
+#### F-P7-001 — Tab-Based Navigation: Appropriate ✅
+**Severity:** N/A (PASS)
+
+8 tabs: Tracker → Events → Calc → Plan → Stats → Collection → Teams → Profile
+
+**Positive:**
+- Tab labels are concise (1 word each) with icons
+- Horizontal scrollable nav with hidden scrollbar
+- Swipe navigation available as opt-in setting
+- Arrow key navigation between tabs (keyboard accessible)
+- Sliding indicator tracks active tab
+- `role="tablist"` / `role="tab"` / `role="tabpanel"` ARIA correctly implemented
+
+**Concern:** 8 tabs is at the high end for mobile horizontal nav. On narrow screens (320px), tabs may require scrolling to reach the rightmost ones (Teams, Profile). However, the scrollbar-hide + swipe pattern handles this reasonably well.
+
+#### F-P7-002 — No URL Routing / Deep Linking
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx — no React Router, no URL hash management]
+
+The app is a single-page SPA with no URL-based routing. All navigation is in-memory via `activeTab` state. This means:
+- Browser back button doesn't navigate between tabs
+- Users can't bookmark or share a link to a specific tab
+- Refreshing always returns to the Tracker tab
+
+**Mitigating factors:**
+- The app is primarily mobile/PWA where back-button behavior differs
+- Each tab is stateful (form values preserved across tab switches via persistent state)
+- Adding hash routing (e.g., `#calc`, `#events`) would be a minimal change
+
+#### F-P7-003 — Swipe Navigation: Thoughtfully Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:914-981]
+
+- Opt-in only (disabled by default)
+- Ignores swipes in horizontally scrollable containers (P10-FIX)
+- Ignores swipes starting near screen edges (avoids OS gesture conflict)
+- Requires minimum velocity (150px in 300ms) and horizontal dominance (deltaX > deltaY)
+- Visual hint shows "← swipe to navigate →" when enabled
+
+---
+
+### §F2. User Flows & Error States
+
+#### F-P7-004 — Onboarding Flow: Good ✅
+**Severity:** N/A (PASS)
+
+First-run users see `OnboardingModal` with server selection, notification preference, and animation toggle. After dismissal, `showOnboarding` is set to `false` and persisted. Existing users are correctly detected and skip onboarding (P7-FIX logic checks for explicit `showOnboarding === true`).
+
+#### F-P7-005 — Destructive Actions: Inconsistent Confirmation Pattern
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx — 14 instances of `window.confirm()`]
+
+14 destructive actions use `window.confirm()`:
+- Clear all purchases, remove purchases, delete bookmarks
+- Clear profile/Convene history, reset ALL data
+- Clear custom images, reset visual settings
+- Clear trophy overrides, reset banners
+- Restore backup
+
+**Issues:**
+1. `window.confirm()` is unstyled — jarring native dialog over the polished dark UI
+2. Not accessible to screen readers in the same way as the app's custom modals
+3. The app already has a custom `ConsentModal` component (P13-FIX: MEDIUM-4) used for leaderboard consent — but it's not used for these destructive actions
+4. Some confirm messages lack context about what will be lost
+
+**Note:** The comment at line 1004 explicitly acknowledges this issue and a custom consent modal was built — but only applied to leaderboard consent, not the other 12 destructive actions.
+
+**Solution:** Replace remaining `window.confirm()` calls with the existing custom `ConsentModal` pattern. This ensures visual consistency and accessibility.
+
+#### F-P7-006 — Toast Feedback: Comprehensive ✅
+**Severity:** N/A (PASS)
+
+30+ toast notifications cover:
+- Success: data saved, imported, exported, submitted
+- Error: storage full, import failed, file too large, admin locked
+- Info: data synced, profile cleared, tab hints
+- Warning: storage usage approaching limit
+
+All use `toast?.addToast?.()` (optional chaining — safe if toast context missing).
+
+#### F-P7-007 — Empty States: Present ✅
+**Severity:** N/A (PASS)
+
+Tabs show meaningful empty states:
+- Tracker with no pulls: "No convene data yet" with import prompt
+- Empty pull log: Ghost pulse skeleton
+- No events: Fallback message
+- Empty collection: Loading indicator
+
+#### F-P7-008 — Loading States: Partially Covered
+**Severity:** LOW
+
+- Leaderboard data: `leaderboardLoading` state with loading indicator ✅
+- Collection images: `loading="lazy"` on images ✅
+- Firebase sync: No visible loading indicator (silent background)
+- Import processing: No progress indicator for large imports
+
+**Solution:** Add loading spinner during JSON import parsing (can be slow for 500+ pull records).
+
+---
+
+### §F3. Data Entry & Forms
+
+#### F-P7-009 — Pull Logging: Streamlined ✅
+**Severity:** N/A (PASS)
+
+The core interaction (logging pulls) uses banner-specific buttons with immediate state updates. No forms to fill out — just tap the banner and increment. Pity counter updates instantly. This is optimal for the use case (logging pulls during game sessions).
+
+#### F-P7-010 — Calculator Input: Good with Caveat
+**Severity:** LOW
+
+The calculator uses sliders and select dropdowns. Computation is deferred (150ms debounce) to avoid jank during slider drag ✅.
+
+**Minor concern:** The character selector dropdown contains 40+ characters. A searchable combobox would be more efficient for finding specific characters, but the current `<select>` works and is native-accessible.
+
+#### F-P7-011 — Data Import: Multiple Methods ✅
+**Severity:** N/A (PASS)
+
+Three import methods:
+1. File upload (drag-and-drop + file picker)
+2. Paste JSON text
+3. URL-based import (with validation)
+
+All validate JSON structure, check file size (MAX_IMPORT_SIZE_MB), and provide error messages on failure.
+
+---
+
+### §F4. Information Hierarchy
+
+#### F-P7-012 — Tab Content Organization: Logical ✅
+**Severity:** N/A (PASS)
+
+| Tab | Primary Focus | Secondary Info | Density |
+|-----|---------------|----------------|---------|
+| Tracker | Pity counters + quick stats | Pull log, luck badge | High |
+| Events | Active banners + countdowns | Daily/weekly resets | Medium |
+| Calc | Character resource calculator | DP table | High |
+| Plan | Banner planner + bookmarks | Income tracker, projections | High |
+| Stats | Analytics charts + statistics | Community comparison | Medium |
+| Collection | Character/weapon grid | Detail modals | High |
+| Teams | Team builder | Team presets | Medium |
+| Profile | Settings + data management | Visual customization, admin | High |
+
+The most-used features (Tracker, Events) are the first two tabs — correct prioritization.
+
+#### F-P7-013 — Progressive Disclosure: Good ✅
+**Severity:** N/A (PASS)
+
+Complex information is layered:
+- Collection grid shows thumbnails → tap for full detail modal
+- Planner shows summary → expand for bookmark details
+- Stats shows overview cards → scroll for detailed charts
+- Character detail modals have collapsible sections
+
+#### F-P7-014 — Profile Tab Overloaded
+**Severity:** LOW
+
+The Profile tab contains:
+- Personal settings (name, UID, server, profile picture)
+- Visual customization (OLED mode, animations, swipe, color overrides)
+- Data management (import, export, clear, reset)
+- Admin panel (password-protected)
+- Leaderboard opt-in
+- Firebase sync settings
+- Image URL overrides
+- Trophy name overrides
+- Banner data editor
+
+This is ~10 distinct feature groups in one scrollable tab. On mobile, users must scroll significantly to find specific settings.
+
+**Solution:** Consider sub-navigation within Profile (e.g., "Settings" | "Data" | "Customize" | "Admin" tabs-within-a-tab), or move visual customization to a separate Settings tab.
+
+---
+
+### §F5. Feedback & Delight
+
+#### F-P7-015 — Confetti on 5★ Pulls ✅
+**Severity:** N/A (PASS)
+
+Canvas confetti fires when a 5★ pull is logged (if animations enabled). This is a delightful touch that mirrors the gacha game's celebration moment.
+
+#### F-P7-016 — Haptic Feedback on Actions ✅
+**Severity:** N/A (PASS)
+
+`haptic()` provides tactile feedback on pull logging, destructive actions (warning vibrate), and button presses. Platform-detected with silent fallback.
+
+#### F-P7-017 — Achievement/Trophy System ✅
+**Severity:** N/A (PASS)
+
+Dynamic trophy system awards badges based on pull statistics (spending patterns, luck, pity outcomes). Each trophy has flavor text matching game lore. Customizable names. This adds replayability and engagement to what could be a dry tracking tool.
+
+---
+
+### P7 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P7-001 | §F1 | ✅ PASS | Tab navigation appropriate with keyboard + swipe support |
+| F-P7-002 | §F1 | LOW | No URL routing or deep linking |
+| F-P7-003 | §F1 | ✅ PASS | Swipe navigation thoughtfully implemented |
+| F-P7-004 | §F2 | ✅ PASS | Onboarding flow well-implemented |
+| F-P7-005 | §F2 | **MEDIUM** | **14 `window.confirm()` calls — inconsistent with custom modal pattern** |
+| F-P7-006 | §F2 | ✅ PASS | Toast feedback comprehensive (30+ notifications) |
+| F-P7-007 | §F2 | ✅ PASS | Empty states present |
+| F-P7-008 | §F2 | LOW | Import processing lacks progress indicator |
+| F-P7-009 | §F3 | ✅ PASS | Pull logging streamlined |
+| F-P7-010 | §F3 | LOW | Character selector could be searchable combobox |
+| F-P7-011 | §F3 | ✅ PASS | Multiple import methods |
+| F-P7-012 | §F4 | ✅ PASS | Tab content logically organized |
+| F-P7-013 | §F4 | ✅ PASS | Progressive disclosure well-implemented |
+| F-P7-014 | §F4 | LOW | Profile tab overloaded with ~10 feature groups |
+| F-P7-015 | §F5 | ✅ PASS | Confetti delight moment |
+| F-P7-016 | §F5 | ✅ PASS | Haptic feedback |
+| F-P7-017 | §F5 | ✅ PASS | Trophy/achievement system |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 1** (window.confirm inconsistency)
+**Low findings: 4**
+**Pass: 12**
+
+**Overall UX Assessment:** Strong information architecture with logical tab organization and progressive disclosure. The pull logging flow is optimally designed for the core use case. Main UX debt is the remaining `window.confirm()` calls that break the premium feel, and the overloaded Profile tab. Navigation is solid with keyboard, touch, and swipe support.
+
+*End of P7. Commit and push follows.*
