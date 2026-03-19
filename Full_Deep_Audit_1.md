@@ -1394,3 +1394,335 @@ The active players presence system writes to Firebase every 30 seconds. On slow/
 **Overall Performance Assessment:** The app has good defensive performance practices (deferred computation, memo'd components, debounced saves, bounded caches, timer cleanup). The main performance concerns are architectural: the monolithic component pattern causes unnecessary re-execution, dual canvas animations tax low-end devices, and Recharts should be lazy-loaded. On modern devices, the app likely performs well; on low-end mobile (2-4 core, limited GPU), the canvas animations are the primary bottleneck.
 
 *End of P5. Commit and push follows.*
+
+---
+
+## PART 6 — VISUAL DESIGN & POLISH
+
+> *This section combines §E (Visual Design) from app-audit with companion analysis from design-aesthetic-audit (§DS1-DS2, §DP0-DP2, §DC1, §DBI3) and art-direction-engine (§ADE) evaluation criteria.*
+
+### §E1. Design Language Classification
+
+**Style Genome:** Dark Glassmorphic — Sci-fi/Gacha Hybrid
+**Primary Influences:** Genshin Impact UI, Wuthering Waves in-game menus, Apple glassmorphism, Valorant tier displays
+**Mood Board Keywords:** Deep space, dark navy, amber accents, frosted glass, soft glow, data-rich, premium-feeling
+
+**Character System (§DP0-DP2):**
+- **Core personality:** Technical tracker that feels like it belongs *inside* the game
+- **Voice:** Quiet confidence — data-heavy but never cold; warm amber humanizes the sci-fi shell
+- **Anti-genericness (§DBI3):** Strong — the dual-canvas wave background, corner decorations on cards, conic-gradient luck badges, and pity ring SVGs are all distinctive. This does not look like a generic dashboard template.
+
+### §E2. Color Architecture (§DC1)
+
+#### F-P6-001 — Color Token System: Well-Structured ✅
+**Severity:** N/A (PASS)
+
+CSS custom properties define a coherent system:
+
+| Token Category | Tokens | Purpose |
+|---------------|--------|---------|
+| **Semantic colors** | `--color-gold`, `--color-pink`, `--color-cyan`, `--color-purple`, `--color-emerald`, `--color-red` | RGB triplets for `rgba()` flexibility |
+| **Surface colors** | `--bg-card`, `--bg-card-inner`, `--bg-btn`, `--bg-input`, `--bg-stat` | OLED-aware backgrounds |
+| **Border scale** | `--border-subtle` → `--border-default` → `--border-medium` → `--border-hover` → `--border-bright` | 5-step opacity scale (0.06 → 0.2) |
+| **Text colors** | `--text-body`, `--text-heading` | Body vs. headings |
+| **Shadow scale** | `--shadow-sm` → `--shadow-md` → `--shadow-lg` → `--shadow-xl` | 4-step depth scale |
+| **Motion tokens** | `--transition-fast`, `--transition-normal`, `--transition-slow` | Unified easing (cubic-bezier(0.16, 1, 0.3, 1)) |
+
+**OLED Mode Support:** Card, button, input, and stat backgrounds all have OLED variants (true black instead of deep navy). This is a premium feature rarely seen in web apps.
+
+#### F-P6-002 — Rarity Color Mapping: Game-Accurate ✅
+**Severity:** N/A (PASS)
+
+5★ items → Gold (`#edaf18` / `--color-gold`) with `.glow-gold` box-shadow
+4★ items → Purple (`#a855f7` / `--color-purple`) with `.glow-purple` box-shadow
+
+The glow intensities are **intentionally different** (5★ stronger than 4★), creating clear visual hierarchy. The `D-HIERARCHY-2` comment confirms this is deliberate design, not an inconsistency.
+
+#### F-P6-003 — Element Color Map: Comprehensive ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-components.jsx:114-141]
+
+All 8 elements (Fusion, Glacio, Electro, Aero, Spectro, Havoc, Encore, Celestial) have distinct bg/text/border/ring Tailwind classes. Colors are visually distinct even at small sizes.
+
+#### F-P6-004 — Hardcoded Colors Outside Token System
+**Severity:** LOW
+**Confidence:** [CODE: throughout App.jsx and appcore-providers.jsx]
+
+While the token system is well-defined, many inline styles still use raw hex/rgba values instead of CSS variables:
+- `rgba(237,175,24,...)` appears ~40+ times instead of `rgba(var(--color-gold),...)`
+- `rgba(255,255,255,0.08)` appears ~20+ times instead of `var(--border-default)`
+- `#edaf18`, `#fbbf24`, `#fef08a` used interchangeably for "gold" tones
+
+**Impact:** If gold accent color ever changes, 40+ locations need manual updates. The border tokens exist but aren't used consistently.
+
+**Solution:** Migrate inline `rgba(237,175,24,...)` to `rgba(var(--color-gold),...)` and border opacity values to `var(--border-*)` tokens. This is a mechanical find-and-replace task.
+
+---
+
+### §E3. Typography
+
+#### F-P6-005 — Font Hierarchy: Clear and Intentional ✅
+**Severity:** N/A (PASS)
+
+| Role | Font | Token | Usage |
+|------|------|-------|-------|
+| Display/Headings | Rajdhani | `--font-display` | Card headers, tab labels, buttons |
+| Data/Monospace | JetBrains Mono | `--font-data` | Pity counts, pull numbers, calculator inputs |
+| Body | System stack | (inline `.kuro-calc`) | Default prose, descriptions |
+
+Rajdhani's geometric letterforms match the sci-fi aesthetic perfectly. JetBrains Mono for data ensures tabular number alignment.
+
+#### F-P6-006 — Type Scale: Consistent but Small
+**Severity:** LOW
+**Confidence:** [CODE: throughout appcore-components.jsx and App.jsx]
+
+The app uses a narrow type scale:
+- `text-[9px]` — Labels, sublabels, micro-captions (very frequent)
+- `text-[10px]` — Tags, badges, combat profile details
+- `text-xs` (12px) — Echo names, stat values
+- `text-sm` (14px) — Body text, descriptions
+- `text-xl` (20px) — Character names in modals
+- `text-2xl` (24px) — Section headers
+
+**Concern:** `text-[9px]` is extremely small (below the typical 10px minimum for readability). It's used extensively for labels, timer sub-labels, and material names. On high-DPI mobile screens this is acceptable; on 1080p desktop monitors at standard zoom, it's at the edge of readability.
+
+**Mitigating factor:** The app is mobile-first, and these micro-labels are supplementary information (not primary content). The contrast is good (gray-300/400 on dark backgrounds).
+
+#### F-P6-007 — Font Weight Distribution: Good ✅
+**Severity:** N/A (PASS)
+
+Headings use `font-bold` (700) or `font-semibold` (600). Body uses default (400). Data displays use `font-bold` for emphasis. This creates clear visual hierarchy without overusing bold.
+
+---
+
+### §E4. Component Design System
+
+#### F-P6-008 — Card System (`.kuro-card`): Premium Quality ✅
+**Severity:** N/A (PASS)
+
+The card component is the visual backbone. It features:
+
+1. **Glassmorphic background:** `backdrop-filter: blur(4px)` + semi-transparent bg
+2. **Layered shadows:** Triple box-shadow (depth + inner glow + ambient light)
+3. **Top shimmer line:** Pseudo-element `::after` with gradient + shimmer animation
+4. **Corner decorations:** `::before` and `::after` on `.kuro-card-inner` draw corner brackets (top-right, bottom-left)
+5. **Hover state:** Subtle lift (`translateY(-2px)`) + enhanced glow + gold ambient light
+6. **Active state:** Press feedback (`scale(0.98)`) with 0.1s snap
+7. **Border-radius:** 16px outer, 15px inner (1px offset for border)
+
+This is a thoughtful, multi-layered card design that feels premium without being garish.
+
+#### F-P6-009 — Button System (`.kuro-btn`): Well-Crafted ✅
+**Severity:** N/A (PASS)
+
+Buttons feature:
+- Glassmorphic backdrop blur (8px)
+- Radial-gradient ripple on hover (`::before` pseudo-element)
+- Disabled state with desaturated cool-shifted opacity (§DP3 compliance)
+- Active color variants: `active-gold`, `active-cyan`, `active-pink` with matching glow + text-shadow
+- SVG icon hover glow (`filter: drop-shadow(0 0 3px currentColor)`) — applied globally via CSS
+
+#### F-P6-010 — Tab Navigation: Polished ✅
+**Severity:** N/A (PASS)
+
+- Sliding indicator bar tracks active tab position with spring easing
+- Tab content transitions with `tabFadeIn` (0.35s)
+- Child cards stagger-animate (`cardSlideIn` with 50ms delay per card)
+- Tab icons get contextual glow colors per tab (gold, cyan, pink, etc.)
+
+#### F-P6-011 — Pity Ring Component: Distinctive ✅
+**Severity:** N/A (PASS)
+
+SVG-based circular progress with:
+- Animated `stroke-dashoffset` with spring easing (0.8s)
+- Soft pity zone visualization (orange arc overlay starting at soft pity)
+- Drop-shadow glow matched to ring color
+- Mono font for centered count display
+- Pulse animation when in soft pity zone
+
+This is a standout component — visually distinct and functionally informative.
+
+#### F-P6-012 — Luck Badge: Creative ✅
+**Severity:** N/A (PASS)
+
+Conic-gradient border animation (8s rotation) with inner background mask. Creates an animated "holographic card border" effect. Applied to luck rating display.
+
+---
+
+### §E5. Background & Atmosphere
+
+#### F-P6-013 — Dual Canvas Background: Atmospheric ✅
+**Severity:** N/A (PASS from design perspective; see P5 for performance)
+
+**Layer A (BackgroundGlow):** Downscaled wave computation → blur → full canvas. Creates a slowly shifting color field (navy/purple/gold undertones) that gives the page a "living" background.
+
+**Layer B (TriangleMirrorWave):** Triangular mesh with 3 independent wave functions. Creates a geometric shimmer overlay reminiscent of Wuthering Waves' UI aesthetic.
+
+**Layer C (TabBackground):** Static radial gradient with dark-space base color. Provides the fallback when animations are disabled.
+
+The three layers create depth: static dark → ambient color → geometric overlay → glassmorphic cards. This is premium-tier background work for a web app.
+
+#### F-P6-014 — Animation Respect: Excellent ✅
+**Severity:** N/A (PASS)
+
+- `prefers-reduced-motion` detected on init → `animationsEnabled` defaults to false
+- `.no-animations` class kills all CSS animations (`animation-duration: 0.01ms !important`)
+- Canvas animations check `animationsEnabled` flag and clear canvas if disabled
+- User-facing toggle in Profile tab
+- Onboarding offers animation toggle as a choice
+
+---
+
+### §E6. Interaction Design
+
+#### F-P6-015 — Haptic Feedback: Platform-Aware ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-data.js — haptic()]
+
+`haptic()` calls `navigator.vibrate(10)` for micro-feedback on touch interactions. Feature-detected, fails silently on desktop.
+
+#### F-P6-016 — Touch Optimization: Thorough ✅
+**Severity:** N/A (PASS)
+
+- `touch-action: manipulation` on all interactive elements (eliminates 300ms delay)
+- `-webkit-tap-highlight-color: transparent` (removes blue flash)
+- Minimum 44px touch targets for selects on `pointer: coarse`
+- Minimum 36px touch targets for buttons on `pointer: coarse`
+- Close buttons use `min-w-[36px] min-h-[36px]` explicitly
+
+#### F-P6-017 — Transition Timing: Consistent ✅
+**Severity:** N/A (PASS)
+
+All transitions use the same cubic-bezier(0.16, 1, 0.3, 1) — an "overshoot-then-settle" spring curve. This creates a cohesive, bouncy-but-controlled motion language. Three speeds: fast (0.15s), normal (0.25s), slow (0.4s).
+
+---
+
+### §E7. Scrollbar & Overflow Styling
+
+#### F-P6-018 — Scrollbar Customization: Complete ✅
+**Severity:** N/A (PASS)
+
+- Webkit: 8px width, dark track (#0f1520), subtle thumb (#2a3548)
+- Firefox: `scrollbar-width: thin; scrollbar-color: #2a3548 #0f1520`
+- Horizontal nav: scrollbars completely hidden (all browsers)
+- Vertical overflow containers: ultra-thin 3px scrollbar
+- Selection color: blue tint matching focus ring
+
+---
+
+### §E8. Visual Hierarchy & Information Density
+
+#### F-P6-019 — Information Density: High but Managed
+**Severity:** LOW (observation, not defect)
+
+The app packs significant data into each screen:
+- Tracker tab: pity rings + pull log + quick stats + luck badge
+- Events tab: countdown timers + phase timers + daily/weekly reset
+- Calculator tab: character selector + DP table + slider controls + resource summary
+- Collection tab: 100+ character grid + detail modals with 5 sections each
+
+This density is appropriate for the target audience (gacha enthusiasts who track pull statistics), but new users may find it overwhelming. The onboarding modal partially addresses this.
+
+#### F-P6-020 — z-index Architecture: Documented and Structured ✅
+**Severity:** N/A (PASS)
+
+Comment in KuroStyles documents the z-index scale:
+```
+bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000)
+```
+
+Actual usage follows this hierarchy consistently. Canvas backgrounds at z:1-2, cards at z:5, content at z:5, sticky header at z:50, modals at z:[100], toasts at z:9999.
+
+---
+
+### §E9. Professionalism & Polish Signals
+
+#### F-P6-021 — Polish Indicators (Positive) ✅
+
+| Signal | Evidence |
+|--------|----------|
+| **Loading states** | Skeleton/ghost pulse animation for empty states |
+| **Error image handling** | `visibility: hidden` (not `display: none`) to prevent CLS |
+| **Empty states** | Dedicated empty state designs with icons and messages |
+| **Toasts** | 4-variant toast system (success/error/info/warning) with auto-dismiss |
+| **Focus management** | Focus trap in modals, escape key to close |
+| **Onboarding** | First-run modal with server/notification/animation preferences |
+| **PWA** | Installable with dynamic manifest, icons, offline support |
+| **OLED mode** | True black variant for AMOLED screens |
+| **Data export** | CSV export + ID card canvas generation |
+| **Confetti** | Canvas confetti on 5★ pulls (with animation toggle) |
+
+#### F-P6-022 — Anti-Generic Design Elements (§DBI3)
+
+| Element | Uniqueness Factor |
+|---------|-------------------|
+| Corner bracket decorations on cards | Sci-fi aesthetic not in any CSS framework |
+| Conic-gradient rotating luck badges | Custom animation, not a library |
+| Dual-canvas wave background | Procedurally generated, unique to this app |
+| Pity ring with soft-pity zone overlay | Domain-specific visualization |
+| Staggered card entrance animations | Timing offsets create "dealt cards" feel |
+| Gold accent bar on card headers (`::before`) | Signature design detail |
+
+**Anti-genericness score: 8/10** — This app has a strong visual identity. The main "generic" elements are Tailwind utility classes for spacing/layout (which is fine — genericness in structure, uniqueness in surface).
+
+---
+
+### §E10. Design Issues & Opportunities
+
+#### F-P6-023 — Inconsistent Border Radius
+**Severity:** LOW
+
+Cards use `rounded-2xl` (16px), buttons use `rounded-xl` (12px), badges use `rounded-lg` (8px), pills use `rounded-full`. While this creates implicit hierarchy, some collection grid items use `rounded-lg` while others use `rounded-xl` inconsistently.
+
+**Solution:** Document the radius scale: `full` → `2xl` → `xl` → `lg` → `md` and ensure consistent usage per component type.
+
+#### F-P6-024 — Gold Color Inconsistency
+**Severity:** LOW
+
+Three gold tones are used interchangeably:
+- `#edaf18` — Primary gold (CSS token, pity ring, card glow)
+- `#fbbf24` — Tailwind `amber-400` (some badges, counters)
+- `#fef08a` — Tailwind `yellow-200` (active button text, some labels)
+
+These serve slightly different purposes (base, accent, highlight) but aren't documented as a deliberate scale. Adding `--color-gold-light` and `--color-gold-bright` tokens would formalize the intent.
+
+---
+
+### P6 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P6-001 | §E2 | ✅ PASS | Color token system well-structured with OLED support |
+| F-P6-002 | §E2 | ✅ PASS | Rarity color mapping game-accurate with intentional hierarchy |
+| F-P6-003 | §E2 | ✅ PASS | Element color map comprehensive (8 elements) |
+| F-P6-004 | §E2 | LOW | ~40+ hardcoded gold `rgba()` values outside token system |
+| F-P6-005 | §E3 | ✅ PASS | Font hierarchy clear (Rajdhani/JetBrains Mono/System) |
+| F-P6-006 | §E3 | LOW | `text-[9px]` extensively used — edge of readability on desktop |
+| F-P6-007 | §E3 | ✅ PASS | Font weight distribution creates clear hierarchy |
+| F-P6-008 | §E4 | ✅ PASS | Card system premium quality (glassmorphic + shimmer + corners) |
+| F-P6-009 | §E4 | ✅ PASS | Button system well-crafted with disabled/active states |
+| F-P6-010 | §E4 | ✅ PASS | Tab navigation polished with sliding indicator |
+| F-P6-011 | §E4 | ✅ PASS | Pity ring distinctive and informative |
+| F-P6-012 | §E4 | ✅ PASS | Luck badge creative conic-gradient animation |
+| F-P6-013 | §E5 | ✅ PASS | Dual canvas background atmospheric |
+| F-P6-014 | §E5 | ✅ PASS | Animation respect (reduced-motion, toggle, onboarding) |
+| F-P6-015 | §E6 | ✅ PASS | Haptic feedback platform-aware |
+| F-P6-016 | §E6 | ✅ PASS | Touch optimization thorough (44/36px targets) |
+| F-P6-017 | §E6 | ✅ PASS | Transition timing consistent (unified spring curve) |
+| F-P6-018 | §E7 | ✅ PASS | Scrollbar customization complete (Webkit + Firefox) |
+| F-P6-019 | §E8 | LOW | High information density (appropriate for audience) |
+| F-P6-020 | §E8 | ✅ PASS | z-index architecture documented and structured |
+| F-P6-021 | §E9 | ✅ PASS | Multiple polish signals (loading states, error handling, PWA) |
+| F-P6-022 | §E9 | ✅ PASS | Strong anti-genericness (8/10) |
+| F-P6-023 | §E10 | LOW | Inconsistent border radius across similar components |
+| F-P6-024 | §E10 | LOW | Three gold tones used without documented scale |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 0**
+**Low findings: 5**
+**Pass: 19**
+
+**Overall Visual Design Assessment:** This is an exceptionally well-crafted visual design for a tracker/toolkit web app. The glassmorphic card system, dual-canvas background, pity ring visualizations, and overall dark sci-fi aesthetic create a premium feel that matches the source game's visual language. The design token system is nearly complete — the main gap is adopting the tokens more consistently in inline styles. Typography is intentionally small for density, which suits the mobile-first gacha audience. The animation system is respectful of user preferences and technically sound. **Design maturity: 9/10.**
+
+*End of P6. Commit and push follows.*
