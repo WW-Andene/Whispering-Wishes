@@ -2071,6 +2071,65 @@ The DPS comparison neon bar charts use hardcoded hex: `#22c55e` (emerald), `#06b
 
 The Teams tab is laid out as `space-y-3` (single column). On desktop at 1440px, the Team Builder card, Team Overview card, DPS Comparison card, and Team Suggestions card all stack vertically at full width (~1176px). The Team Builder + Team Suggestions could sit side-by-side on desktop.
 
+#### F-P6-059 — Team Selector Tabs Missing ARIA Tab Pattern
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx:5148-5167 vs 3224-3238]
+
+The team selector tabs (Team 1/2/3/4/5 buttons) are functionally tabs — they switch which team is displayed. But they are implemented as plain `<button>` elements inside a `<div className="flex gap-1">` with **no ARIA tab semantics**:
+
+- No `role="tablist"` on the container
+- No `role="tab"` on individual buttons
+- No `aria-selected` attribute
+- No `tabIndex={0/-1}` for active/inactive
+- No arrow key navigation handler
+
+**Compare with Tracker sub-tabs** (App.jsx:3224-3238) which correctly implement the full ARIA tabs pattern: `role="tablist"`, `role="tab"`, `aria-selected`, `tabIndex` management, and `ArrowLeft`/`ArrowRight` keyboard navigation.
+
+This is the same interaction pattern with completely different accessibility treatment. A screen reader user cannot navigate between teams using the keyboard arrow pattern.
+
+**Solution:** Add `role="tablist"` to the container div, `role="tab"` + `aria-selected` + `tabIndex` to each team button, and an `onKeyDown` handler for arrow navigation — identical to the Tracker pattern.
+
+#### F-P6-060 — Teams Tab ARIA Coverage: 4 Attributes vs Calculator's 23
+**Severity:** MEDIUM
+**Confidence:** [CODE: Teams section has 4 aria-label, Calculator has 15 aria-label + 8 other ARIA]
+
+Quantitative comparison of accessibility investment:
+
+| Metric | Calculator Tab | Teams Tab | Ratio |
+|--------|---------------|-----------|-------|
+| `aria-label` attributes | 15 | 4 | 3.75× less |
+| `role=` attributes | 6 | 0 | Missing entirely |
+| `aria-selected` / `aria-pressed` | 7 | 0 | Missing entirely |
+| `tabIndex` management | 4 | 1 (tabpanel only) | Missing on tabs |
+| Keyboard navigation handlers | 2 | 0 | Missing entirely |
+| Total ARIA attributes | 23 | 4 | **5.75× less** |
+
+The Teams tab has the lowest ARIA density of any tab in the app. Missing: team selector tab semantics, character slot labels, equipment slot labels, comparison entry labels, sequence button group label.
+
+#### F-P6-061 — 62 Inline Styles vs Design System in Teams Tab
+**Severity:** MEDIUM (systemic)
+**Confidence:** [CODE: App.jsx:5032-6455 — 62 `style={{` instances, 11 `kuro-*` usages]
+
+The Teams tab uses **62 inline `style={{}}` objects** and only **11 `kuro-*` design system class** references. For comparison, the Tracker tab (a shorter section) uses **1 inline style** and the Calculator tab uses **kuro-btn/kuro-input/kuro-label** extensively.
+
+The 62 inline styles include:
+- 18 `boxShadow` definitions with raw `rgba()` values
+- Repeated `background: 'var(--bg-btn)'` and `background: 'var(--bg-stat)'` on elements that should use `.kuro-btn` or `.kuro-stat` classes
+- Element colors inlined as `style={{ color: getElementColor(...), background: getElementBg(...) }}` instead of using the existing `DETAIL_ELEMENT_COLORS` Tailwind class map
+
+This makes the Teams tab visually divergent from the rest of the app and much harder to maintain — a token change to `.kuro-btn` won't propagate to Teams.
+
+#### F-P6-062 — 20 Instances of text-[6px] Only in Teams Tab
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:6304-6327]
+
+The character selector modal in the Teams tab uses `text-[6px]` for:
+- Element dot labels (`{el?.[0]}`) at App.jsx:6306
+- Recommended badges (`★ REC`) at App.jsx:6321
+- Role tags at App.jsx:6327
+
+6px is **not used anywhere else in the entire app**. This is below even the 7px equipment labels already flagged. At 6px, text is invisible on standard mobile screens.
+
 ---
 
 ### §E18. Border Radius (§ADE §SHAPE)
@@ -2161,12 +2220,16 @@ Skeleton loaders mirror real component radii. Inner/outer card math is correct. 
 | F-P6-056 | §E19 | LOW | DPS comparison bars use hardcoded hex, bypass token system |
 | F-P6-057 | §E19 | LOW | Disclaimer text-gray-600 at 2.6:1 contrast — fails AA |
 | F-P6-058 | §E19 | LOW | No desktop grid layout for Teams tab |
-| F-P6-059 | §E18 | ✅ PASS | Border radius hierarchy sound, card math correct |
+| F-P6-059 | §E19 | **MEDIUM** | **Team selector tabs missing ARIA tab pattern (vs Tracker's full implementation)** |
+| F-P6-060 | §E19 | **MEDIUM** | **Teams ARIA coverage 4 attrs vs Calculator's 23 — 5.75× deficit** |
+| F-P6-061 | §E19 | **MEDIUM** | **62 inline styles vs 11 kuro-* class usages — bypasses design system** |
+| F-P6-062 | §E19 | LOW | text-[6px] in selector modal — smallest text in entire app, invisible |
+| F-P6-063 | §E18 | ✅ PASS | Border radius hierarchy sound, card math correct |
 
 **Critical findings: 0**
 **High findings: 0**
-**Medium findings: 11** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text, touch target violations, missing disabled states)
-**Low findings: 24**
+**Medium findings: 14** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text, touch target violations, missing disabled states)
+**Low findings: 25**
 **Pass: 23**
 
 **Overall Visual Design Assessment (Revised):** The app has an exceptionally strong visual *identity* in its established tabs — the glassmorphic cards, dual-canvas backgrounds, pity rings, and conic-gradient badges are distinctive and premium. However, the deep audit reveals **two distinct quality tiers**:
@@ -3121,7 +3184,10 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | 160px unexplained right padding (desktop) | LOW | Small (15 min) | **P3** — Remove or document |
 | Teams tab bypasses .kuro-btn system | MEDIUM | Small (2 hours) | **P2** — Migrate to `.kuro-btn` or `.kuro-btn-sm` |
 | Duplicate element color maps (3 copies) | MEDIUM | Small (1 hour) | **P2** — Extract shared utility |
-| Teams text-[7px] equipment labels | MEDIUM | Small (30 min) | **P2** — Increase to minimum 9px |
+| Teams text-[7px]/[6px] equipment labels | MEDIUM | Small (30 min) | **P2** — Increase to minimum 9px |
+| Teams tab missing ARIA tab pattern | MEDIUM | Small (1 hour) | **P1** — Copy Tracker's ARIA pattern |
+| Teams ARIA coverage 5.75× deficit | MEDIUM | Medium (2 hours) | **P2** — Add aria-label to all controls |
+| Teams 62 inline styles bypass design system | MEDIUM | Large (1 day) | **P1** — Migrate to kuro-* classes |
 | No error state class for inputs | LOW | Small (30 min) | **P3** — Add `.kuro-input-error` |
 | Progress bar heights inconsistent | LOW | Small (1 hour) | **P3** — Standardize to h-1.5 or h-2 |
 | Divider system underutilized | LOW | Small (1 hour) | **P4** — Migrate `border-b` to `.kuro-divider` |
@@ -3140,9 +3206,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 |----------|-------|----------|
 | **CRITICAL** | **0** | — |
 | **HIGH** | **0** | — |
-| **MEDIUM** | **19** | Listed below |
-| **LOW** | **37** | See individual parts |
-| **PASS** | **87** | — |
+| **MEDIUM** | **22** | Listed below |
+| **LOW** | **38** | See individual parts |
+| **PASS** | **88** | — |
 
 ### All MEDIUM Findings
 
@@ -3164,6 +3230,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | F-P6-046 | P6 | Duplicate element color maps — 3 copies (DRY violation) | 1 hour |
 | F-P6-047 | P6 | Teams buttons bypass .kuro-btn — visual inconsistency | 2 hours |
 | F-P6-053 | P6 | Teams equipment grid uses text-[7px] — unreadable | 30 min |
+| F-P6-059 | P6 | Team selector tabs missing ARIA tab pattern | 1 hour |
+| F-P6-060 | P6 | Teams ARIA coverage 5.75× lower than other tabs | 2 hours |
+| F-P6-061 | P6 | 62 inline styles bypass design system in Teams tab | 1 day |
 | F-P7-005 | P7 | 14 `window.confirm()` calls inconsistent with custom modal | 2-3 hours |
 | F-P8-009 | P8 | text-gray-500 fails WCAG AA contrast (3.6:1, 40+ instances) | 1-2 hours |
 | F-P10-001 | P10 | Monolithic 8,218-line App.jsx (= P5-004) | 2-3 days |
@@ -3204,4 +3273,4 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 
 ---
 
-> **Audit complete.** 143 findings evaluated across 13 domains. 0 critical, 0 high, 19 medium (18 unique), 37 low, 87 pass. The established tabs demonstrate strong craft — the visual identity, PWA infrastructure, and accessibility are well above typical standards. The **Teams tab** (newest) is the primary quality outlier: it bypasses the `.kuro-btn` design system, introduces 7px text (below readability floor), duplicates color maps, and has multiple touch target violations. Cross-cutting debt: spacing grid discipline (25% off-grid), shadow token adoption (12%), and desktop responsive typography remain open. The gap between the identity quality of mature tabs and the craft consistency of the newest tab is the clearest signal that a design system enforcement process would yield high returns.
+> **Audit complete.** 148 findings evaluated across 13 domains. 0 critical, 0 high, 22 medium (21 unique), 38 low, 88 pass. The established tabs demonstrate strong craft — the visual identity, PWA infrastructure, and accessibility are well above typical standards. The **Teams tab** (newest) is the primary quality outlier with **8 of 22 medium findings**: it bypasses the `.kuro-btn` design system (62 inline styles vs 11 kuro-* usages), introduces 6-7px text (below readability floor), duplicates color maps 3 times, has no ARIA tab semantics on its selector (vs Tracker's full implementation), and has 5.75× less ARIA coverage than comparable tabs. Cross-cutting debt: spacing grid discipline (25% off-grid), shadow token adoption (12%), and desktop responsive typography remain open. **The Teams tab needs a dedicated design system alignment pass before adding more features to it.**
