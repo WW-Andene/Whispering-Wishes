@@ -1955,6 +1955,124 @@ In 2-column desktop layout at 1440px, each card content area is ~527px wide. Bod
 
 ---
 
+### §E19. Teams Tab — Deep Audit (Newest Tab)
+
+> *Focused audit of the Teams tab (App.jsx:5032-6455) — identified as the newest and least polished section.*
+
+#### F-P6-046 — Duplicate Element Color Maps (DRY Violation)
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx:5102-5113 vs appcore-components.jsx:114-141]
+
+The Teams tab defines **three inline element-color functions** (`getElementColor`, `getElementBg`, `getElementBorder`) at App.jsx:5102-5113 that duplicate the `DETAIL_ELEMENT_COLORS` map already defined in appcore-components.jsx:114-141. Additionally, element color hex values are hardcoded again at App.jsx:6122 inside the Team Suggestions JSX as inline objects `{ Fusion: '#f97316', Electro: '#a855f7', ... }`.
+
+**Impact:** Three copies of element-to-color mapping means color changes require updating 3+ locations. The Team Suggestions section (App.jsx:6122) even inlines the map as an anonymous object **inside JSX** — so it's recreated on every render.
+
+**Solution:** Import and use the existing `DETAIL_ELEMENT_COLORS` or extract a shared utility from `appcore-data.js`.
+
+#### F-P6-047 — Teams Tab Uses Different Button Styling Than Rest of App
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx:5130,5137 vs appcore-providers.jsx:855-910]
+
+The "Compare" and "Clear" action buttons in the Teams tab header (App.jsx:5130-5141) use **inline Tailwind classes + `style={{ background: 'var(--bg-btn)' }}`** instead of the `.kuro-btn` component used everywhere else:
+
+```jsx
+className="px-2 py-1 rounded-lg text-[9px] text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+style={{ background: 'var(--bg-btn)' }}
+```
+
+Compare this to the standard `.kuro-btn` which provides: glassmorphic backdrop-blur, radial-gradient ripple on hover, consistent padding (10px 12px), border-radius (12px), and shadow (`var(--shadow-md)`).
+
+The Teams buttons have:
+- **No backdrop-blur** (missing glassmorphic treatment)
+- **No ripple effect** (missing `::before` pseudo-element)
+- **Different border-radius** (rounded-lg = 8px vs kuro-btn = 12px)
+- **Different padding** (px-2 py-1 = 8px/4px vs 10px/12px)
+- **Different font size** (text-[9px] vs 11px)
+- **No box-shadow** (missing `var(--shadow-md)`)
+
+The same issue applies to: team selector tabs (5155), sequence buttons (5823), and team suggestion buttons (6113).
+
+**Solution:** Use `.kuro-btn` with appropriate active-color variants, or create a `.kuro-btn-sm` for compact contexts.
+
+#### F-P6-048 — Character Selector Modal Close Button Too Small
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:6160]
+
+The character selector modal close button is `w-8 h-8` (32×32px) — below the 36px minimum used by other modals (appcore-components.jsx:211,524). The weapon selector close button is also `w-8 h-8` (App.jsx:6359).
+
+#### F-P6-049 — 3-Column Grid Forces Character Cards to 160px on Mobile
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:5170]
+
+The team builder grid uses `grid-cols-3 gap-2` with `height: '160px'`. On 320px screens: each card ≈ 97px wide × 160px tall (1:1.65 ratio). This is usable but the fixed height creates awkward proportions on very narrow screens compared to the collection grid which uses `aspect-[3/4]` for responsive sizing.
+
+#### F-P6-050 — Remove Slot Button Violates Touch Targets
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:5210-5215]
+
+The red "X" button to remove a character from a slot is `w-5 h-5` (20×20px) — identical to the admin mini-panel buttons flagged in F-P6-035. It uses `sm:opacity-0 sm:group-hover:opacity-100` which means it's hidden by default on desktop and only shows on hover — but on mobile it's always visible at 20×20px.
+
+#### F-P6-051 — Selector Modal Search Input Not Using .kuro-input
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:6168-6175 vs 6362-6367]
+
+The character selector search input (App.jsx:6168-6175) uses raw Tailwind utilities instead of `.kuro-input`. The weapon selector search (App.jsx:6362-6367) correctly uses `.kuro-input`. Inconsistent within the same tab.
+
+#### F-P6-052 — Filter Selects Missing aria-label on 2 of 5
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:6221-6249]
+
+Element, rarity, and damage focus selects have `aria-label` attributes. But the buff filter (App.jsx:6222) and debuff filter (App.jsx:6237) selects are **missing `aria-label`**. This is an accessibility gap within the same filter row.
+
+#### F-P6-053 — Equipment Grid Uses text-[7px] — Below Any Readability Minimum
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx:5795,5800,5811]
+
+The weapon slot label and echo slot labels use `text-[7px]`:
+```jsx
+<span className="text-[7px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+<span className="text-[7px] text-gray-500">Weapon</span>
+<span className="text-[7px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
+```
+
+7px text is **unreadable on virtually all screens**. The smallest size used anywhere else in the app is 8px (already flagged). 7px is a new minimum found only in the Teams tab.
+
+#### F-P6-054 — Sonata Set Select Uses text-[8px] Without .kuro-input
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:5852-5854]
+
+The Sonata Set `<select>` uses `text-[8px]` with raw Tailwind instead of `.kuro-input`. At 8px, select option text is barely legible, especially on native mobile dropdown rendering where the OS may not respect the CSS font-size for the dropdown options list.
+
+#### F-P6-055 — Sequence Buttons (S0-S6) Too Small for Touch
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:5818-5836]
+
+Seven sequence buttons in a `flex gap-px` row with `py-0.5` (2px vertical padding) and `text-[8px]`. On a typical card width (~170px on mobile), each button is ~24px × ~16px — well below 44px minimum. These are functional controls that affect damage calculations.
+
+#### F-P6-056 — DPS Comparison Bar Chart Uses Hardcoded Colors
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:6006-6044]
+
+The DPS comparison neon bar charts use hardcoded hex: `#22c55e` (emerald), `#06b6d4` (cyan) with inline shadows `#22c55e50`, `#06b6d480`. These bypass both the CSS token system and the `getElementColor` map. All comparison bars are the same color regardless of team composition.
+
+#### F-P6-057 — Accuracy Disclaimer Uses text-gray-600 on Dark Background
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:5945]
+
+```jsx
+<p className="text-[9px] text-gray-600 text-center mt-1">Includes: buff uptimes...</p>
+```
+
+`text-gray-600` (#4b5563) on `#080c14` background = **2.6:1 contrast ratio** — fails WCAG AA even for decorative text. This is worse than the `text-gray-500` issue already flagged in P8.
+
+#### F-P6-058 — No Desktop Grid for Teams Tab
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:5036 — `space-y-3` only, no `desktop-grid-*`]
+
+The Teams tab is laid out as `space-y-3` (single column). On desktop at 1440px, the Team Builder card, Team Overview card, DPS Comparison card, and Team Suggestions card all stack vertically at full width (~1176px). The Team Builder + Team Suggestions could sit side-by-side on desktop.
+
+---
+
 ### §E18. Border Radius (§ADE §SHAPE)
 
 #### F-P6-045 — Border Radius Hierarchy: Sound ✅
@@ -2030,15 +2148,36 @@ Skeleton loaders mirror real component radii. Inner/outer card math is correct. 
 | F-P6-042 | §E16 | LOW | Divider system defined but underutilized |
 | F-P6-043 | §E17 | LOW | Planner tab single-column on desktop |
 | F-P6-044 | §E17 | LOW | Line length ~88-110 chars on desktop (upper end) |
-| F-P6-045 | §E18 | ✅ PASS | Border radius hierarchy sound, card math correct |
+| F-P6-046 | §E19 | **MEDIUM** | **Duplicate element color maps — 3 copies across codebase (DRY)** |
+| F-P6-047 | §E19 | **MEDIUM** | **Teams buttons bypass .kuro-btn — no glassmorphism, wrong radius/padding/shadow** |
+| F-P6-048 | §E19 | LOW | Selector modal close buttons 32px (below 36px minimum elsewhere) |
+| F-P6-049 | §E19 | LOW | Fixed 160px height on 3-col grid instead of aspect-ratio |
+| F-P6-050 | §E19 | LOW | Remove-slot button 20×20px (same violation as F-P6-035) |
+| F-P6-051 | §E19 | LOW | Character search input not using .kuro-input (weapon search does) |
+| F-P6-052 | §E19 | LOW | 2 of 5 filter selects missing aria-label |
+| F-P6-053 | §E19 | **MEDIUM** | **text-[7px] in equipment grid — unreadable (new app minimum)** |
+| F-P6-054 | §E19 | LOW | Sonata Set select uses text-[8px] without .kuro-input |
+| F-P6-055 | §E19 | LOW | Sequence buttons S0-S6 ~24×16px — far below touch targets |
+| F-P6-056 | §E19 | LOW | DPS comparison bars use hardcoded hex, bypass token system |
+| F-P6-057 | §E19 | LOW | Disclaimer text-gray-600 at 2.6:1 contrast — fails AA |
+| F-P6-058 | §E19 | LOW | No desktop grid layout for Teams tab |
+| F-P6-059 | §E18 | ✅ PASS | Border radius hierarchy sound, card math correct |
 
 **Critical findings: 0**
 **High findings: 0**
-**Medium findings: 8** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text, touch target violations, missing disabled states)
-**Low findings: 14**
-**Pass: 22**
+**Medium findings: 11** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text, touch target violations, missing disabled states)
+**Low findings: 24**
+**Pass: 23**
 
-**Overall Visual Design Assessment (Revised):** The app has an exceptionally strong visual *identity* — the glassmorphic cards, dual-canvas backgrounds, pity rings, and conic-gradient badges are distinctive and premium. However, the deep audit reveals significant **craft-layer debt** across three areas: (1) **Spatial discipline** — the spacing system drifts from its own 4px grid in ~25% of values, the shadow token system is defined but barely adopted (12%), and pure black shadows bypass the calibrated palette; (2) **Responsive typography** — 434 sub-12px text instances are not scaled up on desktop, and the sidebar uses 8px text below any readability minimum; (3) **Component state completeness** — inputs/selects/sliders lack disabled visual states, secondary controls fall below touch target minimums, and progress bars use inconsistent heights. The surface design identity is 9/10; the spatial and token **discipline** is 6/10; the **component state coverage** is 7/10. **Design maturity: 7/10.**
+**Overall Visual Design Assessment (Revised):** The app has an exceptionally strong visual *identity* in its established tabs — the glassmorphic cards, dual-canvas backgrounds, pity rings, and conic-gradient badges are distinctive and premium. However, the deep audit reveals **two distinct quality tiers**:
+
+**Tier 1 — Mature tabs (Tracker, Events, Calc, Collection, Profile):** Strong craft. Token usage, consistent `.kuro-*` component system, proper ARIA, responsive grids.
+
+**Tier 2 — Teams tab (newest):** Significant craft debt. Bypasses the `.kuro-btn` system entirely (inline Tailwind buttons without glassmorphism), introduces text-[7px] (new app minimum — unreadable), duplicates element color maps 3 times, has multiple touch target violations (S0-S6 sequence buttons at ~16px height, remove buttons at 20×20px), and uses `text-gray-600` at 2.6:1 contrast.
+
+Cross-cutting debt: spacing grid drifts ~25% off the 4px base, shadow tokens adopted at only 12%, 17 pure black shadows bypass palette, desktop responsive typography unscaled.
+
+**Design identity: 9/10. Spatial/token discipline: 6/10. Component consistency: 5/10 (Teams tab drags average down). Design maturity: 6.5/10.**
 
 *End of P6. Commit and push follows.*
 
@@ -2980,6 +3119,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | Input/select/slider disabled state missing | MEDIUM | Small (1 hour) | **P2** — Add `:disabled` CSS rules to match `.kuro-btn` |
 | 30+ `!important` in desktop CSS | LOW | Medium (half day) | **P3** — Refactor to class-based approach |
 | 160px unexplained right padding (desktop) | LOW | Small (15 min) | **P3** — Remove or document |
+| Teams tab bypasses .kuro-btn system | MEDIUM | Small (2 hours) | **P2** — Migrate to `.kuro-btn` or `.kuro-btn-sm` |
+| Duplicate element color maps (3 copies) | MEDIUM | Small (1 hour) | **P2** — Extract shared utility |
+| Teams text-[7px] equipment labels | MEDIUM | Small (30 min) | **P2** — Increase to minimum 9px |
 | No error state class for inputs | LOW | Small (30 min) | **P3** — Add `.kuro-input-error` |
 | Progress bar heights inconsistent | LOW | Small (1 hour) | **P3** — Standardize to h-1.5 or h-2 |
 | Divider system underutilized | LOW | Small (1 hour) | **P4** — Migrate `border-b` to `.kuro-divider` |
@@ -2998,9 +3140,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 |----------|-------|----------|
 | **CRITICAL** | **0** | — |
 | **HIGH** | **0** | — |
-| **MEDIUM** | **16** | Listed below |
-| **LOW** | **27** | See individual parts |
-| **PASS** | **86** | — |
+| **MEDIUM** | **19** | Listed below |
+| **LOW** | **37** | See individual parts |
+| **PASS** | **87** | — |
 
 ### All MEDIUM Findings
 
@@ -3019,6 +3161,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | F-P6-032 | P6 | Desktop sidebar uses 8px text — below minimum readability | 2 hours |
 | F-P6-035 | P6 | Touch target violations on secondary controls (20-36px) | 2 hours |
 | F-P6-038 | P6 | Input/select/slider missing disabled visual state | 1 hour |
+| F-P6-046 | P6 | Duplicate element color maps — 3 copies (DRY violation) | 1 hour |
+| F-P6-047 | P6 | Teams buttons bypass .kuro-btn — visual inconsistency | 2 hours |
+| F-P6-053 | P6 | Teams equipment grid uses text-[7px] — unreadable | 30 min |
 | F-P7-005 | P7 | 14 `window.confirm()` calls inconsistent with custom modal | 2-3 hours |
 | F-P8-009 | P8 | text-gray-500 fails WCAG AA contrast (3.6:1, 40+ instances) | 1-2 hours |
 | F-P10-001 | P10 | Monolithic 8,218-line App.jsx (= P5-004) | 2-3 days |
@@ -3059,4 +3204,4 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 
 ---
 
-> **Audit complete.** 129 findings evaluated across 13 domains. 0 critical, 0 high, 16 medium (15 unique), 27 low, 86 pass. This application demonstrates strong craft for a single-developer project — the visual identity, PWA infrastructure, and accessibility investment are well above typical standards. The main debt is craft-layer consistency: the design *identity* is 9/10 but the spacing grid discipline (25% off-grid), shadow token adoption (12%), desktop responsive typography (434 sub-12px unsized), component state completeness (missing disabled/error states), and touch target compliance on secondary controls need tightening to match the surface quality.
+> **Audit complete.** 143 findings evaluated across 13 domains. 0 critical, 0 high, 19 medium (18 unique), 37 low, 87 pass. The established tabs demonstrate strong craft — the visual identity, PWA infrastructure, and accessibility are well above typical standards. The **Teams tab** (newest) is the primary quality outlier: it bypasses the `.kuro-btn` design system, introduces 7px text (below readability floor), duplicates color maps, and has multiple touch target violations. Cross-cutting debt: spacing grid discipline (25% off-grid), shadow token adoption (12%), and desktop responsive typography remain open. The gap between the identity quality of mature tabs and the craft consistency of the newest tab is the clearest signal that a design system enforcement process would yield high returns.
