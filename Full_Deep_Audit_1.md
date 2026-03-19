@@ -1850,7 +1850,114 @@ The desktop media query uses `!important` on virtually every property override. 
 
 ### §E14. Border Radius (§ADE §SHAPE)
 
-#### F-P6-035 — Border Radius Hierarchy: Sound ✅
+### §E15. Mobile-Specific Issues
+
+#### F-P6-035 — Touch Target Violations on Secondary Controls
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx:8024-8027, appcore-components.jsx:1335, App.jsx:4073]
+
+Several interactive elements fall below the 44×44px WCAG AAA minimum:
+
+| Element | Actual Size | Location | Impact |
+|---------|------------|----------|--------|
+| Admin mini-panel position buttons | 20×20px | App.jsx:8024-8027 | **Critical** — far below minimum |
+| D-pad framing controls | ~28-32px height | App.jsx:8066-8069 | Below minimum |
+| Event status buttons (Done/Skip) | ~32-36px height | appcore-components.jsx:1335-1338 | Below minimum |
+| Leaderboard tab buttons | ~24px height | App.jsx:4073-4078 | Below minimum |
+| Modal close buttons | 36×36px | appcore-components.jsx:211,524 | Below AAA, meets AA |
+
+**Note:** Primary actions (nav tabs, header buttons, card actions) correctly meet 44px targets. The violations are on secondary/admin controls.
+
+**Solution:** Increase mini-panel buttons to 36px minimum (admin-only, lower priority). Event status buttons should use `min-h-[44px]`. Leaderboard tabs should match main tab button sizing.
+
+#### F-P6-036 — Footer Missing Bottom Safe Area Padding
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:8187]
+
+The app footer (`app-footer-mobile`) has `relative z-10` but no `padding-bottom: env(safe-area-inset-bottom)`. On devices with home indicator bars (iPhone X+), footer text may be obscured by the gesture zone.
+
+**Note:** Main content area correctly handles bottom safe area at App.jsx:3212 (`paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'`). This issue is only for the footer element itself.
+
+#### F-P6-037 — Admin Mini-Panel Keyboard Occlusion Risk
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:8014]
+
+The admin mini-panel is `position: fixed` at `bottom-20` (80px). When the virtual keyboard appears on mobile (~250-350px tall), this panel may be hidden behind the keyboard. Admin-only, low frequency of use.
+
+---
+
+### §E16. Component State Completeness (§DCO1-DCO6)
+
+#### F-P6-038 — Input/Select/Slider Missing Disabled Visual State
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-providers.jsx:987-1030 (no :disabled rule)]
+
+`.kuro-btn` has a complete disabled state (`opacity: 0.4; filter: saturate(0.7) brightness(0.8); cursor: not-allowed`), but `.kuro-input`, `<select>`, and `.kuro-slider` have **no disabled styling**. Disabled inputs look identical to enabled inputs — the user cannot distinguish them.
+
+**Impact:** Accessibility violation (WCAG 1.4.1 — use of color/style to convey information). Disabled form controls must be visually distinct from enabled ones.
+
+**Solution:** Add to KuroStyles:
+```css
+.kuro-input:disabled, .kuro-input[disabled],
+select:disabled, .kuro-slider:disabled {
+  opacity: 0.4;
+  filter: saturate(0.7) brightness(0.8);
+  cursor: not-allowed;
+}
+```
+
+#### F-P6-039 — No Dedicated Error State for Form Inputs
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx — inline error patterns only]
+
+Errors are communicated via toast notifications, but there is no `.kuro-input-error` class or consistent error border pattern. Admin password uses `aria-invalid` (App.jsx:7315) but no visual change accompanies it. Import validation uses inline red text. These approaches are ad-hoc rather than systematic.
+
+**Solution:** Add `.kuro-input-error` class with `border-color: rgba(var(--color-red), 0.6)` and subtle red glow to match the button active state pattern.
+
+#### F-P6-040 — Progress Bar Heights Inconsistent
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:3408(h-1.5), 3927(h-2), 4015(h-2), 4178(h-1)]
+
+Four different progress bar heights used:
+- `h-1` (4px) — character rating bars
+- `h-1.5` (6px) — Astrite earn bar
+- `h-2` (8px) — goal progress, luck percentile
+
+No unified `.kuro-progress` component. ARIA coverage is partial: goal progress has `role="progressbar"` with full attributes, but Astrite and character bars have no ARIA.
+
+#### F-P6-041 — Select Styling Inconsistent
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:3181 vs 3904]
+
+Some `<select>` elements use `.kuro-input` class (planner selects), while the header server select uses inline Tailwind utilities (`text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10`). Both produce different visual results. All selects use native browser dropdowns (not custom).
+
+#### F-P6-042 — Divider System Defined but Underutilized
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:1368-1373 vs App.jsx border-b usage]
+
+`.kuro-divider` is defined with a gradient fade effect (`linear-gradient(90deg, transparent, var(--border-hover), transparent)`), but most dividers in the app use ad-hoc `border-b border-white/10`. The designed divider class is rarely used, missing an opportunity for consistent polish.
+
+---
+
+### §E17. Desktop Content Issues
+
+#### F-P6-043 — Planner Tab Single-Column on Desktop
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:3734-4000 — no `desktop-grid-*` class]
+
+7 of 8 tabs use desktop grid layouts (2-col or multi-col), but the Planner tab remains single-column on desktop. The purchases section and bookmark list could benefit from a 2-column layout at 1024px+.
+
+#### F-P6-044 — Line Length ~88-110 Characters on Desktop
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:850 (14px padding), cards at ~555px width]
+
+In 2-column desktop layout at 1440px, each card content area is ~527px wide. Body text (`text-sm` / 14px) reaches ~88-95 characters per line. `text-xs` (12px) reaches ~100-110 characters. This is at the upper end of comfortable reading but within acceptable bounds for a data-dense tool. No `max-width` constraint exists on card bodies.
+
+---
+
+### §E18. Border Radius (§ADE §SHAPE)
+
+#### F-P6-045 — Border Radius Hierarchy: Sound ✅
 **Severity:** N/A (PASS)
 
 Deep audit confirms a consistent, intentional radius scale:
@@ -1913,15 +2020,25 @@ Skeleton loaders mirror real component radii. Inner/outer card math is correct. 
 | F-P6-032 | §E13 | **MEDIUM** | **Desktop sidebar uses 8px text — below minimum readability** |
 | F-P6-033 | §E13 | LOW | Desktop layout uses 30+ `!important` overrides (fragile) |
 | F-P6-034 | §E13 | LOW | Unexplained 160px right padding on desktop content area |
-| F-P6-035 | §E14 | ✅ PASS | Border radius hierarchy sound, card math correct |
+| F-P6-035 | §E15 | **MEDIUM** | **Touch target violations on secondary controls (20-36px)** |
+| F-P6-036 | §E15 | LOW | Footer missing bottom safe area padding |
+| F-P6-037 | §E15 | LOW | Admin mini-panel keyboard occlusion risk |
+| F-P6-038 | §E16 | **MEDIUM** | **Input/select/slider missing disabled visual state** |
+| F-P6-039 | §E16 | LOW | No dedicated error state for form inputs |
+| F-P6-040 | §E16 | LOW | Progress bar heights inconsistent (4px/6px/8px) |
+| F-P6-041 | §E16 | LOW | Select styling inconsistent (.kuro-input vs inline) |
+| F-P6-042 | §E16 | LOW | Divider system defined but underutilized |
+| F-P6-043 | §E17 | LOW | Planner tab single-column on desktop |
+| F-P6-044 | §E17 | LOW | Line length ~88-110 chars on desktop (upper end) |
+| F-P6-045 | §E18 | ✅ PASS | Border radius hierarchy sound, card math correct |
 
 **Critical findings: 0**
 **High findings: 0**
-**Medium findings: 6** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text)
-**Low findings: 7**
+**Medium findings: 8** (card padding grid-break, spacing grid violations, pure black shadows, shadow token adoption, sub-12px type on desktop, desktop sidebar micro-text, touch target violations, missing disabled states)
+**Low findings: 14**
 **Pass: 22**
 
-**Overall Visual Design Assessment (Revised):** The app has an exceptionally strong visual *identity* — the glassmorphic cards, dual-canvas backgrounds, pity rings, and conic-gradient badges are distinctive and premium. However, the deep audit reveals significant **craft-layer debt**: the spacing system drifts from its own 4px grid in ~25% of values, the shadow token system is defined but barely adopted (12%), pure black shadows bypass the carefully calibrated palette, and the desktop responsive layer uses extreme micro-typography without scaling. The surface design is 9/10; the spatial and token **discipline** is 6/10. The gap between identity quality and implementation consistency is the primary design debt. **Design maturity: 7.5/10.**
+**Overall Visual Design Assessment (Revised):** The app has an exceptionally strong visual *identity* — the glassmorphic cards, dual-canvas backgrounds, pity rings, and conic-gradient badges are distinctive and premium. However, the deep audit reveals significant **craft-layer debt** across three areas: (1) **Spatial discipline** — the spacing system drifts from its own 4px grid in ~25% of values, the shadow token system is defined but barely adopted (12%), and pure black shadows bypass the calibrated palette; (2) **Responsive typography** — 434 sub-12px text instances are not scaled up on desktop, and the sidebar uses 8px text below any readability minimum; (3) **Component state completeness** — inputs/selects/sliders lack disabled visual states, secondary controls fall below touch target minimums, and progress bars use inconsistent heights. The surface design identity is 9/10; the spatial and token **discipline** is 6/10; the **component state coverage** is 7/10. **Design maturity: 7/10.**
 
 *End of P6. Commit and push follows.*
 
@@ -2859,8 +2976,13 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | Dual canvas performance on low-end | MEDIUM | Medium (1 day) | **P3** — Consider single canvas or worker |
 | No code splitting (Recharts) | MEDIUM | Small (1-2 hours) | **P2** — `React.lazy()` wrap |
 | Hardcoded color values (40+) | LOW | Medium (half day) | **P3** — Mechanical token migration |
+| Touch target violations (20-36px) | MEDIUM | Small (2 hours) | **P2** — Increase mini-panel/event buttons to 44px |
+| Input/select/slider disabled state missing | MEDIUM | Small (1 hour) | **P2** — Add `:disabled` CSS rules to match `.kuro-btn` |
 | 30+ `!important` in desktop CSS | LOW | Medium (half day) | **P3** — Refactor to class-based approach |
 | 160px unexplained right padding (desktop) | LOW | Small (15 min) | **P3** — Remove or document |
+| No error state class for inputs | LOW | Small (30 min) | **P3** — Add `.kuro-input-error` |
+| Progress bar heights inconsistent | LOW | Small (1 hour) | **P3** — Standardize to h-1.5 or h-2 |
+| Divider system underutilized | LOW | Small (1 hour) | **P4** — Migrate `border-b` to `.kuro-divider` |
 | No TypeScript | LOW | Large (ongoing) | **P4** — Gradual adoption with strict mode |
 | No automated tests | LOW | Medium (1-2 days) | **P3** — Start with engine unit tests |
 
@@ -2876,9 +2998,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 |----------|-------|----------|
 | **CRITICAL** | **0** | — |
 | **HIGH** | **0** | — |
-| **MEDIUM** | **14** | Listed below |
-| **LOW** | **20** | See individual parts |
-| **PASS** | **85** | — |
+| **MEDIUM** | **16** | Listed below |
+| **LOW** | **27** | See individual parts |
+| **PASS** | **86** | — |
 
 ### All MEDIUM Findings
 
@@ -2895,6 +3017,8 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | F-P6-027 | P6 | Shadow token adoption only 12% (2 of 17 definitions) | 2 hours |
 | F-P6-029 | P6 | 434 sub-12px type instances, not scaled up on desktop | half day |
 | F-P6-032 | P6 | Desktop sidebar uses 8px text — below minimum readability | 2 hours |
+| F-P6-035 | P6 | Touch target violations on secondary controls (20-36px) | 2 hours |
+| F-P6-038 | P6 | Input/select/slider missing disabled visual state | 1 hour |
 | F-P7-005 | P7 | 14 `window.confirm()` calls inconsistent with custom modal | 2-3 hours |
 | F-P8-009 | P8 | text-gray-500 fails WCAG AA contrast (3.6:1, 40+ instances) | 1-2 hours |
 | F-P10-001 | P10 | Monolithic 8,218-line App.jsx (= P5-004) | 2-3 days |
@@ -2935,4 +3059,4 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 
 ---
 
-> **Audit complete.** 119 findings evaluated across 13 domains. 0 critical, 0 high, 14 medium (13 unique), 20 low, 85 pass. This application demonstrates strong craft for a single-developer project — the visual identity, PWA infrastructure, and accessibility investment are well above typical standards. The main debt is craft-layer consistency: the design *identity* is 9/10 but the spacing grid discipline, shadow token adoption, and desktop responsive typography need tightening to match the surface quality.
+> **Audit complete.** 129 findings evaluated across 13 domains. 0 critical, 0 high, 16 medium (15 unique), 27 low, 86 pass. This application demonstrates strong craft for a single-developer project — the visual identity, PWA infrastructure, and accessibility investment are well above typical standards. The main debt is craft-layer consistency: the design *identity* is 9/10 but the spacing grid discipline (25% off-grid), shadow token adoption (12%), desktop responsive typography (434 sub-12px unsized), component state completeness (missing disabled/error states), and touch target compliance on secondary controls need tightening to match the surface quality.
