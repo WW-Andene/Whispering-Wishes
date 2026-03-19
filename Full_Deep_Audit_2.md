@@ -293,4 +293,145 @@ All 8 tabs were analyzed for style vocabulary consistency:
 
 ---
 
-*End of Step 2. Steps 3-20 pending.*
+## Step 3: §DP0 — Design Character Extraction
+
+> **Methodology**: Extract the app's personality directly from its design decisions — colors, spacing, typography, components, motion, icons, and copy. This extraction is ground truth for all subsequent character analysis (§DP1, §DP2). Every value cited is read from code, not inferred from intent.
+
+---
+
+### Color Character
+
+| Property | Extracted Values | Character Signal |
+|---|---|---|
+| **Background (base)** | `#080c14` — cool navy-black with blue undertone (R:8, G:12, B:20) | Deep space / command center. Not neutral gray — chromatically cool, intentionally cold |
+| **Background (OLED)** | `#000000` pure black | Theater/cinema mode — maximum contrast for content |
+| **Surface layer 1 (cards)** | `rgba(12, 16, 24, 0.55)` with `backdrop-filter: blur(4px)` | Glassmorphic translucency — surfaces float over the background, not sit on it |
+| **Surface layer 2 (card-inner)** | `rgba(6, 10, 18, 1.0)` — fully opaque dark navy | Solid anchor beneath glass — grounds content against translucent shell |
+| **Surface layer 3 (buttons)** | `rgba(15, 20, 28, 0.85)` | Slightly lighter than cards — interactive surfaces read as elevated |
+| **Primary accent** | `#edaf18` (gold) — R:237 G:175 B:24 — warm, high-chroma amber | Precious metal / rarity signal. Single warm accent on cool canvas = maximum pop |
+| **Secondary accents** | 6-color system: pink `#ec4899`, cyan `#38bdf8`, purple `#a855f7`, emerald `#22c55e`, red `#f87171`, orange `#f97316` | Game-element mapped — each color carries semantic meaning (rarity, element type) |
+| **Text (body)** | `#dfe5ef` — cool off-white with slight blue cast | Clinical precision — not warm cream, not harsh white |
+| **Text (heading)** | `#edf1f8` — brighter cool white | Hierarchy through luminance, not hue shift |
+| **Border system** | 5-tier white opacity: 0.06 → 0.08 → 0.10 → 0.15 → 0.20 | Ghostline borders — visible structure without hard edges. Cyberpunk wireframe aesthetic |
+| **Shadow color** | `rgba(6, 10, 24, 0.4–0.7)` — chromatic navy shadow, not neutral black | Shadows carry the background hue — unified color atmosphere |
+| **Overall palette feeling** | **Cool-dominant monochrome with a single warm precious-metal accent and game-semantic color coding** | High contrast, intentionally cold, gold-as-luxury signal |
+
+### Spatial Character
+
+| Property | Extracted Values | Character Signal |
+|---|---|---|
+| **Card padding** | `14px` (header, body, stat) | Compact but not cramped — data-forward density |
+| **Button/input padding** | `10px 12px` | Tight, efficient touch targets |
+| **Tab content padding** | `0.75rem` (12px) with `-0.75rem` horizontal negative margin | Edge-to-edge content with controlled internal breathing room |
+| **Section spacing** | `space-y-3` (12px gap) consistent across all tabs | Rhythmic, predictable vertical flow |
+| **Divider margin** | `12px 0` | Matches section gap — unified 12px vertical rhythm unit |
+| **Card corner radius** | `16px` outer, `15px` inner | Generous radius for a cyberpunk app — softens the tech-harshness |
+| **Overall density feeling** | **Information-dense / balanced** — leans data-forward without feeling cluttered | Dashboard mentality: every pixel earns its place, but generous enough for mobile touch |
+
+### Typography Character
+
+| Property | Extracted Values | Character Signal |
+|---|---|---|
+| **Display typeface** | Rajdhani (Google Fonts) — geometric sans with Indian Devanagari roots | Technical, angular, slightly exotic. Not a generic sans — has personality without demanding attention |
+| **Data typeface** | JetBrains Mono — monospace designed for code readability | Developer-precision for numbers. Says "this data is exact" |
+| **Weight range** | 500 (body) → 600 (headers) → 700 (numbers/emphasis) | Conservative range — authority through restraint, not through heavy/light extremes |
+| **Size range** | 8px (tab labels) → 48px (error emoji icon) | Wide range but most content lives at 11-14px — functional, not decorative |
+| **Functional sizes** | Buttons: 11px, Inputs: 14px, Headers: 14px, Stats: 18px | Compact text sizes reinforce data-density character |
+| **Overall type feeling** | **Technical-precise with geometric personality** | Rajdhani provides just enough exotic character to avoid corporate-generic; JetBrains Mono signals "we take data seriously" |
+
+### Component Character
+
+| Property | Extracted Values | Character Signal |
+|---|---|---|
+| **Card border radius** | `16px` outer shell, `15px` inner body | Rounded tech — softened cyberpunk, not brutalist sharp |
+| **Button border radius** | `12px` | Consistent with card language — not pill-shaped, not sharp |
+| **Stat box radius** | `10px` | Slightly tighter — nested elements are geometrically subordinate |
+| **Input radius** | `8px` | Tightest interactive radius — functional, inset feeling |
+| **Shadow presence** | 4-tier progressive system (sm→md→lg→xl) + color-coded glows | Prominent but atmospheric — shadows carry hue, create depth narrative |
+| **Border style** | 1px solid with opacity-based white borders; dashed for empty states | Ghost-wire aesthetic — structure visible but never heavy |
+| **Corner decorations** | `::before`/`::after` pseudo-elements on card-inner, `4px` radius corner marks | Cyberpunk HUD brackets — the strongest single personality signal in the component system |
+| **Button style** | Filled with subtle inner glow, active states use color-specific glow halos | Tactile, luminous — buttons feel like they emit light when active |
+| **Card shimmer line** | Animated gradient across card top edge (white 0.3→0.5 opacity) | Specular highlight — cards feel like physical surfaces catching light |
+
+### Motion Character
+
+| Property | Extracted Values | Character Signal |
+|---|---|---|
+| **System easing** | `cubic-bezier(0.16, 1, 0.3, 1)` — sharp attack, soft settle | Snappy-to-smooth — elements arrive with energy then gently land |
+| **Fast transitions** | `0.15s` (hover, micro-interactions) | Near-instant feedback — responsive, alive |
+| **Normal transitions** | `0.25s` (standard state changes) | Perceptible but never slow — functional motion |
+| **Slow transitions** | `0.4s` (card entrances, tab transitions) | Considered, cinematic — entrance animations earn attention |
+| **Ambient loops** | 2–3s infinite: `borderGlow`, `pulseScale`, `shimmer`, `ghostPulse` | Living UI — the interface breathes when idle. Cyber-organic feel |
+| **Stagger pattern** | `cardSlideIn` with 0.05s incremental delays | Cascade entrance — cards arrive in sequence like data loading into a terminal |
+| **Reduced motion** | All durations → `0.01ms`, animations disabled | Accessibility-conscious — motion is additive, not essential |
+| **Overall motion feeling** | **Snappy + ambient breathing** — fast for interactions, slow and atmospheric for idle states | The UI feels alive — it doesn't just display data, it pulses with it |
+
+### Icon Character
+
+| Property | Extracted Values | Character Signal |
+|---|---|---|
+| **Library** | lucide-react (24 icons imported) | Modern, consistent stroke-based system |
+| **Style** | Line icons — uniform 1.5px stroke weight | Clean, precise — matches the technical typography |
+| **Trophy icon set** | 19 curated icons: Crown, Sparkles, Heart, Swords, Shield, Gift, Zap, Clover, Flame, Target, etc. | Gameplay-narrative — icons tell stories about player behavior |
+| **Brand icon** | Base64-encoded custom PNG (`HEADER_ICON`) | Custom identity — not a library icon. Owns its visual mark |
+| **Inline SVG** | Minimal — one custom corner-bracket SVG (12×12) | Restraint — custom SVG only when lucide doesn't have the right shape |
+| **Overall icon feeling** | **Clinical-precise with narrative accents** | Consistent stroke-based system for UI; expressive/playful choices for trophy/achievement contexts |
+
+### Copy / Voice Character
+
+| Property | Extracted Examples | Character Signal |
+|---|---|---|
+| **Error tone** | "Storage full — data may not be saved. Try clearing old Convene history." | Informative, specific, actionable — no generic "Something went wrong" |
+| **Success tone** | "Score submitted to leaderboard!" / "ID Card saved!" | Brief celebration with domain language |
+| **Destructive confirms** | "Clear all imported Convene history? This cannot be undone." | Direct, honest, no softening — respects user's decision-making |
+| **Button labels** | "Save Bookmark", "Save Current State", "Reset to default banners" | Action-specific — never generic "Submit" or "OK" |
+| **Placeholders** | "Search by name...", "Paste your wuwatracker JSON here..." | Instructional, context-aware |
+| **Trophy descriptions** | "Pity 1. Screenshot or Fake." / "go outside." / "seek financial advice" / "uninstall tbh" | **Peak personality** — witty, self-aware, affectionately judgmental. Internet-native voice that knows gacha culture intimately |
+| **Domain fluency** | Uses "Convene", "5★", "pity", "soft zone", "50/50" without explanation | Expert voice — assumes shared knowledge with the audience |
+| **Formality register** | Technical for system messages, casual-witty for achievements/trophies | **Dual-register** — professional when it matters, personality when it can |
+| **Overall voice feeling** | **Expert-casual with sharp wit** — a friend who understands gacha mechanics AND has opinions about your spending habits |
+
+---
+
+### Emergent Personality Statement
+
+> **"Based on these decisions, this app reads as: Precision-crafted gacha command center."**
+
+**The strongest signals that produce this character:**
+1. **Gold-on-navy color architecture** — A single warm precious-metal accent on cool-dark canvas creates an unmistakable luxury-data hybrid. The gold doesn't just accent — it signifies value (5★ rarity), creating emotional resonance with the game's own reward psychology.
+2. **Corner decoration HUD brackets** — The `::before`/`::after` corner marks on every card are the single most distinctive visual fingerprint. They transform standard cards into cyberpunk data panels, setting the app apart from any generic dashboard.
+3. **Trophy copy voice** — The witty, self-aware, affectionately roasting trophy descriptions ("go outside", "seek financial advice", "uninstall tbh") create genuine personality that no design token can replicate. This is where the app becomes a *companion*, not just a tool.
+
+**The weakest/most incoherent elements that contradict the character:**
+1. **Error boundary fallback** (DS1.3) — Reverts to generic inline CSS with no KuroStyles integration. The cyberpunk personality completely vanishes at the moment of maximum user anxiety. Uses plain `#080c12` instead of the system's `#080c14`, standard `border-radius: 8` instead of the card system's `16px`.
+2. **OLED toggle switch** (DS1.1) — iOS-style white toggle reads as a borrowed UI pattern from a different design language. The cyberpunk command center aesthetic would call for a more angular, glowing switch treatment.
+
+---
+
+### §DP0 Findings Table
+
+| # | Finding | Status | Severity | Solution |
+|---|---|---|---|---|
+| DP0.1 | Color character — gold-on-navy palette creates strong precious-metal luxury signal | PASSED | — | **Optional**: Consider adding a subtle gold-tinted noise texture overlay (`opacity: 0.02`) to the base background to deepen the luxury material quality without changing the color system |
+| DP0.2 | Spatial character — 12px vertical rhythm with 14px card padding maintains data-density | PASSED | — | **Optional**: Document the 12px base rhythm unit as a design token (`--rhythm-base: 12px`) to make the spatial system self-describing for future contributors |
+| DP0.3 | Typography — Rajdhani + JetBrains Mono dual-font system creates technical-exotic voice | PASSED | — | **Optional**: Rajdhani's weight 400 (regular) is unused — the lightest deployed weight is 500. Consider using weight 400 for tertiary text (timestamps, metadata) to extend the typographic range without adding a third font |
+| DP0.4 | Component character — corner decoration HUD brackets are the strongest identity signal | PASSED | — | **Optional**: The corner decorations use `--border-bright` (`rgba(255,255,255,0.2)`) — a gold-tinted variant at `rgba(237,175,24,0.12)` would tie them more directly to the brand accent |
+| DP0.5 | Motion character — dual-speed system (snappy interactions + ambient breathing) creates living UI | PASSED | — | **Optional**: The system easing `cubic-bezier(0.16, 1, 0.3, 1)` is excellent but unnamed. Aliasing it as `--ease-kuro` in KuroStyles would make it a branded motion token |
+| DP0.6 | Icon character — lucide-react with consistent line style | PASSED | — | **Optional**: The trophy icon subset (19 icons) could benefit from 2-3 custom SVG icons for the most personality-heavy trophies (e.g., a custom whale icon for spending milestones vs. the generic Fish icon) |
+| DP0.7 | Copy voice — expert-casual dual-register with sharp wit in trophies | PASSED | — | **Optional**: The strong trophy voice doesn't extend to empty states or onboarding. Adding a single witty line to the empty state ("No data yet — your pulls await") would carry the personality into more touchpoints |
+| DP0.8 | Error boundary personality gap — character vanishes in error state | FINDING | Minor | **Solution**: Restyle the error boundary to use KuroStyles classes: `kuro-card` wrapper, `--bg-card` background, system fonts (Rajdhani), gold accent on the retry button. The error state should feel like a "system alert" within the cyberpunk world, not an escape from it |
+| DP0.9 | OLED toggle style contradicts cyberpunk language | FINDING | Minor | **Solution**: Replace the iOS-style toggle with a cyberpunk-styled switch — angular track shape with gold glow indicator, using the existing `borderGlow` animation keyframe for the active state |
+| DP0.10 | Shadow system uses chromatic navy shadows consistently | PASSED | — | **Optional**: The shadow base color `rgba(6, 10, 24, x)` is close to but not derived from `#080c14`. Deriving shadows directly from the background (`rgba(8, 12, 20, x)`) would create tighter chromatic unity |
+| DP0.11 | Border opacity ladder (0.06→0.20) creates ghost-wire aesthetic | PASSED | — | **Optional**: The 5-step ladder jumps from `0.10` to `0.15` (50% increase) then `0.15` to `0.20` (33% increase). A perceptually uniform step at `0.13` between medium and hover would smooth the progression |
+| DP0.12 | Dual-register voice — technical system messages + witty trophies | PASSED | — | **Optional**: The dual register is a strength, but the boundary is currently implicit. A comment in the codebase marking "system voice" vs. "personality voice" zones would protect the character during future development |
+| DP0.13 | Button glow system — color-specific halos create tactile luminous feel | PASSED | — | **Optional**: The red (50/50) button uses slightly different opacity values (`0.2`/`0.8`/`0.35`/`0.1`) vs. the standard formula (`0.15`/`0.7`/`0.3`/`0.08`). Normalizing to the standard formula would eliminate the subtle inconsistency |
+
+---
+
+### Step 3 Score: 9.5/10
+
+The app's design character is remarkably coherent and intentional. The **"Precision-crafted gacha command center"** personality emerges consistently from every design layer — color, space, typography, components, motion, icons, and copy all reinforce the same identity. The gold-on-navy color architecture, HUD corner brackets, and witty trophy voice are three genuinely distinctive character signals that competitors would struggle to replicate. The two character-breaking elements (error boundary, OLED toggle) are confined to edge-case states and don't affect the core experience. The dual-register copy voice (professional system messages + personality-rich trophies) is a sophisticated design decision that serves both trust and delight. This extraction establishes strong ground truth for the §DP1 Character Dimensions and §DP2 Character Brief in subsequent steps.
+
+---
+
+*End of Step 3. Steps 4-20 pending.*
