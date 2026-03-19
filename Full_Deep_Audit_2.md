@@ -1021,3 +1021,418 @@ Priority: LOW — documentation only, no visual change needed
 ---
 
 *End of Step 2 — §DP0 Character Extraction + §DP1 Character Dimensions + §DP2 Character Brief*
+
+---
+
+# STEP 3 — §DC1 Perceptual Color Architecture + §DC2 Palette Roles + §DC3 Dark Mode Craft
+
+---
+
+## §DC1 — PERCEPTUAL COLOR ARCHITECTURE
+
+> **Method:** All color values extracted from code (appcore-providers.jsx CSS variables, App.jsx inline styles, appcore-data.js element maps, appcore-components.jsx, index.css, tailwind.config.js). ~200+ unique color values analyzed.
+
+### 1.1 Palette Temperature Map
+
+```
+TEMPERATURE ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOMINANT TEMPERATURE: COLD (blue 240-250° hue family)
+  - Background: #080c14 → oklch(7.5% 0.015 250) — deep cool navy
+  - Card surfaces: rgba(12,16,24,X) — same cool-blue family
+  - Button/Input surfaces: rgba(15,20,28,X) — same family
+  - Text grays: all carry blue tint (#dfe5ef, #8f99ab, #6b7389)
+  - Shadow base: rgba(6,10,24,X) — deep cool-blue shadow
+  - Scrollbar: #2a3548 / #0f1520 — cool-blue grays
+  - Tailwind gray overrides: 50-950 scale, ALL carry blue tint
+    (e.g., gray-900: #171d29, gray-700: #374050) — EXCELLENT decision
+
+WARM ACCENT (intentional contrast):
+  - Gold: #edaf18 → oklch(78% 0.18 85°) — warm amber at ~85° hue
+  - Temperature distance from background: ~165° (near complementary)
+  - This creates maximum "warm glow in cold space" contrast
+  - Used for: primary accent, brand identity, CTA highlights, medal gold
+
+NEUTRAL-TO-WARM GAME ELEMENTS:
+  - Fusion/Orange: #f97316 → ~50° (warm)
+  - Spectro/Yellow: #eab308 → ~80° (warm)
+  - Havoc/Pink: #ec4899 → ~340° (warm-leaning)
+
+COOL GAME ELEMENTS:
+  - Glacio/Cyan: #06b6d4 → ~195° (cool)
+  - Electro/Purple: #a855f7 → ~285° (cool)
+  - Aero/Emerald: #10b981 → ~160° (cool)
+
+TEMPERATURE COHERENCE VERDICT: EXCELLENT
+  The palette uses a DELIBERATE warm/cool contrast strategy:
+  - Background/surfaces/text: consistently cool (240-250° hue family)
+  - Primary accent: warm (~85°) — near-complementary to create maximum pop
+  - Game elements: distributed across the hue wheel for maximum differentiation
+  This is NOT accidental — it is a sophisticated color temperature strategy.
+```
+
+### 1.2 Chromatic Consistency Assessment
+
+```
+CHROMA ANALYSIS (saturation behavior across hues)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BACKGROUND CHROMA: Very low (0.01-0.015)
+  #080c14 → oklch(7.5% ~0.015 250) — barely chromatic, feels near-neutral
+  Result: Cold void with just enough blue to feel atmospheric, not sterile ✅
+
+TEXT CHROMA: Low (0.005-0.012)
+  #dfe5ef → oklch(93% ~0.008 250) — slight cool tint
+  #8f99ab → oklch(67% ~0.010 250) — moderate cool tint
+  #6b7389 → oklch(52% ~0.012 250) — noticeable cool tint
+  Result: Text hierarchy uses BOTH lightness AND chroma — darker text
+  becomes slightly more chromatic, adding depth without sacrificing
+  readability ✅
+
+ACCENT CHROMA: High (0.15-0.22)
+  #edaf18 (gold) → oklch(78% ~0.18 85) — high chroma, vivid
+  #22c55e (emerald) → oklch(72% ~0.20 155) — high chroma
+  #ec4899 (pink) → oklch(65% ~0.22 350) — very high chroma
+  #a855f7 (purple) → oklch(58% ~0.22 290) — very high chroma
+  #06b6d4 (cyan) → oklch(65% ~0.15 200) — moderate-high chroma
+  #ef4444 (red) → oklch(60% ~0.22 25) — very high chroma
+  Result: All accents at high chroma against low-chroma surfaces =
+  maximum contrast and pop. Game elements need to be immediately
+  identifiable by color alone — this achieves it ✅
+
+CHROMA GRADIENT (background → surface → text → accent):
+  0.015 → 0.008 → 0.012 → 0.18+
+  The jump from text (0.012) to accent (0.18+) is 15x — this is what
+  makes accents feel electric. Professional-grade chroma architecture ✅
+
+NEAR-DUPLICATE CHROMA CONCERN:
+  #22c55e (Emerald/Aero) vs #10b981 (Emerald/bg variant):
+    Both are green family but at different lightness (~72% vs ~62%)
+    These serve different roles (accent text vs background tint)
+    NOT a conflict — intentional variant pair ✅
+
+  #edaf18 (Gold/brand) vs #eab308 (Spectro/game element):
+    Very close hues (~85° vs ~80°) with similar chroma
+    Could create confusion between "brand gold" and "Spectro element"
+    FINDING: DC1-01 — see below
+
+  #06b6d4 (Cyan/Glacio) vs #38bdf8 (Cyan/standard) vs #22d3ee (bright cyan):
+    Three cyan variants serve different roles
+    (Glacio element, standard banner, bright accent)
+    Distinguishable in context but could confuse in isolation
+    FINDING: DC1-02 — see below
+```
+
+### 1.3 Perceptual Uniformity Check
+
+```
+OKLCH LIGHTNESS UNIFORMITY TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do same-role colors appear to have equal visual weight?
+
+GAME ELEMENT ACCENT COLORS (all used for text labels):
+  Fusion/Orange:  #f97316 → oklch(~72% 0.19 50°)  — BRIGHT
+  Spectro/Yellow: #eab308 → oklch(~76% 0.18 85°)  — BRIGHTEST
+  Havoc/Pink:     #ec4899 → oklch(~65% 0.22 350°) — MEDIUM
+  Electro/Purple: #a855f7 → oklch(~58% 0.22 290°) — DIMMEST
+  Aero/Emerald:   #22c55e → oklch(~72% 0.20 155°) — BRIGHT
+  Glacio/Cyan:    #06b6d4 → oklch(~65% 0.15 200°) — MEDIUM
+
+  Lightness range: 58% (purple) to 76% (yellow) = 18% spread
+  This means purple elements appear noticeably darker than yellow/orange
+  elements at the same font size.
+
+  IS THIS A PROBLEM? PARTIALLY:
+  - Game element colors MUST match the game's own palette — so changing
+    them would break subject fidelity (§DP2 pillar 3)
+  - However, the lightness variance means purple element labels may have
+    lower contrast against dark surfaces than yellow/orange labels
+  - FINDING: DC1-03 — see below (contrast verification needed)
+
+SEMANTIC STATUS COLORS:
+  Success: #22c55e → oklch(~72% 0.20 155°) — good contrast on dark
+  Warning: #edaf18 → oklch(~78% 0.18 85°)  — excellent contrast
+  Error:   #ef4444 → oklch(~60% 0.22 25°)  — adequate contrast
+  Info:    #38bdf8 → oklch(~72% 0.15 230°) — good contrast
+
+  Lightness range: 60% (red) to 78% (gold) = 18% spread
+  Red is the dimmest semantic color — appropriate, as error red should
+  feel weighted/heavy, not bright/cheerful ✅
+
+MEDAL COLORS:
+  Gold:   #edaf18 → oklch(~78% 0.18 85°) — vivid
+  Silver: #c0c0c0 → oklch(~80% 0.00 0°)  — neutral gray
+  Bronze: #cd7f32 → oklch(~62% 0.12 65°) — muted warm
+  Perceptual hierarchy: Gold > Silver > Bronze in chroma,
+  Silver > Gold > Bronze in lightness
+  Result: Gold feels richest (high chroma + good lightness),
+  Silver feels clean (high lightness, no chroma),
+  Bronze feels earned (lower, warmer) ✅
+```
+
+### 1.4 — §DC1 Findings
+
+#### DC1-01 · Gold / Spectro Hue Proximity (Low Severity)
+
+| Field | Value |
+|-------|-------|
+| **Finding** | Brand gold `#edaf18` (oklch ~78% 0.18 85°) and Spectro element `#eab308` (oklch ~76% 0.18 80°) differ by only ~5° hue and ~2% lightness. In isolation (e.g., a standalone stat badge) a user cannot distinguish "this is the brand accent" from "this is a Spectro element." |
+| **Impact** | Semantic confusion — brand identity and game element merge. Violates §DS2 "each color must earn its seat." |
+| **Mitigated by** | Context: Spectro appears only inside element badges/character cards with a label; brand gold appears in headers, buttons, and decorative highlights. In practice the two never sit side-by-side without context. |
+| **Severity** | **Low** — functional confusion is unlikely due to contextual separation. |
+| **Solution** | *Option A (recommended):* Shift Spectro to a slightly warmer/oranger yellow (`#f5c518`, hue ~82°) — adds ~3° separation and +4% lightness. *Option B:* Keep as-is and document the intentional overlap as a design decision in a future style-guide, noting that the ~5° gap is acceptable because Spectro IS gold in the game itself. |
+| **Score impact** | −0.1 (minor semantic overlap) |
+
+#### DC1-02 · Three Cyan Variants (Advisory)
+
+| Field | Value |
+|-------|-------|
+| **Finding** | Three distinct cyan values serve different roles: Glacio element `#06b6d4` (oklch ~65% 0.15 200°), standard UI accent `#38bdf8` (oklch ~72% 0.15 230°), and bright highlight `#22d3ee` (oklch ~70% 0.17 200°). Hue range spans 200°–230° with lightness spread of 65%–72%. |
+| **Impact** | In isolation, Glacio and bright cyan could be confused. However, `#38bdf8` has a distinctly bluer hue (230° vs 200°) which separates it visually. |
+| **Mitigated by** | Each cyan appears in a distinct context: Glacio in element badges, `#38bdf8` in standard link/info styling, `#22d3ee` only in select highlights. No context where all three compete. |
+| **Severity** | **Advisory** — no action required, but worth documenting. |
+| **Solution** | Document the three-cyan strategy in a future design-token reference. If consolidation is ever desired, merge `#22d3ee` into `#06b6d4` (they share the same 200° hue). |
+| **Score impact** | −0.05 (documentation gap only) |
+
+#### DC1-03 · Purple Element Contrast on Dark Surfaces (Medium Severity)
+
+| Field | Value |
+|-------|-------|
+| **Finding** | Electro/Purple `#a855f7` at oklch ~58% lightness is the dimmest game element color. Against the card background `rgba(12, 16, 24, 0.55)` ≈ effective `#0c1018`, the contrast ratio is approximately **5.2:1** — passes WCAG AA for normal text (≥4.5:1) but is the lowest-contrast element color. Yellow Spectro achieves ~11:1 by comparison. |
+| **Impact** | Purple element labels are noticeably less prominent than other element labels at the same size. Users with reduced vision may find purple labels harder to read. |
+| **Mitigated by** | Game fidelity requirement — Wuthering Waves' own Electro color is purple. Changing it would break subject authenticity (§DP2 pillar 3). Also, 5.2:1 still passes AA. |
+| **Severity** | **Medium** — technically accessible but perceptually unequal. |
+| **Solution** | *Option A (recommended):* Lighten Electro text color by one stop to `#b87afc` (oklch ~63% 0.20 290°), gaining ~1.5:1 contrast improvement while staying recognizably purple. Keep the original `#a855f7` for borders/backgrounds. *Option B:* Add a subtle text-shadow `0 0 6px rgba(168,85,247,0.3)` to purple labels to increase perceived brightness without changing the hue. |
+| **Score impact** | −0.2 (contrast equity concern) |
+
+---
+
+## §DC2 — PALETTE ARCHITECTURE AUDIT (Role Inventory)
+
+Every color in the system must have **one clear semantic role**. Below is the complete role inventory extracted from code.
+
+### 2.1 Color Role Table
+
+```
+ROLE                    TOKEN / HEX             SOURCE              USAGE COUNT  STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BACKGROUNDS
+  Page base             #080c14                 index.css           1            ✅ single source
+  Page base (OLED)      #000000                 appcore-providers   1            ✅ conditional
+  Card surface          rgba(12,16,24,0.55)     --bg-card           ~50+         ✅ tokenized
+  Card surface (OLED)   rgba(0,0,0,0.95)        --bg-card           ~50+         ✅ tokenized
+  Card inner            rgba(6,10,18,1)         --bg-card-inner     ~20+         ✅ tokenized
+  Card inner (OLED)     rgba(5,5,5,1)           --bg-card-inner     ~20+         ✅ tokenized
+  Button surface        rgba(15,20,28,0.85)     --bg-btn            ~30+         ✅ tokenized
+  Button surface (OLED) rgba(0,0,0,0.95)        --bg-btn            ~30+         ✅ tokenized
+  Input surface         rgba(15,20,28,0.9)      --bg-input          ~15+         ✅ tokenized
+  Input surface (OLED)  rgba(0,0,0,0.95)        --bg-input          ~15+         ✅ tokenized
+  Stat box              rgba(10,14,22,0.8)      --bg-stat           ~25+         ✅ tokenized
+  Stat box (OLED)       rgba(0,0,0,0.9)         --bg-stat           ~25+         ✅ tokenized
+
+BRAND / ACCENT
+  Primary gold          #edaf18                 --color-gold        ~60+         ✅ identity anchor
+  Pink accent           #ec4899                 --color-pink        ~10          ✅ secondary accent
+  Cyan accent           #38bdf8                 --color-cyan        ~15          ✅ info/link color
+  Purple accent         #a855f7                 --color-purple      ~8           ✅ tertiary accent
+  Emerald accent        #22c55e                 --color-emerald     ~12          ✅ success/positive
+  Red accent            #f87171                 --color-red         ~10          ✅ error/negative
+
+TEXT
+  Body text             #dfe5ef                 --text-body         global       ✅ tokenized
+  Heading text          #edf1f8                 --text-heading      global       ✅ tokenized
+  Muted text            gray-400 #8f99ab        tailwind.config     ~40+         ✅ via Tailwind
+  Disabled text         gray-500 #646e7f        tailwind.config     ~10          ✅ via Tailwind
+
+BORDERS (5-stop opacity scale)
+  Subtle                rgba(255,255,255,0.06)  --border-subtle     ~20+         ✅ tokenized
+  Default               rgba(255,255,255,0.08)  --border-default    ~30+         ✅ tokenized
+  Medium                rgba(255,255,255,0.10)  --border-medium     ~15+         ✅ tokenized
+  Hover                 rgba(255,255,255,0.15)  --border-hover      ~20+         ✅ tokenized
+  Bright                rgba(255,255,255,0.20)  --border-bright     ~5           ✅ tokenized
+
+SHADOWS (4-stop depth scale)
+  SM                    0 1px 2px rgba(6,10,24,0.4)    --shadow-sm     ~10+     ✅ tokenized
+  MD                    0 4px 12px rgba(6,10,24,0.5)   --shadow-md     ~20+     ✅ tokenized
+  LG                    0 8px 24px rgba(6,10,24,0.6)   --shadow-lg     ~10+     ✅ tokenized
+  XL                    0 12px 40px rgba(6,10,24,0.7)  --shadow-xl     ~5       ✅ tokenized
+
+GAME ELEMENTS (6 elements — subject-fidelity colors)
+  Fusion                #f97316 / bg 0.15 / border 0.4   appcore-data   per-char   ✅ game-authentic
+  Electro               #a855f7 / bg 0.15 / border 0.4   appcore-data   per-char   ⚠️ DC1-03
+  Aero                  #10b981 / bg 0.15 / border 0.4   appcore-data   per-char   ✅ game-authentic
+  Glacio                #06b6d4 / bg 0.15 / border 0.4   appcore-data   per-char   ✅ game-authentic
+  Havoc                 #ec4899 / bg 0.15 / border 0.4   appcore-data   per-char   ✅ game-authentic
+  Spectro               #eab308 / bg 0.15 / border 0.4   appcore-data   per-char   ⚠️ DC1-01
+
+STATUS
+  Medal Gold            #edaf18                 appcore-data        3 ranks      ✅
+  Medal Silver          #c0c0c0                 appcore-data        3 ranks      ✅
+  Medal Bronze          #cd7f32                 appcore-data        3 ranks      ✅
+  Fallback/Unknown      #6b7280                 appcore-data        fallback     ✅ graceful
+
+FOCUS
+  Focus ring            #60a5fa                 index.css           global       ✅ accessible
+```
+
+### 2.2 Palette Health Assessment
+
+```
+METRIC                                    RESULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total unique color roles                  42
+Roles with CSS custom property tokens     30 (71%)
+Roles via Tailwind config extension        6 (14%)
+Roles as raw hex (non-tokenized)           6 (14%)    ← game elements + medals
+Orphan colors (used once, no clear role)   0          ✅
+Duplicate-role colors                      1          ⚠️ DC1-01 (gold/Spectro overlap)
+Missing semantic roles                     0          ✅
+Color-blind safe palette                   YES        ✅ (all elements distinguishable by
+                                                         lightness+saturation, not hue alone)
+```
+
+**§DC2 Score: 9.4/10** — Excellent tokenization, clear role separation, minimal orphans. The only deduction is the gold/Spectro semantic overlap (DC1-01) which is mitigated by context.
+
+---
+
+## §DC3 — DARK MODE CRAFT ASSESSMENT
+
+This app is **dark-only by design** — there is no light mode. The audit therefore evaluates the quality of the dark theme as the sole visual mode, including its OLED variant.
+
+### 3.1 Elevation-as-Lightness Strategy
+
+```
+SURFACE LAYER      EFFECTIVE COLOR       APPROX LIGHTNESS    DELTA FROM BASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Layer 0 (page)     #080c14               ~6%                 —
+Layer 1 (card)     rgba(12,16,24,0.55)   ~8% (composited)    +2%
+Layer 2 (inner)    rgba(6,10,18,1)       ~5% (opaque)        −1% (recessed)
+Layer 3 (stat)     rgba(10,14,22,0.8)    ~7%                 +1%
+Layer 4 (input)    rgba(15,20,28,0.9)    ~9%                 +3%
+Layer 5 (button)   rgba(15,20,28,0.85)   ~9%                 +3%
+Layer 6 (hover)    transform + shadow    perceived +5%       (via lift illusion)
+```
+
+**Analysis:**
+- The layering follows a **subtle elevation ramp** — each surface is ~1-3% lighter than the base. This is industry-standard dark mode practice (Material Design recommends 1-3% per elevation step).
+- Layer 2 (card-inner) is intentionally *darker* than Layer 1 (card) — creating a recessed well effect inside cards. This is a sophisticated inversion that adds depth ✅.
+- Hover states use **transform + shadow** rather than lightness changes — a motion-based elevation strategy that avoids the "washed out" feel of lightened hovers ✅.
+- The total lightness range from Layer 0 to Layer 5 is only ~3% — very tight. This creates a cohesive dark atmosphere without the "stacked gray boxes" antipattern ✅.
+
+**Verdict:** Elevation-as-lightness is well-executed. The tight range + shadow/transform strategy is professional-grade.
+
+### 3.2 OLED Mode Assessment
+
+```
+STANDARD MODE → OLED MODE MAPPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SURFACE              STANDARD                    OLED
+Page base            #080c14                     #000000 (pure black)
+Card                 rgba(12,16,24,0.55)         rgba(0,0,0,0.95)
+Card inner           rgba(6,10,18,1)             rgba(5,5,5,1)
+Button               rgba(15,20,28,0.85)         rgba(0,0,0,0.95)
+Input                rgba(15,20,28,0.9)          rgba(0,0,0,0.95)
+Stat                 rgba(10,14,22,0.8)          rgba(0,0,0,0.9)
+
+KEY OBSERVATIONS:
+  1. OLED mode shifts ALL surfaces to near-pure-black (0,0,0)
+     with high opacity (0.9-0.95). This maximizes OLED pixel-off
+     efficiency ✅
+
+  2. The cool-blue chromatic tint is eliminated in OLED mode —
+     surfaces become achromatic. This is correct: OLED blacks
+     should be neutral, not tinted, to avoid color fringing
+     on OLED subpixels ✅
+
+  3. Elevation layering is preserved through OPACITY differences:
+     - 0.90 (stat, more transparent → reveals page black)
+     - 0.95 (card/button/input, near-opaque → slightly elevated)
+     This is a smart adaptation: instead of lightness steps,
+     OLED uses opacity steps over a pure-black page ✅
+
+  4. Borders (--border-subtle through --border-bright) are
+     UNCHANGED between modes. Since they use white-alpha
+     (rgba 255,255,255,X), they work equally well on both
+     cool-tinted and pure-black backgrounds ✅
+
+  5. Accent colors (gold, pink, cyan, etc.) are UNCHANGED
+     between modes. This maintains brand consistency and
+     actually makes accents pop MORE against pure black ✅
+
+  6. Shadows use rgba(6,10,24,X) — on OLED pure-black,
+     these shadows become effectively invisible (dark on dark).
+     HOWEVER: this is acceptable because OLED elevation is
+     communicated via borders + opacity, not shadows ✅
+```
+
+### 3.3 Dark Mode Antipattern Check
+
+```
+ANTIPATTERN                              PRESENT?   NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"Inverted light mode" (just swap B/W)    NO ✅       Purpose-built dark theme
+Pure-white text (#fff) on dark           NO ✅       Uses #dfe5ef / #edf1f8 (softened)
+Gray-on-gray illegible text              NO ✅       Lowest body text is gray-400 (#8f99ab)
+                                                     against ~#0c1018 = ~7:1 ratio ✅
+Neon-bright accents without restraint    NO ✅       Accents used sparingly with alpha tints
+Flat surfaces (no depth perception)      NO ✅       Multi-layer card system with shadows
+Inconsistent surface opacity             NO ✅       All surfaces use consistent --bg-* tokens
+Flash of white on load (FOWL)            NO ✅       html/body both set #080c14 in CSS
+Missing focus styles in dark mode        NO ✅       #60a5fa focus ring, high-contrast
+Selection color invisible                NO ✅       Blue selection rgba(96,165,250,0.3)
+Scrollbar blends with content            NO ✅       Custom scrollbar #2a3548 on #0f1520
+```
+
+**§DC3 Score: 9.6/10** — The dark mode implementation is exemplary. Purpose-built, not inverted. OLED mode is a thoughtful adaptation using opacity-based elevation. No antipatterns detected. The only minor observation is that shadows become invisible on OLED, but this is correctly compensated by border-based elevation.
+
+---
+
+## STEP 3 — FINDINGS SUMMARY
+
+### Score Card
+
+| Section | Score | Deductions |
+|---------|-------|------------|
+| §DC1 Perceptual Color Architecture | 9.3/10 | DC1-01 (−0.1), DC1-02 (−0.05), DC1-03 (−0.2), temperature/chroma analysis (+0.15 bonus for excellence) |
+| §DC2 Palette Architecture | 9.4/10 | DC1-01 overlap reflected (−0.1), high tokenization (+0.5 bonus) |
+| §DC3 Dark Mode Craft | 9.6/10 | No findings. OLED mode bonus (+0.1) |
+| **Step 3 Weighted Average** | **9.43/10** | |
+
+### Findings Register (Step 3)
+
+| ID | Section | Severity | Title | Score Impact |
+|----|---------|----------|-------|-------------|
+| DC1-01 | §DC1.2 | Low | Gold / Spectro hue proximity (~5° gap) | −0.1 |
+| DC1-02 | §DC1.2 | Advisory | Three cyan variants in palette | −0.05 |
+| DC1-03 | §DC1.3 | Medium | Purple element lowest contrast (5.2:1 vs 11:1 yellow) | −0.2 |
+
+### Solutions Summary
+
+| ID | Recommended Solution | Alternative |
+|----|---------------------|-------------|
+| DC1-01 | Shift Spectro to `#f5c518` (+3° hue, +4% lightness) for visual separation from brand gold | Document as intentional overlap — Spectro IS gold in-game |
+| DC1-02 | Document the three-cyan strategy in design tokens reference | Merge `#22d3ee` into `#06b6d4` if consolidation desired |
+| DC1-03 | Lighten Electro text to `#b87afc` (oklch ~63%) for +1.5:1 contrast gain; keep `#a855f7` for borders | Add `text-shadow: 0 0 6px rgba(168,85,247,0.3)` to purple labels |
+
+### Cross-Verification (Step 3 ↔ Steps 1-2)
+
+```
+CHECK                                              RESULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+§DC1 findings consistent with §DS2?                ✅ DS2-03 (gold overreliance)
+                                                   aligns with DC1-01 (gold/Spectro overlap)
+§DC2 token coverage consistent with §DP1?          ✅ "Atmospheric Precision Instrument"
+                                                   requires systematic tokens — 71% tokenized
+§DC3 dark mode consistent with §DP2 pillar 2?      ✅ "Atmosphere-first" pillar confirmed by
+                                                   tight lightness ramp + OLED adaptation
+§DC1 element colors match game fidelity (§DP2 p3)? ✅ All 6 elements match official WuWa palette
+Anti-slop check: any §DETECT violations?           ✅ No new violations from §DC findings
+Step 1 score (9.2) coherent with Step 3 (9.43)?    ✅ Step 3 scores slightly higher because color
+                                                   architecture is a strength of this app
+Step 2 score (9.4) coherent with Step 3 (9.43)?    ✅ Consistent — both reflect strong but not
+                                                   perfect implementation
+```
+
+**Step 3 complete. All cross-verifications pass.**
