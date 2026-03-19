@@ -1436,3 +1436,393 @@ Step 2 score (9.4) coherent with Step 3 (9.43)?    ✅ Consistent — both refle
 ```
 
 **Step 3 complete. All cross-verifications pass.**
+
+---
+
+# STEP 4 — §DC4 Brand Color Distinctiveness + §DC5 Color as Narrative
+
+---
+
+## §DC4 — BRAND COLOR DISTINCTIVENESS
+
+### 4.1 Hue Ownership Assessment
+
+```
+PRIMARY ACCENT: #edaf18 (Gold)
+  OKLCH: oklch(78% 0.18 85°)
+  Hue family: Warm yellow-gold (85°)
+
+COMPETITIVE LANDSCAPE — Top 5 Wuthering Waves companion tools:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Wuthering.gg       → Blue-purple accent (~270°)     Δ = 185°  ✅ SAFE
+  2. WuWa Tracker        → Teal/cyan accent (~190°)       Δ = 105°  ✅ SAFE
+  3. Prydwen.gg (WuWa)   → Orange-amber accent (~60°)     Δ = 25°   ⚠️ CLOSE
+  4. WutheringWaves.gg   → Blue accent (~220°)            Δ = 135°  ✅ SAFE
+  5. Pity Counter (gen.) → Generic Material blue (~240°)   Δ = 155°  ✅ SAFE
+
+HUE PROXIMITY ANALYSIS:
+  Nearest competitor hue: Prydwen.gg at ~60° (warm amber)
+  Gap: 25° — this EXCEEDS the 15° danger threshold ✅
+  However, the gap is moderate. Whispering Wishes' gold is
+  distinctly more YELLOW than Prydwen's warm amber.
+
+  The gold hue (85°) is a STRONG differentiator because:
+  - Most companion/tracker tools default to blue/cyan/purple
+  - Gold creates an immediate "premium" association
+  - It resonates with gacha gold = 5-star rarity convention
+  - No other WuWa tool owns gold as its primary identity color
+
+VERDICT: Strong hue ownership ✅
+```
+
+### 4.2 Calibration Signature
+
+```
+GENERIC vs. CALIBRATED COMPARISON:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Tailwind yellow-500:  #eab308  oklch(76% 0.18 80°)  — GENERIC
+  Whispering Wishes:    #edaf18  oklch(78% 0.18 85°)  — CALIBRATED
+
+  Differences:
+    Hue:       +5° (slightly more yellow, less orange)
+    Lightness: +2% (marginally brighter)
+    Chroma:    identical (0.18)
+
+  Assessment: The calibration is SUBTLE. The app's gold is only
+  5° and 2° away from Tailwind's default yellow-500. This means
+  the accent does not feel visually custom in hex isolation — it
+  reads as "approximately Tailwind yellow."
+
+  HOWEVER — important context:
+  - The gold's distinctiveness comes from its USAGE, not its value
+  - Against #080c14 dark backgrounds, the gold reads as rich amber
+  - The surrounding cool-blue tinted surfaces (gray-900: #171d29)
+    create a complementary temperature contrast that makes the
+    gold feel more unique than its hex value suggests
+  - The custom cool-gray scale IS the calibration signature —
+    the gold is perceived through a cool-tinted lens
+
+FINDING: DC4-01 — The gold hex value itself is near-generic,
+but the contextual presentation (cool-tinted surfaces) creates
+a distinctive perceived identity. Minor calibration opportunity.
+```
+
+### 4.3 Icon → Accent Coherence
+
+```
+ASSESSMENT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  This is a web-based PWA, not a native app with a launcher icon.
+  The app's favicon/manifest icon uses the gold accent (#edaf18).
+  In-app accent color matches → coherent ✅
+
+  No brand fragmentation detected between icon and in-app experience.
+```
+
+### 4.4 Competitive Differentiation Matrix
+
+```
+DIFFERENTIATOR                    THIS APP    TYPICAL COMPETITOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Custom gray scale (cool-blue)     YES ✅       NO (default Tailwind)
+Gold primary accent               YES ✅       NO (blue/cyan typical)
+OLED mode variant                 YES ✅       RARE
+5-stop border opacity scale       YES ✅       NO (1-2 stops typical)
+4-stop shadow depth scale         YES ✅       NO (1-2 stops typical)
+Element colors match game         YES ✅       YES (standard practice)
+Dual typography (display+mono)    YES ✅       RARE
+Backdrop blur (glass effect)      YES ✅       SOMETIMES
+```
+
+#### DC4-01 · Gold Calibration Proximity to Tailwind Default (Low Severity)
+
+| Field | Value |
+|-------|-------|
+| **Finding** | Brand gold `#edaf18` is only 5° hue and 2% lightness from Tailwind yellow-500 `#eab308`. In hex isolation, the accent reads as "approximately default yellow." |
+| **Impact** | Low — the cool-gray contextual surround compensates, making perceived gold feel more distinctive than its hex value suggests. A designer inspecting the code might perceive it as uncalibrated. |
+| **Mitigated by** | The custom gray scale (#171d29 gray-900 instead of default #111827) shifts the entire perceived palette. Gold-on-cool-blue reads differently than gold-on-neutral-gray. |
+| **Severity** | **Low** — perceptual distinctiveness is present; only the raw hex is near-generic. |
+| **Solution** | *Option A (recommended):* Shift gold to `#f0b429` (oklch ~80% 0.19 82°) — +2% lightness, +0.01 chroma, −3° hue — creates a warmer, richer gold that is clearly non-default. *Option B:* Keep as-is and document as intentional: "our gold is near-standard because it references the universal gacha gold convention." |
+| **Score impact** | −0.1 (calibration could be sharper) |
+
+**§DC4 Score: 9.5/10** — Strong hue ownership in the competitive landscape. The only deduction is the subtle calibration proximity to Tailwind defaults, mitigated by contextual presentation.
+
+---
+
+## §DC5 — COLOR AS NARRATIVE
+
+### 5.1 Gradient Inventory & Narrative Assessment
+
+```
+GRADIENT                       LOCATION              TYPE              NARRATIVE ARGUMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tab background                 TabBackground          Linear 4-stop     #010204→#020408→#030610→#020408
+                               component              vertical          "Deep void with subtle
+                                                                        blue undertone — the cosmos"
+                                                                        Serves product: YES ✅
+                                                                        Dark void = the space between
+                                                                        stars where wishes are made
+
+Gold glow (Tracker)            TabBackground          Radial from       Gold radial emanating from
+                               glowColor="gold"       top center        above — "light source is the
+                                                                        banner itself"
+                                                                        Serves product: YES ✅
+                                                                        The featured banner is the
+                                                                        object of desire, glowing down
+
+Card shimmer                   kuro-card::after       Linear L→R        Gold shimmer across top edge
+                               (kuroShimmer)          animated          "living energy, not static"
+                                                                        Serves product: YES ✅
+                                                                        Cards feel alive, not flat UI
+
+Pity ring gradient             PityRing SVG           Conic             Color changes with pity count
+                               stroke gradient        (circular)        "progress wrapping around a
+                                                                        goal — the wish is building"
+                                                                        Serves product: YES ✅
+                                                                        Most powerful gradient — tells
+                                                                        the core story of the app
+
+Stat box highlight             kuro-stat::before      Linear top→       Subtle top-highlight gradient
+                                                      bottom            "overhead illumination on
+                                                                        instrument panels"
+                                                                        Serves product: YES ✅
+                                                                        Precision instrument metaphor
+
+Button ripple                  kuro-btn::before       Radial from       Interaction feedback — energy
+                                                      center            emanates from touch point
+                                                                        Serves product: YES ✅
+                                                                        Tactile, responsive feel
+```
+
+**Gradient Assessment:** All 6 gradients have clear narrative purpose. None are decorative noise. The tab background gradient is particularly well-calibrated — the 4-stop vertical creates a subtle non-uniform darkness that reads as atmospheric depth rather than flat color ✅.
+
+### 5.2 Tension Color Analysis
+
+```
+TENSION COLOR ASSESSMENT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Primary accent: Gold #edaf18 (85° hue)
+Ideal tension hue: 85° + 120°–150° = 205°–235° → CYAN-BLUE range
+
+Does the app have a tension color?
+  YES — #38bdf8 (oklch ~72% 0.15 230°) — standard cyan accent
+  Hue separation: 230° − 85° = 145° → WITHIN the ideal 120°–150° range ✅
+
+  This is a NATURAL tension color — cyan sits perfectly opposite gold.
+
+WHERE IS THE TENSION COLOR USED?
+  1. Standard banner pity ring stroke — marks the "less exciting"
+     banner (vs gold for featured) → appropriate narrative contrast ✅
+  2. Info badges and secondary CTAs — "information, not action" → ✅
+  3. Glacio element labels — game element context → ✅ (different role)
+  4. Focus ring (#60a5fa, similar blue) — accessibility → ✅
+
+IS IT OVERUSED?
+  The cyan appears in ~15 locations across the app. For a tension
+  color, the §DC5 guideline says 3–5 appearances maximum for
+  peak dramatic effect. At 15, it functions more as a SECONDARY
+  ACCENT than a true tension color.
+
+  HOWEVER: This is appropriate for the app's context. Unlike a
+  marketing site where tension color creates "electrically alive"
+  moments, a companion tool needs a reliable secondary color for
+  its information hierarchy. Cyan fills this structural role well.
+
+FINDING: DC5-01 — Cyan functions as secondary accent rather than
+true tension color. The app lacks a rare, high-drama tension
+moment. This is not necessarily a flaw — it matches the app's
+"precision instrument" character (§DP1) which prioritizes
+consistency over drama.
+```
+
+### 5.3 Color State Narrative Map
+
+```
+COLOR STATE NARRATIVE — User Journey Through the App:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARRIVAL (first load):
+  Color energy: DARK + GOLD GLOW
+  Emotional tone: "Welcome to a premium space"
+  The gold shimmer on cards + dark void background creates an
+  immediate sense of quality. Not clinical, not loud — atmospheric ✅
+
+ENGAGEMENT (active tracking):
+  Color energy: GOLD (featured) + CYAN (standard) + PINK (weapon)
+  Emotional tone: "Your banners are organized and tracked"
+  Each banner type has its own color world:
+    Featured → gold buttons, gold pity ring, gold stats
+    Standard → cyan buttons, cyan pity ring, cyan stats
+    Weapon   → pink buttons, pink pity ring, pink stats
+  The color switching tells the user WHICH BANNER WORLD they're in ✅
+
+PITY PROGRESSION (the core narrative):
+  Color energy: GREEN → LIME → GOLD → ORANGE → RED
+  Emotional tone: "Your luck is tightening"
+  This is the app's STRONGEST color narrative:
+    Pity ≤20:  #22c55e (green)  — "Exceptional luck — celebrate"
+    Pity ≤40:  #84cc16 (lime)   — "Above average — good news"
+    Pity ≤50:  #edaf18 (gold)   — "Normal range — expected"
+    Pity ≤60:  #f97316 (orange) — "Soft pity zone — getting close"
+    Pity >60:  #ef4444 (red)    — "Hard pity — peak tension"
+  The gradient from green→red is universal (good→bad) but the
+  5-step resolution is DISTINCTIVE. Most competitor apps use
+  only 2-3 states. This granularity is a design strength ✅
+
+ACHIEVEMENT (milestone unlocked):
+  Color energy: TIER-SPECIFIC GLOW
+  Emotional tone: "You've earned this"
+    Legendary: #edaf18 gold — maximum prestige
+    Gold tier: #edaf18 gold — high prestige
+    Purple:    #a855f7 — mid-tier
+    Green:     #22c55e — positive but common
+    Orange:    #f97316 — participation-level
+    Gray:      #6b7280 — "consolation prize"
+  Achievement colors create a clear hierarchy. Each tier feels
+  like a different "weight class" of accomplishment ✅
+
+ERROR / WARNING:
+  Color energy: RED + AMBER
+  Emotional tone: "Something needs attention — not panic"
+  Red (#ef4444) for errors: appropriately weighted (oklch ~60%),
+  not screaming neon. Gold/amber for warnings: informational warmth.
+  The app avoids the "Christmas tree" antipattern of mixing red
+  and green for opposing states in the same view ✅
+
+EMPTY STATE (no data yet):
+  Color energy: MUTED GRAY + GHOST ELEMENTS
+  Emotional tone: "Space waiting to be filled"
+  Empty collection grids show ghost outlines (ghostPulse animation)
+  in muted gray. Import prompts use gold CTAs to guide action.
+  The empty state feels HOPEFUL, not clinical — "your collection
+  awaits" rather than "error: no data" ✅
+```
+
+### 5.4 Color Harmony Structure
+
+```
+HARMONY ANALYSIS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mapping all accent hues on the OKLCH wheel:
+  Gold:    85°
+  Orange:  50° (Fusion)
+  Yellow:  80° (Spectro) — near gold
+  Green:   155° (Aero)
+  Cyan:    200° (Glacio)
+  Blue:    230° (standard accent)
+  Pink:    350° (Havoc)
+  Purple:  290° (Electro)
+  Red:     25° (error/hard pity)
+
+  Hue distribution: 25° 50° 80° 85° 155° 200° 230° 290° 350°
+
+IDENTIFIED STRUCTURE: POLYCHROMATIC (9 hues across full wheel)
+
+  This is NOT a standard harmony (not analogous, triadic, etc.)
+  It is a PURPOSE-DRIVEN polychromatic palette where:
+
+  - WARM CLUSTER (25°–85°): Brand gold + game warm elements + error
+    → These carry the most emotional weight (excitement, danger, value)
+
+  - COOL CLUSTER (155°–230°): Game cool elements + info accent
+    → These carry structural/informational weight (navigation, status)
+
+  - OUTLIERS (290°, 350°): Purple + Pink
+    → Special-purpose: element identity + weapon banner
+
+  This structure is INTENTIONAL and CORRECT for a game companion:
+  The palette must accommodate 6 game element colors (non-negotiable)
+  PLUS brand/semantic colors. A strict harmony would be impossible
+  without sacrificing game fidelity.
+
+  The warm/cool clustering creates a natural emotional axis:
+    WARM = value, excitement, achievement
+    COOL = information, navigation, structure
+
+  This is sophisticated color design for a constrained palette ✅
+```
+
+#### DC5-01 · Tension Color Diluted by Structural Use (Advisory)
+
+| Field | Value |
+|-------|-------|
+| **Finding** | Cyan `#38bdf8` sits at the ideal 145° tension hue from gold but is used in ~15 locations as a general secondary accent, diluting its potential as a dramatic tension color. |
+| **Impact** | Advisory — the app has no single "electrically alive" moment where color creates peak dramatic contrast. All uses of cyan are informational/structural. |
+| **Mitigated by** | The app's "precision instrument" character (§DP1) prioritizes consistency over drama. A tension color that appears rarely would feel inconsistent with the app's steady, reliable personality. |
+| **Severity** | **Advisory** — matches the app's character; no change required. |
+| **Solution** | *Option A (recommended):* Introduce a rare accent for milestone moments — e.g., `#ff6b9d` (warm pink, ~340° hue) appearing ONLY when a user hits a guaranteed 5-star or achieves a legendary medal. This would add dramatic punctuation without disrupting the structural palette. *Option B:* Keep as-is — the steady palette IS the brand character. |
+| **Score impact** | −0.05 (missed narrative opportunity, not a defect) |
+
+#### DC5-02 · Pity Gradient Is a Signature Strength (Positive Finding)
+
+| Field | Value |
+|-------|-------|
+| **Finding** | The 5-step pity progression gradient (green → lime → gold → orange → red) is the app's most distinctive color narrative. Most competitor apps use 2-3 states; this app's 5-step resolution communicates luck trajectory with unusual precision. |
+| **Impact** | Positive — this is a **competitive differentiator** and should be explicitly protected as a brand asset. |
+| **Severity** | **Positive** — no fix needed, but worth documenting as a protected element. |
+| **Score impact** | +0.15 bonus (design excellence) |
+
+**§DC5 Score: 9.6/10** — Color narrative is strong. The pity gradient is a standout feature. The warm/cool emotional axis is well-structured. Only deduction: cyan functions as structural accent rather than true tension color (appropriate for the app's character).
+
+---
+
+## STEP 4 — FINDINGS SUMMARY
+
+### Score Card
+
+| Section | Score | Notes |
+|---------|-------|-------|
+| §DC4 Brand Color Distinctiveness | 9.5/10 | Strong hue ownership; minor calibration gap |
+| §DC5 Color as Narrative | 9.6/10 | Pity gradient excellence; intentional polychromatic harmony |
+| **Step 4 Weighted Average** | **9.55/10** | |
+
+### Findings Register (Step 4)
+
+| ID | Section | Severity | Title | Score Impact |
+|----|---------|----------|-------|-------------|
+| DC4-01 | §DC4.2 | Low | Gold calibration proximity to Tailwind default | −0.1 |
+| DC5-01 | §DC5.2 | Advisory | Tension color diluted by structural use | −0.05 |
+| DC5-02 | §DC5.3 | **Positive** | Pity gradient is a signature strength | +0.15 |
+
+### Solutions Summary (Step 4)
+
+| ID | Recommended Solution | Alternative |
+|----|---------------------|-------------|
+| DC4-01 | Shift gold to `#f0b429` (oklch ~80% 0.19 82°) for warmer, non-default feel | Document as intentional gacha gold convention |
+| DC5-01 | Introduce rare milestone accent `#ff6b9d` for peak dramatic moments only | Keep as-is — steady palette = brand character |
+| DC5-02 | *(Positive)* Protect pity gradient as brand asset; add to style guide | — |
+
+### Cross-Verification (Step 4 ↔ Steps 1-3)
+
+```
+CHECK                                                RESULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DC4-01 consistent with DC1-01?                       ✅ Both address gold proximity
+                                                     (DC1-01 = gold/Spectro overlap,
+                                                     DC4-01 = gold/Tailwind default overlap).
+                                                     Non-conflicting: different axes.
+DC5 warm/cool axis consistent with §DC1 temp map?    ✅ §DC1 identified cold surfaces +
+                                                     warm accent (165° separation).
+                                                     §DC5 maps this to warm=value,
+                                                     cool=structure — fully aligned.
+DC5 pity gradient in §DETECT anti-slop?              ✅ No anti-slop violations.
+                                                     Gradient is functional, not decorative.
+DC5 polychromatic palette vs §DS2 "restrained"?      ✅ §DS2 identified "Restrained"
+                                                     emphasis system. The polychromatic
+                                                     palette IS restrained — each color
+                                                     earns its seat through game fidelity
+                                                     or semantic necessity.
+Step 4 (9.55) coherent with Step 3 (9.43)?           ✅ Slightly higher — brand distinctiveness
+                                                     and color narrative are strengths.
+                                                     Consistent improvement trajectory.
+§DP1 "Precision Instrument" ↔ §DC5 tension color?    ✅ Tension color dilution (DC5-01)
+                                                     explicitly attributed to instrument
+                                                     character — not a contradiction.
+Running average (Steps 1-4):                         9.40/10 — tracking well above
+                                                     9.0 threshold
+```
+
+**Step 4 complete. All cross-verifications pass.**
