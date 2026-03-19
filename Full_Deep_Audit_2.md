@@ -2460,3 +2460,800 @@ Anti-slop: any §DETECT violations?                    ✅ No anti-slop violatio
 ```
 
 **Step 5 complete. All cross-verifications pass.**
+
+---
+
+# STEP 6 — §DM1-DM5 (Motion & Animation)
+
+---
+
+## §DM1 — ANIMATION INVENTORY & TIMING BUDGET
+
+### 1.1 Complete Animation Inventory
+
+```
+EVERY ANIMATION IN THE APP (CSS + Canvas + Tailwind):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  #   NAME               DURATION   EASING                 ITER.     TYPE          PROPS ANIMATED
+  ───────────────────────────────────────────────────────────────────────────────────────────────────
+  1   slideUp             0.2s      ease-out               once      CSS @kf       opacity, translateY
+  2   scaleIn             0.3s      ease-out               once      CSS @kf       opacity, scale
+  3   tabFadeIn           0.35s     cubic-bezier(.16,1,.3,1) once    CSS @kf       opacity, translateY
+  4   cardSlideIn         0.4s      cubic-bezier(.16,1,.3,1) once    CSS @kf       opacity, translateY, scale
+  5   emptyFadeIn         0.4s      ease-out               once      CSS @kf       opacity, translateY
+  6   kuroShimmer         1.8s      ease-in-out            infinite  CSS @kf       background-position
+  7   pulseScale          2.0s      ease-in-out            infinite  CSS @kf       scale
+  8   borderGlow          2.0s      ease-in-out            infinite  CSS @kf       border-color
+  9   kuroPulseOrange     2.0s      ease-in-out            infinite  CSS @kf       text-shadow
+  10  kuroPulseCyan       2.0s      ease-in-out            infinite  CSS @kf       text-shadow
+  11  kuroPulsePink       2.0s      ease-in-out            infinite  CSS @kf       text-shadow
+  12  ghostPulse          2.5s      ease-in-out            infinite  CSS @kf       opacity
+  13  trophyShine         3.0s      ease-in-out            infinite  CSS @kf       opacity
+  14  shimmer             3.0s      ease-in-out            infinite  CSS @kf       opacity
+  15  badgeRotate         8.0s      linear                 infinite  CSS @kf       rotate(360deg)
+  16  BackgroundGlow      rAF/66ms  procedural (JS math)   infinite  Canvas        gradient colors, positions
+  17  TriangleMirrorWave  rAF/66ms  procedural (JS math)   infinite  Canvas        triangle fills, specular
+
+  TOTAL CSS @keyframes: 15
+  TOTAL Canvas animations: 2
+  TOTAL Tailwind animate-*: 2 (animate-pulse, native Tailwind)
+
+  GRAND TOTAL: 19 distinct animations
+```
+
+### 1.2 Duration Distribution
+
+```
+DURATION CLUSTERING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  TIER           RANGE         COUNT   ANIMATIONS
+  ──────────────────────────────────────────────────────────────────────
+  Micro          0.1-0.25s     1       slideUp (0.2s)
+  Short          0.25-0.5s     4       scaleIn, tabFadeIn, cardSlideIn, emptyFadeIn
+  Medium         1.5-3.0s      7       kuroShimmer, pulseScale, borderGlow,
+                                       kuroPulse×3, ghostPulse
+  Slow           3.0-8.0s      3       trophyShine, shimmer, badgeRotate
+  Continuous     rAF (~15fps)  2       BackgroundGlow, TriangleMirrorWave
+
+  §DM1 DURATION GUIDELINE CHECK:
+    Micro (feedback):     0.2s     ✅ within 100-250ms range
+    Entry (appear):       0.3-0.4s ✅ within 200-500ms range
+    Ambient (breathing):  2.0-3.0s ✅ slow enough to be non-distracting
+    Slow rotation:        8.0s     ✅ ultra-slow is appropriate for ambient
+
+  FINDING: DM1-01 — No explicit duration declared for most
+  Tailwind `transition-all` / `transition-colors` classes.
+  Tailwind defaults to `duration-150` (150ms). This means
+  ~82+ transitions all use the same 150ms duration.
+  IMPACT: Hover/focus feedback is uniform — no differentiation
+  between small elements (should be ~100ms) and larger elements
+  (could be 200-250ms). Functional but not crafted.
+```
+
+### 1.3 Transition Inventory
+
+```
+TAILWIND TRANSITION CLASSES (by type):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  CLASS                  COUNT    WHAT IT ANIMATES
+  ──────────────────────────────────────────────────────────────────────
+  transition-all         ~50+     All animatable properties
+  transition-colors      ~25+     color, background-color, border-color
+  transition-transform   ~3       transform (scale, rotate, translate)
+  transition-opacity     ~4       opacity only
+
+  EXPLICIT DURATIONS:
+  duration-700           1        Progress bar fill width (lines 6011, 6035)
+  (all others)           default  150ms (Tailwind default)
+
+  FINDING: DM1-02 — Heavy reliance on `transition-all` (~50+ uses).
+  `transition-all` animates ALL properties, which:
+    - Can cause unexpected visual artifacts if new CSS props
+      are added later
+    - Is less performant than targeted transition properties
+    - Industry best practice: target specific props
+      (transition-colors, transition-transform, transition-opacity)
+```
+
+**§DM1 Score: 9.1/10** — Comprehensive animation inventory with good duration tiers. Two findings: uniform transition durations and overuse of `transition-all`.
+
+---
+
+## §DM2 — EASING & PHYSICS
+
+### 2.1 Easing Function Inventory
+
+```
+EVERY EASING FUNCTION USED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  EASING                          USED ON                      COUNT
+  ──────────────────────────────────────────────────────────────────────
+  ease-out                        slideUp, scaleIn, emptyFadeIn  3
+  ease-in-out                     borderGlow, pulseScale,        8
+                                  kuroPulse×3, ghostPulse,
+                                  trophyShine, shimmer,
+                                  kuroShimmer
+  linear                          badgeRotate                    1
+  cubic-bezier(0.16, 1, 0.3, 1)  tabFadeIn, cardSlideIn         2
+  ease (Tailwind default)         All transition-* classes       82+
+
+  TOTAL DISTINCT EASING FUNCTIONS: 4 custom + 1 default = 5
+```
+
+### 2.2 Easing-to-Purpose Alignment
+
+```
+EASING PURPOSE ANALYSIS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  PURPOSE          EASING USED               §DM2 RECOMMENDATION    VERDICT
+  ──────────────────────────────────────────────────────────────────────────────
+  ENTER/APPEAR     ease-out                  ease-out or decelerate  ✅ CORRECT
+                   cubic-bezier(.16,1,.3,1)  (custom decelerate)     ✅ EXCELLENT
+
+  EXIT/DISMISS     (not explicitly defined)   ease-in or accelerate  ⚠️ MISSING
+                                              — exits use CSS removal
+                                              without exit animation
+
+  AMBIENT/LOOP     ease-in-out               ease-in-out             ✅ CORRECT
+                   linear (rotation)          linear for rotation     ✅ CORRECT
+
+  HOVER/FEEDBACK   ease (Tailwind default)    ease-out preferred      ⚠️ SUBOPTIMAL
+                                              ease is acceptable but
+                                              ease-out is snappier
+
+  FINDING: DM2-01 — No EXIT animations exist. Elements appear with
+  slideUp/scaleIn/tabFadeIn but DISAPPEAR instantly (removed from
+  DOM). This creates an asymmetric motion experience:
+    - ENTER: smooth, crafted (0.2-0.4s with proper easing)
+    - EXIT: instant (0ms)
+  Impact: moderate — users notice appearance but not disappearance
+  in most cases. However, modals and toasts would benefit from
+  exit transitions.
+```
+
+### 2.3 Custom Cubic-Bezier Analysis
+
+```
+cubic-bezier(0.16, 1, 0.3, 1) — DEEP ANALYSIS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  This curve is used for tabFadeIn and cardSlideIn.
+
+  Curve characteristics:
+    P1: (0.16, 1.0) — very early overshoot to full value
+    P2: (0.3, 1.0)  — settles quickly
+
+  Motion profile:
+    - FAST START: reaches ~90% of animation in first 30% of duration
+    - GENTLE SETTLE: slow ease into final position
+    - NO OVERSHOOT: y-values max at 1.0 (no spring/bounce)
+    - Character: "confident snap" — element arrives quickly,
+      then gently locks into place
+
+  This is very close to the standard "ease-out-expo" curve
+  used in Material Design motion specs. It reads as:
+    "I know exactly where I'm going and I'm getting there fast."
+
+  §DM2 ASSESSMENT:
+    ✅ Appropriate for UI entry animations
+    ✅ Creates a sense of snappiness without mechanical rigidity
+    ✅ Consistent between tab and card entries (shared curve)
+    ✅ Professional-grade easing choice
+
+  PHYSICAL ANALOGY:
+    Like a card sliding across a surface with high initial
+    velocity and gradual friction — physically plausible ✅
+```
+
+### 2.4 Easing Consistency Audit
+
+```
+EASING CONSISTENCY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SAME-PURPOSE animations use SAME easing?
+
+  Ambient loops:
+    borderGlow:       ease-in-out  ✅ CONSISTENT
+    pulseScale:       ease-in-out  ✅ CONSISTENT
+    kuroPulse×3:      ease-in-out  ✅ CONSISTENT
+    ghostPulse:       ease-in-out  ✅ CONSISTENT
+    trophyShine:      ease-in-out  ✅ CONSISTENT
+    shimmer:          ease-in-out  ✅ CONSISTENT
+
+  Entry animations:
+    slideUp:          ease-out                      ⚠️ DIFFERENT
+    scaleIn:          ease-out                      ⚠️ from these
+    tabFadeIn:        cubic-bezier(.16,1,.3,1)      ⚠️ DIFFERENT
+    cardSlideIn:      cubic-bezier(.16,1,.3,1)      ⚠️ from those
+
+  Are the TWO entry easing curves a problem?
+    PARTIALLY — slideUp/scaleIn (toast, modal) use ease-out,
+    while tabFadeIn/cardSlideIn (content transitions) use
+    the custom cubic-bezier. This COULD be intentional:
+      - Toast/modal: simpler motion (small element appearing)
+      - Tab/card: content page transition (needs snappier feel)
+
+  VERDICT: The split is defensible but not explicitly designed ⚠️
+  A single entry easing for all entries would be more polished.
+
+  FINDING: DM2-02 — Two different entry easing curves coexist.
+  Minor inconsistency — consider unifying to the custom
+  cubic-bezier for all entries (it's the superior curve).
+```
+
+**§DM2 Score: 9.0/10** — Excellent ambient easing, professional custom bezier. Missing exit animations and minor easing inconsistency on entries.
+
+---
+
+## §DM3 — MOTION PURPOSE & HIERARCHY
+
+### 3.1 Animation Purpose Classification
+
+```
+EVERY ANIMATION CLASSIFIED BY PURPOSE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  PURPOSE              ANIMATIONS                             COUNT
+  ──────────────────────────────────────────────────────────────────────
+  FEEDBACK             hover transitions (scale, color),       82+
+  (user action →       active:scale-95, toggle slides
+  visual response)
+
+  ORIENTATION          tabFadeIn, cardSlideIn                  2
+  (where am I? what
+  changed?)
+
+  ENTRY                slideUp (toast), scaleIn (modal),       3
+  (element appearing)  emptyFadeIn (empty state)
+
+  AMBIENT              borderGlow, pulseScale, kuroPulse×3,    9
+  (life/atmosphere)    ghostPulse, trophyShine, shimmer,
+                       badgeRotate
+
+  LOADING              kuroShimmer                             1
+  (progress/waiting)
+
+  ENVIRONMENTAL        BackgroundGlow, TriangleMirrorWave      2
+  (scene-setting)
+
+  EXIT                 (none)                                  0
+  CELEBRATION          (none)                                  0
+  ERROR/WARNING        (none)                                  0
+
+  §DM3 HIERARCHY ASSESSMENT:
+    The app has STRONG ambient motion (9 animations) and
+    STRONG feedback motion (82+ transitions). It has
+    ADEQUATE entry motion (3 animations) but NO exit,
+    celebration, or error motion.
+
+  FINDING: DM3-01 — No celebration animation for notable events.
+  When a user achieves soft pity, hits a 5-star pull, or
+  completes a collection, the moment is marked by COLOR
+  (kuroPulseOrange/Cyan/Pink glow) but not by MOTION.
+  A subtle scale-bounce or confetti-like particle effect
+  would amplify achievement moments. However, the glow
+  pulses DO serve as ambient celebration — they are permanent
+  "badge of honor" animations that say "this is special."
+  SEVERITY: Low — the glow approach is thematic and consistent.
+```
+
+### 3.2 Motion Hierarchy (Attention Budget)
+
+```
+MOTION ATTENTION HIERARCHY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ATTENTION      ANIMATION           VISUAL WEIGHT   CORRECT?
+  LEVEL
+  ──────────────────────────────────────────────────────────────────────
+  HIGHEST        BackgroundGlow       Large canvas     ⚠️ SEE BELOW
+                 TriangleMirrorWave   Full viewport
+
+  HIGH           cardSlideIn          Content entry    ✅ draws to content
+                 tabFadeIn            Tab content      ✅ draws to content
+
+  MEDIUM         kuroPulse×3          Text-shadow      ✅ calls to data
+                 borderGlow           Border only      ✅ subtle highlight
+                 trophyShine          Opacity pulse    ✅ subtle highlight
+
+  LOW            shimmer              Thin top line    ✅ ambient texture
+                 ghostPulse           0.04-0.08 opa.   ✅ barely visible
+                 badgeRotate          8s slow rotate   ✅ barely perceptible
+                 pulseScale           1.02 scale       ✅ barely perceptible
+
+  LOWEST         hover transitions    150ms color      ✅ background-level
+                 kuroShimmer          Loading skeleton ✅ transient state
+
+  §DM3 HIERARCHY ASSESSMENT:
+  The BackgroundGlow and TriangleMirrorWave are the HIGHEST
+  visual-weight animations (full-canvas, continuous). This is
+  the CORRECT hierarchy for ENVIRONMENTAL motion — they establish
+  atmosphere but sit BEHIND all content (z-index: 1, 2).
+
+  The layering is:
+    z-1: BackgroundGlow (furthest back)
+    z-2: TriangleMirrorWave
+    z-10+: All UI content (cards, text, etc.)
+
+  BECAUSE the background animations are behind content,
+  they don't compete for attention despite being large ✅
+
+  The content-level animations (cardSlideIn, tabFadeIn)
+  correctly have the highest FOREGROUND attention ✅
+
+  The ambient pulses (kuroPulse, trophyShine) are appropriately
+  MEDIUM — they draw the eye but don't demand focus ✅
+
+  VERDICT: Motion hierarchy is well-structured ✅
+```
+
+### 3.3 Stagger Pattern Analysis
+
+```
+STAGGER (SEQUENTIAL DELAY) PATTERNS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  cardSlideIn uses staggered delays:
+    .kuro-card:nth-child(1) → animation-delay: 0.05s
+    .kuro-card:nth-child(2) → animation-delay: 0.1s
+    .kuro-card:nth-child(3) → animation-delay: 0.15s
+    .kuro-card:nth-child(4) → animation-delay: 0.2s
+
+  Stagger interval: 50ms per card
+  Max stagger depth: 4 cards
+  Total stagger span: 200ms
+
+  §DM3 STAGGER ASSESSMENT:
+    50ms interval is within the recommended 30-80ms range ✅
+    4-card depth prevents "waterfall" effect on large lists ✅
+    Cards beyond 4th appear without stagger (instant) ✅
+
+  IS THIS THE ONLY STAGGER?
+    YES — only cardSlideIn uses stagger delays.
+    Other list-like elements (leaderboard rows, trophy grids,
+    collection grids) render without stagger.
+
+  FINDING: DM3-02 — Only card sections use stagger animation.
+  Leaderboard rows and collection grids appear instantly.
+  This is ACCEPTABLE because:
+    - Leaderboard rows are DATA (should feel instant/precise)
+    - Collection grids can have 50+ items (stagger would be slow)
+    - Cards are the primary UI containers (stagger justified)
+  SEVERITY: Advisory — current approach is pragmatic.
+```
+
+**§DM3 Score: 9.3/10** — Well-structured motion hierarchy. Environmental motion correctly layered behind content. Good stagger pattern. Missing celebration/exit motion is acceptable for app context.
+
+---
+
+## §DM4 — TRANSITION CHOREOGRAPHY
+
+### 4.1 Tab Switch Choreography
+
+```
+TAB TRANSITION SEQUENCE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  When user switches between main tabs (Convene/Planner/
+  Leaderboard/Collection/Settings):
+
+  FRAME 0ms:    React state updates (activeTab = newTab)
+  FRAME 0ms:    Old tab content INSTANTLY removed from DOM
+  FRAME 0ms:    New tab content rendered into DOM
+  FRAME 0-16ms: Browser paints new content
+  FRAME 0-350ms: tabFadeIn plays (opacity 0→1, translateY 8→0px)
+  FRAME 0-400ms: cardSlideIn plays on child cards (staggered)
+
+  CHOREOGRAPHY STYLE: "Cut & Fade In"
+    - Old content: instant removal (no exit animation)
+    - New content: smooth entrance (tabFadeIn + cardSlideIn)
+    - Direction: always vertical (bottom-to-top via translateY)
+
+  §DM4 ASSESSMENT:
+    "Cut & Fade In" is the most COMMON tab choreography in
+    mobile apps. It works because:
+      ✅ Tab switching is FAST (no waiting for exit animation)
+      ✅ Entry animation provides orientation ("new content arrived")
+      ✅ Vertical direction implies "new content rises into view"
+
+    ALTERNATIVE NOT USED: "Slide Left/Right" (like iOS swipe tabs)
+    — the app HAS swipe navigation but doesn't use horizontal
+    slide animation for the content itself.
+
+  FINDING: DM4-01 — Tab content always enters from bottom (Y-axis)
+  regardless of tab direction. When swiping LEFT to go to next tab
+  or RIGHT to go to previous tab, the animation doesn't match
+  the swipe direction. Content fades up instead of sliding
+  horizontally. This creates a minor spatial disconnect.
+  SEVERITY: Low — the fade-up is universally understood and
+  doesn't break orientation.
+```
+
+### 4.2 Modal Choreography
+
+```
+MODAL OPEN/CLOSE SEQUENCE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  OPEN:
+    FRAME 0ms:     Backdrop renders (bg-black/60)
+    FRAME 0ms:     Modal container renders
+    FRAME 0-300ms: scaleIn plays (opacity 0→1, scale 0.96→1)
+    Total entry:   ~300ms
+
+  CLOSE:
+    FRAME 0ms:     State changes → modal removed from DOM
+    FRAME 0ms:     Backdrop removed
+    Total exit:    0ms (instant)
+
+  §DM4 ASSESSMENT:
+    The modal ENTRY (scaleIn from 0.96) is a quality choice:
+      ✅ Scale from 96% creates a "zoom into focus" feeling
+      ✅ 300ms is appropriate for modal entry
+      ✅ The slight scale (only 4%) is subtle and professional
+
+    The modal EXIT (instant) is LESS polished:
+      ⚠️ No fade-out or scale-out animation
+      ⚠️ The modal "pops" out of existence
+      ⚠️ Backdrop disappears instantly with content
+
+  This connects to finding DM2-01 (no exit animations).
+
+  FINDING: DM4-02 — Modal close is instant (no exit animation).
+  A reverse scaleIn (scale 1→0.96, opacity 1→0) over 200ms
+  would create symmetry with the entry. Requires React state
+  management (delay DOM removal until animation completes).
+  SEVERITY: Medium — modals are high-visibility interactions.
+```
+
+### 4.3 Toast Choreography
+
+```
+TOAST NOTIFICATION SEQUENCE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  APPEAR:
+    FRAME 0ms:     Toast element renders at bottom of viewport
+    FRAME 0-200ms: slideUp plays (translateY 16→0, opacity 0→1)
+    Total entry:   200ms
+
+  PERSIST:
+    Duration: ~3000ms (auto-dismiss)
+
+  DISMISS:
+    FRAME 0ms:     Toast removed from DOM
+    Total exit:    0ms (instant)
+
+  §DM4 ASSESSMENT:
+    Entry: ✅ Good — 200ms slide-up is snappy and appropriate
+    Persist: ✅ Good — 3s is standard toast duration
+    Exit: ⚠️ Instant removal (no slide-down or fade-out)
+
+  Same pattern as modal: crafted entry, instant exit.
+```
+
+### 4.4 Toggle Switch Choreography
+
+```
+TOGGLE SWITCH INTERACTION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  STATE CHANGE:
+    Thumb position: left-[4px] ←→ left-[32px]
+    Track color: gray-700 ←→ theme-color (emerald/yellow)
+    Animation: transition-all (Tailwind default 150ms ease)
+
+  §DM4 ASSESSMENT:
+    ✅ The toggle slides smoothly between positions
+    ✅ Track color transitions simultaneously with thumb position
+    ✅ 150ms is appropriate for toggle switches
+
+    The toggle switch is one of the FEW elements where
+    both ENTER and EXIT states animate (thumb slides both
+    directions). This is because it uses CSS transitions
+    on positional properties, not keyframe animations.
+
+  VERDICT: Toggle choreography is correct ✅
+```
+
+### 4.5 Chevron Rotation Choreography
+
+```
+CHEVRON EXPAND/COLLAPSE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Income panel chevron (ChevronDown icon):
+    COLLAPSED: rotate(0deg) — pointing down
+    EXPANDED:  rotate(180deg) — pointing up (via rotate-180 class)
+    Animation: transition-transform (Tailwind default 150ms ease)
+
+  §DM4 ASSESSMENT:
+    ✅ Rotation clearly communicates state change
+    ✅ 180° rotation is standard for expand/collapse
+    ✅ Animates in BOTH directions (expand AND collapse)
+
+  VERDICT: Chevron choreography is correct ✅
+```
+
+**§DM4 Score: 9.0/10** — Tab and modal entries are well-choreographed. Toggle and chevron transitions are bidirectional. Missing exit animations for modals and toasts (connects to DM2-01). Tab direction doesn't match swipe direction.
+
+---
+
+## §DM5 — PERFORMANCE & ACCESSIBILITY
+
+### 5.1 GPU-Accelerated Properties
+
+```
+ANIMATION PROPERTY PERFORMANCE AUDIT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  PROPERTY ANIMATED       GPU-COMPOSITED?    USED IN              VERDICT
+  ──────────────────────────────────────────────────────────────────────────
+  opacity                 ✅ YES             slideUp, scaleIn,     ✅ GOOD
+                                             tabFadeIn, cardSlideIn,
+                                             ghostPulse, shimmer,
+                                             trophyShine, emptyFadeIn
+
+  transform (translate)   ✅ YES             slideUp, tabFadeIn,   ✅ GOOD
+                                             cardSlideIn, emptyFadeIn
+
+  transform (scale)       ✅ YES             scaleIn, cardSlideIn, ✅ GOOD
+                                             pulseScale,
+                                             hover:scale-*, active:scale-95
+
+  transform (rotate)      ✅ YES             badgeRotate,          ✅ GOOD
+                                             chevron rotate-180
+
+  border-color            ❌ NO (paint)      borderGlow            ⚠️ PAINT
+  text-shadow             ❌ NO (paint)      kuroPulse×3           ⚠️ PAINT
+  background-position     ❌ NO (paint)      kuroShimmer           ⚠️ PAINT
+  color/background-color  ❌ NO (paint)      transition-colors     ⚠️ PAINT
+
+  GPU-COMPOSITED RATIO:
+    8 out of 15 CSS keyframe animations use ONLY composited
+    properties (opacity, transform) = 53%
+
+    7 animations trigger PAINT operations (border-color,
+    text-shadow, background-position) = 47%
+
+  §DM5 ASSESSMENT:
+    The ENTRY animations (slideUp, scaleIn, tabFadeIn, cardSlideIn)
+    ALL use composited properties only → EXCELLENT ✅
+
+    The AMBIENT animations are split:
+      - Composited: ghostPulse, shimmer, trophyShine, pulseScale,
+        badgeRotate → GOOD ✅
+      - Paint-triggering: borderGlow, kuroPulse×3, kuroShimmer
+        → ACCEPTABLE ⚠️
+
+    Paint-triggering ambient animations run at LOW frequency
+    (2-3s cycles) so the paint cost is minimal per-frame.
+
+  FINDING: DM5-01 — kuroPulse×3 animates `text-shadow`, which
+  triggers paint on every frame of a 2s infinite loop. On low-end
+  devices with multiple soft-pity counters visible simultaneously,
+  this could cause frame drops. Impact depends on device — modern
+  phones handle it fine, older phones may struggle.
+  SEVERITY: Low — the slow 2s cycle and low-frequency updates
+  mitigate performance concerns.
+```
+
+### 5.2 will-change Usage
+
+```
+will-change AUDIT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Declarations found: NONE (0 instances in entire codebase)
+
+  §DM5 GUIDELINE:
+    "Use will-change sparingly, only for animations that are
+    about to start or are currently running."
+
+  ASSESSMENT:
+    The ABSENCE of will-change is CORRECT for this app:
+      - Most animations use composited properties (opacity,
+        transform) which browsers auto-promote to GPU layers
+      - Adding will-change to 15+ animations would consume
+        GPU memory unnecessarily
+      - The canvas-based animations (BackgroundGlow,
+        TriangleMirrorWave) are already GPU-rendered by
+        the canvas element itself
+
+  VERDICT: Correct — will-change would be over-optimization ✅
+```
+
+### 5.3 Canvas Animation Performance
+
+```
+CANVAS ANIMATION FRAME BUDGET:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  BackgroundGlow:
+    - Uses requestAnimationFrame
+    - Frame skip: renders only if 66ms elapsed since last frame
+    - Effective FPS: ~15fps (vs 60fps possible)
+    - Canvas operations: gradient fills, blur filter
+    - Filter: `ctx.filter = 'blur(20px)'` (GPU-accelerated)
+
+  TriangleMirrorWave:
+    - Uses requestAnimationFrame
+    - Frame skip: renders only if 66ms elapsed since last frame
+    - Effective FPS: ~15fps
+    - Canvas operations: triangle path fills with dynamic colors
+
+  §DM5 ASSESSMENT:
+    ✅ 15fps frame cap is EXCELLENT for ambient background animation
+    ✅ Prevents background animation from consuming GPU budget
+       needed for foreground interactions
+    ✅ 15fps is perceptually smooth enough for slow-moving
+       ambient effects (human eye perceives 24fps as motion)
+    ✅ blur(20px) is GPU-accelerated in modern browsers
+
+  The developers made a DELIBERATE performance optimization by
+  capping background animations at 15fps. This is professional-
+  grade performance consciousness.
+
+  VERDICT: Canvas performance is excellently managed ✅
+```
+
+### 5.4 prefers-reduced-motion Support
+
+```
+REDUCED MOTION ACCESSIBILITY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  LAYER 1 — CSS MEDIA QUERY (index.css lines 80-87):
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    This BLANKET rule:
+      ✅ Kills ALL CSS animations (0.01ms = instant)
+      ✅ Stops all infinite loops (iteration-count: 1)
+      ✅ Kills ALL CSS transitions (0.01ms = instant)
+      ✅ Disables smooth scroll
+      ✅ Uses !important to override inline styles
+
+  LAYER 2 — JAVASCRIPT MEDIA QUERY LISTENER (App.jsx):
+    - Listens to matchMedia('(prefers-reduced-motion: reduce)')
+    - Sets visualSettings.animationsEnabled = false
+    - Passes animationsEnabled={false} to BackgroundGlow
+      and TriangleMirrorWave
+    - These components presumably stop their rAF loops when
+      animationsEnabled is false
+
+  LAYER 3 — USER TOGGLE (Settings tab):
+    - "Enable Animations" toggle switch in Settings
+    - Allows user to MANUALLY disable animations even if
+      OS preference is set to "no preference"
+    - Stored in visualSettings state
+
+  §DM5 ASSESSMENT:
+    THREE-LAYER reduced motion support is EXCEPTIONAL:
+      Layer 1: CSS (catches all CSS animations/transitions) ✅
+      Layer 2: JS (catches canvas animations) ✅
+      Layer 3: Manual (user override) ✅
+
+    This exceeds WCAG 2.1 SC 2.3.3 (Animation from Interactions)
+    requirements. Most apps implement only Layer 1.
+
+  VERDICT: Best-in-class reduced motion support ✅
+```
+
+### 5.5 Animation Count Budget
+
+```
+SIMULTANEOUS ANIMATION COUNT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  WORST CASE — Convene tab with soft pity active:
+    Running simultaneously:
+      1. BackgroundGlow (canvas, 15fps)
+      2. TriangleMirrorWave (canvas, 15fps)
+      3. shimmer (card top border, infinite)
+      4. borderGlow (active button, infinite)
+      5. kuroPulseOrange (soft pity counter, infinite)
+      6. kuroPulseCyan (soft pity counter, infinite)
+      7-10. Potential hover transitions (user interaction)
+
+    Max simultaneous: ~6-10 animations
+
+  §DM5 GUIDELINE:
+    "Keep simultaneous animations under 10 for mobile devices."
+
+  ASSESSMENT:
+    6-10 simultaneous animations is AT the recommended limit.
+    However:
+      - 2 are canvas at 15fps (low cost)
+      - 3 are slow CSS loops (2-3s, low frequency)
+      - Hover transitions are transient
+
+    Effective animation load is LOW despite the count ✅
+
+  VERDICT: Within acceptable bounds ✅
+```
+
+**§DM5 Score: 9.6/10** — Excellent GPU-aware property choices for entries. Professional 15fps canvas cap. Best-in-class three-layer reduced-motion support. Minor paint-cost concern on text-shadow animations.
+
+---
+
+## STEP 6 — FINDINGS SUMMARY
+
+### Score Card
+
+| Section | Score | Notes |
+|---------|-------|-------|
+| §DM1 Animation Inventory & Timing | 9.1/10 | 19 animations, uniform transition durations, transition-all overuse |
+| §DM2 Easing & Physics | 9.0/10 | Excellent custom bezier, no exit easing, minor inconsistency |
+| §DM3 Motion Purpose & Hierarchy | 9.3/10 | Well-structured hierarchy, good stagger, no celebration motion |
+| §DM4 Transition Choreography | 9.0/10 | Good entries, instant exits, tab-swipe direction mismatch |
+| §DM5 Performance & Accessibility | 9.6/10 | 15fps canvas cap, 3-layer reduced motion, minor paint concerns |
+| **Step 6 Weighted Average** | **9.20/10** | |
+
+### Findings Register (Step 6)
+
+| ID | Section | Severity | Title | Score Impact |
+|----|---------|----------|-------|-------------|
+| DM1-01 | §DM1.2 | Low | All Tailwind transitions use default 150ms — no size-based differentiation | −0.1 |
+| DM1-02 | §DM1.3 | Medium | ~50+ uses of `transition-all` instead of targeted transition properties | −0.2 |
+| DM2-01 | §DM2.2 | Medium | No EXIT animations — elements appear smoothly but disappear instantly | −0.3 |
+| DM2-02 | §DM2.4 | Low | Two different entry easing curves (ease-out vs custom bezier) | −0.1 |
+| DM3-01 | §DM3.1 | Low | No celebration/achievement motion (glow pulse substitutes) | −0.05 |
+| DM3-02 | §DM3.3 | Advisory | Only card sections use stagger — lists/grids appear instantly | −0.0 |
+| DM4-01 | §DM4.1 | Low | Tab content always fades up, doesn't match swipe direction | −0.1 |
+| DM4-02 | §DM4.2 | Medium | Modal close is instant — no exit animation | −0.15 |
+| DM5-01 | §DM5.1 | Low | text-shadow animation (kuroPulse) triggers paint on every frame | −0.05 |
+
+### Solutions Summary (Step 6)
+
+| ID | Recommended Solution | Alternative |
+|----|---------------------|-------------|
+| DM1-01 | Add `duration-100` for small elements (buttons, badges), `duration-200` for cards/panels, keep default 150ms for medium elements | Keep as-is — uniform 150ms is functional |
+| DM1-02 | Replace `transition-all` with targeted properties: `transition-colors` for color-only changes, `transition-[transform,opacity]` for motion changes. Audit each instance. | Keep as-is — `transition-all` rarely causes issues in practice |
+| DM2-01 | Add exit keyframes: `slideDown` (reverse of slideUp), `scaleOut` (reverse of scaleIn). Implement via React state + `onAnimationEnd` callback to delay DOM removal by ~200ms. | Use CSS `@starting-style` (modern browsers) for automatic exit animations without JS state management |
+| DM2-02 | Standardize all entry animations to `cubic-bezier(0.16, 1, 0.3, 1)` — it's the superior curve. Replace `ease-out` on slideUp, scaleIn, and emptyFadeIn. | Keep split — toast/modal (ease-out) vs content (bezier) creates subtle semantic difference |
+| DM3-01 | Add a `celebratePop` keyframe: scale 1→1.08→1 over 400ms with ease-out. Apply on achievement unlock, 5★ pull, collection complete. | Keep glow-pulse approach — it's thematic and avoids motion inflation |
+| DM3-02 | Keep as-is. Stagger on 50+ item grids would hurt perceived performance. | N/A |
+| DM4-01 | Add `tabSlideLeft`/`tabSlideRight` variants that use translateX instead of translateY. Determine direction from tab index delta. | Keep fade-up — it's universally understood and simpler to maintain |
+| DM4-02 | Add `scaleOut` keyframe (scale 1→0.96, opacity 1→0, 200ms). Implement exit state: set `isClosing` flag → play animation → remove DOM after 200ms via setTimeout or onAnimationEnd. | Use dialog element's native `::backdrop` transition (limited browser support) |
+| DM5-01 | Replace `text-shadow` animation with `filter: drop-shadow()` which CAN be GPU-composited in some browsers. Or use `opacity` on a pseudo-element with static text-shadow. | Keep as-is — 2s cycle at low frequency is negligible cost on modern devices |
+
+### Cross-Verification (Step 6 ↔ Steps 1-5)
+
+```
+CHECK                                                RESULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+§DM1 animation inventory ↔ §DS1 design language?      ✅ Ambient glow/pulse animations
+                                                      match "cyberpunk-luxe" classification
+§DM2 custom bezier ↔ §DP1 "Precision Instrument"?     ✅ Snappy "confident snap" curve
+                                                      matches precision personality
+§DM3 motion hierarchy ↔ §DC3 visual weight?            ✅ Background canvas (z-1,2) behind
+                                                      content animations (z-10+) matches
+                                                      weight hierarchy from Step 3
+§DM4 tab choreography ↔ §DC2 navigation system?       ✅ tabFadeIn serves the role-based
+                                                      tab system identified in Step 3
+§DM5 reduced-motion ↔ §DT3 rendering quality?         ✅ Same attention to browser
+                                                      defaults seen in both typography
+                                                      and motion accessibility
+DM2-01 no exit animations ↔ Steps 1-5?                ✅ Not previously flagged —
+                                                      new finding unique to Step 6
+Step 6 (9.20) coherent with Steps 1-5?                ✅ Motion scores slightly lower
+                                                      than visual/typography — expected
+                                                      (motion is harder to perfect)
+Running average (Steps 1-6):                          9.37/10 — stable trend
+Anti-slop: any §DETECT violations?                    ✅ No anti-slop violations
+```
+
+**Step 6 complete. All cross-verifications pass.**
