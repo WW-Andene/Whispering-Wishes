@@ -617,3 +617,267 @@ However, `+'123abc'` returns NaN → 0, which silently discards invalid input wi
 **Pass: 12**
 
 *End of P2. Commit and push follows.*
+
+---
+
+## PART 3 — SECURITY, PRIVACY & COMPLIANCE
+
+### §C1. Authentication & Authorization
+
+#### F-P3-001 — Admin Hash Stored in Client-Side Source Code
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-components.jsx:1370, App.jsx:3043-3108]
+
+`ADMIN_HASH` is a hardcoded SHA-256/PBKDF2 hash visible in the published JavaScript bundle. While PBKDF2 with 100K iterations significantly increases brute-force cost (~100K hashes/sec on GPU vs ~10B for plain SHA-256), the hash is still extractable from the client bundle. Any sufficiently motivated attacker with the hash can run offline dictionary attacks.
+
+**Mitigations already in place:**
+- PBKDF2 100K iterations (P13-FIX: CRITICAL-2) ✅
+- Constant-time comparison prevents timing attacks ✅
+- Progressive lockout: 5 failed attempts → 5-minute cooldown ✅
+- Session-based + localStorage-based lockout (survives page refresh) ✅
+
+**Solution:** For true security, admin auth should move to a backend service with Argon2id. For the current client-only architecture, the PBKDF2 approach is the best available option. Ensure the admin password is sufficiently long and random (≥16 characters).
+
+#### F-P3-002 — Admin Lockout Clearable via localStorage
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:266-278]
+
+The lockout timer is stored in `ww-admin-lockout` in localStorage. A user can clear localStorage to reset the lockout. However, `adminSessionFailsRef` (in-memory) provides a secondary check that survives localStorage clearing within the same session.
+
+**Solution:** Acceptable for current stakes (LOW — admin controls only visual customization, not real money or user data).
+
+#### F-P3-003 — Firebase Anonymous Auth: Properly Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:1218]
+
+Firebase auth uses anonymous `accounts:signUp` via Identity Toolkit. API key is loaded from env vars only (`VITE_FIREBASE_API_KEY`). No hardcoded fallback. Firebase features gracefully disabled when env vars are absent.
+
+#### F-P3-004 — UID Hashing Before Firebase Writes ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — SHA-256/FNV-1a hashing]
+
+Player UIDs are hashed before being written to Firebase leaderboard/community data. Raw UIDs never leave the client. The leaderboard displays masked IDs (first/last characters only). Admin panel shows full hashed IDs.
+
+---
+
+### §C2. Injection & XSS
+
+#### F-P3-005 — No innerHTML/dangerouslySetInnerHTML/eval Usage ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: Grep across entire src/]
+
+Zero instances of `innerHTML`, `dangerouslySetInnerHTML`, `eval()`, `Function()`, or `document.write` found anywhere in the application source code. All content is rendered via React's JSX (which auto-escapes).
+
+#### F-P3-006 — Image URL Allowlist: Well-Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — ALLOWED_IMAGE_HOSTS, isAllowedImageUrl(), sanitizeImageUrl()]
+
+Custom image URLs are validated against an 11-domain allowlist. HTTPS-only enforcement. URLs not matching the allowlist are rejected. This prevents arbitrary image injection.
+
+#### F-P3-007 — No User-Controlled URL Injection Vectors ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx]
+
+The only `window.open` call (appcore-providers.jsx:165) uses `window.location.href` (same origin). No user-controlled values are concatenated into URLs, `href`, or `src` attributes without validation.
+
+---
+
+### §C3. Prototype Pollution & Import Safety
+
+#### F-P3-008 — Prototype Pollution Protection: Well-Implemented ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:488-513]
+
+`sanitizeStateObj()` recursively filters `__proto__`, `constructor`, and `prototype` keys from imported objects. Applied to:
+- localStorage loads (`loadFromStorage`) ✅
+- State imports (`sanitizeImportedState`) ✅
+- `LOAD_STATE` action in reducer ✅
+- Array elements recursively (P14-FIX: MEDIUM-2) ✅
+
+`sanitizeImportedState()` additionally validates against `ALLOWED_STATE_KEYS` whitelist, preventing unknown top-level keys from entering state.
+
+#### F-P3-009 — JSON.parse Safety ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js:517-552]
+
+`loadFromStorage()` wraps `JSON.parse` in try/catch. Failed parses return `null` and log the error. The caller falls back to `initialState`.
+
+---
+
+### §C4. Network & Dependencies
+
+#### F-P3-010 — CSP Headers: Comprehensive but 'unsafe-inline' in style-src
+**Severity:** LOW
+**Confidence:** [CODE: vercel.json:8, netlify.toml:9]
+
+**CSP Policy Analysis:**
+
+| Directive | Value | Assessment |
+|-----------|-------|-----------|
+| `default-src` | `'self'` | ✅ Restrictive default |
+| `script-src` | `'self'` | ✅ No external scripts, no unsafe-eval |
+| `worker-src` | `'self'` | ✅ Service worker from same origin (P14-FIX) |
+| `style-src` | `'self' 'unsafe-inline' fonts.googleapis.com` | ⚠️ `unsafe-inline` required for Tailwind + KuroStyles `<style>` tag |
+| `img-src` | `'self'` + 11 image domains + `data:` | ✅ Matches ALLOWED_IMAGE_HOSTS |
+| `connect-src` | `'self'` + Firebase + image domains | ✅ Necessary for Firebase + image validation |
+| `font-src` | `'self' fonts.gstatic.com` | ✅ Google Fonts only |
+| `frame-ancestors` | `'none'` | ✅ Prevents clickjacking |
+
+**Issue:** `'unsafe-inline'` in `style-src` is necessary because KuroStyles injects ~1,700 lines of CSS via a `<style>` tag rendered by React. This is a common tradeoff in React SPAs with CSS-in-JS patterns.
+
+**Solution:** To eliminate `unsafe-inline`, the CSS could be extracted to a static `.css` file. However, this would break the dynamic OLED mode toggle (which changes CSS custom properties based on state). The current approach is acceptable for the app's risk profile.
+
+#### F-P3-011 — No CDN Scripts Without SRI ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: index.html]
+
+All JavaScript is bundled via Vite — no external CDN `<script>` tags. Fonts are loaded from Google Fonts (style-only, no script execution risk). DNS prefetch hints (`dns-prefetch`) are used for image CDN domains.
+
+#### F-P3-012 — HTTPS Everywhere ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: Grep for http:// in src/]
+
+Zero instances of `http://` URLs in source code. All external resources use HTTPS. HSTS header set with `max-age=63072000; includeSubDomains; preload`.
+
+#### F-P3-013 — Security Headers: Complete Set ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: vercel.json, netlify.toml]
+
+| Header | Present | Value |
+|--------|---------|-------|
+| Content-Security-Policy | ✅ | Detailed policy (see F-P3-010) |
+| X-Frame-Options | ✅ | DENY |
+| X-Content-Type-Options | ✅ | nosniff |
+| Referrer-Policy | ✅ | strict-origin-when-cross-origin |
+| Permissions-Policy | ✅ | camera=(), microphone=(), geolocation=() |
+| Strict-Transport-Security | ✅ | max-age=63072000; includeSubDomains; preload |
+
+#### F-P3-014 — CSP Mismatch Between Vercel and Netlify
+**Severity:** LOW
+**Confidence:** [CODE: vercel.json vs netlify.toml]
+
+The Netlify CSP `connect-src` is more restrictive than Vercel's — it omits several image host domains from `connect-src`. Vercel's CSP includes image domains in `connect-src` (needed for fetch-based image validation), while Netlify's does not.
+
+**Solution:** Synchronize the CSP policies between Vercel and Netlify deployments to ensure identical security posture on both platforms.
+
+#### F-P3-015 — Vite Dev Server Host Validation ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: vite.config.js:9-10]
+
+P14-FIX removed `allowedHosts: true` which previously disabled host header validation, preventing DNS rebinding attacks during development.
+
+---
+
+### §C5. Privacy & Data Minimization
+
+#### F-P3-016 — Player UID Privacy: Well-Protected ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — SHA-256/FNV-1a hashing]
+
+- Raw UID stored only in `localStorage` (user's own device)
+- Firebase writes use hashed UID
+- Public leaderboard displays masked IDs
+- Consent modal required before any Firebase submission
+
+#### F-P3-017 — Third-Party Image Host IP Exposure
+**Severity:** LOW
+**Confidence:** [CODE: appcore-data.js — 300+ image URLs across ibb.co, imgur, etc.]
+
+When the app loads character/weapon images from third-party hosts (ibb.co, imgur.com, discordapp.com), the user's IP address and referrer header are sent to those services. This is standard web behavior but worth disclosing.
+
+**Solution:** Consider adding a brief privacy note in the Settings or Profile tab: "Character images are loaded from third-party image hosts. Your IP address is visible to these services when images load."
+
+#### F-P3-018 — No PII in Export JSON ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-engine.js — saveToStorage/loadFromStorage]
+
+The export JSON contains pull history, calculator state, team configurations, and settings — no email, real name, location, or other PII. The UID (game player ID) is included but is a game-specific identifier, not a government ID.
+
+#### F-P3-019 — Leaderboard Consent Flow ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — ww-leaderboard-consent]
+
+Users must explicitly consent via a custom accessible modal before any data is sent to Firebase. Consent is stored in localStorage and respected on subsequent sessions.
+
+---
+
+### §C6. Compliance & Legal
+
+#### F-P3-020 — Copyright Attribution for Game Assets
+**Severity:** MEDIUM
+**Confidence:** [CODE: entire codebase]
+
+The app uses Wuthering Waves character names, weapon names, game mechanics, and community-sourced character images. No copyright disclaimer or attribution to Kuro Games is visible in the app UI.
+
+**Solution:** Add a footer disclaimer: "Whispering Wishes is a fan-made tool. Wuthering Waves is a trademark of Kuro Games. This project is not affiliated with or endorsed by Kuro Games. Game data and character information are sourced from public community resources."
+
+#### F-P3-021 — Gacha Probability Disclaimer
+**Severity:** LOW
+**Confidence:** [CODE: appcore-engine.js — probability engine]
+
+The app displays gacha pull probabilities. While it includes notes about "Hybrid DP + Monte Carlo" methodology, there is no prominent disclaimer that these are mathematical estimates based on community-verified rates, not official numbers from Kuro Games.
+
+**Solution:** Add a small disclaimer near probability displays: "Probabilities are mathematical estimates based on community-verified rates. Official rates may differ."
+
+#### F-P3-022 — No Age Gating Required
+**Severity:** N/A (PASS)
+
+The app is a planning/tracking tool — it does not facilitate real-money gambling or purchases. No age gating is required.
+
+#### F-P3-023 — GDPR/CCPA: Minimal Exposure
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx — Firebase integration]
+
+The only data sent to a remote server is:
+- Hashed UID (anonymous identifier)
+- Pull statistics (non-personal game data)
+- Presence heartbeat (session ID, no PII)
+
+This is minimal data processing. However, Firebase usage should be disclosed in a privacy policy.
+
+**Solution:** Add a brief privacy policy accessible from the Profile/Settings tab covering: what data is collected (hashed game ID, pull stats), where it's stored (Firebase), and how to delete it (clear localStorage removes local data; Firebase data can be requested for deletion).
+
+---
+
+### §C7. Mobile-Specific Security
+
+Not applicable — this is a web PWA, not a native mobile app.
+
+---
+
+### P3 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P3-001 | §C1 | MEDIUM | Admin hash in client bundle (PBKDF2 mitigated) |
+| F-P3-002 | §C1 | LOW | Admin lockout clearable via localStorage |
+| F-P3-003 | §C1 | ✅ PASS | Firebase anonymous auth properly implemented |
+| F-P3-004 | §C1 | ✅ PASS | UID hashing before Firebase writes |
+| F-P3-005 | §C2 | ✅ PASS | No innerHTML/eval/XSS vectors |
+| F-P3-006 | §C2 | ✅ PASS | Image URL allowlist enforced |
+| F-P3-007 | §C2 | ✅ PASS | No URL injection vectors |
+| F-P3-008 | §C3 | ✅ PASS | Prototype pollution protection |
+| F-P3-009 | §C3 | ✅ PASS | JSON.parse safety |
+| F-P3-010 | §C4 | LOW | CSP requires unsafe-inline for styles |
+| F-P3-011 | §C4 | ✅ PASS | No CDN scripts without SRI |
+| F-P3-012 | §C4 | ✅ PASS | HTTPS everywhere |
+| F-P3-013 | §C4 | ✅ PASS | Complete security headers |
+| F-P3-014 | §C4 | LOW | CSP mismatch between Vercel and Netlify |
+| F-P3-015 | §C4 | ✅ PASS | Dev server host validation |
+| F-P3-016 | §C5 | ✅ PASS | UID privacy well-protected |
+| F-P3-017 | §C5 | LOW | Third-party image host IP exposure |
+| F-P3-018 | §C5 | ✅ PASS | No PII in exports |
+| F-P3-019 | §C5 | ✅ PASS | Leaderboard consent flow |
+| F-P3-020 | §C6 | **MEDIUM** | **Missing copyright attribution for Kuro Games** |
+| F-P3-021 | §C6 | LOW | Missing gacha probability disclaimer |
+| F-P3-023 | §C6 | LOW | No privacy policy for Firebase data |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 2** (admin hash in client, missing copyright attribution)
+**Low findings: 6**
+**Pass: 14**
+
+**Overall Security Assessment:** The app demonstrates strong security awareness with multiple layers of defense. The codebase shows evidence of 40+ prior security fixes (P2-FIX through P15-FIX). For a client-side hobby tool with LOW stakes, the security posture is **above average**. The main gaps are compliance-related (attribution, disclaimers, privacy policy) rather than technical vulnerabilities.
+
+*End of P3. Commit and push follows.*
