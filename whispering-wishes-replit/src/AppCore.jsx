@@ -17,6 +17,7 @@ export {
   ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS,
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   TAB_ORDER, MEDAL_COLORS,
+  ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder,
 } from './appcore-data.js';
 
 // --- appcore-engine.js ---

@@ -1960,6 +1960,22 @@ const TAB_ORDER = ['tracker', 'events', 'calculator', 'planner', 'analytics', 'g
 const MEDAL_COLORS = ['#edaf18', '#c0c0c0', '#cd7f32'];
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ELEMENT COLOR UTILITIES — Single source of truth for element→color mappings
+// P6-FIX: Consolidates 3 duplicate inline copies (F-P6-046)
+// ═══════════════════════════════════════════════════════════════════════════════
+const ELEMENT_COLORS = {
+  Fusion:  { hex: '#f97316', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.4)' },
+  Electro: { hex: '#a855f7', bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)' },
+  Aero:    { hex: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.4)' },
+  Glacio:  { hex: '#06b6d4', bg: 'rgba(6,182,212,0.15)',  border: 'rgba(6,182,212,0.4)' },
+  Havoc:   { hex: '#ec4899', bg: 'rgba(236,72,153,0.15)', border: 'rgba(236,72,153,0.4)' },
+  Spectro: { hex: '#eab308', bg: 'rgba(234,179,8,0.15)',  border: 'rgba(234,179,8,0.4)' },
+};
+const getElementColor = (el) => ELEMENT_COLORS[el]?.hex || '#6b7280';
+const getElementBg = (el) => ELEMENT_COLORS[el]?.bg || 'rgba(107,114,128,0.15)';
+const getElementBorder = (el) => ELEMENT_COLORS[el]?.border || 'rgba(107,114,128,0.4)';
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTS - Used by App.jsx (WhisperingWishesInner)
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1980,4 +1996,5 @@ export {
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
   TAB_ORDER, MEDAL_COLORS,
+  ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder,
 };

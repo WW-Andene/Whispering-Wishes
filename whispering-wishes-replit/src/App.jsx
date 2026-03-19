@@ -102,6 +102,7 @@ import {
   TabErrorBoundary,
   TAB_ORDER,
   MEDAL_COLORS,
+  getElementColor, getElementBg, getElementBorder,
   hideOnError,
 } from './AppCore';
 
@@ -5098,19 +5099,7 @@ function WhisperingWishesInner() {
                 return aRec - bRec;
               });
 
-              // Element color utilities
-              const getElementColor = (el) => {
-                const map = { Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' };
-                return map[el] || '#6b7280';
-              };
-              const getElementBg = (el) => {
-                const map = { Fusion: 'rgba(249,115,22,0.15)', Electro: 'rgba(168,85,247,0.15)', Aero: 'rgba(16,185,129,0.15)', Glacio: 'rgba(6,182,212,0.15)', Havoc: 'rgba(236,72,153,0.15)', Spectro: 'rgba(234,179,8,0.15)' };
-                return map[el] || 'rgba(107,114,128,0.15)';
-              };
-              const getElementBorder = (el) => {
-                const map = { Fusion: 'rgba(249,115,22,0.4)', Electro: 'rgba(168,85,247,0.4)', Aero: 'rgba(16,185,129,0.4)', Glacio: 'rgba(6,182,212,0.4)', Havoc: 'rgba(236,72,153,0.4)', Spectro: 'rgba(234,179,8,0.4)' };
-                return map[el] || 'rgba(107,114,128,0.4)';
-              };
+              // P6-FIX: Element color utilities now imported from appcore-data.js (F-P6-046)
 
               return (
                 <div className="space-y-3">
@@ -5118,6 +5107,7 @@ function WhisperingWishesInner() {
                   <Card>
                     <CardHeader action={
                       <div className="flex gap-1.5">
+                        {/* P6-FIX: Use .kuro-btn for consistency (F-P6-047) */}
                         <button
                           onClick={() => {
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
@@ -5127,15 +5117,15 @@ function WhisperingWishesInner() {
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
-                          className="px-2 py-1 rounded-lg text-[9px] text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                          style={{ background: 'var(--bg-btn)' }}
+                          className="kuro-btn active-gold text-[10px]"
+                          aria-label="Add current team to comparison"
                         >
                           + Compare
                         </button>
                         <button
                           onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
-                          className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                          style={{ background: 'var(--bg-btn)' }}
+                          className="kuro-btn text-[10px]"
+                          aria-label="Clear all slots in current team"
                         >
                           Clear
                         </button>
@@ -5144,23 +5134,30 @@ function WhisperingWishesInner() {
                       <Users size={14} className="text-yellow-400" /> Team Builder
                     </CardHeader>
                     <CardBody>
-                      {/* Team Selector Tabs */}
-                      <div className="flex gap-1 mb-3">
+                      {/* Team Selector Tabs — P6-FIX: ARIA tab pattern (F-P6-059) */}
+                      <div className="flex gap-1 mb-3" role="tablist" aria-label="Team selector" onKeyDown={(e) => {
+                        const idx = state.activeTeamIndex;
+                        let next;
+                        if (e.key === 'ArrowRight') { e.preventDefault(); next = (idx + 1) % state.teams.length; }
+                        else if (e.key === 'ArrowLeft') { e.preventDefault(); next = (idx - 1 + state.teams.length) % state.teams.length; }
+                        if (next !== undefined) { dispatch({ type: 'SET_ACTIVE_TEAM', index: next }); setTimeout(() => e.currentTarget.children[next]?.focus(), 50); }
+                      }}>
                         {state.teams.map((team, idx) => {
                           const hasChars = team.slots.some(s => s);
+                          const isActive = state.activeTeamIndex === idx;
                           return (
                             <button
                               key={idx}
+                              role="tab"
+                              aria-selected={isActive}
+                              tabIndex={isActive ? 0 : -1}
                               onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
-                              className={`flex-1 min-w-0 px-1.5 py-1.5 rounded-lg border text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
-                                state.activeTeamIndex === idx
-                                  ? 'border-yellow-500/60 bg-yellow-500/15 text-yellow-400 shadow-lg shadow-yellow-500/10'
-                                  : 'border-white/10 text-gray-400 hover:border-white/20 hover:text-gray-300'
+                              className={`kuro-btn flex-1 min-w-0 flex items-center justify-center gap-1 ${
+                                isActive ? 'active-gold' : ''
                               }`}
-                              style={state.activeTeamIndex !== idx ? { background: 'var(--bg-btn)' } : undefined}
                             >
                               <span className="truncate">{team.name}</span>
-                              {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" />}
+                              {hasChars && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/60 flex-shrink-0" aria-hidden="true" />}
                             </button>
                           );
                         })}
@@ -5180,6 +5177,7 @@ function WhisperingWishesInner() {
                                 onClick={() => openSelector(slotIdx)}
                                 className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
                                 style={{ height: '160px', contain: 'paint' }}
+                                aria-label={`Add resonator to slot ${slotIdx + 1}`}
                               >
                                 <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
                                 <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
@@ -5207,11 +5205,13 @@ function WhisperingWishesInner() {
                                   onError={hideOnError}
                                 />
                               )}
+                              {/* P6-FIX: Increased from w-5 h-5 to w-7 h-7 for touch targets (F-P6-050) */}
                               <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                className="absolute top-1 right-1 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
-                                <X size={10} />
+                                <X size={12} />
                               </button>
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
@@ -5792,12 +5792,12 @@ function WhisperingWishesInner() {
                                             ) : equippedWeap ? (
                                               <>
                                                 <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
-                                                <span className="text-[7px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                                <span className="text-[9px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
                                               </>
                                             ) : (
                                               <>
                                                 <Sword size={14} className="text-gray-500" />
-                                                <span className="text-[7px] text-gray-500">Weapon</span>
+                                                <span className="text-[9px] text-gray-500">Weapon</span>
                                               </>
                                             )}
                                           </div>
@@ -5808,19 +5808,22 @@ function WhisperingWishesInner() {
                                               title={'Echo slot ' + (ei + 1) + ' — coming soon'}
                                             >
                                               <Diamond size={12} className="text-gray-600" />
-                                              <span className="text-[7px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
+                                              <span className="text-[9px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
                                             </div>
                                           ))}
                                         </div>
                                         {/* S0-S6 toggle */}
+                                        {/* P6-FIX: Increased sequence button size for touch targets (F-P6-055) */}
                                         <div>
                                           <div className="text-[9px] text-gray-400 mb-0.5">Sequence</div>
-                                          <div className="flex gap-px">
+                                          <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
                                             {[0,1,2,3,4,5,6].map(s => {
                                               const isActive = (eq.sequence || 0) === s;
                                               return (
                                                 <button key={s}
-                                                  className={`flex-1 py-0.5 rounded text-[8px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                  role="radio"
+                                                  aria-checked={isActive}
+                                                  className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                                   onClick={() => {
                                                     setTeamEquipment(prev => {
                                                       const n = { ...prev };
@@ -5849,8 +5852,8 @@ function WhisperingWishesInner() {
                                               });
                                               haptic.light();
                                             }}
-                                            className="w-full text-[8px] text-gray-300 rounded border border-white/10 px-1.5 py-1 focus:border-cyan-500/50 focus:outline-none transition-all"
-                                            style={{ background: 'var(--bg-btn)' }}
+                                            className="kuro-input kuro-input-sm w-full text-[9px]"
+                                            aria-label={`${m.name} sonata echo set`}
                                           >
                                             <option value="">Auto (from recommended)</option>
                                             {Object.keys(ECHO_SETS).map(setName => (
@@ -5942,7 +5945,7 @@ function WhisperingWishesInner() {
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[9px] text-gray-600 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats, Resonance Chain (S1-S6). S0 assumed.</p>
+                            <p className="text-[9px] text-gray-500 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats.</p>
                           </div>
                         </CardBody>
                       </Card>
@@ -5960,8 +5963,8 @@ function WhisperingWishesInner() {
                         <Card>
                           <CardHeader action={
                             <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
-                              className="px-2 py-1 rounded-lg text-[9px] text-gray-400 border border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                              style={{ background: 'var(--bg-btn)' }}>
+                              className="kuro-btn text-[10px]"
+                              aria-label="Clear all team comparisons">
                               Clear All
                             </button>
                           }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
@@ -5974,8 +5977,9 @@ function WhisperingWishesInner() {
                                 return (
                                   <div key={entry.id} className="p-2.5 rounded-lg border border-white/10 relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                      className="absolute top-1.5 right-1.5 z-20 w-5 h-5 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
-                                      <X size={10} />
+                                      className="absolute top-1.5 right-1.5 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                                      aria-label="Remove this team from comparison">
+                                      <X size={12} />
                                     </button>
 
                                     {/* Character cards */}
@@ -6119,7 +6123,7 @@ function WhisperingWishesInner() {
                                   const sf = getImageFraming(`collection-${m}`);
                                   return (
                                     <div key={j} className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative"
-                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280')}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${({ Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Glacio: '#06b6d4', Havoc: '#ec4899', Spectro: '#eab308' }[cd.element] || '#6b7280')}30` : 'none' }}>
+                                      style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>
                                       {collectionImages[m] ? (
                                         <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
@@ -6157,7 +6161,7 @@ function WhisperingWishesInner() {
                             <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
                             <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                          <button onClick={() => setTeamSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
                             <X size={18} />
                           </button>
                         </div>
@@ -6165,13 +6169,14 @@ function WhisperingWishesInner() {
                         {/* Search & Filters */}
                         <div className="p-3 space-y-2 border-b border-white/5">
                           <div className="relative">
+                            {/* P6-FIX: Use .kuro-input for consistency (F-P6-051) */}
                             <input
                               type="text"
                               value={teamSearch}
                               onChange={(e) => setTeamSearch(e.target.value)}
                               placeholder="Search resonators..."
-                              className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
-                              style={{ background: 'var(--bg-btn)' }}
+                              className="kuro-input w-full pl-8 text-xs"
+                              aria-label="Search resonators"
                               autoFocus
                             />
                             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -6223,6 +6228,7 @@ function WhisperingWishesInner() {
                               onChange={(e) => setTeamBuffFilter(e.target.value)}
                               className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by buff type"
                             >
                               <option value="all">All Buffs</option>
                               <option value="Heal">Heal</option>
@@ -6239,6 +6245,7 @@ function WhisperingWishesInner() {
                               onChange={(e) => setTeamDebuffFilter(e.target.value)}
                               className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
+                              aria-label="Filter by debuff type"
                             >
                               <option value="all">All Debuffs</option>
                               <option value="Frazzle">Frazzle</option>
@@ -6301,7 +6308,7 @@ function WhisperingWishesInner() {
                                     background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
                                   }} />
                                   {/* Element dot */}
-                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[6px] font-bold text-white flex items-center justify-center"
+                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center"
                                     style={{ background: getElementColor(el) }}>
                                     {el?.[0]}
                                   </div>
@@ -6318,13 +6325,13 @@ function WhisperingWishesInner() {
                                   {/* Recommended badge */}
                                   {isRecommended && (
                                     <div className="absolute top-0.5 right-0.5 z-10">
-                                      <span className="text-[6px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>
+                                      <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>
                                     </div>
                                   )}
                                   {/* Role tag */}
                                   {cd?.role && (
                                     <div className="absolute bottom-4 inset-x-0 flex justify-center">
-                                      <span className="text-[6px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-white/10">{cd.role}</span>
+                                      <span className="text-[8px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-white/10">{cd.role}</span>
                                     </div>
                                   )}
                                   {/* Name */}
@@ -6356,7 +6363,7 @@ function WhisperingWishesInner() {
                             <h3 className="text-white font-bold text-sm">Select Weapon</h3>
                             <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
                           </div>
-                          <button onClick={() => setWeaponSelectorOpen(false)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X size={16} className="text-gray-400" /></button>
+                          <button onClick={() => setWeaponSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close weapon selector"><X size={16} className="text-gray-400" /></button>
                         </div>
                         <div className="p-2 border-b border-white/5 flex-shrink-0">
                           <input
@@ -6429,7 +6436,7 @@ function WhisperingWishesInner() {
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-[11px] font-semibold truncate">{name}</span>
                                             <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                            {isBest && <span className="text-[7px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                            {isBest && <span className="text-[9px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
                                             <span className="text-[9px] text-gray-400">ATK {w.baseAtk}</span>
