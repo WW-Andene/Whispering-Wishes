@@ -2242,6 +2242,172 @@ Cross-cutting debt: spacing grid drifts ~25% off the 4px base, shadow tokens ado
 
 **Design identity: 9/10. Spatial/token discipline: 6/10. Component consistency: 5/10 (Teams tab drags average down). Design maturity: 6.5/10.**
 
+---
+
+### §E20. Deep Pass Findings (§ADE §BAN, §DC1, §DM1, §DCO Cross-Tab)
+
+> *Findings from full sequential re-pass applying design-aesthetic-audit §DS1-§DBI3, art-direction-engine §BAN/§CHECK, and cross-tab consistency verification.*
+
+#### F-P6-064 — 37 Instances of §BAN Blacklisted Colors
+**Severity:** MEDIUM
+**Confidence:** [CODE: across all source files — 6 distinct banned hex codes]
+
+The art-direction-engine §BAN explicitly bans default Tailwind/framework colors as accents. The codebase contains:
+
+| Banned Color | Hex | Count | Where Used |
+|-------------|-----|-------|-----------|
+| Tailwind blue-500 | `#3b82f6` | 12 | Focus rings (index.css:44) |
+| Tailwind violet-500 | `#8b5cf6` | 2 | Element color fallback |
+| Tailwind emerald-500 | `#10b981` | 1 | Aero element color |
+| Tailwind red-500 | `#ef4444` | 15 | Error states, semantic red |
+| Pure white | `#ffffff` | 6 | Max-contrast text, hover |
+| Pure black | `#000000` | 1 | Canvas shadow fallback |
+
+**Context:** Most are used as *semantic* colors (error red, success green, focus blue) not as brand accent — which is the less severe violation. The focus ring `#3b82f6` in index.css:44 is overridden by the gold `rgba(var(--color-gold), 0.7)` in KuroStyles:498, so it only applies to elements outside `.kuro-calc`. The element colors (emerald for Aero, violet for Electro) are game-accurate mappings, not arbitrary choices.
+
+**Still a finding because:** `#ef4444` for error states is the generic Tailwind red — the app's error color should be calibrated to the cool-dark palette (e.g., a desaturated warm red like `oklch(62% 0.18 20)` would feel more integrated). `#ffffff` should be `--text-heading` (#edf1f8) instead.
+
+**Solution:** Replace `#ef4444` → `rgba(var(--color-red), 1)` (token already exists as `248, 113, 113`). Replace `#ffffff` in text contexts → `var(--text-heading)`. Leave element colors as-is (game-accurate).
+
+#### F-P6-065 — Text Colors 85% Neutral Gray — Violates §DC1 Chromatic Requirement
+**Severity:** LOW
+**Confidence:** [CODE: --text-body: #dfe5ef, --text-heading: #edf1f8, text-gray-300/400/500]
+
+§DC1 states: *"Text: Chromatic, never pure gray. Derive from background hue."* The app's text colors are:
+- `--text-body`: #dfe5ef — slight blue tint (not pure gray ✅)
+- `--text-heading`: #edf1f8 — slight blue tint (not pure gray ✅)
+- Tailwind `text-gray-300` (#d1d5db) — neutral gray ❌
+- Tailwind `text-gray-400` (#9ca3af) — neutral gray ❌
+- Tailwind `text-gray-500` (#6b7280) — neutral gray ❌
+
+The CSS tokens are chromatic (cool-blue tinted), but 85% of actual text uses Tailwind's neutral gray classes which carry no hue. The tokens exist but aren't adopted in JSX.
+
+**Impact:** Subtle — neutral grays on the cool-dark background (#080c14, hue ~245°) don't clash, but chromatically-tinted grays (e.g., `oklch(68% 0.01 240)` for secondary text) would feel more refined and integrated.
+
+**Solution:** This is a polish-tier finding. If pursued, derive `--text-secondary` and `--text-muted` tokens with slight blue tint and migrate from `text-gray-*` Tailwind classes.
+
+#### F-P6-066 — `transition: all` Used in 2 Places (§ADE §BAN)
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:1508, 1615]
+
+§ADE §BAN explicitly bans `transition: all 0.2s ease-in-out`. Two instances found:
+- Line 1508: `.desktop-layout > header nav .kuro-tab { transition: all 0.15s; }`
+- Line 1615: desktop sidebar active tab `transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;`
+
+Both are desktop-only (`@media (min-width: 1024px)`), low-risk, and use non-default easings. But `transition: all` animates layout properties (padding, width, height) unnecessarily, risking jank on complex reflows.
+
+**Solution:** Replace with explicit properties: `transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;`
+
+#### F-P6-067 — Tab Indicator Animates Layout-Triggering Properties
+**Severity:** LOW
+**Confidence:** [CODE: appcore-providers.jsx:705]
+
+```css
+.tab-indicator { transition: left 0.3s cubic-bezier(...), width 0.3s cubic-bezier(...); }
+```
+
+`left` and `width` trigger layout reflow on every animation frame. Per §DM3, smooth 60fps animation should use only compositor-safe properties (`transform`, `opacity`).
+
+**Solution:** Replace with `transform: translateX(...)` + `transform: scaleX(...)` driven by JS-calculated values. This would require refactoring the indicator positioning logic.
+
+#### F-P6-068 — No Explicit Exit Animations (§DM1 Violation)
+**Severity:** LOW
+**Confidence:** [CODE: 15 @keyframes defined, 0 exit-specific animations]
+
+§DM1 states: *"Exits should be faster than entrances."* The app defines 5 entrance animations (slideUp 0.2s, scaleIn 0.3s, tabFadeIn 0.35s, cardSlideIn 0.4s, emptyFadeIn 0.4s) but **zero exit animations**. Toasts, modals, and tab content disappear instantly or use the same duration as entrance.
+
+**Impact:** Low — instant exits can feel snappy rather than wrong. But for modals and toasts, a 0.15s fadeOut would feel more polished than instant disappearance.
+
+**Solution:** Add `@keyframes fadeOut { to { opacity: 0; transform: translateY(8px); } }` at 0.15s for toast dismissal. Modal close could use 0.2s scaleOut.
+
+#### F-P6-069 — Events Tab: 1 aria-label, 0 kuro-btn — Extreme Under-Utilization
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx:3372-3447 — cross-tab comparison matrix]
+
+The Events tab is the least design-system-integrated tab:
+
+| Metric | Events | App Average |
+|--------|--------|------------|
+| `kuro-btn` | 0 | 3.6 |
+| `kuro-input` | 0 | 1.6 |
+| `kuro-label` | 0 | 2.5 |
+| `aria-label` | 1 | 9.5 |
+| `role=` | 1 | 3.5 |
+| Inline styles | 2 | 16 |
+
+The Events tab delegates most rendering to the `EventCard` component (in appcore-components.jsx), which is well-styled. But the tab itself has almost no direct design system usage and minimal ARIA beyond the tabpanel. The refresh button lacks `aria-label`.
+
+**Solution:** Add `aria-label` to the refresh button and any filter controls. The low kuro-btn count is acceptable since EventCard handles the interactive elements.
+
+#### F-P6-070 — Stats Tab: 42 Inline Styles — Second Highest
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx:3982-4759 — 42 `style={{` instances]
+
+The Stats tab has 42 inline style objects, primarily for:
+- Luck badge dynamic colors (`--badge-color` CSS variable)
+- Leaderboard medal backgrounds (top 3 gold/silver/bronze)
+- Chart tooltip styling
+- Dynamic text shadows based on luck percentile
+
+Unlike the Teams tab (57 inline styles, many of which bypass the design system), the Stats tab's inline styles are mostly *dynamic values that can't be expressed as static classes* (luck percentile → color gradient, medal rank → background). This is a lower-severity pattern.
+
+**Solution:** Extract the luck badge and medal styling into reusable CSS classes with CSS custom properties for the dynamic parts.
+
+---
+
+### P6 Summary (Final Revision)
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P6-001–003 | §E2 | ✅ PASS ×3 | Color tokens, rarity mapping, element colors |
+| F-P6-004 | §E2 | LOW | ~40+ hardcoded gold rgba() outside tokens |
+| F-P6-005,007 | §E3 | ✅ PASS ×2 | Font hierarchy, weight distribution |
+| F-P6-006 | §E3 | LOW | text-[9px] edge of readability on desktop |
+| F-P6-008–014 | §E4-E5 | ✅ PASS ×7 | Card, button, tab, pity ring, luck badge, canvas bg, animation respect |
+| F-P6-015–018 | §E6-E7 | ✅ PASS ×4 | Haptic, touch, transitions, scrollbar |
+| F-P6-019 | §E8 | LOW | High information density |
+| F-P6-020–022 | §E8-E9 | ✅ PASS ×3 | z-index, polish signals, anti-genericness |
+| F-P6-023 | §E10 | **MEDIUM** | Kuro-card 14px padding breaks 4px grid |
+| F-P6-024 | §E10 | **MEDIUM** | ~25% spacing values break 4px grid |
+| F-P6-025 | §E10 | LOW | Three gold tones undocumented |
+| F-P6-026 | §E11 | **MEDIUM** | 17 pure black shadows bypass palette |
+| F-P6-027 | §E11 | **MEDIUM** | Shadow token adoption 12% |
+| F-P6-028 | §E11 | ✅ PASS | Shadow direction consistent |
+| F-P6-029 | §E12 | **MEDIUM** | 434 sub-12px type not scaled on desktop |
+| F-P6-030 | §E12 | LOW | Tabular numerals only on 3 elements |
+| F-P6-031 | §E12 | ✅ PASS | Tracking on uppercase correct |
+| F-P6-032 | §E13 | **MEDIUM** | Desktop sidebar 8px text |
+| F-P6-033 | §E13 | LOW | 30+ !important in desktop CSS |
+| F-P6-034 | §E13 | LOW | 160px unexplained right padding |
+| F-P6-035 | §E15 | **MEDIUM** | Touch target violations (20-36px) |
+| F-P6-036–037 | §E15 | LOW ×2 | Footer safe area, admin keyboard |
+| F-P6-038 | §E16 | **MEDIUM** | Input/select/slider disabled state missing |
+| F-P6-039–044 | §E16-E17 | LOW ×6 | Error class, progress bars, selects, dividers, planner col, line length |
+| F-P6-045 | §E18 | ✅ PASS | Border radius hierarchy sound |
+| F-P6-046 | §E19 | **MEDIUM** | Duplicate element color maps (3 copies) — FIXED |
+| F-P6-047 | §E19 | **MEDIUM** | Teams buttons bypass .kuro-btn — PARTIALLY FIXED |
+| F-P6-048–058 | §E19 | LOW ×8, MEDIUM ×3 | Teams: close btns, grid, search, selects, text-[7px], sequence, bars |
+| F-P6-059 | §E19 | **MEDIUM** | Team selector tabs missing ARIA — FIXED |
+| F-P6-060 | §E19 | **MEDIUM** | Teams ARIA 5.75× deficit — PARTIALLY FIXED |
+| F-P6-061 | §E19 | **MEDIUM** | 62 inline styles bypass design system |
+| F-P6-062 | §E19 | LOW | text-[6px] in selector — FIXED to text-[8px] |
+| F-P6-063 | §E18 | ✅ PASS | Border radius hierarchy sound |
+| F-P6-064 | §E20 | **MEDIUM** | 37 instances of §BAN blacklisted colors |
+| F-P6-065 | §E20 | LOW | Text colors 85% neutral gray (non-chromatic) |
+| F-P6-066 | §E20 | LOW | transition: all in 2 desktop-only places |
+| F-P6-067 | §E20 | LOW | Tab indicator animates layout-triggering left+width |
+| F-P6-068 | §E20 | LOW | No explicit exit animations |
+| F-P6-069 | §E20 | **MEDIUM** | Events tab 1 aria-label, 0 kuro-btn |
+| F-P6-070 | §E20 | LOW | Stats tab 42 inline styles (dynamic, lower severity) |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 17**
+**Low findings: 28**
+**Pass: 25**
+
+**Overall Design Maturity: 6.5/10** — Identity 9/10, spatial discipline 6/10, component consistency 5/10, cross-tab coherence 5/10.
+
 *End of P6. Commit and push follows.*
 
 ---
@@ -3188,6 +3354,11 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | Teams tab missing ARIA tab pattern | MEDIUM | Small (1 hour) | **P1** — Copy Tracker's ARIA pattern |
 | Teams ARIA coverage 5.75× deficit | MEDIUM | Medium (2 hours) | **P2** — Add aria-label to all controls |
 | Teams 62 inline styles bypass design system | MEDIUM | Large (1 day) | **P1** — Migrate to kuro-* classes |
+| 37 §BAN blacklisted color instances | MEDIUM | Small (2 hours) | **P2** — Replace #ef4444→token, #ffffff→var(--text-heading) |
+| Events tab under-utilizes design system | MEDIUM | Small (1 hour) | **P3** — Add aria-labels to controls |
+| No exit animations defined | LOW | Small (1 hour) | **P3** — Add 0.15s fadeOut for toasts/modals |
+| Tab indicator animates left+width | LOW | Medium (2 hours) | **P4** — Migrate to translateX+scaleX |
+| Text colors 85% neutral gray | LOW | Medium (half day) | **P4** — Create --text-secondary/--text-muted chromatic tokens |
 | No error state class for inputs | LOW | Small (30 min) | **P3** — Add `.kuro-input-error` |
 | Progress bar heights inconsistent | LOW | Small (1 hour) | **P3** — Standardize to h-1.5 or h-2 |
 | Divider system underutilized | LOW | Small (1 hour) | **P4** — Migrate `border-b` to `.kuro-divider` |
@@ -3206,9 +3377,9 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 |----------|-------|----------|
 | **CRITICAL** | **0** | — |
 | **HIGH** | **0** | — |
-| **MEDIUM** | **22** | Listed below |
-| **LOW** | **38** | See individual parts |
-| **PASS** | **88** | — |
+| **MEDIUM** | **24** | Listed below |
+| **LOW** | **44** | See individual parts |
+| **PASS** | **90** | — |
 
 ### All MEDIUM Findings
 
@@ -3233,6 +3404,8 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 | F-P6-059 | P6 | Team selector tabs missing ARIA tab pattern | 1 hour |
 | F-P6-060 | P6 | Teams ARIA coverage 5.75× lower than other tabs | 2 hours |
 | F-P6-061 | P6 | 62 inline styles bypass design system in Teams tab | 1 day |
+| F-P6-064 | P6 | 37 instances of §BAN blacklisted colors | 2 hours |
+| F-P6-069 | P6 | Events tab 1 aria-label, 0 kuro-btn — under-utilized | 1 hour |
 | F-P7-005 | P7 | 14 `window.confirm()` calls inconsistent with custom modal | 2-3 hours |
 | F-P8-009 | P8 | text-gray-500 fails WCAG AA contrast (3.6:1, 40+ instances) | 1-2 hours |
 | F-P10-001 | P10 | Monolithic 8,218-line App.jsx (= P5-004) | 2-3 days |
@@ -3273,4 +3446,4 @@ Large numbers (HP, resource counts) use `.toLocaleString()`, which automatically
 
 ---
 
-> **Audit complete.** 148 findings evaluated across 13 domains. 0 critical, 0 high, 22 medium (21 unique), 38 low, 88 pass. The established tabs demonstrate strong craft — the visual identity, PWA infrastructure, and accessibility are well above typical standards. The **Teams tab** (newest) is the primary quality outlier with **8 of 22 medium findings**: it bypasses the `.kuro-btn` design system (62 inline styles vs 11 kuro-* usages), introduces 6-7px text (below readability floor), duplicates color maps 3 times, has no ARIA tab semantics on its selector (vs Tracker's full implementation), and has 5.75× less ARIA coverage than comparable tabs. Cross-cutting debt: spacing grid discipline (25% off-grid), shadow token adoption (12%), and desktop responsive typography remain open. **The Teams tab needs a dedicated design system alignment pass before adding more features to it.**
+> **Audit complete.** 158 findings evaluated across 13 domains. 0 critical, 0 high, 24 medium (23 unique), 44 low, 90 pass. The established tabs demonstrate strong craft — the visual identity, PWA infrastructure, and accessibility are well above typical standards. The **Teams tab** (newest) is the primary quality outlier with **8 of 22 medium findings**: it bypasses the `.kuro-btn` design system (62 inline styles vs 11 kuro-* usages), introduces 6-7px text (below readability floor), duplicates color maps 3 times, has no ARIA tab semantics on its selector (vs Tracker's full implementation), and has 5.75× less ARIA coverage than comparable tabs. Cross-cutting debt: spacing grid discipline (25% off-grid), shadow token adoption (12%), and desktop responsive typography remain open. **The Teams tab needs a dedicated design system alignment pass before adding more features to it.**
