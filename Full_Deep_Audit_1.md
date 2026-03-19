@@ -1998,18 +1998,14 @@ Main navigation implements the full ARIA tabs pattern:
 
 Nested tab patterns (banner category, leaderboard tabs) follow the same correct pattern.
 
-#### F-P8-003 — Landmark Structure
-**Severity:** LOW
-**Confidence:** [CODE: App.jsx:3160-3210]
+#### F-P8-003 — Landmark Structure: Present ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: index.html:42-46]
 
-The app uses `<header>` for the sticky header and `<main>` implicitly (via the content area), but:
-- No explicit `<main>` element wrapping tab content
-- No `<footer>` or `<aside>` landmarks
-- No skip-to-content link
-
-**Impact:** Screen reader users cannot quickly jump to main content.
-
-**Solution:** Add `<main>` wrapper around tab content and a visually-hidden "Skip to content" link at the top of the page.
+- `role="main"` on `#root` div ✅
+- `<header>` for sticky navigation ✅
+- Skip-to-content link: `<a href="#root" class="sr-only focus:not-sr-only ...">Skip to main content</a>` ✅
+- Visible on keyboard focus with blue pill styling ✅
 
 ---
 
@@ -2187,7 +2183,7 @@ This prevents screen readers from announcing broken image placeholders.
 |----|----------|----------|---------|
 | F-P8-001 | §G1 | ✅ PASS | 142 aria-labels, 50 roles — extensive ARIA coverage |
 | F-P8-002 | §G1 | ✅ PASS | ARIA tabs pattern fully correct |
-| F-P8-003 | §G1 | LOW | Missing `<main>` landmark and skip-to-content link |
+| F-P8-003 | §G1 | ✅ PASS | Landmarks present (role="main", skip-to-content link) |
 | F-P8-004 | §G2 | ✅ PASS | Focus trap in all modals |
 | F-P8-005 | §G2 | ✅ PASS | Branded gold focus rings with glow |
 | F-P8-006 | §G2 | LOW | Focus not restored to trigger element after modal close |
@@ -2206,9 +2202,220 @@ This prevents screen readers from announcing broken image placeholders.
 **Critical findings: 0**
 **High findings: 0**
 **Medium findings: 1** (text-gray-500 contrast failure)
-**Low findings: 4**
-**Pass: 12**
+**Low findings: 3**
+**Pass: 13**
 
-**Overall Accessibility Assessment:** This app demonstrates above-average accessibility effort for a hobbyist project. The ARIA implementation is comprehensive and correct. Focus management, reduced motion, and keyboard navigation are all well-handled. The primary accessibility debt is the `text-gray-500` contrast failure (simple fix: upgrade to `text-gray-400`) and missing landmarks. For a gacha tracker, this level of a11y investment is commendable.
+**Overall Accessibility Assessment:** This app demonstrates above-average accessibility effort for a hobbyist project. The ARIA implementation is comprehensive and correct. Focus management, reduced motion, and keyboard navigation are all well-handled. The primary accessibility debt is the `text-gray-500` contrast failure (simple fix: upgrade to `text-gray-400`). For a gacha tracker, this level of a11y investment is commendable.
 
 *End of P8. Commit and push follows.*
+
+---
+
+## PART 9 — COMPATIBILITY (Cross-browser, PWA, Mobile)
+
+### §H1. PWA Infrastructure
+
+#### F-P9-001 — Service Worker: Production-Quality ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: public/sw.js — 165 lines]
+
+A well-structured service worker implementing three caching strategies:
+
+| Strategy | Applied To | Rationale |
+|----------|-----------|-----------|
+| **Network-first** | App shell, HTML, Vite bundles | Always serve latest code; cache fallback for offline |
+| **Cache-first** | CDN assets (fonts, libraries) | Rarely change; save bandwidth |
+| **Stale-while-revalidate** | Character/weapon images | Show cached immediately; update in background |
+
+**Additional features:**
+- Version-synchronized cache names (`ww-app-v3.2.3`, `ww-images-v3.2.3`, `ww-cdn-v3.2.3`)
+- Old cache purge on activate
+- Image cache capped at 250 entries with LRU trim (debounced 2s)
+- `skipWaiting` + `clients.claim` for immediate activation
+- Styled offline fallback page (dark-themed, matching app design)
+- Message handler for `skipWaiting`, `clearImageCache`, and `SET_VERSION`
+- 10 image CDN domains whitelisted for caching
+
+**P14-FIX:** Service worker moved from inline blob URL to proper static file, fixing CSP bypass, security scanner visibility, and SW update lifecycle.
+
+#### F-P9-002 — Web App Manifest: Complete ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: public/manifest.webmanifest]
+
+```json
+{
+  "name": "Whispering Wishes — Wuthering Waves Companion",
+  "short_name": "Whispering Wishes",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["games", "utilities"],
+  "icons": [SVG any, PNG 180x180 maskable]
+}
+```
+
+**Dynamic manifest generation:** The app also creates a blob manifest at runtime (App.jsx:460-470) that incorporates dynamic icon URLs. The old blob is properly revoked before creating a new one.
+
+#### F-P9-003 — Install Prompt: Handled ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-providers.jsx — InstallPrompt component]
+
+- `beforeinstallprompt` event captured and deferred
+- Custom install banner displayed (not native prompt)
+- Dismissible with smooth transition
+- iOS-specific install instructions shown when on Safari (`standalone` not available)
+- Chrome/Android install via `prompt()` API
+
+#### F-P9-004 — Offline Experience: Good ✅
+**Severity:** N/A (PASS)
+
+- Offline detected via `navigator.onLine` and `offline`/`online` events
+- Yellow alert bar: "You're offline. Changes will be saved locally." (`role="alert" aria-live="assertive"`)
+- Service worker serves cached app shell when offline
+- Styled offline fallback page if no cache available
+- localStorage saves continue to work offline
+- Firebase sync resumes automatically when back online
+
+---
+
+### §H2. Mobile Optimization
+
+#### F-P9-005 — Viewport Configuration: Correct ✅
+**Severity:** N/A (PASS)
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+```
+
+- `viewport-fit=cover` enables edge-to-edge rendering on notched devices
+- Safe area insets applied via `env(safe-area-inset-*)`:
+  - `padding-left/right` on `<body>` for horizontal safe areas
+  - `padding-top: env(safe-area-inset-top)` on sticky header
+  - Verified with `@supports (padding-top: env(safe-area-inset-top))`
+
+#### F-P9-006 — Apple PWA Meta Tags: Present ✅
+**Severity:** N/A (PASS)
+
+```html
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+```
+
+#### F-P9-007 — Touch Target Sizes: Compliant ✅
+**Severity:** N/A (PASS)
+
+- Selects on `pointer: coarse`: `min-height: 44px` (WCAG AAA target size)
+- Buttons on `pointer: coarse`: `min-height: 36px` (WCAG AA)
+- Close buttons: explicit `min-w-[36px] min-h-[36px]`
+- Destructive action buttons: `min-w-[44px] min-h-[44px]`
+- `touch-action: manipulation` on all interactive elements
+
+#### F-P9-008 — Responsive Grid: Adaptive ✅
+**Severity:** N/A (PASS)
+
+Collection grid uses responsive columns:
+```
+grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6
+```
+
+This scales from 3 columns on mobile to 6 on large desktops. Other grids (calculator, stats) similarly adapt.
+
+---
+
+### §H3. Desktop Layout
+
+#### F-P9-009 — Desktop Sidebar Layout: Present ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-providers.jsx:1445-1547]
+
+At `min-width: 1024px` (lg breakpoint), the app transforms into a sidebar + content layout:
+- **Sidebar (left):** 260px wide, fixed position, full height
+  - Navigation tabs displayed vertically
+  - Header/logo at top
+  - Server selector and export button
+  - Scrollable tab list
+- **Content (right):** Fills remaining width
+  - Scrollable main content area
+  - 6px scrollbar (themed)
+  - Full-width tab panels
+
+The desktop layout disables swipe hints and the horizontal tab indicator. Tab styling changes to full-width vertical pills.
+
+---
+
+### §H4. Cross-Browser Concerns
+
+#### F-P9-010 — CSS Compatibility: Good ✅
+**Severity:** N/A (PASS)
+
+| Feature | Fallback |
+|---------|----------|
+| `backdrop-filter: blur()` | `-webkit-backdrop-filter` prefix ✅ |
+| `scrollbar-width: thin` | Webkit scrollbar pseudo-elements ✅ |
+| CSS custom properties | All browsers 2017+ ✅ |
+| `contain: paint` | Graceful degradation (no visual change if unsupported) ✅ |
+| `env(safe-area-inset-*)` | `@supports` guard ✅ |
+| `100dvh` | `100vh` fallback (listed first) ✅ |
+
+#### F-P9-011 — JavaScript API Compatibility: Good ✅
+**Severity:** N/A (PASS)
+
+| API | Feature Detection |
+|-----|-------------------|
+| `navigator.vibrate` | `if (navigator.vibrate)` ✅ |
+| `navigator.clipboard` | Optional chaining ✅ |
+| `navigator.serviceWorker` | `if ('serviceWorker' in navigator)` ✅ |
+| `crypto.subtle` | `if (window.crypto?.subtle)` ✅ |
+| `Notification` | `if ('Notification' in window)` ✅ |
+| `localStorage` | `storageAvailable()` helper ✅ |
+| `OffscreenCanvas` | Not used (would need feature detection) |
+| `structuredClone` | Not used (JSON parse/stringify pattern instead) |
+
+#### F-P9-012 — Firefox `backdrop-filter` Support
+**Severity:** LOW
+
+`backdrop-filter` is supported in Firefox 103+ (2022). Older Firefox versions will see cards without the glass blur effect — they'll still have the background color but lose the frosted glass appearance.
+
+**Mitigating factor:** The semi-transparent background colors still work without backdrop-filter. The visual degradation is subtle. Firefox auto-updates, so most users will have support.
+
+---
+
+### §H5. Open Graph & Social
+
+#### F-P9-013 — Social Meta Tags: Complete ✅
+**Severity:** N/A (PASS)
+
+- `og:title`, `og:description`, `og:type`, `og:site_name` ✅
+- `og:image` with absolute URL ✅
+- `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image` ✅
+- `<meta name="description">` for search engines ✅
+
+---
+
+### P9 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P9-001 | §H1 | ✅ PASS | Service worker with 3-strategy caching, offline fallback |
+| F-P9-002 | §H1 | ✅ PASS | Web app manifest complete |
+| F-P9-003 | §H1 | ✅ PASS | Install prompt with iOS-specific instructions |
+| F-P9-004 | §H1 | ✅ PASS | Offline experience with alert + cached app shell |
+| F-P9-005 | §H2 | ✅ PASS | Viewport with viewport-fit=cover + safe areas |
+| F-P9-006 | §H2 | ✅ PASS | Apple PWA meta tags |
+| F-P9-007 | §H2 | ✅ PASS | Touch targets compliant (36-44px) |
+| F-P9-008 | §H2 | ✅ PASS | Responsive grid (3-6 columns) |
+| F-P9-009 | §H3 | ✅ PASS | Desktop sidebar layout at 1024px+ |
+| F-P9-010 | §H4 | ✅ PASS | CSS compatibility with fallbacks |
+| F-P9-011 | §H4 | ✅ PASS | JavaScript API feature detection |
+| F-P9-012 | §H4 | LOW | Firefox <103 loses backdrop-filter glass effect |
+| F-P9-013 | §H5 | ✅ PASS | Open Graph + Twitter Card meta tags |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 0**
+**Low findings: 1**
+**Pass: 12**
+
+**Overall Compatibility Assessment:** Excellent. The PWA implementation is production-quality with proper caching strategies, offline support, and install prompts. Mobile optimization is thorough (safe areas, touch targets, responsive grids). Desktop layout provides a dedicated sidebar experience. Cross-browser compatibility uses proper feature detection and CSS fallbacks. This is one of the strongest aspects of the application.
+
+*End of P9. Commit and push follows.*
