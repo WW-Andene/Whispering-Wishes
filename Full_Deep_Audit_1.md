@@ -1173,3 +1173,224 @@ No mutation of source arrays through sort.
 **Overall State/Data Assessment:** The state management is well-architected for a localStorage-only app. The reducer maintains immutability correctly, the import/export system is robust with pre-operation backups, and prototype pollution is thoroughly guarded. The main gap is the lack of schema migration logic, which becomes increasingly costly as the app evolves.
 
 *End of P4. Commit and push follows.*
+
+---
+
+## PART 5 — PERFORMANCE & RESOURCES
+
+### §D1. Runtime Performance
+
+#### F-P5-001 — Two Full-Screen Canvas Animations Running Continuously
+**Severity:** MEDIUM
+**Confidence:** [CODE: appcore-components.jsx:938-1166]
+
+`BackgroundGlow` and `TriangleMirrorWave` each render a full-screen canvas at ~15fps (66ms frame budget). Each frame involves:
+- **BackgroundGlow:** Double-buffered 8% scale canvas → pixel-by-pixel wave computation → blur(20px) draw to full canvas
+- **TriangleMirrorWave:** Full triangle grid computation with 3 wave functions, slope calculations, and per-triangle fill
+
+Both animations run simultaneously on every tab. On low-end mobile devices (4× CPU throttle), this is a significant main-thread tax.
+
+**Mitigations already in place:**
+- Pauses on `visibilitychange` (tab hidden) ✅
+- 66ms frame budget (15fps, not 60fps) ✅
+- Disabled entirely when animations toggle is off ✅
+- `willChange: 'transform'` for GPU compositing ✅
+- Buffer canvas released on unmount (P11-FIX) ✅
+
+**Solution:** Consider:
+1. Reducing to a single canvas layer (merge wave functions into one pass)
+2. Using `OffscreenCanvas` in a Worker for the pixel computation (would free main thread entirely)
+3. Lowering the resolution further on mobile (detect via `navigator.hardwareConcurrency` or viewport width)
+4. Auto-disabling animations on devices with < 4 CPU cores
+
+#### F-P5-002 — Deferred Calculator Computation: Well-Optimized ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx — CALC_DEFER_MS = 150]
+
+Heavy DP computation is deferred 150ms after input changes. During slider drag, the DP table is not recomputed on every frame — only after the user pauses. This prevents jank during interactive use.
+
+#### F-P5-003 — No Code Splitting or Lazy Loading
+**Severity:** MEDIUM
+**Confidence:** [CODE: App.jsx — 8,218 lines, vite.config.js]
+
+All 8 tabs (tracker, events, calculator, planner, analytics, collection, teams, profile) are loaded in the initial bundle. There is no `React.lazy()` or dynamic `import()` anywhere. Vite splits only vendor chunks (react, recharts).
+
+**Impact:**
+- The entire App.jsx (~8,218 lines) is parsed and compiled on first load
+- Recharts is always loaded even if the user never visits the Analytics tab
+- All 300+ character/weapon image URLs are in the data module even if collection is never viewed
+
+**Solution:**
+1. Wrap Recharts-dependent components in `React.lazy()` with `Suspense` — Recharts is ~200KB and only used in Stats tab
+2. Consider lazy-loading the Collection tab (heaviest DOM with 100+ grid items)
+3. Manual chunks in vite.config.js already split react and recharts — this is the right foundation
+
+#### F-P5-004 — 91+ useState Declarations in Single Component
+**Severity:** MEDIUM (maintenance + render concern)
+**Confidence:** [CODE: App.jsx — 91 useState, 1 useReducer]
+
+The monolithic `WhisperingWishesInner` component has 91+ `useState` hooks plus one `useReducer`. Every state change causes the entire 8,218-line component function to re-execute. While React's reconciler avoids unnecessary DOM updates, the **JavaScript execution cost** of re-running all hooks, conditionals, and JSX construction on every keystroke/click is non-trivial.
+
+**Mitigations already in place:**
+- `useMemo` for expensive derived values ✅
+- `useCallback` for event handlers ✅
+- `memo()` on child components (Card, CardHeader, CardBody, TabButton, CountdownTimer, PityRing, BannerCard, EventCard, etc.) ✅
+
+**Solution:** Extract tab content into separate components (e.g., `TrackerTab`, `CalcTab`, `CollectionTab`). Each would own its local state, reducing the re-render surface area. This is a significant refactor but the highest-impact performance improvement available.
+
+#### F-P5-005 — Collection Grid: 100+ Items Without Virtualization
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx [TAB-COLLECT], appcore-components.jsx:1372-1456]
+
+The collection grid renders all characters/weapons as DOM elements simultaneously (~100+ items with 6-column grid). Each item includes an `<img>` with lazy loading, which mitigates the image load cost but not the DOM node cost.
+
+**Mitigations already in place:**
+- `loading="lazy"` on collection images ✅
+- `CollectionGridCard` wrapped in `memo()` with custom comparator ✅
+- `contain: 'paint'` on card containers ✅
+
+**Solution:** For 100+ items, the current approach is acceptable. If the game adds significantly more items (200+), consider virtualization with `react-window` or intersection observer-based rendering.
+
+---
+
+### §D2. Web Vitals & Loading
+
+#### F-P5-006 — Font Loading: Preload + Print-Media Trick ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: index.html:28-37]
+
+Fonts (Rajdhani + JetBrains Mono) are loaded with:
+- `preconnect` to fonts.googleapis.com and fonts.gstatic.com
+- `preload as="style"` for the CSS
+- `media="print" onload="this.media='all'"` trick for non-blocking load
+- `<noscript>` fallback
+
+This is the correct pattern for non-render-blocking font loading.
+
+#### F-P5-007 — FOUC Prevention: Inline Critical CSS ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: index.html:38]
+
+`<style>html,body{background:#080c14;color:#e2e8f0;margin:0}</style>` prevents white flash on dark-themed app. Combined with `color-scheme: dark` in index.css, this eliminates FOUC.
+
+#### F-P5-008 — CLS Risk: Image Dimensions Not Set on Some Images
+**Severity:** LOW
+**Confidence:** [CODE: appcore-components.jsx, App.jsx]
+
+Banner card images use fixed container height (`height: '190px'`) which prevents CLS ✅. Collection grid cards use fixed height (`height: '140px'`) ✅. However, some images in character detail modals and team builder don't have explicit width/height, relying on parent containers for sizing.
+
+**Solution:** Ensure all `<img>` tags either have explicit `width`/`height` attributes or are in fixed-dimension containers with `contain: 'paint'`.
+
+#### F-P5-009 — DNS Prefetch for Image CDNs ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: index.html:32-34]
+
+`dns-prefetch` hints for i.ibb.co, i.imgur.com, and cdn.discordapp.com. This reduces DNS lookup latency for character/weapon images.
+
+---
+
+### §D3. Resource Budget
+
+#### F-P5-010 — Resource Budget Table
+
+| Resource | Source | Est. Size (gzip) | Load Strategy | Critical Path? | Optimization |
+|----------|--------|-------------------|--------------|----------------|-------------|
+| App code (App.jsx + modules) | Vite bundle | ~80-120KB gz | Blocking (module) | Yes | Lazy-load tabs |
+| React + ReactDOM | vendor-react chunk | ~45KB gz | Blocking | Yes | Already split |
+| Recharts | vendor-charts chunk | ~70KB gz | Blocking | **No** — only Stats tab | **Lazy-load** |
+| Lucide icons (50+) | Tree-shaken in bundle | ~15-25KB gz | Blocking | Yes | Already tree-shaken |
+| Tailwind CSS | Generated CSS | ~15-25KB gz | Blocking | Yes | Purged unused |
+| KuroStyles (inline) | `<style>` tag | ~8-12KB gz | Blocking (inline) | Yes | Cannot extract (dynamic) |
+| Rajdhani + JetBrains Mono | Google Fonts CDN | ~30-50KB | Non-blocking | No | Correct strategy |
+| Character/weapon images | ibb.co, imgur, etc. | ~2-5MB total | Lazy | No | Lazy loading ✅ |
+| Service worker | /sw.js | ~4KB | Background | No | Correct |
+| **Estimated Total (JS+CSS)** | | **~250-340KB gz** | | | |
+
+**3G first-load estimate:** ~340KB / 1.5 Mbps ≈ **1.8 seconds** for JS+CSS parse. Acceptable.
+
+**Largest optimization opportunity:** Lazy-load Recharts chunk (~70KB gz) — only loaded when Stats tab is visited.
+
+---
+
+### §D4. Memory Management
+
+#### F-P5-011 — Canvas Buffer Cleanup ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-components.jsx:1034-1037]
+
+BackgroundGlow explicitly releases buffer canvas on unmount:
+```js
+buf.width = 0;
+buf.height = 0;
+```
+This frees the canvas backing store memory (P11-FIX: LOW-3h).
+
+#### F-P5-012 — Timer Cleanup ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:490-494]
+
+Debounce timers and admin tap timer are cleared on unmount. CountdownTimer clears its interval on unmount. Canvas animations cancel `requestAnimationFrame` on unmount.
+
+**Timer/Listener balance:**
+- 49 total `setInterval`/`setTimeout`/`requestAnimationFrame`/`addEventListener` calls
+- 41 corresponding cleanup calls (`removeEventListener`/`clearInterval`/`clearTimeout`/`cancelAnimationFrame`)
+
+The 8-count difference is accounted for by:
+- One-shot `setTimeout` calls that don't need cleanup (they fire once and are GC'd)
+- `addEventListener` in service worker registration (global, lifetime listener)
+
+No timer or listener leaks detected.
+
+#### F-P5-013 — Blob URL Revocation ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: App.jsx:469-470, 2591-2593]
+
+Both blob URL creation points have matching revocations:
+- Manifest blob: old href revoked before creating new one (P7-FIX)
+- ID Card download: `URL.revokeObjectURL(url)` called immediately after `a.click()`
+
+#### F-P5-014 — Mask Gradient Cache: Bounded ✅
+**Severity:** N/A (PASS)
+**Confidence:** [CODE: appcore-components.jsx:52-82, 85-112]
+
+Both `_maskCache` and `_vertMaskCache` are bounded at 200 entries with full clear on overflow. This prevents unbounded memory growth from dynamic gradient generation.
+
+#### F-P5-015 — Presence Heartbeat Every 30 Seconds
+**Severity:** LOW
+**Confidence:** [CODE: App.jsx — presence tracking]
+
+The active players presence system writes to Firebase every 30 seconds. On slow/metered connections, this adds background data usage. However, this only activates when Firebase is configured.
+
+**Solution:** Consider increasing the heartbeat interval to 60 seconds, or pausing when the app is in the background (visibilitychange).
+
+---
+
+### P5 Summary
+
+| ID | Category | Severity | Finding |
+|----|----------|----------|---------|
+| F-P5-001 | §D1 | **MEDIUM** | **Two full-screen canvas animations running simultaneously** |
+| F-P5-002 | §D1 | ✅ PASS | Deferred calculator computation |
+| F-P5-003 | §D1 | **MEDIUM** | **No code splitting — Recharts always loaded** |
+| F-P5-004 | §D1 | **MEDIUM** | **91+ useState in monolithic component** |
+| F-P5-005 | §D1 | LOW | Collection grid without virtualization (acceptable at current scale) |
+| F-P5-006 | §D2 | ✅ PASS | Font loading correctly non-blocking |
+| F-P5-007 | §D2 | ✅ PASS | FOUC prevention with inline critical CSS |
+| F-P5-008 | §D2 | LOW | CLS risk on some images without explicit dimensions |
+| F-P5-009 | §D2 | ✅ PASS | DNS prefetch for image CDNs |
+| F-P5-010 | §D3 | LOW | Recharts (~70KB gz) loaded on cold start for all users |
+| F-P5-011 | §D4 | ✅ PASS | Canvas buffer cleanup |
+| F-P5-012 | §D4 | ✅ PASS | Timer/listener cleanup balanced |
+| F-P5-013 | §D4 | ✅ PASS | Blob URL revocation |
+| F-P5-014 | §D4 | ✅ PASS | Mask gradient cache bounded |
+| F-P5-015 | §D4 | LOW | Presence heartbeat every 30s on metered connections |
+
+**Critical findings: 0**
+**High findings: 0**
+**Medium findings: 3** (dual canvas animations, no code splitting, monolithic state)
+**Low findings: 4**
+**Pass: 8**
+
+**Overall Performance Assessment:** The app has good defensive performance practices (deferred computation, memo'd components, debounced saves, bounded caches, timer cleanup). The main performance concerns are architectural: the monolithic component pattern causes unnecessary re-execution, dual canvas animations tax low-end devices, and Recharts should be lazy-loaded. On modern devices, the app likely performs well; on low-end mobile (2-4 core, limited GPU), the canvas animations are the primary bottleneck.
+
+*End of P5. Commit and push follows.*
