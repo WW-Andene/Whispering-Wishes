@@ -6007,4 +6007,675 @@ This creates a distinctive **temperature personality**: the app feels meditative
 
 > **End of Step 16 — §E9: Visual Identity & Recognizability**
 > **Lines added**: ~530
-> **Next step**: Step 17 — §E10: Data Storytelling & Visual Communication (awaiting user instruction)
+
+---
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 17 — §E10: DATA STORYTELLING & VISUAL COMMUNICATION
+# ═══════════════════════════════════════════════════════════════
+
+> **Skill reference**: app-audit §E10
+> **Scope**: Primary data surfaces — TRACKER, CALCULATOR, STATS, PLANNER tabs (with cross-references to COLLECTION, EVENTS, TEAMS, PROFILE where data is displayed)
+> **Axis context**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+> **Key question**: Are numbers and data *communicated* — not just displayed? Does the visual language help users *understand*, not just *see*?
+
+---
+
+## §E10.1 — Numbers as Visual Elements
+
+### Typography System for Data
+
+The app defines two dedicated typography classes for numeric display (appcore-providers.jsx:1283–1298):
+
+| Class | Font | Weight | Features | Line-Height | Letter-Spacing | Purpose |
+|-------|------|--------|----------|-------------|----------------|---------|
+| `.kuro-number` | JetBrains Mono (`--font-data`) | 700 | `tabular-nums` | 1.2 | default | General data numbers |
+| `.kuro-scoreboard` | JetBrains Mono (`--font-data`) | 700 | `tabular-nums` | 1.0 | -0.02em | Countdown timer digits |
+
+**Assessment**: The foundation is **excellent** — monospace font with tabular numerals ensures vertical alignment of changing digits, and the two classes provide appropriate line-height distinction between inline numbers and prominent timer displays.
+
+### Key Metric Visual Weight Inventory
+
+| Metric | Tab | Display Size | Weight | Color | Font Class | Visual Weight Appropriate? |
+|--------|-----|-------------|--------|-------|-----------|---------------------------|
+| **Success Rate %** | CALC | `text-3xl` (30px) | 700 | Conditional (emerald→yellow→orange→red) | `.kuro-number` | **YES** — primary output, largest number |
+| **Expected Copies** | CALC | `text-2xl` (24px) | 700 | cyan-400 | `.kuro-number` | **YES** — secondary result |
+| **Convenes Needed** | CALC | `text-xl` (20px) | 700 | red-400 | `.kuro-number` | **YES** — tertiary result |
+| **Pity Count (calculator input)** | CALC | `text-2xl` (24px) | 700 | Dynamic gold→orange | `.kuro-number` | **YES** — primary input, animated at soft pity |
+| **Pity Count (ring center)** | TRACKER | SVG ~18px (`size*0.36`) | 700 | Dynamic gold→orange | SVG text | **INCONSISTENT** — same metric is 18px here vs 24px in Calculator |
+| **Banner Stats (5★/4★/Total)** | TRACKER | `text-sm` (14px) | bold | yellow/pink/purple/white | default | **WEAK** — critical pity numbers at same size as labels |
+| **Luck Rating** | STATS | `text-xl` (20px) | bold | Dynamic + text-shadow glow | `.kuro-number` via `--font-data` | **YES** — prominent with glow effect |
+| **Avg Pity (leaderboard)** | STATS | `text-sm` (14px) | bold | Conditional color | default | **ADEQUATE** — appropriate for list context |
+| **Convenes By End** | PLANNER | `text-xl` (20px) | 700 | yellow-400 | `.kuro-number` | **ADEQUATE** — but all 3 projections (7/30/90d) identical size |
+| **Daily Income** | PLANNER | `text-sm` (14px) | bold | yellow-400 | default (not `.kuro-number`) | **WEAK** — important planning metric at body text size |
+| **Astrite Amounts** | PLANNER | `text-[9px]` | regular | gray-400 | default | **TOO SMALL** — resource amounts hidden in micro-text |
+| **Countdown Timer** | TRACKER/EVENTS | 18px (`.kuro-scoreboard`) | 700 | Color-coded | `.kuro-scoreboard` | **YES** — prominent boxed digits |
+| **Win Rate %** | STATS | `text-xs` (12px) | bold | Conditional | default | **WEAK** — key insight metric at smallest readable size |
+
+### Critical Metric Under-Weight Issues
+
+**1. Pity count inconsistency** (§E10-NV1):
+- CALCULATOR tab: `text-2xl` (24px) with soft-pity pulse animation
+- TRACKER tab: SVG `fontSize={size * 0.36}` ≈ 18px in a 52px ring
+- Same data, different visual weight — the Tracker version (most-viewed surface) is 25% smaller
+
+**2. Banner stats flat hierarchy** (§E10-NV2):
+- BannerCard stats (appcore-components.jsx:1222–1244): pity count, denominator, and total pulls all at `text-sm` (14px)
+- The critical threshold "/80" is at `text-[9px]` gray-400 — nearly invisible
+- A user scanning quickly can't distinguish "48" (current pity) from "152" (total pulls)
+
+**3. Planner projection flat grid** (§E10-NV3):
+- Three income projections (7/30/90 days) all at `text-2xl` — zero size differentiation
+- The 30-day projection (monthly planning horizon, most actionable) has no visual priority
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-NV-F1 | **MEDIUM** | Pity count is 18px in Tracker ring but 24px in Calculator input — same metric, inconsistent visual weight across the two most important surfaces | **Increase Tracker ring font**: Change PityRing SVG text `fontSize` from `size * 0.36` to `size * 0.42` (~22px in a 52px ring). This brings it closer to the Calculator's 24px without breaking the ring layout |
+| §E10-NV-F2 | **MEDIUM** | BannerCard stats (5★ Pity, 4★ Pity, Total Pulls) are all `text-sm` with the threshold "/80" at `text-[9px]` gray-400 — no visual hierarchy between current pity and supporting numbers | **Escalate pity number**: Change the pity count to `text-base font-bold` and keep the denominator at `text-[9px]`. Add a subtle color accent to the "/80" threshold (e.g., `text-gray-300` instead of `text-gray-400`) to make it more visible as a reference point |
+| §E10-NV-F3 | **MEDIUM** | Planner 7/30/90-day projections are all `text-2xl` with identical styling — no indication which timeframe is most relevant | **Emphasize 30-day projection**: Make the 30-day cell `text-3xl` with a `kuro-stat-gold` background border, while keeping 7-day and 90-day at `text-xl`. Add a subtle "Recommended" or "Monthly" label badge to the 30-day cell |
+| §E10-NV-F4 | **LOW** | Daily income (`text-sm`, not `.kuro-number`) and Astrite amounts (`text-[9px]`) are under-weighted for planning decisions | **Apply `.kuro-number` to daily income**: Change the daily income display from plain `text-sm font-bold` to `text-base kuro-number` to visually connect it to the data typography system |
+| §E10-NV-F5 | **LOW** | Win Rate % in Stats is displayed at `text-xs` (12px) — a key strategic insight at the smallest readable size | **Escalate win rate**: Change from `text-xs` to `text-sm font-bold` with the `.kuro-number` class. The 50/50 win rate is one of the most important strategic metrics for gacha players |
+
+---
+
+## §E10.2 — Hierarchy of Insight
+
+### Data Flow Architecture per Tab
+
+#### TRACKER: Pull Count → Pity Counter → Soft/Hard Status → Guarantee Prediction
+
+| Layer | Content | Visual Treatment | Insight Level |
+|-------|---------|-----------------|---------------|
+| 1 (Banner identity) | Banner name + element badge | `h4 text-base` white + colored element chip | **Context** — "What am I tracking?" |
+| 2 (Visual progress) | Pity Ring (SVG circle) | Circular fill with gold glow, ~18px center number | **Raw → Computed** — "How close am I?" |
+| 3 (Numeric stats) | 5★ Pity, 4★ Pity, Total Pulls | `text-sm` bold, color-coded | **Raw data** — supporting numbers |
+| 4 (Prediction) | "50/50" or "✓ Guaranteed" badge | `text-[9px]` colored badge | **Actionable insight** — "What's my next outcome?" |
+| 5 (Timeline) | Countdown timer | `.kuro-scoreboard` boxed digits | **Urgency** — "How much time do I have?" |
+
+**Assessment**: The hierarchy exists but is **inverted for the most actionable insight**. The guarantee prediction ("✓ Guaranteed" vs "50/50") is at `text-[9px]` — the smallest element — when it's arguably the most strategically important information. Users need to know "Am I guaranteed?" before they decide to pull.
+
+#### CALCULATOR: Input → Probability → Recommendation
+
+| Layer | Content | Visual Treatment | Insight Level |
+|-------|---------|-----------------|---------------|
+| 1 (Input) | Banner selection + pity counter | Buttons + `text-2xl` slider | **Raw input** |
+| 2 (Primary result) | Success Rate (P ≥ N copies) | `text-3xl` (30px), conditional color | **Computed insight** — the answer to "Should I pull?" |
+| 3 (Secondary results) | Expected copies, Convenes needed | `text-2xl`, `text-xl` | **Supporting computation** |
+| 4 (Context) | Worst case, 4★ counts | `text-xl`, `text-[10px]` | **Edge case awareness** |
+
+**Assessment**: **EXCELLENT** hierarchy. The success percentage is correctly the largest, most prominent number. Color coding (emerald > 75%, yellow > 50%, orange > 25%, red < 25%) provides instant "go/no-go" signal without reading the number. The Calculator tab has the best data storytelling in the app.
+
+#### PLANNER: Resources → Income → Projection → Feasibility
+
+| Layer | Content | Visual Treatment | Insight Level |
+|-------|---------|-----------------|---------------|
+| 1 (Current state) | Daily income breakdown | `text-sm bold` yellow | **Raw data** — "What do I earn?" |
+| 2 (Projection) | By Banner End (total convenes) | `text-xl` yellow `.kuro-number` | **Computed** — "What will I have?" |
+| 3 (Time horizons) | 7/30/90 day projections | All `text-2xl` `.kuro-number` | **Computed** — time-based views (FLAT) |
+| 4 (Goal feasibility) | Target vs current, days needed | `text-xl` + progress bar | **Actionable** — "Can I afford it?" |
+
+**Assessment**: Layers 1-2 and 4 are well-structured. Layer 3 is the **flat grid anti-pattern** — three equal-weight projections with no hierarchy signal.
+
+#### STATS: Pull History → Aggregated Metrics → Trends → Community Context
+
+| Layer | Content | Visual Treatment | Insight Level |
+|-------|---------|-----------------|---------------|
+| 1 (Primary insight) | Luck Rating badge + tier | `text-xl` glowing, dynamic color | **Actionable insight** — "Am I lucky?" |
+| 2 (Distribution) | Pity histogram | Custom HTML bars, color-coded | **Computed** — visual luck distribution |
+| 3 (Trends) | Convene history timeline | AreaChart (Recharts), gold gradient | **Trend** — activity over time |
+| 4 (Raw data) | 5★ Pull log | Scrollable list, color-coded pity | **Raw history** — every individual pull |
+| 5 (Community) | Leaderboard | Ranked list, conditional colors | **Context** — "How do I compare?" |
+| 6 (Aggregates) | Overall stats grid | `kuro-stat` boxes, 2×3 grid | **Supporting data** |
+
+**Assessment**: **STRONG** hierarchy — the Luck Rating badge is correctly positioned as the primary insight (top, prominent, glowing). The progression from single-number summary → histogram → timeline → raw log → community follows a textbook **overview → detail → context** pattern.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-HI-F1 | **HIGH** | Tracker tab's guarantee prediction ("50/50" vs "✓ Guaranteed") is at `text-[9px]` — the most actionable insight is the smallest element | **Escalate guarantee badge**: Increase to `text-xs font-bold` with a colored background pill (emerald for guaranteed, orange for 50/50). Position it prominently below the pity ring, not buried in the stats row. This is the single most important piece of information for deciding whether to pull |
+| §E10-HI-F2 | **LOW** | Planner Layer 3 (time projections) is a flat grid — no signal about which timeframe is most relevant | **Same solution as §E10-NV-F3**: Emphasize 30-day as the primary planning horizon |
+
+---
+
+## §E10.3 — Chart Design Quality
+
+### Chart Inventory
+
+The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus a custom HTML histogram.
+
+#### Chart 1: Convene History Timeline (STATS Tab)
+
+**Location**: App.jsx:4615–4636 | **Type**: AreaChart (Recharts)
+
+**Question it answers**: "How have my Convene pulls distributed over time?"
+
+| Aspect | Implementation | Assessment |
+|--------|---------------|------------|
+| **Chart type** | AreaChart with `type="natural"` interpolation | **CORRECT** — area chart is appropriate for cumulative activity over time; natural interpolation preserves data truth |
+| **X-Axis** | Time periods (months/phases), 10px JetBrains Mono, gray-400, no grid lines | **GOOD** — minimal, readable labels |
+| **Y-Axis** | Numeric counts, 9px, hidden axis line, no tick marks | **GOOD** — clean, uncluttered |
+| **Color encoding** | Gold gradient fill (`rgba(237,175,24,0.22)` → transparent), gold stroke | **MEANINGFUL** — gold matches "Featured" banner semantic, brand-consistent |
+| **Tooltip** | Custom styled: blurred dark background + gold border + 11px data font | **EXCELLENT** — matches LAHAI-ROI design language, uses `--font-data` |
+| **Height** | 128px (`h-32`) | **ADEQUATE** — compact for mobile; enough to see trends |
+| **Empty state** | BarChart3 icon + "Awaiting signal data" + action button | **GOOD** — informative and actionable |
+| **Pagination** | Range indicators (e.g., "1–30 of 120") | **GOOD** — handles large datasets without overcrowding |
+
+**Verdict**: 8.5/10 — Well-executed area chart with appropriate type, meaningful color, and branded tooltip. Minor: Y-axis could show gridlines at major intervals for easier value reading.
+
+#### Chart 2: 5★ Pity Distribution Histogram (STATS Tab)
+
+**Location**: App.jsx:4378–4435 | **Type**: Custom HTML bar chart
+
+**Question it answers**: "What is my luck distribution? How many 5★ did I get at each pity threshold?"
+
+| Aspect | Implementation | Assessment |
+|--------|---------------|------------|
+| **Chart type** | Horizontal histogram with 10-pity-point bins (1–10, 11–20, ..., 81+) | **CORRECT** — histogram is the right choice for distribution analysis |
+| **Bar width** | Proportional to max count | **GOOD** — relative sizing communicates distribution shape |
+| **Color encoding** | 5-point color gradient by pity range: emerald (≤20), lime (≤40), gold (≤50), orange (≤60), red (61+) | **HIGHLY MEANINGFUL** — color maps directly to gacha luck perception (green = lucky, red = unlucky) |
+| **Labels** | Bucket labels (1–10, 11–20, ...) and count values | **GOOD** — both axis and data labels present |
+| **Height** | 96px per bar maximum | **ADEQUATE** |
+| **Empty state** | Returns null (hidden) | **ACCEPTABLE** — no misleading empty chart |
+| **Accessibility** | Screen reader summary with average, range, and per-bucket counts | **EXCELLENT** — `sr-only` div with complete data summary |
+
+**Verdict**: 9/10 — Outstanding data visualization. The color gradient immediately communicates luck quality. The accessibility summary is a standout feature.
+
+#### Chart 3: Session Activity (Admin Dashboard)
+
+**Location**: App.jsx:7512–7530 | **Type**: AreaChart (Recharts)
+
+**Question it answers**: "How many players are currently active?"
+
+| Aspect | Implementation | Assessment |
+|--------|---------------|------------|
+| **Chart type** | AreaChart with `type="monotone"` | **CORRECT** — time-series of active sessions |
+| **Color** | Emerald green (#34d399) gradient | **MEANINGFUL** — green = "active/healthy" |
+| **Axes** | Time on X, count on Y (no decimals, 20px Y width) | **GOOD** — minimal and readable |
+| **Context** | Admin-only view | N/A for most users |
+
+**Verdict**: 8/10 — Clean admin visualization, appropriate for its context.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-CH-F1 | **LOW** | Convene History AreaChart has no Y-axis gridlines — values must be estimated by eye rather than read against a reference | **Add subtle gridlines**: Add `<CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />` to the AreaChart. The ultra-subtle stroke ensures gridlines don't compete with the data |
+| §E10-CH-F2 | **POLISH** | Pity histogram uses custom HTML bars instead of Recharts BarChart — this works well but creates an inconsistency in chart technology (Recharts vs custom) | **Accept as intentional**: The custom HTML implementation allows element-specific color coding per bar and fine-grained layout control that Recharts BarChart doesn't easily provide. No change needed |
+
+---
+
+## §E10.4 — Progressive Complexity Revelation
+
+### Information Layering Assessment per Tab
+
+#### CALCULATOR — Progressive Reveal (BEST EXAMPLE)
+
+| Visibility | Content | Trigger |
+|-----------|---------|---------|
+| **Always visible** | Banner type selection (3 buttons) | None — entry point |
+| **Conditional** | Character vs Weapon toggle | Only after "Featured" selected |
+| **Conditional** | Pity counter inputs (1–4) | Based on banner selection |
+| **Conditional** | 50/50 toggle | Only for Featured Character |
+| **Conditional** | Astrite Priority slider | Only when "Both" banners selected |
+| **Conditional** | Combined analysis section | Only when "Both" banners selected |
+| **Computed** | Result cards (2–4) | Always after inputs set |
+| **Expandable** | Saved states list | Requires prior saves |
+
+**Assessment**: **EXCELLENT** (9/10) — The Calculator reveals complexity on demand. A new user sees 3 buttons; an expert user toggling "Both" banners sees 4 pity inputs + priority slider + combined analysis. The progressive reveal is driven by user choices, not hidden behind "Show Advanced" toggles.
+
+#### STATS — Overview → Detail (STRONG)
+
+| Layer | Position | Content |
+|-------|----------|---------|
+| 1 (Above fold) | Top | Luck Rating badge (single number + tier) |
+| 2 | Below fold | Pity Distribution Histogram |
+| 3 | Scroll | Convene History Timeline |
+| 4 | Scroll | 5★ Pull Log (scrollable, `max-h-60`) |
+| 5 | Scroll | Overall Statistics grid |
+| 6 | Modal | Leaderboard (triggered by button) |
+
+**Assessment**: **STRONG** (8.5/10) — The single-number Luck Rating at the top is the perfect "overview" entry point. Users scroll deeper for detail. The Leaderboard is correctly behind a modal (community comparison is optional context).
+
+#### TRACKER — Category-Based (GOOD)
+
+| Layer | Content | Trigger |
+|-------|---------|---------|
+| 1 | Category tabs (Resonators/Weapons/Standard) | Always visible |
+| 2 | Active banner cards | Selected category |
+| 3 | Past banner history | Scroll / collapsed section |
+
+**Assessment**: **GOOD** (8/10) — Category tabs prevent information overload from showing all banners simultaneously. Past history is correctly subordinated.
+
+#### PLANNER — Vertical Scroll (ADEQUATE)
+
+| Layer | Content |
+|-------|---------|
+| 1 | Daily income summary |
+| 2 | By Banner End projection |
+| 3 | Time horizon projections (7/30/90d) |
+| 4 | Goal progress |
+| 5 | Expandable: Add Purchases panel (`showIncomePanel` toggle with ChevronDown rotation) |
+
+**Assessment**: **ADEQUATE** (7/10) — The Add Purchases panel is correctly collapsible (appcore:3769–3770), but the main content is a vertical scroll with no progressive disclosure between layers 1–4. All projection data is visible simultaneously.
+
+### Expandable/Collapsible Elements Found
+
+| Element | Location | Trigger | Visual Indicator |
+|---------|----------|---------|-----------------|
+| Add Purchases panel | App.jsx:3769–3770 | Click header | ChevronDown rotates 180° |
+| Error details | appcore-components.jsx:638–641 | `<details><summary>` | Native browser disclosure |
+| Character Detail modal | App.jsx:8175–8190 | Click collection card | Full-screen overlay |
+| Leaderboard modal | App.jsx:4059–4274 | Click "Leaderboard" button | Modal overlay |
+| Banner History | App.jsx:3320–3365 | Scroll within card | Contained scrollable area |
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-PC-F1 | **LOW** | Planner tab shows all 4 content layers simultaneously with no progressive disclosure — daily income, projections, and goal are all visible at once | **Consider collapsing time projections**: Make the 7/30/90-day projection grid collapsible by default (with the 30-day preview showing), expanding to show all three on tap. This reduces initial cognitive load while keeping data one tap away |
+
+---
+
+## §E10.5 — Data Density Calibration
+
+### Density Assessment by Tab
+
+| Tab | Distinct Data Items (above fold) | Whitespace | Density Level | Appropriate for A3 (Expert)? |
+|-----|----------------------------------|-----------|---------------|-------------------------------|
+| **TRACKER** | ~8–12 (banner card + pity ring + stats + timer) | Generous (card spacing `space-y-3`) | **LOW-MODERATE** | **YES** — focused, scan-friendly |
+| **CALCULATOR** | ~10–15 (buttons + inputs + results) | Moderate (conditional rendering removes irrelevant fields) | **MODERATE** | **YES** — complexity appears on demand |
+| **STATS** | ~15–20 (luck badge + histogram + chart + stats grid) | Adequate (card spacing `space-y-3`, padding `p-2`–`p-4`) | **MODERATE-HIGH** | **YES** — expert players want comprehensive analytics |
+| **PLANNER** | ~12–18 (income + projections + goal + purchases) | Tight (3-column grid for projections) | **MODERATE-HIGH** | **YES** — planning requires dense data comparison |
+| **COLLECTION** | ~20–40 (grid of character/weapon cards) | Tight (grid gaps `gap-1.5`–`gap-2`) | **HIGH** | **YES** — collection grids should be dense for scanning |
+| **EVENTS** | ~6–10 (event cards with timers) | Generous | **LOW** | **YES** — events are time-sensitive, not data-heavy |
+
+**Overall Density Verdict**: The density calibration is **WELL-MATCHED** to the target audience (A3: Enthusiast/Expert gacha players). Expert users expect dense data screens and can parse them efficiently. The app avoids the trap of over-simplifying for casual users while maintaining adequate whitespace to prevent visual fatigue.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-DD-F1 | **POLISH** | Collection grid uses `gap-1.5` to `gap-2` — at extreme densities (40+ items), the tight spacing can create visual fatigue on long sessions | **No change needed for expert audience**: The density is appropriate for A3 users who actively want to see their full collection at a glance. Consider adding a "compact/comfortable" density toggle as a future enhancement if user feedback indicates fatigue |
+
+---
+
+## §E10.6 — Empty → Populated Visual Storytelling
+
+### Empty State Design Inventory
+
+| Tab | Empty State Message | Location | Visual Treatment | Emotional Quality |
+|-----|-------------------|----------|-----------------|-------------------|
+| **Calculator** | "No states archived. Use Save Current State..." | App.jsx:3960 | `.kuro-empty-state` + gold radial glow + dashed border | Instructive — invites action |
+| **Stats (Trend)** | "Insufficient data for trend analysis" | App.jsx:4519 | `.kuro-empty-state` text only | Clinical — lacks personality |
+| **Stats (Signal)** | "Insufficient signal data" | App.jsx:4573 | `.kuro-empty-state` text only | Clinical |
+| **Stats (5★)** | "No 5★ signals detected" | App.jsx:4671 | `.kuro-empty-state` text only | Game-lore language — better |
+| **Collection** | Ghost grid (6 placeholder cells) | appcore-components.jsx:1560–1568 | `ghostPulse` animation, staggered delays (0.08s each) | **BEST** — visual promise of future content |
+| **Teams** | "No operatives registered" | App.jsx:7557 | `.kuro-empty-state` | Game-lore — immersive |
+| **Trophies** | "Import Convene data to unlock achievements" | App.jsx:7633 | `.kuro-empty-state` | Call-to-action |
+| **Stats (overall)** | BarChart3 icon + "Awaiting signal data" + CTA button | App.jsx:3988–3996 | Icon + text + actionable button | **STRONG** — multi-element with clear path forward |
+
+### Transition Quality: Empty → Populated
+
+**Collection Grid**: The ghost grid (`.ghost-grid-cell` with `ghostPulse 2.5s ease-in-out infinite`) transforms into populated cards with staggered `cardSlideIn` animation. This is the **strongest transition** — the placeholder grid hints at the layout shape, then cards slide in to fill those exact positions.
+
+**Stats Tab**: Empty states use plain `text-gray-500 text-xs text-center py-3` with `.kuro-empty-state` class (gold radial glow + dashed border). When data loads, cards appear via `cardSlideIn`. The transition is **adequate** — the gold glow maintains brand presence — but the text-only empty states feel like spreadsheet placeholders.
+
+**Tab Content General**: All tab content animates via `tabFadeIn` (0.35s) + staggered `cardSlideIn` (0.4s with 0.05–0.2s delays). This creates a **"system boot sequence"** feel when data loads — cards slide up sequentially like instruments powering on.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-EP-F1 | **MEDIUM** | Stats tab empty states ("Insufficient data for trend analysis", "Insufficient signal data") are plain text with no icon, no illustration, and clinical language — they feel like spreadsheet error messages, not a designed experience | **Add icons + rewrite copy**: Each Stats empty state should include a contextual icon (e.g., TrendingUp for trend, Star for 5★) at 24px with gold glow, followed by game-lore copy. "Insufficient data for trend analysis" → "Not enough signals to chart your journey — keep pulling to reveal patterns." This matches the Collection ghost grid's emotional quality |
+| §E10-EP-F2 | **LOW** | No visual ceremony when data first populates — the `cardSlideIn` animation is the same whether it's the first load or a return visit; there's no "first data" moment | **Add a first-population flash**: On first data load (detect via `history.length === 0` → `history.length > 0` transition), trigger a brief gold glow pulse on the newly populated cards. Use a one-time `@keyframes firstDataGlow` with `box-shadow` gold expansion. This celebrates the moment data appears for the first time |
+
+---
+
+## §E10.7 — Error as Communication
+
+### Error State Hierarchy
+
+| Error Type | Visual Treatment | Icon | Color | Duration | Urgency Match? |
+|-----------|-----------------|------|-------|----------|----------------|
+| **Import failed** | Toast | AlertCircle | Red `rgba(248,113,113,0.9)` | 3s auto-dismiss | **ADEQUATE** — import failure is recoverable |
+| **Storage full** | Toast (warning) | AlertTriangle | Gold `rgba(237,175,24,0.9)` | 3s auto-dismiss | **ADEQUATE** — warning with action path |
+| **Rate limit** | Toast (error) | AlertCircle | Red | 3s auto-dismiss | **WEAK** — rate limit is temporary, should use warning not error |
+| **Admin lockout** | Toast (error) | AlertCircle | Red | 3s auto-dismiss | **WEAK** — 5-minute lockout communicated as 3s transient toast |
+| **Tab crash** | In-tab error boundary | AlertCircle (32px) | Red-400 text + retry button | Persistent until retry | **GOOD** — persistent matches severity |
+| **App crash** | Full-screen fallback | None (text only) | Standard text on dark bg | Persistent | **WEAK** — visually identical to tab crash; no severity escalation |
+| **File too large** | Toast (error) | AlertCircle | Red | 3s | **ADEQUATE** — includes size in message |
+
+### Error Visual Design Quality
+
+**Toast system** (appcore-providers.jsx:200–241):
+- 4 distinct icons (CheckCircle, AlertCircle, AlertTriangle, Info) — **GOOD** shape differentiation
+- 4 distinct colors (green, red, gold, cyan) — **GOOD** color differentiation
+- Haptic feedback on error: triple vibration `[50,50,80]` (appcore-providers.jsx:213) — **GOOD** multi-sensory
+- Auto-dismiss at 3s — **PROBLEMATIC** for high-urgency errors
+
+**Error boundary** (appcore-components.jsx:601–695):
+- Tab-level: AlertCircle 32px + "Something went wrong" + retry button
+- App-level: Full darkened screen + heading + body text
+- **No visual distinction between severity levels** — tab crash and app crash look the same
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-ER-F1 | **MEDIUM** | Admin lockout (5-minute cooldown after 5 failed attempts) is communicated as a 3-second auto-dismiss toast — the most persistent security state uses the most transient notification | **Add persistent lockout indicator**: When lockout is active, display a persistent red banner below the input field showing "Locked — try again in X:XX" with a countdown. The toast can still fire, but the persistent indicator ensures the user sees the state even after the toast dismisses |
+| §E10-ER-F2 | **LOW** | Rate limit error uses red "error" toast type instead of gold "warning" — rate limiting is a temporary wait condition, not a failure state | **Change to warning type**: Switch rate limit from `toast.addToast(msg, 'error')` to `toast.addToast(msg, 'warning')`. Gold + AlertTriangle communicates "wait a moment" better than red + AlertCircle which communicates "something broke" |
+| §E10-ER-F3 | **LOW** | Tab-level error boundary and app-level error boundary have identical visual weight — a single tab crashing looks the same as the entire app crashing | **Escalate app crash visually**: Add a red border or red gradient accent to the app-level error boundary. Include an app icon/logo to reassure the user this is still Whispering Wishes (not a browser error). Add "The app encountered an unexpected error" vs the tab-level "Something went wrong in this section" |
+
+---
+
+## §E10.8 — Colorblind-Safe Data Encoding
+
+### Color-Only Differentiation Audit
+
+| Data Context | Colors Used | Secondary Encoding | Grayscale Distinguishable? | Colorblind Risk |
+|-------------|------------|-------------------|---------------------------|-----------------|
+| **Won 50/50 vs Lost 50/50** | Emerald (#34d399) vs Red (#ef4444) | "W" / "L" letter badges + text labels + aria-labels | Emerald ~130 luma, Red ~90 luma — **40 luma gap** (marginal) | **MEDIUM** — red-green colorblind users rely on W/L letters |
+| **Pity gradient (5-point)** | Emerald → Lime → Gold → Orange → Red | Numeric pity value always displayed | Lime ~170 vs Gold ~160 — **10 luma gap** (nearly identical in B&W) | **LOW** — numbers provide full recovery, but mid-range colors merge |
+| **Banner type** | Gold (Resonators) / Pink (Weapons) / Cyan (Standard) | Text labels "Resonators"/"Weapons"/"Standard" | Gold ~160, Pink ~120, Cyan ~130 — distinguishable | **LOW** — labels provide full recovery |
+| **Element colors (6)** | Orange/Purple/Emerald/Cyan/Pink/Yellow | Text labels per element name | Some pairs merge (emerald/cyan, orange/pink) | **MEDIUM** — 6 colors with only text backup; no icon shapes |
+| **Trophy tiers** | Gold/Red/Orange/Green/Purple/Gray/Cyan/Pink | Explicit tier labels in text | Multiple color-tier collisions in grayscale | **LOW** — text tier names provide recovery |
+| **Toast types** | Green/Red/Gold/Cyan | 4 unique icon shapes (CheckCircle/AlertCircle/AlertTriangle/Info) | Green vs Red merge for deuteranopia | **NONE** — icon shapes fully differentiate |
+| **Chart series** | Single gold series (area chart) | N/A — only one data series | N/A | **NONE** |
+| **Histogram bars** | 5-color gradient | Bar position (left=lucky, right=unlucky) + numeric labels | Mid-range colors merge | **LOW** — position + numbers provide redundancy |
+
+### Critical Colorblind Scenarios
+
+**Deuteranopia (Red-Green Colorblindness, ~8% of males)**:
+- Won 50/50 (emerald) vs Lost 50/50 (red): These become nearly indistinguishable in color alone. The "W"/"L" letter badges save this from being a failure.
+- Pity gradient: Emerald (≤20) and Orange (≤60) merge. Lime (≤40) and Red (61+) partially merge. Numbers provide recovery.
+
+**Protanopia (Red-weakness)**:
+- Similar issues to deuteranopia for red/green pairs.
+- Gold (#edaf18) remains highly visible — warm yellow is generally safe across all colorblindness types.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-CB-F1 | **MEDIUM** | Won 50/50 (emerald) vs Lost 50/50 (red) relies on color + tiny "W"/"L" letters at `text-[9px]` — the letter backup is too small to be a reliable secondary encoding for colorblind users | **Enlarge W/L badges or add icons**: Increase "W"/"L" badges from `text-[9px]` to `text-xs` with a background pill (green bg for W, red bg for L). Alternatively, add a ✓ icon for Won and ✗ icon for Lost — shape differentiation is the most robust colorblind backup |
+| §E10-CB-F2 | **LOW** | Pity gradient lime (#84cc16) and gold (#edaf18) are nearly identical in grayscale (~10 luma difference) — users cannot distinguish "lucky average" from "average" by color alone | **Widen the luma gap**: Replace lime (#84cc16) with a brighter green (#4ade80, ~190 luma) for the 21–40 range. This creates a clearer grayscale progression: bright green → gold → orange → dark red. The numeric value always provides full recovery |
+| §E10-CB-F3 | **LOW** | Six element colors have no icon/shape backup — purely text labels. In contexts where labels are truncated or absent, elements are color-only | **Add element icons**: Create or assign simple geometric shapes per element (e.g., Fusion = flame, Electro = bolt, Aero = wind swirl, Glacio = snowflake, Havoc = spiral, Spectro = star). These already exist in WuWa's game UI and would strengthen both identity and accessibility |
+
+---
+
+## §E10.9 — Data Table Design Quality
+
+### Table Inventory
+
+The application uses several data-dense tabular layouts. While none use a literal `<table>` element (all are flexbox/grid constructs), they function as data tables:
+
+| Table | Location | Row Structure | Columns | Max Rows | Scroll Strategy |
+|-------|----------|--------------|---------|----------|-----------------|
+| **5★ Pull Log** | App.jsx:4665–4698 | flex row with `justify-between` | Name, Banner, W/L, Pity, Date | Unbounded (all 5★s) | `max-h-60 overflow-y-auto` |
+| **Leaderboard Rankings** | App.jsx:4108–4142 | flex row with index + avatar + stats | Rank, Player ID, Pull Count, Avg Pity | Top 50 (sliced) | `max-h-72 overflow-y-auto` |
+| **Community Ownership** | App.jsx:4164–4212 | flex row with image + bar | Rank, Image, Name, Percentage, Bar | Top 10 | No scroll (fixed 10) |
+| **Overall Stats Grid** | App.jsx:4648–4663 | `grid grid-cols-2` + `grid-cols-3` | Stat cards (value + label) | Fixed 5 cells | None (always visible) |
+| **Total Obtained Grid** | App.jsx:4706–4718 | `grid grid-cols-2` + `grid-cols-3` | Category value cards | Fixed 5 cells | None |
+| **Admin Player List** | App.jsx:7541–7590 | flex row with UID + stats | Rank, UID, Pull Count, Avg Pity, Date | All players | `max-h-72 overflow-y-auto kuro-scroll` |
+| **Income Sources (Planner)** | App.jsx:3822–3846 | flex row `justify-between` | Name, Price | Dynamic (added items) | None |
+
+### Data Alignment Analysis
+
+**Numeric alignment**: The leaderboard (App.jsx:4133) uses `text-right flex-shrink-0` for avg pity values — **GOOD**. The 5★ Pull Log (App.jsx:4687–4689) also right-aligns pity + date — **GOOD**. Both use right-alignment for numerical columns, which is the correct approach for scan-comparison.
+
+**Font consistency**: Leaderboard avg pity uses inline `text-sm font-bold` without `.kuro-number` — numbers don't get `tabular-nums`. The Pull Log pity uses `font-bold` class with pity color but also lacks `.kuro-number`. Admin player list (App.jsx:7571) uses `.kuro-number` in one place (`typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity`). This is **inconsistent** — some tables use the monospace numeric font, others don't.
+
+**Column stability**: Because rows use flex with `truncate` on names and `flex-shrink-0` on numeric values, columns maintain stable widths. The `truncate` class on names (App.jsx:4681: `text-yellow-400 font-medium truncate`) prevents long names from pushing numbers off-screen — **GOOD**.
+
+**Row density**: Pull Log rows use `p-1.5` padding with `text-[10px]` — very dense but appropriate for a log that can have 20+ entries. Leaderboard rows use `py-1.5 px-2` — slightly more generous. The density difference is **justified** by the different use cases.
+
+### Scroll Container Quality
+
+**Pull Log** (`max-h-60 overflow-y-auto`): 60 × 4 = 240px container. With rows at ~28px each, this shows ~8.5 rows before scrolling. No scroll indicator — the user must discover scrollability by attempting to scroll. No fade-out hint at the bottom.
+
+**Admin Player List** (`max-h-72 overflow-y-auto kuro-scroll`): 72 × 4 = 288px. Uses `kuro-scroll` class which provides a styled thin scrollbar. This is **better** than the Pull Log which lacks the scroll styling class.
+
+**Leaderboard** (`max-h-72 overflow-y-auto`): Same height as Admin list but **missing** `kuro-scroll` class — uses default browser scrollbar.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-DT-F1 | **MEDIUM** | Leaderboard avg pity numbers (App.jsx:4135) and Pull Log pity numbers (App.jsx:4688) lack `.kuro-number` class — they render in the default font without `tabular-nums`, causing digits to shift horizontally as values change (e.g., "45.2" vs "8.1" won't column-align) | **Add `.kuro-number` to all tabular numeric cells**: On leaderboard `entry.avgPity.toFixed(1)`, add `kuro-number` to the parent span. On Pull Log `{p.pity ?? '?'}`, add `kuro-number`. This ensures `tabular-nums` + JetBrains Mono across all data tables, matching the Stats grid and Planner which already use it |
+| §E10-DT-F2 | **LOW** | Pull Log scroll container (`max-h-60 overflow-y-auto`) has no scroll affordance — no `kuro-scroll` class, no bottom fade, no "scroll for more" indicator; the admin list uses `kuro-scroll` but Pull Log and Leaderboard don't | **Add `kuro-scroll` + bottom fade**: Add `kuro-scroll` class to both the Pull Log and Leaderboard scroll containers. Add a `pointer-events-none` gradient overlay at the bottom (`linear-gradient(transparent 80%, var(--bg-card) 100%)`) when content overflows, hinting at more rows below |
+| §E10-DT-F3 | **POLISH** | None of the data tables use semantic `<table>` / `<thead>` / `<tbody>` — they're all flex/grid constructs with no column headers. The Pull Log has no header row explaining what "W" / "L" / the number columns mean | **Add visually subtle header row**: For the Pull Log, add a single header row at `text-[9px] text-gray-500` with "Name | Banner | 50/50 | Pity | Date". Use `role="table"`, `role="rowgroup"`, `role="row"`, `role="cell"` ARIA roles on the flex structure to preserve screen reader semantics without switching to literal `<table>` elements |
+
+---
+
+## §E10.10 — Responsive Data Display
+
+### Breakpoint Strategy
+
+The application uses a **desktop-layout** class toggled at viewport level (appcore-providers.jsx:1555–1561), with two key responsive grids:
+
+- `.banner-grid` on desktop: `grid-template-columns: repeat(auto-fit, minmax(420px, 1fr))` — banner cards reflow into multi-column at wide viewports
+- Collection grid on desktop: `grid-template-columns: repeat(auto-fill, minmax(380px, 1fr))` — collection cards reflow similarly
+
+**Mobile-first base**: Without `.desktop-layout`, the app renders as a single-column stack with `max-w-md mx-auto` (App.jsx global wrapper). All content fits within ~448px width.
+
+### Chart Responsiveness
+
+**Convene History AreaChart** (App.jsx:4615–4636): Uses `<ResponsiveContainer width="100%" height="100%">` inside a `h-32` container — the chart width adapts to container but height is **fixed at 128px** regardless of viewport. On a 4K monitor, a 128px-tall chart spanning 800+ pixels of width creates an extreme aspect ratio.
+
+**Pity Distribution Histogram** (App.jsx:4378–4435): Uses custom HTML bars with `flex-1` width — bars naturally fill available width. Height set by `maxHeight` calculation. This is more responsive than the Recharts chart.
+
+**Admin Activity Chart** (App.jsx:7514–7528): Uses `<ResponsiveContainer width="100%" height="100%">` inside `h-24` — same fixed-height pattern. Even more compressed at 96px.
+
+### Number Wrapping at Small Widths
+
+**Planner "By Banner End" grid** (App.jsx:3857–3870): `grid grid-cols-3 gap-2` with `text-xl kuro-number` values. At narrow widths (~320px), three columns of `text-xl` numbers get squeezed. The `toLocaleString()` on Astrite values adds comma separators which increase text width.
+
+**Income Projections grid** (App.jsx:3880–3889): Same `grid grid-cols-3 gap-2` with `text-2xl kuro-number` values. The `text-2xl` (1.5rem / 24px) in a ~100px column is tight. On very narrow viewports, numbers like "1,440" could overflow or cause awkward wrapping.
+
+**Stats Overall grid** (App.jsx:4652–4660): `grid grid-cols-2` then `grid-cols-3` with `font-bold` values. Using `toLocaleString()` on `totalPulls` and `totalAstrite` — large numbers like "12,345" in a ~50% width column are fine, but the 3-column grid with "Won 50/50" / "Lost 50/50" / "Avg. Pity" headers at `text-[9px]` is tight.
+
+### Tab Navigation Scroll
+
+Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scroll horizontally without visible scrollbar. With 8 tabs, the last 2-3 tabs may be off-screen on narrow viewports. The `scrollbar-hide` class hides the only scroll affordance.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-RD-F1 | **MEDIUM** | Recharts area charts use fixed `h-32` (128px) and `h-24` (96px) containers — on wide viewports the aspect ratio becomes extremely horizontal (e.g., 800×128), making trends harder to read; on narrow viewports the same height wastes vertical space relative to content width | **Use aspect-ratio responsive heights**: Replace fixed `h-32` with `aspect-[4/1]` (or a `min-h-32 max-h-48` clamp). This keeps charts proportional to their width. For the admin `h-24` chart, use `aspect-[5/1]` with `min-h-20 max-h-32`. The `ResponsiveContainer` already handles width — it just needs a proportional height container |
+| §E10-RD-F2 | **LOW** | Planner projection grids (`grid-cols-3` with `text-2xl kuro-number`) can squeeze on narrow viewports (~320px) — three columns of 24px numbers with comma formatting (e.g., "1,440") may overflow cells | **Add `text-xl sm:text-2xl` responsive sizing**: Scale projection numbers from `text-xl` on mobile to `text-2xl` on wider viewports. Alternatively, add `whitespace-nowrap overflow-hidden text-ellipsis` to prevent mid-number wrapping, ensuring numbers are never broken across lines |
+| §E10-RD-F3 | **POLISH** | Tab navigation uses `scrollbar-hide` on 8 tabs — on narrow viewports the last tabs (Profile, Teams) are hidden with no visual indication of horizontal scrollability | **Add edge gradient fade**: Apply a `pointer-events-none` gradient fade on the right edge of the tab nav (`linear-gradient(to left, var(--bg-card) 0%, transparent 32px)`) when scroll position hasn't reached the end. This is a standard mobile pattern that hints "swipe right for more tabs" |
+
+---
+
+## §E10.11 — Number Formatting as Visual Design
+
+### Formatting Strategy Audit
+
+| Context | Method | Example Output | Decimal Places | Class | Font |
+|---------|--------|---------------|----------------|-------|------|
+| **Avg Pity (Stats)** | `.toFixed(1)` | "52.3" | 1 | `font-bold` (no kuro-number) | Default |
+| **Avg Pity (Leaderboard)** | `.toFixed(1)` | "45.2" | 1 | `font-bold` (no kuro-number) | Default |
+| **Win Rate** | `.toFixed(1)` + "%" | "66.7%" | 1 | `font-bold` inline | Default |
+| **Calculator Success %** | `.toFixed(1)` + "%" | "85.3%" | 1 | `text-3xl kuro-number` | JetBrains Mono |
+| **Prices (Planner)** | `$` + `.toFixed(2)` | "$4.99" | 2 | `text-xs` | Default |
+| **File Sizes** | `.toFixed(1)` + "MB" | "2.3MB" | 1 | Inline toast text | Default |
+| **Astrite Amounts** | `.toLocaleString()` | "12,345" | 0 (integer) | `kuro-number text-xl` or `font-bold` | Mixed |
+| **Total Convenes** | `.toLocaleString()` | "1,234" | 0 (integer) | `font-bold` (no kuro-number) | Default |
+| **Pull Counts (small)** | Raw integer | "47" | 0 | `font-bold text-sm` | Default |
+| **Goal Progress** | `.toFixed(1)` + "%" | "73.2%" | 1 | `text-gray-100` | Default |
+| **Convenes/Day** | `.toFixed(2)` | "1.25" | 2 | Inline text | Default |
+| **DPS/Score (Teams)** | `.toLocaleString()` | "12,345" | 0 | `kuro-number` | JetBrains Mono |
+| **Crit Rate/Dmg** | `.toFixed(0)` + "%" | "45%" | 0 | `kuro-number` | JetBrains Mono |
+| **Crit Rate/Dmg (pills)** | `.toFixed(1)` + "%" | "45.2%" | 1 | `text-[9px]` pill | Default |
+
+### Consistency Analysis
+
+**Decimal place inconsistency**: Crit Rate appears as both `.toFixed(0)` (App.jsx:6056 — "45%") and `.toFixed(1)` (App.jsx:5741 — "45.2%") in different views. The team overview pills show 1 decimal, the stat breakdown shows 0 decimals. This creates a visual mismatch for the same data type.
+
+**`.kuro-number` usage inconsistency**: The Calculator success rate (appcore-components.jsx:1634–1661) correctly uses `kuro-number text-3xl` — this is the flagship data display. But Stats tab avg pity, leaderboard avg pity, win rate, and goal progress all use `font-bold` without `kuro-number`. The DPS and score values in Teams tab correctly use `kuro-number`. The pattern is: **feature-level numbers use kuro-number, inherited stats don't**.
+
+**Unit positioning**: Units are sometimes inline ("1,234 Astrite", "85.3%") and sometimes in sub-labels (card layout with value above, "Astrite" below). The card layout is **preferred** — it separates the number from its unit, making the number scannable. The inline format is used in smaller contexts (toasts, detail lines).
+
+**Large number treatment**: `toLocaleString()` adds comma separators for numbers ≥1,000 — this is **correct and consistent** wherever it's applied. However, some raw integers (pull counts, obtained counts) are displayed without formatting because they're typically <1,000.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-NF-F1 | **MEDIUM** | Crit Rate/Crit Damage values use `.toFixed(0)` in stat breakdown (App.jsx:6056–6057) but `.toFixed(1)` in team overview pills (App.jsx:5741–5742) — the same data type shows different precision in different views, which can confuse users comparing values | **Standardize to `.toFixed(1)` everywhere for CR/CD**: These are percentage values where the decimal matters (e.g., 44.8% vs 45.2% are meaningfully different). Use `.toFixed(1)` in both the stat breakdown and the team pill views. The extra digit costs minimal space at `text-[9px]` |
+| §E10-NF-F2 | **MEDIUM** | Stats tab core numbers (avg pity, win rate, total convenes, total Astrite) use `font-bold` without `.kuro-number` — these are the highest-value data points in the Stats tab but don't get the monospace tabular-nums treatment that Calculator and Teams data receive | **Add `.kuro-number` to Stats tab primary values**: Apply `kuro-number` class to: `overallStats.totalPulls.toLocaleString()` (App.jsx:4653), `overallStats.totalAstrite.toLocaleString()` (App.jsx:4654), `overallStats.avgPity` (App.jsx:4659), and `overallStats.winRate` (App.jsx:4661). This aligns Stats with the established data typography system |
+| §E10-NF-F3 | **POLISH** | Goal progress percentage (App.jsx:3933) renders at `text-gray-100` without `kuro-number` or any emphasis — this is a progress completion value that deserves the same treatment as other key percentages | **Add `kuro-number` + color coding**: Apply `kuro-number` to the goal progress percentage. Add color coding: `text-red-400` below 25%, `text-orange-400` at 25–50%, `text-yellow-400` at 50–75%, `text-emerald-400` at 75%+. This transforms a neutral number into a motivational progress signal |
+
+---
+
+## §E10.12 — Real-Time Data Visual Treatment
+
+### Real-Time Component Inventory
+
+| Component | Location | Update Mechanism | Update Frequency | Visual Treatment |
+|-----------|----------|-----------------|------------------|-----------------|
+| **CountdownTimer (full)** | appcore-components.jsx:850–876 | `setInterval(1000)` | Every 1s | Boxed digits: `.kuro-scoreboard` in `TIMER_BOX_STYLE` (rgba(12,16,24,0.7) + blur(8px)), colon separators, "Hr/Min/Sec" labels |
+| **CountdownTimer (compact)** | appcore-components.jsx:842–847 | Same interval | Every 1s | Inline `.kuro-number text-xs` — "3d 04h 32m 15s" format |
+| **PityRing** | appcore-components.jsx:885–927 | Prop-driven (not interval) | On data change | SVG circular progress with `stroke-dashoffset` transition (CSS `0.8s ease-out`), soft pity `pulse-subtle` animation |
+| **PityCounterInput** | appcore-components.jsx:1605–1630 | User input | On keystroke | `text-2xl kuro-number` with soft pity pulse animation when value ≥ threshold |
+| **Active Players Count** | App.jsx:7490–7507 | `fetchActivePlayersCount()` | Every 30s (manual refresh) | Static number display, no transition animation |
+| **Admin Activity Chart** | App.jsx:7511–7530 | `activePlayersHistory` array | On data push | Recharts AreaChart redraws on data change — no enter animation |
+
+### CountdownTimer Design Quality
+
+**Full-size timer** (used on Tracker tab banner cards):
+- **Layout**: Horizontal flex with 4 boxed segments (Days/Hr/Min/Sec), colon separators at `opacity-60`
+- **Typography**: `.kuro-scoreboard` (JetBrains Mono 18px, weight 700, `tabular-nums`, letter-spacing -0.02em, line-height 1.0) — **EXCELLENT** for fixed-width digit display
+- **Box styling**: `TIMER_BOX_STYLE` uses `rgba(12,16,24,0.7)` background + `blur(8px)` — glassy dark box that reads clearly over banner imagery
+- **Border**: `border border-white/10` — subtle but present, reinforcing the "instrument panel" aesthetic
+- **Labels**: `text-[8px] uppercase tracking-wider` — tiny but readable unit labels below each number group
+- **Accessibility**: `role="timer"` with comprehensive `aria-label` including all time components — **STRONG**
+- **Visibility API**: Pauses `setInterval` when tab is hidden, resumes with immediate catch-up on visibility — **prevents stale timer display and saves CPU**
+- **Focus handler**: Additional `window.focus` event as backup for visibility API edge cases — **robust**
+
+**Compact timer** (used in Planner "By Banner End" card):
+- **Layout**: Inline span — "3d 04h 32m 15s" in `.kuro-number text-xs`
+- **Zero-padding**: Uses `String(time.hours).padStart(2, '0')` for hours, minutes, seconds — **ensures consistent width**
+- **Days omission**: Days only show when `time.days > 0` — avoids "0d" clutter
+
+**Timer color system**: `TIMER_COLOR_MAP` provides color variants (yellow, purple, cyan, emerald, pink, red) — timers adapt to banner type. This is a **strong** use of color to connect the timer visually to its parent banner.
+
+### Transition Quality for Data Updates
+
+**PityRing transitions** (appcore-components.jsx:919): The `stroke-dashoffset` property transitions via CSS `transition: stroke-dashoffset 0.8s ease-out` — when pity changes, the ring smoothly animates to the new position. This is **correctly implemented** — SVG stroke animations are GPU-accelerated and performant.
+
+**Soft pity animation** (appcore-providers.jsx:1243–1280): When pity enters the soft zone, PityRing adds `pulse-subtle` class which triggers a gold pulse keyframe. The pulse uses `box-shadow` with gold color — **appropriate urgency escalation** as the user approaches guaranteed territory.
+
+**PityCounterInput** (appcore-components.jsx:1605–1630): The Calculator pity input displays the entered number at `text-2xl kuro-number`. When the value crosses the soft pity threshold, the input container gains a colored pulse animation. This creates a **meaningful state transition** — the number isn't just changing, it's crossing a gameplay-significant boundary.
+
+**Active Players Count**: Static number with no transition animation. When the count changes from 5 to 6, it just jumps. No `CountUp` or value interpolation.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E10-RT-F1 | **LOW** | Active players count (App.jsx:7490) updates as a raw number swap with no transition — when the count changes, it jumps from one value to another without any visual interpolation or flash to indicate the change occurred | **Add brief flash on change**: Wrap the active players number in a `<span>` with a CSS `transition: color 0.3s`. When the value changes (via useEffect on count), briefly set the color to emerald-400 (for increase) or red-400 (for decrease), then fade back to white. This signals "a change just happened" without requiring a full CountUp animation |
+| §E10-RT-F2 | **POLISH** | CountdownTimer full-size displays "Ended" as plain `text-gray-400 text-xs font-medium uppercase tracking-wider` text (appcore-components.jsx:833) when a banner expires — this is the most dramatic state change (banner ending) but has the least dramatic visual treatment | **Add expired visual state**: When timer reaches 00:00:00, instead of just "Ended" text, show the timer boxes with "00" values in red (`text-red-400`) with a subtle pulse animation. This maintains the boxed layout shape (avoiding layout shift) while clearly communicating the expired state |
+| §E10-RT-F3 | **POLISH** | Admin activity chart (App.jsx:7511–7530) redraws without animation when new data points arrive — Recharts `AreaChart` default behavior is to snap-redraw, creating a visual discontinuity when a new data point pushes the chart | **Add Recharts `isAnimationActive` prop**: Set `<Area isAnimationActive={true} animationDuration={500} animationEasing="ease-out" />` on the admin activity chart. This makes new data points animate smoothly into the chart rather than causing a full redraw snap |
+
+---
+
+## Step 17 Summary — §E10: Data Storytelling & Visual Communication
+
+### All Findings by Severity
+
+| # | ID | Severity | Section | Finding (Short) |
+|---|-----|----------|---------|-----------------|
+| 1 | §E10-NV-F1 | **HIGH** | §E10.1 | Tracker guarantee prediction at `text-[9px]` — most actionable insight is the smallest element |
+| 2 | §E10-NV-F2 | **MEDIUM** | §E10.1 | Pity count size inconsistency: `text-sm` on BannerCard vs `text-2xl` on Calculator |
+| 3 | §E10-NV-F3 | **LOW** | §E10.1 | Stats "Overall" numbers use `font-bold` without `.kuro-number` — no tabular-nums |
+| 4 | §E10-NV-F4 | **LOW** | §E10.1 | Planner daily income rate displayed inline at `text-[10px]` — key economic metric lacks emphasis |
+| 5 | §E10-NV-F5 | **POLISH** | §E10.1 | Luck Rating badge uses `text-shadow` glow but is semantically a `<span>` — no tooltip/explanation |
+| 6 | §E10-HI-F1 | **MEDIUM** | §E10.2 | Flat grid anti-pattern in Planner projections — 7/30/90 day values at equal visual weight |
+| 7 | §E10-HI-F2 | **LOW** | §E10.2 | Stats tab lacks narrative header summarizing "Your story so far" |
+| 8 | §E10-CH-F1 | **MEDIUM** | §E10.3 | Convene History AreaChart has no axis labels/tooltips — meaning requires external context |
+| 9 | §E10-CH-F2 | **LOW** | §E10.3 | Histogram summary line at `text-[10px]` placed below bars — easy to miss |
+| 10 | §E10-PC-F1 | **MEDIUM** | §E10.4 | Planner shows all complexity at once — no progressive disclosure |
+| 11 | §E10-DD-F1 | **POLISH** | §E10.5 | Collection grid tight spacing may cause visual fatigue at 40+ items |
+| 12 | §E10-EP-F1 | **MEDIUM** | §E10.6 | Stats empty states lack personality — clinical "Insufficient data" messages |
+| 13 | §E10-EP-F2 | **LOW** | §E10.6 | No visual ceremony for first data population |
+| 14 | §E10-ER-F1 | **MEDIUM** | §E10.7 | Admin lockout uses transient 3s toast for 5-minute security state |
+| 15 | §E10-ER-F2 | **LOW** | §E10.7 | Rate limit error uses red "error" instead of gold "warning" type |
+| 16 | §E10-ER-F3 | **LOW** | §E10.7 | Tab-level and app-level error boundaries have identical visual weight |
+| 17 | §E10-CB-F1 | **MEDIUM** | §E10.8 | W/L colorblind backup badges at `text-[9px]` too small to be reliable |
+| 18 | §E10-CB-F2 | **LOW** | §E10.8 | Pity gradient lime/gold nearly identical in grayscale (~10 luma gap) |
+| 19 | §E10-CB-F3 | **LOW** | §E10.8 | Six element colors have no icon/shape backup |
+| 20 | §E10-DT-F1 | **MEDIUM** | §E10.9 | Leaderboard + Pull Log numeric columns lack `.kuro-number` tabular-nums |
+| 21 | §E10-DT-F2 | **LOW** | §E10.9 | Pull Log + Leaderboard scroll containers missing `kuro-scroll` + fade hint |
+| 22 | §E10-DT-F3 | **POLISH** | §E10.9 | Data tables lack semantic roles and visible column headers |
+| 23 | §E10-RD-F1 | **MEDIUM** | §E10.10 | Recharts charts use fixed `h-32`/`h-24` height — extreme aspect ratios on wide viewports |
+| 24 | §E10-RD-F2 | **LOW** | §E10.10 | Planner projection grids squeeze `text-2xl` numbers on narrow viewports |
+| 25 | §E10-RD-F3 | **POLISH** | §E10.10 | Tab navigation `scrollbar-hide` on 8 tabs — no horizontal scroll indicator |
+| 26 | §E10-NF-F1 | **MEDIUM** | §E10.11 | CR/CD values use different decimal precision (`.toFixed(0)` vs `.toFixed(1)`) in different views |
+| 27 | §E10-NF-F2 | **MEDIUM** | §E10.11 | Stats tab primary numbers missing `.kuro-number` class |
+| 28 | §E10-NF-F3 | **POLISH** | §E10.11 | Goal progress percentage has no color coding or `.kuro-number` treatment |
+| 29 | §E10-RT-F1 | **LOW** | §E10.12 | Active players count updates with no transition animation |
+| 30 | §E10-RT-F2 | **POLISH** | §E10.12 | CountdownTimer "Ended" state has least dramatic visual for most dramatic event |
+| 31 | §E10-RT-F3 | **POLISH** | §E10.12 | Admin activity chart redraws without animation on new data |
+
+### Severity Distribution
+
+| Severity | Count | Percentage |
+|----------|-------|------------|
+| **HIGH** | 1 | 3.2% |
+| **MEDIUM** | 12 | 38.7% |
+| **LOW** | 12 | 38.7% |
+| **POLISH** | 6 | 19.4% |
+| **Total** | **31** | 100% |
+
+### Section Scores
+
+| Section | Score | Rationale |
+|---------|-------|-----------|
+| §E10.1 Numbers as Visual Elements | 7.0/10 | `.kuro-number` system is well-designed but inconsistently applied; guarantee prediction sizing is a significant oversight |
+| §E10.2 Hierarchy of Insight | 7.5/10 | Calculator has excellent hierarchy; Planner's flat grid is the main weakness |
+| §E10.3 Chart Design Quality | 7.0/10 | Charts are clean and branded (gold + glassmorphism) but lack interactive features (tooltips, labels) |
+| §E10.4 Progressive Complexity | 6.5/10 | Most tabs show all data at once; Calculator's collapsible sections are the exception |
+| §E10.5 Data Density | 8.5/10 | Density is well-calibrated for the expert audience — tight but not claustrophobic |
+| §E10.6 Empty→Populated | 7.5/10 | Collection ghost grid is excellent; Stats empty states are clinical and need personality |
+| §E10.7 Error as Communication | 7.5/10 | Toast system has good multi-sensory design; admin lockout persistence is the gap |
+| §E10.8 Colorblind Safety | 7.5/10 | Most color-encoded data has text backup; W/L badge size and element icons are the gaps |
+| §E10.9 Data Tables | 7.0/10 | Alignment and truncation are good; `.kuro-number` inconsistency and missing scroll affordances |
+| §E10.10 Responsive Data | 7.0/10 | Single-column mobile-first is sound; fixed chart heights and tab scroll affordance are weak |
+| §E10.11 Number Formatting | 6.5/10 | `.toLocaleString()` and `.toFixed()` applied correctly but inconsistent precision and font across views |
+| §E10.12 Real-Time Data | 8.5/10 | CountdownTimer is best-in-class (visibility API, kuro-scoreboard, color variants); PityRing transitions are smooth |
+
+### Overall §E10 Score: **7.3 / 10**
+
+**Narrative**: The application has an excellent *foundation* for data storytelling — the `.kuro-number` / `.kuro-scoreboard` typography system, the PityRing circular visualization, the CountdownTimer with its instrument-panel aesthetic, and the gold-on-dark chart theming all demonstrate intentional data design. The weak points are **consistency gaps**: the same number types (pity, percentages, counts) receive different visual treatment depending on which tab they appear in. The guarantee prediction at `text-[9px]` is the single most impactful fix — elevating the most actionable insight from near-invisible to prominent would transform the Tracker experience.
+
+### Connections to Prior Findings
+
+| §E10 Finding | Connected Prior Finding | Relationship |
+|-------------|----------------------|--------------|
+| §E10-NV-F3 (Stats missing kuro-number) | §E8-TK-F2 (typography token gaps) | Same root cause — `kuro-number` was designed but not propagated to all numeric surfaces |
+| §E10-NF-F2 (Stats missing kuro-number) | §E8-TK-F2 | Duplicate of NV-F3 from a formatting angle — reinforce priority |
+| §E10-DT-F1 (tables missing kuro-number) | §E8-TK-F2 | Third instance — `kuro-number` needs a systematic audit-and-apply pass |
+| §E10-CH-F1 (chart missing tooltips) | §E7-IN-F2 (interaction feedback gaps) | Charts lack the hover feedback that buttons and cards already have |
+| §E10-EP-F1 (clinical empty states) | §E9-VE-F7 (empty states lack brand personality) | Same finding from visual identity angle — empty states are generic |
+| §E10-RD-F3 (tab scroll affordance) | §E7-IN-F4 (horizontal scroll missing indicators) | Same affordance gap in tab navigation |
+| §E10-CB-F1 (W/L badge too small) | §E3-A11Y-F3 (touch targets under 44px) | Small interactive/informational elements pattern |
+| §E10-HI-F1 (flat grid anti-pattern) | §E4-PERF-F1 (unnecessary re-renders) | Planner tab has both visual and performance issues — candidate for redesign |
+
+### Top 3 Impact Fixes for §E10
+
+1. **Systematic `.kuro-number` propagation** (fixes NV-F3, NF-F2, DT-F1): A single grep-and-fix pass adding `kuro-number` to all numeric displays would address 3 findings across 3 sections and create visual consistency across all tabs. Estimated: ~15 lines changed.
+
+2. **Guarantee prediction size upgrade** (fixes NV-F1): Promoting `text-[9px]` to `text-xs` with a gold accent background would make the most decision-critical data point visible. Single-line change with outsized user impact.
+
+3. **Chart tooltip + label pass** (fixes CH-F1, RD-F1): Adding Recharts `<Tooltip>` with glassmorphic styling and responsive chart heights would bring data interactivity up to the standard set by the rest of the UI.
+
+---
+
+*Step 17 (§E10: Data Storytelling & Visual Communication) — COMPLETED*
+*31 findings: 1 HIGH, 12 MEDIUM, 12 LOW, 6 POLISH*
+*Overall score: 7.3/10*
