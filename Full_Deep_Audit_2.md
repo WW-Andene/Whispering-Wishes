@@ -4117,3 +4117,600 @@ Dominance hierarchy:
 **Dark mode craft**: Surface elevation is flat (3.7% band) — works via glass-morphism compensation but is architecturally fragile. OLED mode collapses to pure black. Shadows are invisible (correct — depth is via borders/blur/glow).
 **Brand color**: Gold `#edaf18` owns its competitive zone (30°+ from nearest competitor). Near-Tailwind-default calibration is a documentation issue, not a visual one. Favicon gold needs alignment.
 **Color narrative**: Gradient system is intentional (30+ gradients, all purposeful). State narrative flows correctly: onboarding (color tour) → engagement (gold focus) → achievement (color burst) → error (graduated red) → empty (gold promise) → loading (gold scan). Hexadic harmony is correct for the gacha domain. Gold-cyan axis is the core compositional pairing.
+
+---
+
+# STEP 7: §DBI1 Brand Personality Archetype + §DBI3 Anti-Genericness Audit
+
+**Skill reference**: design-aesthetic-audit §DBI1, §DBI3
+**Axis context**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+**Design character**: LUMINOUS TACTICAL COMPANION (from §DP2)
+**Style classification**: Cyberpunk/Terminal (primary) + Glassmorphism (secondary) + Dashboard (secondary atmospheric)
+
+---
+
+## §DBI1. Brand Personality Archetype
+
+### §DBI1.1 Archetype Identification
+
+The 12 Jungian brand archetypes are assessed against the app's visual evidence, content tone, and interaction patterns. Multiple archetypes may blend — the goal is to identify the **primary** and any **secondary** archetype expression.
+
+**Evidence inventory** (from codebase):
+
+| Evidence Category | Signals | Archetype Implication |
+|---|---|---|
+| **Color system** | Gold primary (`#edaf18`), dark navy base (`#080c14`), hexadic 6-hue accent system | Premium, commanding — **Ruler** or **Magician** |
+| **Surface treatment** | Glassmorphism, backdrop-blur layering, shimmer animations, inset glows | Transformative, atmospheric — **Magician** |
+| **Typography** | Rajdhani (geometric/tech-forward display), JetBrains Mono (precision data), 7 unique tracking values | Precise, technical — **Sage** |
+| **Motion** | `cubic-bezier(0.16, 1, 0.3, 1)` (confident ease-out-back), staggered card entrances, pity ring pulses | Purposeful, assured — **Hero** or **Magician** |
+| **Copy tone** | "Your companion for Wuthering Waves Convene planning" — supportive, empowering | Ally, guardian — **Caregiver** or **Hero** |
+| **Achievement copy** | "anime protagonist arc", "Rover's Plot Armor", "protagonist luck is real" | Heroic celebration — **Hero** + **Jester** |
+| **Humor** | "Sunk Cost Fallacy", "Rover's Allowance: Gone", "seek help." | Self-aware wit — **Jester** (secondary) |
+| **Empty states** | Gold promise glow + ghost-grid pulse, helpful directives | Encouraging, forward-looking — **Caregiver** |
+| **Interaction feedback** | Hover lift (-2px), active compression (0.97), immediate tactile response | Responsive precision — **Hero** |
+| **Data presentation** | Stat boxes with color-variant accent lines, pity tracking, trend analysis | Analytical mastery — **Sage** |
+
+### §DBI1.2 Primary Archetype: MAGICIAN
+
+**Definition**: Premium, transformative; shows the "before/after." Makes complex things feel manageable and beautiful.
+
+**Why Magician, not Hero or Sage**:
+
+The app does not merely present data (Sage) or empower through bold action (Hero). It **transforms** — raw gacha pull data becomes luminous, organized, emotionally meaningful information. The transformation is visible in:
+
+1. **Surface alchemy**: Raw data rendered through glassmorphism shimmer, gold glow, and layered depth — the visual system *elevates* numbers into an experience
+2. **Pity ring visualization**: A simple counter becomes a glowing radial progress ring with drop-shadow and pulse animations — transformation of mundane tracking into visual drama
+3. **Achievement system**: Pull statistics become narrative trophies with lore-integrated names — raw numbers become stories ("anime protagonist arc")
+4. **Empty → full state**: Ghost-grid pulse with gold promise glow transitions into populated collection grids — the app shows the "before/after" explicitly
+5. **Onboarding arc**: 7-step color tour that transforms a new user into an empowered Rover — the classic Magician journey structure
+
+**Archetype-visual alignment**:
+
+| Magician Signal | App Implementation | Alignment |
+|---|---|---|
+| Premium surfaces | Glassmorphism + shimmer + inset glow on every card | ✅ Strong |
+| Transformation visible | Empty state → populated state with glow transitions | ✅ Strong |
+| Before/after moments | Pity counter → glowing ring; stats → trophy achievements | ✅ Strong |
+| Atmospheric depth | Backdrop-blur layers, vignette, multi-layer shadows | ✅ Strong |
+| Dark/mysterious base | `#080c14` navy-black with gold illumination | ✅ Strong |
+| Precision + wonder | JetBrains Mono data + Rajdhani display + gold glow | ✅ Strong |
+
+### §DBI1.3 Secondary Archetype: HERO (with Jester undertone)
+
+**Hero expression** (30% of personality):
+- Achievement system celebrates user victories with protagonist language ("Rover's Blessing", "Plot Armor")
+- Interaction feedback is immediate and responsive (tactile compression, hover lift)
+- Gold accent is commanding and triumphant
+- Empty states offer direction and encouragement, not passive waiting
+
+**Jester undertone** (10% of personality):
+- Achievement copy uses community humor ("Copium Rewarded", "seek help.", "Sunk Cost Fallacy")
+- Self-aware about gacha psychology ("emotionally and financially invested")
+- Playful lore integration (Huanglong's Census, Gathering Wives)
+- This prevents the Magician/Hero blend from feeling too serious for a gacha tracker
+
+### §DBI1.4 Archetype Gap Assessment
+
+| Dimension | Intended (from §DP2) | Projected (from visual evidence) | Gap? |
+|---|---|---|---|
+| **Primary feel** | Luminous Tactical Companion | Magician (transformative, premium, atmospheric) | ✅ Aligned — "Luminous" = Magician's atmospheric quality |
+| **Competence signal** | Tactical precision | Sage-like data presentation + Hero responsiveness | ✅ Aligned — "Tactical" maps to both |
+| **Relational tone** | Companion (supportive ally) | Hero encouragement + Caregiver empty-state guidance | ✅ Aligned — "Companion" maps to Hero+Caregiver blend |
+| **Humor register** | Not explicitly defined in §DP2 | Jester undertone in achievements | ⚠️ Minor gap — humor is present but not part of the declared character. This is actually a strength — it prevents the "Luminous Tactical" from being too cold |
+| **Premium signal** | Atmospheric-secondary (from A5) | Magician surfaces (glassmorphism, glow, shimmer) | ✅ Aligned |
+| **Expertise signal** | Enthusiast/Expert (from A3) | Sage typography (JetBrains Mono, precise tracking) | ✅ Aligned |
+
+**Overall alignment**: **STRONG** — The LUMINOUS TACTICAL COMPANION character maps cleanly onto a Magician (primary) + Hero (secondary) + Jester (undertone) archetype blend. No significant visual changes needed to close an archetype gap.
+
+> **Finding DBI1-ARC1** · Severity: **PASS**
+> **Archetype alignment is strong.** The Magician+Hero+Jester blend correctly serves a gacha tracker that transforms raw data into luminous, narratively rich experiences while celebrating user achievement with self-aware humor.
+> **Solution (preservation)**: Document the archetype blend as `MAGICIAN-PRIMARY / HERO-SECONDARY / JESTER-UNDERTONE` in any future design system documentation. When adding new features, test against: "Does this feel transformative (Magician), empowering (Hero), and occasionally self-aware (Jester)?"
+
+### §DBI1.5 Archetype-Closing Recommendations
+
+The archetype is well-expressed. Two minor opportunities to strengthen it:
+
+> **Finding DBI1-ARC2** · Severity: **LOW**
+> **Magician "reveal moment" is underutilized.** The Magician archetype is strongest when it shows explicit transformation — the moment data becomes insight. Currently, stat boxes appear pre-calculated. A brief "calculating..." → result reveal with a subtle gold flash would reinforce the Magician's transformative quality.
+> **Solution**:
+> - Option A (minimal): Add a 200ms fade-in with gold glow pulse when stat values first render after data import
+> - Option B (full ownership): Implement a "data alchemy" micro-animation sequence where numbers count up briefly before settling, with a gold shimmer sweep across the stat box — reinforcing the transformation metaphor
+> - Apply to: `.kuro-stat` boxes on first data load, achievement unlock moments
+
+> **Finding DBI1-ARC3** · Severity: **LOW**
+> **Hero "call to action" moments lack visual weight.** Primary action buttons (Import, Save, Calculate) use the same `.kuro-btn` styling as secondary actions. The Hero archetype demands that key moments feel bold and distinctive.
+> **Solution**:
+> - Option A (minimal): Add `.kuro-btn-primary` variant with gold border glow (`box-shadow: 0 0 12px rgba(237, 175, 24, 0.2)`) and slightly larger padding for the 3-5 most important actions
+> - Option B (full ownership): Create a `.kuro-btn-hero` class with gold gradient border, subtle pulse animation on idle, and enhanced hover glow — reserved exclusively for the single most important action on each screen
+> - Apply to: "Import Data" on TRACKER, "Calculate" on CALC, "Save State" on PLANNER
+
+---
+
+## §DBI3. Anti-Genericness Audit
+
+**Methodology**: Assess all 12 genericness signals defined in the skill document, plus dark-mode-specific signals. For each signal found: document the exact value, explain why it reads generic, assess impact on the §DP2 character ("LUMINOUS TACTICAL COMPANION"), and provide replacement options.
+
+**Assessment scale**: GENERIC (signal is present and damaging), PARTIAL (signal exists but mitigated), OWNED (signal absent or fully customized), N/A (not applicable to this app).
+
+### Signal 1: Default Tailwind Blue (`#3b82f6` / `blue-500`)
+
+**Status: PARTIAL — domain-specific use, not generic defaulting**
+
+**Exact values found**:
+- `#3b82f6` (Tailwind `blue-500`): **15 occurrences** — all in achievement badge color definitions (`App.jsx` lines 1626, 1687-1689, 1698-1699, 1708, 1716, 1723, 1807, 1963)
+- `#60a5fa` (Tailwind `blue-400`): **15 occurrences** — focus outline (`index.css` line 44), banner history stats (`App.jsx` lines 2110-2111, 2332), collection display (`App.jsx` lines 4717, 4802, 5009, 5015-5016)
+- Tailwind classes `text-blue-400`, `bg-blue-500/10`, `border-blue-500/30`: **7 occurrences** in collection/stats UI
+
+**Why it's NOT fully generic**: Blue represents the "Standard/3-star" tier in the gacha domain — it's a semantic color mapping (gold=5★, purple=4★, blue=3★). This is intentional domain language, not a default accent choice.
+
+**Why it's PARTIALLY generic**: The exact hex values `#3b82f6` and `#60a5fa` are uncalibrated Tailwind defaults. They could be shifted to owned values while preserving the blue-tier semantics.
+
+**Impact on character**: Low — these appear in secondary data contexts (3-star items, which users care least about). The Magician character is not undermined because primary accent (gold) is fully owned.
+
+> **Finding DBI3-S01** · Severity: **LOW**
+> **Tailwind blue defaults used for 3-star/standard tier — semantically correct but uncalibrated.**
+> 30 occurrences of `#3b82f6`/`#60a5fa` across achievement badges, banner stats, and collection display. The blue-for-standard mapping is correct gacha convention, but the exact Tailwind hex values lack ownership.
+> **Solution**:
+> - Option A (minimal): Shift hue 8° and adjust lightness — `oklch(62% 0.20 248)` ≈ `#3578f0` for the 500-equivalent, `oklch(72% 0.16 248)` ≈ `#5c9af5` for the 400-equivalent. Same blue family, no longer pixel-identical to Tailwind.
+> - Option B (full ownership): Recalibrate to the app's cool-navy hue family — `oklch(62% 0.18 255)` ≈ `#3070e8` (more indigo, matching the `#080c14` base hue at 240°). This makes even the "common" tier feel part of the Whispering Wishes palette.
+> - Apply to: All `#3b82f6` (15 instances in `App.jsx`), all `#60a5fa` (14 instances in `App.jsx` + 1 in `index.css`), all `text-blue-400`/`bg-blue-500` classes (7 instances)
+> - Consolidate via CSS variable: `--color-blue-tier: oklch(62% 0.20 248)` in `:root`
+
+### Signal 2: Inter at Default Weight
+
+**Status: OWNED — fully customized typography**
+
+**Exact values found**:
+- **Display font**: `'Rajdhani'` — geometric, tech-forward (`appcore-providers.jsx` line 451, `index.css` line 32)
+- **Data font**: `'JetBrains Mono'` — monospace precision (`appcore-providers.jsx` line 452)
+- **No Inter usage anywhere** in the codebase
+- **Weight range**: 500 (buttons), 600 (headers, labels), 700 (data badges) — three intentional weights
+- **Letter-spacing customization**: 7 unique values (`-0.02em`, `0.01em`, `0.02em`, `0.03em`, `0.08em`, `0.1em`, `0.2em`) plus Tailwind `tracking-wider`/`tracking-widest` (30+ instances)
+
+**Why it's OWNED**: The app uses no default system font stack as primary. Rajdhani is a distinctive geometric display face that reinforces the Cyberpunk/Terminal classification. JetBrains Mono for data reinforces the Tactical dimension. The tracking values show intentional typographic craft.
+
+> **Finding DBI3-S02** · Severity: **PASS**
+> **Typography is fully owned — Rajdhani + JetBrains Mono with 7 custom tracking values.**
+> No Inter, no system-font-only defaults. The typeface pairing (geometric display + monospace data) directly expresses the LUMINOUS TACTICAL COMPANION character.
+> **Solution (preservation)**: Current type system is a strength. Document the pairing rationale: "Rajdhani = Cyberpunk/geometric display voice; JetBrains Mono = tactical precision data voice." Ensure all future text elements use one of these two families — no third font should creep in without deliberate character justification.
+
+### Signal 3: `rounded-lg` on Everything
+
+**Status: PARTIAL — dominant single value with some hierarchy**
+
+**Exact values found**:
+
+| Radius Value | CSS/Class | Count | Usage |
+|---|---|---|---|
+| 8px | `rounded-lg` | **109** | Cards, buttons, inputs — dominant everywhere |
+| 50% | `rounded-full` | **45** | Badges, spinner, circles — correct for circular elements |
+| 12px | `rounded-xl` | **28** | Medium cards, headers |
+| 16px | `rounded-2xl` / `.kuro-card` | **5** + CSS | Large cards, modals |
+| 4px | `rounded-sm` | **3** | Fine details |
+| 6px | `rounded-md` | **3** | Rare |
+| 10px | `.kuro-stat` | CSS only | Stat boxes — non-Tailwind value |
+
+**KuroStyles CSS radius definitions**:
+- `.kuro-card`: `border-radius: 16px` (`appcore-providers.jsx` line 714)
+- `.kuro-btn`: `border-radius: 12px` (line 859)
+- `.kuro-input`: `border-radius: 8px` (line 990)
+- `.kuro-stat`: `border-radius: 10px` (line 1039) — custom non-Tailwind value
+
+**Why it's PARTIALLY generic**: The KuroStyles CSS defines an intentional 4-level hierarchy (8→10→12→16px). However, 109 instances of `rounded-lg` in Tailwind utility classes flatten this hierarchy — many elements that *should* use the KuroStyles radius are instead using the generic `rounded-lg` class, creating a visual monoculture at 8px.
+
+**Impact on character**: Moderate — radius communicates personality. The LUMINOUS TACTICAL COMPANION should have sharper, more geometric radii on tactical elements (stat boxes, data displays) and softer radii on atmospheric elements (cards, modals). Currently everything between 8-12px feels similar.
+
+> **Finding DBI3-S03** · Severity: **MEDIUM**
+> **109 instances of `rounded-lg` (8px) create a radius monoculture.** The KuroStyles CSS defines a 4-level hierarchy (8→10→12→16px), but Tailwind utility classes override this with flat 8px application. Radius should vary by component personality.
+> **Solution**:
+> - Option A (minimal): Define explicit CSS variables for the radius scale and audit the 109 `rounded-lg` instances — reassign each to the correct tier:
+>   ```css
+>   --radius-sharp: 4px;    /* tactical elements: inline badges, tiny controls */
+>   --radius-data: 8px;     /* data inputs, small buttons */
+>   --radius-card: 12px;    /* cards, stat boxes, medium containers */
+>   --radius-panel: 16px;   /* large panels, modals, primary cards */
+>   --radius-pill: 9999px;  /* pills, tags, circular elements */
+>   ```
+> - Option B (full ownership): Adopt a character-driven radius philosophy — "Tactical" elements get sharper corners (4-6px), "Luminous/atmospheric" elements get softer corners (14-16px), creating visible personality contrast within the UI. This makes the radius *speak* the dual character.
+> - Priority targets: `.kuro-stat` should be 8px (sharper = tactical), `.kuro-card` stays 16px (atmospheric), `.kuro-btn` could differentiate: primary=12px, secondary=8px
+
+### Signal 4: 16px Grid Spacing
+
+**Status: OWNED — custom 14px primary spacing**
+
+**Exact values found**:
+- **Primary body/stat padding**: `14px` (`appcore-providers.jsx` lines 850, 1040) — non-standard, not a 4px multiple
+- **Button padding**: `10px 12px` (line 860) — asymmetric, intentional
+- **Small input**: `4px 8px` (line 1026) — tight tactical sizing
+- **Custom width**: `56px` input width (line 1028) — non-grid value
+- **Tailwind utility usage**: `p-4` (16px), `p-3` (12px), `p-2` (8px) — standard 4px grid in markup, **561 total occurrences**
+
+**Why it's OWNED**: The 14px primary spacing is a deliberate non-standard choice. Combined with 10px button vertical padding and 56px input widths, the spacing system has custom values that don't conform to a pure 4px grid. The Tailwind utilities in markup follow 4px multiples, but the CSS-in-JS foundation uses custom values.
+
+> **Finding DBI3-S04** · Severity: **PASS**
+> **Spacing uses a custom 14px primary baseline with intentional non-grid values.**
+> The CSS-in-JS layer defines body padding at 14px (not 16px), button padding at 10×12px, and input widths at 56px — all non-standard. The Tailwind markup uses standard 4px grid, but the foundational spacing is custom.
+> **Solution (preservation)**: The custom spacing is a subtle distinctiveness signal. Document the spacing rationale: "14px body = tighter-than-default, information-dense tactical feel; 10×12px buttons = compact action footprint." Consider defining `--space-base: 14px` as a named token for consistency.
+
+### Signal 5: `shadow-sm` on Cards
+
+**Status: OWNED — fully custom shadow system**
+
+**Exact values found**:
+- **Custom shadow tokens** (`appcore-providers.jsx` lines 441-444):
+  - `--shadow-sm: 0 1px 2px rgba(6, 10, 24, 0.4)` — NOT Tailwind's `0 1px 3px rgba(0,0,0,0.1)`
+  - `--shadow-md: 0 4px 12px rgba(6, 10, 24, 0.5)` — NOT Tailwind's `0 4px 6px`
+  - `--shadow-lg: 0 8px 24px rgba(6, 10, 24, 0.6)` — NOT Tailwind's `0 10px 15px`
+  - `--shadow-xl: 0 12px 40px rgba(6, 10, 24, 0.7)` — NOT Tailwind's `0 20px 25px`
+- **Card shadow** (`.kuro-card`, lines 718-722): Multi-layer — `0 4px 24px rgba(6, 10, 24, 0.6)` + `0 0 0 1px rgba(255,255,255, 0.03)` + `inset 0 1px 0 rgba(255,255,255, 0.05)`
+- **Color-specific glows** (lines 938-983): `.glow-gold`, `.glow-purple`, `.active-cyan`, `.active-emerald`, `.active-red` — each with unique glow radius and color
+- **Icon hover**: `filter: drop-shadow(0 0 3px currentColor)` (line 915-926)
+
+**Why it's OWNED**: Shadow color uses `rgba(6, 10, 24, ...)` — calibrated to the app's navy-black base hue (`#080c14`), not generic black. Multi-layer card shadows combine depth + border highlight + inset light. Color-specific glows are a signature element.
+
+> **Finding DBI3-S05** · Severity: **PASS**
+> **Shadow system is fully custom — navy-calibrated depth + multi-layer card shadows + color-specific glows.**
+> No Tailwind `shadow-sm/md/lg` defaults. Shadow color `rgba(6, 10, 24, ...)` is hue-matched to the base. The glow system (`.glow-gold`, `.active-cyan`, etc.) is a Magician-archetype signature — luminous depth that no default provides.
+> **Solution (preservation)**: The shadow/glow system is one of the app's strongest anti-genericness features. Preserve the `rgba(6, 10, 24, ...)` calibration. When adding new shadow contexts, always derive from this base — never use `rgba(0, 0, 0, ...)`.
+
+### Signal 6: Default Icon Library
+
+**Status: PARTIAL — good library choice, default presentation**
+
+**Exact values found**:
+- **Library**: Lucide React (`import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react'` — `appcore-providers.jsx` line 7)
+- **Icon sizes**: `size={32}` (onboarding), `size={16}` (UI controls) — two sizes only
+- **Stroke customization**: None found — using Lucide defaults (stroke-width 2)
+- **Color inheritance**: Icons inherit from parent `text-*` classes
+- **Hover effect**: `filter: drop-shadow(0 0 3px currentColor)` on button hover (lines 915-926) — custom glow
+- **10+ unique icons** used across onboarding, navigation, badges, admin panels
+
+**Why it's PARTIALLY generic**: Lucide is a better choice than Heroicons (less ubiquitous), but it's still recognizable as a stock icon library at default stroke-width. The hover glow effect adds personality, but the icons themselves are unmodified.
+
+**Impact on character**: Low-moderate — the LUMINOUS TACTICAL COMPANION should have icons that feel either more geometric/sharp (tactical) or more atmospheric (luminous). Default Lucide is neutral.
+
+> **Finding DBI3-S06** · Severity: **LOW**
+> **Lucide icons at default stroke-width — correct library, unmodified presentation.**
+> 10+ Lucide icons used with default `strokeWidth={2}`. The hover glow effect (`drop-shadow(0 0 3px currentColor)`) adds atmospheric personality, but the icons themselves are stock.
+> **Solution**:
+> - Option A (minimal): Set global `strokeWidth={1.5}` for all Lucide icons — thinner strokes feel more refined and match the Cyberpunk/Terminal aesthetic. This single change shifts perception from "starter kit" to "considered."
+> - Option B (full ownership): Use `strokeWidth={1.5}` globally, then override to `strokeWidth={2}` for action icons (Upload, Calculator) and `strokeWidth={1}` for atmospheric/decorative icons (Sparkles, Info). This creates a hierarchy within the icon system that mirrors the Tactical/Luminous character split.
+> - Apply to: Lucide import configuration or wrapper component
+
+### Signal 7: Gray-900 / Gray-500 / Gray-400 Text Stack
+
+**Status: GENERIC — highest genericness signal in the app**
+
+**Exact values found**:
+
+| Tailwind Class | Count | Primary Usage |
+|---|---|---|
+| `text-gray-400` | **229** | Secondary text, labels, descriptions — most common text color |
+| `text-gray-500` | **107** | Tertiary text, muted content, timestamps |
+| `text-gray-300` | **73** | Primary secondary text, slightly brighter |
+| `text-gray-200` | **21** | Lighter accent text |
+| `text-gray-100` | **24** | Light text accents |
+| `text-gray-600` | **5** | Darker muted text (rare) |
+| **TOTAL** | **459** | — |
+
+**Custom overrides in KuroStyles**:
+- `--text-body: #dfe5ef` (line 449) — slight blue tint, NOT pure gray ✓
+- `--text-heading: #edf1f8` (line 450) — slight blue tint ✓
+- Placeholder: `#6b7389` (line 1017) — custom gray-blue ✓
+- Focused placeholder: `#8f99ab` (line 1022) — custom gray-blue ✓
+
+**The problem**: The KuroStyles CSS defines chromatic text colors (`#dfe5ef`, `#edf1f8`), but the 459 Tailwind utility class instances in JSX markup use pure Tailwind grays that have NO chromatic quality. The carefully calibrated CSS variables are being overridden or bypassed by generic gray classes at the markup level.
+
+**Impact on character**: **HIGH** — The LUMINOUS TACTICAL COMPANION should never feel "gray." Every text element should carry a trace of the navy-blue hue family (`#080c14` → hue ~230°). Pure Tailwind grays are achromatic — they belong to no palette, no identity. When 459 text elements are achromatic gray, the app's identity is diluted across every screen.
+
+> **Finding DBI3-S07** · Severity: **HIGH**
+> **459 instances of achromatic Tailwind gray text classes overwhelm the custom chromatic text tokens.** `text-gray-400` alone appears 229 times. The KuroStyles CSS defines chromatic alternatives (`--text-body: #dfe5ef`), but markup-level Tailwind classes bypass them entirely.
+> **Solution**:
+> - Option A (minimal): Define chromatic gray replacements as CSS custom properties and create Tailwind utility overrides:
+>   ```css
+>   /* Chromatic grays — same visual weight, navy hue family (230°) */
+>   --text-primary: oklch(92% 0.008 240);    /* ≈ #dfe5ef — replaces text-gray-200/100 */
+>   --text-secondary: oklch(72% 0.010 240);  /* ≈ #9da8b9 — replaces text-gray-300 */
+>   --text-muted: oklch(62% 0.012 240);      /* ≈ #7d8a9f — replaces text-gray-400 */
+>   --text-subtle: oklch(52% 0.010 240);     /* ≈ #5f6d82 — replaces text-gray-500 */
+>   --text-ghost: oklch(42% 0.008 240);      /* ≈ #445064 — replaces text-gray-600 */
+>   ```
+> - Option B (full ownership): Extend Tailwind config with custom `kuro-gray` scale that uses OKLCH chromatic values, then find-and-replace all 459 instances: `text-gray-400` → `text-kuro-400`, `text-gray-500` → `text-kuro-500`, etc. Every gray becomes a navy-tinted chromatic gray.
+> - **Priority**: This is the single highest-impact anti-genericness fix. 459 elements shifting from achromatic to chromatic would transform the entire app's feel without changing any layout or functionality.
+> - Apply to: All 459 `text-gray-*` instances across `App.jsx`, `appcore-components.jsx`, and any other JSX files
+
+### Signal 8: White `#ffffff` / Generic Dark Background
+
+**Status: OWNED — custom dark palette with chromatic identity**
+
+**Exact values found**:
+- **Page background**: `#080c14` (`index.css` line 20, line 31) — custom dark navy, NOT `#0f1117` or `#111827`
+- **Surface tokens** (`appcore-providers.jsx` lines 453-457): All use `rgba(6-15, 10-20, 18-28, ...)` — chromatic navy, not generic black
+- **No `#ffffff` background** anywhere — dark-mode only app
+- **No `#0f1117`** (GitHub dark default) — not used
+- **No `#111827`** (Tailwind `gray-900`) — not used
+- **OLED mode**: Uses `#000000` but as an explicit opt-in mode, not a default
+
+**Why it's OWNED**: The `#080c14` base is a deliberately calibrated dark navy at OKLCH hue ~240°. All surface tokens derive from the same navy family (R:6-15, G:10-20, B:18-28). This is a signature color choice, not a default.
+
+> **Finding DBI3-S08** · Severity: **PASS**
+> **Background system is fully owned — `#080c14` dark navy with chromatic surface tokens.**
+> No generic white, no Tailwind `gray-900`, no GitHub dark defaults. Every surface carries the navy hue family. OLED `#000000` is an intentional opt-in, not a lazy default.
+> **Solution (preservation)**: `#080c14` is a brand-defining color. Protect it as the foundation of the visual identity — any future surface additions must derive from this hue family (R-channel < G-channel < B-channel, approximately 2:3:4 ratio).
+
+### Signal 9: `transition: all 0.2s ease-in-out`
+
+**Status: OWNED — custom transition system with specific properties**
+
+**Exact values found**:
+- **Custom transition tokens** (`appcore-providers.jsx` lines 445-447):
+  - `--transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1)` — NOT 0.2s
+  - `--transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1)` — NOT 0.2s
+  - `--transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1)` — NOT 0.2s
+- **Easing curve**: `cubic-bezier(0.16, 1, 0.3, 1)` (ease-out-back) — used consistently, NOT `ease-in-out`
+- **Specific property transitions** (majority):
+  - `.kuro-card` (line 722): `transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s`
+  - `.kuro-btn` (line 867): 5 specific properties with different speeds
+  - `.kuro-stat` (line 1048): `transform, border-color, box-shadow` individually
+- **`transition: all` usage**: Only **2 instances** (`appcore-providers.jsx` lines 1508, 1615) — minimal
+- **7 unique durations**: 0.15s, 0.2s, 0.25s, 0.3s, 0.35s, 0.4s, 0.8s
+- **Custom keyframe animations**: `slideUp` (0.2s), `tabFadeIn` (0.35s), `cardSlideIn` (0.4s), `badgeRotate` (8s), `trophyShine` (3s)
+
+**Why it's OWNED**: The custom `cubic-bezier(0.16, 1, 0.3, 1)` easing is used everywhere instead of `ease-in-out`. Transitions target specific properties (not `all`). Seven distinct durations create a motion hierarchy. This is a considered motion system, not a default.
+
+> **Finding DBI3-S09** · Severity: **PASS**
+> **Transition system is fully custom — `cubic-bezier(0.16, 1, 0.3, 1)` easing with 7 distinct durations and specific property targeting.**
+> Only 2 instances of `transition: all` in the entire codebase. The custom easing curve (ease-out-back) creates a confident, purposeful motion feel that directly expresses the Magician archetype.
+> **Solution (preservation)**: The motion system is a signature element. The `cubic-bezier(0.16, 1, 0.3, 1)` curve should be documented as the "Whispering Wishes motion personality." Eliminate the 2 remaining `transition: all` instances (lines 1508, 1615) by replacing with specific property lists.
+
+### Signal 10: Full-Width Buttons (`w-full`)
+
+**Status: OWNED — strategic full-width use, majority flex-sized**
+
+**Exact values found**:
+- **`w-full` on buttons**: ~12-15 instances (`App.jsx` lines 3470, 3486, 3493, 3775, 3791, 3801, 3813, 6740, 6743, 6824, 4262)
+- **Total buttons in app**: 100+ instances
+- **Button base style** (`.kuro-btn`, line 855-873): NO default width — buttons are content-sized with `padding: 10px 12px`
+- **Majority pattern**: `flex-1` within button groups, or natural content width
+- **`w-full` contexts**: Calculator toggle groups (appropriate — mobile form), Export/Reset/Save (appropriate — primary actions in settings), Leaderboard submit (appropriate — single-column form)
+
+**Why it's OWNED**: Full-width is used strategically in form/action contexts (12-15 of 100+ buttons). The majority of buttons are flex-sized or content-sized. The `.kuro-btn` base class deliberately omits width — full-width is always an explicit opt-in.
+
+> **Finding DBI3-S10** · Severity: **PASS**
+> **Buttons are strategically sized — `w-full` used only in form/action contexts (12% of buttons).**
+> The `.kuro-btn` base class has no default width. Full-width is applied intentionally for primary actions in single-column layouts. The majority of buttons use flex or content sizing.
+> **Solution (preservation)**: Current button sizing is appropriate. No changes needed.
+
+### Signal 11: Single Separator Style
+
+**Status: PARTIAL — opacity variety exists but single pattern dominates**
+
+**Exact values found**:
+- **Dominant pattern**: `border-t border-white/10` — **25+ instances** (`App.jsx` lines 3841, 4063, 4219, 4252, 4364, 4467, 6053, 6159, 6170, 6361, 6368, 7335, and more)
+- **Secondary patterns**: `border-b border-white/10` (10+ instances), `border-white/15` (10+ in `appcore-components.jsx`), `border-white/5` (3+ instances)
+- **No `<hr>` elements found** — separators are all border-based
+- **CSS border tokens** (`appcore-providers.jsx` lines 459-463):
+  - `--border-subtle: rgba(255,255,255,0.06)` — 6%
+  - `--border-default: rgba(255,255,255,0.08)` — 8%
+  - `--border-medium: rgba(255,255,255,0.1)` — 10%
+  - `--border-hover: rgba(255,255,255,0.15)` — 15%
+  - `--border-bright: rgba(255,255,255,0.2)` — 20%
+- **Separator hierarchy in CSS**: 5-level opacity scale defined but `border-white/10` (matching `--border-medium`) used for ~70% of all separators
+- **`.kuro-divider` class**: Exists (`App.jsx` lines 6768, 6866) but only 2 uses — the custom class is underutilized
+
+**Why it's PARTIALLY generic**: The CSS defines a 5-level border opacity scale, but the markup defaults to `border-white/10` almost everywhere. The `.kuro-divider` semantic class exists but is barely used (2 instances vs 35+ raw Tailwind borders). The separator system has good architecture but poor adoption.
+
+**Impact on character**: Moderate — separators are high-frequency visual elements. When they're all identical, the visual hierarchy flattens. The LUMINOUS TACTICAL COMPANION should have separation that reflects importance: section breaks should feel different from item dividers.
+
+> **Finding DBI3-S11** · Severity: **LOW**
+> **`border-white/10` accounts for ~70% of all separators despite a 5-level opacity scale being defined.** The `.kuro-divider` class exists but is used only twice. Separator hierarchy is architecturally present but not adopted in markup.
+> **Solution**:
+> - Option A (minimal): Audit the 35+ separator instances and reassign to the existing token scale:
+>   - Section breaks (between major UI groups): `border-white/15` or `--border-hover`
+>   - Item separators (within lists/tables): `border-white/5` or `--border-subtle`
+>   - Default dividers: keep `border-white/10` or `--border-medium`
+> - Option B (full ownership): Expand `.kuro-divider` into three semantic variants and migrate all raw borders:
+>   ```css
+>   .kuro-divider-section { border-top: 1px solid var(--border-hover); }    /* 15% — major breaks */
+>   .kuro-divider        { border-top: 1px solid var(--border-default); }   /* 8%  — standard */
+>   .kuro-divider-subtle { border-top: 1px solid var(--border-subtle); }    /* 6%  — within groups */
+>   ```
+> - Apply to: All 35+ `border-t border-white/10` and `border-b border-white/10` instances
+
+### Signal 12: Placeholder Text `#9ca3af` / `placeholder:text-gray-400`
+
+**Status: OWNED — custom placeholder colors**
+
+**Exact values found**:
+- **Custom placeholder** (`appcore-providers.jsx` line 1017): `.kuro-input::placeholder { color: #6b7389; }` — custom gray-blue, darker than Tailwind default
+- **Focus state** (line 1022): `.kuro-input:focus::placeholder { color: #8f99ab; }` — custom lighter gray-blue on focus — a crafted interaction detail
+- **One exception**: `placeholder-gray-500` (`App.jsx` line 4818) — single Tailwind default
+- **Tailwind default `#9ca3af`**: Found in badge fallback (`App.jsx` line 4116) but NOT in placeholder context
+- **Coverage**: ~92% of inputs use custom placeholder via `.kuro-input`, 8% use Tailwind default
+
+**Why it's OWNED**: The custom placeholder colors (`#6b7389`, `#8f99ab`) carry a blue tint that matches the navy palette. The focus-state placeholder change is a craft signal — most apps don't differentiate placeholder color on focus.
+
+> **Finding DBI3-S12** · Severity: **PASS**
+> **Placeholder colors are custom (`#6b7389` / `#8f99ab`) with focus-state differentiation — a craft signal.**
+> 92% of inputs use the chromatic custom placeholder. The focus-state lighter placeholder is a rare interaction detail that reinforces the Tactical quality.
+> **Solution**: Fix the single exception at `App.jsx` line 4818 — replace `placeholder-gray-500` with the custom placeholder class or inline `placeholder-[#6b7389]` to achieve 100% coverage.
+
+---
+
+### §DBI3.D Dark-Mode Specific Genericness Signals
+
+Since Whispering Wishes is a dark-mode-only app, these additional signals are assessed:
+
+**D1. `background: #000000` — absolute black as default**
+
+**Status: OWNED** — `#000000` is OLED-only opt-in, not the default. Standard mode uses `#080c14` (chromatic navy). The OLED toggle at `appcore-providers.jsx` line 408 is an explicit user preference, not a lazy default.
+
+> **Finding DBI3-D01** · Severity: **PASS**
+> Pure black is correctly scoped to OLED opt-in mode. Standard dark mode uses chromatic `#080c14`.
+
+**D2. `border: 1px solid rgba(255,255,255,0.1)` everywhere**
+
+**Status: PARTIAL** — This exact value appears as `--border-medium` and is the dominant border across the app. However, a 5-level border opacity scale exists (6%/8%/10%/15%/20%), showing intentional architecture even if adoption is skewed toward the 10% level.
+
+> **Finding DBI3-D02** · Severity: **LOW**
+> **`rgba(255,255,255,0.1)` borders dominate (~70% of instances) despite a 5-level scale.** This specific value is shared with hundreds of dark-mode dashboards. Shifting the dominant border to use the app's navy hue — `rgba(100, 140, 200, 0.08)` instead of `rgba(255, 255, 255, 0.1)` — would make borders chromatic and owned.
+> **Solution**:
+> - Option A (minimal): Keep white-alpha borders but shift the default from 10% to 8% (`--border-default`) — creates subtle differentiation from the ubiquitous 10% pattern
+> - Option B (full ownership): Replace `rgba(255,255,255,0.1)` with chromatic borders: `rgba(140, 160, 200, 0.08)` — same perceived weight, but carries the navy hue family. This would make borders "invisible to the eye, visible to the soul" — imperceptibly more refined.
+> - Apply to: `--border-medium` token definition and all `border-white/10` utility instances
+
+**D3. Text contrast 60% white everywhere**
+
+**Status: PARTIAL** — Covered under Signal 7. The 459 Tailwind gray instances create an undifferentiated muted-text landscape. The CSS variables (`--text-body`, `--text-heading`) are chromatic, but markup-level classes override them.
+
+> **Finding DBI3-D03** · Severity: **N/A** (covered by DBI3-S07)
+
+**D4. `blue-400` / `#60a5fa` as dark-mode accent**
+
+**Status: OWNED** — The app's primary accent is gold (`#edaf18`), not blue. `#60a5fa` is used semantically for 3-star/standard tier items (15 instances), not as the accent color. Gold dominance at ~40% usage clearly establishes it as the primary brand color.
+
+> **Finding DBI3-D04** · Severity: **PASS**
+> Gold `#edaf18` is the unambiguous primary accent. Blue `#60a5fa` is a tier-semantic color, not the accent. No dark-mode blue-accent genericness.
+
+---
+
+### §DBI3.T Tab-by-Tab Anti-Genericness Assessment
+
+The plan requires assessment across ALL 8 tabs. Below is a per-tab genericness scan identifying elements that make each tab interchangeable with generic trackers:
+
+**TRACKER tab**:
+- ✅ **Owned**: Pity rings with glow, gold/cyan/pink banner color coding, shimmer card tops, corner decorations
+- ⚠️ **Generic**: `text-gray-400` for secondary text (pity counts, timestamps), `border-white/10` separators between banner cards
+- **Minimal fix**: Replace gray text with chromatic `--text-muted`, add subtle accent tint to card borders matching banner color
+
+**EVENTS tab**:
+- ✅ **Owned**: Element-specific color accents (Fusion=orange, Glacio=cyan, etc.), time-based urgency visualization
+- ⚠️ **Generic**: Event card layout follows standard grid pattern, `text-gray-500` for event descriptions
+- **Minimal fix**: Replace gray text, add a subtle element-color glow to event card borders for stronger identity
+
+**CALC tab**:
+- ✅ **Owned**: Stat boxes with color-variant accent lines (8 colors), pity ring visualization, JetBrains Mono data font
+- ⚠️ **Generic**: Calculator input forms use standard rounded-lg styling, `text-gray-400` labels
+- **Minimal fix**: Replace gray labels with chromatic equivalents
+
+**PLANNER tab**:
+- ✅ **Owned**: Income calculator with custom styling, goal milestone progress bars with gold accent
+- ⚠️ **Generic**: Income input rows use standard `border-white/10` dividers, `text-gray-400` secondary text
+- **Minimal fix**: Replace gray text, use `--border-subtle` for item rows vs `--border-hover` for section breaks
+
+**STATS tab**:
+- ✅ **Owned**: Trophy badges with animated glow (`trophyShine` 3s), luck spectrum bar with gradient, pull history with rarity-colored left borders
+- ⚠️ **Generic**: `text-gray-400` for stat labels (high count here), trend analysis uses standard chart patterns
+- **Minimal fix**: Replace gray stat labels — this tab has the most gray text and would benefit most from chromatic replacement
+
+**COLLECT tab**:
+- ✅ **Owned**: Ghost-grid pulse for empty state, collection hover lift with scale, gradient image fades
+- ⚠️ **Generic**: Collection grid follows standard responsive grid, `text-gray-500` for empty messages, `#3b82f6` for 3-star item indicators
+- **Minimal fix**: Replace gray text, recalibrate blue-tier hex values
+
+**TEAMS tab**:
+- ✅ **Owned**: Resonator avatars with element-colored borders, synergy indicators
+- ⚠️ **Generic**: Team builder layout is standard grid, `text-gray-400` for labels, `border-white/10` card separators
+- **Minimal fix**: Replace gray text, differentiate separator weights
+
+**PROFILE tab**:
+- ✅ **Owned**: Trophy unlock animations, OLED mode toggle with custom styling, export/import with branded buttons
+- ⚠️ **Generic**: Settings list uses standard `border-white/10` dividers, `text-gray-400` for setting descriptions
+- **Minimal fix**: Replace gray text, use `.kuro-divider-subtle` for settings items
+
+**Cross-tab pattern**: The genericness signal is remarkably consistent — `text-gray-400/500` and `border-white/10` appear on EVERY tab. Fixing Signal 7 (chromatic grays) and Signal 11 (separator hierarchy) would lift ALL 8 tabs simultaneously.
+
+> **Finding DBI3-TAB1** · Severity: **LOW**
+> **All 8 tabs share the same genericness pattern: achromatic gray text + uniform white/10 borders.** The owned elements vary per tab (pity rings, trophy glows, element colors), but the generic elements are identical across all tabs. This creates a "custom foreground, generic background" split.
+> **Solution**: Fixing DBI3-S07 (chromatic grays) and DBI3-S11 (separator hierarchy) would eliminate the cross-tab genericness pattern in a single systematic pass. No per-tab fixes needed — the solution is architectural.
+
+---
+
+### §DBI3.E Default Detection Summary
+
+**Default palette detection**:
+- ✅ Primary accent (gold `#edaf18`): OWNED — not a framework default
+- ⚠️ Blue tier (`#3b82f6`/`#60a5fa`): Tailwind defaults used semantically — LOW risk
+- ❌ Gray text stack (`text-gray-400/500/300`): Tailwind defaults dominating — HIGH risk
+- ✅ Background (`#080c14`): OWNED — chromatic custom
+- ✅ Shadows: OWNED — calibrated to base hue
+
+**Default component style detection**:
+- ✅ Cards: Glassmorphism + shimmer + corner decorations — OWNED
+- ⚠️ Buttons: Well-styled but missing primary/secondary visual differentiation — PARTIAL
+- ⚠️ Inputs: Custom placeholder but `rounded-lg` dominant — PARTIAL
+- ✅ Stat boxes: Color-variant accent lines, custom 10px radius — OWNED
+- ⚠️ Badges: Achievement badges use uncalibrated Tailwind blue — PARTIAL
+
+**Default layout convention detection**:
+- ✅ Tab navigation: Custom tab indicator with gold glow bar — OWNED
+- ✅ Card layout: Staggered entrance animations, shimmer lines — OWNED
+- ⚠️ List separators: Uniform `border-white/10` — PARTIAL
+- ✅ Empty states: Gold promise glow + ghost-grid — OWNED
+- ✅ Loading states: Gold shimmer skeleton — OWNED
+
+---
+
+### §DBI3.S Anti-Genericness Scorecard
+
+| Signal | Status | Severity | Genericness Level |
+|---|---|---|---|
+| 1. Default Tailwind blue | PARTIAL — domain-semantic, uncalibrated hex | **LOW** | 3/10 |
+| 2. Inter at default weight | OWNED — Rajdhani + JetBrains Mono | **PASS** | 0/10 |
+| 3. `rounded-lg` everywhere | PARTIAL — 109× dominant, 5 unique values | **MEDIUM** | 5/10 |
+| 4. 16px grid spacing | OWNED — 14px custom base | **PASS** | 1/10 |
+| 5. `shadow-sm` on cards | OWNED — multi-layer navy shadows + color glows | **PASS** | 0/10 |
+| 6. Default icon library | PARTIAL — Lucide, default stroke | **LOW** | 3/10 |
+| 7. Gray text stack | GENERIC — 459 achromatic gray instances | **HIGH** | 8/10 |
+| 8. White/generic bg | OWNED — `#080c14` chromatic navy | **PASS** | 0/10 |
+| 9. `transition: all 0.2s` | OWNED — custom cubic-bezier, specific properties | **PASS** | 0/10 |
+| 10. Full-width buttons | OWNED — strategic 12% usage | **PASS** | 1/10 |
+| 11. Single separator | PARTIAL — 70% `white/10`, scale defined unused | **LOW** | 4/10 |
+| 12. Placeholder gray | OWNED — custom `#6b7389`/`#8f99ab` + focus state | **PASS** | 1/10 |
+| D1. Pure black default | OWNED — OLED opt-in only | **PASS** | 0/10 |
+| D2. `white/0.1` borders | PARTIAL — dominant despite 5-level scale | **LOW** | 4/10 |
+| D3. 60% white text | N/A — covered by S07 | — | — |
+| D4. `blue-400` accent | OWNED — gold is primary accent | **PASS** | 0/10 |
+
+**Overall genericness score**: **1.9/10** (weighted average excluding N/A — where 10 = fully generic, 0 = fully owned)
+
+**Interpretation**: The app is **strongly differentiated** in its foundational design decisions (background, shadows, typography, motion, accent color). The genericness that exists is concentrated in two specific areas:
+1. **Text colors** (Signal 7) — the single biggest liability at 459 instances
+2. **Border-radius uniformity** (Signal 3) — 109 instances of the same radius
+
+Both are fixable with systematic find-and-replace operations. The app's custom elements (glassmorphism, gold glow system, Rajdhani + JetBrains Mono, pity rings, corner decorations, shimmer animations) are genuinely distinctive and not found in competitor trackers.
+
+---
+
+## Step 7 — Combined Findings
+
+| ID | Finding | Severity | Section |
+|---|---|---|---|
+| DBI1-ARC1 | Archetype alignment strong (Magician+Hero+Jester) | **PASS** | §DBI1.4 |
+| DBI1-ARC2 | Magician "reveal moment" underutilized | **LOW** | §DBI1.5 |
+| DBI1-ARC3 | Hero "call to action" buttons lack visual weight | **LOW** | §DBI1.5 |
+| DBI3-S01 | Tailwind blue defaults for 3-star tier — uncalibrated | **LOW** | §DBI3 S1 |
+| DBI3-S02 | Typography fully owned (Rajdhani + JetBrains Mono) | **PASS** | §DBI3 S2 |
+| DBI3-S03 | 109× `rounded-lg` creates radius monoculture | **MEDIUM** | §DBI3 S3 |
+| DBI3-S04 | Custom 14px spacing baseline | **PASS** | §DBI3 S4 |
+| DBI3-S05 | Shadow system fully custom + color glows | **PASS** | §DBI3 S5 |
+| DBI3-S06 | Lucide icons at default stroke-width | **LOW** | §DBI3 S6 |
+| DBI3-S07 | 459 achromatic gray text instances — highest genericness signal | **HIGH** | §DBI3 S7 |
+| DBI3-S08 | Background system fully owned (`#080c14`) | **PASS** | §DBI3 S8 |
+| DBI3-S09 | Transition system fully custom (cubic-bezier + specific properties) | **PASS** | §DBI3 S9 |
+| DBI3-S10 | Button sizing strategic (12% full-width) | **PASS** | §DBI3 S10 |
+| DBI3-S11 | Separator hierarchy defined but 70% uses single pattern | **LOW** | §DBI3 S11 |
+| DBI3-S12 | Placeholder colors custom with focus-state differentiation | **PASS** | §DBI3 S12 |
+| DBI3-D01 | Pure black correctly scoped to OLED opt-in | **PASS** | §DBI3.D |
+| DBI3-D02 | `rgba(255,255,255,0.1)` borders dominate despite scale | **LOW** | §DBI3.D |
+| DBI3-D04 | Gold is unambiguous primary accent (not blue) | **PASS** | §DBI3.D |
+| DBI3-TAB1 | All 8 tabs share same genericness pattern (gray text + white/10 borders) | **LOW** | §DBI3.T |
+
+**Severity distribution**: 1 HIGH, 1 MEDIUM, 7 LOW, 10 PASS — **19 total findings**
+
+---
+
+**STEP 7 COMPLETE** — §DBI1 Brand Personality Archetype + §DBI3 Anti-Genericness Audit established.
+
+**Brand archetype**: MAGICIAN (primary) + HERO (secondary) + JESTER (undertone). The "LUMINOUS TACTICAL COMPANION" character maps cleanly onto this blend. Archetype alignment is strong — no major visual gaps to close.
+**Anti-genericness**: Overall score **1.9/10** — the app is strongly differentiated. Foundations (background, shadows, typography, motion, accent) are fully owned. The single highest-impact fix is **Signal 7: replacing 459 achromatic Tailwind gray text classes with chromatic navy-tinted equivalents** — this would transform every screen without changing any layout. Secondary fix: **Signal 3: diversifying `rounded-lg` usage** across the 109 instances. Everything else is either already owned or a minor polish item.
