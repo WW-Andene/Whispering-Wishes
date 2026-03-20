@@ -5479,3 +5479,809 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 **Z-index**: 9-level system with one collision at 9998. Otherwise well-governed.
 **Animations**: 15 keyframes with coherent dual-easing system. Token adoption incomplete.
 **Token coverage**: ~30% overall — the system's biggest structural gap. Adding ~25 new CSS custom properties would reach 70%+.
+
+---
+
+## STEP 9 — §E2: Visual Rhythm & Spatial Composition
+
+**Skill reference**: `app-audit-SKILL.md` §E2
+**Scope**: ALL 8 tabs (TRACKER, EVENTS, CALC, PLANNER, STATS, COLLECT, TEAMS, PROFILE)
+**Five-Axis reminder**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE WuWa L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+
+---
+
+### §E2.1 — Vertical Rhythm Assessment
+
+**Methodology**: Catalogued every gap, space-y, margin, and padding utility in `App.jsx` (7000+ lines) plus CSS-in-JS spacing in `appcore-providers.jsx` KuroStyles block. Cross-referenced with §E1 2px base grid finding.
+
+#### E2.1.1 — Page-Level Vertical Rhythm
+
+All 8 tabs share an identical outermost wrapper:
+
+```
+<main className="max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 pt-3 space-y-3 w-full">
+  ...
+  <div className="kuro-calc space-y-3 tab-content">
+    [tab content]
+  </div>
+</main>
+```
+
+| Layer | Spacing | Value | Source |
+|-------|---------|-------|--------|
+| Page horizontal padding | `px-3` | 12px | Tailwind |
+| Page top padding | `pt-3` | 12px | Tailwind |
+| Page bottom padding | `env(safe-area-inset-bottom, 1rem)` | 16px min | CSS |
+| Section-to-section gap | `space-y-3` | 12px | Tailwind |
+| Tab content internal gap | `space-y-3` | 12px | Tailwind (on `.tab-content`) |
+| Tab content padding | `.tab-content { padding: 0.75rem }` | 12px | CSS-in-JS |
+| Tab content negative bleed | `margin-left/right: -0.75rem` | −12px | CSS-in-JS |
+
+**Finding**: Page-level vertical rhythm is **perfectly consistent** — 12px everywhere. The negative-margin + padding technique on `.tab-content` creates a full-bleed illusion while maintaining the 12px grid. This is deliberate and well-executed.
+
+#### E2.1.2 — Component-Level Vertical Spacing
+
+**Gap utilities (162 total instances)**:
+
+| Utility | px Value | Count | Share |
+|---------|----------|-------|-------|
+| `gap-2` | 8px | 72 | 44% |
+| `gap-1` | 4px | 41 | 25% |
+| `gap-1.5` | 6px | 29 | 18% |
+| `gap-3` | 12px | 11 | 7% |
+| `gap-2.5` | 10px | 4 | 2% |
+| `gap-0.5` | 2px | 4 | 2% |
+| `gap-4` | 16px | 1 | <1% |
+
+**Space-y utilities (92 total instances)**:
+
+| Utility | px Value | Count | Share |
+|---------|----------|-------|-------|
+| `space-y-2` | 8px | 36 | 39% |
+| `space-y-3` | 12px | 29 | 32% |
+| `space-y-1` | 4px | 11 | 12% |
+| `space-y-1.5` | 6px | 6 | 7% |
+| `space-y-4` | 16px | 5 | 5% |
+| `space-y-0.5` | 2px | 3 | 3% |
+| `space-y-0` | 0px | 2 | 2% |
+
+**Margin-bottom utilities (top 10)**:
+
+| Utility | px Value | Count |
+|---------|----------|-------|
+| `mb-2` | 8px | 28 |
+| `mb-1.5` | 6px | 22 |
+| `mb-3` | 12px | 14 |
+| `mb-1` | 4px | 13 |
+| `mb-0.5` | 2px | 3 |
+
+#### E2.1.3 — Vertical Rhythm Scale Analysis
+
+Extracting the **effective vertical spacing scale** from frequency data:
+
+| Step | px | rem | Role | Frequency |
+|------|-----|------|------|-----------|
+| 1 | 2px | 0.125rem | Micro (label→value tight coupling) | 7 uses |
+| 2 | 4px | 0.25rem | Compact (intra-component) | 65 uses |
+| 3 | 6px | 0.375rem | Dense (between related items) | 57 uses |
+| 4 | 8px | 0.5rem | Standard (component internal) | 136 uses |
+| 5 | 10px | 0.625rem | — (only in CSS-in-JS buttons) | 4 uses |
+| 6 | 12px | 0.75rem | Section (page rhythm, card body) | 54 uses |
+| 7 | 16px | 1rem | Major (section breaks, large gaps) | 6 uses |
+
+**Observation**: The dominant values are **4px, 6px, 8px, 12px** — a pattern that mostly follows 2px increments but skips 10px in Tailwind and uses 14px only in CSS-in-JS. The 6px step (57 uses) is heavy, which aligns with the 2px base grid from §E1 but breaks the more common 4px-multiple pattern.
+
+#### E2.1.4 — CSS-in-JS vs Tailwind Rhythm Conflict
+
+| Context | CSS-in-JS Value | Tailwind Equivalent | Match? |
+|---------|----------------|-------------------|--------|
+| Card header padding | 14px | — (no Tailwind equivalent) | ❌ Not on 4px grid |
+| Card body padding | 14px | — | ❌ Not on 4px grid |
+| Stat box padding | 14px | — | ❌ Not on 4px grid |
+| Tab content padding | 12px (0.75rem) | `p-3` | ✅ Matches |
+| Button padding | 10px 12px | `py-2.5 px-3` | ✅ Close |
+| Input padding | 10px 12px | `py-2.5 px-3` | ✅ Close |
+| Divider margin | 12px 0 | `my-3` | ✅ Matches |
+| Slider margin | 8px 0 | `my-2` | ✅ Matches |
+
+**14px is the standout**: It's the signature KuroStyles value (used 3× for card header, body, stat) but sits between Tailwind's 12px (`p-3`) and 16px (`p-4`). This is intentional — it creates a distinctive density that Tailwind can't replicate. However, when Tailwind utilities override it (e.g., `kuro-stat p-2`), the rhythm breaks.
+
+> **E2-VR1** · LOW
+> **Finding**: CSS-in-JS 14px padding and Tailwind 4px-grid spacing create a **dual-rhythm system**. The 14px value is deliberate and creates unique density, but 4 instances of Tailwind overrides on `.kuro-stat` (using `p-2` = 8px) and `.kuro-card` (using `p-5` = 20px) break the card system's internal consistency.
+> **Solution**: Define `--spacing-card: 14px` token. When tighter density is needed inside cards, use a documented `kuro-stat-compact` variant with `padding: 8px` rather than ad-hoc Tailwind overrides. For the `p-5` case on modal cards, use `kuro-card-modal` with `padding: 20px` as a named variant.
+
+> **E2-VR2** · PASS
+> **Finding**: Page-level vertical rhythm is flawless. All 8 tabs use identical `space-y-3` (12px) for section stacking, and the `.tab-content` negative-margin bleed technique maintains visual edge-to-edge while preserving the rhythm grid.
+> **Solution**: No action needed. Document the 12px page rhythm as the canonical section-gap value in a future design-system reference.
+
+---
+
+### §E2.2 — Density Consistency
+
+**Methodology**: Compared internal padding, font sizes, and spacing of same-category components appearing on the same or adjacent screens.
+
+#### E2.2.1 — Card Density Comparison
+
+**KuroStyles base card system** (`appcore-providers.jsx`):
+
+| Component | Internal Padding | Font Size | Border-Radius | Line-Height |
+|-----------|-----------------|-----------|---------------|-------------|
+| `.kuro-card` `.kuro-header` | 14px | 14px / 600wt | 16px (card) | normal |
+| `.kuro-card` `.kuro-body` | 14px | inherited | 16px (card) | normal |
+| `.kuro-stat` | 14px | inherited (mono) | 10px | 1.3 |
+
+**Inline overrides observed**:
+
+| Location | Component | Override | Effective Padding | Delta from Base |
+|----------|-----------|----------|-------------------|-----------------|
+| Calculator results | `kuro-stat p-2` | `p-2` | 8px | −6px (43% less) |
+| Modal wrapper | `kuro-card p-5` | `p-5` | 20px | +6px (43% more) |
+| Events tab cards | `kuro-card` (no override) | — | 14px | baseline |
+| Stats tab cards | `kuro-card` (no override) | — | 14px | baseline |
+| Teams tab cards | `kuro-card` (no override) | — | 14px | baseline |
+
+**Result**: 6 of 8 tabs use default 14px padding consistently. The Calculator and modal contexts use overrides, creating a ±43% density swing on same-type components.
+
+#### E2.2.2 — Stat Box Density Across Tabs
+
+Stat boxes (`.kuro-stat`) appear in TRACKER, CALC, STATS, and PLANNER tabs:
+
+| Tab | Stat Box Usage | Padding | Content Pattern |
+|-----|---------------|---------|-----------------|
+| TRACKER | Banner pity counters | 14px (default) | Number + small label |
+| CALC | Probability results | 8px (`p-2` override) | Large % + label |
+| STATS | Luck rating breakdown | 14px (default) | Number + small label |
+| PLANNER | Income projections | 14px (default) | Number + label |
+
+**Inconsistency**: CALC tab stat boxes are visibly denser than identical stat boxes on other tabs. The `p-2` override compresses content while the font size remains the same, creating a cramped feel relative to sibling tabs.
+
+#### E2.2.3 — Section Container Density
+
+Internal section containers (`.bg-white/5` panels within cards):
+
+| Context | Padding | Gap | Font Size |
+|---------|---------|-----|-----------|
+| Character detail — Combat Profile | `p-3` (12px) | `space-y-2` (8px) | 9–10px |
+| Character detail — Base Stats | `p-3` (12px) | `gap-2` (8px) | 9–14px |
+| Character detail — Weapon Rec | `p-3` (12px) | `gap-3` (12px) | 10–14px |
+| Character detail — Echoes | `p-3` (12px) | `space-y-2` (8px) | 9–12px |
+| Character detail — Teams | `p-3` (12px) | `space-y-2` (8px) | 10–14px |
+
+**Result**: Internal section containers are **remarkably consistent** — `p-3` with `space-y-2` or `gap-2` is the standard. One exception: Weapon Recommendation uses `gap-3` (12px) instead of `gap-2` (8px), making it slightly airier than sibling sections.
+
+#### E2.2.4 — List Item Density
+
+Repeated list items across tabs:
+
+| Component | Item Height (est.) | Internal Padding | Gap Between | Font |
+|-----------|--------------------|-----------------|-------------|------|
+| Banner cards (TRACKER) | ~120px | `p-3` (12px) | `space-y-3` (12px) | 10–14px |
+| Event cards (EVENTS) | ~80px | `p-3` (12px) | `gap-3` (12px) | 9–14px |
+| Team slots (TEAMS) | ~60px | `p-2` (8px) | `gap-2` (8px) | 10–14px |
+| Collection grid items (COLLECT) | ~80px | `p-1.5` (6px) | `gap-2` (8px) | 9–10px |
+| Achievement rows (PROFILE) | ~48px | `py-2` (8px) | `space-y-1` (4px) | 9–12px |
+
+**Pattern**: Density scales with content type — banner cards are spacious, collection items are compact. This is **intentional** and matches A2 (FOCUS-TOOL): data-dense views use tighter spacing, showcase views use generous spacing.
+
+> **E2-DC1** · LOW
+> **Finding**: Calculator tab stat boxes use `p-2` (8px) while all other tabs use default 14px stat-box padding — a 43% density reduction on the same component type. Users moving between CALC and STATS tabs experience a jarring density shift.
+> **Solution**: Create `.kuro-stat-compact` variant in KuroStyles with `padding: 8px` and slightly smaller font-size (12px). Apply it consistently where dense stat displays are needed. This documents the intent rather than relying on Tailwind overrides.
+
+> **E2-DC2** · PASS
+> **Finding**: Internal section containers (`.bg-white/5` panels) maintain excellent density consistency — `p-3` padding with `space-y-2` gaps across 5+ different content types in character detail views. The density hierarchy (cards > sections > items) is intentional and well-scaled.
+> **Solution**: No action needed. This is exemplary density governance for a tool-first app.
+
+> **E2-DC3** · PASS
+> **Finding**: List item density scales appropriately with content type. Banner cards (spacious, ~120px) vs collection grid items (compact, ~80px) vs achievement rows (dense, ~48px) follows a logical density progression matching each view's purpose.
+> **Solution**: No action needed. The density-by-purpose pattern is well-calibrated.
+
+---
+
+### §E2.3 — Alignment Grid Assessment
+
+**Methodology**: Analysed horizontal alignment patterns, grid systems, and element anchoring across all 8 tabs.
+
+#### E2.3.1 — Page-Level Grid System
+
+```
+┌──────────────────────────────────────────┐
+│  12px  │←──── max-w-lg (512px) ────→│ 12px │  MOBILE
+│  (px-3)│                              │(px-3)│
+├──────────────────────────────────────────┤
+│  12px  │←── max-w-2xl (672px) ───→│  12px │  TABLET (md:)
+├──────────────────────────────────────────┤
+│  72px  │←──── no max-width ──────→│ 160px │  DESKTOP (lg:)
+│sidebar │          (fluid)          │ ad    │
+└──────────────────────────────────────────┘
+```
+
+- **Mobile**: Single-column, centered with `mx-auto`, constrained to 512px
+- **Tablet (md: 768px+)**: Widens to 672px, still centered
+- **Desktop (lg: 1024px+)**: Left sidebar (72px fixed), fluid content, right ad margin (160px)
+- **Ultra-wide (1440px+)**: Ad margin expands to 180px
+
+**Grid within cards**: Cards stretch to full container width. Internal grids use:
+- `grid-cols-2` — pity stats, toggle options
+- `grid-cols-3` / `sm:grid-cols-5` — server selection, collection summary
+- `grid-cols-4` — base stats in character detail
+- `banner-grid` (CSS-in-JS) — `auto-fit, minmax(420px, 1fr)` for banner cards on desktop
+- `event-grid` (CSS-in-JS) — `auto-fill, minmax(380px, 1fr)` for event cards
+
+#### E2.3.2 — Horizontal Alignment Patterns
+
+| Pattern | Usage | Count | Alignment Quality |
+|---------|-------|-------|-------------------|
+| `items-center` | Vertical center of flex row | 200+ | ✅ Consistent |
+| `justify-between` | Space-between for label + value rows | 80+ | ✅ Strong pattern |
+| `text-center` | Centered text blocks | 40+ | ✅ Used for stats/badges |
+| `text-right` | Right-aligned numbers | 15+ | ✅ Appropriate for numerics |
+| `mx-auto` | Horizontal centering of constrained containers | 8+ | ✅ Page-level |
+
+**Dominant compositional pattern**: `flex items-center justify-between` for nearly all label+value rows. This creates a strong **left-edge alignment** for labels and **right-edge alignment** for values — a classic data-dashboard pattern that provides visual anchoring.
+
+#### E2.3.3 — Grid Consistency Across Tabs
+
+| Tab | Primary Grid | Internal Grid | Alignment |
+|-----|-------------|---------------|-----------|
+| TRACKER | Single-column stacked | `grid-cols-2` for stats | ✅ Clean left-edge |
+| EVENTS | Single-column stacked | Event cards in `event-grid` | ✅ Auto-fill responsive |
+| CALC | Single-column stacked | `grid-cols-2` for results | ✅ Symmetric pairs |
+| PLANNER | Single-column stacked | Input + result rows | ✅ Label-left, value-right |
+| STATS | Single-column stacked | `grid-cols-2` for stat boxes | ✅ Symmetric pairs |
+| COLLECT | Single-column stacked | `grid-cols-3/5` for items | ✅ Responsive grid |
+| TEAMS | Single-column stacked | Team slot cards | ✅ Consistent |
+| PROFILE | Single-column stacked | `grid-cols-3/5` for servers | ✅ Responsive grid |
+
+**All 8 tabs share the single-column stacked layout** with internal grids where appropriate. No tab introduces a competing layout paradigm. This is excellent structural consistency.
+
+#### E2.3.4 — Floating Elements (Unanchored)
+
+Elements that appear to lack visual anchoring:
+
+1. **Corner decorations** (`.kuro-card-inner::before/::after`): 12×12px boxes at 8px offset from card corners. These are **intentionally floating** as atmospheric decoration — not a misalignment.
+2. **Luck badge** (`.luck-badge`): Centered within its card, no left-edge anchoring. **Intentional** — it's a hero element that benefits from center gravity.
+3. **Tab navigation icons**: Vertically stacked (icon above text) with `gap-0.5` (2px). Each tab is flex-centered. **Well-anchored** via `justify-between` on the nav container.
+
+**No unintentionally floating elements detected.**
+
+> **E2-AG1** · PASS
+> **Finding**: The page-level alignment grid is robust. All 8 tabs use single-column stacked layout with consistent `mx-auto` centering and `px-3` edge padding. Internal grids (`grid-cols-2/3/4/5`) are used appropriately per content type. The `flex items-center justify-between` pattern creates strong left-edge/right-edge anchoring throughout.
+> **Solution**: No action needed. The alignment system is one of the app's strongest structural qualities.
+
+> **E2-AG2** · PASS
+> **Finding**: No unintentionally floating elements found. Corner decorations and centered hero elements (luck badge) are deliberate design choices, not alignment failures.
+> **Solution**: No action needed.
+
+---
+
+### §E2.4 — Whitespace Intention Analysis
+
+**Methodology**: Assessed whether whitespace actively groups related items and separates unrelated ones, or is applied without rhythm.
+
+#### E2.4.1 — Grouping Whitespace (Gestalt Proximity)
+
+**Card-level grouping**:
+- Cards (`.kuro-card`) create strong visual groups via border + background + shadow
+- `.kuro-header` (14px padding) + `1px border-bottom` clearly separates header from body
+- `.kuro-body` (14px padding) provides uniform breathing room
+
+**Section-level grouping within cards**:
+- `.bg-white/5` sub-panels with `p-3` + `rounded-xl` create nested visual groups
+- `space-y-2` (8px) between items within a group
+- `space-y-3` (12px) between groups (e.g., Combat Profile section → Base Stats section)
+
+**The proximity hierarchy**:
+
+| Gap | px | Role | Example |
+|-----|-----|------|---------|
+| Tight | 2–4px | Elements that belong together | Label → value, icon → text |
+| Standard | 6–8px | Sibling items within a group | Stat box → stat box, list item → list item |
+| Section | 12px | Groups within a card | Section header → section content |
+| Card | 12px | Card → card separation | `space-y-3` between top-level cards |
+
+**Observation**: The section gap and card gap are **identical** (both 12px). This means the boundary between "groups within a card" and "separate cards" relies entirely on the card's border/shadow, not on spacing differentiation. This works because the card chrome (border, backdrop-blur, box-shadow) is visually strong enough to compensate.
+
+#### E2.4.2 — Separation Whitespace
+
+**Header-to-content separation**:
+- All card headers: `border-bottom: 1px solid var(--border-subtle)` + 14px padding below = strong separation
+- Section sub-headers: `mb-2` (8px) below header text = adequate but tight
+
+**Tab-to-content separation**:
+- Tab bar: `border-bottom: 1px solid rgba(255,255,255,0.1)` + `space-y-3` below
+- Effective gap: 12px between last tab underline and first content card
+
+**Card-to-card separation**:
+- `space-y-3` (12px) — uniform across all tabs
+- Cards are distinct via border + shadow, so 12px is sufficient
+
+#### E2.4.3 — Whitespace Problem Areas
+
+1. **Cramped areas**: Achievement rows in PROFILE tab use `space-y-1` (4px) between items. With 9px text and 4px gaps, the density is extreme — acceptable for a data list but pushes readability limits.
+
+2. **Sparse areas**: The CALC tab's result section uses `space-y-4` (16px) between result groups while sibling sections use `space-y-3` (12px). This creates a subtle asymmetry — the results feel slightly more spacious than expected.
+
+3. **Header-to-content inconsistency**: Some section headers use `mb-2` (8px), others use `mb-1.5` (6px), and a few use `mb-1` (4px). The variation is small (4–8px range) but prevents establishing a single reliable "header gap" rhythm.
+
+> **E2-WS1** · LOW
+> **Finding**: Section sub-header margins are inconsistent — `mb-2` (8px), `mb-1.5` (6px), and `mb-1` (4px) all used for the same structural role (header → content gap). While the differences are small, a single canonical value would strengthen vertical rhythm.
+> **Solution**: Standardize on `mb-2` (8px) for all section sub-headers. This is the most frequent value and provides adequate separation for 9–10px header text. Define as `--spacing-header-gap: 8px` token.
+
+> **E2-WS2** · PASS
+> **Finding**: Card-level and section-level grouping whitespace is well-intentioned. The proximity hierarchy (2–4px tight → 6–8px standard → 12px section/card) creates clear visual groups. The card chrome (border + shadow + backdrop-blur) compensates for the section-gap = card-gap equivalence.
+> **Solution**: No action needed. The Gestalt proximity grouping is effective.
+
+---
+
+### §E2.5 — Proportion Assessment
+
+**Methodology**: Measured font-size ratios between paired elements (label + value, icon + text, header + content) across all tabs. Assessed whether proportional relationships are consistent and intentional.
+
+#### E2.5.1 — Label + Value Proportions
+
+**Catalogued label+value pairs** (12 examples across components):
+
+| Context | Label Size | Value Size | Ratio (V:L) | Gap | Quality |
+|---------|-----------|-----------|--------------|-----|---------|
+| Base Stats grid | 9px / 600wt | 14px / bold | 1.56:1 | `mb-2` (8px) | ✅ Strong contrast |
+| Combat Profile | 9px / 600wt | 10px chips | 1.11:1 | — | ⚠️ Weak distinction |
+| Resonance Chain | 9px / 400wt | 10px | 1.11:1 | — | ⚠️ Weak distinction |
+| 5★ Pity Display | 9px / 400wt | 14px / bold | 1.56:1 | `mt-0.5` (2px) | ✅ Strong contrast |
+| Featured 4★ | 9px / 400wt | 9px (cyan) | 1:1 | `mb-0.5` (2px) | ❌ No distinction |
+| Weapon Spec | 10px / 400wt | 14px / bold | 1.4:1 | `mt-0.5` (2px) | ✅ Adequate |
+| Echo Recommendation | 9px / 400wt | 12px / bold | 1.33:1 | `mb-2` (8px) | ✅ Adequate |
+| Event Title/Subtitle | 10px / 400wt | 14px / bold | 1.4:1 | — | ✅ Adequate |
+| Buff/Debuff Detail | 9px / 600wt | 10px / 300wt | 1.11:1 | `mb-1` (4px) | ⚠️ Weak |
+| Stat Box (kuro-stat) | inherited | inherited (mono) | — | — | ✅ Mono distinguishes |
+| Planner Daily Income | 9px label | 14px bold yellow | 1.56:1 | — | ✅ Strong |
+| Calculator Result | 9px label | 24px bold (text-2xl) | 2.67:1 | — | ✅ Heroic |
+
+**Proportion clusters**:
+- **Strong (1.4–2.67:1)**: 7 of 12 cases — clear visual hierarchy via size + weight + color
+- **Weak (1.0–1.11:1)**: 5 of 12 cases — label and value nearly indistinguishable by size alone; relies on color (gray vs cyan/white) for differentiation
+
+#### E2.5.2 — Icon + Text Proportions
+
+**Lucide icon sizing**:
+
+| Icon Size | Text Paired With | Ratio (Icon:Cap-Height) | Gap | Count |
+|-----------|-----------------|------------------------|-----|-------|
+| 14px | 14px (`text-sm`) | ~1:1 | `gap-2` (8px) | 11× |
+| 12px | 10px (`text-[10px]`) | ~1.2:1 | `gap-2` (8px) | 5× |
+| 10px | 9px (`text-[9px]`) | ~1.1:1 | inline | 3× |
+| 16px | 14px (`text-sm`) | ~1.14:1 | `gap-2` (8px) | 2× |
+| 32px | 18px (`text-lg`) | ~1.78:1 | — | 1× |
+
+**Consistent pattern**: Icons are sized at 1:1 to 1.2:1 relative to their paired text. The dominant pairing (14px icon + 14px text + 8px gap) accounts for 50% of all icon+text instances. This is a strong, coherent system.
+
+**One outlier**: The 32px icon paired with 18px text in error boundaries creates a 1.78:1 ratio — intentionally dramatic for the error state.
+
+#### E2.5.3 — Header + Content Proportions
+
+**Card header (`.kuro-header`)**: 14px / 600wt text with `h3::before` 3px gold accent bar.
+**Card body (`.kuro-body`)**: 14px / 400wt body text.
+**Header:body ratio**: 1:1 in size, differentiated by weight (600 vs 400) and the gold accent bar.
+
+**Section sub-headers within cards**:
+
+| Sub-Header Pattern | Size | Weight | Compared to Content | Ratio |
+|-------------------|------|--------|-------------------|-------|
+| `text-sm font-bold` | 14px | 700 | 9–10px content | 1.4–1.56:1 |
+| `text-[10px] uppercase tracking-wider` | 10px | 600 | 9–10px content | 1:1 to 1.11:1 |
+| `text-xs font-bold` | 12px | 700 | 9–10px content | 1.2–1.33:1 |
+
+**Observation**: The 10px uppercase sub-headers rely on `letter-spacing: tracking-wider` and `uppercase` transform rather than size to distinguish themselves. This is a valid typographic technique but creates a subtler hierarchy than the `text-sm font-bold` variant.
+
+> **E2-PR1** · LOW
+> **Finding**: 5 of 12 label+value pairs have a proportion ratio ≤1.11:1, making label and value nearly indistinguishable by size. These rely solely on color (gray-400 vs white/cyan) for differentiation. In low-contrast or colorblind scenarios, the hierarchy weakens.
+> **Solution**: For weak-ratio pairs (currently 9px label + 10px value), either: (a) increase the value to 11px for a minimum 1.22:1 ratio, or (b) add `font-weight: 600` to the value to create weight-based distinction. The Featured 4★ case (9px:9px = 1:1) should change the value to `text-[10px] font-semibold` at minimum.
+
+> **E2-PR2** · PASS
+> **Finding**: Icon+text proportions are remarkably consistent. The dominant 14px icon + 14px text pairing at 1:1 ratio with 8px gap accounts for 50%+ of instances. Size scaling follows a logical 10→12→14→16px progression matching paired text.
+> **Solution**: No action needed. Document the 1:1 icon:text-size default in the design system reference.
+
+---
+
+### §E2.6 — Focal Point Clarity
+
+**Methodology**: For each of the 8 primary tabs, identified the intended focal element, assessed whether the current visual treatment actually draws the eye there first, and evaluated whether secondary elements compete for attention.
+
+#### Tab-by-Tab Focal Point Assessment
+
+**1. TRACKER**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Banner cards (character/weapon portraits) | Semi-transparent overlay with character art, pity counters, gold/cyan glow |
+| **First eye draw** | Category tabs (Character/Weapon/Standard) | `.active-gold` / `.active-pink` / `.active-cyan` with glow — saturated color on first visible element |
+| **Competing elements** | None significant | Stat counters within banners are secondary |
+| **Verdict** | ✅ **CLEAR** | The active category tab draws eye first (orientation), then banner cards provide the content focal point. Two-stage hierarchy works well. |
+
+**2. EVENTS**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Event cards with countdown timers | Image backgrounds, status badges, time displays |
+| **First eye draw** | Astrite Progress card | Yellow-tinted `bg-yellow-500/10` + green progress bar — warmest element on screen |
+| **Competing elements** | Refresh button (top-right) | Small, subdued — not competing |
+| **Verdict** | ✅ **CLEAR** | Astrite Progress card is the natural anchor. Event cards below form a scannable list. |
+
+**3. CALCULATOR**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Probability result percentages | `text-2xl` (24px) in yellow-400 and emerald-400 — largest text in the tab |
+| **First eye draw** | Banner selection buttons | `.active-emerald` / `.active-gold` buttons with saturated color at top of tab |
+| **Competing elements** | 50/50 toggle, pity inputs | Multiple interactive elements before results |
+| **Verdict** | ⚠️ **SPLIT** | User must scroll past inputs to reach the results — the focal content (percentages) may be below the fold on shorter screens. The input section is visually louder than it needs to be. |
+
+**4. PLANNER**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Daily income total / pull projections | Yellow-400 bold numbers showing Astrite and pull counts |
+| **First eye draw** | Daily Income input card | Card header + input field at top |
+| **Competing elements** | Subscription toggles | Multiple toggle rows with labels |
+| **Verdict** | ⚠️ **SPLIT** | Similar to CALC — the inputs dominate the viewport while the computed results (the actual value proposition) require scrolling to reach. |
+
+**5. STATS**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Luck Rating badge | Animated conic-gradient border, tier text, percentile bar — `text-xl` (20px) |
+| **First eye draw** | Luck Rating badge | Rotating gradient animation + dynamic glow color = strongest visual magnet in entire app |
+| **Competing elements** | Leaderboard buttons | Small, below the badge — not competing |
+| **Verdict** | ✅ **STRONG** | The luck badge is the single most effective focal element in the entire app. Animation, color, size, and position all converge. |
+
+**6. COLLECTION**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Collection Progress bar + percentage | Yellow gradient bar with bold percentage counter |
+| **First eye draw** | Progress bar | Yellow-500→400 gradient is the warmest element |
+| **Competing elements** | Grid of character portraits | Visually rich but uniform, creating a texture rather than competing focal point |
+| **Verdict** | ✅ **CLEAR** | Progress bar anchors the tab, character grid below provides scannable inventory. |
+
+**7. TEAMS**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Team composition display | Character portraits + synergy score + DPS calculation |
+| **First eye draw** | Compare / Clear action buttons | Positioned in card header — first visible elements |
+| **Competing elements** | Team slot placeholders | Multiple empty/filled slots compete equally for attention |
+| **Verdict** | ⚠️ **DIFFUSE** | When multiple team slots are visible, no single slot dominates. The "active" team slot doesn't have a visually distinct treatment from inactive ones. All slots have equal visual weight. |
+
+**8. PROFILE**
+
+| Aspect | Element | Treatment |
+|--------|---------|-----------|
+| **Intended focal** | Resonator Profile (avatar + username) | w-14 h-14 (56px) profile picture — largest single element |
+| **First eye draw** | Server Region card | 3×3 button grid with active state — first card in tab |
+| **Competing elements** | Achievement section | Long list with colorful trophy icons |
+| **Verdict** | ⚠️ **SPLIT** | Server selection (functional, not a focal destination) sits above the Profile section (the actual identity display). Users looking for "their profile" must scroll past server config. |
+
+#### Focal Point Summary
+
+| Tab | Focal Clarity | Rating |
+|-----|--------------|--------|
+| TRACKER | Two-stage hierarchy (tabs → banners) | ✅ CLEAR |
+| EVENTS | Astrite Progress → event cards | ✅ CLEAR |
+| CALC | Inputs above fold, results below | ⚠️ SPLIT |
+| PLANNER | Inputs above fold, results below | ⚠️ SPLIT |
+| STATS | Luck badge — strongest in entire app | ✅ STRONG |
+| COLLECT | Progress bar → character grid | ✅ CLEAR |
+| TEAMS | Equal-weight team slots | ⚠️ DIFFUSE |
+| PROFILE | Server config above profile display | ⚠️ SPLIT |
+
+> **E2-FP1** · MEDIUM
+> **Finding**: CALC and PLANNER tabs place input controls above the fold and push computed results (the primary value — percentages and pull projections) below. The input sections are visually heavier than necessary, competing with or obscuring the focal output.
+> **Solution**: For both tabs, consider a **results-first layout** — show the most recent/default calculation result at the top (as a hero stat card with `text-2xl` numbers), with the input controls below or in a collapsible section. Alternatively, make the result section sticky so it remains visible while adjusting inputs.
+
+> **E2-FP2** · LOW
+> **Finding**: TEAMS tab has diffuse focal weight — all team slots have identical visual treatment regardless of active/inactive state, preventing users from knowing which team is "current" at a glance.
+> **Solution**: Add a `kuro-card-active` variant with a subtle gold or cyan border-glow to the currently-selected team slot. Use `.glow-gold` or a 2px border-color change to differentiate the active team from inactive ones.
+
+> **E2-FP3** · LOW
+> **Finding**: PROFILE tab places Server Region card (a one-time configuration) above the Resonator Profile (the identity display). Server selection captures attention first despite being the less frequently accessed feature.
+> **Solution**: Reorder PROFILE sections: Resonator Profile first (identity focal point), then Server Region below (secondary configuration). This puts the user's avatar and identity at the top where they expect to see "their profile."
+
+> **E2-FP4** · PASS
+> **Finding**: STATS tab Luck Rating badge is the most effective focal element in the entire app. The combination of animated conic-gradient border, dynamic glow color, `text-xl` size, and top-of-tab positioning creates unmistakable visual hierarchy.
+> **Solution**: No action needed. This is a reference example for how focal elements should be treated in other tabs.
+
+---
+
+### §E2.7 — Visual Weight Distribution
+
+**Methodology**: Scanned each tab for the distribution of visual mass (size, color saturation, contrast, bold weight). Assessed whether heavy elements cluster unintentionally or distribute intentionally.
+
+#### E2.7.1 — Visual Weight Carriers
+
+The app's primary visual weight tools:
+
+| Weight Mechanism | Implementation | Strength |
+|-----------------|----------------|----------|
+| **Color saturation** | Gold (#edaf18), Cyan (#38bdf8), Emerald (#22c55e), Pink (#ec4899) | HIGH — all at full Tailwind 400–500 saturation |
+| **Font size** | `text-2xl` (24px), `text-xl` (20px), `text-lg` (18px) | MEDIUM — used sparingly (26 total large-text instances) |
+| **Font weight** | `font-bold` (105× instances) | HIGH — widespread, potentially dilutes impact |
+| **Glow effects** | `.glow-gold` (24px shadow radius), `.glow-purple` (16px), `.active-cyan` | HIGH — localized to interactive elements |
+| **Gradient fills** | Progress bars, luck badge, header logo blur | MEDIUM — used for 3–4 specific elements |
+| **Animation** | Conic-gradient rotation, tabFadeIn, pulse | LOW — reserved for luck badge and transitions |
+
+#### E2.7.2 — Per-Tab Weight Maps
+
+**Visual weight distribution (L = left, C = center, R = right, T = top, M = middle, B = bottom)**:
+
+| Tab | Heaviest Zone | Weight Type | Balance |
+|-----|--------------|-------------|---------|
+| **TRACKER** | T-center (active category tab glow) + M-full (banner cards) | Color glow + image | ✅ **Balanced** — weight flows top→middle naturally |
+| **EVENTS** | T-center (Astrite card yellow) + M-full (event images) | Color + image | ✅ **Balanced** — warm anchor at top, content below |
+| **CALC** | T-center (active buttons) + B-center (result numbers) | Color + large text | ⚠️ **Top-heavy** — active buttons draw attention but results are the payload |
+| **PLANNER** | T-center (input card header) + M-left (yellow income number) | Color + text | ⚠️ **Scattered** — multiple yellow numbers at different positions |
+| **STATS** | T-center (luck badge animation + glow) | Animation + gradient + color | ✅ **Top-anchored** — single dominant element, everything else recedes |
+| **COLLECT** | T-center (progress bar gradient) + M-full (portrait grid) | Gradient + image | ✅ **Balanced** — hero element at top, uniform grid below |
+| **TEAMS** | M-distributed (team member portraits) | Image + color badges | ⚠️ **Uniform** — no weight hierarchy among team slots |
+| **PROFILE** | T-center (server buttons active state) + M-left (profile picture) | Color + image | ⚠️ **Split** — two competing weight anchors |
+
+#### E2.7.3 — Font-Bold Distribution
+
+`font-bold` appears 105 times across `App.jsx`. Semantic distribution:
+
+| Purpose | Estimated Count | Appropriate? |
+|---------|----------------|--------------|
+| Card headers / section titles | ~25 | ✅ Yes — structural hierarchy |
+| Stat values / numbers | ~35 | ✅ Yes — data emphasis |
+| Button labels | ~15 | ⚠️ Debatable — buttons already have padding/border for emphasis |
+| Body text emphasis | ~20 | ⚠️ Debatable — when everything is bold, nothing is |
+| Status labels / badges | ~10 | ✅ Yes — compact elements need weight |
+
+**Analysis**: ~35 of 105 `font-bold` instances (33%) are used for non-hierarchical purposes (button labels and body emphasis). This dilutes bold's signal value. Cross-reference: §E1-TYP3 already flagged this in Step 8.
+
+> **E2-VW1** · LOW
+> **Finding**: PLANNER tab has scattered visual weight — multiple yellow-400 numbers at different vertical positions without a clear hierarchy. Unlike STATS (single dominant luck badge) or TRACKER (clear banner card focal), PLANNER's yellow numbers all compete at similar visual weight.
+> **Solution**: Establish a weight hierarchy: make the primary result (total Astrite or total pulls) the largest (`text-2xl`) and most saturated (gold with `.glow-gold` treatment). Reduce secondary numbers to `text-lg` without glow. This creates a clear visual gravity center.
+
+> **E2-VW2** · PASS
+> **Finding**: TRACKER, EVENTS, STATS, and COLLECT tabs all demonstrate intentional visual weight distribution. Weight flows naturally from top (orientation/anchor) to content (scannable area) without unintentional clustering. The STATS luck badge is the gold standard.
+> **Solution**: No action needed. 4 of 8 tabs have excellent weight distribution.
+
+---
+
+### §E2.8 — Mobile Screen Real Estate Discipline
+
+**Methodology**: Estimated vertical space consumption on a standard mobile viewport (360×640dp) for each tab. Counted how many primary-content items are visible without scrolling. Assessed touch target compliance and viewport-fit handling.
+
+#### E2.8.1 — Viewport Budget (360×640dp)
+
+**Fixed chrome consuming viewport height**:
+
+| Element | Height (est.) | Notes |
+|---------|--------------|-------|
+| Status bar | 24px | System, not app-controlled |
+| App header + logo | ~44px | `paddingTop: env(safe-area-inset-top)` + header content |
+| Tab navigation bar | ~48px | Icons + 10px labels + `py-2` padding |
+| Bottom safe area | ~16px | `env(safe-area-inset-bottom, 1rem)` |
+| **Total fixed chrome** | **~132px** | |
+| **Available content area** | **~508px** | 640 − 132 = 508px for tab content |
+
+**Content area padding**: `pt-3` (12px top) + `px-3` (12px sides) = content starts 12px below tab bar.
+
+**Effective scrollable viewport**: ~496px (508 − 12px top padding).
+
+#### E2.8.2 — Above-the-Fold Content Per Tab
+
+Estimated primary-content items visible without scrolling (496px available):
+
+| Tab | First Card (est. height) | Second Card | Items Above Fold | Verdict |
+|-----|-------------------------|-------------|------------------|---------|
+| **TRACKER** | Category tabs card (~64px) | First banner card (~120px) + partial 2nd | **2–3 items** | ✅ Good |
+| **EVENTS** | Heading + refresh (~32px) | Astrite card (~80px) + 1st event (~80px) | **3 items** | ✅ Good |
+| **CALC** | Banner selection card (~120px) | Pity inputs card (~100px) + partial results | **2 items** + partial | ⚠️ Results may be clipped |
+| **PLANNER** | Daily Income card (~140px) | Subscription toggles (~120px) | **2 items** | ⚠️ Results below fold |
+| **STATS** | Luck badge card (~160px) | Leaderboard buttons (~48px) + partial percentile | **2–3 items** | ✅ Good — hero visible |
+| **COLLECT** | Progress bar card (~80px) | Character grid (~200px visible) | **2 items** + grid | ✅ Good |
+| **TEAMS** | Team header card (~64px) | First team slot (~120px) + partial 2nd | **2–3 items** | ✅ Adequate |
+| **PROFILE** | Server Region card (~120px) | Profile card header (~64px) | **2 items** | ⚠️ Profile partially visible |
+
+**Per skill threshold**: ≥3 primary items visible = adequate. 5 of 8 tabs meet this. CALC, PLANNER, and PROFILE are borderline at 2 items.
+
+#### E2.8.3 — Touch Target Compliance
+
+**KuroStyles touch targets** (`appcore-providers.jsx`):
+
+| Component | Height | Width | Compliant? |
+|-----------|--------|-------|------------|
+| `kuro-btn` | ~36px (10px padding × 2 + 16px text) | auto | ⚠️ Below 44px on non-touch |
+| `kuro-btn` on `@media (pointer: coarse)` | `min-height: 36px` | auto | ⚠️ Still 36px, not 44px |
+| `kuro-input` | ~38px (10px padding × 2 + 18px text) | auto | ⚠️ Below 44px |
+| `select` on `@media (pointer: coarse)` | `min-height: 44px` | auto | ✅ Meets guideline |
+| Tab bar buttons | ~48px | ~40px (`px-2.5 py-2` + icon + text) | ✅ Meets guideline |
+| Generic buttons on `(pointer: coarse)` | `min-height: 36px` | auto | ⚠️ Below 44px |
+
+**Analysis**: The `@media (pointer: coarse)` query enforces 44px only on `<select>` elements. Buttons and inputs get 36px minimum on touch devices — **8px below** Apple's 44pt and Google's 48dp touch target guidelines. The tab bar buttons (48px) comply.
+
+#### E2.8.4 — Viewport-Fit & Safe Area Handling
+
+```
+viewport meta: width=device-width, initial-scale=1, viewport-fit=cover
+```
+
+| Area | Implementation | Status |
+|------|---------------|--------|
+| Top safe area (notch/Dynamic Island) | `paddingTop: env(safe-area-inset-top, 0px)` on header | ✅ Correct |
+| Bottom safe area (home indicator) | `paddingBottom: max(1rem, env(safe-area-inset-bottom, 1rem))` on main | ✅ Correct |
+| Left/right safe area (landscape notch) | `padding-left/right: env(safe-area-inset-left/right)` on body | ✅ Correct |
+| `viewport-fit: cover` | Set in meta tag | ✅ Correct |
+
+**Full safe-area coverage** — all four insets handled. This is exemplary mobile craft.
+
+> **E2-MO1** · MEDIUM
+> **Finding**: Touch targets for `kuro-btn` and `kuro-input` are 36px on touch devices (`@media (pointer: coarse)`), **8px below** the recommended 44px minimum (Apple HIG) and **12px below** 48dp (Material Design). Only `<select>` elements correctly enforce 44px. This affects every interactive element in the app except the tab bar.
+> **Solution**: In the `@media (pointer: coarse)` block, change `min-height: 36px` to `min-height: 44px` for `.kuro-btn`, `.kuro-input`, and generic buttons. This is a single CSS change that improves touch accuracy across the entire app. Consider `min-height: 48px` if Material Design compliance is desired.
+
+> **E2-MO2** · LOW
+> **Finding**: CALC and PLANNER tabs push primary results below the ~496px mobile fold. Users must scroll past inputs to see computed outputs (the value proposition). Only 2 primary items are visible above the fold on these tabs.
+> **Solution**: Cross-reference with E2-FP1 solution. Show a compact "last result" summary above the input section, or make the result section sticky at the bottom of the viewport. Either approach ensures the computed value is always visible.
+
+> **E2-MO3** · PASS
+> **Finding**: Safe area inset handling is comprehensive — all four edges (top, bottom, left, right) use `env()` with fallbacks. The `viewport-fit: cover` meta tag enables edge-to-edge rendering. This is exemplary PWA mobile craft.
+> **Solution**: No action needed.
+
+---
+
+### §E2.9 — Edge-to-Edge Content & Responsive Grid Breakpoints
+
+**Methodology**: Assessed edge-to-edge content handling, landscape layout, and responsive breakpoint behaviour across all screen sizes.
+
+#### E2.9.1 — Edge-to-Edge Content Assessment
+
+**Page-level edge treatment**:
+
+```
+Screen edge
+│ 12px (px-3)
+│ │ Content area (max-w-lg = 512px on mobile)
+│ │ │
+│ ├──────────────────────────────────────────┤
+│ │  Card (kuro-card)                         │
+│ │  │ 14px (kuro-header / kuro-body padding) │
+│ │  │ │ Card content                          │
+│ │  └──────────────────────────────────────  │
+│ │                                            │
+│ │  Card (kuro-card)                         │
+│ │  ...                                       │
+│ ├──────────────────────────────────────────┤
+│ │
+│ 12px
+```
+
+**Total content inset from screen edge**: 12px (page) + 0px (card flush to container) + 14px (card body) = **26px** from screen edge to content text. On a 360px screen, this leaves 308px for content — **85.6% content efficiency**.
+
+**Negative-margin bleed technique** (`.tab-content`):
+- `margin-left: -0.75rem; margin-right: -0.75rem` (−12px)
+- `padding: 0.75rem` (12px)
+- Net effect: Tab content cards extend to the full width of `px-3` container, then cards within have their own padding. This creates **visual edge-to-edge** cards while maintaining text inset.
+
+**True full-bleed elements**: None found. All content respects the 12px page padding. This is appropriate for a data-focused app — full-bleed is more suited to media/image content.
+
+#### E2.9.2 — Responsive Breakpoint System
+
+**Three-tier breakpoint architecture**:
+
+| Breakpoint | Width | Layout | Source |
+|------------|-------|--------|--------|
+| **Mobile** (default) | <768px | Single column, `max-w-lg` (512px), centered | Tailwind + CSS-in-JS |
+| **Tablet** (md:) | 768–1023px | Single column, `max-w-2xl` (672px), centered | Tailwind |
+| **Desktop** (lg: / 1024px) | 1024–1439px | Sidebar (72px) + fluid content + ad margin (160px) | CSS-in-JS `@media` |
+| **Ultra-wide** (1440px+) | 1440px+ | Same as desktop, ad margin expands to 180px | CSS-in-JS `@media` |
+
+**Desktop layout structure** (CSS-in-JS, `@media (min-width: 1024px)`):
+
+```
+┌──────────┬─────────────────────────────┬──────────┐
+│ Sidebar  │       Main Content          │ Ad       │
+│ 72px     │  (fluid, no max-width)      │ 160px    │
+│ fixed    │  margin-left: 72px          │ fixed    │
+│ left: 0  │                             │ right: 0 │
+│          │  Banner grid: auto-fit      │          │
+│  Icons   │    minmax(420px, 1fr)       │          │
+│  only    │  Event grid: auto-fill      │          │
+│          │    minmax(380px, 1fr)       │          │
+└──────────┴─────────────────────────────┴──────────┘
+```
+
+**Desktop-specific grid classes**:
+- `.banner-grid`: `grid-template-columns: repeat(auto-fit, minmax(420px, 1fr))` — banner cards wrap to multiple columns
+- `.event-grid`: `grid-template-columns: repeat(auto-fill, minmax(380px, 1fr))` — event cards wrap
+- `.desktop-grid-2`: 2-column grid for PROFILE tab sections
+
+**Tailwind responsive utilities used**:
+- `md:max-w-2xl` — tablet width constraint
+- `lg:max-w-none` — desktop removes width constraint
+- `sm:grid-cols-5` — server/collection grid expands from 3 to 5 columns at 640px
+- `lg:space-y-0` — removes vertical gaps when desktop grids activate
+
+#### E2.9.3 — Landscape Layout Quality
+
+**Assessment**: The app is a React SPA (PWA) running in a browser viewport. It does **not** have dedicated landscape layouts.
+
+| Viewport | Behaviour |
+|----------|-----------|
+| Phone landscape (~640×360) | Single column stretches to `max-w-lg` (512px), centered. Content is readable but wastes ~128px horizontally. Tab bar remains at top (horizontal). |
+| Tablet landscape (~1024×768) | Triggers desktop breakpoint (1024px). Sidebar + fluid content layout activates. **This is correct behaviour.** |
+
+**Phone landscape specifically**: The `max-w-lg` (512px) constraint prevents the content from stretching to the full 640px width, maintaining readability. The remaining ~128px (64px per side after centering) is acceptable for a tool app. However, the tab navigation bar still consumes ~48px of the limited 360px vertical height, leaving only ~288px for content.
+
+#### E2.9.4 — Tablet & Foldable Adaptation
+
+| Device | Width Range | Layout | Quality |
+|--------|-------------|--------|---------|
+| Small tablet (768px) | `md:` | 672px centered single-column | ✅ Adequate — content is generously wide |
+| Large tablet (1024px) | `lg:` | Sidebar + fluid + ad margin | ✅ Good — multi-column layout activates |
+| Foldable unfolded (~840px) | Between md and lg | 672px centered | ⚠️ No dedicated treatment |
+| Foldable folded (~360px) | Default mobile | 512px max single-column | ✅ Standard mobile |
+
+**Foldable gap (840px)**: Between `md:max-w-2xl` (672px) and `lg:` (1024px), the layout uses a 672px-wide single column on an 840px screen — wasting 168px (20%). A `@media (min-width: 840px)` breakpoint with a wider content area or 2-column grid would improve foldable experience, but this is a niche concern.
+
+> **E2-EE1** · PASS
+> **Finding**: Edge-to-edge content handling is well-crafted. The negative-margin bleed technique on `.tab-content` creates visual edge-to-edge cards while maintaining proper text inset. Content efficiency is 85.6% on a 360px screen (26px total inset). No inappropriate full-bleed elements.
+> **Solution**: No action needed. The edge treatment is appropriate for a data-focused tool app.
+
+> **E2-EE2** · PASS
+> **Finding**: The three-tier responsive breakpoint system (mobile < 768 < tablet < 1024 < desktop) provides appropriate layout adaptation. Desktop activates sidebar navigation, multi-column grids (banner-grid, event-grid), and removes the mobile max-width constraint. The `auto-fit` / `auto-fill` CSS Grid patterns handle intermediate widths gracefully.
+> **Solution**: No action needed. The responsive architecture is well-implemented.
+
+> **E2-EE3** · LOW
+> **Finding**: Phone landscape (~640×360) leaves only ~288px vertical content area after status bar, header, and tab navigation. The tab bar (48px) consumes 13% of the limited vertical viewport. Content is readable but cramped — fewer than 2 primary items are visible.
+> **Solution**: Consider hiding the tab navigation bar in landscape orientation via `@media (orientation: landscape) and (max-height: 500px)`, replacing it with a slide-out menu or swipe gestures. This would reclaim 48px (17% of available content area). Lower priority — landscape phone usage is a minority use case for a PWA.
+
+> **E2-EE4** · PASS
+> **Finding**: Tablet layout correctly triggers the desktop sidebar+fluid layout at 1024px. The `auto-fit minmax(420px, 1fr)` grid pattern gracefully handles intermediate widths. The foldable gap (840px) is a niche concern with minimal real-world impact.
+> **Solution**: No action needed.
+
+---
+
+### §E2 — Combined Findings
+
+| ID | Section | Severity | Title | Solution Summary |
+|----|---------|----------|-------|-----------------|
+| E2-VR1 | §E2.1 | LOW | Dual-rhythm system (14px CSS-in-JS vs 4px Tailwind grid) | Define `--spacing-card: 14px` token; create named card variants instead of Tailwind overrides |
+| E2-VR2 | §E2.1 | PASS | Page-level vertical rhythm flawless (12px everywhere) | Document 12px as canonical section-gap |
+| E2-DC1 | §E2.2 | LOW | Calculator stat boxes 43% denser than other tabs | Create `.kuro-stat-compact` CSS variant with 8px padding |
+| E2-DC2 | §E2.2 | PASS | Internal section density excellent across character details | — |
+| E2-DC3 | §E2.2 | PASS | List item density scales appropriately by content type | — |
+| E2-AG1 | §E2.3 | PASS | Alignment grid robust — single-column + internal grids | — |
+| E2-AG2 | §E2.3 | PASS | No unintentionally floating elements | — |
+| E2-WS1 | §E2.4 | LOW | Sub-header margins inconsistent (4–8px for same role) | Standardize `mb-2` (8px); define `--spacing-header-gap` token |
+| E2-WS2 | §E2.4 | PASS | Gestalt proximity grouping effective | — |
+| E2-PR1 | §E2.5 | LOW | 5/12 label+value pairs at ≤1.11:1 ratio (weak distinction) | Increase value sizes or add font-weight differentiation |
+| E2-PR2 | §E2.5 | PASS | Icon+text proportions consistent (1:1 default) | — |
+| E2-FP1 | §E2.6 | MEDIUM | CALC + PLANNER push results below fold — split focal point | Results-first layout or sticky result section |
+| E2-FP2 | §E2.6 | LOW | TEAMS tab has diffuse focus — all slots equal weight | Add `kuro-card-active` variant with glow for selected team |
+| E2-FP3 | §E2.6 | LOW | PROFILE: Server config above identity display | Reorder: Profile first, Server second |
+| E2-FP4 | §E2.6 | PASS | STATS luck badge is strongest focal element in app | Reference example for other tabs |
+| E2-VW1 | §E2.7 | LOW | PLANNER: scattered yellow numbers without hierarchy | Differentiate primary (`text-2xl` + glow) from secondary (`text-lg`) |
+| E2-VW2 | §E2.7 | PASS | 4/8 tabs have excellent visual weight distribution | — |
+| E2-MO1 | §E2.8 | MEDIUM | Touch targets 36px on touch devices (below 44px guideline) | Change `min-height: 36px` → `44px` in `@media (pointer: coarse)` |
+| E2-MO2 | §E2.8 | LOW | CALC + PLANNER: only 2 items above fold | Show compact result summary above inputs (cross-ref E2-FP1) |
+| E2-MO3 | §E2.8 | PASS | Safe area inset handling exemplary (all 4 edges) | — |
+| E2-EE1 | §E2.9 | PASS | Edge-to-edge technique well-crafted (85.6% efficiency) | — |
+| E2-EE2 | §E2.9 | PASS | 3-tier responsive breakpoint system well-implemented | — |
+| E2-EE3 | §E2.9 | LOW | Phone landscape: tab bar consumes 13% of limited height | Consider hiding tab bar in landscape via `@media` |
+| E2-EE4 | §E2.9 | PASS | Tablet + foldable adaptation adequate | — |
+
+**Severity summary**: 0 HIGH · 2 MEDIUM · 9 LOW · 13 PASS (24 findings total)
+
+---
+
+**STEP 9 COMPLETE** — §E2 Visual Rhythm & Spatial Composition fully audited.
+
+**Vertical Rhythm**: 12px page rhythm is flawless across all 8 tabs. The 14px CSS-in-JS signature creates distinctive density, but Tailwind overrides break consistency in 4 instances.
+**Density**: Card density is consistent at 14px except Calculator (8px override). Internal section density is excellent.
+**Alignment**: Single-column stacked layout with internal grids — one of the app's strongest structural qualities. No floating elements.
+**Whitespace**: Gestalt proximity grouping is effective. Sub-header margins vary (4–8px) but within a tight range.
+**Proportions**: Icon+text consistent (1:1). Label+value pairs are strong in 7/12 cases but weak in 5/12 (relying on color alone).
+**Focal Points**: STATS tab is exemplary. CALC/PLANNER suffer from input-above-results layout. TEAMS has diffuse focus.
+**Visual Weight**: 4/8 tabs well-distributed. PLANNER has scattered yellow numbers.
+**Mobile**: Safe area handling is exemplary. Touch targets at 36px are 8px below guideline — most impactful fix.
+**Responsive**: 3-tier breakpoint system (mobile → tablet → desktop) with CSS Grid auto-fit for graceful intermediate widths. Phone landscape is the only weak spot.
