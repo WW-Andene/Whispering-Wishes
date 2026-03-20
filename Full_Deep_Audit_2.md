@@ -3247,3 +3247,873 @@ The design system has strong structural tokens (5 border levels, 4 shadow levels
 **Palette architecture**: 60% tokenized (structural), 40% hardcoded (semantic + game-domain gaps).
 **Key actions**: Consolidate 5 gold near-duplicates → 1 canonical gold. Add semantic tokens (success/error/warning/info). Promote game-domain colors to CSS variables.
 **Accent overload**: Gold serves 12 roles — acceptable as brand color with opacity-differentiated usage.
+
+---
+
+# STEP 6: §DC3 + §DC4 + §DC5 — Dark Mode Craft, Brand Color Distinctiveness, Color Narrative
+
+## §DC3. Dark Mode Craft Assessment
+
+### §DC3.1 Elevation-as-Lightness System
+
+In dark mode, depth is communicated by lightness, not shadows. Each surface layer should be ~2-4% OKLCH lightness higher than the layer below it.
+
+**Surface Lightness Inventory (Standard Dark Mode)**:
+
+| Surface Level | Component | Raw Value | Approx OKLCH L% | Expected L% |
+|---|---|---|---|---|
+| **Surface 0** — Page background | `html, body` | `#080c14` | **~14.2%** | 10-14% ✓ |
+| **Surface 1a** — Stat boxes | `--bg-stat` = `rgba(10,14,22,0.8)` | **~13.1%** (composited on S0) | S0+3 = 17% ✗ |
+| **Surface 1b** — Card inner | `--bg-card-inner` = `rgba(6,10,18,1)` | **~12.3%** | S0+3 = 17% ✗ |
+| **Surface 1c** — Cards | `--bg-card` = `rgba(12,16,24,0.55)` | **~14.9%** (composited) | S0+3 = 17% ✗ |
+| **Surface 1d** — Buttons | `--bg-btn` = `rgba(15,20,28,0.85)` | **~15.8%** (composited) | S0+3 = 17% ✗ |
+| **Surface 1e** — Inputs | `--bg-input` = `rgba(15,20,28,0.9)` | **~16.0%** (composited) | S0+3 = 17% ≈ |
+| **Surface 2** — Modal backdrop | `bg-black/90` | **~3.0%** (darkens everything) | S1+3 = 20% ✗ |
+| **Surface 2** — Modal glass | `rgba(12,16,24,0.12)` + `blur(6px)` | **~14.5%** (varies w/ blur) | S1+3 = 20% ✗ |
+| **Surface 3** — Toasts | `rgba(accent,0.9)` | **52-68%** (semantic override) | N/A (correct) |
+| **Surface 3** — Desktop sidebar | `rgba(8,12,18,0.95)` + `blur(20px)` | **~14.0%** | S2+3 = 23% ✗ |
+
+**Lightness Progression Analysis**:
+
+```
+Expected (Material Design dark):
+  S0=14% → S1=17% → S2=20% → S3=23%  (3% steps)
+
+Actual (Standard Dark):
+  S0=14.2% → S1=13.1-16.0% → S2=14.5% → S3=14.0%
+
+  ■■■■■■■■■■■■■■·  S0  14.2%
+  ■■■■■■■■■■■■■··  S1a 13.1%  ← DARKER than S0 (inverted!)
+  ■■■■■■■■■■■■···  S1b 12.3%  ← DARKEST component surface
+  ■■■■■■■■■■■■■■·  S1c 14.9%  ← Near-equal to S0
+  ■■■■■■■■■■■■■■■  S1d 15.8%  ← Only surface with correct lift
+  ■■■■■■■■■■■■■■■  S2  14.5%  ← No lift from S1
+  ■■■■■■■■■■■■■■·  S3  14.0%  ← Sidebar DARKER than cards
+```
+
+**Finding DC3-EL1**: Surface elevation is **flat** — all surfaces cluster within a 3.7% lightness band (12.3%-16.0%). The expected staircase of S0→S1→S2→S3 rising by 3% per step is not present. Components like `--bg-card-inner` and `--bg-stat` are actually *darker* than the page background.
+
+- **Severity**: **MEDIUM**
+- **Why it matters**: Without lightness-based elevation, the app relies entirely on borders and backdrop-blur for depth. This works for glass-morphism but violates the fundamental dark mode depth cue.
+- **Solution**: Restructure surface tokens as a deliberate lightness staircase:
+  ```
+  --surface-0: oklch(14.2% 0.02 264)   /* page background — unchanged */
+  --surface-1: oklch(17.5% 0.02 264)   /* cards, panels — +3.3% */
+  --surface-2: oklch(20.5% 0.02 264)   /* modals, popovers — +3.0% */
+  --surface-3: oklch(23.0% 0.02 264)   /* tooltips, toasts base — +2.5% */
+  ```
+  Apply these as base backgrounds, then layer glass effects on top. The glassmorphism blur+alpha treatment still works — it just starts from a correct lightness base.
+- **Alternative (preserve current aesthetic)**: If the flat-depth glass approach is intentional (the "holographic display" from §DP0), formally document it as a design decision and ensure *all* depth cues come from borders/blur/glow consistently. Currently some components use lightness lift (buttons) while others don't (stat boxes), creating inconsistency.
+
+---
+
+### §DC3.2 OLED Mode Surface Analysis
+
+**OLED Surface Lightness Inventory**:
+
+| Surface Level | Component | OLED Value | OKLCH L% |
+|---|---|---|---|
+| **Surface 0** | Page background | `#000000` | **0%** |
+| **Surface 1a** | Stat boxes | `rgba(0,0,0,0.9)` | **~0%** |
+| **Surface 1b** | Card inner | `rgba(5,5,5,1)` | **~3.5%** |
+| **Surface 1c** | Cards | `rgba(0,0,0,0.95)` | **~0%** |
+| **Surface 1d** | Buttons | `rgba(0,0,0,0.95)` | **~0%** |
+| **Surface 1e** | Inputs | `rgba(0,0,0,0.95)` | **~0%** |
+
+```
+OLED Lightness:
+  ■·····  S0  0.0%
+  ·····  S1a 0.0%   ← Identical to S0
+  ■·····  S1b 3.5%   ← Only lifted surface
+  ·····  S1c 0.0%   ← Identical to S0
+  ·····  S1d 0.0%   ← Identical to S0
+  ·····  S1e 0.0%   ← Identical to S0
+```
+
+**Finding DC3-OLED1**: In OLED mode, **all surfaces collapse to pure black** (0% lightness). Cards, buttons, inputs, and stat boxes are indistinguishable from the page background by lightness alone. Only `--bg-card-inner` at `rgba(5,5,5,1)` has any lift (3.5%).
+
+- **Severity**: **MEDIUM**
+- **Why it matters**: OLED mode destroys all lightness-based depth. The UI becomes dependent entirely on border opacity (0.06-0.2 white) for structure — a fragile single-cue system.
+- **Solution**: Implement an OLED-specific elevation ramp using minimal lightness lift:
+  ```
+  /* OLED surfaces — minimal but perceptible lift */
+  --surface-0: #000000              /* oklch(0% 0 0) — true black for pixel-off */
+  --surface-1: oklch(5% 0.005 264)  /* barely visible lift — saves OLED benefit */
+  --surface-2: oklch(8% 0.008 264)  /* modals — slight cool tint visible */
+  --surface-3: oklch(11% 0.01 264)  /* toasts — clearly elevated */
+  ```
+  This preserves OLED power savings (pixels mostly off) while restoring minimal depth perception. The 5% lift is perceptible on OLED panels without significantly increasing power draw.
+
+**Finding DC3-OLED2**: Toast backgrounds are **not OLED-aware** — they use the same saturated `rgba(accent,0.9)` in both modes. On OLED's pure black, these high-chroma surfaces create a jarring contrast jump.
+
+- **Severity**: **LOW**
+- **Why it matters**: The 0%→52-68% lightness jump from OLED background to toast is extreme. Standard dark mode has a gentler 14%→52% jump.
+- **Solution**: For OLED mode, reduce toast background opacity to 0.8 and add a subtle dark border to anchor them:
+  ```css
+  /* OLED toast adjustment */
+  .toast {
+    background: rgba(accent, ${oledMode ? '0.8' : '0.9'});
+    border: ${oledMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(255,255,255,0.2)'};
+  }
+  ```
+
+---
+
+### §DC3.3 Common Dark Mode Failures Check
+
+**Failure 1: All surfaces the same value → no perceived depth**
+
+| Check | Result |
+|---|---|
+| Standard Dark: surfaces vary by <4% lightness | ⚠️ **PARTIAL FAIL** — 3.7% total range, some surfaces darker than S0 |
+| OLED: all surfaces same value | ❌ **FAIL** — 5 of 6 surface tokens collapse to 0% lightness |
+| Compensating mechanism present? | ✓ **YES** — borders at `rgba(255,255,255,0.06-0.2)` + backdrop-blur provide alternative depth |
+
+**Verdict**: The glass-morphism system compensates partially, but the *intended* depth cue (lightness) is non-functional. The system works visually because blur + border + glow are strong cues — but it's architecturally fragile.
+
+**Failure 2: Pure black `#000000` as background**
+
+| Check | Result |
+|---|---|
+| Standard Dark uses `#080c14` (blue-tinted near-black) | ✓ **PASS** — correct, avoids pure black |
+| OLED mode uses `#000000` | ✓ **PASS** — appropriate for OLED theater mode (intentional pixel-off) |
+| OLED mode is user-opt-in | ✓ **PASS** — toggled via `oledMode` state |
+
+**Finding DC3-BK1**: Pure black usage is **appropriate and intentional** — OLED mode is opt-in.
+- **Severity**: **PASS**
+- **Solution**: No change needed. Document that OLED mode is a theater/battery-saver mode, not the default experience.
+
+**Failure 3: Shadows on dark mode (nearly invisible)**
+
+Shadow tokens from `:root`:
+```
+--shadow-sm: 0 1px 2px rgba(6, 10, 24, 0.4)
+--shadow-md: 0 4px 12px rgba(6, 10, 24, 0.5)
+--shadow-lg: 0 8px 24px rgba(6, 10, 24, 0.6)
+--shadow-xl: 0 12px 40px rgba(6, 10, 24, 0.7)
+```
+
+Shadow base color `rgb(6,10,24)` ≈ oklch(11.5% 0.02 264) — this is *darker* than the page background `#080c14` ≈ oklch(14.2%). On standard dark, shadows carry ~2.7% lightness contrast. On OLED (black background), shadows are invisible.
+
+Card shadow stack (`.kuro-card`):
+```
+0 4px 24px rgba(6, 10, 24, 0.6)     ← barely visible on dark, invisible on OLED
+0 0 0 1px rgba(255, 255, 255, 0.03)  ← hairline white border (visible)
+inset 0 1px 0 rgba(255, 255, 255, 0.05) ← top highlight (visible)
+```
+
+**Finding DC3-SH1**: Dark shadows are **functionally invisible** in both modes. The shadow tokens exist but carry no visual information on dark surfaces. The white hairline border (0.03 opacity) and inset highlight (0.05 opacity) do the actual depth work.
+
+- **Severity**: **LOW**
+- **Why it matters**: Shadow tokens consume rendering resources without contributing visual information. The system already uses the correct dark-mode approach (white borders/highlights), making the dark shadows redundant.
+- **Solution**: Two options:
+  1. **Remove dark shadows entirely** from cards/panels — they're decorative dead weight. Keep only the white hairline + inset highlight.
+  2. **Replace with glow shadows** for elevated surfaces — use `rgba(accent, 0.05-0.15)` glow instead:
+  ```css
+  /* Replace invisible dark shadows with subtle accent glow */
+  .kuro-card {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03),  /* hairline border (keep) */
+      inset 0 1px 0 rgba(255, 255, 255, 0.05), /* top highlight (keep) */
+      0 4px 20px rgba(237, 175, 24, 0.03);  /* gold micro-glow (new) */
+  }
+  ```
+
+**Failure 4: Hardcoded `color: white` / `#ffffff` text**
+
+Instances found:
+| Location | Value | Context |
+|---|---|---|
+| `.kuro-btn:hover` (line 889) | `color: #ffffff` | Button hover text |
+| `.kuro-input` (line 992) | `color: #ffffff` | Input text |
+| Toast text (line 226) | Tailwind `text-white` | Toast message |
+| Priority slider thumb (line 1225) | `linear-gradient(135deg, #ffffff, #e5e7eb)` | Slider control |
+
+**Finding DC3-WH1**: **Four instances** of hardcoded pure white text/elements. On the app's dark surfaces (14-16% lightness), `#ffffff` creates a 84-86% contrast ratio — which is high but acceptable. However, these bypass the `--text-heading: #edf1f8` and `--text-body: #dfe5ef` tokens, creating inconsistency.
+
+- **Severity**: **LOW**
+- **Why it matters**: Pure white (`#ffffff`) is harsher than the app's tinted whites (`#edf1f8`, `#dfe5ef`). The slight blue tint in the token values matches the cool background hue and reduces eye strain. Hardcoded white breaks this tinting.
+- **Solution**: Replace hardcoded white with tokens:
+  ```
+  .kuro-btn:hover   → color: var(--text-heading)  /* #edf1f8 */
+  .kuro-input       → color: var(--text-heading)  /* #edf1f8 */
+  Toast text        → use text-[var(--text-heading)] or keep white for semantic emphasis
+  Slider thumb      → keep white (interactive control, needs maximum contrast)
+  ```
+
+**Failure 5: Light mode assets not adapted for dark context**
+
+| Check | Result |
+|---|---|
+| App is dark-mode only | ✓ **PASS** — no light mode exists |
+| All assets designed for dark | ✓ **PASS** — SVG favicon has dark bg `#080c14` with gold `#fbbf24` text |
+| No inverted/unadapted images | ✓ **PASS** — character/weapon images are game assets (pre-rendered for any background) |
+
+**Finding DC3-AS1**: No asset adaptation issues — the app is dark-mode native.
+- **Severity**: **PASS**
+- **Solution**: No change needed.
+
+---
+
+### §DC3.4 Backdrop-Blur Consistency
+
+The app uses `backdrop-filter: blur()` as a primary depth cue. Audit of all blur values:
+
+| Component | Blur Value | Surface Level | Purpose |
+|---|---|---|---|
+| `.kuro-card` (line 714) | `blur(4px)` | S1 | Card frosted glass |
+| `.kuro-btn` (line 858) | `blur(8px)` | S1 | Button frosted glass |
+| Install banner (line 129) | `blur(4px)` (Tailwind `backdrop-blur-sm`) | S3 | Banner overlay |
+| Onboarding modal (line 351) | `blur(6px)` | S2 | Modal glass |
+| Desktop sidebar (line 1461) | `blur(20px)` | S2 | Sidebar header |
+
+**Finding DC3-BL1**: Blur values are **inconsistent** — 4px, 6px, 8px, 20px across just 5 components. No documented progression tied to surface level.
+
+- **Severity**: **LOW**
+- **Why it matters**: If blur is a depth cue, it should follow a predictable scale (like the shadow-sm/md/lg tokens do). Currently it's ad-hoc.
+- **Solution**: Establish blur tokens aligned to surface levels:
+  ```css
+  --blur-s1: blur(4px);   /* cards, panels */
+  --blur-s2: blur(8px);   /* modals, popovers */
+  --blur-s3: blur(12px);  /* tooltips, toasts, overlays */
+  ```
+  The desktop sidebar's `blur(20px)` is acceptable as a special-case dense blur (it's a persistent navigation surface with heavy backdrop).
+
+---
+
+### §DC3 Summary Table
+
+| ID | Finding | Severity | Solution |
+|---|---|---|---|
+| DC3-EL1 | Surface elevation flat — all surfaces within 3.7% lightness band | **MEDIUM** | Implement lightness staircase: S0=14% → S1=17.5% → S2=20.5% → S3=23%; OR formally document flat-glass as intentional |
+| DC3-OLED1 | OLED mode collapses all surfaces to 0% lightness | **MEDIUM** | Add OLED elevation ramp: S0=0% → S1=5% → S2=8% → S3=11% |
+| DC3-OLED2 | Toasts not OLED-aware — jarring contrast jump on pure black | **LOW** | Reduce toast opacity to 0.8 in OLED; add anchoring border |
+| DC3-BK1 | Pure black usage appropriate for opt-in OLED | **PASS** | Document as intentional theater mode |
+| DC3-SH1 | Dark shadows invisible on dark surfaces | **LOW** | Remove dead shadows; use white hairline + accent micro-glow |
+| DC3-WH1 | 4 hardcoded `#ffffff` text instances bypass tinted tokens | **LOW** | Replace with `var(--text-heading)` except slider thumb |
+| DC3-AS1 | No light-mode asset issues (app is dark-native) | **PASS** | No change needed |
+| DC3-BL1 | Backdrop-blur values inconsistent (4/6/8/20px) | **LOW** | Tokenize as `--blur-s1/s2/s3` aligned to surface levels |
+
+---
+
+## §DC4. Brand Color Distinctiveness
+
+### §DC4.1 Hue Ownership — Competitive Landscape
+
+**Whispering Wishes primary accent**: Gold `#edaf18` → oklch(78.5% 0.17 85°)
+
+The WuWa tracker competitive landscape was analyzed:
+
+| App / Site | Primary Accent | Approx OKLCH Hue | Hue Distance from WW |
+|---|---|---|---|
+| **Whispering Wishes** | Gold `#edaf18` | **~85°** (warm gold) | — |
+| **WuWa Tracker** (wuwatracker.com) | Unknown (site cert issue; Next.js/TS app) | Unknown | — |
+| **WuWaPal** (wuwapal.com) | CSS variable `--primary` (not extractable) | Unknown | — |
+| **wutheringwaves.gg** | Orange `#ff6d00` | **~55°** (warm orange) | **30°** away |
+| **TrackMyPulls** (trackmypulls.com) | Blue-purple gradient | **~270-280°** (blue-purple) | **~185°** away |
+| **Wuthering Waves** (game itself) | Teal/cyan atmospheric + gold accents | **~180°** (teal) / **~85°** (gold) | **~95°** / **0°** |
+
+**Finding DC4-HUE1**: Whispering Wishes' gold accent at ~85° sits **30° away from wutheringwaves.gg's orange (~55°)**. This is within the 15° confusion threshold only if both apps are seen side-by-side, but the calibration difference (gold at 78.5% lightness vs orange at ~65% lightness) provides sufficient distinction. TrackMyPulls at ~270° is maximally distant. The game itself uses gold accents — WW *aligns with* the source material rather than competing against it.
+
+- **Severity**: **PASS**
+- **Why it matters**: Gold hue ownership is strong because (a) it directly references the game's 5★ gacha gold, (b) no direct competitor occupies the same calibrated gold, (c) the closest competitor (wutheringwaves.gg) uses a hotter orange that reads differently.
+- **Solution**: No hue shift needed. The gold is distinctive within the competitive landscape. If further differentiation is desired, the app's *deep blue-black background* + gold combination creates a stronger brand signature than hue alone — it's the *pairing* that's distinctive.
+
+### §DC4.2 Calibration Signature
+
+The brand signature is not just hue — it's the specific saturation and lightness of the accent.
+
+**Whispering Wishes gold calibration**:
+```
+#edaf18 → oklch(78.5% 0.17 85°)
+  Lightness: 78.5%  — bright but not glaring
+  Chroma:    0.17   — high saturation (79% of max for this hue)
+  Hue:       85°    — warm gold, slightly green-leaning vs pure yellow
+```
+
+**Comparison to generic alternatives**:
+```
+Tailwind yellow-500:  #eab308 → oklch(79.5% 0.18 90°)   — 5° hue shift, near-identical
+Tailwind amber-500:   #f59e0b → oklch(77.0% 0.17 75°)   — 10° hue shift, slightly oranger
+Tailwind yellow-400:  #facc15 → oklch(85.5% 0.18 93°)   — lighter, more lemon
+CSS named gold:       #ffd700 → oklch(86.0% 0.17 95°)   — lighter, cooler, more generic
+```
+
+**Finding DC4-CAL1**: The primary gold `#edaf18` is **dangerously close to Tailwind yellow-500** (`#eab308`) — only 5° hue and 1% lightness apart. This means the accent could be perceived as "default Tailwind yellow" rather than a bespoke brand color.
+
+- **Severity**: **MEDIUM**
+- **Why it matters**: A brand color that's indistinguishable from a framework default has zero distinctiveness. Anyone inspecting the CSS might assume it's uncalibrated.
+- **Solution**: Recalibrate slightly to create perceptual distance from Tailwind defaults:
+  ```
+  Current:     oklch(78.5% 0.17 85°)  = #edaf18  ← near Tailwind yellow-500
+  Recommended: oklch(76.0% 0.18 80°)  ≈ #e6a510  ← warmer, richer, +2% chroma, -5° hue
+  ```
+  This shifts toward amber-gold territory, increasing warmth and depth while maintaining the gold identity. The 5° hue shift + 2.5% lightness drop creates clear visual separation from `#eab308`.
+
+  **Alternatively**: Keep `#edaf18` and **document it as an intentional choice** — the near-Tailwind alignment reduces visual friction for developers and the brand identity is carried by the *system* (gold-on-deep-blue + glass) rather than the specific hex value.
+
+### §DC4.3 Icon → Accent Coherence
+
+**Favicon analysis** (`public/favicon.svg`):
+```svg
+<rect fill="#080c14"/>  ← Background: deep blue-black (matches app)
+<text fill="#fbbf24"/>  ← Gold "W" character
+```
+
+Favicon gold: `#fbbf24` → oklch(83.0% 0.17 90°)
+In-app gold:  `#edaf18` → oklch(78.5% 0.17 85°)
+
+| Property | Favicon | In-App | Delta |
+|---|---|---|---|
+| Lightness | 83.0% | 78.5% | **4.5%** |
+| Chroma | 0.17 | 0.17 | 0% |
+| Hue | 90° | 85° | **5°** |
+
+**Finding DC4-ICO1**: Favicon gold `#fbbf24` and in-app gold `#edaf18` differ by **4.5% lightness and 5° hue**. The favicon is lighter and slightly more yellow-green. This is a minor brand fragmentation — the user sees one gold in the browser tab and encounters a slightly different gold inside.
+
+- **Severity**: **LOW**
+- **Why it matters**: The mismatch is subtle (4.5% L / 5° H) and likely imperceptible to most users. However, it violates the principle that the icon establishes the color promise and the app fulfills it.
+- **Solution**: Align favicon gold to the in-app primary:
+  ```svg
+  <!-- Before -->
+  <text fill="#fbbf24"/>
+  <!-- After -->
+  <text fill="#edaf18"/>
+  ```
+  Or, if the favicon needs to be slightly lighter for legibility at small sizes (16x16px), use a documented "favicon-weight" variant:
+  ```
+  --color-gold:         #edaf18  /* in-app primary */
+  --color-gold-favicon: #f0b820  /* +2% lightness for small-icon legibility */
+  ```
+
+### §DC4.4 Competitive Hue Mapping — Visual Summary
+
+```
+Hue wheel (OKLCH):
+
+         0° (red)
+         |
+  330° ──┼── 30°
+         |
+  300° ──┼── 60°
+(purple) |         wutheringwaves.gg ← 55° (orange)
+  270° ──┼── 90°
+(blue)   |    ↑    Whispering Wishes ← 85° (gold)
+  240° ──┼── 120°  Tailwind yellow-500 ← 90°
+         |
+  210° ──┼── 150°
+  (teal)  |
+  180° (cyan/teal)
+    ↑ WuWa game accent
+
+  TrackMyPulls ← 270-280° (blue-purple)
+```
+
+**Finding DC4-MAP1**: The competitive hue map shows:
+- **Clear ownership zone**: 80°-90° (warm gold) is occupied only by WW and Tailwind defaults
+- **Nearest competitor**: wutheringwaves.gg at 55° (30° away — safe)
+- **Maximum distance**: TrackMyPulls at 270° (~185° away)
+- **Game alignment**: WuWa game uses gold accents (~85°) — WW correctly mirrors the source
+
+- **Severity**: **PASS**
+- **Solution**: The gold hue is well-positioned. No competitive conflict. The *system-level* brand (deep blue void + gold + glass + cyberpunk typography) is far more distinctive than any single hue.
+
+---
+
+### §DC4 Summary Table
+
+| ID | Finding | Severity | Solution |
+|---|---|---|---|
+| DC4-HUE1 | Gold hue at 85° has no competitive conflict (nearest at 55°, 30° away) | **PASS** | No hue change needed |
+| DC4-CAL1 | Primary gold `#edaf18` is near-identical to Tailwind yellow-500 `#eab308` | **MEDIUM** | Recalibrate to `oklch(76% 0.18 80°)` ≈ `#e6a510`; OR document as intentional |
+| DC4-ICO1 | Favicon gold `#fbbf24` ≠ in-app gold `#edaf18` (4.5% L, 5° H delta) | **LOW** | Align favicon to `#edaf18` or create documented favicon variant |
+| DC4-MAP1 | Competitive hue mapping shows clear gold ownership | **PASS** | No change needed — system-level brand is distinctive |
+
+---
+
+## §DC5. Color as Narrative
+
+### §DC5.1 Gradient Design Audit
+
+Every gradient is a color argument. For each gradient found, the visual argument it makes is assessed.
+
+#### Category A: Structural Gradients (Surface Definition)
+
+**A1. TabBackground deep-blue gradient** (`appcore-components.jsx` line 148):
+```css
+linear-gradient(180deg, #010204 0%, #020408 30%, #030610 60%, #020408 100%)
+```
+- **Type**: Linear top→bottom
+- **Argument**: "The void has subtle depth — darker at edges, slightly lifted in the middle"
+- **Assessment**: ✓ **CORRECT** — This is the spatial foundation. The lightness variation is barely perceptible (L 2.5%→4.5%→2.5%) but creates an atmospheric sense of a deep space rather than a flat surface. The symmetrical return to dark at bottom grounds the composition.
+- **Tokens used**: Hardcoded hex (acceptable — this is a one-time spatial effect)
+
+**A2. TabBackground vignette** (`appcore-components.jsx` line 150):
+```css
+radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(2,3,6,0.5) 100%)
+```
+- **Type**: Radial from center
+- **Argument**: "Content lives in a pool of relative light; edges fade to deeper void"
+- **Assessment**: ✓ **CORRECT** — Classic cinematic vignette that directs attention inward. The transparent center preserves content readability while dark edges compress peripheral vision. Film-like compositional control.
+
+**A3. Events tab sticky footer fade** (`App.jsx` line 3442):
+```css
+linear-gradient(to top, rgba(8,12,20,0.95) 60%, transparent)
+```
+- **Type**: Linear bottom→top
+- **Argument**: "Content dissolves into ground below — this is a boundary, not a container"
+- **Assessment**: ✓ **CORRECT** — Standard scroll-fade pattern that communicates "more content below" without a hard edge. The 60% stop creates a wide transition zone.
+
+**A4. Collection image bottom fade** (multiple locations):
+```css
+linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)  /* App.jsx ~6308 */
+linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)    /* appcore-components.jsx ~882 */
+```
+- **Type**: Linear bottom→top
+- **Argument**: "Image fades into the card surface — text overlay zone below"
+- **Assessment**: ✓ **CORRECT** — Standard image-to-text transition. Two slightly different implementations (pure black vs tinted) — minor inconsistency.
+- **Solution**: Unify to `rgba(8,12,20,0.85)` (tinted) for consistency with the app's blue-tinted dark palette.
+
+**A5. Desktop ad column separator** (`appcore-providers.jsx` line 1655):
+```css
+linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent)
+```
+- **Type**: Linear top→bottom
+- **Argument**: "A thin vertical light line exists in the middle zone — a ghost column divider"
+- **Assessment**: ✓ **CORRECT** — Subtle structural separator that appears only in the content zone (20%-80%), fading at extremes. Restrained and functional.
+
+#### Category B: Decorative/Brand Gradients (Identity Expression)
+
+**B1. Onboarding step gradients** (`appcore-providers.jsx` lines 338-344):
+```css
+bg-gradient-to-r from-neutral-900/30 via-neutral-900/20 to-[accent]-900/30
+```
+Seven steps, each with a different accent color (gold→cyan→orange→purple→emerald→pink→gold).
+- **Type**: Linear left→right
+- **Argument**: "Each step has a unique color identity; the gradient introduces it gently from the neutral side"
+- **Assessment**: ✓ **CORRECT** — The left-to-right gradient creates a sense of *forward motion* through the onboarding flow. Each accent at 30% opacity in the `-900` shade is restrained — it tints rather than dominates. The return to gold on step 7 bookends the journey.
+
+**B2. Install prompt banner** (`appcore-providers.jsx` lines 129, 155):
+```css
+bg-gradient-to-r from-yellow-500/90 to-amber-500/90
+```
+- **Type**: Linear left→right
+- **Argument**: "This is an attention-demanding call to action — gold energy flowing forward"
+- **Assessment**: ⚠️ **PARTIAL** — The gradient direction is correct (forward/action), but the high opacity (90%) on *two similar yellows* creates a nearly flat read. The gradient barely transitions — yellow-500 `#eab308` to amber-500 `#f59e0b` is only ~10° hue shift.
+- **Solution**: Either make the gradient more expressive (wider hue spread: gold→warm-orange) or replace with a flat gold background — the current treatment is effort without payoff.
+
+**B3. Header gold accent bar** (`appcore-providers.jsx` line 844):
+```css
+linear-gradient(180deg, rgba(237, 175, 24, 0.9), rgba(237, 175, 24, 0.4))
+```
+- **Type**: Linear top→bottom
+- **Argument**: "Gold energy emanates from the top and fades — this header has authority"
+- **Assessment**: ✓ **CORRECT** — Applied as a left-border decoration on section headers. The top-heavy fade creates a "lit from above" effect consistent with the holographic display character. The 90%→40% opacity range is well-calibrated.
+
+**B4. Luck rating spectrum bar** (`App.jsx` ~line 7056):
+```css
+linear-gradient(90deg, #f87171, #edaf18, #34d399)
+```
+- **Type**: Linear left→right (red→gold→green)
+- **Argument**: "A spectrum of fortune: bad→neutral→good, read left to right"
+- **Assessment**: ✓ **CORRECT** — Classic semantic spectrum. Red (unlucky) → Gold (average) → Green (lucky) maps to universal color meanings. The three stops create two transition zones.
+
+#### Category C: Shimmer/Animation Gradients (Motion Expression)
+
+**C1. Card shimmer line** (`appcore-providers.jsx` lines 754-760):
+```css
+linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.3) 80%, transparent 100%)
+```
+- **Type**: Linear left→right, animated
+- **Argument**: "Light sweeps across the card top edge — this surface is alive, not static"
+- **Assessment**: ✓ **CORRECT** — The symmetric peak at center (0.5 opacity) with fade-out at edges creates a convincing light-sweep. The 3s animation cycle is slow enough to feel ambient rather than distracting.
+
+**C2. Skeleton loading shimmer** (`appcore-providers.jsx` line 1307):
+```css
+linear-gradient(90deg, transparent 0%, rgba(237,175,24,0.06) 40%, rgba(237,175,24,0.10) 50%, rgba(237,175,24,0.06) 60%, transparent 100%)
+```
+- **Type**: Linear left→right, animated (1.8s cycle)
+- **Argument**: "Gold light scanning across a placeholder — data is incoming, the system is working"
+- **Assessment**: ✓ **CORRECT** — Gold-tinted shimmer (vs generic gray) reinforces brand identity even during loading. The narrow peak (40%-60%) creates a focused beam effect. 6-10% opacity is perfectly restrained.
+
+**C3. Stat box shimmer lines** (`appcore-providers.jsx` lines 1066-1124):
+```css
+linear-gradient(90deg, transparent, rgba([accent], 1), transparent)
+```
+Eight variants: white, gold, cyan, purple, emerald, red, pink, gray — each matching its stat box accent.
+- **Type**: Linear left→right, decorative
+- **Argument**: "Each stat box has a color-coded top accent line — an identity badge"
+- **Assessment**: ✓ **CORRECT** — The `transparent→full→transparent` pattern creates a centered glow effect. Each line is a 1px pseudo-element that codes the stat's category. Consistent pattern across all variants.
+
+**C4. Button hover ripple** (`appcore-providers.jsx` line 880):
+```css
+radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%)
+```
+- **Type**: Radial from center
+- **Argument**: "Energy emanates from the touch point — this button is responding to you"
+- **Assessment**: ✓ **CORRECT** — Standard interaction feedback. The 15% opacity is subtle enough not to overwhelm the button content.
+
+#### Category D: Semantic/Data Gradients (Information Encoding)
+
+**D1. Priority slider dual-color track** (`App.jsx` ~line 3626):
+```css
+linear-gradient(to right, #edaf18 0%, #edaf18 [pct]%, #ec4899 [pct]%, #ec4899 100%)
+```
+- **Type**: Linear left→right (hard-stop)
+- **Argument**: "Gold region = character priority, pink region = weapon priority — the ratio is visible"
+- **Assessment**: ✓ **CORRECT** — Hard-stop gradient (no blending between colors) correctly encodes a binary proportion. Gold/pink map to character/weapon banner types — consistent with the app's color language.
+
+**D2. Pull history rarity backgrounds** (`App.jsx` ~line 5993):
+```css
+linear-gradient(to top, rgba(237,175,24,0.15), rgba(237,175,24,0.05))   /* 5★ */
+linear-gradient(to top, rgba(168,85,247,0.15), rgba(168,85,247,0.05))   /* 4★ */
+```
+- **Type**: Linear bottom→top
+- **Argument**: "Rarity glows from below — higher energy at the base, fading upward"
+- **Assessment**: ✓ **CORRECT** — The bottom-up glow creates a "radiating from data" effect. Gold for 5★ and purple for 4★ maintain the rarity color language established throughout the app.
+
+**D3. Trophy card backgrounds** (`App.jsx` ~lines 4297, 4337):
+```css
+linear-gradient(135deg, [color]18, [color]08)     /* trophy card */
+linear-gradient(145deg, #1a1a2e, #0d0d1a)         /* trophy section bg */
+linear-gradient(135deg, [color]35, [color]15)      /* trophy icon circle */
+```
+- **Type**: Diagonal (135°-145°)
+- **Argument**: "Achievement cards have directional depth — light source from upper-left"
+- **Assessment**: ✓ **CORRECT** — Consistent 135° angle across trophy cards creates a unified "lit from upper-left" system. The section background uses a slightly different angle (145°) — minor inconsistency but acceptable for visual variety.
+
+#### Category E: Conic Gradient (Special)
+
+**E1. Luck badge rotating border** (`appcore-providers.jsx` line 663):
+```css
+conic-gradient(from 0deg, var(--badge-color), transparent 50%, var(--badge-color))
+```
+- **Type**: Conic (rotating)
+- **Argument**: "This badge has orbital energy — a halo of light circling it"
+- **Assessment**: ✓ **CORRECT** — Conic gradients are rarely appropriate in UI, but a rotating badge border is one of the few valid uses. The half-transparent gap creates a partial ring that, when animated with `badgeRotate`, produces a spinning halo effect. Appropriately special — used only for luck badges.
+
+**Finding DC5-GR1**: The gradient system is **well-designed and intentional**. Of 30+ gradient instances examined, only one has a clear issue (B2 — install banner flat gradient). Gradients consistently serve one of four roles: structural (depth/fade), brand (identity/decoration), motion (shimmer/animation), or semantic (data encoding). The 135° diagonal angle is used consistently for "lit from upper-left" trophy/achievement contexts.
+
+- **Severity**: **PASS** (with one LOW sub-finding)
+- **Solution**: Fix the install banner gradient (B2) — either widen the hue spread or flatten to a single gold.
+
+**Finding DC5-GR2**: **Two inconsistent bottom-fade implementations** — `rgba(0,0,0,0.9)` (pure black) vs `rgba(8,12,20,0.85)` (tinted) for the same visual purpose.
+
+- **Severity**: **LOW**
+- **Solution**: Unify to `rgba(8,12,20,0.85)` for blue-tint consistency.
+
+---
+
+### §DC5.2 Tension Color Assessment
+
+A tension color is a secondary accent used specifically to create *dynamic contrast* with the primary accent. It sits roughly 120°-150° away on the color wheel and appears rarely — 3-5 times maximum — marking moments of genuine significance.
+
+**Primary accent**: Gold `#edaf18` at oklch hue ~85°
+**Ideal tension zone**: 85° + 120°-150° = **205°-235°** (blue to blue-violet)
+
+**Candidate tension colors in the app**:
+
+| Color | OKLCH Hue | Distance from Gold | Usage Count | Role |
+|---|---|---|---|---|
+| **Cyan** `#38bdf8` | ~230° | **145°** ✓ in zone | ~45+ uses | Standard banner, info, links |
+| **Purple** `#a855f7` | ~300° | 215° (outside) | ~35+ uses | 4★ rarity, tertiary accent |
+| **Pink** `#ec4899` | ~350° | 265° (opposite side) | ~25+ uses | Weapon banner, secondary |
+
+**Finding DC5-TN1**: **Cyan functions as the tension color** — it sits at 145° from gold, perfectly within the 120°-150° ideal range. However, it is **severely overused**. With 45+ appearances (standard banner coding, info toasts, links, stat boxes, soft-pity pulse, tab indicator), cyan has been devalued from a tension color to a *secondary accent*.
+
+- **Severity**: **MEDIUM**
+- **Why it matters**: A tension color's power comes from scarcity. At 3-5 uses, cyan would mark moments of electric significance. At 45+ uses, it's just "the other color." The app has a rich gold-cyan duality, but the tension has been diluted through overexposure.
+- **Solution**: Reframe the color hierarchy:
+  1. **Accept cyan as a full secondary accent** (not a tension color) — it's already doing too much to be restrained
+  2. **Introduce a true tension color** for rare significant moments. Candidates:
+     - `oklch(65% 0.20 210°)` ≈ `#1e8fd4` — steel blue, 125° from gold, would mark: first 5★ pull celebrations, completion milestones, "max luck" states
+     - Or repurpose the existing red `#f87171` at hue ~25° (60° from gold) as a *warm tension* for critical moments (though red is already semantic for "error/loss")
+  3. **Most pragmatic approach**: Do nothing — the app's 6-color accent system is working. Gold→Cyan provides the primary tension pairing, and the system uses pink/purple/emerald/red for additional narrative beats. A formal tension color is a refinement, not a necessity.
+
+**Finding DC5-TN2**: **Purple functions as a power hierarchy marker**, not a tension color. At 300° (215° from gold), it's outside the tension zone. Its role — encoding 4★ rarity — is semantic, not compositional. This is correct usage.
+
+- **Severity**: **PASS**
+- **Solution**: No change. Purple's role as a rarity marker is well-established and should not be repurposed for tension.
+
+---
+
+### §DC5.3 Color State Narrative Mapping
+
+How does color tell the user where they are at each emotional beat?
+
+#### State 1: ONBOARDING (Arrival)
+
+**Color experience**: Warm welcome → multi-color tour → gold return
+
+```
+Step 1 (Welcome):   Gold      tint at 30% + neutral dark
+Step 2 (Import):    Cyan      tint at 30% → "here's the tool part"
+Step 3 (Track):     Orange    tint at 30% → "here's the action part"
+Step 4 (Build):     Purple    tint at 30% → "here's the depth"
+Step 5 (Calculate): Emerald   tint at 30% → "here's the planning"
+Step 6 (Analytics): Pink      tint at 30% → "here's the fun"
+Step 7 (Ready):     Gold      tint at 30% → "welcome home"
+```
+
+**Narrative**: The onboarding is a **color tour of the app's full accent palette**. Each step introduces a color that the user will later associate with specific functions. The bookend gold (steps 1 & 7) creates a "departure and return" arc.
+
+**Finding DC5-ST1**: The onboarding color narrative is **excellent** — it previews the app's color language through progressive revelation, creating subconscious color-function associations before the user encounters the actual UI.
+
+- **Severity**: **PASS**
+- **Solution**: No change. This is one of the app's strongest design decisions.
+
+#### State 2: ENGAGEMENT (Active Use)
+
+**Color experience**: Cool void + gold warmth + contextual accents
+
+```
+Base field:     Deep blue-black (#080c14) — 90% of viewport
+Active accent:  Gold borders, gold glow, gold shimmer lines — "you're here"
+Content cards:  Glass panels with white hairline borders — structure without warmth
+Tab buttons:    Active = gold glow; inactive = transparent ghost
+Data colors:    Banner-coded (gold=char, pink=weapon, cyan=standard)
+```
+
+**Narrative**: Engagement is **calm focus with gold punctuation**. The void background recedes, cards float as glass surfaces, and gold marks interactive/active elements. The color energy is restrained — the app doesn't shout during normal use, it whispers.
+
+**Finding DC5-ST2**: The engagement state has **correct emotional temperature** — quiet enough for prolonged use, warm enough to feel engaging. The gold-on-void combination avoids both the clinical feel of gray UIs and the exhaustion of high-saturation dashboards.
+
+- **Severity**: **PASS**
+- **Solution**: No change needed.
+
+#### State 3: ACHIEVEMENT (Success / Celebration)
+
+**Color experience**: Color explosion → trophy hierarchy
+
+```
+5★ Pull:       Gold glow burst — radialGradient(rgba(237,175,24,0.08)), box-shadow 24px gold
+4★ Pull:       Purple glow (subtler) — box-shadow 16px purple
+Trophy unlock: Per-trophy color (92 hardcoded hex values spanning full spectrum)
+Toast success: Emerald green rgba(34,197,94,0.9) — high-saturation full-width bar
+Medal system:  Gold/Silver/Bronze (#edaf18/#c0c0c0/#cd7f32)
+```
+
+**Pity-to-color emotional arc**:
+```
+Early pull (1-20):   Emerald #22c55e  → "amazing luck!"
+Lucky (21-40):       Lime #84cc16    → "good luck"
+Normal (41-50):      Gold #edaf18    → "expected"
+Late (51-60):        Orange #f97316  → "getting worried"
+Hard pity (61+):     Red #ef4444    → "pain"
+```
+
+**Narrative**: Achievement is the **only state where color breaks free** from the restrained engagement palette. The pity-to-color arc is emotionally precise — it mirrors the gacha player's anxiety curve from euphoria (green/early) through dread (red/late). The trophy system's 92 distinct colors create a "collection of color" meta-game.
+
+**Finding DC5-ST3**: The achievement color narrative is **strong but architecturally fragile**. The emotional arc (green→gold→red) is excellent. However, the 92 hardcoded trophy colors are not tokenized and bypass the design system entirely.
+
+- **Severity**: **LOW** (narrative quality is high; implementation quality is §DC2-level concern already captured)
+- **Solution**: The narrative is correct — trophy colors *should* be diverse and celebratory. Wrap them in a `TROPHY_COLORS` constant map rather than inline strings, but don't reduce the color variety.
+
+#### State 4: ERROR (Failure / Gravity)
+
+**Color experience**: Red intensity varies by severity
+
+```
+Toast error:         rgba(248,113,113,0.9) — full red bar, slideUp animation
+Tab crash:           Red AlertCircle icon + gray context + cyan recovery button
+Root crash:          Minimal #080c12 bg + red details + cyan primary action
+Form validation:     Red border glow
+50/50 loss display:  Red text + red stat background
+```
+
+**Narrative**: Error uses **graduated red** — from a bright red toast (transient) to a quiet red icon (tab error) to a minimal red-on-dark (root crash). The severity→color-intensity mapping is correct: louder errors are more visually aggressive.
+
+The recovery action is always **cyan** — establishing cyan as the "way forward" color in error states. This creates a red→cyan flow: "problem (red) → solution (cyan)."
+
+**Finding DC5-ST4**: The error color narrative is **coherent and graduated**. Red communicates gravity without panic. Cyan as the recovery color is a strong compositional choice — it's the maximum-tension complement to gold, making the "fix this" button feel electrically important.
+
+- **Severity**: **PASS**
+- **Solution**: No change. The red-gravity + cyan-recovery pattern should be documented as a design principle.
+
+#### State 5: EMPTY (Nothing Yet)
+
+**Color experience**: Gold whisper + ghost texture
+
+```
+Background:   Radial gold glow at 4% opacity — barely perceptible warm halo
+Border:       Dashed gold at 10% opacity — "placeholder boundary"
+Top accent:   Gold shimmer at 30% — identity marker
+Ghost grid:   Cool blue-gray (rgba(140,160,200,0.06)) — pulsing 2.5s cycle
+Text:         Subdued, medium-weight
+```
+
+**Narrative**: Empty states feel **hopeful, not clinical**. The gold glow at 4% says "something warm will go here." The ghost grid's breathing animation (opacity 4%→8%→4%) says "this space is alive, waiting." The cool-shift of the ghost cells (from gold to blue-gray) creates a *potential energy* feel — as if the cells are pre-gold, waiting to be filled.
+
+**Finding DC5-ST5**: The empty state color narrative is **one of the app's best design moments**. The warm-gold-hinted void + breathing ghost grid creates a feeling of "potential" rather than "absence." This is emotionally correct for a gacha tracker — an empty collection is a promise, not a failure.
+
+- **Severity**: **PASS**
+- **Solution**: No change. Document this as a design principle: "Empty states use gold promise + ghost potential, never clinical gray."
+
+#### State 6: LOADING
+
+**Color experience**: Gold scanning beam
+
+```
+Skeleton base:  rgba(12,16,24,0.55) — card-matching dark surface
+Shimmer:        Gold beam (6%-10% opacity) sweeping left→right at 1.8s
+Card shimmer:   White beam (30%-50% opacity) on top edge at 3s
+```
+
+**Narrative**: Loading maintains **brand presence through gold** even when no content exists. The scanning beam metaphor ("gold light sweeping across surfaces searching for data") is cyberpunk-appropriate and distinctive.
+
+**Finding DC5-ST6**: Loading state has **correct brand temperature** — gold shimmer > generic gray shimmer.
+
+- **Severity**: **PASS**
+- **Solution**: No change.
+
+#### State Narrative Flow (Summary)
+
+```
+ONBOARDING → ENGAGEMENT → ACHIEVEMENT → ERROR → EMPTY → LOADING
+
+[Color Tour] → [Gold Focus] → [Color Burst] → [Red Gravity] → [Gold Promise] → [Gold Scan]
+  ↑ multi-hue    ↑ restrained   ↑ explosive     ↑ graduated     ↑ hopeful      ↑ rhythmic
+  ↑ 30% opacity  ↑ 15% accent   ↑ 90% toast     ↑ red→cyan      ↑ 4% glow      ↑ 6-10%
+  ↑ progressive   ↑ void + glass ↑ 92 trophy     ↑ recover cyan   ↑ ghost breath ↑ 1.8s beam
+
+Energy level:
+  HIGH ─────── LOW ──────── PEAK ────── HIGH ─── LOW ──── LOW
+  (welcome)   (focus)      (celebrate)  (alert)  (wait)  (load)
+```
+
+**Finding DC5-ST7**: The color state narrative has **clear emotional arcs** with intentional energy modulation. Each state has a distinct color energy level, and the transitions are natural. The only missing transition is engagement→achievement — there's no "ramping up" color between normal use and a pull result.
+
+- **Severity**: **LOW**
+- **Solution**: Consider a brief "anticipation" color state for the moment between initiating a pull check and receiving results — a gold pulse or shimmer intensification that signals "something is about to happen."
+
+---
+
+### §DC5.4 Color Harmony System Identification
+
+**Active palette hues** (OKLCH):
+
+```
+Hue wheel with app accents:
+
+       0° (red)
+       │
+ 350° ─┼─ 25°    Pink (#ec4899) ~350°     Red (#f87171) ~25°
+       │
+ 300° ─┼─ 55°    Purple (#a855f7) ~300°
+       │                                    Gold (#edaf18) ~85°
+ 270° ─┼─ 90°
+       │
+ 230° ─┼─ 120°   Cyan (#38bdf8) ~230°
+       │
+       │                                    Emerald (#22c55e) ~155°
+ 180° (teal)
+```
+
+**Hue distribution analysis**:
+
+| Accent | OKLCH Hue | Gap to Next (clockwise) |
+|---|---|---|
+| Red | ~25° | 60° to Gold |
+| Gold | ~85° | 70° to Emerald |
+| Emerald | ~155° | 75° to Cyan |
+| Cyan | ~230° | 70° to Purple |
+| Purple | ~300° | 50° to Pink |
+| Pink | ~350° | 35° to Red |
+
+**Average gap**: ~60° (6 hues across 360° = 60° equidistant)
+
+**Harmony structure identified**: **HEXADIC (six-hue)** — the app uses a near-equidistant six-color system. This is not a traditional named harmony (monochromatic, analogous, complementary, triadic) — it's a full-spectrum chromatic system where:
+
+1. **Gold** (85°) dominates as primary — warm anchor
+2. **Cyan** (230°) serves as complementary tension — cool pole
+3. **Purple** (300°), **Pink** (350°), **Red** (25°), **Emerald** (155°) fill the remaining quadrants
+
+```
+Dominance hierarchy:
+  ████████████████████████  Gold       PRIMARY    (~40% of accent usage)
+  ████████████████          Cyan       SECONDARY  (~20% of accent usage)
+  ████████████              Purple     TERTIARY   (~15% of accent usage)
+  ██████████                Pink       TERTIARY   (~10% of accent usage)
+  ████████                  Emerald    SEMANTIC   (~8% of accent usage)
+  ██████                    Red        SEMANTIC   (~7% of accent usage)
+```
+
+**Finding DC5-HS1**: The palette uses a **hexadic harmony with clear dominance hierarchy**. This is the most energetic possible harmony system — six equidistant hues create maximum chromatic variety. It works because:
+
+1. **Gold suppresses all others through usage frequency** (~40% of accent appearances)
+2. **Cyan provides structured opposition** (complementary to gold)
+3. **The remaining four hues appear in specific contexts** (rarity, banners, semantics) — they don't compete freely
+4. **The dark void background absorbs excess energy** — chromatic variety reads as richness, not chaos
+
+- **Severity**: **PASS**
+- **Why it works**: In a gacha tracker, chromatic variety is *functional* — each color encodes a game concept (element, rarity, banner type, emotion). A monochromatic or analogous palette would lose this semantic richness.
+- **Solution**: No harmony change needed. The hexadic system is correct for this app's domain. The key is maintaining the dominance hierarchy — gold must always be the loudest voice. If additional accent colors are ever added, they should replace an existing hue, not expand the system to 7+.
+
+**Finding DC5-HS2**: The **gold-cyan axis** is the strongest compositional pairing in the system. At ~145° apart (near-complementary), they create the maximum visual tension available in the palette. This axis should be protected as the app's core color narrative.
+
+- **Severity**: **PASS**
+- **Solution**: Document the gold-cyan axis as the primary compositional axis. All other accents are satellites of this axis.
+
+---
+
+### §DC5 Summary Table
+
+| ID | Finding | Severity | Solution |
+|---|---|---|---|
+| DC5-GR1 | Gradient system well-designed — 30+ gradients all serve clear purposes | **PASS** | Fix install banner flat gradient (B2) |
+| DC5-GR2 | Two inconsistent bottom-fade implementations (pure black vs tinted) | **LOW** | Unify to `rgba(8,12,20,0.85)` |
+| DC5-TN1 | Cyan serves as tension color but is overused (45+ instances) | **MEDIUM** | Accept cyan as secondary accent; consider introducing a rare true tension color at ~210° |
+| DC5-TN2 | Purple correctly used as rarity marker, not tension | **PASS** | No change |
+| DC5-ST1 | Onboarding color tour is excellent design | **PASS** | No change — document as design principle |
+| DC5-ST2 | Engagement state has correct emotional temperature | **PASS** | No change |
+| DC5-ST3 | Achievement color burst is strong but trophy colors hardcoded | **LOW** | Wrap 92 colors in `TROPHY_COLORS` map; keep variety |
+| DC5-ST4 | Error uses graduated red + cyan recovery — coherent | **PASS** | Document red→cyan as design principle |
+| DC5-ST5 | Empty state "gold promise + ghost potential" is exceptional | **PASS** | Document as design principle |
+| DC5-ST6 | Loading gold shimmer maintains brand presence | **PASS** | No change |
+| DC5-ST7 | Missing "anticipation" transition between engagement→achievement | **LOW** | Add brief gold pulse before pull results |
+| DC5-HS1 | Hexadic harmony with gold dominance hierarchy — correct for domain | **PASS** | Maintain gold dominance; never exceed 6 hues |
+| DC5-HS2 | Gold-cyan axis is the core compositional pairing | **PASS** | Document and protect the gold-cyan axis |
+
+---
+
+## Step 6 Combined Findings
+
+### All Step 6 Findings (§DC3 + §DC4 + §DC5)
+
+| ID | Finding | Severity | Section |
+|---|---|---|---|
+| DC3-EL1 | Surface elevation flat — 3.7% lightness band | **MEDIUM** | §DC3.1 |
+| DC3-OLED1 | OLED collapses all surfaces to 0% | **MEDIUM** | §DC3.2 |
+| DC3-OLED2 | Toasts not OLED-aware | **LOW** | §DC3.2 |
+| DC3-BK1 | Pure black OLED appropriate | **PASS** | §DC3.3 |
+| DC3-SH1 | Dark shadows invisible | **LOW** | §DC3.3 |
+| DC3-WH1 | 4 hardcoded `#ffffff` text | **LOW** | §DC3.3 |
+| DC3-AS1 | No asset issues (dark-native) | **PASS** | §DC3.3 |
+| DC3-BL1 | Backdrop-blur inconsistent | **LOW** | §DC3.4 |
+| DC4-HUE1 | Gold hue no competitive conflict | **PASS** | §DC4.1 |
+| DC4-CAL1 | Gold near-identical to Tailwind yellow-500 | **MEDIUM** | §DC4.2 |
+| DC4-ICO1 | Favicon/in-app gold mismatch | **LOW** | §DC4.3 |
+| DC4-MAP1 | Competitive hue map — clear ownership | **PASS** | §DC4.4 |
+| DC5-GR1 | Gradient system well-designed | **PASS** | §DC5.1 |
+| DC5-GR2 | Inconsistent bottom-fade gradients | **LOW** | §DC5.1 |
+| DC5-TN1 | Cyan overused as tension color | **MEDIUM** | §DC5.2 |
+| DC5-TN2 | Purple correct as rarity marker | **PASS** | §DC5.2 |
+| DC5-ST1 | Onboarding color tour excellent | **PASS** | §DC5.3 |
+| DC5-ST2 | Engagement emotional temperature correct | **PASS** | §DC5.3 |
+| DC5-ST3 | Achievement colors strong but hardcoded | **LOW** | §DC5.3 |
+| DC5-ST4 | Error graduated red + cyan recovery | **PASS** | §DC5.3 |
+| DC5-ST5 | Empty state gold promise exceptional | **PASS** | §DC5.3 |
+| DC5-ST6 | Loading gold shimmer on-brand | **PASS** | §DC5.3 |
+| DC5-ST7 | Missing anticipation transition | **LOW** | §DC5.3 |
+| DC5-HS1 | Hexadic harmony correct for domain | **PASS** | §DC5.4 |
+| DC5-HS2 | Gold-cyan axis — core pairing | **PASS** | §DC5.4 |
+
+**Severity distribution**: 3 MEDIUM, 8 LOW, 14 PASS — **25 total findings**
+
+---
+
+**STEP 6 COMPLETE** — §DC3 Dark Mode Craft + §DC4 Brand Color Distinctiveness + §DC5 Color as Narrative established.
+
+**Dark mode craft**: Surface elevation is flat (3.7% band) — works via glass-morphism compensation but is architecturally fragile. OLED mode collapses to pure black. Shadows are invisible (correct — depth is via borders/blur/glow).
+**Brand color**: Gold `#edaf18` owns its competitive zone (30°+ from nearest competitor). Near-Tailwind-default calibration is a documentation issue, not a visual one. Favicon gold needs alignment.
+**Color narrative**: Gradient system is intentional (30+ gradients, all purposeful). State narrative flows correctly: onboarding (color tour) → engagement (gold focus) → achievement (color burst) → error (graduated red) → empty (gold promise) → loading (gold scan). Hexadic harmony is correct for the gacha domain. Gold-cyan axis is the core compositional pairing.
