@@ -1780,3 +1780,756 @@ Based on all extracted design decisions across color, space, typography, compone
 **Strongest axes**: Color, Component, Depth/Surface, Motion, Copy/Voice
 **Weakest axis**: Spatial (untokenized spacing), Icons (functional but not distinctive)
 **Character coherence**: Strong at system level, diluted at application layer by hardcoded values
+
+---
+---
+
+# STEP 4: §DP1 + §DP2 — Character Dimensions & Brief
+
+> **Method**: Analyze the §DP0 extraction against the §0 Five-Axis Profile. Each spectrum marks current position (from extraction evidence) and target position (from axis profile intent). A gap of >2 units is a finding.
+> **Scale**: 1–10 for each spectrum, where 1 = left extreme, 10 = right extreme.
+
+---
+
+## §DP1 — Character Dimensions Analysis
+
+### Dimension 1 — Visual Voice
+
+#### Spectrum 1A: Terse ↔ Expansive
+
+```
+Terse ←———●——————————————————→ Expansive
+           3
+```
+
+**Current position: 3/10 (Terse-leaning)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| Dominant text sizes `text-[9px]` (158 uses) + `text-[10px]` (153 uses) | Ultra-compact — every pixel earns its place |
+| `gap-2` (8px) as dominant spacing with 72 uses | Tight rhythm — minimal breathing room in data zones |
+| 14px card padding (structural) | Moderate structural breathing room |
+| Dual density: dense data zones + generous card envelopes | Mixed — terse inside, slightly generous outside |
+| Tight line-heights (1.0-1.3 range dominant) | Compressed — no generous leading |
+
+**Target position: 3/10** — The axis profile says "FOCUS-TOOL (precision data)" and "expert-density is appropriate." A data tracker SHOULD be terse in data zones.
+
+**Gap: 0** — No misalignment. The terseness is intentional and appropriate for the tool's focus identity.
+
+**Finding**: DP1-V1 — **PASS** — Visual terseness matches FOCUS-TOOL intent.
+**Solution**: Maintain current density. Do not add unnecessary whitespace — the expert audience expects information density.
+
+---
+
+#### Spectrum 1B: Cold ↔ Warm
+
+```
+Cold ←———————●———————————————→ Warm
+              4
+```
+
+**Current position: 4/10 (Cool-leaning with warm anchor)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| All backgrounds in `hsl(220°-230°, ~40-60%, 3-8%)` range | Deeply cool — blue-tinted near-black |
+| Body text `#dfe5ef` carries cool blue undertone | Cool text on cool surfaces |
+| Ghost borders `rgba(255,255,255,0.06-0.2)` | Neutral-cool — white-opacity on dark |
+| Gold `#edaf18` as primary accent | **Single warm anchor** — breaks the cold field |
+| Bouncy overshoot easing `cubic-bezier(0.16, 1, 0.3, 1)` | Adds warmth through playful motion |
+| Trophy humor ("go outside.", "nobody believes you") | Injects warmth through personality |
+
+**Target position: 4/10** — The axis profile says "cyberpunk-luxe aesthetic mirrors the game's visual identity" and "FUNCTIONAL-PRIMARY." Cyberpunk is inherently cool with deliberate warm accents. A purely cold tool would feel sterile; too warm would break the source material alignment.
+
+**Gap: 0** — The temperature balance is correct. Gold-as-warm-anchor is the right strategy.
+
+**Finding**: DP1-V2 — **PASS** — Temperature balance matches cyberpunk-luxe + focus-tool intent.
+**Solution**: Protect the gold warm anchor. If additional warm elements are ever introduced, they should always be gold-family — never introduce a second warm hue (orange, red-warm) as an accent.
+
+---
+
+#### Spectrum 1C: Formal ↔ Casual
+
+```
+Formal ←—————————●———————————→ Casual
+                  5.5
+```
+
+**Current position: 5.5/10 (Balanced with contextual shifts)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| Uppercase + wide-tracked labels (0.08em, HUD convention) | Formal — institutional/military labeling |
+| Structured card hierarchy (header → body → stats) | Formal — rigid component grammar |
+| Domain-expert terminology without explanation | Formal — assumes knowledge |
+| Trophy descriptions: "go outside.", "guilty of whaling" | **Casual** — breaks formal register |
+| "Rover" direct address in onboarding | Casual — personal companion |
+| Tab labels: "Calc", "Plan", "Stats" (abbreviated) | Casual — informal shorthand |
+| Exclamation marks in success toasts: "Imported 42 Convenes!" | Casual — enthusiasm |
+
+**Target position: 5/10** — The axis profile says "community credibility signals" (formal domain mastery) but also "copy should sound like a player, not a product" (casual insider). A formal-casual balance is correct for this audience.
+
+**Gap: 0.5** — Within tolerance. The current balance is essentially on-target.
+
+**Finding**: DP1-V3 — **PASS** — Formality register matches ENTHUSIAST/EXPERT audience with companion voice.
+**Solution**: Maintain the dual register. The formal UI structure + casual copy personality creates a "knowledgeable friend" voice. Do not shift further in either direction.
+
+---
+
+#### Spectrum 1D: Restrained ↔ Expressive
+
+```
+Restrained ←——————————●——————→ Expressive
+                       6.5
+```
+
+**Current position: 6.5/10 (Moderately expressive)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| 15 custom `@keyframes` animations | Expressive — substantial motion investment |
+| Colored text-shadow glows on active states | Expressive — text emits light |
+| Shimmer lines, corner brackets, gold accent bars | Expressive — HUD chrome decorations |
+| Luck badge with rotating conic gradient (8s infinite) | Expressive — continuous animation |
+| Ambient pulse animations (shimmer, ghostPulse, trophyShine) | Expressive — "always alive" interface |
+| Weight center at font-medium (500) — not bold | Restrained — avoids shouting |
+| No custom icons, no illustrations, no mascot | Restrained — functional icon choices |
+| Neutral-clinical Lucide line icons (2px stroke) | Restrained — no decorative icon flourish |
+
+**Target position: 6/10** — The axis profile says "ATMOSPHERIC-SECONDARY" and "atmospheric treatments serve as ambient context rather than focal decoration." Expressiveness should be ambient (motion, glow) not loud (illustrations, mascots).
+
+**Gap: 0.5** — Within tolerance. Current expressiveness is primarily through motion and light effects — appropriate for the atmospheric-secondary axis.
+
+**Finding**: DP1-V4 — **PASS** — Expressiveness channeled through motion/light rather than illustration/decoration matches the atmospheric-secondary role.
+**Solution**: Continue channeling expressiveness through glow, shimmer, and motion. Do not add illustrations, mascots, or decorative elements that would shift expressiveness from ambient to focal.
+
+---
+
+### Dimension 2 — Spatial Character
+
+#### Spectrum 2A: Dense ↔ Airy
+
+```
+Dense ←————●—————————————————→ Airy
+            3.5
+```
+
+**Current position: 3.5/10 (Dense-leaning)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| `text-[9px]` (158 uses) + `text-[10px]` (153 uses) | Ultra-small — maximum data per pixel |
+| `gap-2` (8px) dominant with 72 uses | Tight gutters |
+| `py-0.5` (2px) with 33 uses | Micro-padding for data items |
+| 14px card padding (structural envelope) | Moderate — cards breathe |
+| `gap-3` (12px) for section separation | Slightly generous between major sections |
+
+**Target position: 3.5/10** — A FOCUS-TOOL for EXPERT users should be information-dense. The axis profile says "expert-density is appropriate."
+
+**Gap: 0** — Density is intentional and appropriate.
+
+**Finding**: DP1-S1 — **PASS** — Information density matches FOCUS-TOOL + EXPERT audience.
+**Solution**: Maintain current density. The dual-density model (tight data zones, generous card envelopes) is the correct spatial strategy.
+
+---
+
+#### Spectrum 2B: Flat ↔ Deep
+
+```
+Flat ←————————————————●——————→ Deep
+                       7.5
+```
+
+**Current position: 7.5/10 (Deep)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| 5-level z-index hierarchy (void→panels→controls→chrome→modals→system) | Multi-plane depth |
+| Triple-stack card shadows (4px blur + 1px ring + inset highlight) | Prominent shadow depth |
+| `backdrop-filter: blur(4px-8px)` on all interactive surfaces | Glass transparency creates optical depth |
+| Semi-transparent surfaces (55%-90% opacity) | Content behind is softly visible — spatial layering |
+| Color-emissive glow shadows on active states (24-36px radius) | Light-based depth cues |
+| Corner brackets and shimmer lines at z:10 above card content | Chrome decoration layer |
+
+**Target position: 7/10** — The axis profile describes "semi-transparent layered surfaces with inset highlights + color-matched shadows" and "glassmorphism" — depth is a core identity trait.
+
+**Gap: 0.5** — Within tolerance. The depth is slightly more than strictly needed but creates the desired "holographic display" metaphor.
+
+**Finding**: DP1-S2 — **PASS** — Spatial depth strongly supports the glass-over-void material identity.
+**Solution**: Protect the multi-layer depth system. If simplification is ever needed, reduce shadow layers (3→2) before removing backdrop-blur — the blur is the stronger depth signal.
+
+---
+
+#### Spectrum 2C: Rigid ↔ Fluid
+
+```
+Rigid ←———●——————————————————→ Fluid
+           3
+```
+
+**Current position: 3/10 (Rigid-leaning)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| Consistent 8px grid rhythm | Grid-locked spacing |
+| Card → header → body → stats component grammar | Rigid structural hierarchy |
+| Tab-based navigation (8 fixed tabs) | Rigid — no dynamic layout shifts |
+| Graduated border-radius scale (1px→16px) | Systematic — predictable radius per component type |
+| No masonry layouts, no overlapping elements, no dynamic grids | Rigid — all elements in grid lanes |
+
+**Target position: 3/10** — A FOCUS-TOOL for data tracking should be predictable and scannable. Fluid layouts would undermine data legibility.
+
+**Gap: 0** — Rigidity is correct for a precision data tool.
+
+**Finding**: DP1-S3 — **PASS** — Spatial rigidity supports scannable data presentation.
+**Solution**: Maintain grid-locked layouts. Do not introduce asymmetric layouts, masonry grids, or overlapping elements — these would undermine the "precision instrument" feel.
+
+---
+
+#### Spectrum 2D: Anchored ↔ Floating
+
+```
+Anchored ←———————————●———————→ Floating
+                      6.5
+```
+
+**Current position: 6.5/10 (Floating-leaning)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| `backdrop-filter: blur(4px)` on cards — content shows through | Panels hover over content |
+| `translateY(-2px)` on card hover | Elements lift off surface |
+| `cardSlideIn` animation: `translateY(12px) scale(0.98)` entrance | Elements materialize from space |
+| Dark void background (`#080c14`) with no texture/pattern | Infinite depth — no "ground" |
+| Triple-stack shadows with 24px blur radius | Prominent elevation signal |
+| Inset highlights `inset 0 1px 0 rgba(255,255,255,0.05)` | Top-edge light suggests floating above light source |
+
+**Target position: 7/10** — The glass-over-void metaphor inherently implies floating. The axis profile describes "depth model: semi-transparent layered surfaces."
+
+**Gap: 0.5** — Within tolerance. Could lean slightly more floating (e.g., more pronounced hover lift).
+
+**Finding**: DP1-S4 — **PASS** — Floating spatial character supports the holographic display metaphor.
+**Solution**: Maintain the floating-panel metaphor. The `translateY(-2px)` hover lift + dark void background + glass surfaces create the correct spatial relationship. Consider increasing hover lift to `-3px` for slightly more dramatic floating on desktop (where spatial subtlety is more perceptible).
+
+---
+
+### Dimension 3 — Material Character
+
+#### Current Material Personality
+
+| Material | Presence Level | Evidence |
+|----------|---------------|----------|
+| **Glass** | **PRIMARY** (dominant) | `backdrop-filter: blur(4-8px)` on all cards, buttons, inputs, stats; semi-transparent `rgba` backgrounds at 55-90% opacity; `border-white/0.06-0.2` ghost edges |
+| **Void / Spatial** | **PRIMARY** (co-dominant) | `#080c14` body with no texture; OLED `#000000` variant; infinite depth implied by dark nothing; content floats with no ground plane |
+| **Light** | **SECONDARY** (accent) | Gold text-shadow glows; color-emissive active states; shimmer line animations; conic gradient luck badge rotation; radial gold glow on empty states |
+| **Metal** | **TERTIARY** (detail) | Gold gradient header accent bars (3×16px chrome); slider thumb gradients; hardcoded gold glow shadows; specular-like inset highlights |
+| **Paper** | ABSENT | No flat surfaces, no shadow-cast-on-surface, no organic texture |
+| **Fabric / Felt** | ABSENT | No soft shadows, no matte surfaces, no tactile texture |
+| **Stone / Mineral** | ABSENT | No heavy visual weight, no durable/permanent feel |
+| **Wood / Organic** | ABSENT | No warmth, no grain, no imperfection |
+
+#### Material Formula
+
+**Glass + Void + Light = "Holographic Display"**
+
+The dominant material metaphor is **frosted glass panels floating in dark space, illuminated by colored light**. This is internally coherent:
+- Glass provides the surface → translucent, reflective, lightweight
+- Void provides the space → infinite, dark, gravity-free
+- Light provides the accent → emissive, colored, dynamic
+
+This triad is the **correct material palette** for a cyberpunk/HUD interface aligned to Wuthering Waves' visual language.
+
+#### Material Consistency Audit
+
+| Component | Expected Material | Actual Material | Consistent? |
+|-----------|------------------|-----------------|-------------|
+| `.kuro-card` | Glass + Void | Glass (blur 4px, 55% opacity) + triple shadow + shimmer chrome | ✅ |
+| `.kuro-btn` | Glass | Denser glass (blur 8px, 85% opacity) + emissive active states | ✅ |
+| `.kuro-input` | Glass | Dense glass (blur 8px, 90% opacity) + gold focus ring | ✅ |
+| `.kuro-stat` | Glass | Glass (blur 4px, 80% opacity) + color-tinted shimmer | ✅ |
+| `.kuro-empty-state` | Void + Light | Gold radial glow + dashed border — atmospheric void | ✅ |
+| `.kuro-skeleton` | Glass + Light | Gold shimmer gradient on glass surface | ✅ |
+| **Toast notifications** | Glass | Solid-fill colored background (0.9 opacity), no blur | ⚠️ BREAKS |
+| **Root error boundary** | Glass + Void | Inline styles, no blur, no glass — flat emergency fallback | ⚠️ BREAKS (justified) |
+| **Collection card hover** | Glass | `0 8px 24px rgba(0,0,0,0.5)` shadow but no backdrop-blur defined in hover | ✅ (inherits) |
+| **Onboarding modal** | Glass + Void | `backdropFilter: 'blur(6px)'` + gradient borders + decorative blur circles | ✅ |
+
+**Findings**:
+
+**DP1-M1** — Toast notifications break glass material | **LOW**
+- **Current**: Toast backgrounds are solid-fill at 0.9 opacity (`rgba(34,197,94,0.9)`, etc.) with no `backdrop-filter`.
+- **Impact**: Toasts read as "flat colored banners" rather than "glass status indicators." They feel imported from a different material system.
+- **Solution**: Add `backdrop-filter: blur(8px)` to toasts and reduce background opacity to 0.7. This makes toasts translucent glass panels consistent with the button material. Change:
+  - `rgba(34,197,94,0.9)` → `rgba(34,197,94,0.7)` + `backdropFilter: 'blur(8px)'`
+  - Same for error, warning, info variants
+  - Keep `border-white/20` as-is — already glass-compatible
+
+**DP1-M2** — Root error boundary uses flat material (justified) | **PASS**
+- **Current**: AppErrorBoundary uses inline styles with no blur, no glass, minimal styling.
+- **Reason**: When the app crashes, complex CSS (including backdrop-filter) may be broken. The fallback MUST work with zero CSS dependencies.
+- **Solution**: No change needed — this is a correct safety tradeoff. Document as intentional: "Root error state uses minimal inline styles for maximum crash resilience."
+
+**Target material**: Glass + Void + Light — the current extraction matches this precisely at the system level.
+
+---
+
+### Dimension 4 — Interaction Character
+
+#### Spectrum 4A: Mechanical ↔ Physical
+
+```
+Mechanical ←————————————●————→ Physical
+                         7
+```
+
+**Current position: 7/10 (Physical-leaning)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| Bouncy overshoot `cubic-bezier(0.16, 1, 0.3, 1)` on all transitions | Physical — spring dynamics, elements have mass |
+| `scale(0.97)` on button active press | Physical — push-back resistance |
+| `translateY(-2px)` on card hover + elevated shadow | Physical — elements respond to proximity |
+| `scale(1.15)` on slider thumb hover | Physical — elements swell on touch |
+| Card entrance stagger (50ms intervals) | Physical — cascading arrival has weight |
+| Haptic feedback on toast types (`haptic.success()`, `haptic.error()`) | Physical — device vibration response |
+
+**Target position: 7/10** — A data tool with atmospheric-secondary role should feel responsive and physically grounded, but not overanimated.
+
+**Gap: 0** — Physical interaction quality is on-target.
+
+**Finding**: DP1-I1 — **PASS** — Physical interaction character creates a responsive, weighty feel.
+**Solution**: Protect the bouncy easing curve — it's the signature interaction personality. Do not flatten to `ease-out` or `linear`.
+
+---
+
+#### Spectrum 4B: Snappy ↔ Considered
+
+```
+Snappy ←—————————●———————————→ Considered
+                  4.5
+```
+
+**Current position: 4.5/10 (Balanced snappy-to-considered)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| `--transition-fast: 0.15s` for micro-interactions | Snappy — sub-200ms for color/border changes |
+| `--transition-normal: 0.25s` for standard interactions | Considered — 250ms is deliberate, not instant |
+| `--transition-slow: 0.4s` for entrances | Considered — elements take time to arrive |
+| Button active: `0.1s ease` | Instant — press response is immediate |
+| Card stagger: 0.05s-0.2s delays | Considered — orchestrated arrival |
+| Pity ring: `0.8s` stroke animation | Slow — dramatic data reveal |
+
+**Target position: 4/10** — A FOCUS-TOOL should lean snappy (fast feedback for data interactions) with considered moments for dramatic data reveals (pity count, luck rating).
+
+**Gap: 0.5** — Within tolerance.
+
+**Finding**: DP1-I2 — **PASS** — Speed profile appropriately balances fast data feedback with dramatic reveals.
+**Solution**: Maintain the three-tier speed system. Do not flatten all transitions to a single duration — the fast/normal/slow hierarchy is the correct temporal structure.
+
+---
+
+#### Spectrum 4C: Passive ↔ Reactive
+
+```
+Passive ←————————————●———————→ Reactive
+                      6
+```
+
+**Current position: 6/10 (Moderately reactive)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| Card hover: border brightens + `translateY(-2px)` + gold glow appears | Reactive — multi-property hover response |
+| Button hover: shadow elevates + background lightens | Reactive — visible hover feedback |
+| Input focus: gold ring + shadow expansion | Reactive — strong focus affordance |
+| Stat hover: color-specific glow + border brightens | Reactive — contextual hover response |
+| Ambient shimmer/pulse animations (always running) | Reactive — UI is "alive" even without interaction |
+| No cursor-proximity effects, no parallax, no scroll-linked animation | Passive — reactions only on direct interaction |
+
+**Target position: 6/10** — Reactive enough to feel alive without being distracting. A data tool should respond to direct interaction but not create ambient distraction.
+
+**Gap: 0** — On-target.
+
+**Finding**: DP1-I3 — **PASS** — Reactivity level appropriate for focused data tool.
+**Solution**: Maintain direct-interaction reactivity (hover, focus, press). Do not add cursor-proximity effects or scroll-triggered animations — these would distract from data consumption.
+
+---
+
+#### Spectrum 4D: Silent ↔ Expressive
+
+```
+Silent ←————————————●————————→ Expressive
+                     6
+```
+
+**Current position: 6/10 (Moderately expressive)**
+
+| Evidence (from §DP0) | Signal |
+|----------------------|--------|
+| Color-emissive button active states (glow + inset + text shadow) | Expressive — full "light up" animation |
+| Card entrance with scale + translate + opacity + stagger | Expressive — orchestrated entrance |
+| Pity ring SVG stroke animation (0.8s) | Expressive — dramatic data reveal |
+| Rotating luck badge conic gradient (8s infinite) | Expressive — continuous personality |
+| Standard state changes (border color shift) use simple transitions | Silent-leaning — functional feedback |
+| No page-transition animations, no route-change effects | Silent — tab switches are instant |
+
+**Target position: 6/10** — Expressive for signature moments (pity reveal, luck rating, trophy unlock), silent for routine operations (tab switch, data entry).
+
+**Gap: 0** — On-target.
+
+**Finding**: DP1-I4 — **PASS** — Expressiveness reserved for signature moments, routine operations are functional.
+**Solution**: Maintain the expressiveness hierarchy: dramatic for data reveals (pity, luck), ambient for atmosphere (shimmer, pulse), functional for routine (tab switch, input focus).
+
+---
+
+### Dimension 5 — State Character Consistency
+
+> Design character is only as coherent as its weakest state.
+
+| State | §DP0 Character Baseline | Character in This State | Consistent? | Finding |
+|-------|------------------------|------------------------|-------------|---------|
+| **First arrival (onboarding)** | Glass-over-void, HUD chrome, gold accent | Glass modal with `blur(6px)`, gradient borders per step, decorative blur circles, gold/cyan/purple step theming | ✅ **YES** | Character maintained — onboarding IS the design character showcase |
+| **Active engagement** | Neon-on-void, glass panels, corner brackets, shimmer, emissive states | Full KuroStyles system: `.kuro-card`, `.kuro-stat-*`, `.kuro-btn active-*`, gold glows, staggered entrances | ✅ **YES** | Peak character expression — this is the baseline |
+| **Success / completion** | Emissive light, glass surface, gold anchor | Toast: solid green fill (0.9 opacity), no blur, no glass treatment. `slideUp` animation preserved. Lucide icon + white border | ⚠️ **PARTIAL** | Material breaks (solid fill vs glass), color logic correct (green=success) |
+| **Error / failure** | *(Tab-level)*: Glass + void + red accent | Tab error: `.kuro-card` + `.kuro-card-inner` + `.kuro-btn active-cyan` + red AlertCircle icon | ✅ **YES** | Uses full component system with red accent |
+| **Error / failure** | *(Root-level)*: Emergency fallback | Root crash: inline styles only, no blur, no glass, cyan buttons, emoji ⚠️, system-ui font | ❌ **NO** | Character fully abandoned — **justified** (CSS may be broken during crash) |
+| **Loading / waiting** | Glass + light, gold accent | `.kuro-skeleton` with gold shimmer gradient, 1.8s animation, contextual shapes (circle, text, row) | ✅ **YES** | Character maintained — gold shimmer = "data in transit through the HUD" |
+| **Edge/empty (no data)** | Void + gold ambient, HUD grid structure | `.kuro-empty-state` with gold radial glow, dashed gold border, animated top gradient line, ghost-grid pulsing cells | ✅ **YES** | Character strongly maintained — empty state shows the grid structure waiting to be filled |
+
+#### State-Level Findings
+
+**DP1-SC1** — Success/completion toasts use flat material instead of glass | **LOW**
+- **State**: Success toast (and all toast types)
+- **§DP0 character**: Glass surfaces with backdrop-blur + semi-transparent backgrounds
+- **Character here**: Solid-fill `rgba(34,197,94,0.9)` with no blur — reads as flat colored banner
+- **Inconsistency**: Material breaks from glass to flat. The color mapping (green=success, red=error) is correct UX, but the material is wrong.
+- **Solution**: Add `backdrop-filter: blur(8px)` to toast container and reduce opacity to 0.7:
+  ```css
+  /* Before: */ background: rgba(34,197,94,0.9);
+  /* After:  */ background: rgba(34,197,94,0.7); backdrop-filter: blur(8px);
+  ```
+  This makes toasts read as "colored glass status indicators" rather than "flat banners." Apply to all four toast types (success, error, warning, info).
+
+**DP1-SC2** — Root error boundary abandons character entirely | **PASS** (justified)
+- **State**: App crash (AppErrorBoundary triggered)
+- **§DP0 character**: Glass panels, HUD chrome, Rajdhani display font, KuroStyles
+- **Character here**: Inline styles, system-ui font, emoji icon, flat cyan buttons
+- **Inconsistency**: Complete character abandonment — but JUSTIFIED. When the app crashes, the CSS-in-JS system (KuroStyles) may have failed. The error boundary must work with zero CSS dependencies.
+- **Solution**: No change. Document as intentional safety fallback. The error boundary's job is reliability, not brand expression. Current implementation is correct.
+
+**DP1-SC3** — Empty states are the strongest non-active character expression | **PASS**
+- **State**: No data imported / no matching results
+- **Character**: Gold radial glow + dashed gold border + animated top gradient + ghost-grid with pulsing cells
+- **Assessment**: The ghost-grid pattern (faded card shapes that pulse subtly) is particularly strong — it communicates "this is a HUD grid waiting for data" rather than "there's nothing here." The gold ambient glow anchors the empty space to the app's warm accent.
+- **Solution**: Protect this pattern. It's a character asset. When adding new empty states, use `.kuro-empty-state` class consistently.
+
+**DP1-SC4** — Loading skeletons correctly express character | **PASS**
+- **State**: Fetching data (leaderboard, community stats)
+- **Character**: Gold-tinted shimmer on glass-colored base, contextual shapes
+- **Assessment**: The gold shimmer is the key decision — it ties loading to the brand accent rather than using a generic gray pulse. This reads as "gold data is flowing through the interface" — perfectly on-character.
+- **Solution**: Protect the gold shimmer. Do not change skeleton color to neutral gray — the gold tint is a character-expressing decision.
+
+**DP1-SC5** — Onboarding modal correctly showcases character | **PASS**
+- **State**: First-time user experience
+- **Character**: Glass modal with colored gradient borders per step, decorative blur circles for atmospheric depth, step-themed color transitions (gold → cyan → orange → purple → emerald → pink)
+- **Assessment**: The onboarding IS a character demonstration — it introduces users to the glass material, the color accent system, and the HUD aesthetic through progressive color theming.
+- **Solution**: Protect the multi-step color progression. It effectively teaches the user the app's visual language while introducing features.
+
+---
+
+### Dimension 6 — Overall Character Coherence
+
+After assessing all five dimensions against the §DP0 extraction: do they tell the same story?
+
+#### Cross-Dimension Coherence Matrix
+
+| Dimension | Observed Character | Tells the Same Story? |
+|-----------|-------------------|----------------------|
+| **Visual Voice** | Terse (3), cool (4), balanced formality (5.5), moderately expressive (6.5) | ✅ "Technical expert tool with personality" |
+| **Spatial** | Dense (3.5), deep (7.5), rigid (3), floating (6.5) | ✅ "Dense data on floating glass in deep space" |
+| **Material** | Glass + Void + Light = "Holographic Display" | ✅ "Translucent command interface" |
+| **Interaction** | Physical (7), balanced speed (4.5), reactive (6), moderately expressive (6) | ✅ "Responsive instruments with spring-loaded feedback" |
+| **State** | 5/7 states fully consistent, 1 partial (toasts), 1 justified break (root crash) | ✅ "Character holds across nearly all states" |
+
+**All five dimensions tell the same story**: A dense, deep, floating, cool-technical data interface made of glass panels in dark space, with spring-loaded physical interactions, responsive to touch, and always subtly alive with ambient light. The single warm element (gold) anchors everything.
+
+#### Character Coherence Assessment
+
+```
+Character Coherence: PARTIALLY COHERENT
+
+Dominant character: "luminous tactical glass" — dense data floating on
+  translucent glass panels in dark space, illuminated by gold-accented
+  neon light, responding with spring-loaded physicality
+
+Conflicting signals:
+  1. Toast notifications use solid flat fill (breaks glass material)
+  2. ~240+ hardcoded colors in application layer (fuzzes precision)
+  3. Split-gold problem: Tailwind #facc15 vs CSS variable #edaf18
+  4. Desktop sidebar easing (cubic-bezier(0.4,0,0.2,1)) differs from
+     app signature curve (cubic-bezier(0.16,1,0.3,1))
+
+Primary coherence fix: Tokenize the application-layer hardcoded values
+  to use CSS custom properties. This single class of change eliminates
+  ~88% of all color inconsistencies and brings the application layer
+  into alignment with the design system's character.
+```
+
+**Why PARTIALLY COHERENT and not COHERENT**: The design system (KuroStyles) IS coherent — every component expresses the same character. But the application layer (App.jsx inline styles + Tailwind classes) introduces ~240+ hardcoded values that bypass the token system, creating subtle color mismatches and inconsistencies. The character is correct at the system level but fuzzy at the application level. The 4 conflicting signals above are all application-layer leaks, not system-level contradictions.
+
+**Finding**: DP1-CC1 — Character is PARTIALLY COHERENT: system-level coherent, application-layer inconsistent | **MEDIUM**
+- **Solution**: The single highest-impact change is tokenizing the pity tier colors and trophy colors (which account for 88% of hardcoded values per §DS2 findings). This brings the application layer into alignment with the design system's established character.
+
+---
+
+### §DP1 Dimension Summary
+
+| ID | Spectrum | Current | Target | Gap | Severity | Solution |
+|----|----------|---------|--------|-----|----------|---------|
+| DP1-V1 | Terse ↔ Expansive | 3 | 3 | 0 | **PASS** | Maintain density |
+| DP1-V2 | Cold ↔ Warm | 4 | 4 | 0 | **PASS** | Protect gold warm anchor |
+| DP1-V3 | Formal ↔ Casual | 5.5 | 5 | 0.5 | **PASS** | Maintain dual register |
+| DP1-V4 | Restrained ↔ Expressive | 6.5 | 6 | 0.5 | **PASS** | Channel expressiveness through motion/light |
+| DP1-S1 | Dense ↔ Airy | 3.5 | 3.5 | 0 | **PASS** | Maintain dual-density model |
+| DP1-S2 | Flat ↔ Deep | 7.5 | 7 | 0.5 | **PASS** | Protect multi-layer depth |
+| DP1-S3 | Rigid ↔ Fluid | 3 | 3 | 0 | **PASS** | Maintain grid-locked layouts |
+| DP1-S4 | Anchored ↔ Floating | 6.5 | 7 | 0.5 | **PASS** | Maintain floating-panel metaphor |
+| DP1-M1 | Toast material | Flat fill | Glass | 1 material step | **LOW** | Add backdrop-blur(8px) + reduce opacity to 0.7 |
+| DP1-M2 | Root error material | Flat emergency | Flat emergency | 0 (justified) | **PASS** | Intentional safety fallback |
+| DP1-I1 | Mechanical ↔ Physical | 7 | 7 | 0 | **PASS** | Protect bouncy easing curve |
+| DP1-I2 | Snappy ↔ Considered | 4.5 | 4 | 0.5 | **PASS** | Maintain 3-tier speed system |
+| DP1-I3 | Passive ↔ Reactive | 6 | 6 | 0 | **PASS** | Maintain direct-interaction reactivity |
+| DP1-I4 | Silent ↔ Expressive | 6 | 6 | 0 | **PASS** | Maintain expressiveness hierarchy |
+| DP1-SC1 | Toast state character | Flat solid | Glass panel | Material break | **LOW** | Add blur + reduce opacity |
+| DP1-SC2 | Root error state | Flat inline | Flat inline | 0 (justified) | **PASS** | Intentional safety fallback |
+| DP1-SC3 | Empty state character | Gold glow + ghost grid | On-character | 0 | **PASS** | Protect ghost-grid pattern |
+| DP1-SC4 | Loading state character | Gold shimmer | On-character | 0 | **PASS** | Protect gold shimmer |
+| DP1-SC5 | Onboarding state | Glass + color progression | On-character | 0 | **PASS** | Protect multi-step theming |
+| DP1-CC1 | Overall coherence | PARTIALLY COHERENT | COHERENT | App-layer leaks | **MEDIUM** | Tokenize hardcoded colors |
+
+**§DP1 Summary**: 16 spectra/states assessed. **0 major gaps** (no spectrum differs by >2 units from target). **2 findings** (DP1-M1 toast material, DP1-CC1 app-layer coherence). The character dimensions are remarkably well-aligned to the axis profile — the design system expresses the intended character precisely. The only issues are at the implementation layer (toast material, hardcoded values), not at the character definition layer.
+
+---
+
+## §DP2 — Design Character Brief
+
+```
+━━━ DESIGN CHARACTER BRIEF ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+App: Whispering Wishes v3.2.3
+Axis Profile: NON-REVENUE focus-tool for EXPERT gacha players,
+              NAMED-SOURCE (Wuthering Waves L3), FUNCTIONAL-PRIMARY
+              + ATMOSPHERIC-SECONDARY
+
+EXISTING CHARACTER (extracted from §DP0)
+  What the design already says:
+
+    "I am your tactical command interface for Wuthering Waves gacha planning.
+     I am made of glass panels floating in dark space, illuminated by gold
+     light. I speak in your language — pity, 50/50, Astrite, Convenes — and
+     I track your data with precision. I am dense because your time is
+     valuable. I am always subtly alive — shimmering, glowing, pulsing —
+     because your data is live. I reward your investment with dry humor
+     hidden in trophy descriptions. I am NOT a generic dashboard. I am NOT
+     a corporate tool. I am your companion, built by a player who
+     understands the game as deeply as you do."
+
+  Strongest signals (the 3 decisions most responsible):
+
+    1. GLASS-OVER-VOID MATERIAL
+       `backdrop-filter: blur(4px)` + `rgba(12,16,24,0.55)` cards +
+       `#080c14` void background + triple-stack shadows. This single
+       material decision creates the entire spatial metaphor — every
+       surface is a translucent panel floating in darkness.
+
+    2. GOLD WARM ANCHOR
+       `--color-gold: 237, 175, 24` (#edaf18) as the only warm element
+       in an entirely cool palette. Gold appears in: focus rings, active
+       states, header chrome bars, glow shadows, shimmer accents, empty
+       state radial glow, skeleton shimmer, tab indicator. It is the
+       single color that says "Wuthering Waves premium" and "pay
+       attention here."
+
+    3. HUD CHROME DECORATIONS
+       Corner brackets (L-shaped borders at top-right/bottom-left),
+       gold gradient accent bars (3×16px), top-edge shimmer lines
+       (animated opacity 0.6→1→0.6), colored text-shadow glows. These
+       pseudo-element details transform standard cards into command
+       interface readouts. No other gacha tracker uses this language.
+
+  Weakest/incoherent signals:
+
+    1. ~240+ hardcoded color values in App.jsx that bypass the design
+       token system, creating subtle inconsistencies (Tailwind
+       `text-yellow-400` #facc15 vs CSS variable gold #edaf18)
+
+    2. Toast notifications use solid flat fill instead of glass
+       material — the only recurring UI element that breaks the
+       glass-over-void metaphor
+
+TARGET CHARACTER
+  Voice:       Terse (3) + Cool (4) + Balanced formal/casual (5.5) +
+               Moderately expressive (6.5)
+               Anchored in: 9-10px dominant text, 8px gap rhythm, cool
+               blue-tinted text (#dfe5ef), gold text-shadow glows,
+               uppercase wide-tracked labels (0.08em), Rajdhani display
+               font, expert domain vocabulary
+
+  Space:       Dense (3.5) + Deep (7.5) + Rigid (3) + Floating (6.5)
+               Anchored in: gap-2 (72 uses), 14px card padding, 5-level
+               z-index hierarchy, backdrop-filter blur(4-8px), triple-stack
+               shadows, translateY(-2px) hover lift, dark void background
+
+  Material:    Glass + Void + Light = "Holographic Display"
+               Anchored in: backdrop-filter: blur(4px) on cards, blur(8px)
+               on controls, rgba(12,16,24,0.55) card surfaces, rgba(0,0,0)
+               OLED variant, gold radial-gradient ambient glows, inset
+               0 1px 0 rgba(255,255,255,0.05) top-edge highlights
+
+  Interaction: Physical (7) + Balanced speed (4.5) + Reactive (6) +
+               Moderately expressive (6)
+               Anchored in: cubic-bezier(0.16, 1, 0.3, 1) signature
+               curve, 0.15s/0.25s/0.4s three-tier speed system, scale(0.97)
+               press feedback, card entrance stagger (50ms intervals),
+               haptic feedback per toast type
+
+  States:      5/7 fully consistent, 1 partial (toasts), 1 justified
+               break (root crash). Character holds across onboarding,
+               active use, empty states, loading, and tab-level errors.
+               Gold shimmer in skeletons and gold glow in empty states
+               are particularly strong character-consistent choices.
+
+CHARACTER STATEMENT
+  "This app's design reads as a LUMINOUS TACTICAL COMPANION — a glass
+   command interface floating in dark space, illuminated by gold light,
+   built by a player for players. The strongest expression of this is
+   the glass-over-void material system with HUD chrome decorations that
+   transforms every card into a command panel readout.
+
+   It should never feel GENERIC or CORPORATE — which currently happens
+   when hardcoded Tailwind colors (text-yellow-400, text-emerald-400)
+   override the design system's precisely calibrated accent tokens, and
+   when toast notifications appear as flat colored banners instead of
+   translucent glass indicators."
+
+CHARACTER TESTS (decision filters for new design work)
+  ✓ ON CHARACTER: New components use backdrop-filter + semi-transparent
+    rgba background + border from the 5-level opacity scale
+  ✗ OFF CHARACTER: Flat solid-fill backgrounds with no transparency
+    (except root error boundary)
+
+  ✓ ON CHARACTER: Interactive elements have gold focus ring, color-
+    emissive glow on active state, bouncy easing on transition
+  ✗ OFF CHARACTER: Standard :focus-visible outline, instant state
+    change, no glow — reads as "default browser styling"
+
+  ✓ ON CHARACTER: Color accent references CSS custom property
+    (rgba(var(--color-gold), 0.5)) or KuroStyles class (active-gold)
+  ✗ OFF CHARACTER: Tailwind color class (text-yellow-400) or raw hex
+    (#facc15) for the same semantic as a design token color
+
+  ✓ ON CHARACTER: Empty/loading states use gold-tinted atmospheric
+    treatment (radial glow, gold shimmer, ghost grid)
+  ✗ OFF CHARACTER: Generic gray placeholder, default spinner, or
+    untreated blank space
+
+  ✓ ON CHARACTER: Copy uses Wuthering Waves terminology (Convene,
+    Resonator, Astrite, pity, 50/50) and insider humor
+  ✗ OFF CHARACTER: Generic gacha terms (pull, character, gems) or
+    corporate-neutral language ("An error occurred")
+
+  ✓ ON CHARACTER: Motion uses the signature curve
+    cubic-bezier(0.16, 1, 0.3, 1) with 3-tier duration system
+  ✗ OFF CHARACTER: Generic ease/ease-out, Tailwind transition-all
+    defaults, or no motion at all
+
+PROTECT (existing decisions that express the character correctly)
+  - #080c14 blue-black void background (NOT pure black except OLED)
+  - #edaf18 gold accent as sole warm anchor
+  - backdrop-filter: blur(4px) on cards, blur(8px) on controls
+  - Corner bracket pseudo-elements on .kuro-card-inner
+  - Gold gradient header accent bars (.kuro-header h3::before)
+  - Top-edge shimmer line animation on cards (.kuro-card::after)
+  - Gold-tinted skeleton shimmer (.kuro-skeleton)
+  - Gold radial glow on empty states (.kuro-empty-state)
+  - Ghost-grid pulsing placeholder (.ghost-grid-cell)
+  - cubic-bezier(0.16, 1, 0.3, 1) signature easing curve
+  - Rajdhani + JetBrains Mono font pairing
+  - 5-level border opacity scale (--border-subtle → --border-bright)
+  - 4-level shadow scale (--shadow-sm → --shadow-xl)
+  - Trophy humor and domain vocabulary
+  - Onboarding multi-step color progression
+  - Card entrance stagger (50ms intervals)
+
+REJECT (patterns that belong to a different product's character)
+  - White/light backgrounds → wrong product (this is a dark-mode-only tool)
+  - Pastel accent colors → wrong product (this uses neon-range saturated accents)
+  - Rounded pill-shaped buttons (border-radius: 9999px) → wrong product
+    (this uses 12px radius glass panels)
+  - Illustrations or mascot characters → wrong product (this uses line
+    icons and text, not illustration)
+  - Flat Material Design cards (no transparency, no blur) → wrong product
+    (this is glass, not paper)
+  - Warm gray palette → wrong product (this uses cool-tinted chromatic grays)
+  - Sans-serif system UI font as display → wrong product (this uses
+    Rajdhani for its angular, technical character)
+  - Generic dashboard template styling → wrong product (this has a
+    specific cyberpunk/HUD identity, not "dark mode dashboard")
+  - Rounded-friendly, soft-shadow, warm-toned components (Notion-like)
+    → wrong product (this is sharp, glassy, cool, luminous)
+  - Excessive whitespace between data points → wrong product (this is
+    information-dense for expert users)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+### §DP2 Plan-Deliverable Checklist
+
+The plan (lines 110-116) specified these §DP2 deliverables:
+
+| Deliverable | Location | Status |
+|-------------|----------|--------|
+| Character in one sentence | CHARACTER STATEMENT (first sentence) | ✅ |
+| Character keywords (3-5) | "Luminous", "Tactical", "Glass", "Gold-anchored", "Expert-companion" | ✅ |
+| Character "never" list | REJECT section (10 anti-patterns) | ✅ |
+| What makes it distinctive | EXISTING CHARACTER → Strongest signals (3 decisions) | ✅ |
+| What threatens its character | EXISTING CHARACTER → Weakest signals + CHARACTER STATEMENT → "should never feel" | ✅ |
+| Audience emotional expectation | VOICE → "expert domain vocabulary" + INTERACTION → "responsive instruments" = audience expects precision data delivery with insider credibility | ✅ |
+
+---
+
+### Step 4 All-Findings Summary
+
+| ID | Finding | Severity | Solution |
+|----|---------|----------|---------|
+| DP1-V1 | Visual terseness matches FOCUS-TOOL intent | **PASS** | Maintain density |
+| DP1-V2 | Temperature balance matches cyberpunk-luxe | **PASS** | Protect gold warm anchor |
+| DP1-V3 | Formality register matches EXPERT audience | **PASS** | Maintain dual register |
+| DP1-V4 | Expressiveness channeled through motion/light | **PASS** | Continue motion/light expressiveness |
+| DP1-S1 | Density matches FOCUS-TOOL | **PASS** | Maintain dual-density model |
+| DP1-S2 | Depth supports glass-over-void identity | **PASS** | Protect multi-layer depth |
+| DP1-S3 | Rigidity supports data scanability | **PASS** | Maintain grid layouts |
+| DP1-S4 | Floating character supports holographic metaphor | **PASS** | Maintain floating panels |
+| DP1-M1 | Toast notifications break glass material | **LOW** | Add backdrop-blur(8px) + opacity 0.7 |
+| DP1-M2 | Root error uses flat material (justified safety) | **PASS** | Intentional fallback |
+| DP1-I1 | Physical interaction character on-target | **PASS** | Protect bouncy easing |
+| DP1-I2 | Speed profile balances fast + dramatic | **PASS** | Maintain 3-tier system |
+| DP1-I3 | Reactivity appropriate for data tool | **PASS** | Maintain hover reactivity |
+| DP1-I4 | Expressiveness hierarchy correct | **PASS** | Reserve drama for data reveals |
+| DP1-SC1 | Toast state breaks glass material | **LOW** | Same as DP1-M1 |
+| DP1-SC2 | Root error state justified break | **PASS** | No change |
+| DP1-SC3 | Empty states are strong character expression | **PASS** | Protect ghost-grid pattern |
+| DP1-SC4 | Loading skeletons correctly express character | **PASS** | Protect gold shimmer |
+| DP1-SC5 | Onboarding correctly showcases character | **PASS** | Protect color progression |
+| DP1-CC1 | App-layer hardcoded values fuzz precision | **MEDIUM** | Tokenize pity/trophy colors |
+
+---
+
+**STEP 4 COMPLETE** — §DP1 Character Dimensions + §DP2 Design Character Brief established.
+
+**Character Coherence**: PARTIALLY COHERENT — system-level coherent, application-layer leaks
+**Dominant Character**: "Luminous Tactical Glass" — dense data on floating glass panels in dark space, illuminated by gold-accented neon light, responding with spring-loaded physicality
+**Dimension Alignment**: All 12 spectra within 0.5 units of target — no major misalignments
+**Actionable Findings**: 2 (DP1-M1 toast material LOW, DP1-CC1 tokenization MEDIUM)
+**Character Brief**: Established as decision filter for all subsequent audit findings
