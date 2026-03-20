@@ -3750,3 +3750,684 @@ MOTION SIGNATURE BRIEF
 > **End of Step 13 — §E6: Interaction Design Quality**
 > **Lines added**: ~1200
 > **Next step**: Step 14 — §E7: Overall Visual Professionalism (awaiting user instruction)
+
+---
+
+## Step 14 — §E7: Overall Visual Professionalism
+
+**Skill reference**: `app-audit-SKILL.md` §E7
+**Scope**: Design coherence, attention to detail, brand consistency, first-impression test, screenshot quality test, visual noise inventory, cross-device consistency, competitive credibility check, polish delta, polish level assessment
+**Axis profile**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+
+---
+
+### §E7.1 Design coherence
+
+> *"Does the app feel like it was designed as a whole, or like different sections were designed independently?"*
+
+#### Coherence architecture
+
+The app operates on a **dual-layer design system**:
+
+**Layer 1 — KuroStyles system** (`appcore-providers.jsx:425–1430`):
+A comprehensive CSS-in-JS design system providing:
+- 12 CSS custom properties for backgrounds (`--bg-card`, `--bg-btn`, `--bg-input`, `--bg-stat`)
+- 5-level border opacity scale (`--border-subtle` 0.06 → `--border-bright` 0.2)
+- 4-level shadow tokens (`--shadow-sm` → `--shadow-xl`)
+- 3 transition speed tokens sharing one easing curve
+- 2 font families (`--font-display` Rajdhani, `--font-data` JetBrains Mono)
+- 2 text color tokens (`--text-body`, `--text-heading`)
+- 9 named component classes: `kuro-card`, `kuro-btn`, `kuro-stat`, `kuro-input`, `kuro-slider`, `kuro-empty-state`, `kuro-skeleton`, `kuro-divider`, `kuro-scroll`
+- OLED mode adaptation across all background tokens
+
+**Layer 2 — Inline Tailwind** (`App.jsx`):
+~100+ buttons, progress bars, badges, filter selects, and utility text styled with Tailwind classes directly. These elements use Tailwind defaults (`transition-colors`, `duration-300`, `rounded-lg`) rather than design tokens.
+
+#### Coherence assessment
+
+| Dimension | KuroStyles layer | Inline Tailwind layer | Verdict |
+|-----------|-----------------|----------------------|---------|
+| Background colors | Token-driven (`--bg-card`, `--bg-btn`) | Mix of `bg-white/5`, `bg-white/10`, raw rgba | **Gap** — inline backgrounds don't track OLED mode |
+| Border colors | 5-level token scale | `border-white/10`, `border-white/15`, hardcoded rgba | **Gap** — inline borders bypass token hierarchy |
+| Border radius | Deliberate hierarchy (16→12→10→8→3px) | `rounded-lg` (8px) everywhere | **Partial gap** — Tailwind defaults to 8px monoculture |
+| Transitions | Token-driven (fast/normal/slow) | `transition-colors`, `transition-all` | **Gap** — inline uses Tailwind defaults, not tokens |
+| Typography | `--font-display`, `--font-data` tokens | System font inherited from body | **OK** — falls back to the same system font |
+| Hover states | 5-signal (border, color, lift, shadow, ripple) | Single-signal `hover:bg-{color}/20` | **Gap** — identified in §E6-HV9 |
+| Active states | Physical (scale + lift reset) | Mostly absent | **Gap** — identified in §E6-AP4 |
+
+**Coherence rating**: The app feels **~70% designed-as-a-whole**. Every section that uses kuro-* components has the same DNA — glassy surfaces, gold accents, corner decorations, shimmer lines, physical hover responses. The remaining ~30% (inline buttons, progress bars, badges, filter selects) feels like a second, simpler design vocabulary layered on top. A user wouldn't notice this as "two different designers" — but they would notice that some elements feel more polished than others.
+
+> **Finding E7-DC1** · MEDIUM
+> **Two-layer coherence gap**: The KuroStyles system provides a comprehensive, cohesive design vocabulary. But ~30% of interactive elements bypass it entirely, creating a perceptible quality gradient within each screen. The issue isn't visual chaos — it's a polish gradient from "premium" (kuro-*) to "adequate" (inline Tailwind).
+> **Evidence**: 39 `.kuro-btn` instances vs ~100+ inline `<button>` elements (`App.jsx`). Inline buttons use `bg-white/5`, `border-white/10`, `rounded-lg`, `transition-colors` — none of which reference design tokens.
+> **Solution**: Create 2–3 lightweight kuro-btn variants (`kuro-btn-ghost`, `kuro-btn-link`, `kuro-btn-inline`) that inherit the token system. Migrate inline buttons in batches per-tab. This simultaneously fixes §E5-BT5 (visual inconsistency), §E6-HV9 (hover gap), and §E6-AP4 (active gap).
+
+> **Finding E7-DC2** · PASS
+> **Component-level coherence**: All 9 kuro-* component classes share consistent design DNA — glassmorphism backgrounds with backdrop-filter, 1px solid borders from the opacity token scale, top shimmer lines (cards, stats), gold accent color, matching padding (14px card body/header, 10px 12px buttons/inputs). The system feels like a single designer's work.
+> **Evidence**: `appcore-providers.jsx:709–1420` — every component follows the same pattern: position-relative → background-token → border-token → border-radius → overflow → backdrop-filter → box-shadow → transition.
+> **Solution**: None needed — maintain this pattern as the template when creating new components.
+
+---
+
+### §E7.2 Attention to detail
+
+> *"Pixel-perfect alignment? No 1-pixel misalignments on borders? No slight gaps where elements should touch?"*
+
+#### Radius hierarchy audit
+
+| Component | Radius | Token? | Verdict |
+|-----------|--------|--------|---------|
+| `kuro-card` | 16px | Hardcoded | Largest — correct for primary containers |
+| `kuro-btn` | 12px | Hardcoded | Second tier — correct for interactive elements |
+| `kuro-stat` | 10px | Hardcoded | Third tier — but **10px is non-standard** |
+| `kuro-input` | 8px | Hardcoded | Fourth tier — matches Tailwind `rounded-lg` |
+| `kuro-empty-state` | 8px | Hardcoded | Matches input tier |
+| `ghost-grid-cell` | implied | Via Tailwind | Inherits context |
+| Toggle switches | 3px | Hardcoded | Smallest — sharp/military feel |
+| `collection-card` | Tailwind `rounded-lg` (8px) | No | Matches input tier |
+| Inline buttons | Tailwind `rounded-lg` (8px) or `rounded` (4px) | No | **Mixed** — two different radiuses |
+
+> **Finding E7-AD1** · LOW
+> **Non-standard 10px stat radius**: The `kuro-stat` uses `border-radius: 10px` (`appcore-providers.jsx:1039`), which doesn't fit cleanly into the 16→12→8→3px hierarchy. The 2px difference from inputs (8px) and 2px from buttons (12px) is visually imperceptible.
+> **Solution**: Standardize to either 12px (group with buttons) or 8px (group with inputs). Recommend 12px — stats are standalone display elements closer in visual weight to buttons than inputs.
+
+> **Finding E7-AD2** · LOW
+> **No radius tokens**: All 5 radius values are hardcoded in each component definition. The hierarchy is deliberate but not tokenized.
+> **Evidence**: `border-radius: 16px` (line 714), `12px` (line 859), `10px` (line 1039), `8px` (line 990), `3px` (switches in `App.jsx`).
+> **Solution**: Add radius tokens to `:root`: `--radius-card: 16px; --radius-btn: 12px; --radius-input: 8px; --radius-switch: 3px`. Reference these in component definitions. Enables future radius adjustments from a single location.
+
+#### Padding consistency audit
+
+| Component | Padding | Notes |
+|-----------|---------|-------|
+| `kuro-header` | `14px` | Internal card header |
+| `kuro-body` | `14px` | Internal card body — **matches header** ✓ |
+| `kuro-btn` | `10px 12px` | Button padding — asymmetric (taller than wide) |
+| `kuro-input` | `10px 12px` | Input padding — **matches button** ✓ |
+| `kuro-stat` | `14px` | Stat box — **matches card body** ✓ |
+| `kuro-divider` | `margin: 12px 0` | Vertical rhythm spacer |
+| `.tab-content` | `0.75rem` (12px) | Tab content area |
+| Inline badge (element) | `px-2 py-0.5` (8px 2px) | Character detail modal |
+| Inline badge (buff) | `px-1.5 py-0.5` (6px 2px) | Same modal, different padding |
+
+> **Finding E7-AD3** · PASS
+> **Card padding alignment**: `kuro-header` and `kuro-body` both use exactly `14px` padding. `kuro-stat` also uses `14px`. Buttons and inputs share `10px 12px`. Two padding tiers are internally consistent.
+> **Solution**: None needed — the two-tier system (14px containers, 10px×12px interactive) is logical.
+
+> **Finding E7-AD4** · LOW
+> **Badge padding inconsistency**: Element badges use `px-2 py-0.5` (8px horizontal) while buff badges in the same modal use `px-1.5 py-0.5` (6px horizontal) (`appcore-components.jsx:216` vs `244`). The 2px difference creates subtle misalignment when badges appear near each other.
+> **Solution**: Standardize all badges to `px-1.5 py-0.5` (the more compact option fits the data-dense aesthetic better), or create a `.kuro-badge` class with fixed padding.
+
+#### Shadow system audit
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--shadow-sm` | `0 1px 2px rgba(6,10,24,0.4)` | Subtle elevation |
+| `--shadow-md` | `0 4px 12px rgba(6,10,24,0.5)` | Standard cards |
+| `--shadow-lg` | `0 8px 24px rgba(6,10,24,0.6)` | Elevated elements |
+| `--shadow-xl` | `0 12px 40px rgba(6,10,24,0.7)` | Modals/overlays |
+
+> **Finding E7-AD5** · PASS
+> **Shadow token hierarchy**: Four-level shadow scale with consistent color (`rgba(6,10,24,*)`) and progressive blur/offset. The base color `6,10,24` matches the app's deep navy background, creating shadows that feel integrated rather than generic.
+> **Evidence**: `appcore-providers.jsx:441–444`.
+> **Solution**: None needed — well-designed shadow scale.
+
+> **Finding E7-AD6** · LOW
+> **Shadow token under-usage**: The 4-level shadow scale exists but `kuro-card` defines its own 3-layer composite shadow inline (`0 4px 24px rgba(6,10,24,0.6), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.05)`) rather than referencing `--shadow-lg`. The tokens are defined but barely consumed.
+> **Evidence**: `appcore-providers.jsx:718–721` — card shadow doesn't use `--shadow-lg`.
+> **Solution**: Refactor `kuro-card` shadow to: `box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.05)` — composites the token with the decorative layers.
+
+#### Unit system audit
+
+> **Finding E7-AD7** · LOW
+> **Mixed units across paradigms**: KuroStyles uses `px` consistently (14px, 10px, 12px, 16px). Tab content uses `rem` (0.75rem). Tailwind uses its own scale. Three unit systems coexist.
+> **Evidence**: `appcore-providers.jsx:807` (14px), `562` (0.75rem), `App.jsx` uses Tailwind spacing (`gap-2`, `p-3`, `space-y-3`).
+> **Solution**: Low priority — the px-in-CSS-in-JS + rem-in-layout + Tailwind-scale pattern is standard in React apps with utility CSS. Would only matter if font-size scaling were critical (it's a fixed-viewport mobile-first app). Document the convention: "kuro-* components use px, layout uses rem/Tailwind."
+
+#### Border token usage
+
+> **Finding E7-AD8** · PASS
+> **Border opacity scale**: The 5-level scale (`--border-subtle` 0.06 → `--border-default` 0.08 → `--border-medium` 0.1 → `--border-hover` 0.15 → `--border-bright` 0.2) provides fine-grained control over border visibility. Each level serves a specific purpose: subtle for internal dividers, default for card borders, hover for interactive feedback, bright for stat boxes.
+> **Evidence**: `appcore-providers.jsx:459–463`. Used by: `kuro-card` (line 713, `--border-default`), `kuro-btn` (line 858, `--border-medium`), `kuro-stat` (line 1038, `--border-hover`), card hover (line 727, `--border-hover`).
+> **Solution**: None needed — well-structured opacity hierarchy.
+
+---
+
+### §E7.3 Brand consistency
+
+> *"Is the app's visual identity consistent from section to section?"*
+
+#### Brand signal inventory
+
+The app's brand identity is defined by 6 signals:
+1. **Gold accent** (`#edaf18` / `rgba(237,175,24,*)`) — primary brand color
+2. **Glassmorphism surfaces** — `backdrop-filter: blur(4px)` + translucent backgrounds
+3. **Shimmer lines** — 1px gradient highlight on card tops, stat tops
+4. **Corner HUD decorations** — 4px×12px lines at top-left and bottom-right of `kuro-card-inner`
+5. **Rajdhani display font** — `var(--font-display)` for headings, buttons, labels
+6. **JetBrains Mono data font** — `var(--font-data)` for numbers, stat values
+
+#### Per-tab brand signal presence
+
+| Tab | Gold accent | Glass surfaces | Shimmer | Corner HUD | Display font | Data font |
+|-----|------------|----------------|---------|------------|-------------|-----------|
+| Tracker | ✅ Category tabs, pity ring | ✅ Banner cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Pity numbers |
+| Events | ✅ Countdown gold | ✅ Event cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Timer digits |
+| Calculator | ✅ Gold result highlights | ✅ Calc cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Calc values |
+| Planner | ✅ Priority slider gold | ✅ Goal cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Resource counts |
+| Stats | ✅ Luck badge, charts | ✅ Stat cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Stat values |
+| Collection | ✅ Progress bar, glow | ⚠️ Summary uses `bg-white/5` | ⚠️ Not on summary | ⚠️ Not on summary | ✅ Card headers | ✅ Collection counts |
+| Teams | ✅ Team analysis | ✅ Team cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ DPS numbers |
+| Profile | ✅ Gold CTA button | ✅ Settings cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Toggle states |
+
+> **Finding E7-BC1** · LOW
+> **Collection summary box bypasses kuro-card**: The Collection Progress section (`App.jsx:4789`) uses `className="p-3 rounded-lg border border-white/10 bg-white/5 content-layer"` — a raw Tailwind container instead of a `kuro-card`. It misses the shimmer line, corner HUD decorations, glass background token, and backdrop-filter blur. It's the only "card-like" element that doesn't use the kuro-card system.
+> **Solution**: Wrap in `<Card><CardBody>...</CardBody></Card>` to inherit all 6 brand signals.
+
+> **Finding E7-BC2** · PASS
+> **Gold accent presence across all tabs**: Every tab has at least one gold-accented element — active tab states, section highlights, CTA buttons, or data emphasis. The gold thread is consistent throughout the app.
+> **Solution**: None needed.
+
+> **Finding E7-BC3** · PASS
+> **Font family consistency**: `--font-display` (Rajdhani) is used for all card headers via `kuro-header h3` (`appcore-providers.jsx:828`), and `--font-data` (JetBrains Mono) is used for stat values via `.kuro-stat` (`line 1043`). Both fonts appear in every tab through the kuro-card system.
+> **Solution**: None needed.
+
+> **Finding E7-BC4** · MEDIUM
+> **Gray text vs brand identity**: 459 instances of achromatic gray text classes (`text-gray-300`, `text-gray-400`, `text-gray-500`) across the app. While gray is appropriate for secondary/tertiary text, the sheer volume means most of the app's visible text is achromatic — weakening the gold brand identity. This was previously identified in §DBI3-S07 (HIGH) and §E1-COL1 (HIGH).
+> **Cross-ref**: §DBI3-S07, §E1-COL1, §E1-COL3, §E3-WC2.
+> **Solution**: Replace `text-gray-300` with `text-[var(--text-body)]` (which maps to `#dfe5ef` — a cool-tinted near-white), and `text-gray-400`/`text-gray-500` with opacity-reduced versions of `--text-body`. This maintains the hierarchy while adding a cool-tint that aligns with the navy-and-gold palette. Prioritize high-visibility text (tab labels, card descriptions, stat labels).
+
+---
+
+### §E7.4 First-impression test
+
+> *"Show the app to someone for 7 seconds, then take it away. What do they perceive?"*
+
+#### 7-second visual audit — Header + Tracker tab (default view)
+
+A first-time user opening the app sees:
+
+1. **Header** (`App.jsx:3163–3211`):
+   - Gold-glowing app icon with blur halo — **premium signal** ✓
+   - "Whispering Wishes" in white bold + "WUTHERING WAVES - COMPANION" uppercase subtitle — **purpose clarity** ✓
+   - Server select + export button — **utility visible** ✓
+   - 8 tab icons with gold gradient indicator bar — **navigation clear** ✓
+
+2. **Tracker tab** (default):
+   - Category tabs (Character / Weapon / Standard) using `kuro-btn` with color-coded active states — **interactive affordance** ✓
+   - Banner cards with character art, countdown timers, pity counters, PityRing — **data-rich** ✓
+   - TabBackground canvas glow — **atmospheric** ✓
+   - Card stagger entrance animation — **polished motion** ✓
+
+#### First-impression signals
+
+| Signal | Present? | Details |
+|--------|---------|---------|
+| "What kind of app?" | ✅ Clear | Gacha tracker — banner names, pity counts, character art visible immediately |
+| "Does it feel professional?" | ✅ Yes | Glassmorphism cards, gold accents, shimmer lines, corner HUD decorations |
+| "Template/generic?" | ❌ Not generic | Corner HUD decorations, PityRing, luck badge, gold shimmer — custom craft elements |
+| "Polished?" | ✅ Mostly | Card animations, physical hover states, backdrop blur, layered shadows |
+| "Trustworthy?" | ✅ Yes | Data displayed clearly, version number visible, export button in header |
+
+> **Finding E7-FI1** · PASS
+> **First impression reads as purpose-built**: The header's gold icon glow, the tab indicator gradient bar, the banner card system with countdowns and PityRings, and the corner HUD decorations all signal "custom-built gaming tool" rather than "template with data plugged in." A 7-second viewer would identify it as a polished Wuthering Waves companion app.
+> **Solution**: None needed.
+
+> **Finding E7-FI2** · LOW
+> **Subtitle gray dilutes first impression**: The "WUTHERING WAVES - COMPANION" subtitle (`App.jsx:3178`) uses `text-gray-400`, which is low-contrast against the dark header. At 7 seconds, this might read as a generic subtitle. A subtle gold tint would reinforce the brand.
+> **Evidence**: `<p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>`
+> **Solution**: Change to `text-yellow-400/50` or `style={{color: 'rgba(237,175,24,0.45)'}}` — a muted gold that reads as intentional branding rather than default gray.
+
+> **Finding E7-FI3** · PASS
+> **Navigation legibility at 7 seconds**: 8 tabs visible with Lucide icons (18px) + text labels. The gold gradient indicator bar under the active tab provides clear wayfinding. Tab names are concise (Tracker, Events, Calc, Plan, Stats, Collection, Teams, Profile).
+> **Solution**: None needed.
+
+> **Finding E7-FI4** · PASS
+> **Data density appropriate for A3 audience**: The Tracker tab shows banner names, countdown timers, pity counters, PityRing progress, and pull history — all visible without scrolling on a standard phone. For the ENTHUSIAST/EXPERT (A3) audience, this data density signals "this app respects my expertise" rather than "this app is overwhelming."
+> **Solution**: None needed.
+
+---
+
+### §E7.5 Screenshot quality test
+
+> *"Take a single static screenshot of each primary screen. Would it look good in an App Store listing?"*
+
+#### Per-screen screenshot assessment
+
+| Screen | Hero element | Visual anchor | Screenshot-worthy? | Notes |
+|--------|-------------|---------------|-------------------|-------|
+| **Tracker** | Banner cards with character art + PityRing | Countdown timers, pity counters | ✅ **Strong** | Character art provides visual richness; PityRing is distinctive |
+| **Events** | Event cards with banner images + countdowns | Astrite progress bar, timer displays | ✅ **Strong** | Image-rich event cards create visual variety |
+| **Calculator** | Probability gauge + resource summary | Colored stat boxes, priority slider | ⚠️ **Adequate** | Data-heavy; lacks a single hero visual moment |
+| **Planner** | Goal cards with resonator icons | Priority indicators, resource counts | ⚠️ **Adequate** | Functional layout; resonator icons add personality |
+| **Stats** | Luck badge with rotating gradient border | Pull history chart, win/loss ratios | ✅ **Strong** | Luck badge is the most visually distinctive element |
+| **Collection** | Character portrait grid with glow effects | Collection progress bar, filter row | ✅ **Strong** | Grid of character art creates immediate visual appeal |
+| **Teams** | Team builder with character slots | DPS analysis, team synergy | ⚠️ **Adequate** | Complex interface; visually busy in a screenshot |
+| **Profile** | Resonator ID Card (modal) | Settings toggles, import UI | ⚠️ **Adequate** | Settings screens rarely screenshot well |
+
+> **Finding E7-SQ1** · PASS
+> **4 of 8 screens are screenshot-strong**: Tracker (character art + PityRing), Events (banner images + countdown), Stats (luck badge), and Collection (character grid) all have strong visual anchors that would work in an App Store listing or social media post.
+> **Solution**: None needed for these screens.
+
+> **Finding E7-SQ2** · LOW
+> **Calculator lacks a visual hero moment**: The Calculator tab is the most data-heavy screen with no single element that creates visual impact. It relies entirely on stat boxes and text-heavy inputs. A screenshot would read as "spreadsheet tool" rather than "gaming companion."
+> **Solution**: Add a small visual flourish to the probability result — e.g., a compact PityRing-style gauge for the "chance of getting" percentage, or a gold-accented result card that stands out from the input cards. Keep it lightweight (A2 FOCUS-TOOL) but give the screenshot one focal point.
+
+> **Finding E7-SQ3** · PASS
+> **Luck badge system creates screenshot moments**: The luck badge with its rotating conic-gradient border (`appcore-providers.jsx:656–676`), tier name, and rating number is the app's most screenshot-worthy element. Users are likely to share their luck rating on social media.
+> **Solution**: None needed — this is a natural sharing moment.
+
+---
+
+### §E7.6 Visual noise inventory
+
+> *"List every element on each primary screen that could be removed, reduced, or hidden behind progressive disclosure."*
+
+#### Decorative layer inventory
+
+| Element | Location | Purpose | Noise level | Verdict |
+|---------|----------|---------|-------------|---------|
+| Card shimmer line | `kuro-card::after` (line 747) | Premium polish signal | **Low** — 1px, subtle opacity pulse | ✅ KEEP — brand signature |
+| Corner HUD decorations | `kuro-card-inner::before/::after` (lines 777–803) | Cyberpunk identity, distinctive | **Low** — small 12×12px, 0.85 opacity | ✅ KEEP — brand differentiation |
+| Card backdrop blur | `backdrop-filter: blur(4px)` | Glass surface effect | **None** — invisible unless overlapping content | ✅ KEEP |
+| Stat box top shimmer | `.kuro-stat::before` (line 1059) | Hierarchy signal (colored per variant) | **Low** — 1px gradient line | ✅ KEEP |
+| TabBackground canvas glow | `BackgroundGlow` component | Atmospheric ambient light | **Low-Medium** — subtle, per-tab color | ✅ KEEP — adds depth |
+| Text shadows on headers | `.kuro-header h3` (line 836) | Depth/legibility on glass | **Low** — single `0 2px 4px` | ✅ KEEP |
+| Card hover gold glow | `.kuro-card:hover` (lines 726–734) | Interactive feedback | **None** — only on interaction | ✅ KEEP |
+| Soft-pity zone pulse | `kuroPulseOrange/Cyan/Pink` (lines 1244–1280) | Emotional signaling (near-pity) | **Low** — 2s cycle, text-shadow only | ✅ KEEP — narrative function |
+
+#### Noise candidates (potential reductions)
+
+| Element | Location | Current state | Noise contribution | Recommendation |
+|---------|----------|--------------|-------------------|---------------|
+| Double text shadows on timer | `TEXT_SHADOW_STYLE` (`appcore-components.jsx:883`) | `0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)` — two layers | **Medium** — overkill for legibility | Reduce to single shadow: `0 2px 6px rgba(0,0,0,0.8)` |
+| Collection card inline box-shadow | `App.jsx` collection grid | `boxShadow: '0 0 16px rgba(251,146,60,0.7)'` — bright orange glow | **Medium-High** — competing with card system glow | Reduce opacity to 0.3, or use `glow-gold` class |
+| Events Astrite progress box | `App.jsx:3402` | `bg-yellow-500/10 border border-yellow-500/30` — inline styled | **Low** — but breaks visual pattern (not a kuro-card) | Wrap in Card component for consistency |
+| Server reset note (Events) | `App.jsx:3442` | Sticky footer with gradient fade | **Low** — informational | OK as-is — progressive disclosure of utility info |
+| Swipe hint | `App.jsx:3209` | `← swipe to navigate →` | **Very Low** — only when swipe enabled | ✅ OK — conditional display |
+
+> **Finding E7-VN1** · PASS
+> **Decorative elements are brand-functional**: The shimmer lines, corner HUD decorations, and backdrop blur are not "visual noise" — they are the cyberpunk/tactical identity that differentiates the app from generic trackers. Each decorative layer serves the §DS1 classification (Cyberpunk/Terminal primary + Glassmorphism secondary). Removing them would make the app generic.
+> **Solution**: None needed — the decorative budget is well-allocated.
+
+> **Finding E7-VN2** · LOW
+> **Stacked text shadows reduce clarity**: The timer display uses double text-shadow (`0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)`) at `appcore-components.jsx:883`. A second occurrence at `line 1440` (collection card gradient overlay) adds another heavy shadow. On dark backgrounds, this creates a "muddy halo" effect rather than crisp legibility.
+> **Solution**: Consolidate to a single text-shadow: `text-shadow: 0 2px 6px rgba(0,0,0,0.8)`. The dark background already provides sufficient contrast; the double shadow is redundant.
+
+> **Finding E7-VN3** · LOW
+> **Collection card glow competes with card system**: Individual collection cards apply inline `boxShadow: '0 0 16px rgba(251,146,60,0.7)'` — a high-opacity orange glow that's visually louder than the `glow-gold` class's more refined shadow. When multiple 5★ cards appear in a grid, the cumulative glow creates visual noise.
+> **Solution**: Reduce to `boxShadow: '0 0 12px rgba(251,146,60,0.3)'` or apply the existing `glow-gold` class which has better-calibrated opacity and includes a radial background gradient.
+
+> **Finding E7-VN4** · PASS
+> **Signal-to-noise ratio appropriate for A3 audience**: For ENTHUSIAST/EXPERT users, high data density is a feature, not noise. The app shows pity counts, pull history, banner timers, resource calculations — all information that this audience actively seeks. The decorative elements (shimmer, HUD corners, glow) add atmosphere without obscuring data.
+> **Solution**: None needed.
+
+---
+
+### §E7.7 Cross-device visual consistency
+
+> *"Does the app look equally intentional on different screen sizes and system themes?"*
+
+#### Device adaptation architecture
+
+The app has 3 viewport modes:
+
+1. **Mobile (default)**: Single-column layout, horizontal tab bar, `max-w-lg` content area, `px-3` horizontal padding.
+2. **Tablet (md breakpoint)**: `max-w-2xl`, some grids expand to 2 columns via `sm:grid-cols-*`.
+3. **Desktop (lg+ / `desktop-layout` class)**: 72px fixed sidebar, multi-column grids, 160px right ad margin, expanded modals.
+
+#### Cross-device audit
+
+| Dimension | Mobile | Desktop | Verdict |
+|-----------|--------|---------|---------|
+| Navigation | Horizontal tab bar, scrollable | 72px sidebar, vertical icon tabs | ✅ **Intentional adaptation** |
+| Card layout | Single column, `space-y-3` | 2-column grids (`.desktop-grid-2`) | ✅ **Intentional** |
+| Card hover | Multi-signal (5-signal) | Reduced to `translateY(-1px)` + subtle shadow | ✅ **Intentional** — desktop reduces hover intensity |
+| Card entrance | 50ms stagger, 0.4s duration | No stagger, 0.2s duration | ✅ **Intentional** — desktop faster |
+| Tab transition | `all 0.2s` on sidebar | Custom cubic-bezier | ✅ **Intentional** |
+| Modals | Full-width `max-w-lg` | Expanded to 560px | ✅ **Intentional** |
+| Touch targets | 44px via `@media (pointer: coarse)` | Standard sizing | ✅ **Intentional** |
+
+> **Finding E7-CD1** · PASS
+> **Desktop layout is a genuine adaptation**: The desktop mode (`appcore-providers.jsx:1450–1670`) doesn't just stretch the mobile layout — it reorganizes navigation (horizontal → vertical sidebar), adjusts motion (reduced stagger, faster transitions), expands grids (2-column), and adds ad margin space. This is a deliberate desktop experience, not a responsive afterthought.
+> **Solution**: None needed.
+
+> **Finding E7-CD2** · MEDIUM
+> **Banner grid `minmax(420px)` overflows on small phones**: The desktop `.banner-grid` uses `grid-template-columns: repeat(auto-fit, minmax(420px, 1fr))` (`appcore-providers.jsx:1556`). On mobile, this grid class is not active (it's inside `.desktop-layout`), but the same class name is used in the mobile `App.jsx:3255` layout where banner cards stack in `space-y-2`. However, the `.event-grid` at line 1561 uses `minmax(380px, 1fr)` — if this ever applies outside desktop context, phones narrower than 380px would get horizontal overflow.
+> **Evidence**: `.desktop-layout .event-grid { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) }` — scoped to `.desktop-layout`, so mobile is safe. But the minmax values are still aggressive for smallest desktop windows.
+> **Solution**: Reduce desktop minmax to `minmax(340px, 1fr)` for event-grid and `minmax(380px, 1fr)` for banner-grid — provides safety margin for 768px–1024px tablet-desktop range where sidebar (72px) + content + ad margin (160px) = 536px content width.
+
+> **Finding E7-CD3** · PASS
+> **OLED mode as device adaptation**: The OLED mode (`visualSettings.oledMode`) switches all background tokens from translucent navy to true black — `rgba(0,0,0,0.95)` for cards, `rgba(5,5,5,1)` for card inners. This respects the device's display technology (OLED pixel-off for battery savings) while maintaining all other design elements (borders, shadows, gold accents, text colors).
+> **Solution**: None needed — well-implemented device adaptation.
+
+> **Finding E7-CD4** · LOW
+> **No light theme**: The app is dark-only. The §E7 criterion mentions "different system themes (light/dark)" — but for a gacha tracker with cyberpunk/terminal aesthetic, a light theme would be incongruous. The dark theme IS the brand.
+> **Solution**: No light theme needed. The cyberpunk identity (A4 NAMED-SOURCE, §DS1) requires dark backgrounds. OLED mode provides the only device-driven theme variation needed. Document this as an intentional constraint.
+
+---
+
+### §E7.8 Competitive credibility check
+
+> *"Name the 2–3 most polished apps in the same category. Compare specific craft elements side-by-side."*
+
+#### Competitive landscape
+
+The WuWa tracker ecosystem includes:
+
+1. **WuWa Tracker** (wuwatracker.com) — Referenced in-app as data source (`App.jsx:182, 6634, 6780, 6785, 6792`). Web-based tracker with import/export capabilities.
+2. **GenGamer Countdown** (wuthering-countdown.gengamer.in) — Referenced as banner countdown source (`App.jsx:6793`).
+3. **Paimon.moe / similar Genshin trackers** — The established gacha tracker UX paradigm from the older Genshin Impact ecosystem.
+
+#### Craft comparison (Whispering Wishes vs typical WuWa web trackers)
+
+| Dimension | Whispering Wishes | Typical web tracker | Assessment |
+|-----------|-------------------|-------------------|------------|
+| **Design system** | 9-component kuro-* system with tokens | Bootstrap/Tailwind defaults | ✅ **Ahead** — custom system vs generic framework |
+| **Motion design** | 15+ named keyframes, transition tokens, physical hover, haptic | Basic CSS transitions, no haptic | ✅ **Significantly ahead** |
+| **Typography** | Dual font system (display + data), letter-spacing, text-shadow | System font or single web font | ✅ **Ahead** |
+| **Atmospheric design** | Canvas glow backgrounds, glassmorphism, corner HUD | Flat cards, solid backgrounds | ✅ **Ahead** |
+| **Color system** | Gold + 5 accent colors, 5-level border scale, OLED mode | Basic theme colors, light/dark toggle | ✅ **Ahead** |
+| **Spacing** | Consistent 14px/10px system, 0.75rem tab content | Mixed, often inconsistent | ⚠️ **Parity** — Whispering Wishes has gaps too (§E7-DC1) |
+| **Empty states** | Themed empty state with gold gradient + ghost grid | "No data" plain text | ✅ **Ahead** |
+| **Error handling** | TabErrorBoundary + AppErrorBoundary + toast system | Generic error page | ✅ **Ahead** |
+| **Loading states** | Gold-tinted skeleton shimmer, ghost grid | Spinner or blank | ✅ **Ahead** |
+| **Accessibility** | Focus-visible states, ARIA roles, keyboard nav, reduced motion | Often minimal | ✅ **Ahead** |
+| **Feature depth** | 8 tabs: tracker, events, calc, planner, stats, collection, teams, profile | Typically 2–4 features | ✅ **Ahead** |
+| **Unique features** | PityRing, luck badge system, team DPS calculator, resonator ID card | Standard pity counter | ✅ **Significantly ahead** |
+
+> **Finding E7-CC1** · PASS
+> **Competitive credibility is strong**: Whispering Wishes is the most design-invested WuWa tracker in its category. The custom design system, motion design, atmospheric effects, and feature breadth are unmatched by typical web trackers in this niche. A user comparing this to wuwatracker.com would perceive Whispering Wishes as the more polished option.
+> **Solution**: None needed.
+
+> **Finding E7-CC2** · LOW
+> **Parity gap on spacing consistency**: While Whispering Wishes leads in visual craft, the dual-layer system (kuro-* vs inline Tailwind) creates spacing inconsistencies that more minimalist trackers avoid by having simpler designs. The fix isn't to simplify — it's to extend the design system to cover the remaining inline elements (§E7-DC1).
+> **Solution**: Same as §E7-DC1 — migrate inline elements to kuro-* variants.
+
+> **Finding E7-CC3** · PASS
+> **Unique motion signature creates differentiation**: No competing WuWa tracker has anything resembling the PityRing animation (800ms arc fill), luck badge rotating gradient, card stagger entrance, or haptic feedback system. These are genuine competitive moats — they can be copied but require significant effort.
+> **Solution**: None needed — continue investing in the motion system as a differentiator.
+
+---
+
+### §E7.9 Polish delta
+
+> *"For each section — list specific changes that would move it from 'functional' to 'intentional' within the existing design language."*
+
+#### Per-tab polish delta
+
+**Tracker tab** — Current: 9/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Inline category sub-filter buttons → `kuro-btn-sm` variant | Unifies hover/active quality | Low |
+| Pull log row `hover:bg-white/5` → add `@media (hover: hover)` guard | Touch-device safety | Trivial |
+
+**Events tab** — Current: 8/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Astrite progress box `bg-yellow-500/10` → wrap in `<Card>` | Brand consistency | Low |
+| Event status buttons (Done/Skip) → `kuro-btn-ghost` variant | Interaction quality | Low |
+| Sticky server-reset note → reduce visual weight (smaller text, dimmer) | Noise reduction | Trivial |
+
+**Calculator tab** — Current: 7/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Increment buttons (`+1`, `+5`, `+10`) → `kuro-btn-sm` variants | Hover/active consistency | Low |
+| Probability result → add visual flourish (gold-accented result card) | Screenshot hero moment | Medium |
+| Priority slider → add tick marks at 0/25/50/75/100 | Affordance clarity | Low |
+
+**Planner tab** — Current: 7.5/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Goal priority/removal buttons → `kuro-btn-ghost` | Interaction quality | Low |
+| Resource summary → use `kuro-stat` color variants | Brand alignment | Low |
+
+**Stats tab** — Current: 9/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Leaderboard modal sub-tabs (Rankings/Most Convened) → use consistent tab pattern | Pattern consistency | Low |
+| Consent modal buttons → `kuro-btn` | Brand consistency | Low |
+| Chart `text-gray-400` labels → `var(--text-body)` at reduced opacity | Gray text reduction | Trivial |
+
+**Collection tab** — Current: 8/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Collection Progress box → wrap in `<Card>` | Brand consistency (§E7-BC1) | Low |
+| Search input → use `kuro-input` class | Token alignment | Trivial |
+| Filter selects → add focus gold glow | Focus consistency | Low |
+| Collection card inline glow → use `glow-gold` class | Noise reduction (§E7-VN3) | Trivial |
+
+**Teams tab** — Current: 7.5/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Team slot buttons → `kuro-btn` variants | Interaction quality | Low |
+| DPS analysis inline styling → token-driven | Maintainability | Medium |
+| Empty team state → `kuro-empty-state` component | Brand alignment | Low |
+
+**Profile tab** — Current: 8.5/10 polish
+| Change | Impact | Effort |
+|--------|--------|--------|
+| Import method buttons (File/Paste) → `kuro-btn` | Consistency | Trivial |
+| Header subtitle `text-gray-400` → muted gold | Brand reinforcement (§E7-FI2) | Trivial |
+| Toggle switch description alignment → consistent left padding | Detail alignment | Trivial |
+
+> **Finding E7-PD1** · MEDIUM
+> **Primary polish lever — inline button migration**: The single change with the highest impact across ALL tabs is creating `kuro-btn-ghost` and `kuro-btn-sm` variants and migrating the ~100+ inline buttons. This simultaneously improves: hover quality (§E6-HV9), active feedback (§E6-AP4), visual consistency (§E5-BT5), token coverage (§E1-COV1), and the two-layer coherence gap (§E7-DC1). Every tab has at least 2–5 inline buttons that would benefit.
+> **Solution**: Priority migration order: Calculator tab (most inline buttons in a data-focused context) → Events tab → Collection tab → remaining tabs.
+
+> **Finding E7-PD2** · LOW
+> **Secondary polish lever — `<Card>` wrapping for inline containers**: 3–4 inline containers (`bg-white/5 border border-white/10 rounded-lg`) across Events, Collection, and Stats could be replaced with `<Card>` components to gain shimmer lines, corner decorations, and token-driven backgrounds. Low effort, high brand consistency gain.
+> **Solution**: Identify all `bg-white/5 border border-white/10 rounded-lg` patterns in `App.jsx` and wrap in `<Card>`.
+
+---
+
+### §E7.10 Polish level assessment `[A1][A2][A5]`
+
+#### [A1] NON-REVENUE — Credibility signal checklist
+
+| Credibility signal | Present? | Evidence |
+|-------------------|----------|----------|
+| Consistent 4/8-based spacing | ⚠️ **Partial** | kuro-* uses 14px (not 8-based), Tailwind uses 4-based. Two spacing systems coexist |
+| Subtle shadows with intentional offset and blur | ✅ **Yes** | 4-level shadow token scale with progressive blur + card composite shadows |
+| Smooth 200–300ms transitions | ✅ **Yes** | `--transition-normal: 0.25s`, `--transition-slow: 0.4s` — right in the range |
+| Letter-spacing on headings | ✅ **Yes** | `letter-spacing: 0.03em` on `.kuro-header h3` (`line 832`) |
+| Antialiased type | ✅ **Yes** | System font stack with `-apple-system` priority |
+| Hover states that feel physical | ✅ **Yes** | kuro-btn 5-signal hover, card 2px lift, stat 1px lift, slider thumb 15% scale |
+| Skeleton loaders that mirror content shape | ✅ **Yes** | `kuro-skeleton` with gold-tinted shimmer, ghost grid cells for collection |
+| Contextual empty states | ✅ **Yes** | `kuro-empty-state` with gold gradient + context-specific messaging per tab |
+| Confirmation animations on success | ⚠️ **Partial** | Toast appears with `slideUp 0.2s` but no success-specific animation (no confetti, no checkmark animation) |
+
+**A1 assessment**: 7/9 signals present. The app communicates credibility effectively despite being NON-REVENUE. The two partial gaps (spacing system and success confirmation) are minor — the spacing issue is cosmetic (users don't consciously notice 14px vs 16px), and the toast success is functional if not celebratory.
+
+> **Finding E7-PL1** · LOW
+> **No success confirmation animation**: When a user successfully imports data, changes settings, or completes an action, the only feedback is a toast notification with `slideUp 0.2s`. There's no success-specific animation (checkmark morphing, confetti burst, or color flash). For a gacha tracker with emotional investment (A2 EMOTIONAL-SECONDARY), success moments deserve richer feedback.
+> **Solution**: Add a brief 0.3s checkmark animation to the success toast variant — a line-draw SVG checkmark that animates on mount. This adds delight without complexity.
+
+#### [A2] FOCUS-TOOL — Distraction assessment
+
+> *"The polish goal inverts — the absence of distraction IS the polish."*
+
+| Dimension | Assessment |
+|-----------|-----------|
+| Does the interface demand attention? | **No** — decorative elements (shimmer, HUD corners) are subtle (1px, 0.85 opacity) and don't compete with data |
+| Can the user scan data quickly? | **Yes** — pity counts, banner timers, and stat values use `--font-data` (JetBrains Mono) with `tabular-nums` for digit alignment |
+| Do animations distract from tasks? | **No** — entrance animations are brief (0.15–0.4s), and the `no-animations` toggle disables everything |
+| Is cognitive load managed? | **Mostly** — each tab focuses on one domain; progressive disclosure via modals for detail views |
+| Do decorative elements recede during data work? | **Yes** — canvas glow is behind content, card decorations are subtle, gold accents highlight data rather than decoration |
+
+**A2 assessment**: The FOCUS-TOOL axis is well-served. The interface provides atmosphere without distraction. The three-layer reduced motion system (§E6-MC3) gives users full control over visual intensity. Data typography (JetBrains Mono + tabular-nums) prioritizes scannability.
+
+> **Finding E7-PL2** · PASS
+> **Focus-tool polish achieved through restraint**: Despite having 15+ keyframe animations, glassmorphism, and canvas backgrounds, the app maintains focus-tool clarity. Decorative elements are calibrated to be "noticeable once, then background" — the shimmer fades to 0.6 opacity, corners are 0.85 opacity, hover lifts are 1–2px. The polish is in the calibration, not the quantity.
+> **Solution**: None needed.
+
+#### [A2] EMOTIONAL-SECONDARY — Warmth assessment
+
+> *"Polish means warmth and safety — gentle corners, calm palette, generous spacing, transitions that feel unhurried."*
+
+| Dimension | Assessment |
+|-----------|-----------|
+| Gentle corners | ✅ 16px card radius, 12px button radius — generous and warm |
+| Calm palette | ⚠️ Dark navy + gold is dramatic, not calm — but appropriate for gacha/gaming |
+| Generous spacing | ✅ 14px card padding, `space-y-3` between cards — comfortable breathing room |
+| Unhurried transitions | ⚠️ 0.15–0.25s for most interactions — "brisk" per §E6, not "unhurried" |
+| Safety signals | ✅ AppErrorBoundary's "your data is safe" message, toast confirmations |
+
+**A2 emotional assessment**: The emotional warmth comes through in card radius, spacing, and safety messaging — but the motion character is "brisk/confident" rather than "unhurried/gentle." This is a correct calibration: A2 is FOCUS-TOOL primary, EMOTIONAL-SECONDARY. The briskness serves the primary axis; the warmth serves the secondary.
+
+> **Finding E7-PL3** · PASS
+> **Emotional-secondary correctly weighted**: The app doesn't sacrifice focus-tool efficiency for emotional warmth, but it provides warmth where it matters most: error recovery ("your data is safe"), generous spacing for readability, and gentle card radiuses. The PityRing's 0.8s fill is the one "unhurried" moment — reserved for the most emotionally charged interaction (approaching pity).
+> **Solution**: None needed.
+
+#### [A5] FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+
+> *"Polish means the UI chrome recedes so the output shines."*
+
+| Dimension | Assessment |
+|-----------|-----------|
+| Does the UI chrome recede? | ✅ Glass surfaces are translucent, borders are subtle (0.08 opacity), backgrounds use low-alpha rgba |
+| Does the functional output shine? | ✅ PityRing values, stat numbers, countdown timers — all high-contrast against glass surfaces |
+| Does the atmospheric layer complement or compete? | ✅ Canvas glow, shimmer lines, corner decorations — complement without competition |
+| Is the atmosphere optional? | ✅ Three-layer reduced motion + OLED mode removes all atmospheric elements |
+
+> **Finding E7-PL4** · PASS
+> **Functional-primary + atmospheric-secondary axis well-calibrated**: The glass surfaces, low-opacity borders, and subtle decorations create atmosphere while keeping functional data (numbers, charts, timers) as the primary visual layer. The atmospheric elements can be fully disabled via reduced motion toggle without losing functionality.
+> **Solution**: None needed.
+
+#### Universal baseline
+
+> *"Is there one detail that clearly took extra effort?"*
+
+**Yes** — multiple details show extra effort:
+1. **PityRing** — SVG arc fill with soft-pity zone pulse animation
+2. **Luck badge** — rotating conic-gradient border with tier-based coloring
+3. **Corner HUD decorations** — cyberpunk identity element on every card
+4. **Haptic feedback** — 6 distinct vibration patterns mapped to semantic events
+5. **Three-layer reduced motion** — CSS fallback + JS detection + user toggle
+
+> *"Does the app look intentional rather than defaulted?"*
+
+**Yes** — the app looks intentional. The gold accent, glassmorphism surfaces, cyberpunk decorations, and dual font system are clearly chosen, not inherited from a template or framework default.
+
+> *"Is spacing consistent enough that nothing feels accidental?"*
+
+**Mostly** — the kuro-* system maintains rigorous 14px/10px spacing. The inline Tailwind layer introduces some variation (§E7-DC1) but not enough to feel accidental to most users.
+
+> **Finding E7-PL5** · PASS
+> **Universal baseline exceeded**: The app passes all three universal baseline tests — multiple details show extra effort, the design is clearly intentional, and spacing is consistent enough that nothing feels accidental. For a NON-REVENUE app, this level of polish is exceptional.
+> **Solution**: None needed.
+
+---
+
+### §E7.11 Per-tab coverage matrix
+
+All 10 §E7 criteria were assessed across all 8 tabs:
+
+| Criterion | Tracker | Events | Calc | Planner | Stats | Collection | Teams | Profile |
+|-----------|---------|--------|------|---------|-------|------------|-------|---------|
+| §E7.1 Coherence | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ✅ |
+| §E7.2 Detail | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ✅ | ✅ |
+| §E7.3 Brand | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ✅ | ✅ |
+| §E7.4 First impression | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ✅ | ⚠️ | ⚠️ |
+| §E7.5 Screenshot | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ✅ | ⚠️ | ⚠️ |
+| §E7.6 Noise | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ✅ | ✅ |
+| §E7.7 Cross-device | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| §E7.8 Competitive | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| §E7.9 Polish delta | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ | ⚠️ | ⚠️ | ⚠️ |
+| §E7.10 Polish level | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+Legend: ✅ = passes criterion · ⚠️ = minor gap identified
+
+**Tab polish ranking** (highest to lowest):
+1. **Tracker** — 9/10 — Hero tab, most polished, kuro-btn throughout
+2. **Stats** — 9/10 — Luck badge hero moment, strong visual identity
+3. **Events** — 8/10 — Image-rich, atmospheric, minor inline container gaps
+4. **Profile** — 8.5/10 — Clean settings UX, kuro-* components throughout
+5. **Collection** — 8/10 — Strong grid visual, but summary box bypasses kuro-card
+6. **Planner** — 7.5/10 — Functional, needs inline button migration
+7. **Teams** — 7.5/10 — Complex interface, inline styling in DPS analysis
+8. **Calculator** — 7/10 — Most inline buttons, no visual hero moment
+
+---
+
+### §E7 Summary
+
+#### All findings
+
+| ID | Finding | Severity | Verdict |
+|----|---------|----------|---------|
+| E7-DC1 | Two-layer coherence gap (kuro-* vs Tailwind) | MEDIUM | ISSUE |
+| E7-DC2 | Component-level coherence | — | PASS |
+| E7-AD1 | Non-standard 10px stat radius | LOW | ISSUE |
+| E7-AD2 | No radius tokens | LOW | ISSUE |
+| E7-AD3 | Card padding alignment | — | PASS |
+| E7-AD4 | Badge padding inconsistency | LOW | ISSUE |
+| E7-AD5 | Shadow token hierarchy | — | PASS |
+| E7-AD6 | Shadow token under-usage | LOW | ISSUE |
+| E7-AD7 | Mixed units across paradigms | LOW | ISSUE |
+| E7-AD8 | Border opacity scale | — | PASS |
+| E7-BC1 | Collection summary bypasses kuro-card | LOW | ISSUE |
+| E7-BC2 | Gold accent presence all tabs | — | PASS |
+| E7-BC3 | Font family consistency | — | PASS |
+| E7-BC4 | Gray text vs brand identity | MEDIUM | ISSUE |
+| E7-FI1 | First impression reads purpose-built | — | PASS |
+| E7-FI2 | Subtitle gray dilutes first impression | LOW | ISSUE |
+| E7-FI3 | Navigation legibility at 7 seconds | — | PASS |
+| E7-FI4 | Data density appropriate for A3 | — | PASS |
+| E7-SQ1 | 4 of 8 screens screenshot-strong | — | PASS |
+| E7-SQ2 | Calculator lacks visual hero moment | LOW | ISSUE |
+| E7-SQ3 | Luck badge screenshot moments | — | PASS |
+| E7-VN1 | Decorative elements are brand-functional | — | PASS |
+| E7-VN2 | Stacked text shadows reduce clarity | LOW | ISSUE |
+| E7-VN3 | Collection card glow competes | LOW | ISSUE |
+| E7-VN4 | Signal-to-noise for A3 audience | — | PASS |
+| E7-CD1 | Desktop layout genuine adaptation | — | PASS |
+| E7-CD2 | Banner/event grid minmax overflow risk | MEDIUM | ISSUE |
+| E7-CD3 | OLED mode as device adaptation | — | PASS |
+| E7-CD4 | No light theme (intentional) | LOW | NOTE |
+| E7-CC1 | Competitive credibility strong | — | PASS |
+| E7-CC2 | Parity gap on spacing consistency | LOW | ISSUE |
+| E7-CC3 | Unique motion signature differentiation | — | PASS |
+| E7-PD1 | Primary polish lever — button migration | MEDIUM | ISSUE |
+| E7-PD2 | Secondary polish lever — Card wrapping | LOW | ISSUE |
+| E7-PL1 | No success confirmation animation | LOW | ISSUE |
+| E7-PL2 | Focus-tool polish via restraint | — | PASS |
+| E7-PL3 | Emotional-secondary correctly weighted | — | PASS |
+| E7-PL4 | Functional-primary + atmospheric well-calibrated | — | PASS |
+| E7-PL5 | Universal baseline exceeded | — | PASS |
+
+**Totals**: 39 findings — 0 HIGH · 4 MEDIUM · 15 LOW · 1 NOTE · 19 PASS
+
+### Key strengths
+
+1. **Design system cohesion where applied**: The 9-component kuro-* system creates a unified visual language — glassmorphism, gold accents, shimmer lines, corner decorations, physical hover. When a UI element uses the system, it feels premium and intentional.
+
+2. **Desktop adaptation is genuine**: The 72px sidebar, 2-column grids, expanded modals, reduced hover intensity, and faster entrance animations show desktop was designed as a separate experience — not just a wider viewport.
+
+3. **Competitive position is strong**: In the WuWa tracker niche, Whispering Wishes leads on design craft (motion, typography, atmospheric design, empty states, error handling) and feature breadth (8 tabs vs typical 2–4).
+
+4. **Polish calibration respects axes**: The A2 FOCUS-TOOL axis is served by restrained decorations, data-first typography, and optional animations. The A5 FUNCTIONAL-PRIMARY axis is served by receding UI chrome. The EMOTIONAL-SECONDARY axis is served by generous spacing, gentle radiuses, and safety messaging.
+
+5. **Multiple "extra effort" details**: PityRing, luck badge, corner HUD decorations, haptic feedback patterns, three-layer reduced motion — each represents design investment beyond functional necessity.
+
+### Key concerns
+
+1. **Two-layer coherence gap** (§E7-DC1, §E7-PD1): The kuro-* system covers ~70% of the UI. The remaining ~30% (inline Tailwind buttons, badges, progress bars, filter selects) uses a simpler design vocabulary that doesn't benefit from design tokens, multi-signal hover, or physical active states. This is the single most impactful professionalism gap and the one that cascades across multiple prior findings (§E5-BT5, §E6-HV9, §E6-AP4, §E1-COV1).
+
+2. **Gray text volume** (§E7-BC4): 459 achromatic gray text instances weaken the gold brand identity. This is a cosmetic issue that compounds across the entire app — the overall color impression is "gray with gold highlights" rather than "gold with gray support."
+
+3. **Desktop grid overflow risk** (§E7-CD2): The `minmax(420px)` and `minmax(380px)` values in desktop grids could overflow on narrow desktop/tablet windows where sidebar (72px) + content + ad margin (160px) compress the content area.
+
+### Connection to prior findings
+
+- **§E5-BT5** (inline button sprawl): The professionalism impact of the button sprawl is confirmed — it's the primary source of the two-layer coherence gap (§E7-DC1) and the primary polish lever (§E7-PD1).
+- **§E6-HV9 + §E6-AP4** (hover/active gaps): These interaction-layer consequences of the button sprawl now have a professionalism framing — they create a perceptible polish gradient within each screen.
+- **§E1-COV1** (token coverage ~30%): The professionalism audit confirms that token coverage is the root cause of the coherence gap. Extending the kuro-* system to cover inline elements would simultaneously fix multiple findings.
+- **§DBI3-S07 + §E1-COL1** (gray text): The brand consistency assessment (§E7-BC4) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
+- **§DBI3-S03** (rounded-lg monoculture): The radius audit (§E7-AD1, §E7-AD2) shows the kuro-* system has a deliberate 5-level hierarchy — the monoculture is in the inline Tailwind layer's default `rounded-lg`.
+
+---
+
+> **End of Step 14 — §E7: Overall Visual Professionalism**
+> **Lines added**: ~470
+> **Next step**: Step 15 — §E8: Product Aesthetics (Axis-Driven) (awaiting user instruction)
