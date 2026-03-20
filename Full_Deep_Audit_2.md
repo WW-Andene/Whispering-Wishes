@@ -2533,3 +2533,717 @@ The plan (lines 110-116) specified these §DP2 deliverables:
 **Dimension Alignment**: All 12 spectra within 0.5 units of target — no major misalignments
 **Actionable Findings**: 2 (DP1-M1 toast material LOW, DP1-CC1 tokenization MEDIUM)
 **Character Brief**: Established as decision filter for all subsequent audit findings
+
+---
+---
+
+# STEP 5: §DC1 + §DC2 — Perceptual Color Architecture + Palette Roles
+
+> **Method**: Convert all app colors to OKLCH perceptual space for uniform analysis. OKLCH provides perceptually uniform lightness (L), chroma (C = saturation), and hue (h). All conversions performed via sRGB→OKLab→OKLCH pipeline.
+
+---
+
+## §DC1 — Perceptual Color Architecture
+
+### §DC1.1 — Background Layer Analysis
+
+**All background values converted to OKLCH:**
+
+| Background | Hex/RGB | OKLCH | Lightness | Chroma | Hue |
+|-----------|---------|-------|-----------|--------|-----|
+| **App body** | `#080c14` | `oklch(15.4% 0.019 263°)` | 15.4% | 0.019 | 263° (blue) |
+| **OLED mode** | `#000000` | `oklch(0% 0 —)` | 0% | 0 | achromatic |
+| **Scrollbar track** | `#0f1520` | `oklch(19.5% 0.024 262°)` | 19.5% | 0.024 | 262° (blue) |
+| **Card surface** | `rgb(12,16,24)` | `oklch(17.3% 0.018 264°)` | 17.3% | 0.018 | 264° (blue) |
+| **Card inner** | `rgb(6,10,18)` | `oklch(14.4% 0.019 261°)` | 14.4% | 0.019 | 261° (blue) |
+| **Button/Input** | `rgb(15,20,28)` | `oklch(19.0% 0.018 260°)` | 19.0% | 0.018 | 260° (blue) |
+| **Stat box** | `rgb(10,14,22)` | `oklch(16.4% 0.018 264°)` | 16.4% | 0.018 | 264° (blue) |
+| **Shadow base** | `rgb(6,10,24)` | `oklch(14.9% 0.031 269°)` | 14.9% | 0.031 | 269° (blue) |
+
+#### Background Layer Assessment
+
+**Hue coherence**: ✅ **EXCELLENT** — All non-OLED backgrounds sit within a 9° hue range (260°-269°), all firmly in the blue family. The shadow base is slightly more blue-shifted (269°) which is correct — shadows naturally shift cooler.
+
+**Chroma coherence**: ✅ **EXCELLENT** — All backgrounds have chroma between 0.018-0.031. This is the "chromatic dark" sweet spot identified by the skill document: `oklch(~14% ~0.02 ~260)` — enough hue presence to feel intentionally tinted, not enough to read as "blue." The shadow base has slightly higher chroma (0.031) — this is appropriate because shadow color benefits from slightly more saturation to feel rich rather than neutral.
+
+**Lightness progression**: The surface elevation system in OKLCH lightness:
+
+```
+Layer                  L%       Δ from below
+─────────────────────────────────────────────
+OLED mode              0.0%     —
+Card inner            14.4%     +14.4%
+Shadow base           14.9%     +0.5%
+App body              15.4%     +0.5%
+Stat box              16.4%     +1.0%
+Card surface          17.3%     +0.9%
+Button/Input          19.0%     +1.7%
+Scrollbar track       19.5%     +0.5%
+```
+
+**Finding**: DC1-BG1 — Background lightness steps are too narrow | **LOW**
+
+The standard-mode lightness range spans only 14.4% to 19.5% — a total of **5.1 OKLCH lightness points**. The skill document recommends **~3-4% per layer step** for perceptible elevation. Current steps between layers are 0.5-1.7%, meaning:
+- Card inner (14.4%) vs App body (15.4%) = 1.0% — **imperceptible** without border/blur cues
+- Stat box (16.4%) vs Card surface (17.3%) = 0.9% — **barely perceptible**
+- Card surface (17.3%) vs Button/Input (19.0%) = 1.7% — **marginally perceptible**
+
+**Assessment**: This narrow range WORKS in practice because the app uses **alternative depth cues** — backdrop-filter blur, border opacity, and shadow layers — rather than relying solely on surface lightness for elevation. The lightness system is supplementary, not primary. However, it means the lightness alone provides weak depth signal.
+
+**Solution**: If lightness-as-elevation is desired as a stronger signal:
+- Keep app body at `oklch(15.4% 0.019 263)` (anchor)
+- Shift card surface to `oklch(19% 0.018 263)` (+3.6% from body)
+- Shift button/input to `oklch(22% 0.018 263)` (+3% from card)
+- This creates a 3%+ step between each layer
+
+However, **this may be unnecessary** given the strong blur/border/shadow depth system already in place. The narrow lightness range is a character choice (dark-mode-focused, OLED-friendly) rather than an error. Mark as LOW — no change recommended unless other depth cues are reduced.
+
+**Finding**: DC1-BG2 — OLED mode correctly uses pure black | **PASS**
+
+OLED mode at `oklch(0% 0 —)` is achromatic pure black. This is the correct choice for OLED pixel-off power savings. The skill document notes pure black is "appropriate only for OLED/theater mode" — and that's exactly how it's used.
+
+**Solution**: Protect OLED pure black. The standard mode's chromatic `oklch(15.4% 0.019 263°)` provides the refined feeling, while OLED provides the functional power savings.
+
+**Finding**: DC1-BG3 — Shadow base has elevated chroma (intentional) | **PASS**
+
+Shadow base `oklch(14.9% 0.031 269°)` has nearly 2× the chroma (0.031 vs 0.018) of the surface colors. This is correct for dark-mode shadow design — slightly more chromatic shadows feel richer and more intentional than neutral gray shadows. The 6° hue shift toward cooler blue (269° vs 263°) is also correct — shadows naturally read as cooler.
+
+**Solution**: Protect the elevated shadow chroma. It's a subtle but perceptually correct design decision.
+
+---
+
+### §DC1.2 — Text Color Chromaticity Assessment
+
+**All text colors in OKLCH:**
+
+| Text Role | Hex | OKLCH | L% | C | Hue | Cool-tinted? |
+|-----------|-----|-------|-----|---|-----|-------------|
+| **Heading** (--text-heading) | `#edf1f8` | `oklch(95.7% 0.010 262°)` | 95.7 | 0.010 | 262° | ✅ Blue |
+| **Body** (--text-body) | `#dfe5ef` | `oklch(92.0% 0.015 261°)` | 92.0 | 0.015 | 261° | ✅ Blue |
+| **Secondary** (gray-300) | `#c5ccda` | `oklch(84.4% 0.021 265°)` | 84.4 | 0.021 | 265° | ✅ Blue |
+| **Muted** (gray-400) | `#8f99ab` | `oklch(68.1% 0.029 262°)` | 68.1 | 0.029 | 262° | ✅ Blue |
+| **Disabled** (gray-500) | `#646e7f` | `oklch(53.6% 0.029 261°)` | 53.6 | 0.029 | 261° | ✅ Blue |
+| **Placeholder** | `#6b7389` | `oklch(55.7% 0.036 270°)` | 55.7 | 0.036 | 270° | ✅ Blue |
+| **Focus placeholder** | `#8f99ab` | `oklch(68.1% 0.029 262°)` | 68.1 | 0.029 | 262° | ✅ Blue |
+| **White** | `#ffffff` | `oklch(100% 0 —)` | 100 | 0 | achromatic | — |
+
+#### Text Chromaticity Assessment
+
+**Hue coherence**: ✅ **EXCELLENT** — All non-white text colors sit within a 9° hue band (261°-270°), matching the background hue family exactly. This creates a **monochromatic blue-tinted text system** — text and backgrounds share the same hue, differing only in lightness and chroma.
+
+**Lightness hierarchy**:
+
+```
+Text role          L%       Contrast vs body (L=15.4%)
+──────────────────────────────────────────────────────
+Heading            95.7%    80.3 L-points  ✅ Excellent
+Body               92.0%    76.6 L-points  ✅ Excellent
+Secondary          84.4%    69.0 L-points  ✅ Strong
+Muted              68.1%    52.7 L-points  ✅ Adequate
+Disabled           53.6%    38.2 L-points  ⚠️ Low (intentional)
+Placeholder        55.7%    40.3 L-points  ⚠️ Low (intentional)
+```
+
+The text hierarchy has clear perceptual separation between each level: heading→body (3.7 L-points), body→secondary (7.6), secondary→muted (16.3), muted→disabled (14.5). The largest perceptual gap is between secondary and muted (16.3 points) — this creates a strong "above/below the fold" division between readable and de-emphasized text.
+
+**Chroma progression**: Interesting pattern — chroma *increases* as lightness decreases:
+
+```
+Heading    L=95.7%  C=0.010  (near-achromatic white)
+Body       L=92.0%  C=0.015  (barely tinted)
+Secondary  L=84.4%  C=0.021  (subtly tinted)
+Muted      L=68.1%  C=0.029  (noticeably tinted)
+Disabled   L=53.6%  C=0.029  (noticeably tinted)
+Placeholder L=55.7% C=0.036  (most tinted)
+```
+
+This is **perceptually correct** — at higher lightness (near white), chroma is less visible, so lower chroma is needed. At lower lightness (grays), chroma is more perceptible, so the cool blue tint becomes visible. The rising chroma ensures the blue tint remains consistently perceptible across the entire text hierarchy.
+
+**Finding**: DC1-TX1 — Text chromaticity system is perceptually well-calibrated | **PASS**
+
+All text colors share the blue hue family (261°-270°), chroma rises with decreasing lightness to maintain consistent perceived tint, and the lightness hierarchy provides clear 4-step text weight. The cool-tinted text reinforces the cyberpunk/HUD character from §DP0.
+
+**Solution**: Protect this text color system. Do not introduce neutral grays (hue-less) or warm-tinted grays — they would break the monochromatic blue harmony.
+
+**Finding**: DC1-TX2 — Hardcoded `#ffffff` (pure white) used for emphasis | **PASS**
+
+Pure white at `oklch(100% 0)` is achromatic — it breaks the blue tint. However, this is used deliberately for maximum-emphasis moments (numbers, hero stats). The contrast between blue-tinted body text and pure-white emphasis text creates a subtle **"highlight glow"** effect that reinforces the HUD aesthetic.
+
+**Solution**: Continue using pure white sparingly for emphasis. If overused, it dilutes the cool-tinted atmosphere.
+
+---
+
+### §DC1.3 — Accent Color Calibration
+
+**All accent colors in OKLCH with perceptual analysis:**
+
+| Accent | Hex | OKLCH | L% | C | Hue | Hue Family |
+|--------|-----|-------|-----|---|-----|-----------|
+| **Gold** (primary) | `#edaf18` | `oklch(79.1% 0.159 82°)` | 79.1 | 0.159 | 82° | Yellow-amber |
+| **Pink** | `#ec4899` | `oklch(65.6% 0.212 354°)` | 65.6 | 0.212 | 354° | Red-magenta |
+| **Cyan** | `#38bdf8` | `oklch(75.4% 0.139 233°)` | 75.4 | 0.139 | 233° | Blue-cyan |
+| **Purple** | `#a855f7` | `oklch(62.7% 0.233 304°)` | 62.7 | 0.233 | 304° | Blue-purple |
+| **Emerald** | `#22c55e` | `oklch(72.3% 0.192 150°)` | 72.3 | 0.192 | 150° | Green |
+| **Red** | `#f87171` | `oklch(71.1% 0.166 22°)` | 71.1 | 0.166 | 22° | Red-orange |
+
+#### Perceptual Lightness Uniformity
+
+**Target**: Accent colors should have similar perceptual lightness so they feel equally prominent when placed side-by-side (e.g., in a tab bar, stat grid, or legend).
+
+```
+Accent lightness ranking:
+  Gold      79.1%  ████████████████████████████████████████  ← brightest
+  Cyan      75.4%  ███████████████████████████████████████
+  Emerald   72.3%  ████████████████████████████████████
+  Red       71.1%  ████████████████████████████████████
+  Pink      65.6%  █████████████████████████████████
+  Purple    62.7%  ███████████████████████████████        ← darkest
+
+  Range: 16.4 L-points (79.1 - 62.7)
+```
+
+**Finding**: DC1-AC1 — Accent lightness range is wide (16.4 L-points) | **MEDIUM**
+
+The perceptual lightness spread of 16.4 points means gold appears significantly brighter than purple when used at equal size. In practice:
+- Gold (79.1%) and cyan (75.4%) read as "bright accents"
+- Emerald (72.3%) and red (71.1%) read as "medium accents"
+- Pink (65.6%) and purple (62.7%) read as "darker accents"
+
+This creates an **unintentional visual hierarchy** among the accents — gold and cyan dominate attention not because of semantic importance but because they're perceptually lighter.
+
+**Assessment**: This is **PARTIALLY INTENTIONAL** — gold IS the primary accent and SHOULD be brightest. But the gap between gold (79.1%) and purple (62.7%) is larger than necessary. Purple is the 4★ rarity color and should read as clearly visible, not muted.
+
+**Solution**: To equalize secondary accents while keeping gold brightest:
+- Gold: keep at 79.1% (primary accent privilege)
+- Increase purple from 62.7% to ~68% → `oklch(68% 0.22 304)` ≈ `#b56aff`
+- Increase pink from 65.6% to ~69% → `oklch(69% 0.20 354)` ≈ `#f55fa4`
+- Keep cyan, emerald, red as-is (72-75% is fine)
+
+This narrows the secondary accent range to 68%-75% (7 points) while gold remains above at 79%. The result: gold leads, all secondaries feel equally weighted.
+
+**However**: This change is cosmetic and low-risk. The current values work in practice because each accent is used in isolated contexts (element badges, stat cards) where relative lightness between accents rarely matters. Mark as MEDIUM — beneficial but not urgent.
+
+#### Chroma Analysis (Peak Chroma for Hue)
+
+**Is each accent at peak chroma for its hue?** Yellow and green hues have lower maximum chroma than purple/blue in OKLCH.
+
+| Accent | Current C | Approx Max C for Hue | % of Max | Status |
+|--------|-----------|----------------------|----------|--------|
+| **Gold** (82°) | 0.159 | ~0.20 | 80% | ✅ High but not maxed — avoids neon glare |
+| **Pink** (354°) | 0.212 | ~0.28 | 76% | ✅ High — vivid without oversaturation |
+| **Cyan** (233°) | 0.139 | ~0.18 | 77% | ✅ Moderate — calm technical blue |
+| **Purple** (304°) | 0.233 | ~0.30 | 78% | ✅ High — strongest chroma in the palette |
+| **Emerald** (150°) | 0.192 | ~0.24 | 80% | ✅ High — vivid green |
+| **Red** (22°) | 0.166 | ~0.24 | 69% | ⚠️ Lower — reads as coral, not pure red |
+
+**Finding**: DC1-AC2 — Red accent (`#f87171`) is low-chroma for an error signal | **LOW**
+
+Red at `oklch(71.1% 0.166 22°)` sits at only 69% of max chroma for its hue. The `--color-red` CSS variable uses the lighter, softer `#f87171` rather than the more saturated `#ef4444` (`oklch(63.7% 0.208 25°)`) used for actual error states. This creates a **split red** situation:
+- `--color-red: 248, 113, 113` (#f87171) → lighter, lower chroma (0.166)
+- Error hex `#ef4444` → darker, higher chroma (0.208)
+
+**Solution**: Standardize error red. The `#ef4444` is the stronger signal and should be the canonical error red. Update `--color-red` to `239, 68, 68` (#ef4444) for consistency. However, this may make the red stat box more aggressive — if softer red is preferred for non-error contexts, introduce a second token `--color-red-soft` for stat boxes while keeping `--color-red` at full error strength.
+
+**Finding**: DC1-AC3 — Accent chroma distribution is well-calibrated | **PASS**
+
+All accents sit in the 69-80% of max chroma range — high enough to read as vivid neon accents on dark backgrounds, low enough to avoid P3/sRGB gamut-edge artifacts. Purple has the highest absolute chroma (0.233) which is correct — it needs more chroma than gold to achieve similar perceived vibrancy at its darker lightness level.
+
+**Solution**: Protect the current chroma balance. Do not push accents to max chroma — the 75-80% sweet spot provides vivid neon without eye strain on dark backgrounds.
+
+---
+
+### §DC1.4 — Semantic Color Calibration
+
+**Semantic colors vs accent palette:**
+
+| Semantic Role | Token Source | Color | OKLCH | Same as Accent? |
+|--------------|-------------|-------|-------|----------------|
+| **Success** | Toast system | `#22c55e` | `oklch(72.3% 0.192 150°)` | = `--color-emerald` ✅ |
+| **Error** | Toast system | `#ef4444` | `oklch(63.7% 0.208 25°)` | ≠ `--color-red` (#f87171) ⚠️ |
+| **Warning** | Toast system | `#edaf18` | `oklch(79.1% 0.159 82°)` | = `--color-gold` ✅ |
+| **Info** | Toast system | `#38bdf8` | `oklch(75.4% 0.139 233°)` | = `--color-cyan` ✅ |
+
+#### Semantic vs Palette Alignment
+
+**Finding**: DC1-SM1 — Success/Warning/Info correctly reuse accent tokens | **PASS**
+
+Three of four semantic colors are identical to their accent counterparts:
+- Success green = `--color-emerald` (same hex, same OKLCH)
+- Warning gold = `--color-gold` (same hex, same OKLCH)
+- Info cyan = `--color-cyan` (same hex, same OKLCH)
+
+This is excellent palette economy — semantic colors derive from the existing accent system rather than introducing new hues.
+
+**Solution**: Protect this alignment. When semantic colors diverge from the accent palette, it creates palette bloat.
+
+**Finding**: DC1-SM2 — Error red diverges from `--color-red` token | **LOW**
+
+The toast error color `#ef4444` (`oklch(63.7% 0.208 25°)`) differs from `--color-red: #f87171` (`oklch(71.1% 0.166 22°)`):
+- Lightness gap: 7.4 L-points (63.7% vs 71.1%)
+- Chroma gap: 0.042 (0.208 vs 0.166)
+- The toast red is darker and more saturated — more "urgent"
+- The CSS variable red is lighter and softer — more "decorative"
+
+This means `--color-red` is NOT the canonical error red — the error system uses a hardcoded different value. This is a token-bypass inconsistency.
+
+**Solution**: Choose one red as canonical and derive the other:
+- **Option A** (recommended): Keep `#ef4444` for errors, rename `--color-red` to `--color-red-soft` for stat/decorative use, and add `--color-error: 239, 68, 68` as a new semantic token.
+- **Option B**: Unify to `#ef4444` everywhere — makes stat-red boxes more aggressive but eliminates the split.
+
+#### Semantic Color Perceptual Weight
+
+```
+Semantic lightness:
+  Warning (gold)  79.1%  ████████████████████████  ← brightest (attention)
+  Info (cyan)     75.4%  ██████████████████████
+  Success (green) 72.3%  ████████████████████
+  Error (red)     63.7%  ████████████████         ← darkest (gravity)
+```
+
+**Assessment**: The semantic lightness hierarchy is **CORRECT** for dark-mode UX:
+- Warning is brightest → high visibility for preventive alerts
+- Info is medium-bright → noticeable but not alarming
+- Success is medium → confirmed but not demanding attention
+- Error is darkest → this is counterintuitive on light backgrounds, but on dark backgrounds, the lower lightness + higher chroma creates a **heavier, more serious** visual weight. The red's density communicates gravity.
+
+**Finding**: DC1-SM3 — Semantic lightness hierarchy is correct for dark-mode context | **PASS**
+
+**Solution**: Protect this hierarchy. On dark backgrounds, "serious" semantics should feel heavier (darker, denser), not lighter.
+
+---
+
+### §DC1.5 — Color Temperature Coherence
+
+**Temperature classification of all palette colors:**
+
+| Color | Hue° | Temperature | Family |
+|-------|------|-------------|--------|
+| App body | 263° | **COOL** | Blue |
+| Card surfaces | 260°-264° | **COOL** | Blue |
+| Shadow base | 269° | **COOL** | Blue |
+| Text (all levels) | 261°-270° | **COOL** | Blue |
+| **Gold accent** | **82°** | **WARM** | Yellow-amber |
+| Pink accent | 354° | **NEUTRAL-WARM** | Red-magenta |
+| Cyan accent | 233° | **COOL** | Blue-cyan |
+| Purple accent | 304° | **COOL** | Blue-purple |
+| Emerald accent | 150° | **COOL-NEUTRAL** | Green |
+| Red accent | 22° | **WARM** | Red-orange |
+
+#### Temperature Map
+
+```
+COOL FIELD (210°-300°):
+  Backgrounds (260°-269°), Text (261°-270°), Cyan (233°), Purple (304°)
+  → 90%+ of the app's surface area
+
+NEUTRAL ZONE (140°-210°, 300°-360°):
+  Emerald (150°), Pink (354°)
+  → Element/game-specific accents
+
+WARM ISLAND (0°-90°):
+  Gold (82°), Red (22°)
+  → Primary accent + error/loss signal
+```
+
+**Finding**: DC1-TMP1 — Temperature coherence is deliberately bimodal: cool field + warm island | **PASS**
+
+The temperature strategy is **intentional and well-executed**:
+- **Cool field** (backgrounds, text, cyan, purple): Creates the cyberpunk/HUD atmosphere. This is 90%+ of the visual area.
+- **Warm island** (gold at 82°): The single deliberate warm accent that creates maximum temperature contrast against the cool field. Gold draws the eye BECAUSE it's the only warm element — this is the "warm anchor" identified in §DP0.
+- **Red** (22°) is warm but used sparingly for error/loss — its warmth communicates urgency on the cool field.
+
+This is **not** a mixed-temperature palette — it's a **cool-dominant palette with intentional warm focal point**. The temperature contrast between gold (82°) and the cool field (260°+) is ~180° on the hue wheel — almost perfectly complementary. This creates the maximum possible temperature tension, which is why gold "pops" so effectively.
+
+**Solution**: Protect the bimodal temperature strategy. Rules for new colors:
+- Default to cool (220°-300°) for structural/background elements
+- Reserve warm (40°-90°) exclusively for gold-family accents and emphasis
+- Game element colors (150°-360°) may be neutral/warm but should only appear in game-context UI (element badges, team cards)
+
+**Finding**: DC1-TMP2 — Pink accent (354°) sits at the warm/cool boundary | **PASS**
+
+Pink at hue 354° is on the red-magenta boundary — technically warm but perceptually reads as "electric/synthetic" rather than "warm." In the context of a cool-dominant palette, pink functions as a **cool-ish accent** (closer to purple than to orange). This is correct for the Havoc element color and for its use as a limited-banner accent.
+
+**Solution**: No change needed. Pink's boundary position gives it flexibility — it can lean warm (with gold, in banner contexts) or cool (with purple, in element contexts).
+
+---
+
+## §DC2 — Palette Architecture Audit
+
+### §DC2.1 — Complete Palette Role Inventory
+
+**Every color token/role in the app, its current value, and assessment:**
+
+#### Background Tokens (Surface System)
+
+| Role | Token | Current Value | OKLCH | Assessment |
+|------|-------|--------------|-------|------------|
+| Background (deepest) | `html bg` | `#080c14` | `oklch(15.4% 0.019 263°)` | ✅ Chromatic dark — correct |
+| Surface layer 1 (cards) | `--bg-card` | `rgba(12,16,24,0.55)` | `oklch(17.3% 0.018 264°)` at 55% | ✅ Glass with cool tint |
+| Surface layer 1 inner | `--bg-card-inner` | `rgba(6,10,18,1)` | `oklch(14.4% 0.019 261°)` | ✅ Solid dark panel |
+| Surface layer 2 (controls) | `--bg-btn` | `rgba(15,20,28,0.85)` | `oklch(19.0% 0.018 260°)` at 85% | ✅ Denser glass |
+| Surface layer 2 (inputs) | `--bg-input` | `rgba(15,20,28,0.9)` | `oklch(19.0% 0.018 260°)` at 90% | ✅ Dense glass |
+| Surface layer 2 (stats) | `--bg-stat` | `rgba(10,14,22,0.8)` | `oklch(16.4% 0.018 264°)` at 80% | ✅ Medium glass |
+| Surface layer 3 (modal) | *Hardcoded* | `rgba(12,16,24,0.95)` | `oklch(17.3% 0.018 264°)` at 95% | ⚠️ No token — hardcoded in 10+ places |
+| OLED background | `html.oled bg` | `#000000` | `oklch(0% 0 —)` | ✅ Pure black for pixel-off |
+
+**Finding**: DC2-BG1 — Modal backdrop has no token (hardcoded in 10+ places) | **LOW**
+
+The modal backdrop `rgba(12,16,24,0.95)` is repeated as a hardcoded value in `appcore-components.jsx` in 10+ modal implementations. This should be a token: `--bg-modal`.
+
+**Solution**: Add `--bg-modal: rgba(12, 16, 24, 0.95)` to the `:root` CSS custom properties alongside the other `--bg-*` tokens. Replace all hardcoded instances.
+
+#### Text Tokens
+
+| Role | Token | Current Value | OKLCH | Assessment |
+|------|-------|--------------|-------|------------|
+| Primary text (headings) | `--text-heading` | `#edf1f8` | `oklch(95.7% 0.010 262°)` | ✅ Cool-white, high contrast |
+| Primary text (body) | `--text-body` | `#dfe5ef` | `oklch(92.0% 0.015 261°)` | ✅ Cool-white, standard contrast |
+| Secondary text | *Tailwind `text-gray-300`* | `#c5ccda` | `oklch(84.4% 0.021 265°)` | ⚠️ No CSS variable — relies on Tailwind |
+| Muted text | *Tailwind `text-gray-400`* | `#8f99ab` | `oklch(68.1% 0.029 262°)` | ⚠️ No CSS variable — relies on Tailwind |
+| Disabled text | *Tailwind `text-gray-500`* | `#646e7f` | `oklch(53.6% 0.029 261°)` | ⚠️ No CSS variable — relies on Tailwind |
+| Emphasis text | Hardcoded | `#ffffff` | `oklch(100% 0 —)` | ✅ Pure white for maximum emphasis |
+
+**Finding**: DC2-TX1 — Secondary/muted/disabled text rely on Tailwind classes instead of tokens | **LOW**
+
+Only heading and body text have CSS custom properties (`--text-heading`, `--text-body`). Secondary, muted, and disabled text rely on Tailwind's custom gray scale (`text-gray-300/400/500`) — which IS custom-defined in `tailwind.config.js` but not accessible as CSS variables.
+
+**Solution**: Add semantic text tokens for completeness:
+- `--text-secondary: #c5ccda`
+- `--text-muted: #8f99ab`
+- `--text-disabled: #646e7f`
+These mirror the Tailwind values but make them available for CSS-in-JS components.
+
+#### Accent Tokens
+
+| Role | Token | Current Value | OKLCH | Assessment |
+|------|-------|--------------|-------|------------|
+| Accent primary | `--color-gold` | `237, 175, 24` (#edaf18) | `oklch(79.1% 0.159 82°)` | ✅ Strong warm anchor |
+| Accent hover | *None* | *Derived inline* | — | ⚠️ No explicit hover token |
+| Accent active | *KuroStyles class* | `active-gold` border + glow | — | ✅ Full emissive treatment |
+| Secondary accent 1 | `--color-cyan` | `56, 189, 248` (#38bdf8) | `oklch(75.4% 0.139 233°)` | ✅ Cool technical blue |
+| Secondary accent 2 | `--color-purple` | `168, 85, 247` (#a855f7) | `oklch(62.7% 0.233 304°)` | ✅ Vivid 4★ purple |
+| Secondary accent 3 | `--color-pink` | `236, 72, 153` (#ec4899) | `oklch(65.6% 0.212 354°)` | ✅ Vivid limited-banner pink |
+| Secondary accent 4 | `--color-emerald` | `34, 197, 94` (#22c55e) | `oklch(72.3% 0.192 150°)` | ✅ Success + Aero green |
+| Secondary accent 5 | `--color-red` | `248, 113, 113` (#f87171) | `oklch(71.1% 0.166 22°)` | ⚠️ Softer than error red — split role |
+
+**Finding**: DC2-AC1 — No explicit `--accent-hover` token | **LOW**
+
+Gold hover states are computed inline or via KuroStyles classes, but there's no `--color-gold-hover` token. This means hover gold intensity isn't centrally controlled.
+
+**Solution**: Add `--color-gold-hover: 237, 175, 24` with a different opacity scale for hover (e.g., use the existing opacity pattern but document the expected hover opacity: `rgba(var(--color-gold), 0.5)` for borders, `rgba(var(--color-gold), 0.08)` for backgrounds).
+
+#### Border Tokens
+
+| Role | Token | Current Value | OKLCH Equivalent | Assessment |
+|------|-------|--------------|-----------------|------------|
+| Border subtle | `--border-subtle` | `rgba(255,255,255,0.06)` | White at 6% | ✅ Decorative separators |
+| Border default | `--border-default` | `rgba(255,255,255,0.08)` | White at 8% | ✅ Default component edges |
+| Border medium | `--border-medium` | `rgba(255,255,255,0.1)` | White at 10% | ✅ Elevated components |
+| Border hover | `--border-hover` | `rgba(255,255,255,0.15)` | White at 15% | ✅ Hover state borders |
+| Border bright | `--border-bright` | `rgba(255,255,255,0.2)` | White at 20% | ✅ High-emphasis borders |
+| Border focus | *None* | Gold ring (inline) | — | ⚠️ No explicit focus border token |
+
+**Finding**: DC2-BD1 — No `--border-focus` token | **LOW**
+
+Focus borders use gold glow (`0 0 0 3px rgba(237,175,24,0.1)` + `0 0 20px rgba(237,175,24,0.08)`) but this is defined inline in `.kuro-input:focus`. A focus border token would centralize this.
+
+**Solution**: Add `--border-focus: rgba(237, 175, 24, 0.5)` and `--ring-focus: 0 0 0 3px rgba(237, 175, 24, 0.1)` as tokens.
+
+#### Shadow Tokens
+
+| Role | Token | Current Value | Assessment |
+|------|-------|--------------|------------|
+| Shadow small | `--shadow-sm` | `0 1px 2px rgba(6,10,24,0.4)` | ✅ Subtle depth |
+| Shadow medium | `--shadow-md` | `0 4px 12px rgba(6,10,24,0.5)` | ✅ Standard card |
+| Shadow large | `--shadow-lg` | `0 8px 24px rgba(6,10,24,0.6)` | ✅ Elevated/hover |
+| Shadow extra-large | `--shadow-xl` | `0 12px 40px rgba(6,10,24,0.7)` | ✅ Maximum elevation |
+| Shadow glow (gold) | *None* | Inline `0 0 24px rgba(237,175,24,0.20)` | ⚠️ No token — hardcoded per color |
+| Shadow glow (purple) | *None* | Inline `0 0 16px rgba(168,85,247,0.12)` | ⚠️ No token |
+
+**Finding**: DC2-SH1 — Glow shadows have no tokens | **LOW**
+
+Color-emissive glow shadows (gold glow, purple glow, etc.) are hardcoded inline in KuroStyles. These are character-defining effects that should be tokenized.
+
+**Solution**: Add glow shadow tokens:
+- `--glow-gold: 0 0 24px rgba(237, 175, 24, 0.20)`
+- `--glow-gold-hover: 0 0 36px rgba(237, 175, 24, 0.30)`
+- `--glow-purple: 0 0 16px rgba(168, 85, 247, 0.12)`
+This centralizes the glow intensity and makes it adjustable per theme (e.g., reduced glow for OLED mode).
+
+#### Semantic Tokens
+
+| Role | Token | Current Value | Assessment |
+|------|-------|--------------|------------|
+| Success | *None* | `#22c55e` / `rgba(34,197,94,0.9)` | ⚠️ No token — reuses emerald implicitly |
+| Error | *None* | `#ef4444` / `rgba(248,113,113,0.9)` | ⚠️ No token — hardcoded, differs from `--color-red` |
+| Warning | *None* | `#edaf18` / `rgba(237,175,24,0.9)` | ⚠️ No token — reuses gold implicitly |
+| Info | *None* | `#38bdf8` / `rgba(56,189,248,0.9)` | ⚠️ No token — reuses cyan implicitly |
+
+**Finding**: DC2-SM1 — No semantic color tokens exist | **MEDIUM**
+
+The design system defines 6 accent colors but zero semantic tokens. Semantic colors (success, error, warning, info) are hardcoded in the toast system. This means:
+1. Semantic colors can't be adjusted independently of accent colors
+2. Error red diverges from `--color-red` with no documentation of why
+3. If toast colors need changing, multiple hardcoded values must be found and updated
+
+**Solution**: Add semantic token layer:
+```css
+--color-success: var(--color-emerald);     /* 34, 197, 94 */
+--color-error: 239, 68, 68;               /* #ef4444 — darker, more urgent */
+--color-warning: var(--color-gold);        /* 237, 175, 24 */
+--color-info: var(--color-cyan);           /* 56, 189, 248 */
+```
+This documents the semantic→accent mapping explicitly and gives error its own value (diverging from `--color-red` intentionally).
+
+#### Transition Tokens
+
+| Role | Token | Current Value | Assessment |
+|------|-------|--------------|------------|
+| Fast | `--transition-fast` | `0.15s cubic-bezier(0.16,1,0.3,1)` | ✅ Micro-interactions |
+| Normal | `--transition-normal` | `0.25s cubic-bezier(0.16,1,0.3,1)` | ✅ Standard |
+| Slow | `--transition-slow` | `0.4s cubic-bezier(0.16,1,0.3,1)` | ✅ Entrances |
+
+**Finding**: DC2-TR1 — Transition tokens are well-defined | **PASS**
+
+Three-tier system with consistent signature easing curve. No gaps.
+
+**Solution**: Protect. Consider adding `--easing-signature: cubic-bezier(0.16, 1, 0.3, 1)` as a standalone token for cases where duration varies but easing should remain consistent.
+
+#### Game-Domain Tokens
+
+| Role | Token | Source | Assessment |
+|------|-------|--------|------------|
+| Element colors (6) | `ELEMENT_COLORS` | `appcore-data.js` | ⚠️ JS object, not CSS tokens |
+| Medal colors (3) | `MEDAL_COLORS` | `appcore-data.js` | ⚠️ JS array, not CSS tokens |
+| Rarity colors | *None* | Scattered Tailwind classes | ⚠️ No centralized rarity color system |
+| Pity tier colors | *None* | Hardcoded in ~92 trophy defs | ⚠️ Highest-count hardcoded set |
+
+**Finding**: DC2-GM1 — Game-domain colors exist only as JS constants, not CSS tokens | **MEDIUM**
+
+Element colors, medal colors, rarity colors, and pity tier colors are defined in JavaScript objects/arrays or hardcoded inline, not as CSS custom properties. This means:
+1. Components can't use them via `var(--element-fusion)` in CSS
+2. Values can't be overridden per theme (e.g., OLED adjustments)
+3. The 92 trophy color assignments use raw hex instead of referencing a color system
+
+**Solution**: Promote game-domain colors to CSS custom properties:
+```css
+/* Element colors */
+--element-fusion: 249, 115, 22;
+--element-electro: 168, 85, 247;
+--element-aero: 16, 185, 129;
+--element-glacio: 6, 182, 212;
+--element-havoc: 236, 72, 153;
+--element-spectro: 234, 179, 8;
+
+/* Rarity colors */
+--rarity-5star: var(--color-gold);
+--rarity-4star: var(--color-purple);
+--rarity-3star: 96, 165, 250;  /* blue */
+```
+Then update `ELEMENT_COLORS` to reference these CSS variables, and trophy definitions to use rarity tokens.
+
+---
+
+### §DC2.2 — Near-Duplicate Color Consolidation
+
+**Colors that serve the same semantic role but use different values:**
+
+#### Gold Family (Hue 80°-92°)
+
+| Color | Hex | OKLCH | Source | Semantic |
+|-------|-----|-------|--------|----------|
+| **CSS gold** | `#edaf18` | `oklch(79.1% 0.159 82°)` | `--color-gold` | Primary accent (canonical) |
+| **Tailwind yellow-400** | `#facc15` | `oklch(86.1% 0.173 92°)` | Tailwind class | 5★ text color |
+| **Tailwind yellow-500** | `#eab308` | `oklch(79.5% 0.162 86°)` | Tailwind class | Alternative gold |
+| **Spectro element** | `#eab308` | `oklch(79.5% 0.162 86°)` | `ELEMENT_COLORS` | Spectro element |
+| **Slider hardcode** | `#e6b030` | `oklch(78.7% 0.148 84°)` | Inline style | Slider thumb |
+
+**Analysis**: Five distinct gold values where ONE should exist.
+- `#edaf18` and `#eab308` differ by only 0.4 L-points and 4° hue — nearly identical but not the same hex
+- `#facc15` (Tailwind yellow-400) is **7 L-points brighter** and 10° more yellow — visibly different
+- `#e6b030` (slider) is slightly dimmer and less saturated — a muted variant
+
+**Finding**: DC2-ND1 — Gold family has 5 near-duplicates | **MEDIUM**
+
+| Pair | ΔL | ΔC | ΔH | Perceptible? |
+|------|-----|-----|-----|-------------|
+| CSS gold vs TW yellow-400 | 7.0 | 0.014 | 10° | **YES** — visibly different yellow |
+| CSS gold vs TW yellow-500 | 0.4 | 0.003 | 4° | **NO** — effectively identical |
+| CSS gold vs Spectro | 0.4 | 0.003 | 4° | **NO** — effectively identical |
+| CSS gold vs Slider | 0.4 | 0.011 | 2° | **NO** — effectively identical |
+
+**Solution**: Consolidate to `#edaf18` as the single gold value:
+- Replace all `text-yellow-400` with `text-[rgb(237,175,24)]` or a custom Tailwind extension using `--color-gold`
+- Replace `#eab308` in Spectro element with `#edaf18` (imperceptible change)
+- Replace slider hardcodes `#e6b030`/`#edaf18` with `var(--color-gold)`
+- **Exception**: If Tailwind yellow-400's extra brightness is intentional for text-on-dark contrast, document this as a deliberate "text gold" variant and create `--color-gold-text: 250, 204, 21` as an explicit lighter token
+
+#### Cyan Family (Hue 211°-233°)
+
+| Color | Hex | OKLCH | Source | Semantic |
+|-------|-----|-------|--------|----------|
+| **CSS cyan** | `#38bdf8` | `oklch(75.4% 0.139 233°)` | `--color-cyan` | Accent + info |
+| **Glacio element** | `#06b6d4` | `oklch(71.5% 0.126 215°)` | `ELEMENT_COLORS` | Glacio element |
+| **TW cyan-400** | `#22d3ee` | `oklch(79.7% 0.134 212°)` | Tailwind class | Cyan text |
+
+**Analysis**: Three distinct cyans — CSS cyan is bluer (233°), Glacio is greener (215°), Tailwind is mid (212°).
+- CSS cyan vs Glacio: ΔL=3.9, ΔH=18° — **perceptibly different** (different hue angle)
+- CSS cyan vs TW cyan-400: ΔL=4.3, ΔH=21° — **perceptibly different**
+- Glacio vs TW cyan-400: ΔL=8.2, ΔH=3° — **same hue, different lightness**
+
+**Finding**: DC2-ND2 — Cyan family has 3 distinct values with legitimate role separation | **PASS**
+
+Unlike the gold duplication, the cyan variants serve genuinely different purposes:
+- `#38bdf8` (233° blue-cyan): UI accent — cooler, more "electric"
+- `#06b6d4` (215° green-cyan): Glacio element — warmer, more "ice"
+- `#22d3ee` (212° green-cyan): Text display — brighter for readability
+
+The 18-21° hue difference between UI cyan and element cyan is intentional — they represent different concepts.
+
+**Solution**: Document the role separation. No consolidation needed, but consider:
+- Rename `--color-cyan` to `--accent-cyan` to clarify it's the UI accent cyan
+- Keep Glacio's `#06b6d4` as the element color (game-accurate)
+
+#### Green/Emerald Family (Hue 149°-163°)
+
+| Color | Hex | OKLCH | Source | Semantic |
+|-------|-----|-------|--------|----------|
+| **CSS emerald** | `#22c55e` | `oklch(72.3% 0.192 150°)` | `--color-emerald` | Success + accent |
+| **Aero element** | `#10b981` | `oklch(69.6% 0.149 163°)` | `ELEMENT_COLORS` | Aero element |
+| **TW emerald-400** | `#34d399` | `oklch(77.3% 0.153 163°)` | Tailwind class | Green text |
+
+**Analysis**: Three distinct greens with legitimate role separation (like cyan).
+- CSS emerald is more saturated (C=0.192) and more yellow-green (150°)
+- Aero is darker (L=69.6%) and more blue-green (163°)
+- TW emerald-400 is brighter (L=77.3%) for text readability
+
+**Finding**: DC2-ND3 — Green family has legitimate role separation | **PASS**
+
+**Solution**: Same as cyan — document separation, no consolidation.
+
+#### Red Family (Hue 22°-25°)
+
+| Color | Hex | OKLCH | Source | Semantic |
+|-------|-----|-------|--------|----------|
+| **CSS red (soft)** | `#f87171` | `oklch(71.1% 0.166 22°)` | `--color-red` | Stat accent |
+| **Error red** | `#ef4444` | `oklch(63.7% 0.208 25°)` | Hardcoded | Error/loss |
+| **TW red-400** | `#f87171` | `oklch(71.1% 0.166 22°)` | Tailwind class | = CSS red |
+
+**Finding**: DC2-ND4 — Red has an intentional soft/error split | **LOW**
+
+`--color-red` (#f87171) is used for decorative/stat contexts. Error red (#ef4444) is used for actual error states. The difference: 7.4 L-points darker, 0.042 more chroma — error is heavier and more urgent.
+
+**Solution**: Formalize the split with explicit tokens:
+- `--color-red: 248, 113, 113` (decorative/stat) — keep as-is
+- `--color-error: 239, 68, 68` (error/destructive) — new token
+
+---
+
+### §DC2.3 — Accent Overload Assessment
+
+**Question**: Is any accent used in >3 semantic contexts (overloaded = loses meaning)?
+
+| Accent | Semantic Contexts | Count | Overloaded? |
+|--------|------------------|-------|-------------|
+| **Gold** | Primary accent, 5★ rarity, warning, focus ring, tab indicator, header chrome, empty state glow, skeleton shimmer, medal gold, slider thumb, pity ring, bookmark icon | **12** | ⚠️ **YES** |
+| **Cyan** | Info, standard banner, Glacio element, weapon category, tech detail | 5 | BORDERLINE |
+| **Purple** | 4★ rarity, Electro element, featured display | 3 | ✅ No |
+| **Pink** | Havoc element, limited banner, character featured | 3 | ✅ No |
+| **Emerald** | Success, Aero element, positive stat | 3 | ✅ No |
+| **Red** | Error, loss, negative stat, soft pity warning | 4 | BORDERLINE |
+
+**Finding**: DC2-OL1 — Gold accent is overloaded across 12 semantic contexts | **MEDIUM**
+
+Gold (#edaf18) serves as: primary accent, rarity indicator, warning color, focus affordance, navigation indicator, chrome decoration, ambient atmosphere, loading feedback, achievement medal, interactive control, data visualization, AND bookmark marker. This means gold has no single semantic meaning — it simultaneously means "premium," "pay attention," "interactive," "loading," "warning," and "decorative."
+
+**Assessment**: This overload is **partially acceptable** because gold is the **brand color**. A brand color IS expected to appear everywhere — it's the unifying visual thread. The overload becomes problematic only when two gold-accented elements compete for attention in the same viewport (e.g., a gold pity ring + gold header bar + gold tab indicator + gold focus ring all visible simultaneously).
+
+**Solution**:
+1. **Accept gold's multi-role nature** as a brand color privilege — this is not unusual for primary accents
+2. **Differentiate gold usage by opacity/intensity**, not by hue:
+   - **Structural gold** (chrome bars, tab indicator): 90% opacity — strong, permanent
+   - **Interactive gold** (focus ring, active state): 50% opacity + glow — responds to action
+   - **Ambient gold** (empty state radial, skeleton shimmer): 4-10% opacity — atmospheric
+   - **Semantic gold** (warning toast): 90% fill — high urgency
+3. This opacity-differentiated approach already exists in the code — it just isn't documented. Formalizing it as an **"opacity role map"** makes the multi-use intentional rather than accidental.
+
+**Finding**: DC2-OL2 — Cyan accent is borderline overloaded (5 contexts) | **PASS**
+
+Cyan serves as info, standard banner, element color, weapon category, and tech accent — but these contexts rarely overlap. Standard banner and Glacio element are the closest potential conflict, but they appear in different tabs.
+
+**Solution**: Acceptable. Monitor for viewport conflicts but no change needed.
+
+---
+
+### §DC2.4 — Design System Gap Analysis
+
+**Roles NOT covered by tokens (compared to §DC2 template):**
+
+| Expected Role | Token Exists? | Current Implementation | Gap Severity |
+|--------------|--------------|----------------------|-------------|
+| `--bg-modal` | ❌ | Hardcoded `rgba(12,16,24,0.95)` × 10+ | LOW |
+| `--text-secondary` | ❌ | Tailwind `text-gray-300` | LOW |
+| `--text-muted` | ❌ | Tailwind `text-gray-400` | LOW |
+| `--text-disabled` | ❌ | Tailwind `text-gray-500` | LOW |
+| `--accent-hover` | ❌ | Computed inline per component | LOW |
+| `--border-focus` | ❌ | Inline gold ring in `.kuro-input:focus` | LOW |
+| `--color-success` | ❌ | Hardcoded `#22c55e` in toast | MEDIUM |
+| `--color-error` | ❌ | Hardcoded `#ef4444` in toast | MEDIUM |
+| `--color-warning` | ❌ | Reuses `--color-gold` implicitly | MEDIUM |
+| `--color-info` | ❌ | Reuses `--color-cyan` implicitly | MEDIUM |
+| `--glow-*` | ❌ | Inline color-emissive shadows | LOW |
+| `--element-*` | ❌ | JS constants in `appcore-data.js` | MEDIUM |
+| `--rarity-*` | ❌ | Scattered Tailwind + hardcoded | MEDIUM |
+
+**Finding**: DC2-GAP1 — 13 expected token roles are not covered | **MEDIUM**
+
+The design system has strong structural tokens (5 border levels, 4 shadow levels, 3 transition levels, 6 accent colors, 5 surface backgrounds) but lacks semantic, interactive, and game-domain tokens. The token architecture covers ~60% of roles — the remaining 40% are hardcoded or Tailwind-reliant.
+
+**Solution**: Phase the token additions:
+- **Phase 1 (highest value)**: `--color-success`, `--color-error`, `--color-warning`, `--color-info` — semantic tokens that consolidate toast + status colors
+- **Phase 2 (medium value)**: `--element-*`, `--rarity-*` — game-domain tokens that consolidate the 240+ hardcoded values
+- **Phase 3 (lower value)**: `--text-secondary/muted/disabled`, `--bg-modal`, `--border-focus`, `--glow-*`, `--accent-hover` — completeness tokens
+
+---
+
+### Step 5 All-Findings Summary
+
+| ID | Finding | Severity | Solution |
+|----|---------|----------|---------|
+| DC1-BG1 | Background lightness steps narrow (5.1 L-points total) | **LOW** | Widen to 3%+ per step if needed; currently compensated by blur/shadow depth |
+| DC1-BG2 | OLED mode correctly uses pure black | **PASS** | Protect |
+| DC1-BG3 | Shadow base has elevated chroma (intentional) | **PASS** | Protect chromatic shadows |
+| DC1-TX1 | Text chromaticity well-calibrated (monochromatic blue) | **PASS** | Protect cool-tinted text system |
+| DC1-TX2 | Pure white used for emphasis (intentional) | **PASS** | Continue sparingly |
+| DC1-AC1 | Accent lightness range wide (16.4 L-points) | **MEDIUM** | Brighten purple/pink by ~5 L-points to narrow secondary spread |
+| DC1-AC2 | Red accent low-chroma for error signal | **LOW** | Standardize error red to `#ef4444`, keep `#f87171` as decorative |
+| DC1-AC3 | Accent chroma distribution well-calibrated | **PASS** | Protect 75-80% max chroma sweet spot |
+| DC1-SM1 | Success/Warning/Info reuse accent tokens | **PASS** | Protect palette economy |
+| DC1-SM2 | Error red diverges from `--color-red` | **LOW** | Introduce `--color-error` token at `#ef4444` |
+| DC1-SM3 | Semantic lightness hierarchy correct for dark-mode | **PASS** | Protect heavier=serious pattern |
+| DC1-TMP1 | Temperature deliberately bimodal (cool field + warm island) | **PASS** | Protect; new colors default to cool |
+| DC1-TMP2 | Pink at warm/cool boundary (flexible) | **PASS** | No change |
+| DC2-BG1 | Modal backdrop hardcoded 10+ places, no token | **LOW** | Add `--bg-modal` |
+| DC2-TX1 | Secondary/muted/disabled text rely on Tailwind | **LOW** | Add `--text-secondary/muted/disabled` |
+| DC2-AC1 | No `--accent-hover` token | **LOW** | Add hover opacity documentation |
+| DC2-BD1 | No `--border-focus` token | **LOW** | Add `--border-focus` |
+| DC2-SH1 | Glow shadows have no tokens | **LOW** | Add `--glow-gold/purple` |
+| DC2-SM1 | No semantic color tokens | **MEDIUM** | Add `--color-success/error/warning/info` |
+| DC2-GM1 | Game-domain colors in JS only, not CSS tokens | **MEDIUM** | Promote to `--element-*` and `--rarity-*` |
+| DC2-ND1 | Gold family has 5 near-duplicates | **MEDIUM** | Consolidate to `#edaf18`; if lighter variant needed, create explicit `--color-gold-text` |
+| DC2-ND2 | Cyan family has 3 values (legitimate separation) | **PASS** | Document roles |
+| DC2-ND3 | Green family has 3 values (legitimate separation) | **PASS** | Document roles |
+| DC2-ND4 | Red has intentional soft/error split | **LOW** | Formalize with `--color-red` + `--color-error` |
+| DC2-OL1 | Gold overloaded across 12 contexts | **MEDIUM** | Document opacity-role map; accept as brand color privilege |
+| DC2-OL2 | Cyan borderline overloaded (5 contexts) | **PASS** | Monitor, no change |
+| DC2-GAP1 | 13 expected token roles not covered | **MEDIUM** | Phase token additions (semantic → game-domain → completeness) |
+
+---
+
+**STEP 5 COMPLETE** — §DC1 Perceptual Color Architecture + §DC2 Palette Role Inventory established.
+
+**Perceptual system**: All backgrounds share cool blue hue (260°-269°), all text carries matching cool tint (261°-270°), all accents at 69-80% max chroma sweet spot.
+**Temperature strategy**: Bimodal — 90% cool field + gold warm island (complementary hue opposition at ~180°).
+**Palette architecture**: 60% tokenized (structural), 40% hardcoded (semantic + game-domain gaps).
+**Key actions**: Consolidate 5 gold near-duplicates → 1 canonical gold. Add semantic tokens (success/error/warning/info). Promote game-domain colors to CSS variables.
+**Accent overload**: Gold serves 12 roles — acceptable as brand color with opacity-differentiated usage.
