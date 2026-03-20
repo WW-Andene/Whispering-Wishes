@@ -562,3 +562,595 @@ Based on the Five-Axis Profile, these principles govern every finding in Steps 2
 **STEP 1 COMPLETE** — §0 Aesthetic Context Block + Five-Axis Profile established.
 
 This document governs all subsequent audit steps (2–20). Every finding, every recommendation, every severity assessment traces back to the axis profile defined here.
+
+---
+
+## STEP 2 — §DS1 + §DS2: Style Classification & Coherence
+
+---
+
+### §DS1 — Style Classification
+
+#### DS1.1 PRIMARY DESIGN SCHOOL
+
+**Classification: CYBERPUNK / TERMINAL — with Glassmorphism execution layer**
+
+The app's visual language maps most strongly to the **Cyberpunk/Terminal** school from the full taxonomy, executed through a **Glassmorphism** rendering pipeline. This is not a 50/50 split — Cyberpunk/Terminal is the *identity*, Glassmorphism is the *material*.
+
+**Evidence for Cyberpunk/Terminal as primary:**
+
+| Signal | Location | Detail |
+|--------|----------|--------|
+| Dark ambient base | `appcore-providers.jsx:408` | `#080c14` blue-black, `#000000` OLED — not neutral gray, cool-shifted |
+| Gold accent system | `:root` vars, lines 435–440 | `--color-gold: 237,175,24` as primary accent — sci-fi instrument gold, not luxury gold |
+| Corner bracket decorations | `.kuro-card-inner::before/::after`, lines 777–803 | Geometric L-shaped corner marks on every card — a HUD/terminal motif |
+| Top shimmer line | `.kuro-card::after`, lines 747–763 | Animated horizontal scanline across card tops — CRT/holographic reference |
+| Monospace data font | `--font-data`, line 452 | JetBrains Mono for all numerical data — terminal typography |
+| Text-shadow on labels | `.kuro-label`, line 1167 | `text-shadow: 0 1px 2px rgba(0,0,0,0.5)` — holographic floating text |
+| Header gold bar accent | `.kuro-header h3::before`, lines 840–847 | Vertical gold gradient bar with glow — instrument panel indicator |
+| Animation vocabulary | `borderGlow`, `pulseScale`, `shimmer` | Pulsing borders, scale breathing, shimmer — all sci-fi UI patterns |
+| OLED dual-mode | Throughout KuroStyles | Pure black vs blue-black toggle — AMOLED optimization is a Cyberpunk-native concern |
+| Uppercase labels | `.kuro-label`, line 1164 | `text-transform: uppercase; letter-spacing: 0.08em` — HUD readout style |
+
+**Why NOT pure Glassmorphism as primary:**
+Glassmorphism's defining identity is *frosted glass over colorful backgrounds*. Whispering Wishes uses glassmorphism's *techniques* (backdrop-blur, semi-transparent surfaces, layered shadows) but not its *identity*. The backgrounds are dark and moody, not colorful. The blur serves depth, not transparency. The emotional register is "precision instrument in a dark command center" — not "floating cards over a gradient."
+
+**Confidence: HIGH** — 10/10 primary signals align with Cyberpunk/Terminal. No competing primary classification.
+
+---
+
+#### DS1.2 SECONDARY INFLUENCES
+
+**Secondary 1: GLASSMORPHISM (execution layer — L2 influence)**
+
+| Signal | Location | Detail |
+|--------|----------|--------|
+| `backdrop-filter: blur()` | `.kuro-card` (line 716), `.kuro-btn` (line 871), `.kuro-stat` (line 1045), `.kuro-input` (line 996) | Every major surface uses backdrop-blur |
+| Semi-transparent backgrounds | `--bg-card`, `--bg-btn`, `--bg-input`, `--bg-stat` | All use `rgba()` with alpha channels (0.55, 0.85, 0.9, 0.8) |
+| Layered box-shadows | `.kuro-card`, lines 718–721 | Triple shadow stack: ambient shadow + 1px ring + inset highlight |
+| Inset light edge | `.kuro-card`, line 721 | `inset 0 1px 0 rgba(255,255,255,0.05)` — glass edge highlight |
+| Variable border opacity | `--border-subtle` through `--border-bright` | 5-tier border system from 0.06 to 0.2 opacity — frosted glass edges |
+
+**Relationship to primary:** Glassmorphism is subordinate. It provides the *material rendering* for Cyberpunk/Terminal *structures*. The cards are terminal panels built from glass. This is intentional fusion, not confusion.
+
+**Secondary 2: DATA VISUALIZATION / Dashboard (atmospheric influence — L1 influence)**
+
+| Signal | Location | Detail |
+|--------|----------|--------|
+| Stat box grid system | `.kuro-stat` + color variants | 7 colored stat variants (gold/cyan/purple/emerald/red/pink/gray) — dashboard-native |
+| Color-coded data hierarchy | Active button states | Gold/pink/cyan/purple/emerald/red — each color carries semantic meaning |
+| Tabular numerics | `.kuro-stat`, line 1047 | `font-variant-numeric: tabular-nums` — data-dense alignment |
+| Pity ring visualization | Inline SVG | Circular progress indicators — a dashboard/analytics convention |
+
+**Relationship to primary:** This influence is *content-appropriate*, not a style leak. A gacha tracker IS a dashboard. These patterns reinforce the Cyberpunk/Terminal identity (data instruments) rather than diluting it.
+
+**No other secondary influences detected.** The app does not exhibit Material/Elevation, Neo-Brutalist, Skeuomorphic, or Minimal/Flat characteristics.
+
+---
+
+#### DS1.3 COHERENCE SCORE
+
+**Score: MIXED-INTENTIONAL**
+
+The app's *design system* (KuroStyles in `appcore-providers.jsx`) is coherent. The Cyberpunk/Terminal + Glassmorphism fusion is consistent and well-executed at the system level. However, the *application layer* (`App.jsx`, `appcore-components.jsx`) introduces style vocabulary breaks through hardcoded values that bypass the design system, creating localized incoherence.
+
+**Why not COHERENT:**
+- 121 hardcoded hex/rgba color instances in `App.jsx` alone bypass CSS custom properties
+- 10+ modal backdrop values hardcode `rgba(12,16,24,0.95)` instead of using a token
+- Pity tier colors (`#22c55e`, `#84cc16`, `#edaf18`, `#f97316`, `#ef4444`) are repeated in 5+ places without tokenization
+- Border radius values span 7 different sizes (3px, 4px, 6px, 8px, 10px, 12px, 15px, 16px) without a scale token
+- Desktop sidebar uses a different easing curve (`cubic-bezier(0.4, 0, 0.2, 1)`) than the rest of the app (`cubic-bezier(0.16, 1, 0.3, 1)`)
+
+**Why not ACCIDENTALLY MIXED:**
+- The *intentional* design decisions are strong and consistent: card system, button system, stat system, color accent system all speak the same language
+- The mixing happens at the *implementation* level (hardcoded values), not the *conceptual* level (conflicting design philosophies)
+- Every tab uses the same structural vocabulary (kuro-card → kuro-header → kuro-body)
+- The Cyberpunk/Terminal + Glassmorphism fusion reads as a single voice, not two competing styles
+
+**Verdict:** The *design intent* is coherent. The *implementation* leaks. This is fixable without redesign — it requires tokenization, not reconceptualization.
+
+---
+
+#### DS1.4 STYLE-APPROPRIATE EXECUTION ASSESSMENT
+
+Assessing whether the Cyberpunk/Terminal + Glassmorphism fusion is executed at the quality level the chosen style demands:
+
+| Execution Axis | Rating | Detail |
+|----------------|--------|--------|
+| **Surface depth model** | STRONG | 4-layer depth (bg → card → inner → content) with proper z-index scale, backdrop-blur on every surface, inset highlights — Glassmorphism executed correctly |
+| **Color temperature** | STRONG | Cool-shifted throughout. `#080c14` base, blue-tinted grays in Tailwind config, gold as warm accent against cold field — Cyberpunk temperature nailed |
+| **Typography hierarchy** | STRONG | Dual-font system (Rajdhani display + JetBrains Mono data) with proper scale. Uppercase labels, tracking, text-shadows — all Terminal-native |
+| **Animation vocabulary** | STRONG | `shimmer`, `borderGlow`, `pulseScale`, stagger animations, spring easing `cubic-bezier(0.16, 1, 0.3, 1)` — sci-fi appropriate, not playful |
+| **Spatial rhythm** | GOOD | Consistent 14px body padding, 10px gaps, but no formal spacing scale token. Works by convention, not by system |
+| **Detail ornaments** | STRONG | Corner brackets, gold bar accents, shimmer lines, inset edges — HUD chrome is consistent and restrained |
+| **Interactive states** | GOOD | Hover lifts, active scales, glow effects all appropriate. But: button active colors hardcode light pastels (`#fef08a`, `#fbcfe8`, `#bae6fd`) that feel slightly off-brand for a dark terminal aesthetic |
+| **Dark mode execution** | STRONG | OLED mode properly implemented with conditional backgrounds throughout. Dual-mode is a first-class citizen |
+| **Token utilization** | WEAK | Strong token *definitions* in `:root`, but weak *adoption*. ~121 hardcoded colors in App.jsx, transitions hardcoded on cards, shadows hardcoded in stat hover. The design system is well-designed but under-used |
+| **Responsive adaptation** | GOOD | Mobile-first with desktop sidebar layout. Touch targets addressed. But style vocabulary doesn't degrade gracefully — same complexity on small screens |
+
+**Overall Execution: 7/10 — GOOD with specific gaps**
+
+The design *vision* is excellent: a Cyberpunk/Terminal gacha command center rendered in Glassmorphism materials. Execution is strong at the system definition level but degrades at the application layer where developers bypassed tokens with hardcoded values. The path to 9/10 is tokenization and consistency, not redesign.
+
+**Specific execution gaps (with solutions):**
+
+| # | Gap | Severity | Solution |
+|---|-----|----------|----------|
+| DS1-E1 | Card transition hardcodes `0.3s` instead of `var(--transition-normal)` | LOW | Replace `transition: transform 0.3s ...` with `transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal)` in `.kuro-card` (line 722) |
+| DS1-E2 | `.kuro-stat:hover` hardcodes `rgba(0, 0, 0, 0.3)` shadow | LOW | Replace with `box-shadow: var(--shadow-md)` or define `--shadow-hover` token |
+| DS1-E3 | Button active state text colors use light pastels (`#fef08a`, `#fbcfe8`, `#bae6fd`, `#e9d5ff`, `#86efac`, `#fecaca`) | LOW | These are intentionally light for readability against dark glowing backgrounds. **PASSED — style-appropriate.** The pastels serve as high-contrast legibility aids within the glow effect. No change needed. |
+| DS1-E4 | Desktop sidebar easing `cubic-bezier(0.4, 0, 0.2, 1)` differs from app standard `cubic-bezier(0.16, 1, 0.3, 1)` | LOW | Unify to `var(--transition-slow)` which uses the standard spring curve. The sidebar expand/collapse should feel like the rest of the app |
+| DS1-E5 | `.kuro-input` text color hardcodes `#ffffff` (line 992) | LOW | Replace with `color: var(--text-heading)` — heading token is `#edf1f8`, nearly white but theme-consistent |
+| DS1-E6 | `.kuro-btn:hover` hardcodes `color: #ffffff` (line 889) | LOW | Replace with `color: var(--text-heading)` |
+| DS1-E7 | Slider thumb gradients hardcode `#e6b030, #edaf18` (lines 1190, 1206) | LOW | Replace with `linear-gradient(135deg, rgba(var(--color-gold), 1), rgba(var(--color-gold), 0.85))` |
+| DS1-E8 | Placeholder colors `#6b7389` and `#8f99ab` not tokenized (lines 1017, 1022) | LOW | Add `--text-placeholder: #6b7389` and `--text-placeholder-focus: #8f99ab` to `:root` |
+| DS1-E9 | No spacing scale tokens | MEDIUM | Add `--space-xs: 4px`, `--space-sm: 8px`, `--space-md: 14px`, `--space-lg: 20px`, `--space-xl: 32px` to `:root`. Current 14px padding works but isn't systematic |
+| DS1-E10 | `.kuro-input:hover` border hardcodes `rgba(255,255,255,0.3)` (line 1002) | LOW | Replace with `border-color: var(--border-bright)` (0.2 opacity) or add `--border-focus: rgba(255,255,255,0.3)` |
+
+---
+
+### §DS2 — Coherence Audit
+
+---
+
+#### DS2.1 STYLE VOCABULARY ACROSS ALL 8 TABS
+
+**Methodology:** Each tab audited for adherence to the KuroStyles vocabulary: `kuro-card` → `kuro-header` → `kuro-body` structure, `kuro-stat` data boxes, `kuro-btn` buttons, `TabBackground` backdrop, and CSS custom property usage vs hardcoded bypasses.
+
+##### TAB 1: TRACKER (`[TAB-TRACKER]`, lines ~3215–3371)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Uses `Card` → `CardHeader` → `CardBody` consistently |
+| Stat boxes | **PASS** | Uses `kuro-stat` for banner history |
+| Buttons | **PASS** | `kuro-btn` with `active-gold`, `active-pink`, `active-cyan` states |
+| TabBackground | **PASS** | `<TabBackground id="tracker" glowColor="gold" />` |
+| Token adherence | **MINOR ISSUE** | Banner ended alert uses Tailwind `bg-yellow-500/10`, `border-yellow-500/30` instead of design system classes |
+| Custom components | **PASS** | `BannerCard` and `StandardBannerSection` are structural wrappers, not style-breaking |
+
+**Solution for minor issue:** The Tailwind alert styling is contextual (temporary status indicator) and sits within the card system. Acceptable as-is, but could be unified into a `kuro-alert-gold` class for reuse. **LOW priority — cosmetic.**
+
+##### TAB 2: EVENTS (`[TAB-EVENTS]`, lines ~3372–3447)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Standard `Card` → `CardHeader` → `CardBody` |
+| Stat boxes | **PASS** | Uses styled progress bars within card bodies |
+| Buttons | **PASS** | Refresh button with `text-cyan-400` |
+| TabBackground | **PASS** | `<TabBackground id="events" />` |
+| Token adherence | **MINOR ISSUE** | Progress bar uses Tailwind `bg-emerald-400` and `bg-yellow-500/10` directly |
+| Custom components | **PASS** | `EventCard` is a structural wrapper, style-consistent |
+
+**Solution for minor issue:** Progress bars are dynamic-width elements that require inline `style={{ width }}`. The color choice (`bg-emerald-400`) is consistent with the emerald semantic color used throughout. **PASSED — style-appropriate.** For maximal consistency, could add `--color-emerald-solid: #34d399` token.
+
+##### TAB 3: CALC (`[TAB-CALC]`, lines ~3448–3733)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Multiple `Card` sections with proper hierarchy |
+| Stat boxes | **PASS** | Heavy `kuro-stat` usage with color variants (`kuro-stat-emerald`, `kuro-stat-gold`, `kuro-stat-pink`, `kuro-stat-cyan`, `kuro-stat-red`) — excellent system usage |
+| Buttons | **PASS** | Extensive `kuro-btn` with `active-gold`, `active-pink`, `active-cyan`, `active-emerald` |
+| TabBackground | **PASS** | `<TabBackground id="calc" />` |
+| Token adherence | **ISSUE** | `PityCounterInput` receives hardcoded hex colors as props: `color="#edaf18"`, `color="#f9a8d4"`, `color="#22d3ee"`. Priority slider gradient hardcodes `#edaf18` and `#ec4899` in inline style |
+| Custom components | **MINOR ISSUE** | `PityCounterInput` and `CalcResultsCard` are custom but follow card conventions |
+
+**Solution:** Replace hardcoded color props with semantic tokens. `PityCounterInput` should accept a color *name* (e.g., `"gold"`, `"pink"`, `"cyan"`) and resolve to `rgba(var(--color-gold), 1)` internally. Priority slider gradient should reference `rgba(var(--color-gold), 1)` and `rgba(var(--color-pink), 1)`. **MEDIUM priority — repeated hardcoded values.**
+
+##### TAB 4: PLANNER (`[TAB-PLANNER]`, lines ~3735–3974)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Consistent `Card` → `CardHeader` → `CardBody` throughout all sections |
+| Stat boxes | **PASS** | Multiple `kuro-stat` grids for projections and "By Banner End" data |
+| Buttons | **PASS** | `kuro-btn` with `active-emerald` for Lunite toggle |
+| TabBackground | **PASS** | `<TabBackground id="planner" />` |
+| Token adherence | **MINOR ISSUE** | Lunite indicator uses Tailwind `bg-emerald-500/10`, daily income uses `bg-yellow-500/10` — status indicators |
+| Custom components | **PASS** | No custom components — fully standard card system. Most structurally disciplined tab |
+
+**Solution for minor issue:** Status indicator pills could use existing `kuro-stat-emerald` and `kuro-stat-gold` classes instead of inline Tailwind. **LOW priority — visual result identical.**
+
+**Planner is the gold standard tab** — best structural discipline, highest token adherence, no style-breaking elements.
+
+##### TAB 5: STATS (`[TAB-STATS]`, lines ~3981–4759)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Uses `Card` system for all major sections |
+| Stat boxes | **PASS** | Very heavy `kuro-stat` usage — stats tab is the stat system's showcase |
+| Buttons | **PASS** | `kuro-btn` with `active-cyan` for mode switches |
+| TabBackground | **PASS** | `<TabBackground id="stats" />` |
+| Token adherence | **MAJOR ISSUE** | Heaviest hardcoding of any tab. Luck badge uses inline `style={{color: luckRating.color, textShadow: ...}}`. Trophy cards use inline `style={{ background: linear-gradient..., border, boxShadow }}`. Leaderboard medal colors from `MEDAL_COLORS` constant. Chart tooltip and legend fully inline. Pity histogram neon dots use hardcoded box-shadows |
+| Custom components | **ISSUE** | `luck-badge` custom CSS class, Recharts `AreaChart` with inline SVG gradients, trophy grid with custom card styling — significant departure from card system |
+
+**Solution:** Stats is the most complex tab and legitimately needs dynamic colors (luck rating, element-based trophies, chart data). However:
+1. **Luck badge:** Extract to a `kuro-badge` variant with `--badge-color` already used as CSS variable — just needs to be formalized as a design system component
+2. **Trophy cards:** Their gradient/glow styling should use the same `kuro-stat-{color}` patterns rather than rebuilding the effect inline
+3. **MEDAL_COLORS constant:** Move `['#edaf18','#c0c0c0','#cd7f32']` to CSS variables `--color-medal-gold`, `--color-medal-silver`, `--color-medal-bronze`
+4. **Chart styling:** Recharts requires inline SVG attributes — this is a library constraint, not a design system failure. **PASSED — library constraint.**
+5. **Pity histogram dots:** Extract to `kuro-legend-dot` class with color variants
+
+**MEDIUM-HIGH priority — Stats is the public showcase tab (leaderboards, trophies) and deserves the tightest execution.**
+
+##### TAB 6: COLLECT (`[TAB-COLLECT]`, lines ~4760–5032)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Standard `Card` system for all sections |
+| Stat boxes | **MINOR ISSUE** | Uses `style={{ background: 'var(--bg-stat)' }}` inline instead of `kuro-stat` class |
+| Buttons | **PASS** | Filter and sort buttons use `kuro-btn` |
+| TabBackground | **PASS** | `<TabBackground id="gathering" />` |
+| Token adherence | **GOOD** | Most inline styles reference CSS variables (`var(--bg-stat)`, `var(--bg-btn)`) rather than hardcoded hex |
+| Custom components | **PASS** | `CollectionGridSection` is a reusable structural component |
+
+**Solution for stat box issue:** Replace `style={{ background: 'var(--bg-stat)' }}` with `className="kuro-stat"` to get the full stat box treatment (border, backdrop-filter, hover effects) rather than just the background color. **LOW priority — functional but under-styled.**
+
+**Collect tab has the best inline-style discipline** — when it does use inline styles, they reference CSS variables rather than hardcoded values.
+
+##### TAB 7: TEAMS (`[TAB-TEAMS]`, lines ~5033–6463)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Primary `Card` wrapper with proper hierarchy |
+| Stat boxes | **PASS** | Team stats use styled containers |
+| Buttons | **PASS** | `kuro-btn` with `active-gold` for compare, team selector tabs |
+| TabBackground | **PASS** | `<TabBackground id="teams" />` |
+| Token adherence | **MAJOR ISSUE** | Element-based dynamic colors are entirely hardcoded via `getElementColor()`, `getElementBg()`, `getElementBorder()` functions returning raw hex values. Character stats badges use inline `boxShadow`. Damage analysis sections have heavy inline styling |
+| Custom components | **ISSUE** | Character slot UI, team comparison system, damage analysis calculator — all custom-built with inline styles |
+
+**Solution:** The Teams tab faces the same challenge as Stats — dynamic, data-driven colors. However:
+1. **Element color functions:** `getElementColor()` should return CSS variable references, not hex values. Define `--element-fusion`, `--element-glacio`, `--element-electro`, etc. in `:root`. The functions then return `rgba(var(--element-fusion), 1)`
+2. **Character slot styling:** Extract the overlay/gradient patterns to `kuro-char-slot` class
+3. **Damage analysis:** Complex inline calculations are acceptable for dynamic data. Focus on extracting the *static* patterns (badge backgrounds, text shadows) to classes
+4. **Text shadow on character names:** `textShadow: '0 2px 8px rgba(0,0,0,0.9)'` should be a utility class `kuro-text-shadow-heavy` since it's used across multiple components
+
+**MEDIUM priority — Teams is complex but the static patterns are extractable.**
+
+##### TAB 8: PROFILE (`[TAB-PROFILE]`, lines ~6464–6809)
+
+| Dimension | Status | Detail |
+|-----------|--------|--------|
+| Card structure | **PASS** | Multiple `Card` sections: Server Region, Resonator Profile, Display Settings, Import |
+| Stat boxes | **N/A** | Profile doesn't use stat boxes — appropriate, it's a settings tab |
+| Buttons | **PASS** | Heavy `kuro-btn` with `active-gold` for server/platform selection |
+| TabBackground | **PASS** | `<TabBackground id="profile" />` |
+| Token adherence | **MINOR ISSUE** | Profile pic container uses complex inline style with hardcoded `boxShadow` and `border` that replicate existing tokens. OLED toggle uses conditional inline styles |
+| Custom components | **PASS** | Toggle switches are custom but visually consistent. `ImportGuide` is structural |
+
+**Solution:**
+1. **Profile pic container:** Replace inline `style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)' }}` with `box-shadow: var(--shadow-md)` + existing inset pattern
+2. **OLED toggle:** The conditional background (`#fff` vs `var(--bg-btn)`) is a legitimate toggle widget styling need. However, the track and thumb should use `kuro-toggle-track` / `kuro-toggle-thumb` classes for consistency. **LOW priority.**
+
+**Profile tab is well-structured** — settings tabs naturally have fewer style-breaking patterns.
+
+---
+
+**TAB VOCABULARY SUMMARY:**
+
+| Tab | Structural Compliance | Token Adherence | Style Breaks | Overall |
+|-----|----------------------|-----------------|--------------|---------|
+| Tracker | FULL | GOOD | 1 minor | A |
+| Events | FULL | GOOD | 1 minor | A |
+| Calc | FULL | MODERATE | 2 (hardcoded color props) | B+ |
+| Planner | FULL | EXCELLENT | 0 | A+ |
+| Stats | FULL | WEAK | 5+ (heaviest offender) | C+ |
+| Collect | FULL | GOOD | 1 minor | A |
+| Teams | FULL | WEAK | 4+ (element color system) | B- |
+| Profile | FULL | GOOD | 2 minor | A- |
+
+**Key finding: Structural compliance is 100% — all 8 tabs use the kuro-card system and TabBackground without exception.** The style vocabulary breaks are exclusively at the *token adherence* level, not the *structural* level. This confirms the MIXED-INTENTIONAL coherence score: the architecture is coherent, the value implementation leaks.
+
+---
+
+#### DS2.2 STYLE INFLECTION POINTS
+
+Every component or pattern that breaks the established visual language. An inflection point is a moment where the user's eye encounters a different design "voice."
+
+| # | Inflection Point | Location | Established Language | What Breaks | Intentional? | Solution |
+|---|-----------------|----------|---------------------|-------------|--------------|----------|
+| IP-1 | **Luck badge** | Stats tab, line ~4005 | `kuro-stat` boxes with token colors | Custom `luck-badge` / `luck-badge-inner` CSS classes with dynamic inline `color`, `textShadow`, percentage-width gradient — a completely different component model | INTENTIONAL — luck rating is a hero element deserving unique treatment | Formalize as `kuro-badge` in KuroStyles. Keep the unique visual but bring it under system governance. Define `.kuro-badge { --badge-color: ... }` with the same glass + glow grammar as `kuro-stat` |
+| IP-2 | **Trophy card grid** | Stats tab, lines ~4296–4340 | `kuro-card` with standard border/shadow | Inline `style={{ background: linear-gradient(...), border: 1px solid ..., boxShadow: ... }}` rebuilds the card effect from scratch per trophy | ACCIDENTAL — same visual intent as kuro-card-inner but reimplemented inline | Extract to `.kuro-trophy-card` class with color variants, reusing `kuro-card-inner` patterns. The gradient/glow should use `rgba(var(--color-gold), 0.x)` syntax |
+| IP-3 | **PityCounterInput color props** | Calc tab, lines ~3510–3540 | CSS custom properties (`--color-gold`, `--color-pink`, `--color-cyan`) | Hardcoded hex strings passed as React props: `color="#edaf18"`, `color="#f9a8d4"`, `color="#22d3ee"` | ACCIDENTAL — developer shortcut bypassing the token layer | Refactor to accept semantic color names and resolve internally: `colorName="gold"` → `rgba(var(--color-gold), 1)` |
+| IP-4 | **Element color system** | Teams tab, lines ~5232+ | Token-based colors | `getElementColor()`, `getElementBg()`, `getElementBorder()` return raw hex values applied inline | ACCIDENTAL — a parallel color system that should feed from CSS variables | Define `--element-{name}` CSS custom properties in `:root`. Refactor utility functions to return `rgba(var(--element-fusion), 1)` etc. |
+| IP-5 | **Recharts visualization** | Stats tab, lines ~4600+ | KuroStyles surfaces and colors | Recharts components require inline SVG attributes for fills, strokes, gradients — completely outside CSS | INTENTIONAL — library constraint. Recharts does not support CSS custom properties in SVG gradients | **PASSED — library constraint.** Mitigate by defining chart color constants that reference the same RGB values as CSS tokens, ensuring visual alignment even without direct token usage |
+| IP-6 | **Error boundary** | `appcore-components.jsx` | KuroStyles card system | Fully hardcoded inline styles: colors, backgrounds, borders, shadows — zero token usage | ACCIDENTAL — likely built as standalone fallback before design system existed | Rewrite error boundary to use `kuro-card`, `kuro-header`, `kuro-body` classes. It already renders within the app shell, so design system classes are available |
+| IP-7 | **Modal backdrop** | `appcore-components.jsx`, 10+ instances | Should use a single token | `rgba(12,16,24,0.95)` repeated as hardcoded value in every modal | ACCIDENTAL — copy-paste propagation | Add `--bg-overlay: rgba(12, 16, 24, 0.95)` to `:root` (with OLED variant `rgba(0, 0, 0, 0.98)`). Replace all instances with `var(--bg-overlay)` |
+| IP-8 | **Priority slider gradient** | Calc tab, line ~3626 | Token colors | Inline `background: linear-gradient(to right, #edaf18 0%, #edaf18 ${pct}%, #ec4899 ${pct}%, #ec4899 100%)` | ACCIDENTAL — dynamic gradient built from hardcoded hex | Use `rgba(var(--color-gold), 1)` and `rgba(var(--color-pink), 1)` in the template literal |
+| IP-9 | **`.kuro-calc` font-family** | `appcore-providers.jsx`, line 532 | `var(--font-display)` (Rajdhani) | Uses system font stack `ui-sans-serif, system-ui...` without Rajdhani — every other component uses Rajdhani | ACCIDENTAL — fallback stack written without the primary font | Prepend `var(--font-display)` to the `.kuro-calc` font-family declaration. The system stack should be the *fallback*, not the primary |
+| IP-10 | **OLED toggle widget** | Profile tab, line ~6560 | `kuro-btn` / `kuro-stat` toggle patterns | Custom toggle with hardcoded `#fff` track color and conditional `bg-black` / `bg-gray-400` thumb | INTENTIONAL — toggle widgets are a specialized UI element with unique state-visual requirements | Formalize as `.kuro-toggle` in KuroStyles with `--toggle-track-on`, `--toggle-track-off`, `--toggle-thumb` tokens. The toggle is repeated (OLED toggle, swipe toggle) and should be a first-class design system component |
+
+**Inflection point breakdown:**
+- **Intentional (keep, formalize):** 3 (IP-1 luck badge, IP-5 Recharts, IP-10 toggle)
+- **Accidental (fix):** 7 (IP-2 trophy, IP-3 pity counter, IP-4 elements, IP-6 error boundary, IP-7 modal, IP-8 slider, IP-9 font)
+
+---
+
+#### DS2.3 INTENTIONAL TENSION VS ACCIDENTAL MIXING
+
+**Intentional Tensions (style-appropriate, keep):**
+
+1. **Cyberpunk/Terminal × Glassmorphism fusion** — This is the app's identity, not a tension. The HUD chrome (corner brackets, shimmer lines, gold accents) is rendered through glass materials (backdrop-blur, alpha surfaces, layered shadows). Both schools serve the same emotional register: precision instrumentation.
+
+2. **Monospace data × Display headings** — JetBrains Mono for numbers, Rajdhani for labels. This dual-font system is *required* by the content: tabular-nums data must be monospace, display text should be branded. The tension is functional, not aesthetic.
+
+3. **Warm gold accent × Cool blue-black field** — The gold is an intentional chromatic outlier. It draws attention to interactive elements and data highlights against the cool void. This is a classic sci-fi UI technique (think: cockpit HUD gold on black).
+
+4. **Playful trophy copy × Serious data UI** — Trophy names ("Down Bad (Financially)", "Rover's Plot Armor") contrast with the precision-instrument visual language. This tension is the app's personality — the community voice emerging through formal structures. It's a *feature*, not a bug.
+
+**Accidental Mixing (needs fixing):**
+
+1. **Token-governed system × Hardcoded application layer** — The design system (KuroStyles) is well-tokenized. The application code (App.jsx) frequently bypasses tokens with raw hex/rgba values. This creates visual *near-matches* that are worse than deliberate differences — the eye notices a `#ffffff` that should be `#edf1f8` as "something's off" without being able to name it.
+
+2. **Tailwind color utilities × CSS custom properties** — The app uses both `text-yellow-400` (Tailwind) and `rgba(var(--color-gold), 1)` (design system) for conceptually identical gold text. These resolve to different values (`#facc15` vs `rgb(237,175,24)`) creating a split-gold problem.
+
+3. **Consistent card chrome × Inconsistent data visualization** — Cards, buttons, stats, and inputs all follow the glass-on-dark grammar. But charts, badges, and inline data visualizations each invent their own surface treatment. The vocabulary diverges exactly where complexity increases.
+
+**Solution for accidental mixing category:**
+The fix is singular: **enforce token usage at the application layer.** The design system definitions are correct. The violations are all in `App.jsx` and `appcore-components.jsx`. A systematic search-and-replace pass would resolve 80% of the issues without any visual change.
+
+---
+
+#### DS2.4 HARDCODED VALUE AUDIT
+
+Systematic inventory of hex/rgba values that bypass the CSS custom property system. Grouped by category with per-finding solutions.
+
+##### CATEGORY A: PITY TIER COLORS (CRITICAL — most repeated pattern)
+
+The pity tier color scale (`green → lime → yellow → orange → red`) appears in **5+ separate locations** across `App.jsx`, each time re-declared as inline Tailwind classes:
+
+| Color | Tailwind Class | Hex Value | Instances | Used For |
+|-------|---------------|-----------|-----------|----------|
+| Green (safe) | `text-emerald-400` | `#34d399` | ~20 | Pity 1–30, wins, positive states |
+| Lime (good) | `text-lime-400` | `#a3e635` | ~15 | Pity 31–50 |
+| Yellow (caution) | `text-yellow-400` | `#facc15` | ~40 | Pity 51–64, gold accent, warnings |
+| Orange (danger) | `text-orange-400` | `#fb923c` | ~20 | Pity 65–74, soft pity zone |
+| Red (critical) | `text-red-400` | `#f87171` | ~25 | Pity 75–80, losses, errors |
+
+**Total: ~120 Tailwind color class instances** across the app.
+
+**Solution:** These are the app's semantic data scale — they need to be design system citizens, not ad-hoc Tailwind. Add to `:root`:
+```css
+--pity-safe: 52, 211, 153;      /* emerald-400 */
+--pity-good: 163, 230, 53;      /* lime-400 */
+--pity-caution: 250, 204, 21;   /* yellow-400 */
+--pity-danger: 251, 146, 60;    /* orange-400 */
+--pity-critical: 248, 113, 113; /* red-400 */
+```
+Then create utility classes: `.kuro-text-safe`, `.kuro-text-good`, `.kuro-text-caution`, `.kuro-text-danger`, `.kuro-text-critical`.
+
+**Severity: MEDIUM** — Not a visual bug (Tailwind values are consistent) but a maintainability and theming gap. If the color palette ever changes, 120+ class references need updating.
+
+**Note on Tailwind vs token duality:** The Tailwind `text-yellow-400` (`#facc15`) and the CSS variable `--color-gold` (`rgb(237,175,24)`) are *different yellows*. Tailwind yellow is a pure bright yellow; the design system gold is a warmer amber. Both are used for "gold" semantics, creating a **split-gold problem**. Recommendation: audit every `text-yellow-400` usage and determine if it should be `rgba(var(--color-gold), 1)` (the branded amber) or keep as-is (generic yellow).
+
+##### CATEGORY B: TROPHY SYSTEM COLORS (~100 instances in `App.jsx`)
+
+The trophy system (lines ~1621–1968) assigns hardcoded hex colors to every trophy:
+
+| Trophy Tier | Color | Hex | Count |
+|-------------|-------|-----|-------|
+| Legendary | Gold/Red | `#edaf18`, `#ff0000` | ~12 |
+| Gold | Gold | `#edaf18` | ~15 |
+| Purple | Purple | `#a855f7` | ~8 |
+| Pink | Pink | `#ec4899` | ~6 |
+| Orange | Orange | `#f97316` | ~8 |
+| Green | Green | `#22c55e` | ~10 |
+| Cyan | Cyan | `#06b6d4` | ~6 |
+| Blue | Blue | `#3b82f6` | ~4 |
+| Gray | Gray | `#6b7280` | ~15 |
+| Red | Red | `#ef4444` | ~8 |
+
+**Total: ~92 hardcoded color assignments** in the trophy computation function alone.
+
+**Solution:** Define a `TROPHY_TIER_COLORS` map in `appcore-data.js`:
+```js
+const TROPHY_TIER_COLORS = {
+  legendary: 'rgba(var(--color-gold), 1)',
+  gold: 'rgba(var(--color-gold), 1)',
+  purple: 'rgba(var(--color-purple), 1)',
+  pink: 'rgba(var(--color-pink), 1)',
+  orange: '#f97316',  // no existing token — add --color-orange
+  green: 'rgba(var(--color-emerald), 1)',
+  cyan: 'rgba(var(--color-cyan), 1)',
+  blue: '#3b82f6',    // no existing token — add --color-blue
+  gray: '#6b7280',    // no existing token — add --color-muted
+  red: 'rgba(var(--color-red), 1)',
+};
+```
+Then each trophy references `color: TROPHY_TIER_COLORS[tier]` instead of repeating hex values. This also enables future theming (e.g., OLED-adjusted trophy glow intensities).
+
+**New tokens needed:** `--color-orange: 249, 115, 22`, `--color-blue: 59, 130, 246`, `--color-muted: 107, 114, 128`
+
+**Severity: MEDIUM** — The trophy colors are functionally correct but create a maintenance hazard. If the app's gold shifts from `#edaf18` to a different hue, 27 trophy definitions need manual updates.
+
+##### CATEGORY C: MODAL BACKDROP (`appcore-components.jsx`)
+
+| Value | Instances | Location |
+|-------|-----------|----------|
+| `rgba(12,16,24,0.95)` | ~10 | Every modal's backdrop overlay |
+
+**Solution:** Already identified in IP-7. Add `--bg-overlay` token to `:root` with OLED variant. Single-point-of-change.
+
+**Severity: LOW** — Consistent value (always the same rgba), just not tokenized.
+
+##### CATEGORY D: ELEMENT_COLORS SYSTEM (`appcore-data.js`)
+
+The `ELEMENT_COLORS` object (lines 1966–1972) stores hardcoded hex values for game elements:
+
+```js
+ELEMENT_COLORS = {
+  Fusion:  { hex: '#f97316', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.4)' },
+  Electro: { hex: '#a855f7', bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)' },
+  Aero:    { hex: '#10b981', ... },
+  Glacio:  { hex: '#06b6d4', ... },
+  Havoc:   { hex: '#ec4899', ... },
+  ...
+}
+```
+
+**Current state:** This is a *centralized* color system (single source of truth, used via `getElementColor()` etc.), which is better than inline hex. But it bypasses CSS custom properties.
+
+**Solution:** Move to CSS custom properties:
+```css
+:root {
+  --element-fusion: 249, 115, 22;
+  --element-electro: 168, 85, 247;
+  --element-aero: 16, 185, 129;
+  --element-glacio: 6, 182, 212;
+  --element-havoc: 236, 72, 153;
+  --element-spectro: 237, 175, 24;
+}
+```
+Then `ELEMENT_COLORS` derives from these: `hex: 'rgb(var(--element-fusion))'`. This enables OLED-mode element color adjustments and future theming.
+
+**Severity: LOW-MEDIUM** — Already centralized, just needs CSS variable migration.
+
+##### CATEGORY E: MEDAL_COLORS (`appcore-data.js`)
+
+```js
+const MEDAL_COLORS = ['#edaf18', '#c0c0c0', '#cd7f32'];
+```
+
+Three hardcoded hex values for gold/silver/bronze medals in the leaderboard.
+
+**Solution:** Add to `:root`: `--color-medal-gold: #edaf18`, `--color-medal-silver: #c0c0c0`, `--color-medal-bronze: #cd7f32`. Array becomes `[var(--color-medal-gold), ...]`.
+
+**Severity: LOW** — Only used in one location, but should be tokenized for OLED compatibility (silver `#c0c0c0` may need adjustment on pure black).
+
+##### CATEGORY F: PITY COUNTER INPUT PROPS (`App.jsx`)
+
+| Prop | Value | Line |
+|------|-------|------|
+| `color` | `"#edaf18"` | ~3510 |
+| `softColor` | `"#fb923c"` | ~3510 |
+| `softGlow` | `"rgba(251,146,60,0.5)"` | ~3510 |
+| `color` | `"#f9a8d4"` | ~3520 |
+| `softColor` | `"#ec4899"` | ~3520 |
+| `color` | `"#22d3ee"` | ~3530 |
+| `softColor` | `"#67e8f9"` | ~3530 |
+
+**Solution:** Already covered in IP-3. Refactor `PityCounterInput` to accept semantic color names and resolve internally via CSS variables.
+
+**Severity: MEDIUM** — These props are the Calc tab's most prominent visual elements.
+
+##### CATEGORY G: MANIFEST & META COLORS (`App.jsx`)
+
+```js
+background_color: '#0a0a1a'   // line 463
+theme_color: '#0c0820'         // line 464
+```
+
+**Solution:** These are PWA manifest values and must be static strings (cannot use CSS variables). However, they should match the actual `html` background. Current values (`#0a0a1a`, `#0c0820`) differ from the app's actual background (`#080c14`).
+
+**Fix:** Update to `background_color: '#080c14'` and `theme_color: '#080c14'` to match the actual app background.
+
+**Severity: LOW** — Only visible during PWA splash screen, but the mismatch creates a flash of incorrect color.
+
+##### HARDCODED VALUE AUDIT SUMMARY
+
+| Category | Instances | Severity | Fix Complexity |
+|----------|-----------|----------|----------------|
+| A. Pity tier Tailwind colors | ~120 | MEDIUM | Add 5 pity tokens + utility classes, gradual migration |
+| B. Trophy system colors | ~92 | MEDIUM | Create TROPHY_TIER_COLORS map + 3 new tokens |
+| C. Modal backdrop | ~10 | LOW | Add 1 token, search-replace |
+| D. Element colors | 6 entries | LOW-MEDIUM | Migrate ELEMENT_COLORS to CSS vars |
+| E. Medal colors | 3 values | LOW | Add 3 tokens |
+| F. Pity counter props | 9 values | MEDIUM | Refactor component API |
+| G. Manifest colors | 2 values | LOW | Update to match actual bg |
+| **Total** | **~240+** | | |
+
+**Critical path:** Categories A and B account for ~88% of all hardcoded color instances. Fixing these two categories would bring the app from ~240 hardcoded values to ~50, dramatically improving token adherence.
+
+---
+
+#### DS2.5 SHAPE SYSTEM CONSISTENCY
+
+Audit of `border-radius` values across the entire design system to identify the shape language and any inconsistencies.
+
+##### BORDER-RADIUS INVENTORY
+
+All `border-radius` values found in `appcore-providers.jsx` (KuroStyles):
+
+| Value | Component | Line | Role |
+|-------|-----------|------|------|
+| `16px` | `.kuro-card` | 714 | Primary card container |
+| `15px` | `.kuro-card-inner` | 773 | Inner card content |
+| `12px` | `.kuro-btn` | 859 | Buttons |
+| `10px` | `.kuro-stat` | 1039 | Stat boxes |
+| `8px` | `.kuro-input` | 990 | Input fields |
+| `8px` | `.kuro-toggle-track` (responsive) | 1337 | Toggle switches |
+| `6px` | `.kuro-badge` (responsive) | 1310 | Badges at small size |
+| `4px` | `.kuro-card-inner::before/::after` corner brackets | 786, 800 | Decorative corners |
+| `3px` | `.kuro-slider` track | 1178 | Slider track |
+| `3px` | Scrollbar thumb | 490 | Scrollbar |
+| `2px` | `.kuro-header h3::before` gold bar | 845 | Header accent |
+| `1px` | `.tab-indicator` | 704 | Tab underline |
+| `50%` | `.kuro-slider` thumb | 1189 | Circular slider handle |
+
+**Analysis:**
+
+The shape system uses **13 different radius values** across the design system. This is NOT a formal scale — it's an *organic* gradient from pill-shaped cards (16px) down to sharp accents (1px).
+
+| # | Finding | Status | Solution |
+|---|---------|--------|----------|
+| SH-1 | **Card vs card-inner mismatch: 16px vs 15px** | **ISSUE** | The 1px difference between `.kuro-card` (16px) and `.kuro-card-inner` (15px) is *likely intentional* — the inner element is 1px smaller to account for the parent's 1px border, ensuring the inner content doesn't clip the rounded corners. **PASSED — structural intent.** However, this should be documented with a comment: `/* 15px = parent 16px - 1px border */` |
+| SH-2 | **No border-radius tokens** | **ISSUE** | All radius values are hardcoded numbers. Define a scale: `--radius-xs: 2px`, `--radius-sm: 4px`, `--radius-md: 8px`, `--radius-lg: 12px`, `--radius-xl: 16px`, `--radius-full: 50%`. Then components reference tokens instead of magic numbers |
+| SH-3 | **Button (12px) vs Input (8px) vs Stat (10px)** | **PASS** | The descending scale (card 16 → button 12 → stat 10 → input 8) creates a natural hierarchy where larger containers have softer edges and smaller elements are more compact. This reads as intentional differentiation, not inconsistency |
+| SH-4 | **Responsive badge uses 6px, 8px, 10px** | **PASS** | These responsive breakpoint adjustments (lines 1310, 1315, 1319) appropriately scale the radius with the element size. Smaller screen → smaller radius → more compact feel |
+| SH-5 | **Tailwind rounded-* classes in App.jsx** | **MINOR ISSUE** | App.jsx also uses Tailwind `rounded-lg`, `rounded-xl`, `rounded-full` which resolve to different values than the KuroStyles scale. `rounded-lg` = 8px in Tailwind ≠ 12px `.kuro-btn`. Potential confusion. Solution: Where possible, prefer KuroStyles classes over Tailwind radius utilities for consistency |
+
+**Shape system verdict: GOOD — organically consistent, needs formalization.**
+
+The radius values form a logical hierarchy but aren't governed by tokens. The 16→12→10→8 descending scale is appropriate for the Cyberpunk/Terminal style (cards are soft, elements are progressively sharper). Formalize with `--radius-*` tokens to prevent future drift.
+
+---
+
+#### DS2.6 STYLE-APPROPRIATE DETAIL LEVEL
+
+Assessing whether the level of visual detail matches the Cyberpunk/Terminal + Glassmorphism classification:
+
+| Aspect | Assessment | Detail |
+|--------|-----------|--------|
+| **Chrome density** | **APPROPRIATE** | Corner brackets, shimmer lines, gold bar accents, inset edges — enough HUD chrome to establish the sci-fi register without overwhelming data readability |
+| **Animation count** | **APPROPRIATE** | 6 keyframe animations (`slideUp`, `scaleIn`, `borderGlow`, `pulseScale`, `shimmer`, `tabFadeIn`, `cardSlideIn`, `kuroPulseOrange`) — rich enough for atmosphere, not so many as to create visual noise |
+| **Shadow complexity** | **APPROPRIATE** | Triple-stack shadows on cards (ambient + ring + inset) is Glassmorphism-correct. Single shadows on hover states. Proper escalation from rest → hover → active |
+| **Backdrop-filter usage** | **APPROPRIATE** | Applied to cards, buttons, stats, inputs — every interactive surface. This is correct for Glassmorphism: the blur creates depth without visual weight |
+| **Color accent count** | **APPROPRIATE** | 6 accent colors (gold, pink, cyan, purple, emerald, red) each with semantic meaning (banner types, data states). For a gacha tracker with multiple banner types, this palette is necessary |
+| **Typography detail** | **APPROPRIATE** | Uppercase labels with letter-spacing, text-shadows, dual fonts — Terminal-native without being cosplay. The labels look like instrument readouts |
+| **Transition coverage** | **GOOD** | Most interactive elements have transitions. However, some Tailwind-styled elements lack transitions (inline `text-*` classes don't transition). Solution: Add `transition: color var(--transition-fast)` to base text elements that change color dynamically |
+| **Decorative elements** | **APPROPRIATE** | The only purely decorative elements are: corner brackets (establish HUD frame), shimmer line (establish glass surface), gold bar accent (establish section hierarchy). All three serve the Cyberpunk/Terminal identity rather than being arbitrary decoration |
+| **Information density** | **EXCELLENT** | Expert-appropriate density. Stats tab shows pity histograms, luck ratings, trophy grids, leaderboards — all without simplification. This matches the A3 axis (ENTHUSIAST/EXPERT audience) |
+
+**Detail level verdict: APPROPRIATE for classification.**
+
+The Cyberpunk/Terminal school expects *more* detail than Minimal/Flat but *less* than full Skeuomorphism. This app sits correctly in that range: HUD chrome provides atmosphere, glass materials provide depth, but the visual noise never overwhelms the data. The one area for improvement is transition consistency on dynamically-colored text elements.
+
+---
+
+### §DS2 FINDINGS SUMMARY
+
+| ID | Finding | Severity | Category |
+|----|---------|----------|----------|
+| DS2-F1 | Structural compliance 100% across all 8 tabs | **PASS** | Vocabulary |
+| DS2-F2 | Stats tab has weakest token adherence (5+ major style breaks) | MEDIUM-HIGH | Vocabulary |
+| DS2-F3 | Teams tab element color system bypasses CSS variables | MEDIUM | Vocabulary |
+| DS2-F4 | Planner tab is the gold standard (zero style breaks) | **PASS** | Vocabulary |
+| DS2-F5 | 10 style inflection points identified (3 intentional, 7 accidental) | MEDIUM | Inflection |
+| DS2-F6 | Cyberpunk × Glassmorphism fusion is intentional and well-executed | **PASS** | Tension |
+| DS2-F7 | Tailwind yellow-400 ≠ design system gold creates split-gold | MEDIUM | Tension |
+| DS2-F8 | ~240 hardcoded color values across 7 categories | MEDIUM | Hardcoded |
+| DS2-F9 | Pity tier + trophy colors account for 88% of hardcoded values | MEDIUM | Hardcoded |
+| DS2-F10 | Modal backdrop repeated 10+ times without token | LOW | Hardcoded |
+| DS2-F11 | PWA manifest colors don't match actual app background | LOW | Hardcoded |
+| DS2-F12 | Border-radius uses 13 values without tokens but forms logical hierarchy | LOW | Shape |
+| DS2-F13 | Card (16px) vs card-inner (15px) is structural intent, not error | **PASS** | Shape |
+| DS2-F14 | Detail level appropriate for Cyberpunk/Terminal classification | **PASS** | Detail |
+| DS2-F15 | `.kuro-calc` font-family missing Rajdhani as primary | LOW | Inflection |
+| DS2-F16 | No spacing scale tokens defined | MEDIUM | Shape |
+
+---
+
+**STEP 2 COMPLETE** — §DS1 Style Classification + §DS2 Coherence Audit established.
+
+**Classification:** Cyberpunk/Terminal (primary) + Glassmorphism (secondary execution layer) + Dashboard (secondary atmospheric)
+**Coherence:** MIXED-INTENTIONAL — Design system is coherent, application layer leaks through hardcoded values.
+**Execution:** 7/10 GOOD — Strong vision, strong system definitions, weak token adoption in application code.
+**Critical fix path:** Tokenize pity tier colors and trophy colors to eliminate 88% of hardcoded value violations.
