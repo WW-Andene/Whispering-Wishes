@@ -1154,3 +1154,629 @@ The Cyberpunk/Terminal school expects *more* detail than Minimal/Flat but *less*
 **Coherence:** MIXED-INTENTIONAL — Design system is coherent, application layer leaks through hardcoded values.
 **Execution:** 7/10 GOOD — Strong vision, strong system definitions, weak token adoption in application code.
 **Critical fix path:** Tokenize pity tier colors and trophy colors to eliminate 88% of hardcoded value violations.
+
+---
+---
+
+# STEP 3: §DP0 — CHARACTER EXTRACTION
+
+> **Extraction method**: Read from code, not from intent. This documents what the design IS, not what it should be.
+> **Source files**: `appcore-providers.jsx` (KuroStyles CSS-in-JS), `App.jsx` (application layer), `appcore-components.jsx` (shared components), `appcore-data.js` (data/color definitions), `index.css` (base styles), `tailwind.config.js` (theme config)
+
+---
+
+## §DP0.1 — Color Character
+
+### Background Values
+
+| Layer | Standard Mode | OLED Mode | Temperature |
+|-------|--------------|-----------|-------------|
+| **App body** | `#080c14` (RGB 8,12,20) | `#000000` | Deep cool navy — blue-shifted near-black |
+| **Card surface** | `rgba(12, 16, 24, 0.55)` | `rgba(0, 0, 0, 0.95)` | Cool slate, 55% translucent glass |
+| **Card inner** | `rgba(6, 10, 18, 1)` | `rgba(5, 5, 5, 1)` | Solid dark panel |
+| **Button** | `rgba(15, 20, 28, 0.85)` | `rgba(0, 0, 0, 0.95)` | Cool dark, 85% glass |
+| **Input** | `rgba(15, 20, 28, 0.9)` | `rgba(0, 0, 0, 0.95)` | Cool dark, 90% glass |
+| **Stat box** | `rgba(10, 14, 22, 0.8)` | `rgba(0, 0, 0, 0.9)` | Cool dark, 80% glass |
+| **Modal backdrop** | `rgba(12, 16, 24, 0.95)` | Same | Near-opaque cool dark |
+| **Scrollbar track** | `#0f1520` | — | Slightly lighter than body |
+
+**Background character**: All backgrounds sit in the `hsl(220°-230°, ~40-60%, 3-8%)` range — deeply cool-shifted, consistently blue-tinted. OLED mode flattens to pure black. The standard mode maintains chromatic depth with a navy undertone that reads as "deep space" or "command center darkness." No warm backgrounds exist anywhere in the system.
+
+### Surface Values
+
+| Surface | Value | Treatment |
+|---------|-------|-----------|
+| **Glass card** | `rgba(12, 16, 24, 0.55)` + `backdrop-blur(4px)` | Frosted glass at 55% opacity |
+| **Glass button** | `rgba(15, 20, 28, 0.85)` + `backdrop-blur(8px)` | Denser glass at 85% |
+| **Glass input** | `rgba(15, 20, 28, 0.9)` + `backdrop-blur(8px)` | Near-solid glass at 90% |
+| **Glass stat** | `rgba(10, 14, 22, 0.8)` + `backdrop-blur(4px)` | Medium glass at 80% |
+| **Solid card inner** | `rgba(6, 10, 18, 1)` | Fully opaque dark panel |
+| **Modal surface** | `rgba(12, 16, 24, 0.95)` | Near-opaque overlay |
+
+**Surface character**: Three-material system — (1) frosted glass at varying opacity (55%-90%), (2) solid dark panels, (3) near-opaque overlays. All surfaces share the same cool-navy hue family. Blur values range from 4px (cards) to 8px (buttons, inputs) to 20px (desktop sidebar). This is a **glass-over-void** material language.
+
+### Accent Values
+
+| Accent | CSS Variable | Hex | RGB | Character |
+|--------|-------------|-----|-----|-----------|
+| **Gold** (primary) | `--color-gold` | `#edaf18` | `237, 175, 24` | Warm amber — oversaturated, high-contrast against cool backgrounds |
+| **Pink** | `--color-pink` | `#ec4899` | `236, 72, 153` | Hot pink — vivid, synthetic |
+| **Cyan** | `--color-cyan` | `#38bdf8` | `56, 189, 248` | Electric cyan — cool, technical |
+| **Purple** | `--color-purple` | `#a855f7` | `168, 85, 247` | Vivid purple — neon-range saturation |
+| **Emerald** | `--color-emerald` | `#22c55e` | `34, 197, 94` | Bright green — success/positive signal |
+| **Red** | `--color-red` | `#f87171` | `248, 113, 113` | Warm coral-red — softer than pure red |
+
+**Accent character**: Six accent colors, all at high saturation (80-100% in HSL). Gold dominates as the primary accent — it appears in focus rings, active states, header chrome, glow effects, and the primary navigation indicator. The remaining five form a **role-based chromatic system**: pink (limited/featured), cyan (standard/weapon), purple (4-star), emerald (success/positive), red (error/negative). The palette is **neon-on-void** — intensely saturated accents against near-black backgrounds, classic cyberpunk chromatics.
+
+### Text Colors
+
+| Role | Value | Character |
+|------|-------|-----------|
+| **Body text** | `--text-body: #dfe5ef` | Cool blue-white, ~88% lightness |
+| **Heading text** | `--text-heading: #edf1f8` | Slightly brighter cool white, ~95% |
+| **Pure emphasis** | `#ffffff` | White for maximum contrast moments |
+| **Secondary** | `#9ca3af` / `#bcc3d1` | Muted cool gray, 60-75% lightness |
+| **Tertiary** | `#6b7280` / `#4b5563` | Dark gray, 40-50% lightness |
+| **Input placeholder** | `#6b7389` → focus: `#8f99ab` | Cool gray shifting lighter on focus |
+
+**Text color character**: Three-tier hierarchy — bright cool-white for headers, medium cool-white for body, and two levels of muted gray for secondary/tertiary. All text colors carry the same cool blue undertone as the backgrounds. No warm text colors exist in the base system (warm appears only via accent classes like `text-yellow-400`).
+
+### Gradient Values
+
+| Type | Values | Use |
+|------|--------|-----|
+| **Gold bar** | `linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.4))` | Header accent bar |
+| **Card shimmer** | `linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)` | Top-edge shimmer line |
+| **Banner fade** | `linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)` | Image overlay text protection |
+| **Empty state glow** | `radial-gradient(ellipse at center, rgba(237,175,24,0.04), transparent 70%)` | Subtle gold ambient |
+| **Gold glow** | `radial-gradient(ellipse at 50% 80%, rgba(237,175,24,0.08), transparent 60%)` | 5-star card background glow |
+| **Luck badge** | `conic-gradient(from 0deg, var(--badge-color), transparent 50%, var(--badge-color))` | Rotating badge ring |
+| **Soft pity pulse** | `linear-gradient(to top, rgba(COLOR,0.15), transparent)` | Animated pity warning |
+
+**Gradient character**: Gradients serve three purposes: (1) gold chrome accents (header bars, glow fields), (2) depth-fading overlays (banner cards, image protection), (3) animated atmospheric effects (shimmer, pulse, badge rotation). All gradients use the accent palette — no neutral or warm gradients exist.
+
+### Overall Palette Feeling
+
+**"Neon-on-void with a single warm anchor."** The palette is overwhelmingly cool (navy/black backgrounds, blue-tinted text, cool-shifted grays) with high-saturation neon accents. Gold functions as the warm anchor point — it's the only consistently warm element, creating a strong temperature contrast that draws the eye to interactive and important elements. The remaining accents (pink, cyan, purple, emerald, red) are all cool-to-neutral, creating a cohesive neon field. This reads as **cyberpunk command interface** — dark operational surfaces with luminous data points.
+
+**Solution for all color findings**: Color extraction is ground truth documentation. No solutions needed at this stage — findings emerge in §DP1 when extraction is compared against intent.
+
+---
+
+## §DP0.2 — Spatial Character
+
+### Dominant Padding Values
+
+| Source | Value | Frequency | Context |
+|--------|-------|-----------|---------|
+| **CSS (KuroStyles)** | `14px` | Cards, headers, bodies, stats | Primary structural padding |
+| **Tailwind** | `p-2` (8px) | 54 uses | Most common general padding |
+| **Tailwind** | `p-3` (12px) | 24 uses | Secondary structural padding |
+| **Tailwind** | `p-1` (4px) | 14 uses | Tight element padding |
+| **CSS (KuroStyles)** | `10px 12px` | Buttons, inputs | Interactive element padding |
+| **CSS (KuroStyles)** | `4px 8px` | Small inputs | Compact variant |
+
+### Spacing Rhythm
+
+| Axis | Dominant Value | Frequency | Secondary | Frequency |
+|------|---------------|-----------|-----------|-----------|
+| **Gap (flex/grid)** | `gap-2` (8px) | 72 uses | `gap-1` (4px) | 41 uses |
+| **Gap secondary** | `gap-1.5` (6px) | 29 uses | `gap-3` (12px) | 11 uses |
+| **Vertical spacing** | `space-y-2` (8px) | 36 uses | `space-y-3` (12px) | — |
+| **Y-axis padding** | `py-0.5` (2px) | 33 uses | `py-1` (4px) | 29 uses |
+| **X-axis padding** | `px-1.5` (6px) | 26 uses | `px-3` (12px) | 19 uses |
+
+**Spacing base unit**: 4px — all values are multiples (2px, 4px, 6px, 8px, 10px, 12px, 14px, 16px). The rhythm is consistent and grid-aligned.
+
+### Gap Between Sections
+
+| Context | Gap | Source |
+|---------|-----|--------|
+| **Card body items** | `gap-2` (8px) | Dominant flex gap |
+| **Stat group** | `gap-1.5` (6px) | Tighter for data clusters |
+| **Tab content** | `space-y-2` (8px) | Vertical section spacing |
+| **Card stacks** | `gap-3` (12px) | Between major sections |
+
+### Overall Density Feeling
+
+**COMFORTABLE-TO-DENSE** — The app balances two spatial modes:
+- **Data display**: Dense (9-10px text, gap-1 to gap-2, py-0.5) — information-rich areas like pity counters, stats tables, and trophy grids pack data tightly
+- **Structural layout**: Generous (14px card padding, gap-2 to gap-3 section spacing) — cards and sections breathe
+
+This dual density is **intentional for a data tool**: the structural envelope is generous enough to avoid claustrophobia, while data zones are dense enough to show meaningful amounts of information without scrolling. The 8px grid (gap-2) as the dominant rhythm creates a comfortable, not cramped, baseline.
+
+**Solution**: Spatial extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.3 — Typography Character
+
+### Typefaces in Use
+
+| Role | Font | Fallback Chain | Character |
+|------|------|---------------|-----------|
+| **Display** | Rajdhani | `ui-sans-serif, system-ui, sans-serif` | Geometric, angular, tech-forward — designed for UI/HUD display |
+| **Data/Mono** | JetBrains Mono | `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace` | Developer-grade monospace for numeric precision |
+| **Body** | System UI stack | `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif` | Platform-native fallback |
+
+**Type personality**: Two-font system with clear role separation. Rajdhani handles display/UI text (headers, labels, navigation) — its geometric letterforms and angular design reinforce the cyberpunk/HUD aesthetic. JetBrains Mono handles numeric data (pity counters, stats, timers) — its monospace precision communicates data accuracy. The system stack serves as a body text fallback. This reads as **technical instrument typography** — prioritizing clarity and data legibility over warmth.
+
+### Weight Range
+
+| Weight | CSS Value | Tailwind | Frequency | Role |
+|--------|-----------|----------|-----------|------|
+| **Normal** | `400` | `font-normal` | 7 uses | Rare — body text fallback |
+| **Medium** | `500` | `font-medium` | 71 uses | **DOMINANT** — standard UI text |
+| **Semibold** | `600` | `font-semibold` | 12 uses | Headers, labels (KuroStyles) |
+| **Bold** | `700` | `font-bold` | 66 uses | Numbers, emphasis, stats |
+
+**Weight character**: The weight center sits at 500 (medium) — this avoids both the thinness of 300/400 and the heaviness of 700/800. The system is **medium-biased**, creating a professional, confident-but-not-aggressive feel. Bold is reserved for numeric data and emphasis moments, not for general headings. This is a **measured weight system** that avoids shouting.
+
+### Size Range
+
+| Category | Values | Frequency | Context |
+|----------|--------|-----------|---------|
+| **Micro** | `text-[8px]` | 26 uses | Ultra-compact labels, badges |
+| **Small** | `text-[9px]` | 158 uses | **DOMINANT** — primary data text |
+| **Small+** | `text-[10px]` | 153 uses | **CO-DOMINANT** — secondary data text |
+| **System small** | `text-xs` (12px) | 95 uses | Standard small text |
+| **System base** | `text-sm` (14px) | 45 uses | Standard body text |
+| **Heading** | `text-lg` (18px) | 4 uses | Section headers |
+| **Hero** | `text-xl` (20px) | 10 uses | Major stats, hero numbers |
+| **Display** | `text-2xl` (24px) | 3 uses | Prominent numbers |
+| **Feature** | `text-5xl` (48px) | 1 use | Single hero moment |
+
+**Size character**: The type scale is **bottom-heavy** — 9-10px custom sizes dominate with 311 combined uses, more than all standard Tailwind sizes combined (144 uses). This signals **data density priority** — the app optimizes for showing maximum information in minimum space, consistent with a gacha tracker tool identity. The jump from 10px body to 18-20px headers is aggressive (~2× ratio), creating clear hierarchy without intermediate steps.
+
+**Notable**: Heavy use of arbitrary pixel values (`text-[9px]`, `text-[10px]`) rather than Tailwind's scale suggests the standard scale didn't fit the tool's density requirements.
+
+### Letter-Spacing Values
+
+| Value | Tailwind | Context | Character |
+|-------|----------|---------|-----------|
+| `0.08em` | — | `.kuro-label` (uppercase labels) | Wide — technical HUD labeling |
+| `0.1em` | — | Desktop AD margin text | Widest — display/decorative |
+| `0.03em` | — | `.kuro-header h3` | Slight — heading refinement |
+| `0.02em` | — | `.kuro-btn` | Subtle — button text |
+| `0.01em` | — | `.kuro-empty-state` | Minimal — body text |
+| `-0.02em` | — | Pity ring text, scoreboard | Tight — numeric display |
+| — | `tracking-wider` (0.05em) | 12 uses | Uppercase label convention |
+
+**Tracking character**: The system uses **negative tracking for numbers** (tight, precise data display) and **positive tracking for labels** (wide, HUD-like labeling). This split reinforces the technical instrument personality — numbers compress for density, labels expand for scannability. The `0.08em` on `.kuro-label` with uppercase transform is a classic **HUD/terminal convention**.
+
+### Line-Height Values
+
+| Value | Context | Character |
+|-------|---------|-----------|
+| `1.0` | Scoreboard numbers | **Ultra-tight** — data display, no leading |
+| `1.2` | Pity ring numbers | Tight — numeric display |
+| `1.25` | Card headers | Tight — heading compression |
+| `1.3` | Stat values, labels | Moderate — balanced |
+| `leading-tight` | 3 uses | Tailwind tight |
+| `leading-relaxed` | 4 uses | Tailwind relaxed |
+
+**Line-height character**: Predominantly tight (1.0-1.3 range). The system avoids generous leading — even body areas use 1.3 rather than 1.5+. This contributes to the **dense, technical feel** — text blocks are compact, not airy.
+
+### Text Effects
+
+| Effect Type | Values | Count | Character |
+|-------------|--------|-------|-----------|
+| **Depth shadow** | `0 2px 4px rgba(0,0,0,0.5)` | Headers, labels | Subtle depth — text floats above surface |
+| **Color glow** | `0 0 12px rgba(COLOR, 0.6)` | 6 color variants | Active state neon glow |
+| **Pity pulse** | `0 0 8px → 0 0 15px + 0 0 25px` | 3 animations | Double-layer animated glow |
+| **Dynamic glow** | `0 0 20px ${color}40` | Luck badge, stats | Data-driven color glow |
+| **Uppercase** | `text-transform: uppercase` | Labels only | Technical/HUD convention |
+
+**Text effect character**: The glow system is the most distinctive typography feature — text literally emits light in the accent colors, creating a **holographic/neon signage** feeling. Combined with uppercase + wide tracking on labels, this produces the characteristic **HUD data readout** aesthetic. No underlines, no decorative fonts, no text decorations beyond shadow and glow.
+
+### Overall Type Feeling
+
+**TECHNICAL-PRECISION with CYBERPUNK FLAIR.** The typography system communicates "data instrument operated by an expert." Rajdhani's geometric forms + JetBrains Mono's precision + tight leading + wide-tracked uppercase labels + colored text-shadow glows = a **HUD terminal readout** personality. This is not warm, not editorial, not casual — it's purpose-built for dense data display with aesthetic flair through glow effects.
+
+**Solution**: Typography extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.4 — Component Character
+
+### Border Radius Inventory
+
+| Value | Component | Personality Signal |
+|-------|-----------|-------------------|
+| `1px` | Tab indicator | Near-zero — sharp data accent |
+| `2px` | Header accent bar | Minimal — chrome detail |
+| `3px` | Scrollbar thumb | Minimal — functional element |
+| `4px` | Skeleton loading, corner bracket corners | Small — structural |
+| `6px` | Skeleton text | Small — placeholder |
+| `8px` | Input, empty state | **Medium — interactive elements** |
+| `10px` | Stat box | Medium — data containers |
+| `12px` | Button | **Medium-large — primary interactive** |
+| `15px` | Card inner wrapper | Large — structural accommodation (16px - 1px border) |
+| `16px` | Card outer | **Large — primary container** |
+| `rounded-xl` (12px) | Install banner, luck badge | Large — promotional/hero |
+| `rounded-2xl` (16px) | Onboarding modal | Large — modal |
+| `rounded-full` | Decorative circles, progress bars | Circular — non-structural |
+
+**Radius character**: The system uses a **graduated scale** from 1px (sharp data accents) to 16px (container cards). Interactive elements cluster around 8-12px, containers at 15-16px. This is **moderately rounded** — not sharp/technical (0-4px) and not pill-shaped/friendly (20px+). The rounding softens the cyberpunk sharpness just enough to feel **approachable without losing authority**. No fully-square components exist; no pill-shaped buttons exist.
+
+### Shadow Presence
+
+| Level | Token | Value | Usage |
+|-------|-------|-------|-------|
+| **Small** | `--shadow-sm` | `0 1px 2px rgba(6,10,24,0.4)` | Subtle depth — minimal elevation |
+| **Medium** | `--shadow-md` | `0 4px 12px rgba(6,10,24,0.5)` | Default button shadow |
+| **Large** | `--shadow-lg` | `0 8px 24px rgba(6,10,24,0.6)` | Hover states, elevated cards |
+| **XL** | `--shadow-xl` | `0 12px 40px rgba(6,10,24,0.7)` | Modals, prominent elements |
+| **Glow (gold)** | Inline | `0 0 24px rgba(237,175,24,0.20)` | 5-star card glow |
+| **Glow (purple)** | Inline | `0 0 16px rgba(168,85,247,0.12)` | 4-star card glow |
+| **Inset** | Inline | `inset 0 0 20px rgba(COLOR,0.06-0.08)` | Active button inner glow |
+
+**Shadow character**: **PROMINENT** — shadows are always present, always cool-tinted (`rgba(6,10,24,*)` base), and always multi-layered. Cards use a **triple-stack** shadow: `4px blur + 1px ring + inset highlight`. Active states add **color-emissive glows** (24-36px radius). The shadow system creates a clear **floating-panel** metaphor — components don't sit on a surface, they hover in the void. This reinforces the **command center / holographic display** personality.
+
+### Border Style
+
+| Component | Border Treatment | Character |
+|-----------|-----------------|-----------|
+| **Card** | `1px solid var(--border-default)` (8% white) | Ghost border — barely visible structural outline |
+| **Card hover** | `var(--border-hover)` (15% white) | Brightens on interaction |
+| **Button** | `1px solid var(--border-medium)` (10% white) | Slightly more visible than card |
+| **Button active** | `rgba(COLOR, 0.7)` | Strong accent color border |
+| **Input** | `1px solid var(--border-bright)` (20% white) | Most visible — interactive affordance |
+| **Input focus** | `rgba(237,175,24,0.5)` + `3px ring` | Gold focus ring — strong affordance |
+| **Stat** | `1px solid var(--border-hover)` (15% white) | Medium visibility |
+| **Stat hover** | Color-specific at 0.7 opacity | Strong accent on hover |
+| **Element borders** | `rgba(ELEMENT_COLOR, 0.4)` | Semi-transparent element color |
+
+**Border character**: All borders use **opacity-based white** (`rgba(255,255,255,0.06-0.20)`) rather than discrete colors. This creates **ghost outlines** that define shapes without competing with content. The 5-step opacity scale (subtle→default→medium→hover→bright) is a **luminance hierarchy** — borders brighten to indicate interactivity and state changes. Active/focus states switch from white-opacity to **accent-color borders**, creating a dramatic shift from "structural outline" to "emissive edge." This is distinctly **sci-fi panel** language.
+
+### Button Style
+
+| State | Treatment | Character |
+|-------|-----------|-----------|
+| **Default** | Filled glass (`rgba(15,20,28,0.85)` + `backdrop-blur(8px)`) + ghost border | **Glassy filled** — not flat, not outlined |
+| **Hover** | Lightened background (`rgba(255,255,255,0.05)` additive) + elevated shadow | Subtle lift |
+| **Active (pressed)** | `scale(0.97)` + reduced shadow | Micro-press feedback |
+| **Active (selected)** | Accent-colored border (0.7) + color glow shadow + inset glow + text glow | **Full emissive state** — button "lights up" |
+| **Ripple effect** | `::before` radial gradient overlay | Material-like ripple on click |
+
+**Button personality**: Buttons are **translucent glass panels** in default state — they let background show through via backdrop-blur. When activated, they transform into **emissive light sources** with colored borders, outer glow, inner glow, and text glow. This creates a **toggle switch / control panel** metaphor — off buttons are dim glass, on buttons are lit indicators. No flat buttons, no outlined-only buttons, no pill buttons exist.
+
+### Pseudo-Element Chrome Decorations
+
+| Decoration | Element | Visual |
+|------------|---------|--------|
+| **Corner brackets** | `.kuro-card-inner::before/::after` | L-shaped 12×12px borders at top-right and bottom-left, `var(--border-bright)` |
+| **Header accent bar** | `.kuro-header h3::before` | 3×16px gold gradient bar with glow shadow |
+| **Card shimmer line** | `.kuro-card::after` | Full-width 1px gradient line at top edge, animated opacity |
+| **Stat shimmer line** | `.kuro-stat::before` | Full-width 1px color-tinted gradient at top edge |
+| **Button ripple** | `.kuro-btn::before` | Radial gradient from center, triggered on active |
+| **Luck badge ring** | `.luck-badge::before` | Conic gradient rotating ring (8s infinite) |
+| **Version watermark** | `.desktop-layout > header::after` | `content: 'WW'` text watermark |
+
+**Chrome character**: The pseudo-element decorations are the most **distinctive personality feature** of the component system. Corner brackets (HUD targeting reticle), gold accent bars (status indicator), shimmer lines (energy/power flow) — these are all **sci-fi interface chrome** conventions. They transform standard card/stat components into **control panel readouts**. The corner brackets in particular are a signature element that no other common design system uses — they reference **military/tactical HUD overlays**.
+
+### Overall Component Character
+
+**"Glass panels in a command center."** Components are translucent glass surfaces (backdrop-blur + semi-transparent backgrounds) floating in a dark void, outlined by ghost borders that brighten on interaction, decorated with HUD chrome (corner brackets, shimmer lines, gold accent bars), and capable of emitting colored light when activated. The component language is **consistently sci-fi** — every element reinforces the "futuristic control interface" metaphor.
+
+**Solution**: Component extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.5 — Depth & Surface Character
+
+### Depth Levels
+
+| Layer | Z-Index | Elements | Visual Treatment |
+|-------|---------|----------|-----------------|
+| **L0 — Void** | 0 | `#080c14` body background | Flat dark surface, no texture |
+| **L1 — Panels** | 5 | `.kuro-card` glass panels | Glass + blur(4px) + triple shadow |
+| **L2 — Controls** | — | Buttons, inputs, stats | Denser glass + blur(8px) |
+| **L3 — Chrome** | 10 | Corner brackets, shimmer lines, headers | Pseudo-element decorations above panels |
+| **L4 — Overlays** | 100 | Modals, detail views | Near-opaque dark + blur(6px) |
+| **L5 — System** | 9998-10000 | Toasts, install prompt, offline indicator | Highest priority floating UI |
+
+**Depth character**: **5-level elevation system** — void (dark nothing) → glass panels (floating, semi-transparent) → controls (embedded in panels) → chrome accents (decorative overlay) → modals (full takeover) → system alerts (highest priority). The depth is communicated through **three simultaneous cues**: z-index (stacking), opacity (glass transparency), and shadow (drop-shadow intensity). This is a **rich layered system** — not flat, not merely 2-level.
+
+### Surface Material
+
+| Material | Where | Visual Character |
+|----------|-------|-----------------|
+| **Void/matte** | Body background | Flat dark, no texture, no pattern — pure emptiness |
+| **Frosted glass** | Cards (55%), buttons (85%), inputs (90%), stats (80%) | Translucent with backdrop-blur — content behind is softly visible |
+| **Solid dark** | Card inner panels | Opaque dark surface — no transparency |
+| **Chrome/metal** | Header accent bars, slider thumbs | Gold gradient with light emission (box-shadow glow) |
+| **Holographic** | Luck badge, shimmer animations | Conic gradients, rotating light, animated opacity |
+
+**Material character**: The dominant material is **frosted glass** — appearing at different opacity levels (55%-90%) with consistent backdrop-blur. This creates a cohesive "looking through tinted glass" experience. The glass sits over a **matte void** (no texture, no pattern, just dark). Chrome/metal accents appear only at small scale (bars, thumbs, lines) — they are **detail elements, not surface treatments**. The holographic material (luck badge conic gradient, shimmer animations) adds a premium/magical quality to key interactive moments.
+
+### Blur Scale
+
+| Value | Usage | Effect |
+|-------|-------|--------|
+| `blur(3px)` | Luck badge conic gradient | Very subtle diffusion |
+| `blur(4px)` | Cards, stat boxes | Light glass — content shows through |
+| `blur(6px)` | Onboarding modal | Medium glass |
+| `blur(8px)` | Buttons, inputs | Dense glass — mostly opaque |
+| `blur(20px)` | Desktop sidebar | Heavy frosting — near-opaque |
+| `blur-md` (12px) | Header logo glow | Decorative diffusion |
+| `blur-xl` (24px) | Onboarding decorative circles | Heavy decorative blur |
+| `blur-2xl` (40px) | Onboarding decorative circles | Maximum decorative blur |
+
+**Blur character**: Functional blur ranges from 4-8px (glass surfaces). Decorative blur goes up to 40px (ambient glow effects). The 4px card blur is deliberately light — it allows a hint of background content to show through without being distracting. The 8px button/input blur is denser — controls read as more solid than their parent cards, creating a **control-embedded-in-glass** depth relationship.
+
+### Overall Depth/Surface Feeling
+
+**"Glass instruments floating in dark space."** The depth system creates a clear spatial hierarchy: dark void → floating glass panels → embedded controls → decorative chrome → overlay modals. Every surface communicates its depth through a consistent combination of opacity, blur, and shadow. The frosted glass metaphor is the **unifying material** — it connects all interactive surfaces while the dark void behind them creates infinite depth. This is **holographic display** language — interfaces projected into darkness, with glass-like materiality and light-emissive accents.
+
+**Solution**: Depth/surface extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.6 — Motion Character
+
+### Transition Duration Values
+
+| Token/Value | Duration | Category | Usage |
+|-------------|----------|----------|-------|
+| `--transition-fast` | `0.15s` | **Snappy** (100-200ms) | Color changes, border shifts, small state changes |
+| `--transition-normal` | `0.25s` | **Considered** (200-300ms) | Button interactions, input focus |
+| `--transition-slow` | `0.4s` | **Deliberate** (300-500ms) | Card entrances, layout transitions |
+| Hardcoded `0.3s` | `0.3s` | Considered | Card hover (should use `--transition-normal`) |
+| Hardcoded `0.1s` | `0.1s` | **Instant** (<100ms) | Button active press |
+| Hardcoded `0.8s` | `0.8s` | **Slow** (>500ms) | Pity ring SVG stroke animation |
+
+**Duration profile**: Three-tier system — fast (0.15s) for micro-interactions, normal (0.25s) for standard interactions, slow (0.4s) for entrance animations. The range 0.15s-0.4s is **snappy-to-considered** — never sluggish, never instant. The 0.8s pity ring animation is the slowest transition, reserved for the most dramatic data reveal moment.
+
+### Easing Values
+
+| Easing | Curve | Usage | Character |
+|--------|-------|-------|-----------|
+| **Primary** | `cubic-bezier(0.16, 1, 0.3, 1)` | ALL transition tokens, tab indicator, card entrance | **Bouncy overshoot** — starts fast, overshoots slightly, settles |
+| **Secondary** | `ease-out` | `slideUp`, `emptyFadeIn` | Standard deceleration |
+| **Tertiary** | `ease-in-out` | `shimmer`, `trophyShine`, `badgeRotate`, soft pity pulses | Symmetric — ambient loops |
+| **Linear** | `linear` | `badgeRotate` (8s rotation) | Constant speed — mechanical rotation |
+| **Desktop sidebar** | `cubic-bezier(0.4, 0, 0.2, 1)` | Desktop header nav width | Different curve — **inconsistency** |
+| **Collection card** | `ease` | Card hover | Generic — **inconsistency** |
+
+**Easing character**: The primary curve `cubic-bezier(0.16, 1, 0.3, 1)` is the **signature motion curve** — it's a springy, physics-based easing that overshoots its target and bounces back. This creates a **lively, energetic** feel — elements don't just move, they arrive with a subtle bounce. This is more playful than a standard `ease-out` and less mechanical than `linear`. The curve is used consistently across all transition tokens, making it the **motion identity** of the app.
+
+### Animation Inventory
+
+| Animation | Duration | Timing | Transform | Purpose |
+|-----------|----------|--------|-----------|---------|
+| `slideUp` | 0.2s | ease-out | `translateY(16px)→0` + opacity | Content entrance |
+| `scaleIn` | — | — | `scale(0.96)→1` + opacity | Modal/card scale entrance |
+| `tabFadeIn` | 0.35s | primary curve | `translateY(8px)→0` + opacity | Tab content switch |
+| `cardSlideIn` | 0.4s | primary curve | `translateY(12px) scale(0.98)→identity` | Staggered card entrance |
+| `shimmer` | 3s | ease-in-out ∞ | opacity 0.6→1→0.6 | Card top-edge shimmer |
+| `trophyShine` | 3s | ease-in-out ∞ | opacity 0.5→1 | Trophy highlight pulse |
+| `badgeRotate` | 8s | linear ∞ | `rotate(360deg)` | Luck badge ring spin |
+| `kuroPulseOrange` | 2s | ease-in-out ∞ | text-shadow glow cycle | Soft pity warning |
+| `kuroPulseCyan` | 2s | ease-in-out ∞ | text-shadow glow cycle | Soft pity warning |
+| `kuroPulsePink` | 2s | ease-in-out ∞ | text-shadow glow cycle | Soft pity warning |
+| `kuroShimmer` | 1.8s | ease-in-out ∞ | background-position shift | Skeleton loading |
+| `emptyFadeIn` | 0.4s | ease-out | `translateY(8px)→0` + opacity | Empty state entrance |
+| `ghostPulse` | 2.5s | ease-in-out ∞ | opacity 0.04→0.08 | Placeholder ghost grid |
+| `borderGlow` | — | — | border-color pulse | Accent highlight |
+| `pulseScale` | — | — | scale(1→1.02→1) | Emphasis pulse |
+
+**Animation character**: 15 custom `@keyframes` definitions — **no Tailwind animate classes used**. All animations are hand-crafted CSS. Two categories:
+1. **Entrance animations** (slideUp, scaleIn, tabFadeIn, cardSlideIn, emptyFadeIn): Y-axis translation + opacity = **"rising from below"** metaphor — content materializes upward, like data appearing on a heads-up display.
+2. **Ambient loops** (shimmer, trophyShine, badgeRotate, kuroPulse*, ghostPulse): Continuous energy — the interface is **always subtly alive** with pulsing light, rotating rings, and shimmering edges. This communicates **active monitoring / live data feed**.
+
+### Card Entrance Stagger
+
+```css
+.kuro-card:nth-child(1) { animation-delay: 0.05s; }
+.kuro-card:nth-child(2) { animation-delay: 0.1s; }
+.kuro-card:nth-child(3) { animation-delay: 0.15s; }
+.kuro-card:nth-child(4) { animation-delay: 0.2s; }
+```
+
+Cards stagger their entrance by 50ms intervals, creating a **cascading waterfall** effect. This is a premium touch that communicates **orchestrated data loading** rather than an instant dump.
+
+### Reduced Motion Support
+
+| Path | Implementation |
+|------|---------------|
+| **User toggle** | `.no-animations *` → `animation-duration: 0.01ms !important; transition-duration: 0.01ms !important;` |
+| **OS preference** | `@media (prefers-reduced-motion: reduce)` → same |
+
+Both paths covered — **accessible**.
+
+### Overall Motion Feeling
+
+**SNAPPY & ALIVE.** The motion system has two personalities working together:
+1. **Interaction motion** (0.15s-0.4s, bouncy overshoot curve): Responsive, energetic, slightly playful — elements snap to position with a subtle bounce
+2. **Ambient motion** (1.8s-8s, ease-in-out loops): Always-on subtle animation — the interface breathes, shimmers, and pulses
+
+This combination reads as **"live monitoring system"** — the UI feels like it's connected to real-time data, always active, always subtly moving. The bouncy interaction curve adds a touch of **personality and delight** that prevents the interface from feeling cold or clinical.
+
+**Solution**: Motion extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.7 — Icon Character
+
+### Library in Use
+
+**Lucide React** — line-style icon library, imported as React components from `lucide-react`.
+
+### Icon Inventory
+
+**42 unique icons imported** in `App.jsx` (line 22):
+
+| Category | Icons | Count |
+|----------|-------|-------|
+| **Navigation/UI** | `X`, `ChevronDown`, `Plus`, `Minus`, `Search`, `Settings`, `RefreshCcw`, `Check`, `Info` | 9 |
+| **Game/Domain** | `Crown`, `Sword`, `Swords`, `Shield`, `Diamond`, `Star`, `Sparkles`, `Zap`, `Flame`, `Target`, `Gamepad2` | 11 |
+| **Data/Analytics** | `BarChart3`, `TrendingUp`, `TrendingDown`, `Calculator`, `ClipboardList`, `Trophy`, `Award` | 7 |
+| **Content/Media** | `Calendar`, `Archive`, `Gift`, `Heart`, `Clover`, `Fish`, `BookmarkPlus` | 7 |
+| **Users/Social** | `User`, `Users` | 2 |
+| **Device/System** | `Monitor`, `Smartphone`, `Download`, `Upload` | 4 |
+| **Alert/Status** | `AlertCircle`, `AlertTriangle` | 2 |
+
+### Icon Style
+
+| Property | Value | Character |
+|----------|-------|-----------|
+| **Style** | Line/outline (stroke-based) | Clean, precise, technical |
+| **Stroke weight** | 2px (Lucide default) | Consistent — uniform visual weight |
+| **Fill** | None — all stroke-only | Transparent, lightweight |
+| **Color method** | Inherits from parent text color or inline `style={{ color }}` | Semantic — icon color matches text context |
+
+### Icon Sizing Scale
+
+| Size | Context | Frequency |
+|------|---------|-----------|
+| `7-9px` | Ultra-compact inline (badges, micro-labels) | Rare |
+| `10-12px` | Inline text accompaniment | Common |
+| `14-16px` | Standard UI actions (buttons, headers) | **Dominant** |
+| `18px` | Tab navigation icons | Primary nav |
+| `32px` | Onboarding hero icons | Rare — feature moments |
+
+### Icon Usage by Tab
+
+| Tab | Primary Icons | Character Signal |
+|-----|--------------|-----------------|
+| **Tracker** | `Sparkles`, `Crown`, `Swords`, `Star` | Fantasy/game — rarity, combat |
+| **Events** | `Calendar`, `Gift`, `Check` | Time-based, rewards |
+| **Calc** | `Calculator`, `Plus`, `Minus` | Mathematical, precise |
+| **Planner** | `TrendingUp`, `Calendar`, `Zap` | Growth, energy, planning |
+| **Stats** | `BarChart3`, `Trophy`, `Clover`, `TrendingUp/Down` | Analytics, luck, achievement |
+| **Collection** | `Archive`, `Search`, `Crown`, `Sword` | Catalog, search, game items |
+| **Teams** | `Users`, `Target`, `Swords`, `Shield` | Group, combat, defense |
+| **Profile** | `User`, `Settings`, `Monitor`, `Upload/Download` | Personal, config, data management |
+
+### Overall Icon Feeling
+
+**CLINICAL-PRECISE with DOMAIN FLAVOR.** Lucide's line-style icons provide a clean, technical foundation — consistent 2px stroke weight, no fills, transparent centers. The icon selection itself is **domain-aware** — game-specific icons (Crown, Sword, Swords, Shield, Diamond, Star, Sparkles) inject Wuthering Waves fantasy flavor into an otherwise clinical icon set. The most-used icon is `X` (close) at 19 uses — functional UI priority. No custom icons exist; no icon inconsistency (all from same library, same stroke weight).
+
+**Solution**: Icon extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.8 — Copy / Voice Character
+
+### Formality Register
+
+| Context | Register | Examples |
+|---------|----------|---------|
+| **Game actions** | NEUTRAL | "Convene History", "Banner Selection", "Resonator Convenes" |
+| **Settings/config** | NEUTRAL-FORMAL | "Display Settings", "Astrite allocation", "Import/Export" |
+| **Error messages** | TECHNICAL | "Invalid backup format — missing required 'state' object", "File too large (3.2MB). Maximum is 5MB." |
+| **Achievement descriptions** | CASUAL-HUMOROUS | "go outside.", "nobody believes you", "guilty of whaling in the first degree" |
+| **Legal/privacy** | FORMAL | "Your generated user ID, average pity, Convene count... are sent to a shared database and displayed publicly" |
+| **Success feedback** | POSITIVE-CASUAL | "ID Card saved!", "Imported 42 Convenes!", "Banner data refreshed!" |
+| **Instructions** | IMPERATIVE | "Import", "Clear", "Reset", "Tap another image to edit it" |
+
+### Personality Presence
+
+| Signal | Evidence | Level |
+|--------|----------|-------|
+| **Direct address** | "Good luck on your Convenes, Rover!" | VISIBLE — uses game protagonist name |
+| **Humor** | Trophy descriptions: "it only gets worse", "go outside.", "your team cannot die. ever." | VISIBLE — dry, self-aware humor |
+| **Personality shifts** | Professional onboarding → humorous achievements → technical errors | CONTEXT-AWARE — voice adapts to situation |
+| **Empty state tone** | "No Convene data on record" / "Import your Convene history to unlock achievements" | NEUTRAL-HELPFUL — guides without personality |
+
+### Domain Fluency
+
+| Term | WuWa-Authentic? | Generic Alternative (NOT used) |
+|------|-----------------|-------------------------------|
+| **Convene** | ✅ Yes | "Pull", "Summon", "Gacha" |
+| **Resonator** | ✅ Yes | "Character", "Unit", "Hero" |
+| **Astrite** | ✅ Yes | "Premium currency", "Gems" |
+| **Radiant Tide** | ✅ Yes | "Character currency", "Tickets" |
+| **Forging Tide** | ✅ Yes | "Weapon currency" |
+| **Lustrous Tide** | ✅ Yes | "Standard currency" |
+| **Pity** | ✅ Community term | "Counter", "Progress" |
+| **50/50** | ✅ Community term | "Win rate", "Chance" |
+| **Resonance Chain** | ✅ Yes | "Constellation", "Duplicate bonus" |
+| **Echo** | ✅ Yes | "Artifact", "Equipment" |
+| **5★ / 4★** | ✅ Standard notation | "5-star", "Legendary" |
+
+**Domain fluency**: **EXPERT-LEVEL** — the app uses authentic Wuthering Waves terminology throughout, never substituting generic gacha terms. A player familiar with Wuthering Waves instantly recognizes every label. This is the vocabulary of **an insider tool built by a player, for players**.
+
+### Tab Labels
+
+```
+Tracker  |  Events  |  Calc  |  Plan  |  Stats  |  Collection  |  Teams  |  Profile
+```
+
+**Label style**: Mix of abbreviated nouns ("Calc", "Stats") and full words ("Collection", "Profile"). Action verbs ("Plan") mixed with descriptive nouns ("Tracker"). All single-word. Maximum 10 characters. This is **scannable and compact** — optimized for mobile tab bar width.
+
+### Button Label Patterns
+
+| Pattern | Examples | Tone |
+|---------|----------|------|
+| **Action verbs** | "Save", "Load", "Delete", "Clear", "Refresh", "Import", "Export" | Direct, imperative |
+| **Action + object** | "Import Data", "Export Backup", "Add Purchases", "Download ID Card", "Clear All" | Specific, unambiguous |
+| **State toggle** | "50/50 active: off", "Guaranteed next 5-star: on" | Technical state readout |
+| **Instructional** | "Tap another image to edit it", "Go to Collection tab..." | Conversational help |
+
+### Toast/Notification Voice
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| **Success** | Past tense + exclamation | "Imported 42 Convenes!", "Banner data refreshed!" |
+| **Error** | Problem + solution | "Storage full — data may not be saved. Try clearing old Convene history." |
+| **Warning** | Condition + consequence | "Storage at 4.2MB of ~5MB. Consider exporting a backup." |
+| **Info** | Neutral statement | "Data synced from another tab" |
+
+### Overall Voice Feeling
+
+**EXPERT-COMPANION with HIDDEN HUMOR.** The dominant voice is **knowledgeable and efficient** — it uses expert terminology, gives clear instructions, and reports states precisely. But tucked into achievement descriptions and occasional UI moments is a layer of **dry, self-aware humor** ("go outside.", "nobody believes you", "guilty of whaling in the first degree") that reveals a playful personality behind the technical surface. The voice addresses the user as "Rover" (game protagonist) in the onboarding close, establishing a **personal companion relationship**. This is not a generic tool — it's a tool built by someone who plays the game and speaks the language.
+
+**Solution**: Copy/voice extraction is ground truth. Findings assessed in §DP1.
+
+---
+
+## §DP0.9 — Emergent Personality Statement
+
+### Character Name
+
+Based on all extracted design decisions across color, space, typography, components, depth, motion, icons, and voice:
+
+> **"Based on these decisions, this app reads as: LUMINOUS TACTICAL COMPANION"**
+
+### Strongest Signals That Produce This Character
+
+1. **Neon-on-void color palette** — High-saturation accents (gold, pink, cyan, purple, emerald) against near-black blue-tinted backgrounds create the signature cyberpunk/holographic feeling. The gold-as-warm-anchor against a cold palette is the single most distinctive visual decision.
+
+2. **Glass-over-darkness material system** — Frosted glass surfaces at varying opacity (55%-90%) with backdrop-blur, floating over a dark void with multi-layer shadows, create the "holographic display" spatial metaphor. Every interactive surface is translucent, reinforcing the sci-fi control panel identity.
+
+3. **HUD chrome decorations** — Corner brackets (L-shaped targeting reticles), gold accent bars (status indicators), top-edge shimmer lines (energy flow), colored text-shadow glows (emissive data) — these pseudo-element decorations are the most unique personality feature. No other gacha tracker or dashboard app uses tactical HUD chrome as its decorative language.
+
+### Weakest / Most Incoherent Elements
+
+1. **Hardcoded values in application layer** — ~240+ hardcoded color instances bypass the design token system, creating subtle inconsistencies (e.g., Tailwind `text-yellow-400` `#facc15` vs CSS variable gold `#edaf18`). The design system defines a coherent character, but the application code doesn't fully respect it. This doesn't destroy the character, but it **fuzzes the precision** — a tactical display should feel calibrated, not approximate.
+
+2. **Voice register whiplash** — The copy voice shifts from formal (privacy disclosure) to technical (error messages) to humorous (trophy descriptions) to companion (Rover address). While each register fits its context, the transitions can feel abrupt. The humor in achievement descriptions is the most potentially jarring — trophy text like "go outside." and "nobody believes you" is tonally distant from the rest of the professional interface. This isn't necessarily wrong (it's intentional personality injection), but it's the **most likely place for a new user to feel tonal dissonance**.
+
+---
+
+### §DP0 Complete Extraction Summary
+
+| Character Axis | Extracted Identity | Strength |
+|---------------|-------------------|----------|
+| **Color** | Neon-on-void — cool navy backgrounds, high-saturation neon accents, gold as warm anchor | **STRONG** — consistent, distinctive |
+| **Spatial** | Comfortable-to-dense — 8px grid, 14px card padding, dual density (generous structure, dense data) | **MODERATE** — consistent but untokenized |
+| **Typography** | Technical-precision — Rajdhani display + JetBrains Mono data, bottom-heavy size scale (9-10px dominant), wide-tracked uppercase labels, colored text-shadow glows | **STRONG** — distinctive font pairing + HUD conventions |
+| **Component** | Glass panels in command center — frosted glass surfaces, ghost borders, HUD chrome (corner brackets, shimmer, gold bars), emissive active states | **STRONG** — most distinctive axis |
+| **Depth/Surface** | Glass-over-void — 5-level elevation, frosted glass at varying opacity, holographic accents | **STRONG** — consistent material language |
+| **Motion** | Snappy & alive — bouncy overshoot curve, 0.15s-0.4s range, vertical entrance metaphor, always-on ambient animation | **STRONG** — distinctive signature curve |
+| **Icon** | Clinical-precise with domain flavor — Lucide line-style, consistent 2px stroke, game-specific icon selection | **MODERATE** — functional but not distinctive |
+| **Copy/Voice** | Expert-companion with hidden humor — WuWa-authentic terminology, dry achievement humor, Rover address | **STRONG** — domain expertise + personality |
+
+**Overall character strength**: **7/10** — The design system (KuroStyles) defines a strong, distinctive character. The weakness is at the application layer, where hardcoded values and Tailwind overrides dilute the precision of the design system's character.
+
+---
+
+**STEP 3 COMPLETE** — §DP0 Character Extraction established.
+
+**Character**: LUMINOUS TACTICAL COMPANION
+**Dominant signals**: Neon-on-void palette, glass-over-darkness materials, HUD chrome decorations
+**Strongest axes**: Color, Component, Depth/Surface, Motion, Copy/Voice
+**Weakest axis**: Spatial (untokenized spacing), Icons (functional but not distinctive)
+**Character coherence**: Strong at system level, diluted at application layer by hardcoded values
