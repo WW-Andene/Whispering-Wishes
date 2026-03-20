@@ -5194,4 +5194,817 @@ For a community fan tool, the distribution channels are:
 
 > **End of Step 15 — §E8: Product Aesthetics (Axis-Driven)**
 > **Lines added**: ~620
-> **Next step**: Step 16 — §E9: Visual Identity & Recognizability (awaiting user instruction)
+
+---
+
+# ═══════════════════════════════════════════════════════════════
+# STEP 16 — §E9: VISUAL IDENTITY & RECOGNIZABILITY
+# ═══════════════════════════════════════════════════════════════
+
+> **Skill reference**: app-audit §E9
+> **Scope**: All 8 tabs — TRACKER, EVENTS, CALC, PLANNER, STATS, COLLECT, TEAMS, PROFILE
+> **Axis context**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+> **Key question**: Can a user identify this app from a partial screenshot? Is the visual identity memorable, coherent, and distinctly *this* app?
+
+---
+
+## §E9.1 — Visual Signature Assessment
+
+### Partial Screenshot Identification Test
+
+**Test**: Given only a cropped fragment of the UI — a card corner, a color swatch, an animation frame, a button, a background — could a user (or a designer) identify this as Whispering Wishes?
+
+### Tier 1 — Unique Signature Elements (Only in This App)
+
+| ID | Element | Location | Description | Distinctiveness |
+|----|---------|----------|-------------|-----------------|
+| §E9-VS1 | **BackgroundGlow canvas animation** | appcore-components.jsx:938–1042 | 3-layer sine-wave procedural glow in blue-cyan spectrum, 15 FPS, specular bands traveling across full-screen canvas at z-index 1 | **UNIQUE** — bespoke wave functions (`_wf1`, `_wf2`, `_wf3`) with specific frequency/amplitude ratios; no library or template produces this exact visual |
+| §E9-VS2 | **TriangleMirrorWave canvas animation** | appcore-components.jsx:1046–1166 | Tessellated 36×31px triangle mesh with slope-based specular reflection simulation; blue-purple traveling wavefront at z-index 2 | **UNIQUE** — procedural triangle mesh with `Math.pow(specular, 5)` highlight calculation; distinctive "faceted water" appearance |
+| §E9-VS3 | **Corner bracket decorations** | appcore-providers.jsx:777–803 | 12×12px L-shaped border segments in top-right + bottom-left of each `.kuro-card`; `border-top/right` and `border-bottom/left` with 4px radius | **UNIQUE** — sci-fi HUD framing motif; not available in any Tailwind template or component library |
+| §E9-VS4 | **Shimmer line on card tops** | appcore-providers.jsx:747–768 | 1px horizontal gradient line (`transparent → white 0.3 → white 0.5 → white 0.3 → transparent`) with 3s ease-in-out pulse animation | **UNIQUE** — simulates glass surface catching light; combined with corner brackets creates recognizable card "frame" |
+| §E9-VS5 | **Gold header accent bar** | appcore-providers.jsx:840–847 | 3×16px vertical gradient bar (`rgba(237,175,24,0.9)` → `rgba(237,175,24,0.4)`) with 8px gold glow; `::before` on every `.kuro-header h3` | **DISTINCTIVE** — gold gradient with glow is calibrated to this specific app |
+| §E9-VS6 | **Logo glow effect** | App.jsx:3171–3173 | Yellow-to-orange gradient (`from-yellow-400 to-orange-500`) with blur-md at 50% opacity beneath header icon; intensifies to 70% on hover | **DISTINCTIVE** — the "glowing W" header is a recognizable entry point |
+| §E9-VS7 | **Pity Ring SVG progress** | appcore-components.jsx:885–925 | Circular SVG `stroke-dashoffset` animation (0.8s cubic-bezier overshoot); color-coded per banner type (gold/pink/cyan) with glow shadow | **DISTINCTIVE** — gacha pity visualization with color-coded rarity glow |
+| §E9-VS8 | **LAHAI-ROI design language** | appcore-providers.jsx:402–404 | Explicitly named design system: "Black, White, Gold" — stated philosophy anchoring all visual decisions | **UNIQUE** — no other gacha tracker names its design language |
+
+### Tier 2 — Highly Distinctive Combinations (Rare Elsewhere)
+
+| ID | Element | Location | Description | Distinctiveness |
+|----|---------|----------|-------------|-----------------|
+| §E9-VS9 | **Glassmorphism card system** | appcore-providers.jsx:709–735 | `backdrop-filter: blur(4px)` + 3-layer box-shadow (depth + inner rim + inset light) + corner brackets + shimmer line | **HIGHLY DISTINCTIVE** — the combination of glassmorphism + corner brackets + shimmer is unique to this app |
+| §E9-VS10 | **Gold glow rarity hierarchy** | appcore-providers.jsx:601–622 | `.glow-gold` (24px shadow + radial gradient) for 5★; `.glow-purple` (16px shadow) for 4★; visual hierarchy maps to gacha rarity | **HIGHLY DISTINCTIVE** — rarity-based glow system with calibrated intensity steps |
+| §E9-VS11 | **Element color coding** | appcore-components.jsx:115–141 | 6 WuWa elements (Fusion/orange, Electro/purple, Aero/emerald, Glacio/cyan, Havoc/pink, Spectro/yellow) with consistent `bg-{color}-500/20 + text-{color}-400` | **DISTINCTIVE** — WuWa-specific palette mapping; game-accurate |
+| §E9-VS12 | **Custom slider thumbs** | appcore-providers.jsx:1184–1200 | 18×18px circular thumb with gold gradient (`#e6b030 → #edaf18`) + 12px gold glow + 2px dark border | **DISTINCTIVE** — gold gradient thumb matches brand |
+
+### Tier 3 — Generic/Interchangeable Elements
+
+| ID | Element | Count | Locations | Generic Because |
+|----|---------|-------|-----------|-----------------|
+| §E9-VS13 | `rounded-lg` corners | ~360 | App.jsx + appcore-components.jsx | Standard Tailwind utility; no shape differentiation |
+| §E9-VS14 | `text-gray-400` muted text | ~492 | All JSX files | Default Tailwind neutral; could be any dark-theme app |
+| §E9-VS15 | `transition-colors` | ~280 | App.jsx | Standard Tailwind transition; no motion personality |
+| §E9-VS16 | Lucide icon set | 45 icons | All JSX files | Open-source icon library used by thousands of apps |
+
+### Verdict: Partial Screenshot Identification
+
+| Fragment Visible | Confidence | Identifying Element |
+|------------------|------------|---------------------|
+| Card corner with bracket decoration | **95%** | Corner brackets are unique to this app |
+| Gold accent on dark navy background | **85%** | #edaf18 + #080c14 combination is distinctive |
+| Canvas animation frame (either layer) | **90%** | Procedural wave algorithms produce unique visuals |
+| Pity ring with color-coded glow | **90%** | Gacha tracker-specific + brand color system |
+| Card with shimmer line + glass blur | **85%** | Combination of shimmer + glassmorphism + brackets |
+| Generic rounded-lg card with gray text | **15%** | Could be any Tailwind dark-theme app |
+| Lucide icon at default size | **5%** | Identical to thousands of other apps |
+
+**Overall Visual Signature Strength: 8.5/10** — The app has strong unique elements (canvas animations, corner brackets, LAHAI-ROI palette), but ~30% of the surface area uses generic Tailwind patterns that dilute the signature.
+
+### Subject Identity (A4) Assessment
+
+**Does the visual signature feel like Wuthering Waves?**
+
+| Evidence | Location | Assessment |
+|----------|----------|------------|
+| Game terminology: "Convenes", "Resonators", "Astrite", "Rover" | App.jsx throughout; appcore-providers.jsx:338–344 | **STRONG** — uses official WuWa vocabulary, not generic "pulls"/"characters" |
+| 6 element colors matching WuWa's system | appcore-components.jsx:115–141 | **STRONG** — game-accurate color mapping |
+| Gold 5★ / Purple 4★ rarity hierarchy | appcore-providers.jsx:601–622 | **STRONG** — matches WuWa's in-game rarity visual language |
+| Cyberpunk-luxe glassmorphism aesthetic | appcore-providers.jsx:709–735 | **MODERATE** — tonally aligned with WuWa's sci-fi UI panels |
+| Medal names reference WuWa lore | App.jsx:1622+ | **STRONG** — "Jinzhou Housing Crisis", "Forte Circuit Overload" |
+| Corner bracket sci-fi HUD motif | appcore-providers.jsx:777–803 | **MODERATE** — aligns with WuWa's tech aesthetic but not directly derived |
+
+**A4 Verdict: 8/10** — The signature feels connected to Wuthering Waves through vocabulary, color, and rarity systems. The sci-fi HUD motifs are tonally aligned but not directly derived from specific WuWa UI elements.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-VS-F1 | **MEDIUM** | ~30% of UI surface uses generic Tailwind (`rounded-lg`, `text-gray-400`, `transition-colors`) that dilutes the distinctive signature | **Migrate inline Tailwind to design-system classes**: Replace `text-gray-400` with `text-[var(--text-muted)]`; replace `rounded-lg` with `.kuro-radius-md` token; replace `transition-colors` with `transition: color var(--transition-fast)` — this shifts the "generic" surface to the branded token layer without changing appearance |
+| §E9-VS-F2 | **LOW** | Canvas animations are invisible to screen readers and non-visual users; they're also pure decoration with no fallback | **Add `prefers-reduced-motion` check** to BackgroundGlow/TriangleMirrorWave: skip `requestAnimationFrame` loop when reduced motion is preferred; use a static gradient fallback for the background layer |
+| §E9-VS-F3 | **LOW** | The LAHAI-ROI design language is documented only in a CSS comment (line 402) — not in any design documentation or README | **Surface the design language name**: Add a `<meta name="design-system" content="LAHAI-ROI">` tag or document in a design tokens file — this reinforces intentionality for any future contributor |
+
+---
+
+## §E9.2 — Visual Metaphor Coherence
+
+### Primary Metaphor: "Precision Instrument / Digital War Room"
+
+The app declares its visual language explicitly as **LAHAI-ROI** (appcore-providers.jsx:402–404): "Black, White, Gold." This establishes a **cyberpunk-luxe precision instrument** metaphor — the feel of an advanced HUD overlaid on a calm, dark environment.
+
+### Metaphor Evidence Inventory
+
+| Signal | Location | Metaphor Expressed | Consistency |
+|--------|----------|-------------------|-------------|
+| Glassmorphism card surfaces | appcore-providers.jsx:709–735 | Frosted glass panels (HUD overlay) | **CONSISTENT** — all 8 tabs |
+| Corner bracket decorations | appcore-providers.jsx:777–803 | Sci-fi targeting reticle / HUD framing | **CONSISTENT** — every `.kuro-card` |
+| JetBrains Mono for data | appcore-providers.jsx:451 | Terminal / command interface readout | **CONSISTENT** — all numeric displays |
+| Rajdhani for headings | appcore-providers.jsx:450 | Geometric tech display font | **CONSISTENT** — all headings |
+| Gold accent on interactions | appcore-providers.jsx:435, 934–941 | "Active target" / "selected system" glow | **CONSISTENT** — all interactive states |
+| Canvas procedural waves | appcore-components.jsx:938–1166 | Ambient atmospheric energy beneath interface | **CONSISTENT** — background layer across all tabs |
+| Shimmer line on card tops | appcore-providers.jsx:747–768 | Glass surface catching light (environmental reflection) | **CONSISTENT** — all cards |
+| Gold header accent bar | appcore-providers.jsx:840–847 | Active section indicator (HUD element) | **CONSISTENT** — all card headers |
+| Pity ring SVG circles | appcore-components.jsx:885–925 | Circular gauge / dial readout | **CONSISTENT** — tracker tab |
+| Staggered card entrance | appcore-providers.jsx:579–599 | System boot / data loading sequence | **CONSISTENT** — all tab transitions |
+
+### Secondary Metaphor: "Gacha Rarity Hierarchy"
+
+Layered on top of the precision instrument metaphor is a **rarity-based visual hierarchy** derived from gacha game conventions:
+
+| Rarity | Visual Treatment | Metaphor |
+|--------|-----------------|----------|
+| 5★ Featured | Gold glow (24px shadow + radial gradient) | "Legendary/Mythic" — maximum visual weight |
+| 4★ | Purple glow (16px shadow) | "Rare" — subordinate but visible |
+| Standard | No glow, standard card | "Common" — minimal visual emphasis |
+
+This dual-metaphor system (precision instrument + rarity hierarchy) is **intentionally layered** — the rarity system operates within the broader instrument metaphor, not in conflict with it.
+
+### Metaphor Breaks / Inconsistencies
+
+| ID | Location | Break Description | Severity |
+|----|----------|-------------------|----------|
+| §E9-MB1 | App.jsx:3182 | **Native `<select>` dropdown** for server selection — breaks the glassmorphism/HUD aesthetic with browser-default chrome | **HIGH** — visually alien to the established metaphor |
+| §E9-MB2 | appcore-providers.jsx:352–356 | **Decorative gradient circles** in onboarding modal (`blur-2xl opacity-40`) — organic/amorphous shapes conflict with the geometric precision of corner brackets and triangle meshes | **LOW** — only visible during onboarding (transient) |
+| §E9-MB3 | App.jsx inline Tailwind | **~30% of surface area** using bare Tailwind utilities (`rounded-lg`, `text-gray-400`) without LAHAI-ROI design tokens — these patches feel "framework-default" rather than "designed" | **MEDIUM** — dilutes precision metaphor with generic patterns |
+
+### 8-Tab Metaphor Consistency Map
+
+| Tab | Background | Card Style | Color Accent | Metaphor Coherence |
+|-----|-----------|-----------|--------------|-------------------|
+| **Tracker** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Gold (Featured), Pink (Weapon), Cyan (Standard) | **10/10** — full HUD + rarity expression |
+| **Events** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Multi-color (event-type coded) | **9/10** — HUD metaphor intact; event colors add visual variety without breaking |
+| **Calculator** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Gold/Pink/Cyan (banner-type) | **10/10** — "probability engine" aesthetic is peak precision-instrument |
+| **Planner** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Gold + Emerald (goal progress) | **9/10** — planning dashboard aesthetic; emerald "affordability" is logical |
+| **Stats** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Gold/Cyan/Purple/Emerald/Red (stat-type) | **9/10** — analytics dashboard; multiple accent colors are justified by data categories |
+| **Collection** | BackgroundGlow + TriangleMirrorWave | kuro-card + glow-gold/glow-purple | Gold (5★), Purple (4★) | **10/10** — collection grid with rarity glow is the strongest identity expression |
+| **Teams** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Gold (active team), synergy colors | **9/10** — team composition "war room" aesthetic |
+| **Profile** | BackgroundGlow + TriangleMirrorWave | kuro-card + brackets | Gold (featured stats) | **9/10** — "operator ID card" feel |
+
+**Cross-Tab Metaphor Coherence: 9.4/10** — All 8 tabs maintain the precision-instrument metaphor with consistent card treatments, background animations, and accent usage. No tab "breaks character."
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-MC-F1 | **HIGH** | Native `<select>` dropdown at App.jsx:3182 breaks the glassmorphism HUD metaphor with browser-default chrome | **Replace with custom dropdown**: Create a `.kuro-select` component using a `<button>` trigger + positioned `<div>` menu, styled with `var(--bg-card)`, `backdrop-filter: blur(4px)`, and border tokens — matching the card system. This is the single most visible metaphor violation |
+| §E9-MC-F2 | **MEDIUM** | ~30% of inline Tailwind surface (§E9-VS-F1) reads as "framework default" rather than "LAHAI-ROI designed" | **Same solution as §E9-VS-F1**: Migrate generic Tailwind to design-system tokens. The metaphor break and the signature dilution are the same underlying issue |
+| §E9-MC-F3 | **LOW** | Onboarding gradient circles (appcore-providers.jsx:352–356) use organic blob shapes that contrast with the geometric precision language | **Replace with geometric decorative elements**: Use angular gradient strips or triangle-mesh-inspired patterns instead of circular blurs — this keeps the onboarding visually distinct while staying within the geometric design language |
+
+---
+
+## §E9.3 — Accent Color Intentionality
+
+### Gold (#edaf18) — Primary Accent Analysis
+
+**Hex**: `#edaf18` | **RGB**: `(237, 175, 24)` | **HSL**: `(42.5°, 82%, 51%)` | **Character**: Warm, saturated, slightly desaturated toward brass
+
+### Usage Distribution
+
+| Context | Count | Purpose | Strategic? |
+|---------|-------|---------|-----------|
+| CSS custom property `--color-gold` | 1 (defines all) | Foundation token | **YES** — single source of truth |
+| Active button state `.active-gold` | 116+ in App.jsx | Featured banner / primary interactive | **YES** — maps to "Featured Resonator" game mechanic |
+| Header accent bar `::before` | Every card header | Visual anchor / section indicator | **YES** — consistent rhythm element |
+| Focus-visible outline | All interactive elements | Accessibility + brand | **YES** — gold focus rings reinforce brand on every keyboard interaction |
+| Pity ring default color | Tracker tab | Featured banner progress | **YES** — gold = featured convene |
+| Stat boxes `.kuro-stat-gold` | Stats tab | Featured metrics | **YES** — gold for primary/most-important metrics |
+| Glow effects `.glow-gold` | Collection tab | 5★ rarity indicator | **YES** — maximum rarity = maximum gold |
+| Slider thumb gradient | All sliders | Interactive control | **YES** — brand-colored interaction points |
+| PWA theme-color meta tag | index.html, appcore-providers.jsx:55–57 | Browser chrome / OS integration | **YES** — gold appears in browser UI and Windows taskbar |
+| Trophy badge accent | Profile/Stats | Achievement emphasis | **YES** — gold = achievement/reward |
+
+### Calibration Assessment
+
+**Is this a "first pick from a color wheel" or a calibrated choice?**
+
+Evidence of calibration:
+1. **Gradient layering**: Slider thumb uses `#e6b030 → #edaf18` (darker → lighter gold gradient), not flat color (appcore-providers.jsx:1190)
+2. **Three-layer box-shadow**: Active-gold button has outer glow + inner inset + drop shadow (appcore-providers.jsx:938–940) — vs single-layer for other colors
+3. **Opacity scaling**: Gold header bar fades from 0.9 → 0.4 opacity (appcore-providers.jsx:844–846) — deliberate gradient
+4. **Context-aware intensity**: Focus outline uses `rgba(237,175,24,0.7)` (70% opacity) — not 100%, showing restraint
+5. **OLED-aware variant**: OLED mode adjusts card backgrounds but preserves gold accent at same intensity — gold was tested against both surface types
+
+**Verdict: HIGHLY CALIBRATED** — The gold is not a default; it's a purposefully tuned warm accent that maps to game mechanics (Featured = Gold), maintains consistent intensity hierarchy, and has been adjusted for multiple surface contexts.
+
+### Wuthering Waves Connection
+
+Gold (#edaf18) connects to WuWa's visual identity:
+- WuWa uses warm gold/amber borders for 5★ rarity items in-game
+- The in-game "Featured Convene" banner uses gold/yellow accents
+- Spectro element (one of 6 WuWa elements) uses yellow/gold
+- **Conclusion**: The gold accent is both brand-distinctive AND game-faithful
+
+### Competing Accent Analysis
+
+| Color | Hex | Usage | Semantic | Dilution Risk |
+|-------|-----|-------|----------|---------------|
+| **Pink** | #ec4899 | 25+ | Weapon banner, Havoc element | **NONE** — clearly distinct context (secondary banner) |
+| **Cyan** | #22d3ee | 15+ | Standard banner, Glacio element | **NONE** — cool temperature contrasts warm gold |
+| **Purple** | #a855f7 | 20+ | 4★ rarity, Electro element | **LOW** — dual semantic (rarity + element) but never competes with gold for primary emphasis |
+| **Emerald** | #34d399 | 10+ | Won 50/50, positive outcomes | **NONE** — semantic is "success/positive" |
+| **Red** | #ef4444 | 8+ | Lost 50/50, negative outcomes | **NONE** — semantic is "failure/negative" |
+| **Orange** | #fb923c | 3+ | Soft pity range indicator | **MINIMAL** — only appears in specific pity-range context |
+
+**Dilution Verdict: NONE** — Gold maintains clear supremacy as the primary accent. Secondary colors are semantically separated (banner type, element, rarity, outcome) and never compete for "primary interactive" status. The `.active-gold` button state has no equivalent `.active-green` or `.active-red` that could claim primary attention.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-AC-F1 | **LOW** | Purple (#a855f7) carries dual semantics: "4★ rarity" AND "Electro element" — minor cognitive ambiguity | **Accept as intentional**: In context, users will always know which meaning applies (collection view = rarity, character card = element). If needed, differentiate by using a slightly shifted purple for Electro element badges (e.g., `#9333ea` for element vs `#a855f7` for rarity) |
+| §E9-AC-F2 | **POLISH** | Favicon uses `#fbbf24` (Tailwind amber-400) instead of `#edaf18` (brand gold) — 2-hue offset | **Align favicon gold**: Change favicon.svg `fill` from `#fbbf24` to `#edaf18` to match the exact brand gold. This ensures the browser tab icon uses the same hue as the in-app accent |
+| §E9-AC-F3 | **POLISH** | Install prompt banner uses `from-yellow-500 to-amber-500` (Tailwind defaults) instead of brand gold `rgba(237,175,24,*)` | **Replace with brand tokens**: Use `background: linear-gradient(135deg, rgba(237,175,24,0.9), rgba(237,175,24,0.7))` instead of Tailwind color classes — ensures the install prompt is unmistakably branded |
+
+---
+
+## §E9.4 — Emotional Arc Design
+
+### Intended Arc for a Gacha Tracker
+
+For a Wuthering Waves gacha companion, the ideal emotional arc is:
+**Anticipation → Precision → Confidence → Celebration → Mastery**
+
+### Arc Stage Inventory
+
+#### Stage 1: ANTICIPATION (First Launch / Onboarding)
+
+**Implementation**: 7-step carousel modal (appcore-providers.jsx:332–395)
+
+| Step | Color | Content | Emotion Targeted |
+|------|-------|---------|-----------------|
+| 1 | Yellow/Gold | "Welcome to Whispering Wishes" | Warm introduction — curiosity |
+| 2 | Cyan | "Import Your Data" | Cool action prompt — clarity |
+| 3 | Orange | "Banner Tracking" | Energetic — excitement about tracking |
+| 4 | Purple | "Collection Building" | Mystical — aspiration |
+| 5 | Emerald | "Odds Calculation" | Growth — empowerment |
+| 6 | Pink | "Analytics & Stats" | Achievement — sophistication |
+| 7 | Gold (return) | "You're Ready, Rover!" | Confidence loop — uses player name "Rover" |
+
+**Assessment**: The color progression creates a **deliberate emotional gradient** from warm (curiosity) through cool (action) through energetic (tracking) to warm again (confidence). The return to gold on step 7 closes the loop. **Rating: 9/10**
+
+**Visual styling**: Each step has themed decorative gradient circles (`blur-2xl opacity-40`, appcore-providers.jsx:352–356), dynamic step indicators reflecting current color, and focus trap for accessibility.
+
+#### Stage 2: PRECISION (Empty States → First Data)
+
+**Empty states** use the `kuro-empty-state` class (appcore-providers.jsx:1329–1366):
+
+```css
+.kuro-empty-state {
+  background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);
+  border: 1px dashed rgba(237, 175, 24, 0.10);
+  animation: emptyFadeIn 0.4s ease-out both;
+}
+```
+
+| Tab | Empty State Message | Tone | Emotional Quality |
+|-----|-------------------|------|------------------|
+| Tracker | "Import Convene data to start tracking" | Instructive | Calm guidance — not a failure state |
+| Collection | Ghost-grid with 6 placeholder cells (appcore-providers.jsx:1354–1366) | Anticipatory | "These slots are waiting for your characters" — visual promise |
+| Stats | "Insufficient data for trend analysis" | Neutral/precise | Clinical precision — respects intelligence |
+| Teams | "No operatives registered" | Game-lore | In-universe language — immersive |
+| Planner | "No goals configured" | Instructive | Forward-looking — implies planning |
+
+**Assessment**: Empty states use **atmospheric gold radial glow** + **dashed gold border** + **ghost-grid placeholders** — they feel like "dormant systems waiting to activate" rather than "broken/missing content." **Rating: 8.5/10**
+
+#### Stage 3: CONFIDENCE (Data Populated → Active Tracking)
+
+**Tab transitions** (appcore-providers.jsx:558–599):
+- `tabFadeIn`: 0.35s cubic-bezier(0.16, 1, 0.3, 1) — snappy entrance
+- `cardSlideIn`: 0.4s staggered (0.05s increments per nth-child) — choreographed "boot sequence"
+
+**Pity ring animation** (appcore-components.jsx:885–925):
+- `stroke-dashoffset` transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1)
+- Gold glow shadow intensifies as pity count approaches guarantee
+- Color-coded per banner type (gold/pink/cyan)
+
+**Assessment**: The staggered card entrance and pity ring animations create a sense of **system coming to life** — each card sliding in sequentially feels like instruments powering on in a cockpit. **Rating: 9/10**
+
+#### Stage 4: CELEBRATION (Milestones / Achievements)
+
+**Success toast** (appcore-providers.jsx:183–241):
+- Green background `rgba(34,197,94,0.9)` with CheckCircle icon
+- Haptic feedback via `navigator.vibrate` (appcore-providers.jsx:212)
+- 4s display duration with slide-up entrance
+
+**Trophy system** (App.jsx:1617–2018):
+- Achievement badges with `trophyShine` keyframe (3s ease-in-out infinite)
+- WuWa-specific medals: "Gotta Whale 'Em All", "Jinzhou Housing Crisis", "Forte Circuit Overload"
+- Canvas-rendered custom icons (Crown, Sparkles, etc.)
+
+**Glow effects for rare items** (appcore-providers.jsx:601–622):
+- `.glow-gold`: 24px outer shadow + radial gradient + enhanced hover
+- `.glow-purple`: 16px outer shadow (subordinate)
+
+**Assessment**: Success moments include **multi-sensory feedback** (visual toast + haptic vibration + color-coded glow). However, there is **no dedicated celebration animation for the most important moment — hitting pity/getting a 5★**. The success is communicated through toast + glow, but a moment like "pulling a 5★ character" deserves a more dramatic celebration. **Rating: 7/10**
+
+#### Stage 5: MASTERY (Deep Analytics / Long-Term Usage)
+
+**Stats tab** progression:
+- Basic stats (pity average, win rate) → Charts (AreaChart, BarChart) → Leaderboard → Pull log analysis
+- Trophy collection grows over time
+- Luck badge with rotating conic gradient (appcore-providers.jsx:664–670)
+
+**Collection tab** progression:
+- Empty ghost grid → Partial collection (mixed glow-gold/glow-purple) → Full collection
+- Visual density increases as collection grows
+
+**Assessment**: The visual progression from simple metrics to complex analytics mirrors the **mastery journey**. The trophy system provides long-term engagement hooks. However, there's no "collection completion" celebration or "streak" visual indicator for long-term users. **Rating: 7.5/10**
+
+### Emotional Arc Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-EA-F1 | **HIGH** | No dedicated celebration animation for the most important gacha moment — pulling a 5★ / hitting guaranteed pity. The success toast is the same generic green toast used for all successes (import, profile pic, etc.) | **Create a dedicated 5★ celebration**: When the pull log shows a 5★ acquisition, trigger a gold particle burst animation + screen-edge glow flash + the character's element color accent + gold confetti. Use a `@keyframes celebrateGold` animation with scale + glow + particle effects. This is the app's emotional peak — it deserves its own visual moment |
+| §E9-EA-F2 | **MEDIUM** | No visual indicator for pity "danger zone" (approaching hard pity) beyond the pity ring fill level — no escalating urgency in the UI | **Add progressive urgency**: As pity count enters the soft-pity range (60+), add a subtle gold pulse to the pity ring border (`kuroPulseGold` animation); at hard pity approach (70+), increase pulse frequency and add a glow halo. This creates anticipation/excitement as the guarantee approaches |
+| §E9-EA-F3 | **MEDIUM** | No "collection milestone" celebration — reaching 50%, 75%, or 100% collection completion has no visual acknowledgment | **Add collection milestone states**: When collection completion crosses 25/50/75/100% thresholds, trigger a brief celebration animation on the collection tab header + update a progress badge with the milestone color (bronze/silver/gold/diamond). This rewards the long-term collector journey |
+| §E9-EA-F4 | **LOW** | Empty states use game-lore language ("operatives", "signals") but some messages are clinical ("Insufficient data for trend analysis") — inconsistent tone | **Unify empty state voice**: Rewrite clinical messages to match the game-lore tone. "Insufficient data for trend analysis" → "Not enough Convene signals to chart your destiny" — maintains immersion while communicating the same information |
+
+---
+
+## §E9.5 — Anti-Genericness Audit (Code-Focused)
+
+### Generic Pattern Census
+
+| Pattern | Occurrences | Files | Generic Because |
+|---------|------------|-------|-----------------|
+| `rounded-lg` | ~360 | App.jsx (~282), appcore-components.jsx (~78) | Standard Tailwind radius; identical to any dark-theme app |
+| `text-gray-400` | ~492 | All JSX files | Default Tailwind neutral text; no brand personality |
+| `transition-colors` | ~280 | App.jsx | Tailwind default transition; no motion character |
+| `p-2`, `p-3`, `px-4` | ~200+ | App.jsx | Standard padding utilities |
+| `gap-2`, `gap-3` | ~100+ | App.jsx | Standard flex/grid gaps |
+| `flex items-center` | ~150+ | App.jsx | Standard layout pattern |
+
+### Anti-Generic Strategies Already Deployed
+
+The codebase actively fights genericness through several deliberate strategies:
+
+**1. CSS Custom Property System** (appcore-providers.jsx:434–464)
+- Instead of `bg-gray-800`: uses `--bg-card: rgba(12, 16, 24, 0.55)`
+- Instead of `border-gray-700`: uses `--border-subtle: rgba(255,255,255,0.06)` through `--border-bright`
+- Instead of `font-sans`: uses `--font-display: 'Rajdhani'` and `--font-data: 'JetBrains Mono'`
+
+**2. Bespoke Animation Language** (appcore-providers.jsx:535–599)
+- 15+ named keyframe animations (`borderGlow`, `trophyShine`, `kuroPulseOrange`, etc.)
+- NOT using Tailwind's generic `animate-pulse`, `animate-bounce`, `animate-spin`
+
+**3. Semantic Color Classes** (appcore-providers.jsx:601–1156)
+- `.glow-gold`, `.glow-purple` instead of generic badge colors
+- `.kuro-stat-gold`, `.kuro-stat-cyan` etc. instead of generic stat boxes
+- `.kuro-soft-pity` with orange pulse instead of generic warning
+
+**4. Custom Card System** (appcore-providers.jsx:708–804)
+- 3-layer box-shadow (depth + inner rim + inset light)
+- Corner bracket decorations (unique to this app)
+- Shimmer line (unique to this app)
+- NOT a Tailwind UI or shadcn/ui card component
+
+**5. WuWa-Specific Vocabulary** (App.jsx throughout)
+- "Convenes" not "pulls"
+- "Resonators" not "characters"
+- "Astrite" not "currency"
+- Medal names reference WuWa locations/mechanics
+
+### Remaining Generic Surface
+
+Despite the strong anti-generic strategies, approximately **30% of the UI surface area** still uses bare Tailwind utilities that read as "framework default":
+
+| Location Type | Example | Count | Impact |
+|--------------|---------|-------|--------|
+| Secondary text labels | `text-gray-400 text-xs` | ~200 | LOW per-element, HIGH cumulative — creates "generic" texture |
+| Card internal borders | `border-t border-white/5` | ~50 | MEDIUM — raw Tailwind instead of `var(--border-subtle)` |
+| Button corners | `rounded-lg` | ~100 | LOW — functional, but a custom token would reinforce brand |
+| Hover states | `hover:bg-white/5` | ~80 | LOW — functional but generic |
+| Layout utilities | `flex items-center gap-2 p-3` | ~300 | NONE — layout utilities are appropriately generic |
+
+### Anti-Genericness Score
+
+**Distinctive elements (unique to this app)**: 12 elements identified in §E9.1
+**Generic elements (interchangeable)**: 4 major patterns across ~1,100 occurrences
+**Design-system coverage**: ~70% of visual surface uses branded tokens/classes; ~30% uses raw Tailwind
+
+**Anti-Genericness Score: 7.5/10** — The app is meaningfully distinctive through its card system, animations, color hierarchy, and WuWa vocabulary. The 30% generic surface is the primary drag on the score.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-AG-F1 | **MEDIUM** | ~492 instances of `text-gray-400` create a "Tailwind template" texture across secondary text — the muted text has no brand personality | **Create `--text-muted` token**: Add `--text-muted: #9ca3af` (or the current gray-400 value) as a CSS custom property. Migrate `text-gray-400` → `text-[var(--text-muted)]` or add a utility class `.kuro-text-muted`. This doesn't change the color but moves it into the branded token layer, making it intentional rather than default |
+| §E9-AG-F2 | **MEDIUM** | ~360 instances of `rounded-lg` create a "same radius everywhere" pattern with no shape hierarchy | **Create radius scale tokens**: `--radius-sm: 8px`, `--radius-md: 12px`, `--radius-lg: 16px`. Cards already use 16px via `.kuro-card`; extend this to buttons (12px) and badges/chips (8px). The visual result is the same, but the shape system becomes documented and intentional |
+| §E9-AG-F3 | **LOW** | ~280 instances of `transition-colors` use browser-default timing instead of LAHAI-ROI motion tokens | **Replace with branded transitions**: `transition-colors` → `transition: color var(--transition-fast)`. The app already defines `--transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1)` — using it ensures every color transition has the app's signature "overshoot snap" feel |
+| §E9-AG-F4 | **LOW** | ~50 instances of raw `border-white/5` or `border-white/10` instead of using `var(--border-subtle)` / `var(--border-default)` tokens | **Migrate to border tokens**: Replace inline `border-white/5` with `border-[var(--border-subtle)]` and `border-white/10` with `border-[var(--border-default)]`. The token layer already exists — it's just not universally applied |
+
+---
+
+## §E9.6 — App Icon / Launcher Icon Quality
+
+### Current Icon Design
+
+**File**: `public/favicon.svg` (4 lines)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#080c14"/>
+  <text x="16" y="23" font-size="20" text-anchor="middle"
+        fill="#fbbf24" font-family="system-ui, sans-serif" font-weight="bold">W</text>
+</svg>
+```
+
+**Design**: Gold lettermark "W" on dark navy rounded rectangle.
+
+### Size Legibility Matrix
+
+| Size | Context | Legibility | Notes |
+|------|---------|-----------|-------|
+| 16×16 | Browser tab favicon | **ADEQUATE** | High contrast (gold on navy) preserves recognition; "W" becomes a gold dot at extreme zoom-out but retains shape |
+| 32×32 | Standard favicon | **EXCELLENT** | Clean letterform, rounded corners visible, high contrast |
+| 180×180 | Apple touch icon | **EXCELLENT** (if PNG exists) | SVG scales perfectly; the concern is whether the referenced `apple-touch-icon.png` exists |
+| 192×192+ | PWA home screen | **EXCELLENT** | SVG `sizes="any"` allows perfect scaling |
+| 512×512 | PWA splash / store | **GOOD** | The simple "W" holds up but may feel too minimal at large display sizes |
+
+### Icon Manifest Coverage
+
+**File**: `public/manifest.webmanifest` (lines 11–24)
+
+| Declared | Source | Size | Format | Purpose | Status |
+|----------|--------|------|--------|---------|--------|
+| ✓ | `/favicon.svg` | any | SVG | any | **Present** |
+| ✓ | `/apple-touch-icon.png` | 180×180 | PNG | any maskable | **Referenced but needs verification** |
+| ✗ | — | 192×192 | PNG | maskable | **MISSING** — required for Android home screen |
+| ✗ | — | 512×512 | PNG | any | **MISSING** — required for PWA install splash screen |
+| ✗ | — | 32×32 / 64×64 | PNG | fallback | **MISSING** — fallback for older browsers |
+
+### HTML Icon References (index.html)
+
+| Element | Value | Status |
+|---------|-------|--------|
+| `<link rel="icon">` | `/favicon.svg` | ✓ Present, correct MIME type |
+| `<link rel="apple-touch-icon">` | `/apple-touch-icon.png` | ✓ Present |
+| `<meta property="og:image">` | `https://whisperingwishes.vercel.app/og-image.png` | ⚠ External URL, not version-controlled |
+| `<meta name="twitter:image">` | Same as og:image | ⚠ External URL |
+| `<meta name="theme-color">` | `#080c14` | ✓ Correct (dark navy) |
+| `<meta name="msapplication-TileColor">` | Set via appcore-providers.jsx:56–57 | ✓ Set to `#edaf18` (gold) |
+
+### Visual Coherence with App
+
+| Aspect | Icon | App | Match? |
+|--------|------|-----|--------|
+| Background color | `#080c14` (dark navy) | `#080c14` (dark navy) | **YES** |
+| Accent color | `#fbbf24` (Tailwind amber-400) | `#edaf18` (custom gold) | **NO** — 2-hue offset (~5° warmer in icon) |
+| Typography | `system-ui, sans-serif` | `Rajdhani` (display) | **NO** — icon uses system font, app uses Rajdhani |
+| Shape language | `rx="6"` (rounded rectangle) | `border-radius: 16px` (cards) | **PARTIAL** — both rounded but different radii |
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-IC-F1 | **HIGH** | Missing 192×192 and 512×512 PNG icons in manifest — Android PWA install will use a generic placeholder or degrade | **Generate PNG icon variants**: Create 192×192 and 512×512 PNGs from the SVG favicon. Add to manifest.webmanifest with `"purpose": "any maskable"`. Use a build script or manual export from the SVG |
+| §E9-IC-F2 | **MEDIUM** | Favicon uses `#fbbf24` (Tailwind amber) instead of brand gold `#edaf18` — the browser tab icon is technically off-brand | **Align favicon gold**: Change `fill="#fbbf24"` to `fill="#edaf18"` in favicon.svg. This is the same finding as §E9-AC-F2 — a single-line fix |
+| §E9-IC-F3 | **MEDIUM** | Favicon uses `system-ui, sans-serif` font family — if Rajdhani is the brand font, the "W" letterform in the icon doesn't match the app's typography | **Use Rajdhani in favicon**: Either embed Rajdhani as a `<style>` in the SVG or render the "W" as a `<path>` traced from the Rajdhani glyph. This ensures the letterform is identical to in-app headings |
+| §E9-IC-F4 | **MEDIUM** | OG image points to external URL (`https://whisperingwishes.vercel.app/og-image.png`) — not version-controlled, could be outdated or missing | **Create local OG image**: Design a 1200×630px social card with brand elements (gold accent bar, dark navy background, "Whispering Wishes" text, optional character art). Save as `public/og-image.png` and update meta tags to relative path |
+| §E9-IC-F5 | **LOW** | No dedicated PWA splash screen design — relies on manifest icon + background_color | **Verify splash screen quality**: Test the PWA install on Chrome Android and check that the splash screen uses the gold "W" icon on `#080c14` background. If the icon looks too small, consider creating a larger splash-specific image |
+
+---
+
+## §E9.7 — Motion Identity
+
+### Motion Token System
+
+**Defined tokens** (appcore-providers.jsx:445–447):
+
+| Token | Duration | Easing | Character |
+|-------|----------|--------|-----------|
+| `--transition-fast` | 0.15s | `cubic-bezier(0.16, 1, 0.3, 1)` | Snappy with slight overshoot |
+| `--transition-normal` | 0.25s | `cubic-bezier(0.16, 1, 0.3, 1)` | Responsive with settle |
+| `--transition-slow` | 0.4s | `cubic-bezier(0.16, 1, 0.3, 1)` | Deliberate with momentum |
+
+**Easing signature**: `cubic-bezier(0.16, 1, 0.3, 1)` — This is a **fast-attack, overshoot-settle** curve. The control points create a motion that accelerates quickly (0.16), overshoots the target (1.0 y-value exceeds 1.0 endpoint), then settles back. This gives the app a **reactive, lively** feel — like a precision instrument with slight spring behavior.
+
+### Animation Inventory
+
+| Animation | Duration | Easing | Type | Character |
+|-----------|----------|--------|------|-----------|
+| `slideUp` | 0.2s | ease-out | Toast entrance | Quick, functional |
+| `scaleIn` | 0.3s | ease-out | Modal pop | Standard expand |
+| `borderGlow` | 2s | ease-in-out | Active button pulse | Slow ambient glow |
+| `pulseScale` | 2s | ease-in-out | Important highlight | Slow ambient scale |
+| `tabFadeIn` | 0.35s | cubic-bezier(0.16,1,0.3,1) | Tab content entrance | **SIGNATURE** — branded easing |
+| `cardSlideIn` | 0.4s | cubic-bezier(0.16,1,0.3,1) | Card stagger (0.05s steps) | **SIGNATURE** — choreographed boot sequence |
+| `shimmer` | 3s | ease-in-out | Card top shimmer line | Ambient decoration |
+| `badgeRotate` | 8s | linear | Luck badge conic rotation | Slow hypnotic spin |
+| `trophyShine` | 3s | ease-in-out | Achievement badge blink | Ambient pride signal |
+| `kuroPulseOrange` | 2s | ease-in-out | Soft pity glow | Status-driven ambient |
+| `kuroPulseCyan` | 2s | ease-in-out | Soft pity glow | Status-driven ambient |
+| `kuroPulsePink` | 2s | ease-in-out | Soft pity glow | Status-driven ambient |
+| `kuroShimmer` | 1.8s | ease-in-out | Skeleton loading | Standard loading |
+| `emptyFadeIn` | 0.4s | ease-out | Empty state entrance | Gentle appearance |
+| `ghostPulse` | 2.5s | ease-in-out | Collection placeholder | Ambient anticipation |
+| BackgroundGlow | Continuous | Sine wave | Canvas procedural waves | **UNIQUE** — organic atmospheric |
+| TriangleMirrorWave | Continuous | Sine wave | Canvas triangle mesh | **UNIQUE** — faceted specular |
+| Pity Ring | 0.8s | cubic-bezier(0.16,1,0.3,1) | SVG stroke progress | **SIGNATURE** — luxury gauge feel |
+
+### Motion Character Assessment
+
+**Is there a recognizable animation vocabulary?**
+
+**YES — Three distinct layers:**
+
+1. **Interaction layer** (fast): 0.15–0.4s, branded easing (`cubic-bezier(0.16, 1, 0.3, 1)`)
+   - Character: **Reactive precision** — fast onset, slight overshoot, clean settle
+   - Applies to: button hovers, card lifts, tab transitions, pity ring
+   - Feeling: "responsive instrument that acknowledges your input instantly"
+
+2. **Ambient layer** (slow): 2–8s, ease-in-out
+   - Character: **Calm atmosphere** — slow breathing, gentle pulsing
+   - Applies to: shimmer lines, button glows, trophy shines, soft pity pulses
+   - Feeling: "the system is alive and monitoring, even when you're not interacting"
+
+3. **Procedural layer** (continuous): Infinite, sine-wave
+   - Character: **Organic energy** — traveling wavefronts, specular reflections
+   - Applies to: BackgroundGlow, TriangleMirrorWave
+   - Feeling: "ambient energy flowing beneath the precision surface"
+
+**Motion Identity Summary**: The app feels like a **precision instrument floating on calm energy** — interactions are snappy and responsive (layer 1), the interface breathes with ambient life (layer 2), and the background radiates subtle organic energy (layer 3). This three-layer motion architecture is distinctive and coherent.
+
+### Inconsistencies
+
+| ID | Location | Issue |
+|----|----------|-------|
+| §E9-MI1 | Desktop layout (appcore-providers.jsx:1615) | Uses `cubic-bezier(0.4, 0, 0.2, 1)` (Material Design standard ease) instead of the branded `cubic-bezier(0.16, 1, 0.3, 1)` — different motion feel on desktop |
+| §E9-MI2 | Slider transitions | Uses `0.15s` with no explicit easing (browser default = `ease`) instead of branded easing |
+| §E9-MI3 | `transition-colors` (Tailwind inline) | ~280 instances use Tailwind's default 150ms ease without the branded overshoot curve |
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-MO-F1 | **MEDIUM** | Desktop layout uses Material Design easing `cubic-bezier(0.4, 0, 0.2, 1)` instead of branded `cubic-bezier(0.16, 1, 0.3, 1)` — motion personality changes on desktop | **Unify easing**: Replace the desktop layout easing at appcore-providers.jsx:1615 with `var(--transition-slow)` or the branded cubic-bezier value. The motion should feel the same regardless of viewport |
+| §E9-MO-F2 | **LOW** | ~280 instances of Tailwind `transition-colors` use browser-default timing instead of branded motion tokens (same as §E9-AG-F3) | **Same solution as §E9-AG-F3**: Migrate to `transition: color var(--transition-fast)` to inject branded easing into every color transition |
+| §E9-MO-F3 | **LOW** | No `prefers-reduced-motion` handling for canvas animations (BackgroundGlow, TriangleMirrorWave) or CSS ambient animations (shimmer, pulses) | **Add reduced-motion respect**: Wrap canvas `requestAnimationFrame` loops in a `matchMedia('(prefers-reduced-motion: reduce)')` check; add `@media (prefers-reduced-motion: reduce) { .kuro-card::after { animation: none; } }` for CSS ambient animations |
+| §E9-MO-F4 | **POLISH** | Slider animation uses bare `0.15s` with no easing instead of `var(--transition-fast)` | **Apply branded token**: Replace slider transition with `transition: all var(--transition-fast)` to include the overshoot easing |
+
+---
+
+## §E9.8 — Iconography as Identity Signal
+
+### Icon Family
+
+**Library**: Lucide React (open-source, MIT licensed)
+**Style**: 2px stroke, rounded corners, outline-only, geometric
+**Total unique icons**: 45 imported across 3 files
+
+### Icon Size Hierarchy
+
+| Size | Count | Context | Assessment |
+|------|-------|---------|------------|
+| 14px | 48 | Primary UI elements (cards, lists, labels) | **DOMINANT** — establishes the default scale |
+| 12px | 25 | Secondary inline elements (ratings, mini-labels) | Appropriate subordination |
+| 16px | 22 | Navigation, buttons, close controls | Appropriate for touch targets |
+| 18px | 12 | Emphasis elements | Moderate escalation |
+| 10px | 11 | Micro-labels, checklist items | Very small — may have legibility concerns |
+| 32px | 10 | Onboarding modal hero icons | Intentional visual emphasis |
+| 9px | 2 | Ultra-micro elements | Potentially too small |
+| 56px | 1 | Pity ring custom sizing | Contextually appropriate |
+
+### Brand Personality Alignment
+
+**Question**: Do the icons communicate the "cyberpunk-luxe precision instrument" personality?
+
+| Aspect | Lucide Default | Brand Need | Alignment |
+|--------|---------------|-----------|-----------|
+| Weight | 2px stroke (light) | Precision/technical (light strokes work) | **ALIGNED** — thin strokes feel technical |
+| Corner treatment | Rounded | Geometric/tech (mixed — sharp corners more "cyber") | **PARTIALLY ALIGNED** — rounded softens the cyberpunk edge |
+| Fill style | Outline only | HUD/wireframe (outline is good for HUD) | **ALIGNED** — outline icons feel like HUD elements |
+| Geometric precision | High | High | **ALIGNED** — clean geometry matches Rajdhani/JetBrains aesthetic |
+| Personality | Neutral/friendly | Cyberpunk-luxe | **PARTIALLY ALIGNED** — Lucide is more "friendly" than "cyberpunk" |
+
+### Icon Hover Behavior
+
+**Global icon hover** (appcore-providers.jsx:912–931):
+```css
+@media (hover: hover) {
+  button:hover > svg, a:hover > svg {
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+}
+```
+
+**Assessment**: The glow-on-hover effect adds the "precision instrument" feel — icons light up like HUD elements being targeted. This is a strong identity signal.
+
+### Custom vs Library Icons
+
+| Category | Source | Count | Quality |
+|----------|--------|-------|---------|
+| UI icons | Lucide React | 45 | **HIGH** — consistent, professional |
+| Trophy badge icons | Custom Canvas-drawn | 6+ | **MEDIUM** — hand-drawn paths (Crown, Sparkles, etc.) |
+| Star ratings | Lucide Star with fill override | Multiple | **HIGH** — filled variant for earned stars |
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-IG-F1 | **LOW** | Lucide's rounded-corner, friendly aesthetic is slightly misaligned with the cyberpunk-luxe precision identity — the icons are "nice" rather than "sharp" | **Accept with awareness**: Lucide's consistency and size hierarchy are more valuable than a niche icon set that matches the cyberpunk aesthetic exactly. The glow-on-hover effect compensates by adding the HUD feel. If future refinement is desired, consider Phosphor Icons (available in thin/bold weights with sharper geometry) as an alternative |
+| §E9-IG-F2 | **POLISH** | Icons at 9–10px size (appcore-components.jsx, App.jsx) may be below legibility threshold for some users — ultra-micro icons are hard to parse | **Set minimum icon size to 12px**: Replace `size={9}` and `size={10}` instances with `size={12}`. At 12px, Lucide icons remain crisp with 2px strokes. Below 12px, anti-aliasing artifacts reduce clarity |
+| §E9-IG-F3 | **POLISH** | Custom Canvas-drawn trophy icons (App.jsx:2209–2228) use hand-drawn paths that may not perfectly match Lucide's geometric precision | **Consider using Lucide equivalents**: Replace custom Canvas Crown/Sparkles/etc. with the equivalent Lucide icons rendered to Canvas via `drawImage`. This ensures geometric consistency across all icon contexts |
+
+---
+
+## §E9.9 — Color System as Memory
+
+### Memory Anchor Analysis
+
+**Test**: After using the app for 10 minutes and closing it, could a user describe its color character?
+
+### Primary Memory Anchors
+
+| Rank | Color | Hex | Description | Memory Strength |
+|------|-------|-----|-------------|-----------------|
+| 1 | **Gold** | #edaf18 | Warm, saturated brass-gold; appears on every interactive element, header bar, pity ring, 5★ glow, focus outline | **EXCEPTIONAL** — gold is omnipresent; users will say "the gold app" or "the one with gold accents" |
+| 2 | **Deep Navy** | #080c14 | Cool-toned near-black; the constant background that never changes | **STRONG** — creates visual stability; users will say "dark background" |
+| 3 | **Pink** | #ec4899 | Warm cool-tone; Weapon banner, Havoc element | **MODERATE** — memorable because it's the most visually contrasting accent against the navy+gold dominant |
+
+### Surface Temperature Character
+
+**Base**: Cool (navy #080c14, RGB 8/12/20 — blue-dominant)
+**Accent**: Warm (gold #edaf18, HSL 42°/82%/51% — yellow-warm)
+**Interaction pattern**: **"Active warm / passive cool"** — at rest the app is calm and cool; during interaction, gold warmth activates
+
+This creates a distinctive **temperature personality**: the app feels meditative when idle and energized when engaged. This dual-temperature character is rare and memorable.
+
+### Dark Mode Character
+
+| Property | Value | Assessment |
+|----------|-------|------------|
+| Base surface | #080c14 (not #000000) | **CHROMATIC DARK** — blue undertone, not pure black |
+| Card surface | `rgba(12, 16, 24, 0.55)` | **LAYERED** — semi-transparent over dark base |
+| OLED mode | #000000 (pure black toggle) | **THOUGHTFUL** — respects pure-black preference for battery |
+| Text on dark | #dfe5ef (cool white), #edf1f8 (heading white) | **COOL-TINTED** — text has slight blue tint matching base |
+| Shadow system | `rgba(6, 10, 24, *)` | **CHROMATIC** — shadows are blue-tinted, not neutral gray |
+
+**Dark mode character**: "Cool ocean depth" — the interface feels like looking at an illuminated HUD through deep, calm water. Shadows are blue, surfaces have blue undertones, and the gold accent feels like bioluminescence or submerged light.
+
+### Colors That Break Character
+
+| Color | Context | Breaks Character? |
+|-------|---------|-------------------|
+| Blue (#60a5fa) | 3★ Weapons indicator | **NO** — fits the cool spectrum; appropriate for low-rarity |
+| Gray (#6b7289) | Disabled/muted text | **NO** — intentional visual hierarchy |
+| Emerald (#34d399) | "Won 50/50" / positive | **MINIMAL** — green is slightly warmer than the cool palette, but semantically correct |
+| Red (#ef4444) | "Lost 50/50" / error | **MINIMAL** — warm red stands out against cool palette, but that's the point (danger signal) |
+
+**Verdict**: **ZERO jarring breaks** — every color has a semantic justification and none violates the cool-dark-with-warm-accent character.
+
+### Palette Memorability Score
+
+| Criterion | Score | Rationale |
+|-----------|-------|-----------|
+| Distinctive accent | 9.5/10 | Gold #edaf18 is highly distinctive — not generic yellow, not orange, specifically calibrated brass-gold |
+| Surface character | 9/10 | Chromatic dark navy is more memorable than generic #000 or #1a1a1a |
+| Temperature personality | 9/10 | "Active warm / passive cool" is a rare and distinctive temperature pattern |
+| Palette cohesion | 9.5/10 | Zero character breaks; all colors serve semantic roles |
+| Competitor distinction | 8.5/10 | Gold-on-navy is fairly unique among WuWa trackers (most use blue/purple accents) |
+
+**Color Memory Score: 9.1/10**
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-CM-F1 | **POLISH** | The pink accent (#ec4899) is the third most memorable color but has weaker brand association than gold — users may not immediately connect pink to "Weapon banner" | **Strengthen pink association**: When pink appears in Weapon banner context, pair it with a subtle text label or icon that reinforces the connection (e.g., a small Sword icon next to pink elements). This turns pink from "a color that appears" into "the Weapon color" |
+| §E9-CM-F2 | **POLISH** | Emerald (#34d399) for "Won 50/50" and "goal affordable" creates warm temperature intrusion in the otherwise cool palette | **Accept as intentional**: The warm-green warmth is semantically correct — "positive/success" should feel warm. No change needed; this is a deliberate semantic temperature shift |
+
+---
+
+## §E9.10 — Brand Scalability
+
+### Key Visual Elements
+
+| Element | Description | Scalability |
+|---------|-------------|-------------|
+| **Gold "W" lettermark** | SVG favicon, bold sans-serif | **HIGH** — simple geometry survives any size |
+| **Gold accent color** | #edaf18 | **HIGH** — distinctive hue works at any context |
+| **Dark navy background** | #080c14 | **HIGH** — dark base is universally scalable |
+| **Corner bracket motif** | 12×12px L-shaped borders | **LOW** — too small/subtle for icon or share card contexts |
+| **Glassmorphism cards** | backdrop-blur + shimmer | **LOW** — requires sufficient screen area to appreciate |
+| **Canvas animations** | BackgroundGlow, TriangleMirrorWave | **NONE** — requires canvas rendering, not scalable to static contexts |
+
+### Scale Survival Matrix
+
+| Scale | Context | Status | Distinctive? | What Survives |
+|-------|---------|--------|-------------|---------------|
+| 16×16 | Browser tab favicon | ✓ Adequate | **YES** | Gold dot on navy (letterform legible at limits) |
+| 32×32 | Standard favicon | ✓ Excellent | **YES** | Full "W" lettermark, rounded corners |
+| 180×180 | Apple touch icon | ✓ (if PNG exists) | **YES** | Full lettermark + background |
+| 192×192 | Android PWA icon | ⚠ **MISSING** | — | Needs PNG variant |
+| 512×512 | PWA splash / store | ⚠ **MISSING** | — | Needs PNG variant |
+| 1200×630 | Social media OG card | ⚠ **EXTERNAL URL** | **UNKNOWN** | og-image.png hosted on Vercel, not version-controlled |
+| Dynamic | Loading/splash screen | ⚠ **MISSING** | **PARTIAL** | Generic skeleton shimmer; no branded splash |
+| Notification | Toast banner | ✓ On-brand | **YES** | Green/red/gold/cyan toasts use secondary palette |
+| Browser chrome | Theme color meta | ✓ Set | **PARTIAL** | `#080c14` (dark navy) — subtle, doesn't scream brand |
+
+### Missing Brand Assets
+
+| Asset | Purpose | Priority | Design Spec |
+|-------|---------|----------|-------------|
+| **192×192 PNG icon** | Android home screen | **HIGH** | Gold "W" on #080c14 navy, 192×192, with maskable safe zone (40px inset) |
+| **512×512 PNG icon** | PWA install splash | **HIGH** | Same design, larger |
+| **OG image (local)** | Social sharing (Reddit, Discord, Twitter) | **HIGH** | 1200×630, dark navy background, gold accent bar at top, "Whispering Wishes" in Rajdhani, subtitle "Wuthering Waves Companion" in JetBrains Mono, optional WuWa character silhouette |
+| **Branded splash screen** | PWA first-load experience | **MEDIUM** | Full-screen #080c14, centered gold "W" with `glow-gold` shadow effect, subtle gold progress bar at bottom |
+| **Favicon PNG fallback** | Older browsers (IE, some webviews) | **LOW** | 32×32 and 64×64 PNGs matching SVG design |
+
+### Brand Scalability Score
+
+| Criterion | Score | Rationale |
+|-----------|-------|-----------|
+| Icon scale survival | 7/10 | Gold "W" works at all sizes; missing PNG variants reduces reliability |
+| Multi-platform presence | 5/10 | Only SVG favicon + apple-touch-icon; no Android, Windows, or social media assets |
+| Static brand extraction | 8/10 | Gold + navy + "W" can represent the brand in any static context |
+| Dynamic brand expression | 9/10 | Canvas animations + gold glow + staggered cards create strong in-app identity |
+| Social/share presence | 4/10 | OG image externally hosted, not version-controlled; Discord/Reddit previews are not guaranteed |
+
+**Brand Scalability Score: 6.6/10** — Strong in-app identity but weak multi-platform/multi-size presence. The brand works beautifully at phone-screen scale but lacks the asset inventory for a complete platform presence.
+
+### Findings
+
+| ID | Severity | Finding | Solution |
+|----|----------|---------|----------|
+| §E9-BS-F1 | **HIGH** | Missing 192×192 and 512×512 PNG icon variants — Android PWA install degrades without these | **Generate PNG icons**: Export the SVG favicon to 192×192 and 512×512 PNGs. Add to `public/` directory and update manifest.webmanifest with additional icon entries including `"purpose": "any maskable"`. For maskable icons, ensure the "W" lettermark fits within the safe zone (center 80% of the image) |
+| §E9-BS-F2 | **HIGH** | OG image (`og-image.png`) is hosted externally at `whisperingwishes.vercel.app` — not version-controlled, may be outdated or absent | **Create local OG image**: Design a 1200×630px social card. Spec: `#080c14` background, 4px gold (#edaf18) accent bar at top, "Whispering Wishes" in Rajdhani Bold at ~48px centered, "Wuthering Waves Companion" subtitle in JetBrains Mono at ~20px below, gold "W" logo at bottom-right. Save as `public/og-image.png` and update `index.html` meta tags to use relative URL `/og-image.png` |
+| §E9-BS-F3 | **MEDIUM** | No branded PWA loading/splash screen — first load shows generic skeleton shimmer instead of brand moment | **Add branded splash**: Create a simple splash overlay that shows on first render before data loads: centered gold "W" with `glow-gold` box-shadow on `#080c14` background, with a small gold progress bar or dot animation at the bottom. Dismiss once React mounts and initial data loads |
+| §E9-BS-F4 | **LOW** | Theme-color meta tag uses `#080c14` (dark navy) — this is the background, not the accent. Some PWA contexts display this color in the status bar, making the brand invisible | **Consider gold theme-color**: Change `<meta name="theme-color">` to `#edaf18` (gold) for mobile browsers. Note: This is already done for msapplication-TileColor but not for the primary theme-color. Test on Chrome Android to verify the gold status bar looks good against the dark app |
+| §E9-BS-F5 | **LOW** | Corner bracket motif (the most unique visual element) doesn't survive reduction to icon/card sizes — the brand's most distinctive decorative element is lost outside the app viewport | **Create a "bracket W" mark**: Design a version of the "W" lettermark that incorporates corner bracket elements — e.g., the "W" with thin L-shaped brackets at its corners. This would carry the most distinctive visual element into the icon/card contexts where it currently can't exist |
+
+---
+
+## §E9 — Step 16 Summary
+
+### Section Scores
+
+| Section | Score | Key Insight |
+|---------|-------|-------------|
+| §E9.1 Visual Signature | **8.5/10** | 12 unique/distinctive elements; ~30% generic Tailwind dilution |
+| §E9.2 Visual Metaphor | **9.4/10** | "Precision Instrument / Digital War Room" metaphor is exceptionally coherent across all 8 tabs |
+| §E9.3 Accent Color | **9.5/10** | Gold (#edaf18) is highly calibrated, purposeful, and game-faithful; no dilution from secondary colors |
+| §E9.4 Emotional Arc | **7.8/10** | Strong onboarding + empty states; weak celebration moments (no 5★ pull celebration) |
+| §E9.5 Anti-Genericness | **7.5/10** | Strong anti-generic strategies deployed; ~30% surface still raw Tailwind |
+| §E9.6 App Icon | **6.5/10** | Good design, missing PNG variants and social assets |
+| §E9.7 Motion Identity | **8.5/10** | Three-layer motion architecture is distinctive; minor easing inconsistencies |
+| §E9.8 Iconography | **8/10** | Consistent Lucide set with glow-on-hover identity; slightly "friendly" for cyberpunk |
+| §E9.9 Color Memory | **9.1/10** | Exceptional gold memorability; chromatic dark mode is distinctive |
+| §E9.10 Brand Scalability | **6.6/10** | Strong in-app but weak multi-platform asset coverage |
+
+**Overall §E9 Score: 8.1/10**
+
+### All Findings by Severity
+
+#### HIGH (3 findings)
+| ID | Finding | Solution |
+|----|---------|----------|
+| §E9-IC-F1 | Missing 192×192 and 512×512 PNG icons | Generate PNG variants; add to manifest |
+| §E9-BS-F2 | OG image externally hosted, not version-controlled | Create local 1200×630 OG image with brand design |
+| §E9-EA-F1 | No dedicated 5★ celebration animation — the emotional peak of a gacha tracker has no visual climax | Create gold particle burst + screen glow for 5★ pull moments |
+
+#### MEDIUM (8 findings)
+| ID | Finding | Solution |
+|----|---------|----------|
+| §E9-VS-F1 | ~30% generic Tailwind surface dilutes signature | Migrate to design-system tokens |
+| §E9-MC-F1 | Native `<select>` breaks HUD metaphor | Create custom `.kuro-select` dropdown |
+| §E9-MC-F2 | Inline Tailwind reads as "framework default" | Same token migration as §E9-VS-F1 |
+| §E9-EA-F2 | No escalating pity urgency visual | Add progressive gold pulse as pity approaches |
+| §E9-EA-F3 | No collection milestone celebration | Add threshold celebration animations |
+| §E9-AG-F1 | ~492 `text-gray-400` instances have no brand personality | Create `--text-muted` token |
+| §E9-AG-F2 | ~360 `rounded-lg` with no shape hierarchy | Create radius scale tokens |
+| §E9-MO-F1 | Desktop easing differs from branded easing | Unify to branded cubic-bezier |
+
+#### LOW (7 findings)
+| ID | Finding | Solution |
+|----|---------|----------|
+| §E9-VS-F2 | Canvas animations no reduced-motion fallback | Add `prefers-reduced-motion` check |
+| §E9-VS-F3 | LAHAI-ROI only documented in CSS comment | Surface in design docs or meta tag |
+| §E9-MC-F3 | Onboarding blob shapes conflict with geometric language | Use angular decorative patterns |
+| §E9-AC-F1 | Purple dual semantics (rarity + element) | Accept or use shifted purples |
+| §E9-EA-F4 | Inconsistent empty state voice (clinical vs game-lore) | Unify to game-lore tone |
+| §E9-AG-F3 / §E9-MO-F2 | `transition-colors` uses default timing | Migrate to branded motion tokens |
+| §E9-AG-F4 | Raw `border-white/5` instead of border tokens | Migrate to `var(--border-subtle)` |
+
+#### POLISH (6 findings)
+| ID | Finding | Solution |
+|----|---------|----------|
+| §E9-AC-F2 / §E9-IC-F2 | Favicon gold (#fbbf24) ≠ brand gold (#edaf18) | Align to #edaf18 |
+| §E9-AC-F3 | Install prompt uses Tailwind yellow not brand gold | Use brand gold gradient |
+| §E9-MO-F4 | Slider easing not branded | Apply `var(--transition-fast)` |
+| §E9-IG-F2 | Icons at 9–10px below legibility | Set minimum 12px |
+| §E9-IG-F3 | Custom Canvas trophy icons inconsistent with Lucide | Use Lucide equivalents |
+| §E9-CM-F1 | Pink accent lacks strong semantic label | Pair with Weapon icon |
+
+### Connection to Prior Findings
+
+- **§E1-COV1** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1). Token migration is the single highest-impact improvement.
+- **§E7-PD1** (button migration): The native `<select>` (§E9-MC-F1) is the same class of issue — a non-branded native element breaking the design system.
+- **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
+- **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2) — the radius monoculture prevents shape from serving as an identity signal.
+- **§E7-PL1** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
+- **§E8-CI2** (PWA identity broken): Expanded here with full brand scalability audit (§E9.10) — missing PNG variants, external OG image, and no splash screen compound into a weak multi-platform presence.
+
+---
+
+> **End of Step 16 — §E9: Visual Identity & Recognizability**
+> **Lines added**: ~530
+> **Next step**: Step 17 — §E10: Data Storytelling & Visual Communication (awaiting user instruction)
