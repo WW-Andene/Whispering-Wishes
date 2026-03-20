@@ -7036,10 +7036,10 @@ STRATEGY:
  [PASS] Design communicates stated values
          → Precision (monospace numbers), game-world (terminology),
            intelligence-respect (dense data), community (leaderboard).
- [FAIL] Touch targets ≥ 44px (mobile)
-         → Many interactive elements at text-[9px]/text-[10px]
-           have touch targets well below 44px. Tab bar items
-           may be undersized on small screens.
+ [PARTIAL] Touch targets ≥ 44px (mobile)
+         → A @media (pointer: coarse) rule sets min-height 36px
+           for buttons and 44px for selects. 36px is below the
+           44px iOS HIG recommendation but meets Android 36dp.
  [FAIL] Reduced-motion fallback exists
          → 7 instances of prefers-reduced-motion detected, but
            not all animations are covered. Canvas animations
@@ -7048,8 +7048,8 @@ STRATEGY:
 ```
 
 **Craft score: 9/9 PASS** (all craft checks pass)
-**Strategy score: 5/8 PASS** (3 failures: proportions, touch targets, reduced-motion)
-**Total: 14/17** — exceeds the 20-check threshold for "proceed" (skill says <20 = rebuild, 20-25 = fix, 26+ = proceed)
+**Strategy score: 6/8 PASS** (2 failures: proportions, reduced-motion; 1 partial: touch targets)
+**Total: 15/17** — exceeds the 20-check threshold for "proceed" (skill says <20 = rebuild, 20-25 = fix, 26+ = proceed)
 
 ### Findings
 
@@ -7069,18 +7069,18 @@ STRATEGY:
   ```
   Apply harmonic ratios to: Planner priority/projection split, Stats overview/detail split, Calculator input/output split. Leave auto-fill grids functional (they need to be).
 
-**CK-F2 — Touch targets below 44px minimum** [MEDIUM]
+**CK-F2 — Touch targets at 36px, below 44px minimum** [LOW]
 
-- **Evidence**: Multiple interactive elements with text-[9px] and text-[10px] sizing. Tab bar icons at ~20px. Small clickable labels, filter chips, and secondary buttons may fall below the 44×44px minimum touch target.
-- **Impact**: Mobile usability degradation. Users must tap precisely on small elements, increasing error rate and frustration.
-- **Solution**: Add `min-h-[44px] min-w-[44px]` to all interactive elements, or use padding to expand the tappable area while keeping the visual footprint small:
-  ```jsx
-  {/* Visually small, tappably large */}
-  <button className="text-[10px] p-3 min-h-[44px] flex items-center justify-center">
-    {label}
-  </button>
+- **Evidence**: A `@media (pointer: coarse)` rule (appcore-providers.jsx:518-526) applies `min-height: 36px` to standalone buttons and `min-height: 44px` to selects on touch devices. The 36px floor is below the iOS HIG recommended 44px minimum, though it meets Android's 36dp minimum.
+- **Impact**: Mild — 36px targets are usable but slightly undersized for comfortable one-handed mobile use. The most affected elements are small action buttons in dense data areas.
+- **Solution**: Increase the touch-device button minimum from 36px to 44px:
+  ```css
+  @media (pointer: coarse) {
+    .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]) {
+      min-height: 44px; /* was 36px */
+    }
+  }
   ```
-  Priority targets: tab bar items, filter chips, small action buttons, expandable sections.
 
 **CK-F3 — Canvas animations lack prefers-reduced-motion handling** [MEDIUM]
 
@@ -7893,7 +7893,7 @@ COMPONENTS
          → Toast system with calibrated colors and border-left accent.
  [PASS] Buttons have distinct rest/hover/active/focus
          → Rest, hover (scale + brightness), active (scale down).
-           Focus not explicitly styled in most cases.
+           Focus-visible: gold outline + glow (appcore-providers:502-509).
  [PASS] Input focus ≠ ring-blue-500
          → Gold border on focus.
  [PASS] Cards ≠ white + gray border + shadow-sm
@@ -7966,18 +7966,19 @@ Mapping the 5 root causes to Whispering Wishes:
 
 ### Findings
 
-**BT-F1 — Buttons lack `:focus-visible` styling** [MEDIUM]
+**BT-F1 — Focus-visible styling exists but excludes anchor links and role="button"** [LOW]
 
-- **Evidence**: No `:focus-visible` ring, outline, or glow on button elements. Keyboard users have no visual indicator of which button is focused.
-- **Impact**: Accessibility failure — keyboard navigation is visually broken. Users tabbing through the interface cannot see where they are.
-- **Solution**: Add a global focus-visible rule using the accent color:
+- **Evidence**: Global `:focus-visible` IS defined (appcore-providers.jsx:502-509) for `button`, `select`, `input`, `textarea` with gold outline + glow. However, `<a>` elements and `[role="button"]` elements are NOT covered by this rule. Keyboard focus on link-buttons or div-buttons would show browser defaults.
+- **Impact**: Minor gap — most interactive elements are actual `<button>` elements, but any anchor or div acting as a button would miss the gold focus ring.
+- **Solution**: Extend the existing rule to cover additional interactive patterns:
   ```css
-  button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--bg-card-inner), 0 0 0 4px rgba(237,175,24,0.6);
+  button:focus-visible, select:focus-visible, input:focus-visible,
+  textarea:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+    outline: 2px solid rgba(var(--color-gold), 0.8);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(var(--color-gold), 0.15);
   }
   ```
-  The double-ring (inner bg color + outer accent) ensures visibility on any surface.
 
 **BT-F2 — No loading spinner-in-button pattern** [LOW]
 
@@ -8176,11 +8177,11 @@ Per §TABLES:
 
 ### §FOCUS — Accessibility Assessment
 
-**Current state**: No explicit `:focus-visible` styling on most interactive elements. Browser defaults may provide a thin outline, but it's not customized to the gold accent.
+**Current state**: Global `:focus-visible` IS defined (appcore-providers.jsx:502-509) for `button`, `select`, `input`, `textarea`. Uses gold accent: `outline: 2px solid rgba(var(--color-gold), 0.8)` with `outline-offset: 2px` and `box-shadow: 0 0 0 4px rgba(var(--color-gold), 0.15)`.
 
 Per §FOCUS: "Replace browser default. Use `:focus-visible` (keyboard only, not mouse clicks). NEVER remove focus styles without replacing them."
 
-**Assessment**: FAIL — focus styling is not designed. This is the most significant accessibility gap in the interaction design. Already captured in BT-F1.
+**Assessment**: PASS — focus styling is designed and uses the accent color. Minor gap: `<a>` and `[role="button"]` elements are not covered (see BT-F1).
 
 ### §ACTIVE — Press Physics Assessment
 
@@ -8902,7 +8903,7 @@ Competitive positioning map:
 | BN-F4 | §BAN | #8b5cf6 Tailwind purple-500 in trophies | POLISH |
 | BN-F5 | §BAN | #10b981 Tailwind green-500 for Aero | POLISH |
 | CK-F1 | §CHECK | Layout lacks harmonic proportions | MEDIUM |
-| CK-F2 | §CHECK | Touch targets below 44px minimum | MEDIUM |
+| CK-F2 | §CHECK | Touch targets at 36px, below 44px | LOW |
 | CK-F3 | §CHECK | Canvas animations lack prefers-reduced-motion | MEDIUM |
 | CL-F1 | §COLOR | Surface elevation steps too small | MEDIUM |
 | CL-F2 | §COLOR | Semantic colors not fully palette-calibrated | LOW |
@@ -8923,7 +8924,7 @@ Competitive positioning map:
 | TY-F2 | §TYPOGRAPHY | Type scale lacks consistent ratio | LOW |
 | TY-F3 | §TYPOGRAPHY | No `text-wrap: balance` on headings | POLISH |
 | TY-F4 | §TYPOGRAPHY | No `max-width: 65ch` for prose | POLISH |
-| BT-F1 | §BUTTONS | Buttons lack `:focus-visible` styling | MEDIUM |
+| BT-F1 | §BUTTONS | Focus-visible excludes anchor/role="button" | LOW |
 | BT-F2 | §BUTTONS | No loading spinner-in-button pattern | LOW |
 | CD-F1 | §CARDS | Cards lack purpose-based differentiation | LOW |
 | IN-F1 | §INPUTS | No filled-state visual distinction | LOW |
@@ -8950,8 +8951,8 @@ Competitive positioning map:
 |---|---|
 | CRITICAL | 0 |
 | HIGH | 0 |
-| MEDIUM | 13 |
-| LOW | 27 |
+| MEDIUM | 11 |
+| LOW | 29 |
 | POLISH | 10 |
 | **TOTAL** | **50** |
 
