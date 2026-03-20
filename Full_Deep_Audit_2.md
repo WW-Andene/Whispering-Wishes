@@ -4714,3 +4714,768 @@ Both are fixable with systematic find-and-replace operations. The app's custom e
 
 **Brand archetype**: MAGICIAN (primary) + HERO (secondary) + JESTER (undertone). The "LUMINOUS TACTICAL COMPANION" character maps cleanly onto this blend. Archetype alignment is strong — no major visual gaps to close.
 **Anti-genericness**: Overall score **1.9/10** — the app is strongly differentiated. Foundations (background, shadows, typography, motion, accent) are fully owned. The single highest-impact fix is **Signal 7: replacing 459 achromatic Tailwind gray text classes with chromatic navy-tinted equivalents** — this would transform every screen without changing any layout. Secondary fix: **Signal 3: diversifying `rounded-lg` usage** across the 109 instances. Everything else is either already owned or a minor polish item.
+
+---
+
+# STEP 8: §E1 — Design Token System
+
+**Skill reference**: app-audit §E1
+**Axis context**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+
+---
+
+## §E1.1 Spacing Scale Audit
+
+**Methodology**: Extract every padding, margin, and gap value from CSS-in-JS (`appcore-providers.jsx`) and Tailwind utility classes across all source files. Assess whether values form a coherent mathematical scale.
+
+### CSS-in-JS Spacing Values (KuroStyles)
+
+**Padding values** (`appcore-providers.jsx`):
+
+| Value | Pixel Equivalent | Count | Usage | On 4px Grid? |
+|---|---|---|---|---|
+| `14px` | 14px | 3 | `.kuro-body`, `.kuro-stat`, `.kuro-card` body | ❌ **No** |
+| `10px 12px` | 10/12px | 2 | `.kuro-btn` | ❌/✅ |
+| `4px 8px` | 4/8px | 1 | `.kuro-input-sm` | ✅ |
+| `1.5px` | 1.5px | 1 | Tab indicator | ❌ **No** |
+| `0.75rem` (12px) | 12px | 1 | Responsive override | ✅ |
+| `0.75rem 0.5rem` (12/8px) | 12/8px | 1 | Responsive override | ✅ |
+| `0.5rem` (8px) | 8px | 2 | Responsive | ✅ |
+| `0.375rem` (6px) | 6px | 1 | Responsive override (`!important`) | ❌ **No** |
+| `0.25rem 0.125rem` (4/2px) | 4/2px | 1 | Tiny badge | ✅/❌ |
+| `0.125rem 0.25rem` (2/4px) | 2/4px | 1 | Tiny badge | ❌/✅ |
+| `0.125rem` (2px) | 2px | 1 | Tiny override | ❌ |
+
+**Margin values** (`appcore-providers.jsx`):
+
+| Value | Usage |
+|---|---|
+| `8px 0` | Vertical gap |
+| `12px 0` | Section spacing |
+| `-4px 0` | Negative margin (optical alignment) |
+| `-1px` | Subpixel alignment |
+
+**Gap values** (`appcore-providers.jsx`):
+
+| Value | Count | Usage |
+|---|---|---|
+| `0.75rem` (12px) | 4 | Responsive grid gaps (`!important`) |
+| `10px` | 1 | Standard gap |
+| `3px` | 2 | Tiny gaps (`!important`) |
+| `1px` | 1 | Minimal gap |
+| `0.5rem` (8px) | 2 | Small gaps |
+
+### Tailwind Utility Spacing (top 25 by frequency)
+
+| Class | Pixel Value | Count | On 4px Grid? |
+|---|---|---|---|
+| `gap-2` | 8px | 98 | ✅ |
+| `p-2` | 8px | 58 | ✅ |
+| `py-0.5` | 2px | 53 | ❌ |
+| `gap-1` | 4px | 51 | ✅ |
+| `mb-2` | 8px | 42 | ✅ |
+| `space-y-2` | 8px | 41 | ✅ |
+| `mt-0.5` | 2px | 38 | ❌ |
+| `py-1.5` | 6px | 37 | ❌ |
+| `p-3` | 12px | 37 | ✅ |
+| `gap-1.5` | 6px | 37 | ❌ |
+| `space-y-3` | 12px | 34 | ✅ |
+| `py-1` | 4px | 34 | ✅ |
+| `px-2` | 8px | 34 | ✅ |
+| `px-1.5` | 6px | 33 | ❌ |
+| `mt-1` | 4px | 29 | ✅ |
+| `py-2` | 8px | 28 | ✅ |
+| `mb-1` | 4px | 25 | ✅ |
+| `mb-1.5` | 6px | 23 | ❌ |
+| `px-3` | 12px | 22 | ✅ |
+| `p-4` | 16px | 18 | ✅ |
+| `mb-3` | 12px | 17 | ✅ |
+| `p-2.5` | 10px | 16 | ❌ |
+| `gap-3` | 12px | 16 | ✅ |
+| `px-4` | 16px | 13 | ✅ |
+| `space-y-1` | 4px | 12 | ✅ |
+
+### Spacing Scale Assessment
+
+**Actual scale used** (by frequency): 2, 4, 6, 8, 10, 12, 14, 16px
+
+**Standard 4px grid**: 4, 8, 12, 16, 20, 24, 32, 48, 64px
+
+**Off-grid values** (token debt):
+
+| Value | Count | Issue |
+|---|---|---|
+| **2px** (`0.5` suffix) | 91+ | Half-step — legitimate for micro-spacing but high frequency |
+| **6px** (`1.5` suffix) | 130+ | Between 4px and 8px steps — very frequent |
+| **10px** (`2.5` suffix) | 18+ | Between 8px and 12px — moderate use |
+| **14px** (CSS) | 3 | Primary body padding — deliberate non-standard base |
+| **1.5px** (CSS) | 1 | Tab indicator — subpixel |
+| **3px** (CSS gap) | 2 | Not on any standard grid |
+
+**Analysis**: The spacing system uses a **2px base grid** rather than a 4px grid. The pattern is: 2, 4, 6, 8, 10, 12, 14, 16px — an arithmetic progression with step 2. This is internally consistent and explains why half-values (`.5` suffix) are so prevalent. The 14px primary padding is a deliberate signature (identified in §DBI3-S04).
+
+However, 6px appears 130+ times, making it the most common off-4px-grid value. This is either a 2px-grid system (consistent) or token debt from indecisive 4/8 splits.
+
+> **Finding E1-SP1** · Severity: **LOW**
+> **Spacing system operates on a 2px base grid (2/4/6/8/10/12/14/16) rather than the standard 4px grid.** The 2px steps are internally consistent but not documented. 6px (130+ uses) is the most frequent non-4px value.
+> **Solution**:
+> - Option A (minimal): Document the 2px base grid as intentional. Define named spacing tokens:
+>   ```css
+>   --space-1: 2px;  --space-2: 4px;  --space-3: 6px;  --space-4: 8px;
+>   --space-5: 10px; --space-6: 12px; --space-7: 14px; --space-8: 16px;
+>   ```
+> - Option B (full ownership): Formalize as an intentional "dense tactical" spacing scale. The 2px base reinforces the information-dense Enthusiast/Expert audience (A3). Add the token definitions and document: "2px base = higher density than standard 4px grid, appropriate for data-rich gacha tracking."
+> - No migration needed — current usage is already internally consistent
+
+> **Finding E1-SP2** · Severity: **LOW**
+> **3 subpixel/odd values exist as token debt**: `1.5px` (tab indicator), `3px` (gap), `-1px` (margin). These fall outside any grid.
+> **Solution**: Replace `1.5px` with `2px`, `3px` gap with `4px`, and evaluate `-1px` margin for necessity. These are 6 instances total — trivial to fix.
+
+---
+
+## §E1.2 Color Palette Architecture
+
+**Methodology**: Extract every unique hex color across all source files. Identify near-duplicate clusters, assess token coverage, and map token debt.
+
+### Color Inventory Summary
+
+**Total unique hex colors**: 66
+**Total color occurrences**: ~450+
+**CSS custom property coverage**: 6 accent colors + 5 backgrounds + 5 borders + 2 text = 18 color tokens in `:root`
+
+### Token-Governed Colors (via CSS custom properties)
+
+| Token | RGB Value | Hex Equivalent | Usage | Occurrences |
+|---|---|---|---|---|
+| `--color-gold` | `237, 175, 24` | `#edaf18` | Primary accent | **71** |
+| `--color-emerald` | `34, 197, 94` | `#22c55e` | Success/positive | **35** |
+| `--color-pink` | `236, 72, 153` | `#ec4899` | Featured/limited banner | **17** |
+| `--color-cyan` | `56, 189, 248` | `#38bdf8` | Standard banner | **4** (token) |
+| `--color-purple` | `168, 85, 247` | `#a855f7` | 4-star rarity | **21** |
+| `--color-red` | `248, 113, 113` | `#f87171` | Error/danger | **5** (token) |
+| `--text-body` | — | `#dfe5ef` | Body text | **2** |
+| `--text-heading` | — | `#edf1f8` | Heading text | **1** |
+
+### Near-Duplicate Color Clusters (Token Debt)
+
+**CLUSTER 1: Gold variants** (previously identified in §DC2, now with full inventory)
+
+| Hex | Approx OKLCH | Count | Location | Role |
+|---|---|---|---|---|
+| `#edaf18` | L76% C0.17 H85° | 71 | Token `--color-gold` | Primary gold — canonical |
+| `#eab308` | L76% C0.17 H90° | 1 | `App.jsx` trophy | Tailwind `yellow-500` — near-duplicate |
+| `#e6b030` | L76% C0.15 H87° | 2 | `appcore-data.js` | Element color — near-duplicate |
+| `#f97316` | L73% C0.18 H55° | 27 | Achievement badges | Tailwind `orange-500` — distinct hue but gold-adjacent |
+| `#fb923c` | L76% C0.15 H60° | 3 | Trophy colors | Tailwind `orange-400` |
+| `#cd7f32` | L62% C0.12 H75° | 1 | Medal colors | Bronze — intentionally distinct |
+| `#ff8c00` | L72% C0.19 H65° | 1 | Trophy | Dark orange — distinct |
+
+**Consolidation**: `#edaf18`, `#eab308`, `#e6b030` are within 5° hue and 1% lightness — should be 1 token. `#f97316` (orange) is 30° away and serves a different semantic role (achievement badges) — keep separate.
+
+**CLUSTER 2: Gray text stack** (highest token debt — see §DBI3-S07)
+
+| Hex | Tailwind Class | Count | Role |
+|---|---|---|---|
+| `#6b7280` | `gray-500` | 29 | Muted text, labels |
+| `#9ca3af` | `gray-400` | 13 | Secondary text |
+| `#4b5563` | `gray-600` | 8 | Darker muted text |
+| `#d1d5db` | `gray-300` | 1 | Light text |
+| `#e5e7eb` | `gray-200` | 4 | Lighter text |
+| `#e2e8f0` | `slate-200` | 6 | Light text (different family!) |
+| `#f1f5f9` | `slate-50` | 7 | Near-white |
+| `#8892a4` | Custom | 4 | Placeholder-adjacent |
+| `#bcc3d1` | Custom | 1 | Light gray |
+
+**Problem**: Mixing Tailwind `gray-*` and `slate-*` families. Gray is achromatic (no hue), Slate carries a blue tint. These two palettes have different color temperatures and should not be mixed within the same hierarchy. Plus 2 custom grays (`#8892a4`, `#bcc3d1`) that overlap with Tailwind values.
+
+**CLUSTER 3: Dark background variants**
+
+| Hex | Count | Role | Source |
+|---|---|---|---|
+| `#080c14` | 3 | Page background — canonical | Token |
+| `#0f1520` | 2 | Dark surface | CSS |
+| `#101218` | 1 | Very dark | CSS |
+| `#0a0a1a` | — | Near-black variant | Component gradient |
+| `#0d0d1a` | 1 | Near-black | Component |
+| `#1a1a2e` | 1 | Slightly lighter dark | Component |
+| `#0c0820` | 2 | Purple-tinted dark | Component |
+| `#080810` | — | Very dark | Component |
+| `#010204`, `#020408`, `#030610` | 1 each | Tab background gradient | Component |
+
+**Assessment**: 10+ dark background hex values. The gradient uses (`#010204` → `#020408` → `#030610` → `#020408`) are intentional step gradients — not duplicates. But `#0f1520`, `#101218`, `#0d0d1a`, `#1a1a2e` are all "slightly lighter than base" variants that could be consolidated into a token scale.
+
+**CLUSTER 4: Green variants**
+
+| Hex | Count | Role |
+|---|---|---|
+| `#22c55e` | 35 | Tailwind `green-500` — primary green (token `--color-emerald`) |
+| `#34d399` | 7 | Tailwind `emerald-400` |
+| `#4ade80` | 3 | Tailwind `green-400` |
+| `#86efac` | 1 | Tailwind `green-300` |
+| `#10b981` | 1 | Tailwind `emerald-500` |
+| `#84cc16` | 6 | Tailwind `lime-500` — **different hue family** |
+
+**Problem**: 6 different greens. `#22c55e` (green-500) is the token, but code also uses `#34d399` (emerald-400), `#4ade80` (green-400), `#10b981` (emerald-500), and `#84cc16` (lime-500 — a completely different yellow-green). Only `#84cc16` is semantically distinct (weapon rarity). The rest should derive from the token.
+
+**CLUSTER 5: Purple variants**
+
+| Hex | Count | Role |
+|---|---|---|
+| `#a855f7` | 21 | Tailwind `purple-500` — primary purple (token `--color-purple`) |
+| `#8b5cf6` | 2 | Tailwind `violet-500` — **different family** |
+| `#c084fc` | 4 | Tailwind `purple-400` |
+| `#a78bfa` | 2 | Tailwind `violet-400` |
+| `#e9d5ff` | 1 | Tailwind `purple-200` |
+
+**Problem**: Mixing `purple-*` and `violet-*` Tailwind families (different hue angles). Purple at ~300° and Violet at ~270° create inconsistency.
+
+**CLUSTER 6: Red/Error variants**
+
+| Hex | Count | Role |
+|---|---|---|
+| `#f87171` | 5 | Tailwind `red-400` — token `--color-red` |
+| `#ef4444` | 15 | Tailwind `red-500` — darker red |
+| `#ff0000` | 5 | Pure red — **uncalibrated** |
+| `#ff6347` | 1 | Tomato — trophy color |
+| `#ff4500` | 1 | OrangeRed — trophy color |
+| `#fecaca` | 1 | Tailwind `red-200` |
+
+**Problem**: Token is `#f87171` (red-400) but `#ef4444` (red-500) appears 15× — 3× more than the token value. And `#ff0000` (pure red) appears 5× — this is an uncalibrated color that signals low craft (per §E3 saturation calibration).
+
+### Color Architecture Findings
+
+> **Finding E1-COL1** · Severity: **HIGH**
+> **66 unique hex colors with only 18 governed by CSS custom properties — 73% of the palette is unmanaged.** Near-duplicate clusters exist in gold (3 values), gray (9+ values mixing gray/slate families), green (6 values), purple (5 values mixing purple/violet families), red (6 values), and dark backgrounds (10+ values). This creates a maintenance burden and visual inconsistency.
+> **Solution**:
+> - Define a comprehensive token palette covering all color needs:
+>   ```css
+>   /* Accent tokens (already exist — keep) */
+>   --color-gold, --color-pink, --color-cyan, --color-purple, --color-emerald, --color-red
+>
+>   /* NEW: Gray hierarchy (chromatic, replacing Tailwind grays — per §DBI3-S07) */
+>   --text-primary: #edf1f8;    --text-secondary: #9da8b9;
+>   --text-muted: #7d8a9f;      --text-subtle: #5f6d82;
+>   --text-ghost: #445064;
+>
+>   /* NEW: Surface hierarchy (consolidate dark variants) */
+>   --surface-0: #080c14;       --surface-1: #0f1520;
+>   --surface-2: #1a1a2e;       --surface-3: #2a3548;
+>
+>   /* NEW: Accent light variants (for backgrounds/badges) */
+>   --color-green-light: #34d399;  --color-purple-light: #c084fc;
+>   --color-red-light: #fecaca;    --color-pink-light: #f9a8d4;
+>   ```
+> - Eliminate `#ff0000` (pure red) — replace with `#ef4444` or the token `#f87171`
+> - Consolidate gold: `#eab308` and `#e6b030` → `#edaf18` (the canonical token)
+> - Stop mixing `gray-*`/`slate-*` and `purple-*`/`violet-*` Tailwind families
+
+> **Finding E1-COL2** · Severity: **MEDIUM**
+> **3 near-duplicate gold values (`#edaf18`, `#eab308`, `#e6b030`) where 1 token exists.** Previously identified in §DC2 — this is the token-level debt. Each occurrence should reference `--color-gold` or `rgba(var(--color-gold), ...)`.
+> **Solution**: Replace `#eab308` (1 instance in `App.jsx`) and `#e6b030` (2 instances in `appcore-data.js`) with `var(--color-gold)` or the hex `#edaf18`. Total: 3 replacements.
+
+> **Finding E1-COL3** · Severity: **MEDIUM**
+> **Tailwind gray and slate families mixed in the same text hierarchy.** `gray-*` (achromatic) and `slate-*` (blue-tinted) have different color temperatures. 29 instances of `#6b7280` (gray-500) alongside 6 instances of `#e2e8f0` (slate-200) and 7 of `#f1f5f9` (slate-50) create thermal inconsistency.
+> **Solution**: Choose one family. Given the app's navy base (`#080c14` at ~240° hue), slate (blue-tinted) is the correct choice. Migrate all `gray-*` to `slate-*` equivalents, or better: to the chromatic custom tokens proposed in §DBI3-S07.
+
+> **Finding E1-COL4** · Severity: **LOW**
+> **5 instances of `#ff0000` (pure red) — uncalibrated color.** Pure saturated red signals low craft. It appears in trophy/achievement badge colors.
+> **Solution**: Replace `#ff0000` with `#ef4444` (Tailwind red-500, already used 15× in the app) or the token `#f87171`. Both are calibrated reds with intentional lightness/saturation balance.
+
+> **Finding E1-COL5** · Severity: **LOW**
+> **Purple and violet Tailwind families mixed.** `#a855f7` (purple-500) is the token, but `#8b5cf6` (violet-500, 2×) and `#a78bfa` (violet-400, 2×) appear. Purple and violet have a ~30° hue difference.
+> **Solution**: Consolidate all purple usage to the `purple-*` family. Replace `#8b5cf6` → `#a855f7` and `#a78bfa` → `#c084fc` (4 replacements total).
+
+---
+
+## §E1.3 Typography Scale
+
+**Methodology**: Extract every unique `font-size`, `font-weight`, `letter-spacing`, `line-height`, and font family declaration. Assess whether values form coherent scales with consistent semantic purpose.
+
+### Font-Size Inventory
+
+**CSS-in-JS values** (`appcore-providers.jsx`):
+
+| Value | Count | Element | Role |
+|---|---|---|---|
+| `8px` | 3 | Responsive overrides, tiny labels | Micro text |
+| `0.5rem` (8px) | 1 | Responsive tiny | Micro text |
+| `11px` | 2 | `.kuro-btn` text, `.kuro-label` | UI control text |
+| `12px` | 1 | `.kuro-input-sm` | Small input |
+| `13px` | 1 | `.kuro-skeleton-text` | Skeleton placeholder |
+| `14px` | 2 | `.kuro-body`, `.kuro-input` | Body text base |
+| `18px` | 1 | `.kuro-data-badge-value` | Data display |
+
+**Tailwind text size classes** (all source files):
+
+| Class | Pixel Equivalent | Count | Role |
+|---|---|---|---|
+| `text-xs` | 12px | **114** | Most frequent — labels, metadata, small text |
+| `text-sm` | 14px | **77** | Second most — body text, descriptions |
+| `text-base` | 16px | **2** | Rare — barely used |
+| `text-lg` | 18px | **4** | Subheadings |
+| `text-xl` | 20px | **16** | Section headings |
+| `text-2xl` | 24px | **5** | Major headings |
+| `text-3xl` | 30px | **1** | Large display |
+| `text-5xl` | 48px | **1** | Extra-large display |
+
+**Complete scale used**: 8, 11, 12, 13, 14, 16, 18, 20, 24, 30, 48px — **11 unique sizes**
+
+**Assessment against modular scales**:
+
+```
+Major Third (1.25):  8 / 10 / 12 / 15 / 19 / 24 / 30 / 38 / 48
+Perfect Fourth (1.333): 8 / 11 / 14 / 19 / 25 / 34 / 45
+Actual scale:        8 / 11 / 12 / 13 / 14 / 16 / 18 / 20 / 24 / 30 / 48
+```
+
+**Off-scale values** (token debt):
+- **11px**: Between 10 and 12 — used for UI controls. Could be 12px without visual impact.
+- **13px**: Between 12 and 14 — skeleton placeholder text. Should match actual text it replaces (12 or 14px).
+- **16px** (`text-base`): Only 2 uses — this standard Tailwind size is almost unused, indicating the app deliberately avoids it. The 14px body base is the intentional replacement.
+- **18px**: Both CSS (`kuro-data-badge-value`) and Tailwind (`text-lg`). Combined 5 uses — a legitimate scale step.
+
+> **Finding E1-TYP1** · Severity: **LOW**
+> **11 unique font sizes — 2 are off-scale token debt.** `11px` (2 uses) and `13px` (1 use) fall between scale steps. The app broadly follows a custom scale anchored at 14px body rather than 16px default, which is intentional.
+> **Solution**:
+> - Replace `11px` (`.kuro-btn`, `.kuro-label`) with `12px` (text-xs) — aligns with the scale and matches surrounding UI text
+> - Replace `13px` (`.kuro-skeleton-text`) with `14px` — skeleton should match the body text it replaces
+> - Document the intentional scale: `8 / 12 / 14 / 18 / 20 / 24 / 30 / 48` — an 8-step scale with 14px base
+
+### Font Weight Semantics
+
+**CSS-in-JS weights**:
+
+| Weight | Count | Elements |
+|---|---|---|
+| `500` (medium) | 2 | `.kuro-btn`, `.kuro-skeleton-text` |
+| `600` (semibold) | 3 | `.kuro-header h3`, `.kuro-label`, H4 labels |
+| `700` (bold) | 3 | `.kuro-data-badge-value`, data displays |
+
+**Tailwind weight classes**:
+
+| Class | Weight | Count | Usage |
+|---|---|---|---|
+| `font-bold` | 700 | **105** | Most frequent — headings, numbers, emphasis |
+| `font-medium` | 500 | **102** | Second most — buttons, labels, names |
+| `font-semibold` | 600 | **14** | Occasional — section headers |
+| `font-normal` | 400 | **7** | Rare — body text reset |
+
+**Semantic analysis**:
+
+| Semantic Role | Expected Weight | Actual Weight(s) | Consistent? |
+|---|---|---|---|
+| Body text | 400 (normal) | 400 + inherited | ✅ |
+| Labels / UI controls | 500 (medium) | 500 (`.kuro-btn`), 600 (`.kuro-label`) | ⚠️ Mixed |
+| Section headings | 600 (semibold) | 600 (CSS), but `font-bold` (700) in Tailwind | ⚠️ Mixed |
+| Data emphasis | 700 (bold) | 700 consistent | ✅ |
+| Primary headings | 700 (bold) | `font-bold` (700) | ✅ |
+
+**Problem**: `font-bold` (700) is used for BOTH headings AND data emphasis, blurring the distinction. `font-semibold` (600) should own headings, with `font-bold` (700) reserved for data/numerical emphasis. Currently 105 uses of `font-bold` vs only 14 `font-semibold` — the weight hierarchy is top-heavy.
+
+> **Finding E1-TYP2** · Severity: **LOW**
+> **`font-bold` (700) used 105× for both headings and data emphasis — weight semantic overlap.** The CSS-in-JS correctly differentiates (600 for headers, 700 for data), but Tailwind classes in markup use `font-bold` for everything that needs emphasis.
+> **Solution**:
+> - Audit the 105 `font-bold` instances: headings and section titles should be `font-semibold` (600), data values and numbers should remain `font-bold` (700)
+> - This creates a clearer weight hierarchy: 400 (body) → 500 (controls/labels) → 600 (headings) → 700 (data emphasis)
+> - Estimated redistribution: ~40 `font-bold` → `font-semibold`, ~65 remain `font-bold`
+
+### Letter-Spacing Inventory
+
+**CSS-in-JS tracking**:
+
+| Value | Count | Element | Purpose |
+|---|---|---|---|
+| `-0.02em` | 2 | Data badges | Negative tracking for large data numbers |
+| `0.01em` | 1 | Skeleton text | Subtle body spacing |
+| `0.02em` | 1 | `.kuro-btn` | Button text spacing |
+| `0.03em` | 1 | `.kuro-header h3` | Header spacing |
+| `0.08em` | 1 | `.kuro-label` | Label uppercase spacing |
+| `0.1em` | 1 | Large labels | Wide uppercase spacing |
+| `0.2em` | 1 | Extra-wide labels | Maximum spacing |
+
+**Tailwind tracking**: `tracking-wide` (0.025em) — **31 occurrences**
+
+**Assessment**: 8 unique letter-spacing values (7 CSS + 1 Tailwind) form a clear progression: `-0.02, 0.01, 0.02, 0.025, 0.03, 0.08, 0.1, 0.2em`. The negative tracking for data displays and positive tracking for uppercase labels follows typographic best practices (§DT2 compliance).
+
+> **Finding E1-TYP3** · Severity: **PASS**
+> **Letter-spacing uses 8 intentional values in a clear progression.** Negative tracking for display data, subtle positive for body, wider for uppercase labels. This is considered typographic craft, not token debt.
+> **Solution (preservation)**: Document the tracking scale. Consider defining CSS variables for the 3 most-used values:
+>   ```css
+>   --tracking-tight: -0.02em;   /* data display numbers */
+>   --tracking-body: 0.01em;     /* body text */
+>   --tracking-caps: 0.08em;     /* uppercase labels */
+>   ```
+
+### Line-Height Inventory
+
+**CSS-in-JS**:
+
+| Value | Count | Element |
+|---|---|---|
+| `1` | 1 | Compact element |
+| `1.2` | 1 | Dense text |
+| `1.25` | 1 | Semi-dense |
+| `1.3` | 2 | Body default |
+
+**Tailwind**: `leading-tight` (1.25) — 8 uses, `leading-relaxed` (1.625) — 7 uses
+
+**Assessment**: Line heights range from 1.0 to 1.625. The CSS-in-JS uses tighter values (1.0–1.3) reflecting the dense tactical character. Tailwind classes add `leading-relaxed` (1.625) for descriptive text — appropriate contrast.
+
+> **Finding E1-TYP4** · Severity: **PASS**
+> **Line-height values serve clear density purposes.** CSS-in-JS: tight 1.0–1.3 for data/UI. Tailwind: `leading-tight` (1.25) for headings, `leading-relaxed` (1.625) for descriptions. No inconsistency.
+> **Solution (preservation)**: Current system is functional. No changes needed.
+
+### Type Craft Features
+
+| Feature | Present? | Location |
+|---|---|---|
+| `-webkit-font-smoothing: antialiased` | ✅ | `appcore-providers.jsx` line 416, `index.css` line 22 |
+| `-moz-osx-font-smoothing: grayscale` | ✅ | `appcore-providers.jsx` line 417, `index.css` line 23 |
+| `font-variant-numeric: tabular-nums` | ✅ | Lines 1047, 1285, 1293 — stat boxes, data badges |
+| `text-rendering: optimizeLegibility` | ❌ | Not found |
+| `text-wrap: balance` | ❌ | Not found |
+| OpenType features (ligatures, alternates) | ❌ | Not used |
+
+> **Finding E1-TYP5** · Severity: **LOW**
+> **`text-rendering: optimizeLegibility` is missing from root-level styles.** Font smoothing is correctly applied at both root and KuroStyles level. Tabular numerals are correctly used on data displays. But `optimizeLegibility` (enables kerning and ligatures) is absent.
+> **Solution**: Add `text-rendering: optimizeLegibility;` to the root-level `*` selector in `appcore-providers.jsx` (line 416, alongside the existing font-smoothing declarations). One line of CSS for improved text rendering quality.
+
+---
+
+## §E1.4 Border-Radius System
+
+### Radius Inventory
+
+**CSS-in-JS values** (`appcore-providers.jsx`, `appcore-components.jsx`):
+
+| Value | Count | Element | Role |
+|---|---|---|---|
+| `1px` | 1 | Minor detail | Micro radius |
+| `2px` | 2 | Tab indicator, small element | Micro radius |
+| `3px` | 4 | Various small elements | Micro radius |
+| `4px` | 1 | Corner detail | Small radius |
+| `6px` | 1 | Medium-small element | — |
+| `8px` | 3 | `.kuro-input` | Input radius |
+| `10px` | 2 | `.kuro-stat` | Stat box radius (non-standard) |
+| `12px` | 1 | `.kuro-btn` | Button radius |
+| `15px` | 1 | Special element | — |
+| `16px` | 1 | `.kuro-card` | Card radius |
+| `50%` | 3 | Circular elements | Circle |
+| `0.25rem` (4px) | 1 | Responsive override | — |
+| `0.375rem` (6px) | 1 | Responsive override | — |
+
+**Tailwind classes**:
+
+| Class | Pixel Value | Count |
+|---|---|---|
+| `rounded-lg` | 8px | **109** |
+| `rounded-full` | 9999px | **45** |
+| `rounded-xl` | 12px | **28** |
+| `rounded-2xl` | 16px | **5** |
+| `rounded-sm` | 2px | **3** |
+| `rounded-md` | 6px | **3** |
+
+**Unique radius values**: 1, 2, 3, 4, 6, 8, 10, 12, 15, 16px + 50% + 9999px — **12 unique values**
+
+### Radius Scale Assessment
+
+**KuroStyles intentional hierarchy** (CSS-in-JS):
+
+```
+.kuro-input:  8px  (data entry)
+.kuro-stat:  10px  (data display — custom non-Tailwind)
+.kuro-btn:   12px  (interaction)
+.kuro-card:  16px  (container)
+```
+
+This is a 4-level hierarchy with 2-4px steps — intentional and well-structured. However:
+
+**Problem 1**: Tailwind `rounded-lg` (8px) at 109 instances flattens the hierarchy. Many cards in Tailwind markup use `rounded-lg` (8px) when the KuroStyles card radius is 16px. Many buttons use `rounded-lg` (8px) when KuroStyles defines 12px.
+
+**Problem 2**: 12 unique values. The sub-8px range (1, 2, 3, 4, 6px) has 5 values with no clear system — each appears 1-4 times. These are micro-radius token debt.
+
+**Problem 3**: 15px appears once — between the 12px (button) and 16px (card) steps, serving no clear semantic purpose.
+
+> **Finding E1-RAD1** · Severity: **MEDIUM**
+> **12 unique radius values — the sub-8px range has 5 unsystematic values, and `rounded-lg` (109×) overrides the KuroStyles hierarchy.** The CSS-in-JS defines a clean 4-level scale (8/10/12/16px), but markup usage doesn't follow it.
+> **Solution**:
+> - Formalize the radius token scale and eliminate off-scale values:
+>   ```css
+>   --radius-xs: 2px;     /* micro: small badges, inline tags */
+>   --radius-sm: 4px;     /* small: fine controls, toggle tracks */
+>   --radius-md: 8px;     /* medium: inputs (existing) */
+>   --radius-stat: 10px;  /* stat boxes (existing custom) */
+>   --radius-lg: 12px;    /* large: buttons (existing) */
+>   --radius-xl: 16px;    /* extra-large: cards (existing) */
+>   --radius-full: 9999px;/* pill/circle */
+>   ```
+> - Consolidate: `1px` → `2px`, `3px` → `4px`, `6px` → `4px` or `8px`, `15px` → `16px`
+> - Audit 109 `rounded-lg` instances: cards should use `rounded-xl` (12px) or `rounded-2xl` (16px), buttons should use `rounded-xl` (12px)
+
+---
+
+## §E1.5 Shadow Hierarchy
+
+### Shadow Token Architecture
+
+**CSS custom properties** (`:root`):
+
+| Token | Value | Used? |
+|---|---|---|
+| `--shadow-sm` | `0 1px 2px rgba(6, 10, 24, 0.4)` | Defined, minimal direct use |
+| `--shadow-md` | `0 4px 12px rgba(6, 10, 24, 0.5)` | ✅ Buttons (line 870, 891) |
+| `--shadow-lg` | `0 8px 24px rgba(6, 10, 24, 0.6)` | Defined, not referenced via var() |
+| `--shadow-xl` | `0 12px 40px rgba(6, 10, 24, 0.7)` | ❌ **Never referenced** |
+
+**Actual shadow usage**: 34 unique `box-shadow` values across the codebase. Most are hardcoded rather than using the token system.
+
+**Shadow categories**:
+
+| Category | Count | Token-governed? |
+|---|---|---|
+| Depth shadows (elevation) | 5 | 2 use `--shadow-md`, 3 hardcoded |
+| Color glow shadows | 17 | ❌ All hardcoded per-color |
+| Focus ring shadows | 3 | ❌ Hardcoded with `var(--color-gold)` |
+| Slider thumb shadows | 6 | ❌ All hardcoded |
+| Hover enhancement shadows | 8 | ❌ All hardcoded |
+
+**Problem**: The shadow token system defines 4 levels but only 1 (`--shadow-md`) is actively used. `--shadow-xl` is never referenced. The 34 unique shadow values are mostly hardcoded — the token system exists but isn't adopted.
+
+The color-specific glow shadows (17 values) follow a consistent pattern (`0 0 Xpx rgba(color, 0.Y), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(color, 0.08)`) — this is a template that could be tokenized.
+
+> **Finding E1-SHD1** · Severity: **LOW**
+> **4 shadow tokens defined but only 1 actively referenced (`--shadow-md`). `--shadow-xl` is unused. 34 unique shadow values are mostly hardcoded.**
+> **Solution**:
+> - Actually USE the shadow tokens: audit all 34 `box-shadow` declarations and map each to the nearest token
+> - Remove `--shadow-xl` or use it for the highest-elevation elements (modals, popovers)
+> - For the 17 color-glow shadows, consider a parametric approach:
+>   ```css
+>   .glow { box-shadow: 0 0 var(--glow-radius, 25px) rgba(var(--glow-color), var(--glow-opacity, 0.3)), ... }
+>   ```
+>   Then each color variant only overrides `--glow-color` and optionally `--glow-radius`/`--glow-opacity`
+
+---
+
+## §E1.6 Z-Index Governance
+
+### Z-Index Inventory
+
+| Z-Index | Element | File:Line | Layer |
+|---|---|---|---|
+| 1 | `.luck-badge-inner` | providers:673 | Content |
+| 1 | `.kuro-card::after` (shimmer) | providers:762 | Content |
+| 2 | `.kuro-card-inner::before/::after` (corners) | providers:787, 801 | Content |
+| 5 | `.kuro-card` | providers:711 | Card |
+| 5 | `.content-layer` | providers:823 | Card |
+| 10 | `.kuro-header-action` | providers:817 | Card chrome |
+| 30 | `.desktop-ad-margin` | providers:1586 | Sidebar |
+| 50 | `.desktop-layout > header` (nav) | providers:1460 | Navigation |
+| 100 | `FocusTrapModal` (dialog) | providers:321 | Modal |
+| 9998 | Toast notification container | providers:224 | System |
+| 9998 | Install prompt banner | providers:129, 155 | System |
+| 10000 | Offline indicator | providers:123 | System (highest) |
+
+**Total unique z-index values**: 9 (with 1, 2, 5, 10, 30, 50, 100, 9998, 10000)
+
+**Documented layer system** (from code comment, line 448):
+```
+bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000)
+```
+
+### Z-Index Collision Check
+
+| Z-Index | Elements at this level | Collision Risk |
+|---|---|---|
+| 1 | luck-badge-inner, card shimmer | ✅ Safe — different parents, no overlap |
+| 5 | kuro-card, content-layer | ✅ Safe — content-layer is inside cards |
+| **9998** | **Toast container + Install prompt** | ⚠️ **COLLISION** — both are viewport-fixed elements that could display simultaneously |
+
+> **Finding E1-ZDX1** · Severity: **MEDIUM**
+> **Z-index collision at 9998: Toast container and Install prompt banner share the same z-index.** Both are viewport-fixed elements. If a toast fires while the install banner is showing, stacking order is undefined (depends on DOM order). The documented layer system mentions z-9999 for "floating-ui" but no CSS rule exists at that level.
+> **Solution**:
+> - Separate the system-level z-indices:
+>   ```css
+>   /* System layer hierarchy */
+>   --z-toast: 9997;      /* toast notifications */
+>   --z-install: 9998;    /* install prompt (less frequent, above toasts) */
+>   --z-settings: 9999;   /* mini settings panel (documented but unimplemented) */
+>   --z-offline: 10000;   /* offline indicator (highest — system critical) */
+>   ```
+> - Define these as CSS custom properties for governance
+
+> **Finding E1-ZDX2** · Severity: **PASS**
+> **Z-index layer system is documented and mostly collision-free.** The 9-value system covers all necessary layers with appropriate gaps. The documented comment (line 448) serves as living documentation.
+> **Solution (preservation)**: Keep the documented layer system comment. Add the collision fix from E1-ZDX1.
+
+---
+
+## §E1.7 Animation Token Set
+
+### Animation Duration Inventory
+
+**Entrance/exit animations** (one-shot):
+
+| Animation | Duration | Easing | Purpose |
+|---|---|---|---|
+| `slideUp` | 0.2s | ease-out | Toast entrance |
+| `scaleIn` | 0.3s | ease-out | Modal entrance |
+| `tabFadeIn` | 0.35s | cubic-bezier(0.16, 1, 0.3, 1) | Tab content entrance |
+| `cardSlideIn` | 0.4s | cubic-bezier(0.16, 1, 0.3, 1) | Card staggered entrance |
+| `emptyFadeIn` | 0.4s | ease-out | Empty state entrance |
+
+**Ambient/loop animations** (infinite):
+
+| Animation | Duration | Easing | Purpose |
+|---|---|---|---|
+| `kuroShimmer` | 1.8s | ease-in-out | Skeleton loading |
+| `borderGlow` | 2s | ease-in-out | Active gold border pulse |
+| `pulseScale` | 2s | ease-in-out | Subtle breathing |
+| `kuroPulseOrange` | 2s | ease-in-out | Soft pity indicator |
+| `kuroPulseCyan` | 2s | ease-in-out | Soft pity indicator |
+| `kuroPulsePink` | 2s | ease-in-out | Soft pity indicator |
+| `ghostPulse` | 2.5s | ease-in-out | Empty state ghost grid |
+| `shimmer` | 3s | ease-in-out | Card top shimmer |
+| `trophyShine` | 3s | ease-in-out | Trophy badge glow |
+| `badgeRotate` | 8s | linear | Luck badge rotation |
+
+**Transition durations** (7 unique):
+
+| Duration | Count | Role |
+|---|---|---|
+| 0.1s | 3 | Instant feedback (active states) |
+| 0.15s | 8 | Fast feedback (`--transition-fast`) |
+| 0.2s | 4 | Standard desktop interactions |
+| 0.25s | 1 | Normal state changes (`--transition-normal`) |
+| 0.3s | 3 | Tab indicator, card interactions |
+| 0.4s | 1 | Slow transitions (`--transition-slow`) — **defined but never used via token** |
+| 0.8s | 1 | Pity ring stroke (longest transition) |
+
+### Easing Curve System
+
+| Curve | Count | Usage |
+|---|---|---|
+| `cubic-bezier(0.16, 1, 0.3, 1)` | 13 | **Primary** — all custom transitions |
+| `ease` | 6 | Desktop transitions, basic interactions |
+| `ease-out` | 5 | Entrance animations |
+| `ease-in-out` | 10 | All infinite loop animations |
+| `linear` | 1 | Badge rotation only |
+| `cubic-bezier(0.4, 0, 0.2, 1)` | 1 | Material Design easing (desktop tabs) |
+
+### Assessment
+
+**Duration consistency**: Entrance animations form a clean progression: 0.2→0.3→0.35→0.4s. Ambient animations cluster at 2-3s (correct for breathing/pulsing). The system is coherent.
+
+**Easing consistency**: Two systems exist — the custom `cubic-bezier(0.16, 1, 0.3, 1)` for interactive transitions and `ease-in-out` for ambient loops. This is correct: interactive elements need responsive snap, ambient elements need smooth oscillation. However, 6 uses of `ease` (without the custom curve) are inconsistent.
+
+> **Finding E1-ANI1** · Severity: **LOW**
+> **`--transition-slow` (0.4s) is defined but never referenced via the token.** The 0.4s duration is used directly in `cardSlideIn` animation but not through `var(--transition-slow)`. Also, 6 transitions use `ease` instead of the custom `cubic-bezier(0.16, 1, 0.3, 1)`.
+> **Solution**:
+> - Use `var(--transition-slow)` where 0.4s is needed, so the token system is actually adopted
+> - Replace the 6 `ease` transitions with `cubic-bezier(0.16, 1, 0.3, 1)` for consistency (except `linear` on rotation and `ease-in-out` on loops — those are correctly different)
+> - The Material Design easing `cubic-bezier(0.4, 0, 0.2, 1)` at line 1615 should be replaced with the app's custom curve unless there's a specific reason for using Material Design easing
+
+> **Finding E1-ANI2** · Severity: **PASS**
+> **Animation system is well-structured.** 15 keyframe animations with clear purpose differentiation: 5 entrance animations (one-shot, 0.2-0.4s) and 10 ambient animations (infinite, 1.8-8s). Duration hierarchy is coherent. Staggered card delays (0.05s increments) are a signature element.
+> **Solution (preservation)**: Document the dual-system: "Interactive = `cubic-bezier(0.16, 1, 0.3, 1)`, Ambient = `ease-in-out`." This is the motion vocabulary of the LUMINOUS TACTICAL COMPANION.
+
+---
+
+## §E1.8 Token Naming Quality
+
+### Current Token Names Assessment
+
+| Token | Name Type | Quality |
+|---|---|---|
+| `--color-gold` | **Presentational** (color name) | ⚠️ Works for single-theme; won't scale to theming |
+| `--color-pink` | **Presentational** | ⚠️ Same issue |
+| `--color-cyan` | **Presentational** | ⚠️ Same issue |
+| `--color-purple` | **Presentational** | ⚠️ Same issue |
+| `--color-emerald` | **Presentational** | ⚠️ Same issue |
+| `--color-red` | **Presentational** | ⚠️ Same issue |
+| `--shadow-sm/md/lg/xl` | **Size-based** (scale) | ✅ Standard pattern, acceptable |
+| `--transition-fast/normal/slow` | **Semantic** (speed role) | ✅ Good — describes purpose |
+| `--font-display` | **Semantic** (role) | ✅ Good |
+| `--font-data` | **Semantic** (role) | ✅ Good |
+| `--text-body` | **Semantic** (role) | ✅ Good |
+| `--text-heading` | **Semantic** (role) | ✅ Good |
+| `--bg-card/card-inner/btn/input/stat` | **Semantic** (component) | ✅ Good — component-scoped |
+| `--border-subtle/default/medium/hover/bright` | **Semantic** (intensity) | ✅ Good — describes visual weight |
+
+**Analysis**: The naming is split — accent colors are presentational (`--color-gold`) while everything else is semantic (`--bg-card`, `--text-body`, `--transition-fast`). For a single-theme dark-mode app with no whitelabeling plans, presentational color names are acceptable. They're clear, memorable, and map directly to the design language.
+
+> **Finding E1-NAM1** · Severity: **PASS**
+> **Token naming is hybrid: presentational for accent colors, semantic for everything else.** For a single-theme app (A1 NON-REVENUE, no whitelabeling), this is appropriate. The semantic names (`--bg-card`, `--text-body`, `--transition-fast`, `--border-subtle`) are well-chosen and self-documenting.
+> **Solution (preservation)**: If the app ever needs theming or whitelabeling, rename accent tokens: `--color-gold` → `--color-accent-primary`, `--color-cyan` → `--color-accent-secondary`, etc. For now, the current naming is clear and functional.
+
+---
+
+## §E1.9 CSS Custom Property Coverage
+
+### Coverage Assessment
+
+| Category | Tokens Defined | Values in Codebase | Coverage |
+|---|---|---|---|
+| **Accent colors** | 6 | 6 core + ~20 Tailwind variants | 30% — Tailwind shade variants not tokenized |
+| **Text colors** | 2 (`body`, `heading`) | 9+ gray shades in Tailwind | **18%** — critical gap |
+| **Background surfaces** | 5 (OLED-aware) | 10+ dark hex variants | 50% — dark gradient stops not tokenized |
+| **Borders** | 5 (opacity scale) | 35+ border instances | 85% — tokens exist, adoption incomplete |
+| **Shadows** | 4 (sm/md/lg/xl) | 34 unique values | **12%** — token system barely used |
+| **Transitions** | 3 (fast/normal/slow) | 17 transition declarations | 65% — most use tokens or matching values |
+| **Typography** | 2 (display, data) | Consistent usage | 95% — well-covered |
+| **Spacing** | 0 | Hundreds of values | **0%** — no spacing tokens exist |
+| **Radius** | 0 | 12 unique values | **0%** — no radius tokens exist |
+| **Z-index** | 0 | 9 values | **0%** — no z-index tokens exist |
+
+**Overall CSS custom property coverage**: ~30% of design decisions are token-governed. The remaining 70% are hardcoded values scattered across markup and CSS-in-JS.
+
+> **Finding E1-COV1** · Severity: **HIGH**
+> **CSS custom property coverage is ~30% — spacing, radius, and z-index have zero token governance.** Text colors (18%), shadows (12%), and dark surface variants are critically undertokenized. This means any design system change requires finding and replacing hundreds of scattered values.
+> **Solution**:
+> - **Priority 1** (highest impact): Add text color tokens (replaces 459 gray instances — see §DBI3-S07)
+> - **Priority 2**: Add spacing tokens (at least `--space-base: 14px` and the 2px grid scale)
+> - **Priority 3**: Add radius tokens (7-level scale from §E1-RAD1)
+> - **Priority 4**: Add z-index tokens (from §E1-ZDX1)
+> - **Priority 5**: Expand shadow token adoption (use the existing 4 tokens instead of hardcoding)
+> - Total new tokens needed: ~20-25 new CSS custom properties to reach 70%+ coverage
+
+---
+
+## Step 8 — Combined Findings
+
+| ID | Finding | Severity | Section |
+|---|---|---|---|
+| E1-SP1 | Spacing uses 2px base grid (not 4px) — undocumented but consistent | **LOW** | §E1.1 |
+| E1-SP2 | 3 subpixel/odd spacing values (1.5px, 3px, -1px) | **LOW** | §E1.1 |
+| E1-COL1 | 66 unique hex colors, only 18 tokenized — 73% unmanaged palette | **HIGH** | §E1.2 |
+| E1-COL2 | 3 near-duplicate gold values where 1 token exists | **MEDIUM** | §E1.2 |
+| E1-COL3 | Tailwind gray and slate families mixed in same hierarchy | **MEDIUM** | §E1.2 |
+| E1-COL4 | 5 instances of uncalibrated pure `#ff0000` red | **LOW** | §E1.2 |
+| E1-COL5 | Purple and violet Tailwind families mixed | **LOW** | §E1.2 |
+| E1-TYP1 | 11 font sizes — 2 off-scale (11px, 13px) | **LOW** | §E1.3 |
+| E1-TYP2 | `font-bold` (700) used 105× for both headings and data — weight overlap | **LOW** | §E1.3 |
+| E1-TYP3 | Letter-spacing uses 8 intentional values in clear progression | **PASS** | §E1.3 |
+| E1-TYP4 | Line-height values serve clear density purposes | **PASS** | §E1.3 |
+| E1-TYP5 | `text-rendering: optimizeLegibility` missing from root | **LOW** | §E1.3 |
+| E1-RAD1 | 12 unique radius values — sub-8px range unsystematic, `rounded-lg` dominates | **MEDIUM** | §E1.4 |
+| E1-SHD1 | 4 shadow tokens defined, only 1 used — 34 hardcoded shadow values | **LOW** | §E1.5 |
+| E1-ZDX1 | Z-index collision at 9998 (Toast + Install prompt) | **MEDIUM** | §E1.6 |
+| E1-ZDX2 | Z-index layer system documented and mostly collision-free | **PASS** | §E1.6 |
+| E1-ANI1 | `--transition-slow` unused via token; 6 `ease` curves inconsistent | **LOW** | §E1.7 |
+| E1-ANI2 | Animation system well-structured (15 keyframes, dual easing) | **PASS** | §E1.7 |
+| E1-NAM1 | Token naming hybrid (presentational colors + semantic rest) — appropriate | **PASS** | §E1.8 |
+| E1-COV1 | CSS custom property coverage ~30% — spacing/radius/z-index at 0% | **HIGH** | §E1.9 |
+
+**Severity distribution**: 2 HIGH, 4 MEDIUM, 9 LOW, 5 PASS — **20 total findings**
+
+---
+
+**STEP 8 COMPLETE** — §E1 Design Token System fully audited.
+
+**Spacing**: 2px base grid (undocumented but internally consistent). 14px primary body padding is a deliberate signature. 3 odd values are trivial token debt.
+**Color**: 66 unique hex colors with only 30% token governance. 5 near-duplicate clusters (gold, gray, dark backgrounds, green, purple/violet). Gray/slate family mixing is the most impactful issue. Pure `#ff0000` appears 5×.
+**Typography**: 11 font sizes anchored at 14px body base. 2 off-scale values (11px, 13px). Letter-spacing and line-height are well-considered. `font-bold` overused for mixed semantic purposes.
+**Radius**: 12 unique values. KuroStyles defines a clean 4-level hierarchy (8/10/12/16px) that markup doesn't follow. `rounded-lg` (109×) dominates.
+**Shadows**: 34 unique values but only 1 of 4 tokens is actively used. Color-glow system is consistent but hardcoded.
+**Z-index**: 9-level system with one collision at 9998. Otherwise well-governed.
+**Animations**: 15 keyframes with coherent dual-easing system. Token adoption incomplete.
+**Token coverage**: ~30% overall — the system's biggest structural gap. Adding ~25 new CSS custom properties would reach 70%+.
