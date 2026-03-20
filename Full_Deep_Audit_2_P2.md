@@ -4431,3 +4431,767 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 > **End of Step 14 — §E7: Overall Visual Professionalism**
 > **Lines added**: ~470
 > **Next step**: Step 15 — §E8: Product Aesthetics (Axis-Driven) (awaiting user instruction)
+
+---
+
+## Step 15 — §E8: Product Aesthetics (Axis-Driven)
+
+**Skill reference**: `app-audit-SKILL.md` §E8
+**Scope**: Product aesthetics derived from Five-Axis Profile — all axis-tagged items whose axis is active
+**Axis profile**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+
+**Active sections**:
+- **[A1] Commercial Intent** — reframed for NON-REVENUE: community credibility replaces conversion
+- **[A2] Focus-Critical** — cognitive load, scannability, visual noise
+- **[A2] Emotionally Sensitive** — safety signals, warmth calibration, tone-design coherence (SECONDARY weight)
+- **[A2] Leisure/Casual** — delight calibration, low-stakes visual permission (game companion context)
+- **[A3] Expert/Practitioner** — density as respect, vocabulary accuracy, power-user surface area
+- **[A4] Subject Has Strong Visual Identity** — palette coherence, typographic tone, motion character, iconography register
+- **[A4] Community Aesthetic Norms** — insider signal audit, anti-corporate check
+- **[A5] Aesthetic Must Stay Invisible** — distraction inventory, trust-through-clarity (FUNCTIONAL-PRIMARY)
+- **Universal** — "made with intent" test, app icon quality, visual coherence across sections
+
+**Skipped sections** (axis not active):
+- [A2] Creative/Expressive — not a creative tool
+- [A3] Mixed/Bridging — audience is single-tier (enthusiast/expert), not mixed
+- [A4] Subject Neutral — subject has strong identity (Wuthering Waves)
+- [A5] Aesthetic Is The Value — aesthetic is functional-primary, not the product value
+
+---
+
+### §E8.1 [A1] Commercial Intent — Community Credibility
+
+> *Axis adaptation: A1 is NON-REVENUE. The skill's A1 criteria (conversion blockers, distribution channel fit) are reframed: "credibility" means community trust and craft respect, not purchase confidence. "Conversion" means the user deciding to adopt this tool over alternatives.*
+
+#### §E8.1.1 First-impression credibility test
+
+> *"Before the user reads a single word — does the composition signal 'trusted tool' or 'rough prototype'?"*
+
+**Impression audit** (first 2 seconds of landing):
+
+| Signal | What the user sees | Verdict |
+|--------|-------------------|---------|
+| **Header** | Gold-glowing app icon, "Whispering Wishes" title, subtitle, server select, export button — all on blurred glass header | **Trusted** — purpose-built, branded |
+| **Background** | Deep blue-black (#080c14) with subtle gold radial glow behind content | **Trusted** — atmospheric, not default |
+| **First card** | kuro-card with shimmer line, corner HUD decorations, glassmorphic surface | **Trusted** — premium component system |
+| **Typography** | Rajdhani headings + JetBrains Mono data — deliberate dual-font system | **Trusted** — typographic investment |
+| **Tab bar** | 8 icon+label tabs with animated gold underline indicator | **Trusted** — clear navigation, gold brand accent |
+| **Data display** | PityRing SVG with animated fill, large gold pity numbers | **Trusted** — custom data visualization |
+
+**3 elements most undermining credibility** (per skill criteria):
+
+1. **Inline Tailwind buttons** (~100+): Scattered throughout, using `bg-white/5 border-white/10 rounded-lg transition-colors` instead of the kuro-btn system. These create a visible polish gradient — the same screen has premium kuro-btn elements and plain utility buttons. On first impression, a user scanning the Calculator or Collection tab sees this inconsistency as "some parts are polished, some aren't."
+
+2. **Missing apple-touch-icon.png**: The manifest references `/apple-touch-icon.png` (`manifest.webmanifest:19`) but the file doesn't exist in `/public/`. iOS users adding to home screen get a blank icon or screenshot fallback — the worst possible first impression on the most common mobile platform.
+
+3. **Subtitle gray text** (`App.jsx:3178`): "Wuthering Waves - Companion" uses `text-gray-400` (#8f99ab) at 10px — the first piece of body text a user reads is in the lowest-contrast, smallest-size text. The subtitle should be a brand-reinforcing moment, not a footnote.
+
+> **Finding E8-CI1** · LOW
+> **First-impression credibility is strong but not flawless**: The composition signals "trusted tool" through 6/6 first-impression vectors (header, background, cards, typography, navigation, data visualization). The credibility gap is in the inline Tailwind layer (§E7-DC1) which creates a visible quality gradient on tabs with mixed kuro-btn and inline buttons.
+> **Evidence**: Header (`App.jsx:3166–3211`) uses custom glassmorphic styling, branded gold glow, dual-font system. First card (BannerCard) uses full kuro-card system. Tab bar uses custom animated indicator.
+> **Solution**: No new action — the kuro-btn migration recommended in §E7-PD1 is the primary credibility lever. Completing that migration eliminates the visible polish gradient.
+
+> **Finding E8-CI2** · MEDIUM
+> **Missing apple-touch-icon.png breaks mobile home screen identity**: The PWA manifest (`manifest.webmanifest:19`) and HTML (`index.html:24`) reference `/apple-touch-icon.png` but the file doesn't exist. iOS users adding to home screen see a blank or screenshot-based icon instead of the branded "W" mark.
+> **Evidence**: `ls -la /home/user/Whispering-Wishes/whispering-wishes-replit/public/apple-touch-icon.png` → FILE NOT FOUND. Manifest declares `"src": "/apple-touch-icon.png", "type": "image/png", "sizes": "180x180"`.
+> **Solution**: Generate a 180×180 PNG from the favicon concept (gold "W" on #080c14 background with 6px corner radius). Place at `/public/apple-touch-icon.png`. Also generate 192×192 and 512×512 variants for the Android manifest and splash screens.
+
+#### §E8.1.2 Visual trust hierarchy
+
+> *"Does the palette feel stable and intentional? Does the typography feel appropriate? Does spacing feel designed or accidental?"*
+
+| Dimension | Assessment | Rating |
+|-----------|-----------|--------|
+| **Palette stability** | Single gold accent throughout, consistent element colors, OLED mode doesn't break hierarchy | **Intentional** |
+| **Typography appropriateness** | Rajdhani (technical sans) + JetBrains Mono (tabular data) — both appropriate for a precision game tool | **Appropriate** |
+| **Spacing feel** | 14px card padding, 12px divider margin, 10×12px button padding — consistent tiers. BUT the kuro-* system has clean spacing while inline elements use Tailwind utilities (p-2, p-3, px-4 py-2) creating mixed spacing rhythms | **Mostly designed, partially accidental** |
+
+> **Finding E8-VT1** · PASS
+> **Palette and typography signal intentional design**: The gold accent, chromatic gray scale, game-aligned element colors, and dual-font system all communicate deliberate craft. The palette feels "chosen" not "defaulted."
+> **Evidence**: `:root` tokens (`appcore-providers.jsx:434–464`) define a complete, internally consistent color system. Font loading uses preload + media-swap optimization (`index.html:30–31`).
+> **Solution**: Maintain current palette and typography system — these are strong trust signals.
+
+> **Finding E8-VT2** · LOW
+> **Spacing rhythm is inconsistent between layers**: The kuro-* system uses deliberate spacing tiers (14px, 12px, 10×12px) but inline elements use Tailwind spacing utilities (p-2=8px, p-3=12px, px-4=16px, py-2=8px) which don't align to the same scale. This creates perceptible spacing inconsistency — two buttons in the same view can have different internal padding.
+> **Evidence**: `kuro-btn` uses `padding: 10px 12px` (`appcore-providers.jsx:870`). Inline buttons use `px-4 py-2` (16px 8px) or `p-2` (8px) (`App.jsx` passim). The ratio difference (10:12 vs 8:16) is visible.
+> **Solution**: When migrating inline buttons to kuro-btn variants (§E7-PD1), the spacing inconsistency resolves automatically. For buttons that remain inline, standardize on `px-3 py-2.5` (12px 10px) to approximate the kuro-btn rhythm.
+
+#### §E8.1.3 Competitive visual benchmark
+
+> *"Name the 2–3 most credible tools in this category. What does this app do better, at parity, or worse?"*
+
+**Benchmark competitors** (from code references: `App.jsx:182, 6634, 6780–6793`):
+
+| Competitor | Craft comparison |
+|-----------|-----------------|
+| **wuwatracker.com** | The primary competitor. Whispering Wishes does **better** on: motion design (custom easing, staggered animations, physical hover), atmospheric design (glassmorphism, shimmer, corner HUD), typography (dual-font system), empty states (gold-tinted custom empty states vs generic). At **parity** on: data accuracy, layout clarity. Whispering Wishes does **worse** on: nothing observable from code evidence — the design investment exceeds the competitor in every visual dimension. |
+| **GenGamer** | A broader multi-game tool. Whispering Wishes does **better** on: WuWa-specific design identity (element colors, game terminology, cyberpunk-luxe atmosphere), information density, feature depth (8 tabs vs fewer). At **parity** on: general usability. Whispering Wishes does **worse** on: multi-game coverage (by design — this is a WuWa-only tool). |
+
+> **Finding E8-CB1** · PASS
+> **Competitive visual position is strong**: Whispering Wishes leads the WuWa tracker niche in visual craft. The design investment (custom component system, motion library, atmospheric treatments, dual-font typography) exceeds what comparable community tools offer. This is consistent with §E7-CC1.
+> **Evidence**: Competitive references in code (`App.jsx:6634` — wuwatracker.com import URL, `App.jsx:6793` — GenGamer). The 9-component kuro-* system, 114 trophies, and PityRing visualization represent design investment atypical for community fan tools.
+> **Solution**: Maintain this competitive advantage. The kuro-btn migration (§E7-PD1) would further widen the craft gap.
+
+#### §E8.1.4 Conversion/commitment blockers
+
+> *Axis adaptation: For NON-REVENUE, "conversion" = the user deciding to trust this tool with their data (importing convene log). "Commitment" = initial data entry and ongoing tool adoption.*
+
+**Commitment flow audit** (import convene log — the critical trust moment):
+
+The import flow is the app's equivalent of a sign-up flow. The user pastes a URL or JSON containing their pull history — they're entrusting personal game data to this tool.
+
+| Moment | Visual treatment | Trust assessment |
+|--------|-----------------|-----------------|
+| **Import button** | kuro-btn with Upload icon, gold hover | **Good** — clear CTA, branded |
+| **Import modal** | Full-screen overlay with glassmorphic card | **Good** — feels secure, contained |
+| **URL input field** | kuro-input with clear label | **Good** — professional input styling |
+| **Import instructions** | Step-by-step with numbered steps | **Good** — guides user through process |
+| **Success state** | Toast notification | **Adequate** — no celebration moment (§E7-PL1) |
+| **Error state** | Red error message with retry | **Good** — clear error communication |
+
+> **Finding E8-CO1** · LOW
+> **Import success lacks celebration**: When a user successfully imports their convene log — the most significant commitment moment — they receive only a toast notification. This is the moment where the app should signal "welcome, you're set up" with visual delight (a brief gold pulse, a checkmark animation, a personalized summary).
+> **Evidence**: Import success dispatches `IMPORT_DATA` action and shows a toast. No success animation, no celebration state, no personalized welcome.
+> **Cross-reference**: §E7-PL1 (no success confirmation animation).
+> **Solution**: Add a brief success celebration after import: (1) Gold checkmark animation (scale in + fade), (2) Brief summary card showing "Imported X pulls across Y banners — your pity status is ready", (3) Auto-navigate to Tracker tab after 2s. Use the existing `--transition-slow` (0.4s) for the celebration animation.
+
+#### §E8.1.5 Distribution channel fit
+
+> *"What first-impression surface matters most?"*
+
+For a community fan tool, the distribution channels are:
+1. **Reddit/Discord link sharing** — most common discovery path for gacha tools
+2. **Browser tab** (already open) — returning users identify the tab
+3. **PWA home screen** — committed users who installed
+4. **Google search results** — organic discovery
+
+| Channel | Readiness | Assessment |
+|---------|----------|------------|
+| **Reddit/Discord** | OG tags present (`index.html:12–18`), og:image referenced | **Mostly ready** — but og:image URL points to `whisperingwishes.vercel.app/og-image.png` which may not exist (no og-image.png in public/) |
+| **Browser tab** | SVG favicon with gold "W" on dark background | **Good** — legible, on-brand |
+| **PWA home screen** | Manifest present, but apple-touch-icon.png missing | **Broken** — see §E8-CI2 |
+| **Google search** | Description meta present, structured title | **Good** — standard SEO |
+
+> **Finding E8-DC1** · LOW
+> **OG image may not exist**: `index.html:20` references `https://whisperingwishes.vercel.app/og-image.png` for social media previews, but no `og-image.png` exists in the `/public/` directory. Reddit/Discord link previews would show a text-only card — missing the visual first impression that drives clicks.
+> **Evidence**: `<meta property="og:image" content="https://whisperingwishes.vercel.app/og-image.png" />` (`index.html:20`). No corresponding file in `public/`.
+> **Solution**: Create a 1200×630 OG image featuring: (1) App name "Whispering Wishes" in Rajdhani bold, (2) Gold accent color (#edaf18) on dark background (#080c14), (3) Subtitle "Wuthering Waves Companion", (4) Representative UI screenshot or PityRing illustration. Place at `/public/og-image.png`.
+
+---
+
+### §E8.2 [A2] Use Context — Focus-Tool (Primary)
+
+> *The FOCUS-TOOL axis is primary. The app is a precision data instrument — pity counters, probability tables, resource calculators. Every visual element must earn its place by serving the data mission.*
+
+#### §E8.2.1 Cognitive load audit
+
+> *"Identify every visual element that demands attention beyond what the user's task requires."*
+
+**Decorative element inventory** (attention cost assessment):
+
+| Element | Location | Attention cost | Functional justification | Verdict |
+|---------|----------|---------------|-------------------------|---------|
+| **Shimmer line** (card top) | `appcore-providers.jsx:747–763` | LOW — 1px, opacity 0.6→1 pulse, barely visible | Creates surface boundary, aids card recognition | **Justified** — ambient, not focal |
+| **Corner HUD decorations** | `appcore-providers.jsx:777–803` | LOW — 12×12px, 0.85 opacity, static | Reinforces cyberpunk identity, frames content | **Justified** — brand signal below attention threshold |
+| **Gold radial glow** (tab background) | TabBackground component | VERY LOW — behind content at z-[2], subtle gradient | Creates atmospheric depth, frames data area | **Justified** — atmospheric enhancement |
+| **Card hover lift** (translateY -2px) | `appcore-providers.jsx:726–735` | LOW — only activates on hover, 2px is subtle | Confirms interactivity, provides depth feedback | **Justified** — functional feedback |
+| **Badge rotation** (luck badge) | `appcore-providers.jsx:656–670` | MEDIUM — continuous 8s rotation with conic gradient | Draws eye to luck rating — but luck rating IS the data | **Justified** — highlights primary data output |
+| **Trophy shine** (trophy badges) | `appcore-providers.jsx:679–686` | LOW — 3s opacity pulse, subtle | Marks achievement items as special | **Justified** — emotional-secondary feature |
+| **Tab entrance stagger** | `appcore-providers.jsx:555–599` | LOW — 0.3s fade + slide, one-time on tab switch | Provides spatial context for navigation | **Justified** — aids orientation |
+| **Text-shadow on headings** | Various inline styles | LOW — subtle depth on white text | Minor legibility enhancement on glassmorphic surfaces | **Marginal** — could be removed without loss |
+| **Collection card hover** (4px lift + 1.02 scale) | `appcore-providers.jsx:1402–1405` | MEDIUM — more dramatic than standard card hover | Previews interaction, highlights browsable items | **Acceptable** — collection is a browsing context |
+
+> **Finding E8-CL1** · PASS
+> **Decorative elements are well-calibrated for focus-tool context**: Every decorative element in the kuro-* system is either ambient (below attention threshold) or functionally justified (highlights primary data, confirms interactivity). The design follows the A5 principle: atmospheric treatments serve the functional core without competing with it.
+> **Evidence**: Shimmer line is 1px at 0.6 opacity. Corner HUD is 12×12px at 0.85 opacity. Gold glow is behind content at z-[2]. Badge rotation highlights the luck rating number itself — the primary data output of the Stats tab.
+> **Solution**: No removal recommended. The decorative inventory is lean and justified. The atmospheric layer is what distinguishes this from a generic dashboard.
+
+> **Finding E8-CL2** · LOW
+> **Text-shadow accumulation on headings**: Multiple heading elements use `text-shadow` for depth (e.g., card headers, stat labels). While each individual shadow is subtle, they accumulate across a full tab view — 5–8 text-shadows visible simultaneously. In a focus-tool context, text-shadows on data labels are unnecessary cognitive overhead.
+> **Evidence**: Text-shadow applied to `.kuro-header` content, trophy labels, stat headings. Each is `0 1px 2px rgba(0,0,0,0.3)` or similar.
+> **Cross-reference**: §E7-VN2 (stacked text shadows).
+> **Solution**: Remove text-shadow from data labels (stat names, pity counters, calculator inputs). Retain text-shadow only on display/brand elements (app title, tab headings) where it serves atmospheric depth.
+
+#### §E8.2.2 Information scannability
+
+> *"Under time pressure, can the user find the critical number, status, or action within 2 seconds?"*
+
+**2-second scan test** (per-tab critical data):
+
+| Tab | Critical data point | Visual treatment | 2-second findable? |
+|-----|-------------------|-----------------|-------------------|
+| **Tracker** | Current pity count | PityRing SVG — large gold number, animated ring | **YES** — hero element, impossible to miss |
+| **Tracker** | 50/50 status | Color-coded badge below pity ring | **YES** — clear secondary position |
+| **Events** | Total Astrite available | Gold text in yellow-tinted progress box | **YES** — prominent, color-coded |
+| **Calculator** | Pull probability result | Large number in result card | **YES** — result is the tab's hero |
+| **Stats** | Luck rating | Luck badge with rotating border, large number | **YES** — strongest visual magnet on tab |
+| **Stats** | Average pity | Smaller text beside luck badge | **Marginal** — secondary to luck badge, text-gray-200 at xs size |
+| **Collection** | Owned count | Progress text in summary box | **YES** — top of collection grid |
+| **Profile** | Import status | Conditional rendering based on import state | **YES** — clear empty/populated state |
+
+> **Finding E8-SC1** · PASS
+> **Critical data is findable within 2 seconds across all tabs**: The app uses gold highlighting, size hierarchy, and dedicated components (PityRing, luck badge) to make primary data outputs visually dominant. The focus-tool axis is well-served.
+> **Evidence**: PityRing (`appcore-components.jsx`) renders pity as a large SVG with gold fill arc. Luck badge (`appcore-providers.jsx:650–676`) uses continuous rotation animation to attract attention. Astrite progress box (`App.jsx:3402`) uses `bg-yellow-500/10 border-yellow-500/30` — gold-tinted prominence.
+> **Solution**: No action needed. Scannability is a strength of the current design.
+
+> **Finding E8-SC2** · LOW
+> **Average pity is visually subordinate to luck rating**: On the Stats tab, the luck rating badge dominates visual attention (rotating border, large colored number), while average pity — arguably the more actionable number for decision-making — appears in `text-gray-200 text-xs` beside it (`App.jsx:4021`). The focus-tool axis suggests the more actionable number should receive more visual weight.
+> **Evidence**: Luck rating: `text-xl font-bold` with colored text-shadow and rotating badge (`App.jsx:4008`). Avg pity: `text-gray-200 text-xs font-medium` (`App.jsx:4021`).
+> **Solution**: Increase avg pity prominence: upgrade from `text-xs` to `text-sm`, from `text-gray-200` to `text-white`, and add `font-family: var(--font-data)` for tabular presentation. The luck rating remains the emotional centerpiece, but avg pity should be clearly readable at a glance.
+
+#### §E8.2.3 Visual noise inventory
+
+> *"List every element that could be removed without losing functional information."*
+
+| Element | Could remove? | Impact if removed |
+|---------|--------------|-------------------|
+| Shimmer line pulse animation | Yes | Saves ~1% CPU on low-end mobile; no functional loss |
+| Corner HUD decorations | Yes | Loses brand identity signal; no functional loss |
+| Gold background glow | Yes | Loses atmospheric depth; tab backgrounds become flat dark |
+| Text-shadows on headers | Yes | Slight legibility loss on glassmorphic surfaces; saves visual complexity |
+| Trophy badge shine animation | Yes | Loses "special item" signal; trophies become static badges |
+| Collection card scale on hover | Debatable | Could reduce to translateY only; scale adds visual noise but also delight |
+| Scrollbar custom styling | Yes | Falls back to browser defaults; minor visual noise reduction |
+
+> **Finding E8-VN1** · PASS
+> **Visual noise is appropriate for A5 ATMOSPHERIC-SECONDARY**: While 7 decorative elements could theoretically be removed, none compete with functional data. The atmospheric layer is what makes the app feel like a game companion rather than a spreadsheet — removing it would harm the A4 (subject identity) and A2 (emotional-secondary) axes while providing negligible focus benefit.
+> **Evidence**: The app already provides a `.no-animations` toggle (`appcore-providers.jsx:1414–1419`) and respects `prefers-reduced-motion` (`appcore-providers.jsx:1423–1430`), giving users control over decorative animation if needed.
+> **Solution**: No removal recommended. The existing animation toggle gives focus-sensitive users the option to eliminate decorative motion. The atmospheric layer earns its keep for the majority use case.
+
+---
+
+### §E8.2b [A2] Use Context — Leisure/Casual
+
+> *Axis activation: While the primary A2 is FOCUS-TOOL, the app is a game companion used during leisure time. The Leisure/Casual criteria apply at secondary weight.*
+
+#### §E8.2b.1 Delight calibration
+
+> *"Is the experience genuinely pleasurable? Is there any moment of unexpected delight?"*
+
+**Delight inventory**:
+
+| Moment | Delight type | Assessment |
+|--------|-------------|-----------|
+| **Trophy unlocks** (114 trophies) | Discovery delight — community humor, game references, tiered badges | **Strong** — "Pity 1. Screenshot or Fake.", "Kuro Hates You", "No Life Achievement" |
+| **Luck badge** | Visual delight — rotating conic gradient, tier-colored badge | **Strong** — feels like a game achievement |
+| **PityRing animation** | Data-delight hybrid — animated SVG arc fill, gold glow | **Strong** — makes checking pity feel rewarding |
+| **Collection card hover** | Browse delight — lift + scale + shadow on character cards | **Good** — makes browsing feel tactile |
+| **Empty state messaging** | Tone delight — game-flavored copy ("Awaiting signal data") | **Good** — personality without obstruction |
+| **Haptic feedback** | Tactile delight — 6 patterns for different interactions | **Good** — makes mobile feel native |
+| **Tab indicator animation** | Navigation delight — smooth gold bar slide between tabs | **Good** — elegant micro-interaction |
+
+> **Finding E8-DL1** · PASS
+> **Delight calibration is well-balanced**: The app provides 7+ delight moments across different interaction types (discovery, visual, tactile, tonal) without any of them compromising the focus-tool mission. The trophy system is the standout — 114 community-humor trophies represent exceptional delight investment.
+> **Evidence**: Trophy definitions (`App.jsx:1617–1846`) include names like "Gotta Whale 'Em All", "Dev Account?", "Disgusting Luck", "Soft Pity Landlord" — each one demonstrating game community knowledge and humor craft.
+> **Solution**: No action needed. The delight calibration is a strength. The focus-tool primary axis is respected (delight moments are in emotional/celebration contexts, not in data-critical flows).
+
+#### §E8.2b.2 Low-stakes visual permission
+
+> *"Does the design use the freedom of leisure context for personality and playfulness?"*
+
+> **Finding E8-LP1** · PASS
+> **Visual personality uses leisure permission effectively**: The cyberpunk-luxe aesthetic, community-humor trophy copy, luck rating system, and gold-accent atmospheric treatments all leverage the leisure context to add personality. The app doesn't apply "professional-tool austerity" — it feels like a game companion, not a spreadsheet.
+> **Evidence**: Trophy names use community slang ("copium", "touch grass", "F2P BTW"). Luck ratings use emotional language ("incredible!", "above average!"). Empty states use game-flavored messaging. Corner HUD decorations reference cyberpunk/sci-fi UI tropes.
+> **Solution**: No action needed. Continue using leisure permission for personality. One area for expansion: the Calculator tab is the most "professional-tool austere" tab — it could benefit from a small personality injection (e.g., a brief encouraging message when probability results are favorable).
+
+---
+
+### §E8.3 [A2] Use Context — Emotionally Sensitive (Secondary)
+
+> *Axis activation: EMOTIONAL-SECONDARY. The app tracks gacha outcomes where users experience real emotional responses — excitement (lucky pulls), frustration (loss streaks), anxiety (deciding whether to spend resources). This section applies at secondary weight but is genuine.*
+
+#### §E8.3.1 Safety signals
+
+> *"Does the visual design feel safe? Assess: corner radius, color temperature, spacing, animation speed."*
+
+**Safety signal audit**:
+
+| Signal | Current state | Assessment |
+|--------|-------------|-----------|
+| **Corner radius** | 16px cards, 12px buttons, 8px inputs — generous radiuses | **Safe** — rounded, approachable. Not sharp/clinical |
+| **Color temperature** | Cool blue-tinted base (#080c14), warm gold accent (#edaf18) | **Balanced** — the cool base is cyberpunk-appropriate, the gold warmth prevents coldness |
+| **Spacing** | 14px card padding, 12px gap rhythm, 3px between sections | **Adequate** — not cramped. Elements have breathing room |
+| **Animation speed** | 0.15s/0.25s/0.4s — fast-out easing with slight overshoot | **Good** — organic feel, not robotic. Overshoot adds gentle bounce |
+| **Empty state tone** | "Awaiting signal data", dashed gold border, gentle gradient | **Warm** — inviting, not demanding |
+| **Data-sharing consent** | Custom modal with detailed explanation, pseudonymity note | **Excellent** — respectful, transparent, not pressuring |
+
+**2–3 changes that most increase felt safety**:
+
+1. **Already done well**: The consent modal (`App.jsx:4038–4057`) is a standout safety signal — it explains exactly what data is shared, notes pseudonymity, and provides Decline/Consent buttons with neutral visual weight (no dark-pattern CTA emphasis).
+
+2. **Loss-streak messaging could soften**: When displaying unlucky stats (loss streaks, high pity), the trophy system uses humor ("Kuro Hates You", "Certified Unlucky") which is appropriate for the community tone but could feel rough for genuinely frustrated users. The humor is a brand asset (A3: community credibility) and shouldn't be removed, but the context around it could include a gentler note.
+
+3. **Resource calculations**: The Calculator tab shows probability results that may cause spending anxiety. There's no "this is just a tool" disclaimer or "only spend what you're comfortable with" message.
+
+> **Finding E8-SS1** · PASS
+> **Safety signals are well-calibrated for emotional-secondary context**: The design uses generous radiuses, warm gold accents, comfortable spacing, and organic animation easing. The data-sharing consent modal is a standout safety implementation — transparent, detailed, and non-pressuring.
+> **Evidence**: Consent modal (`App.jsx:4038–4057`) includes: data item list, pseudonymity explanation, neutral button styling (no dark pattern). Corner radiuses range 8–16px (approachable). Animation easing uses `cubic-bezier(0.16, 1, 0.3, 1)` — slight overshoot creates organic feel.
+> **Solution**: No action needed on safety signals. The current design effectively balances the cyberpunk aesthetic with emotional safety.
+
+> **Finding E8-SS2** · NOTE
+> **Consider adding a responsible-spending note in Calculator**: The Calculator tab outputs probability and resource calculations that directly influence spending decisions. While the tool has no obligation (A1: NON-REVENUE), a brief footer note like "This tool provides probability estimates — always spend within your comfort zone" would strengthen the emotional-safety signal.
+> **Evidence**: Calculator result section outputs probability percentages and resource costs without any framing message. The tool is accurate but context-neutral.
+> **Solution**: Add a single-line disclaimer below the Calculator results in `text-gray-500 text-[9px]`: "Probability estimates only — always convene within your comfort zone." This matches the safety-conscious tone established by the consent modal.
+
+#### §E8.3.2 Warmth calibration
+
+> *"Is the palette warm enough for this emotional context without feeling saccharine?"*
+
+| Dimension | Assessment |
+|-----------|-----------|
+| **Gold accent** (#edaf18) | Warm, celebratory, associated with premium outcomes — creates positive emotional association |
+| **Background** (#080c14) | Cool blue-black — professional, not cold. The blue tint prevents the sterile feel of pure black |
+| **Success states** (emerald #22c55e) | Natural warmth — "growth" connotation appropriate for positive outcomes |
+| **Error states** (red #f87171) | Softened red (71% lightness) — not alarming, just indicating |
+| **Empty states** | Gold-tinted gradient with dashed gold border — welcoming, not clinical |
+| **Typography** | Rajdhani is slightly condensed/technical — could feel cold, but gold highlighting and generous line-height warm it |
+
+> **Finding E8-WC1** · PASS
+> **Warmth calibration balances cyberpunk with approachability**: The gold accent is the primary warmth vehicle — every positive state (5★ results, wins, achievements) uses gold, creating a "warm reward" association. The cool background is warmed by the blue tint (not pure black/gray). Empty states use gold gradients. The overall feeling is "welcoming precision instrument" not "cold dashboard."
+> **Evidence**: Gold accent used in: PityRing fill, luck badge, trophy badges, tab indicator, card hover glow, empty state border, header icon glow, button active states. This consistent warmth thread prevents the dark aesthetic from feeling hostile.
+> **Solution**: Maintain the gold-as-warmth strategy. This is emotionally effective.
+
+#### §E8.3.3 Tone-design coherence
+
+> *"Does the visual language match the emotional register the copy is attempting?"*
+
+**Tone alignment audit**:
+
+| Copy register | Visual treatment | Coherent? |
+|--------------|-----------------|-----------|
+| **Celebratory** — "incredible!", trophy unlock, luck badge | Gold color, rotating badge, tier-colored text | **Yes** — visual matches emotional peak |
+| **Commiserative** — "Kuro Hates You", "Certified Unlucky", "pain." | Gray tier color, muted badge styling | **Yes** — visual recedes for negative moments |
+| **Informational** — pity status, resource counts, probability | JetBrains Mono, tabular layout, muted labels | **Yes** — precision visual for precision data |
+| **Encouraging** — "keep tracking to see your trends" | Smaller text, luck-rating color at 56% opacity | **Mostly** — the encouraging tone is slightly undermined by being in the smallest text size |
+| **Warning** — "⚠ 50/50 Active" | Gold button with warning emoji | **Yes** — gold conveys importance without alarm |
+
+> **Finding E8-TC1** · PASS
+> **Tone-design coherence is strong**: The visual design matches the emotional register of the copy across celebratory, commiserative, informational, and warning contexts. The gold color successfully serves as both a celebration color (trophies, achievements) and a caution/importance color (50/50 warning, resource thresholds) — the dual role works because both contexts demand user attention.
+> **Evidence**: Celebratory trophies use `color: '#edaf18', tier: 'legendary'` with rotating badge animation. Commiserative trophies use `color: '#6b7280', tier: 'gray'` with no special animation. The visual intensity matches the emotional intensity.
+> **Solution**: No action needed. The tone-design coherence is a design strength.
+
+---
+
+### §E8.4 [A3] Audience — Expert/Enthusiast
+
+> *The audience is Wuthering Waves gacha enthusiasts who understand pity mechanics, banner systems, and community culture. Domain expertise is assumed.*
+
+#### §E8.4.1 Density as respect
+
+> *"Information density is a feature for expert users, not a flaw."*
+
+**Density audit per tab**:
+
+| Tab | Data density | Assessment |
+|-----|-------------|-----------|
+| **Tracker** | PityRing + countdown + banner list — moderate density | **Appropriate** — hero display for primary data |
+| **Events** | Astrite summary + event cards with rewards + progress tracking | **Appropriate** — scannable cards with actionable data |
+| **Calculator** | Banner selection + pity inputs + increment/decrement + resource inputs + probability output | **High density** — appropriate for the audience |
+| **Planner** | Priority sliders + resource allocation | **Moderate** — could be denser |
+| **Stats** | Luck rating + pull history charts + streak data + trophy grid | **High density** — appropriate for analytics enthusiasts |
+| **Collection** | 5-category grid + search + element/weapon/rarity filters + sort | **High density** — grid layout respects collector mentality |
+| **Teams** | Team compositions with character cards | **Low-moderate** — limited by available data |
+| **Profile** | Settings + import/export + data management | **Moderate** — utility tab, density appropriate |
+
+**Excessive whitespace check**: No tab has significant wasted space. The 14px card padding and 3px section gap are comfortable without being spacious. The Collection grid (`grid-cols-3 sm:grid-cols-4`) efficiently uses available width. The Calculator tab packs 7+ input groups into a single scrollable view.
+
+> **Finding E8-DR1** · PASS
+> **Information density respects expert audience**: The app doesn't patronize users with excessive whitespace, simplified presentation, or hidden complexity. The Calculator tab's dense input layout, the Collection grid's compact cards, and the Stats tab's multi-chart layout all signal "tool for people who understand gacha" rather than "simplified dashboard for newcomers."
+> **Evidence**: Collection summary grid (`App.jsx:4797–4803`) shows 5 data categories in a compact grid at 9px text — dense but scannable. Calculator banner selection (`App.jsx:3456–3498`) offers all banner types immediately without progressive disclosure. Stats tab presents luck rating, percentile, avg pity, and pull history all visible without scrolling.
+> **Solution**: No action needed. The density level is appropriate for A3 ENTHUSIAST/EXPERT.
+
+#### §E8.4.2 Vocabulary accuracy
+
+> *"Every label, stat name, unit, and domain term is a trust signal."*
+
+**Domain vocabulary audit** (353 occurrences of game terms across `App.jsx`):
+
+| Term | App usage | WuWa canonical | Accurate? |
+|------|----------|---------------|-----------|
+| **Convene** | "Featured Convene", "Standard Convene", "Convene history" | ✓ WuWa uses "Convene" for gacha pulls | **Accurate** |
+| **Resonator** | Character category label, collection filter | ✓ WuWa uses "Resonator" for playable characters | **Accurate** |
+| **Astrite** | Resource counter, calculator input, event rewards | ✓ WuWa's premium currency | **Accurate** |
+| **Pity** | "Pity Counter", "Current Pity", "Soft Pity" | ✓ Community-standard term (not official WuWa term, but universally understood) | **Accurate** (community convention) |
+| **50/50** | "50/50 Active", "Won 50/50", "Lost 50/50" | ✓ Universal gacha term for featured vs non-featured odds | **Accurate** |
+| **Soft pity** | SOFT_PITY_START = 65 | ✓ Community term for increased rates; 65 matches WuWa's soft pity start | **Accurate** |
+| **Hard pity** | HARD_PITY = 80 | ✓ Guaranteed 5★ at 80 convenes matches WuWa's system | **Accurate** |
+| **Sequence Node** | Character detail modal (S0-S6) | ✓ WuWa's term for character constellation/duplicate bonuses | **Accurate** |
+| **Forte** | Character detail skill tree | ✓ WuWa's skill system name | **Accurate** |
+| **Sonata Effect** | Trophy name, echo system reference | ✓ WuWa's echo set bonus system | **Accurate** |
+| **Broadblade/Sword/Pistols/Gauntlets/Rectifier** | Weapon type filters | ✓ All 5 WuWa weapon types present and correctly named | **Accurate** |
+| **Aero/Glacio/Electro/Fusion/Spectro/Havoc** | Element filters, color coding | ✓ All 6 WuWa elements present and correctly named | **Accurate** |
+| **Tide** | Resource type (Lustrous/Radiant Tide) | ✓ WuWa's gacha currency items | **Accurate** |
+| **Lunite** | "Lunite subscription" in calculator | ✓ WuWa's monthly subscription item | **Accurate** |
+
+> **Finding E8-VA1** · PASS
+> **Domain vocabulary is precise and complete**: Every game term used in the app matches Wuthering Waves' canonical terminology or universally-accepted community conventions. The 14 audited terms span game mechanics (Convene, pity, 50/50), character systems (Resonator, Sequence Node, Forte), resources (Astrite, Tide, Lunite), elements (all 6), and weapon types (all 5). Zero incorrect terms found.
+> **Evidence**: `appcore-data.js` defines constants: `HARD_PITY = 80`, `SOFT_PITY_START = 65`, `ASTRITE_PER_PULL = 160`, `BEGINNER_ASTRITE_PER_PULL = 128` — all matching WuWa's actual game values. 87 game-term occurrences in `appcore-data.js`, 353 in `App.jsx`.
+> **Solution**: Maintain this vocabulary precision. Any new features should use official Wuthering Waves terminology (check Kuro Games' official announcements for canonical names).
+
+#### §E8.4.3 Power-user surface area
+
+> *"Are advanced capabilities accessible without being buried?"*
+
+**Power-user access audit** (clicks to advanced features):
+
+| Feature | Access path | Clicks | Assessment |
+|---------|------------|--------|-----------|
+| **Import convene log** | Profile tab → Import section (visible immediately) | 1 (tab switch) | **Good** |
+| **Collection filters** | Collection tab → filter row (visible immediately) | 1 (tab switch) | **Good** |
+| **Sort collection** | Collection tab → sort dropdown | 2 (tab + sort) | **Good** |
+| **Element filter** | Collection tab → element dropdown | 2 (tab + dropdown) | **Good** |
+| **Calculator banner selection** | Calculator tab → banner buttons (visible immediately) | 1 (tab switch) | **Good** |
+| **Pity input with increment** | Calculator tab → +/- buttons on pity counter | 2 (tab + interact) | **Good** |
+| **Resource bulk input** | Calculator tab → scroll to resource section | 2 (tab + scroll) | **Acceptable** |
+| **Export backup** | Header → export button (always visible) | 1 | **Excellent** — always accessible |
+| **OLED mode** | Profile tab → Settings → OLED toggle | 2 (tab + scroll) | **Acceptable** |
+| **Leaderboard** | Stats tab → Leaderboard button in card header | 2 (tab + button) | **Good** |
+| **Trophy override** | Profile tab → scroll to trophy section → JSON input | 3+ | **Buried** — but appropriately so (edge case) |
+| **ID card generation** | Stats tab → scroll to ID card section | 2 (tab + scroll) | **Good** |
+
+> **Finding E8-PU1** · PASS
+> **Power-user surface area is excellent**: Most advanced features are accessible in 1–2 clicks. The export button is always visible in the header (0 extra clicks). Filters are immediately visible on the Collection tab. Calculator inputs are all on one scrollable page. No essential feature requires more than 2 clicks from any tab.
+> **Evidence**: Export button in header (`App.jsx:3185`). Collection filters immediately visible (`App.jsx:4809–4870`). Calculator banner selection at top of tab (`App.jsx:3456`). Leaderboard button in Stats card header (`App.jsx:4002`).
+> **Solution**: No action needed. The 1–2 click access pattern respects expert users' time.
+
+> **Finding E8-PU2** · LOW
+> **Keyboard shortcuts absent**: Expert users of focus-tools often expect keyboard shortcuts for common actions (tab switching, import, export). The app has arrow-key tab navigation (`App.jsx:3190–3196`) but no global keyboard shortcuts for actions like "jump to calculator", "open import", or "export backup."
+> **Evidence**: `onKeyDown` handler on nav (`App.jsx:3190`) supports ArrowLeft/ArrowRight for tab cycling. No global `keydown` listener for shortcuts like Ctrl+I (import), Ctrl+E (export), 1-8 (tab jump).
+> **Solution**: Add optional keyboard shortcuts for power users: (1) Number keys 1-8 to jump to tabs, (2) Ctrl+I to open import modal, (3) Ctrl+E to trigger export. Add a "Keyboard shortcuts" section in Profile settings with a toggle to enable/disable. This is a LOW priority — the current arrow-key navigation is functional.
+
+---
+
+### §E8.5 [A4] Subject Identity — Wuthering Waves (L3 Visual Vocabulary)
+
+> *The app references Wuthering Waves at L3 fidelity — colors, typography character, spatial grammar aligned to WuWa's cyberpunk-luxe aesthetic, without literal UI replication.*
+
+#### §E8.5.1 Palette coherence
+
+> *"Identify the dominant visual tones associated with the subject and assess whether the app's palette is inspired by, neutral to, or in conflict with them."*
+
+**Wuthering Waves visual tones** (source game):
+- **Primary**: Deep darks (near-black backgrounds), blue-tinged atmosphere
+- **Premium/5★**: Gold/amber accent — universal gacha premium signal
+- **Elements**: Cyan (Glacio), Purple (Electro), Orange (Fusion), Emerald (Aero), Pink (Havoc), Yellow (Spectro)
+- **UI character**: Sharp, angular, sci-fi terminal aesthetic with glass panels
+- **Mood**: Serious, atmospheric, slightly melancholic — post-apocalyptic sci-fi
+
+**Whispering Wishes palette alignment**:
+
+| WuWa tone | App implementation | Alignment |
+|-----------|-------------------|-----------|
+| Deep dark backgrounds | #080c14 (blue-black) + OLED #000000 | **Inspired by** — not identical but same family |
+| Blue-tinged atmosphere | All grays are chromatic blue-tinted (#dfe5ef, #c5ccda, #8f99ab) | **Inspired by** — consistent atmospheric temperature |
+| Gold premium accent | #edaf18 as primary accent throughout | **Inspired by** — echoes 5★ gold language |
+| Element colors | All 6 mapped: Fusion #f97316, Electro #a855f7, Aero #10b981, Glacio #06b6d4, Havoc #ec4899, Spectro #eab308 | **Directly sourced** — matches game element colors |
+| Angular/sharp UI | Glassmorphism with corner HUD decorations | **Inspired by** — corner brackets echo terminal/HUD panels |
+| Serious atmosphere | Dark cyberpunk-luxe, no playful illustrations | **Coherent** — tone matches game's atmosphere |
+
+> **Finding E8-PC1** · PASS
+> **Palette coherence with Wuthering Waves is strong at L3**: The app's color system is inspired by — not copying — WuWa's visual identity. The deep darks, blue-tinted grays, gold premium accent, and exact element color mapping create immediate recognition for WuWa players. The cyberpunk-luxe atmosphere mirrors the game's post-apocalyptic sci-fi mood without replicating its actual UI.
+> **Evidence**: Element color map (`appcore-data.js`, `Full_Deep_Audit_2_P1.md:173–182`) maps all 6 WuWa elements to specific hex colors with background and border variants. Root color tokens (`appcore-providers.jsx:435–440`) establish the element colors as CSS custom properties. Background #080c14 is in the same deep blue-black family as WuWa's UI.
+> **Solution**: Maintain current palette alignment. The L3 fidelity level is correct — deeper replication (L4+) would risk IP concerns.
+
+#### §E8.5.2 Typographic tone
+
+> *"Does the typeface feel tonally coherent with the subject?"*
+
+**WuWa typographic character**: The game uses sharp, slightly condensed sans-serif typography with technical/military undertones. UI text is clean and geometric. Numbers are presented with high precision.
+
+**Whispering Wishes type assessment**:
+
+| Typeface | Character | WuWa alignment |
+|----------|----------|---------------|
+| **Rajdhani** (display) | Slightly condensed, geometric, technical-feeling gothic sans | **Strong match** — the condensed weight and geometric construction echo WuWa's sharp UI text |
+| **JetBrains Mono** (data) | Monospaced, tabular numerals, developer-tool aesthetic | **Good match** — precision tool feel, tabular data presentation. WuWa doesn't use monospace, but the "data instrument" quality is coherent with the app's focus-tool role |
+
+> **Finding E8-TT1** · PASS
+> **Typographic tone is coherent with WuWa's aesthetic**: Rajdhani's condensed geometric character mirrors the technical precision of WuWa's UI typography. JetBrains Mono adds a data-instrument dimension that's appropriate for the app's focus-tool role (A2) while staying within the cyberpunk/terminal aesthetic family. No tonal mismatch.
+> **Evidence**: Rajdhani used for headings, navigation, labels (`--font-display`). JetBrains Mono used for pity numbers, percentages, resource counts (`--font-data`). Both loaded via Google Fonts with 4 weight variants (400–700).
+> **Solution**: No change recommended. The font pairing is a design strength — both technically appropriate (A2: focus-tool) and aesthetically aligned (A4: WuWa identity).
+
+#### §E8.5.3 Motion character
+
+> *"Does the animation vocabulary honor the subject's energy, weight, and atmosphere?"*
+
+**WuWa motion character**: Fast-paced action combat, sci-fi energy effects, sharp transitions, weight-through-impact. The game feels quick, precise, and powerful.
+
+**App motion vocabulary**:
+
+| Animation | Speed | Easing | WuWa alignment |
+|-----------|-------|--------|---------------|
+| Tab transitions | 0.25s–0.3s | `cubic-bezier(0.16, 1, 0.3, 1)` — fast-out with overshoot | **Good** — the overshoot adds energy/impact, matching WuWa's combat feel |
+| Card hover lift | 0.3s | Same easing | **Good** — precise, controlled motion |
+| Button active scale | 0.1s | `ease` | **Good** — quick compression = impact feedback |
+| Badge rotation | 8s continuous | `linear` | **Atmospheric** — slow rotation creates ambient energy |
+| Shimmer pulse | 3s ease-in-out | Opacity 0.6→1 | **Atmospheric** — gentle, background energy |
+| Tab stagger | 0.05s increments | fade + translateY | **Good** — sequential reveal implies systematic precision |
+
+> **Finding E8-MC1** · PASS
+> **Motion character honors WuWa's energy signature**: The `cubic-bezier(0.16, 1, 0.3, 1)` easing produces fast-out motion with slight overshoot — this creates an "impact" quality that echoes WuWa's combat feel. Button active states use 0.1s compression for immediate feedback. The motion vocabulary communicates "precise, energetic, controlled" — coherent with the source material's action-RPG character.
+> **Evidence**: All three speed tokens share the same easing curve (`appcore-providers.jsx:445–447`). The 0.16 start value creates very fast initial motion (95% of distance in first 30% of duration). The 1.0 overshoot creates slight bounce before settling.
+> **Solution**: No change recommended. The unified easing curve is both a technical strength (consistency) and an identity strength (WuWa-coherent energy).
+
+#### §E8.5.4 Iconography and visual register
+
+> *"Do custom icons or decorative elements feel consistent with the subject's visual language?"*
+
+**Iconography inventory**:
+
+| Element | Source | WuWa coherence |
+|---------|--------|---------------|
+| **Lucide React icons** (~40 imported) | Generic icon library | **Neutral** — clean, geometric line icons. Not WuWa-specific but not clashing |
+| **Corner HUD decorations** | Custom CSS (`appcore-providers.jsx:777–803`) | **Strong** — L-bracket corners directly reference sci-fi/military HUD language |
+| **PityRing** | Custom SVG component | **Strong** — circular gauge evokes game UI elements |
+| **Shimmer line** | Custom CSS gradient | **Moderate** — generic premium signal, not WuWa-specific |
+| **Collection card images** | External CDN (game character art) | **Direct** — actual WuWa character artwork |
+| **Trophy icons** | Lucide icons with game-themed names | **Moderate** — icon shapes are generic but naming is deeply WuWa-specific |
+
+> **Finding E8-IC1** · LOW
+> **Iconography uses generic library icons**: The app uses Lucide React for all UI icons — these are clean and functional but not game-specific. WuWa-themed custom icons for key actions (convene, element filter, pity counter) would deepen the subject identity at L3 fidelity. Currently, a Sparkles icon represents the Tracker tab and a Star icon represents Resonators — these are generic rather than WuWa-referencing.
+> **Evidence**: Import: `AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar...` (`App.jsx:22`). All from Lucide — no custom game-specific icons.
+> **Solution**: LOW priority — create 3–5 custom SVG icons for the most game-specific contexts: (1) A custom convene/pull icon for the Tracker tab, (2) Element icons using WuWa's element symbols for the filter dropdowns, (3) A custom pity counter icon. Keep Lucide for generic actions (settings, export, search) where game-specificity isn't needed.
+
+---
+
+### §E8.5b [A4] Community Aesthetic Norms
+
+#### §E8.5b.1 Insider signal audit
+
+> *"What visual choices communicate that the maker is genuinely part of this community?"*
+
+**Insider signals** (choices that communicate community membership):
+
+| Signal | Evidence | Strength |
+|--------|----------|----------|
+| **Trophy naming** | "Pity 1. Screenshot or Fake.", "Gotta Whale 'Em All", "Lingyang Main (Involuntary)", "Kuro Hates You" — these require deep community knowledge | **Very strong** — impossible to write without being in the community |
+| **Luck rating system** | Statistical z-score calculation against theoretical mean pity (53.5) — community-standard methodology | **Strong** — shows mathematical understanding of gacha systems |
+| **Banner phase tracking** | Version 3.1 phase 1/2, correct character lineups, correct dates | **Strong** — tracks live game content |
+| **Community copy voice** | "go outside", "nobody believes you", "pain.", "how" — community-native tone | **Very strong** — tone-perfect community voice |
+| **Element color accuracy** | All 6 elements correctly mapped to their game colors | **Strong** — demonstrates game familiarity |
+| **Convene log import** | Understands the actual import mechanism WuWa players use | **Strong** — technical community knowledge |
+| **Weapon type completeness** | All 5 weapon types (Broadblade, Sword, Pistols, Gauntlets, Rectifier) | **Strong** — complete domain coverage |
+| **50/50 system modeling** | Correct guarantee mechanics, won/lost tracking, streak analysis | **Strong** — precise gacha math |
+
+**Outsider signals** (choices that might indicate an outsider):
+
+| Signal | Evidence | Assessment |
+|--------|----------|-----------|
+| **Generic tab icons** | Sparkles for Tracker, Calculator for Calc — generic Lucide icons | **Minor** — functional but missed identity opportunity (§E8-IC1) |
+| **"Wuthering Waves - Companion" subtitle** | Dash-separated, slightly formal phrasing | **Negligible** — subtitle placement is a design choice, not an outsider signal |
+
+> **Finding E8-IS1** · PASS
+> **Insider signal density is exceptional**: The app communicates genuine community membership through 8+ strong insider signals. The trophy system alone (114 entries) would be impossible to write without deep community immersion. The mathematical modeling (z-score luck ratings, correct soft/hard pity values, precise probability calculation) demonstrates both game knowledge and analytical sophistication matching the expert audience.
+> **Evidence**: Trophy definitions (`App.jsx:1617–1846`) reference specific characters, community memes, and precise game mechanics. Luck calculation uses `LUCK_MEAN_PITY = 53.5` and `LUCK_STD_DEV_SINGLE = 22.7` (`appcore-data.js:47–48`) — community-verified statistical parameters.
+> **Solution**: Maintain this insider signal density. When adding new features, ensure community-native naming and copy voice.
+
+#### §E8.5b.2 Anti-corporate check
+
+> *"Does the visual design feel like it belongs to the community, or like it's trying to productize the community?"*
+
+**Corporate signal inventory**:
+
+| Dimension | Community feel | Corporate feel | Current state |
+|-----------|---------------|---------------|--------------|
+| **Copy voice** | "pain.", "go outside", "nobody believes you" | "Your statistics show...", "Welcome to your dashboard" | **Community** |
+| **Monetization** | None — no ads, no premium, no paywall | Ad slots exist but empty, no payment processing | **Community** — ad slots are structural only |
+| **Data handling** | localStorage-first, pseudonymous leaderboard, explicit consent | Account-required, analytics-heavy, auto-opt-in | **Community** — privacy-first |
+| **Visual polish level** | High but hand-crafted feeling | Polished but generic/template feeling | **Community** — the kuro-* system feels bespoke, not template |
+| **Feature set** | 114 trophies, luck ratings, community humor | Core tracking only, no personality | **Community** — feature investment beyond utility |
+| **Naming** | "Whispering Wishes" — poetic, game-referencing | "WuWa Tracker Pro", "GachaTrack" | **Community** — name is creative, not SEO-optimized |
+
+> **Finding E8-AC1** · PASS
+> **The app feels community-made, not corporate-produced**: Every indicator — copy voice, data handling, feature investment, naming, monetization absence — signals "passionate player's tool" rather than "startup product." The 114 community-humor trophies alone represent investment that no corporate product would make. The explicit data consent modal and pseudonymous leaderboard demonstrate respect for the community rather than data extraction.
+> **Evidence**: No monetization code. Trophy names use community slang. Firebase used only for voluntary leaderboard with explicit consent (`App.jsx:1317–1321`). UIDs hashed for privacy (`App.jsx:204–205`). App name is poetic rather than SEO-optimized.
+> **Solution**: Maintain this community-first character. If future monetization is considered, ensure it follows community-acceptable patterns (optional, transparent, non-gating).
+
+---
+
+### §E8.6 [A5] Aesthetic Role — Functional-Primary + Atmospheric-Secondary
+
+> *The aesthetic must serve the data mission (FUNCTIONAL-PRIMARY) while atmospheric treatments provide ambient context (ATMOSPHERIC-SECONDARY). The aesthetic must stay invisible — it should enhance data comprehension, not compete with it.*
+
+#### §E8.6.1 Distraction inventory
+
+> *"Every element that draws attention to itself is a failure."*
+
+**Attention competition assessment** (elements that draw attention away from data):
+
+| Element | Draws attention? | Competes with data? | Verdict |
+|---------|-----------------|-------------------|---------|
+| **Shimmer line** (1px, 0.6 opacity pulse) | Barely visible | No — top of card, away from data | **Invisible** — passes |
+| **Corner HUD** (12×12px, 0.85 opacity) | Visible but peripheral | No — in card corners, away from content | **Nearly invisible** — passes |
+| **Gold background glow** | Barely visible under content | No — z-index below content layer | **Invisible** — passes |
+| **Tab stagger animation** | Visible but brief (0.3s, one-time) | Brief attention cost, aids orientation | **Earns its attention** — passes |
+| **Luck badge rotation** (8s continuous) | **YES** — continuous animation draws eye | Competes with surrounding stats when not the focus | **Marginal** — justified because it highlights the primary data output, but could reduce when not in viewport |
+| **Card hover lift + glow** | Visible on hover only | No — confirms interactivity | **Earns its attention** — passes |
+| **Collection card scale** (1.02 on hover) | Visible, more dramatic than standard | Minimal — collection is a browsing context | **Acceptable** for browse context |
+| **Trophy badge shine** (3s pulse) | Subtle opacity pulse | No — trophies are the data in the Stats context | **Invisible** — passes |
+
+> **Finding E8-DI1** · PASS
+> **Atmospheric treatments stay below the functional threshold**: Of 8 decorative elements assessed, 6 are effectively invisible (below attention threshold), 1 earns its attention cost (tab stagger), and 1 is marginal (luck badge rotation). The atmospheric-secondary layer successfully enhances the experience without competing with the functional-primary data mission.
+> **Evidence**: Shimmer line is 1px at 0.6 opacity — invisible to focused users. Corner HUD is 12×12px in card corners — peripheral vision only. Gold glow is at z-[2] under content. The luck badge rotation is the only continuously-animated element that could compete with surrounding data.
+> **Solution**: Consider pausing the luck badge rotation animation after 2 cycles (16s) — let it attract initial attention, then settle. Use `animation-iteration-count: 2` or `animation-fill-mode: forwards` to stop after the initial attention-grab. This preserves the delight moment while reducing ongoing distraction.
+
+#### §E8.6.2 Trust-through-clarity
+
+> *"Is every element present because it is functionally necessary? Are there any decorative elements that should be removed entirely?"*
+
+**Functional necessity audit**:
+
+| Element | Functionally necessary? | Atmospheric value? | Recommendation |
+|---------|------------------------|-------------------|---------------|
+| Shimmer line | No | Yes — surface quality signal | **Keep** — atmospheric value, no functional cost |
+| Corner HUD | No | Yes — brand/identity signal | **Keep** — defines visual character |
+| Gold glow | No | Yes — depth and warmth | **Keep** — prevents flat/sterile feel |
+| Card glassmorphism (blur) | Partially — aids depth hierarchy | Yes — premium surface feel | **Keep** — serves both axes |
+| Text-shadows | No | Marginal — slight depth | **Remove from data labels** — unnecessary on numbers |
+| Badge rotation | No | Yes — celebration moment | **Keep but limit** — see §E8-DI1 |
+
+> **Finding E8-TC2** · PASS
+> **Trust is primarily built through clarity, with atmospheric enhancement**: The app achieves trust through clear data hierarchy (gold highlighting, tabular numbers, size-based importance), precise domain vocabulary, and reliable calculations. The atmospheric layer (glassmorphism, corner HUD, shimmer) adds "made with care" trust without obscuring clarity.
+> **Evidence**: Critical numbers use JetBrains Mono (`--font-data`) with `font-variant-numeric: tabular-nums`. Pity counters use gold highlighting for the primary number. Stats tab uses clear label-value pairs. The clarity-first approach is maintained even in the most atmospherically decorated areas (kuro-card with shimmer still has clean 14px-padded content areas).
+> **Solution**: No action needed. The balance is correct for FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY.
+
+---
+
+### §E8.7 Universal (Always Apply)
+
+#### §E8.7.1 "Made with intent" test
+
+> *"Does the app look like every visual decision was made deliberately — or like some things were shipped at their default?"*
+
+**3 elements most clearly signaling unintentional defaulting**:
+
+1. **Tailwind `transition-colors` on inline buttons**: Approximately 100+ inline buttons use `transition-colors` — Tailwind's default transition utility. This produces a 150ms color-only transition that feels generic compared to the kuro-btn's 5-signal multi-property transition. The "default" feeling is strongest when a kuro-btn and an inline button appear in the same view.
+
+2. **Tailwind `rounded-lg` monoculture**: Inline elements uniformly use `rounded-lg` (8px) — Tailwind's go-to border-radius class. The kuro-* system has a deliberate 5-level hierarchy (16→12→10→8→3px), but the inline layer defaults to a single value. This looks "shipped at default" rather than "designed to hierarchy."
+
+3. **`text-gray-400` (#8f99ab) as universal muted text**: Gray-400 is used for 200+ text elements as the default muted text color. While this is consistent, it's consistent in a "never changed from default" way. The kuro-* system's `--text-body` (#dfe5ef) and `--text-heading` (#edf1f8) tokens are deliberate — the gray-400 usage is Tailwind-default.
+
+> **Finding E8-MI1** · MEDIUM
+> **Three defaulting signals undermine "made with intent" impression**: The inline Tailwind layer's `transition-colors`, `rounded-lg`, and `text-gray-400` trio creates a "default Tailwind" fingerprint visible in ~30% of the UI. These aren't wrong — they're functional — but they look like decisions that weren't made rather than decisions that were. The contrast with the deliberate kuro-* system makes the defaulting more visible than it would be in an all-Tailwind app.
+> **Evidence**: `transition-colors` appears ~80+ times in `App.jsx`. `rounded-lg` appears ~120+ times. `text-gray-400` appears ~200+ times. In contrast, `var(--transition-fast)`, custom radius values, and `var(--text-body)` appear only within kuro-* components.
+> **Cross-reference**: §E7-DC1 (two-layer coherence gap), §E1-COV1 (token coverage ~30%), §DBI3-S03 (rounded-lg monoculture), §E7-BC4 (gray text volume).
+> **Solution**: This finding converges with the kuro-btn migration (§E7-PD1). When migrating inline buttons to kuro-btn variants, the transition, radius, and color tokens migrate simultaneously. For non-button elements (badges, progress bars, filter selects), create `kuro-badge`, `kuro-progress`, and `kuro-select` classes that reference design tokens instead of Tailwind defaults. This is the single most impactful "intent" improvement.
+
+#### §E8.7.2 App icon / favicon quality
+
+> *"Legible at 16×16? Coherent with design language? Distinct enough for browser tab identification?"*
+
+**Current favicon** (`public/favicon.svg`):
+```svg
+<svg viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#080c14"/>
+  <text x="16" y="23" font-size="20" text-anchor="middle"
+        fill="#fbbf24" font-family="system-ui, sans-serif"
+        font-weight="bold">W</text>
+</svg>
+```
+
+| Criterion | Assessment |
+|-----------|-----------|
+| **Legible at 16×16** | Marginal — single "W" letter at 16px is barely readable. The character is recognizable but not crisp |
+| **Coherent with design language** | Partial — uses app background (#080c14) and a gold color (#fbbf24), but the gold is `#fbbf24` (Tailwind amber-400) instead of the app's actual gold `#edaf18`. Uses `system-ui` instead of Rajdhani |
+| **Distinct in browser tab** | Marginal — a gold "W" on dark background is identifiable but not distinctive. Many apps use single-letter favicons |
+| **PWA icon** | Missing — apple-touch-icon.png doesn't exist (§E8-CI2). Manifest only has SVG favicon + missing PNG |
+
+> **Finding E8-FV1** · MEDIUM
+> **Favicon uses wrong gold color and system font**: The favicon uses `#fbbf24` (Tailwind amber-400) instead of the app's brand gold `#edaf18`, and `system-ui` instead of Rajdhani. These are small differences but they break the brand coherence — the favicon is the most frequently-seen representation of the app (browser tab, bookmarks, PWA icon).
+> **Evidence**: `favicon.svg:3` — `fill="#fbbf24"` vs brand gold `#edaf18` (defined in `appcore-providers.jsx:435` as `--color-gold: 237, 175, 24`). Font is `system-ui, sans-serif` vs `Rajdhani` (the display font used throughout the app).
+> **Solution**: Update `favicon.svg` to use: (1) Correct brand gold `#edaf18` instead of `#fbbf24`, (2) A more distinctive icon mark — consider a stylized "WW" monogram or a simplified version of the PityRing/star motif rather than a plain "W". For legibility at 16px, bold geometric shapes outperform letter forms. Also generate raster variants: 180×180 (apple-touch-icon), 192×192, and 512×512 PNGs for PWA manifest.
+
+#### §E8.7.3 Visual coherence across sections
+
+> *"Does the app feel designed as a whole? Would a user recognize a new screen as part of the same product?"*
+
+**Cross-section coherence audit** (would a user recognize each tab as the same app?):
+
+| Tab pair | Coherence | Evidence |
+|----------|----------|---------|
+| Tracker ↔ Stats | **High** — both use kuro-cards, gold accent, PityRing/luck badge as hero elements | Same design system, same data-hero pattern |
+| Events ↔ Calculator | **High** — both use Card components with CardHeader/CardBody | Same card structure, same font system |
+| Collection ↔ Profile | **Moderate** — Collection uses inline progress box (§E7-BC1) while Profile uses proper Card. Both use filter/settings UI but with different component levels | Recognizable as same app, but Collection feels slightly "less kuro-*" |
+| Calculator ↔ Tracker | **Moderate-High** — Calculator is the most input-dense tab, Tracker is the most display-focused. Different UI density but same font, color, and card system | Functional contrast, visual coherence maintained |
+| Teams ↔ any other tab | **Moderate** — Teams is the simplest tab with limited content | Less atmospheric investment, but uses same card system |
+| Any tab ↔ Modal overlays | **High** — modals use kuro-card, glassmorphic overlay, gold accents | Consistent modal system across all contexts |
+
+> **Finding E8-VC1** · PASS
+> **Visual coherence across sections is strong**: A user would recognize any tab as part of the same product. The shared elements — kuro-card, gold accent, Rajdhani/JetBrains Mono typography, glassmorphic surfaces, tab-content stagger animation — create a consistent visual DNA across all 8 tabs. The coherence weakens slightly in the Collection tab's inline progress summary and the Teams tab's limited content, but both still feel "same product, different focus."
+> **Evidence**: All 8 tabs share: TabBackground component for atmospheric glow, Card/CardHeader/CardBody for structured content, gold accent for primary data, JetBrains Mono for numbers, kuro-btn for primary actions. Tab stagger animation (`appcore-providers.jsx:555–599`) applies uniformly.
+> **Solution**: No action needed. Visual coherence is a strength of the current design.
+
+---
+
+### §E8.8 Summary
+
+#### Finding index
+
+| ID | Severity | Section | Title |
+|----|---------|---------|-------|
+| E8-CI1 | LOW | §E8.1.1 | First-impression credibility gap (inline Tailwind layer) |
+| E8-CI2 | MEDIUM | §E8.1.1 | Missing apple-touch-icon.png breaks mobile home screen |
+| E8-VT1 | PASS | §E8.1.2 | Palette and typography signal intentional design |
+| E8-VT2 | LOW | §E8.1.2 | Spacing rhythm inconsistent between layers |
+| E8-CB1 | PASS | §E8.1.3 | Competitive visual position is strong |
+| E8-CO1 | LOW | §E8.1.4 | Import success lacks celebration |
+| E8-DC1 | LOW | §E8.1.5 | OG image may not exist |
+| E8-CL1 | PASS | §E8.2.1 | Decorative elements well-calibrated for focus-tool |
+| E8-CL2 | LOW | §E8.2.1 | Text-shadow accumulation on headings |
+| E8-SC1 | PASS | §E8.2.2 | Critical data findable within 2 seconds |
+| E8-SC2 | LOW | §E8.2.2 | Average pity visually subordinate to luck rating |
+| E8-VN1 | PASS | §E8.2.3 | Visual noise appropriate for atmospheric-secondary |
+| E8-DL1 | PASS | §E8.2b.1 | Delight calibration well-balanced |
+| E8-LP1 | PASS | §E8.2b.2 | Visual personality uses leisure permission effectively |
+| E8-SS1 | PASS | §E8.3.1 | Safety signals well-calibrated |
+| E8-SS2 | NOTE | §E8.3.1 | Consider responsible-spending note in Calculator |
+| E8-WC1 | PASS | §E8.3.2 | Warmth calibration balances cyberpunk with approachability |
+| E8-TC1 | PASS | §E8.3.3 | Tone-design coherence is strong |
+| E8-DR1 | PASS | §E8.4.1 | Information density respects expert audience |
+| E8-VA1 | PASS | §E8.4.2 | Domain vocabulary precise and complete |
+| E8-PU1 | PASS | §E8.4.3 | Power-user surface area excellent |
+| E8-PU2 | LOW | §E8.4.3 | Keyboard shortcuts absent |
+| E8-PC1 | PASS | §E8.5.1 | Palette coherence with WuWa strong at L3 |
+| E8-TT1 | PASS | §E8.5.2 | Typographic tone coherent with WuWa |
+| E8-MC1 | PASS | §E8.5.3 | Motion character honors WuWa energy signature |
+| E8-IC1 | LOW | §E8.5.4 | Generic library icons vs game-specific iconography |
+| E8-IS1 | PASS | §E8.5b.1 | Insider signal density exceptional |
+| E8-AC1 | PASS | §E8.5b.2 | Anti-corporate — community-made character |
+| E8-DI1 | PASS | §E8.6.1 | Atmospheric treatments stay below functional threshold |
+| E8-TC2 | PASS | §E8.6.2 | Trust built through clarity with atmospheric enhancement |
+| E8-MI1 | MEDIUM | §E8.7.1 | Three defaulting signals undermine "made with intent" |
+| E8-FV1 | MEDIUM | §E8.7.2 | Favicon uses wrong gold color and system font |
+| E8-VC1 | PASS | §E8.7.3 | Visual coherence across sections is strong |
+
+**Totals**: 33 findings — **0 HIGH**, **3 MEDIUM**, **9 LOW**, **1 NOTE**, **20 PASS**
+
+#### Key strengths
+
+1. **Subject identity alignment is exceptional**: The palette, typography, motion vocabulary, and community voice all demonstrate L3 fidelity to Wuthering Waves without literal UI copying. The app would pass any "insider test" — a WuWa player instantly recognizes it as a community tool.
+
+2. **Axis balance is well-calibrated**: The focus-tool primary axis (data clarity, scannability, tabular numbers) coexists with atmospheric-secondary (glassmorphism, shimmer, corner HUD) without competition. The emotional-secondary axis (safety signals, warmth, celebration moments) is genuinely supportive without compromising precision.
+
+3. **Community credibility is a competitive advantage**: 114 community-humor trophies, precise domain vocabulary (14/14 terms accurate), privacy-first data handling, and community-native copy voice create trust that no generic tool could replicate.
+
+4. **Delight investment is proportional**: Trophy system, luck badges, PityRing animation, haptic feedback — each delight moment serves the emotional-secondary axis without compromising the focus-tool primary axis.
+
+#### Key concerns
+
+1. **"Made with intent" gap in inline layer** (§E8-MI1): The `transition-colors` + `rounded-lg` + `text-gray-400` trio in the inline Tailwind layer signals "Tailwind defaults" rather than "deliberate design." This is the most visible "unintentional" signal and it compounds across ~30% of the UI. Converges with §E7-DC1, §E7-PD1, §E1-COV1.
+
+2. **PWA identity is broken** (§E8-CI2, §E8-FV1): Missing apple-touch-icon.png + wrong favicon gold color = the app's most-seen representations (browser tab, home screen) don't match the brand. This is a quick-fix, high-impact issue.
+
+3. **Distribution assets incomplete** (§E8-CI2, §E8-DC1): Missing apple-touch-icon.png and potentially missing og-image.png mean the app's first impression on Reddit/Discord link shares and iOS home screens is degraded.
+
+#### Connection to prior findings
+
+- **§E7-DC1 + §E7-PD1** (two-layer gap, button migration): The §E8 "made with intent" test (§E8-MI1) confirms that the Tailwind default fingerprint is the primary "unintentional" signal. The button migration remains the single most impactful improvement across both professionalism (§E7) and product aesthetics (§E8).
+- **§E1-COV1** (token coverage ~30%): The axis-driven assessment confirms that the token gap isn't just a technical issue — it's a product aesthetics issue visible through the A1 (credibility), A2 (intent), and Universal (made-with-intent) lenses.
+- **§E7-PL1** (no success animation): Confirmed as a commitment-flow gap (§E8-CO1) — the import success moment is the app's "conversion" equivalent.
+- **§DBI3-S03** (rounded-lg monoculture): Confirmed as a "defaulting" signal (§E8-MI1) — the monoculture is visible as "unintentional" rather than "coherent."
+
+---
+
+> **End of Step 15 — §E8: Product Aesthetics (Axis-Driven)**
+> **Lines added**: ~620
+> **Next step**: Step 16 — §E9: Visual Identity & Recognizability (awaiting user instruction)
