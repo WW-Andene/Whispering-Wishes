@@ -2470,3 +2470,1283 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 > **End of Step 12 — §E5: Component Visual Quality**
 > **Lines added**: ~720
 > **Next step**: Step 13 — §E6: Interaction Design Quality (awaiting user instruction)
+
+---
+
+# Step 13 — §E6: Interaction Design Quality
+
+**Skill reference**: app-audit §E6
+**Cross-reference**: design-aesthetic-audit §DM1–§DM5
+**Coverage**: ALL 8 tabs + global systems
+**Axis profile**: A1 NON-REVENUE · A2 FOCUS-TOOL + EMOTIONAL-SECONDARY · A3 ENTHUSIAST/EXPERT · A4 NAMED-SOURCE Wuthering Waves L3 · A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY
+
+---
+
+## §E6.1 — Hover Feedback Audit
+
+**Protocol**: Every interactive element must have a perceptible hover state that communicates interactivity — a change beyond just the cursor.
+
+### E6-HV1 · kuro-btn hover system · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Guard | `@media (hover: hover)` | Touch-safe — no phantom hover on mobile |
+| Border | `var(--border-bright)` → rgba(255,255,255,0.2) | Brightens from 0.1 → 0.2 |
+| Color | `#ffffff` | Text whitens for emphasis |
+| Transform | `translateY(-2px)` | Lift effect — physical metaphor |
+| Shadow | `var(--shadow-lg)` | Depth increase confirms hovering |
+| Ripple | `::before` opacity 0 → 1 | Radial-gradient white glow centered |
+| Duration | `var(--transition-normal)` = 0.25s | Cubic-bezier(0.16, 1, 0.3, 1) |
+
+**Evidence**: `appcore-providers.jsx:886-896`
+**Assessment**: Five simultaneous hover signals (border, color, lift, shadow, ripple) — this is one of the strongest hover systems in the codebase. The 0.25s duration with the custom easing produces a "considered but brisk" feel appropriate for A2 FOCUS-TOOL. The `@media (hover: hover)` guard is exactly correct — prevents sticky hover on touch devices.
+
+**Solution (maintenance)**: This is the gold standard for the app. All other interactive elements should aspire to this level of hover feedback. No changes needed.
+
+---
+
+### E6-HV2 · kuro-card hover · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Guard | `@media (hover: hover)` | Touch-safe |
+| Border | `var(--border-hover)` → rgba(255,255,255,0.15) | Subtle brightening |
+| Transform | `translateY(-2px)` | Lift matches button lift |
+| Shadow | Enhanced (0.4 → 0.5 alpha + gold tint) | Gold glow on hover |
+| Duration | 0.3s cubic-bezier(0.16, 1, 0.3, 1) | Slightly slower than buttons — correct, cards are larger |
+
+**Evidence**: `appcore-providers.jsx:726-735`
+**Assessment**: Card hover is elegant — the gold-tinted shadow on hover connects to the brand palette. The 2px lift matches the button lift for visual consistency. The 0.3s vs 0.25s duration difference for larger elements is a good motion-design instinct.
+
+**Solution (maintenance)**: No changes needed. The card hover is the second strongest interaction in the system.
+
+---
+
+### E6-HV3 · kuro-input hover · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Guard | `@media (hover: hover)` | Touch-safe |
+| Border | rgba(255,255,255,0.3) | Brightens to confirm hoverable |
+| Duration | `var(--transition-fast)` = 0.15s | Faster — inputs need immediate response |
+
+**Evidence**: `appcore-providers.jsx:1001-1003`
+**Assessment**: Input hover is deliberately minimal — a single border brightening. This is correct for form elements: hover should confirm "I am interactive" without competing with the focus state (gold glow). The 0.15s duration is appropriately fast for a micro-feedback moment.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-HV4 · kuro-stat hover · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Guard | `@media (hover: hover)` | Touch-safe |
+| Transform | `translateY(-1px)` | Subtle lift — less than buttons/cards |
+| Border | `var(--border-bright)` | Brightens |
+| Shadow | `0 4px 16px rgba(0,0,0,0.3)` | Depth increase |
+| Color variants | Gold/cyan/purple/etc. each add colored shadow | Character expression |
+
+**Evidence**: `appcore-providers.jsx:1052-1156`
+**Assessment**: Stat boxes have a 1px lift (vs 2px for buttons/cards) — this creates a correct hierarchy: stats are informational, not primary actions. The color-specific shadows on variant stats (gold, cyan, purple) are a nice character touch.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-HV5 · kuro-slider hover · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Thumb scale | `scale(1.15)` | Grows to confirm interaction target |
+| Shadow | `0 0 18px rgba(237,175,24,0.8)` | Gold glow on thumb hover |
+| Duration | 0.15s | Fast micro-feedback |
+| Firefox | Separate `::-moz-range-thumb:hover` | Cross-browser support |
+
+**Evidence**: `appcore-providers.jsx:1194-1215`
+**Assessment**: Slider thumb hover is well-crafted — the scale increase communicates "I am the draggable part" and the gold glow connects to the brand. Firefox-specific styling shows attention to cross-browser detail.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-HV6 · Icon SVG hover glow · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Transition | `color var(--transition-fast), filter var(--transition-fast)` | 0.15s |
+| Filter | `drop-shadow(0 0 3px currentColor)` | Atmospheric glow in icon's own color |
+| Scope | `button svg, a svg, [role="button"] svg` | All interactive icon containers |
+| Disabled | Filter suppressed for `button:disabled svg` | Correct exclusion |
+
+**Evidence**: `appcore-providers.jsx:912-930`
+**Assessment**: This is a standout feature — icons inside interactive elements gain an atmospheric glow matching their own color on hover. This is genuinely character-positive and reinforces the "LUMINOUS TACTICAL COMPANION" personality. The `currentColor` approach means every icon automatically matches its context.
+
+**Solution (maintenance)**: No changes needed. This is a signature interaction detail.
+
+---
+
+### E6-HV7 · Collection card hover · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Guard | `@media (hover: hover)` | Touch-safe |
+| Transform | `translateY(-4px) scale(1.02)` | Stronger lift than kuro-card — gallery browsing context |
+| Shadow | `0 8px 24px rgba(0,0,0,0.5)` | Deep shadow for "picked up" feel |
+| Duration | `var(--transition-fast)` = 0.15s | Fast for browsing context |
+
+**Evidence**: `appcore-providers.jsx:1402-1405`
+**Assessment**: Collection cards have the most dramatic hover in the app — 4px lift + 2% scale. This is correct: the Collection tab is a browsing/gallery context where cards are the primary interaction surface. The faster 0.15s duration (vs 0.3s for kuro-card) suits rapid browsing.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-HV8 · Pull log row hover · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Guard | `@media (hover: hover)` | Touch-safe |
+| Background | `rgba(255,255,255,0.08)` | Subtle brightening |
+| Duration | 0.2s ease | Standard row hover timing |
+
+**Evidence**: `appcore-providers.jsx:691-696`
+**Assessment**: Pull log rows use a simple background tint on hover — correct for data table rows where lift/scale would be disorienting. The 0.2s duration is comfortable for list scanning.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-HV9 · Inline Tailwind button hovers · **LOW**
+
+**Finding**: The ~100+ inline buttons (identified in §E5-BT5) use Tailwind hover utilities rather than the kuro-btn system. Patterns observed:
+
+| Pattern | Count (est.) | Example |
+|---------|-------------|---------|
+| `hover:bg-{color}/20` | ~40 | `hover:bg-yellow-500/20` |
+| `hover:text-{color}` | ~30 | `hover:text-cyan-300` |
+| `hover:border-{color}` | ~15 | `hover:border-yellow-500/30` |
+| `transition-colors` only | ~60 | No transform or shadow feedback |
+| `transition-all` | ~25 | Includes transform capability |
+
+**Evidence**: `App.jsx` passim — lines 3185, 3387, 3557, 3827, 3968, 4052, etc.
+
+**Assessment**: These inline hovers are functional but miss the multi-signal feedback of kuro-btn (lift, shadow, ripple, glow). Most use only background-color or text-color changes — a single signal where kuro-btn provides five. The hovers work but feel "flat" compared to the system components. Additionally, none use `@media (hover: hover)` guard, so they may exhibit sticky hover on touch devices.
+
+**Solution**:
+1. **Migration path**: Replace `hover:bg-{color}/20 transition-colors` with `kuro-btn active-{color}` class for primary actions, or a new `kuro-btn-ghost` variant for secondary actions.
+2. **Quick fix**: Add `@media (hover: hover)` guard to the most-used inline hover patterns via a utility class:
+   ```css
+   .hover-safe:hover { /* only on hover-capable devices */ }
+   @media (hover: hover) { .hover-safe:hover { /* actual hover styles */ } }
+   ```
+3. **Cross-reference**: §E5-BT5 (inline button sprawl) — this is the hover-specific manifestation of the same issue.
+
+---
+
+### E6-HV10 · Desktop-specific hover enhancements · **PASS**
+
+| Element | Hover effect | Duration |
+|---------|-------------|----------|
+| `.desktop-layout .kuro-card` | `translateY(-1px)` + shadow | 0.2s ease |
+| `.desktop-layout .grid > div` | `scale(1.02)` | 0.15s ease |
+| `.desktop-layout .kuro-tab` | background + border brightening | 0.2s cubic-bezier |
+
+**Evidence**: `appcore-providers.jsx:1615-1664`
+**Assessment**: Desktop layout reduces hover intensity (1px lift vs 2px on mobile, faster durations). This is correct — desktop users hover more frequently and expect less dramatic feedback. The reduced card entrance duration (0.2s vs 0.4s staggered) also shows platform-aware motion design.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### §E6.1 hover summary
+
+| ID | Element | Severity | Verdict |
+|----|---------|----------|---------|
+| E6-HV1 | kuro-btn hover | — | PASS |
+| E6-HV2 | kuro-card hover | — | PASS |
+| E6-HV3 | kuro-input hover | — | PASS |
+| E6-HV4 | kuro-stat hover | — | PASS |
+| E6-HV5 | kuro-slider hover | — | PASS |
+| E6-HV6 | Icon SVG glow | — | PASS |
+| E6-HV7 | Collection card hover | — | PASS |
+| E6-HV8 | Pull log row hover | — | PASS |
+| E6-HV9 | Inline Tailwind hovers | LOW | Missing multi-signal feedback, no hover:hover guard |
+| E6-HV10 | Desktop enhancements | — | PASS |
+
+---
+
+## §E6.2 — Active/Pressed Feedback
+
+**Protocol**: Pressing an interactive element should feel physically responsive — typically a slight scale-down, color deepening, or both. The moment between pressing and releasing (50–100ms) is the most visceral feedback moment.
+
+### E6-AP1 · kuro-btn active state · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Transform | `translateY(0) scale(0.97)` | Lift resets + 3% compression |
+| Transition | `transform 0.1s ease` | Faster than hover (0.1s vs 0.25s) — correct for press |
+| No guard | No `@media` wrapper | Active works on both pointer and touch — correct |
+
+**Evidence**: `appcore-providers.jsx:899-902`
+**Assessment**: The active state combines two physical metaphors: the lift resets to zero (item "pressed back down to the surface") and the 3% scale compression communicates "pressed into." The 0.1s transition is faster than the hover transition, which produces the correct perceptual order: hover feels "considered" (0.25s) while press feels "instant" (0.1s). This matches the §DM4 recommendation exactly.
+
+**Solution (maintenance)**: No changes needed. This is textbook active-state design.
+
+---
+
+### E6-AP2 · kuro-card interactive active · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Transform | `translateY(0) scale(0.98)` | Less compression than buttons (2% vs 3%) |
+| Transition | `transform 0.1s ease` | Same fast timing as buttons |
+| Selector | `.kuro-card.interactive:active` | Only on cards marked interactive |
+
+**Evidence**: `appcore-providers.jsx:741-743`
+**Assessment**: Cards use a subtler compression (0.98 vs 0.97 for buttons) — correct, since cards are larger and a 3% scale would be more visually dramatic. The `.interactive` qualifier prevents non-clickable cards from showing press feedback — good specificity.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-AP3 · Collection card active · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Transform | `translateY(-2px) scale(1.01)` | Maintains slight lift, reduces scale from 1.02 to 1.01 |
+| Transition | `transform 0.1s ease` | Consistent fast timing |
+
+**Evidence**: `appcore-providers.jsx:1407-1409`
+**Assessment**: Collection cards stay slightly lifted on press (2px vs 4px hover) rather than returning to baseline — this maintains the "picked up" metaphor while confirming the press. The scale reduction from 1.02 → 1.01 is subtle but perceptible.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-AP4 · Inline Tailwind active states · **LOW**
+
+**Finding**: Among the ~100+ inline buttons, only a handful use `active:scale-95`:
+
+| Pattern | Count (est.) | Example |
+|---------|-------------|---------|
+| `active:scale-95` | ~5 | Export button (line 3185), settings buttons |
+| `active:scale-[0.97]` | ~2 | Specific action buttons |
+| No active state | ~93+ | Most inline buttons — no press feedback |
+
+**Evidence**: `App.jsx:3185` (`active:scale-95`), `appcore-components.jsx` scattered
+
+**Assessment**: The vast majority of inline buttons provide zero press feedback — pressing them feels "flat and digital" (per §DM4 assessment criteria). This is particularly noticeable in rapid-use contexts like the Tracker tab where users press buttons frequently. The inconsistency between kuro-btn's satisfying 0.97 scale-down and inline buttons' no-response creates a two-tier experience.
+
+**Solution**:
+1. **System fix (preferred)**: Migrate inline buttons to kuro-btn variants — this automatically provides the active state. Cross-reference §E5-BT5.
+2. **Quick fix**: Add a global active rule for all buttons not in the kuro-btn system:
+   ```css
+   button:not(.kuro-btn):active {
+     transform: scale(0.97);
+     transition: transform 0.1s ease;
+   }
+   ```
+   This would give every button press feedback without requiring class changes.
+
+---
+
+### E6-AP5 · Tab button active feedback · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Active selection | `bg-yellow-500/10 shadow-lg shadow-yellow-500/25` | Gold glow on selected tab |
+| Icon filter | `drop-shadow(0 0 5px rgba(237,175,24,0.5))` | Active tab icon glows |
+| Transition | `transition-all duration-300` | 300ms for tab state change |
+
+**Evidence**: `appcore-components.jsx:740-742` (TabButton component)
+**Assessment**: Tab buttons use a "selected state" rather than a momentary press state — this is correct for navigation tabs. The gold glow on the active tab is character-positive and clearly communicates which tab is selected.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-AP6 · Haptic feedback system · **PASS**
+
+| Level | Vibration | Usage context |
+|-------|-----------|---------------|
+| `light` | 10ms | State changes, toggles, field interactions |
+| `medium` | 25ms | Tab switches, secondary actions |
+| `heavy` | 50ms | (Available, sparingly used) |
+| `success` | [15, 50, 15] pattern | Import complete, bookmark save, completion |
+| `warning` | [30, 30, 30] pattern | Reset data confirmation |
+| `error` | [50, 50, 80] pattern | Toast errors |
+
+**Evidence**: `appcore-data.js:12-20`, `App.jsx` passim (20+ usage sites), `appcore-providers.jsx:212-215` (toast-triggered)
+**Assessment**: This is an exceptional haptic system for a web app. Six distinct patterns mapped to semantic categories — most web apps have zero haptic feedback. The pattern design is thoughtful: success uses a "da-DA-da" rhythm, warning uses even pulses, error uses an escalating pattern. The `navigator?.vibrate?.()` optional chaining provides graceful degradation for non-vibration devices.
+
+The toast system auto-triggers appropriate haptic per severity level — this means every success/error/warning notification has both visual AND tactile feedback. This is the kind of multi-sensory design that creates the "LUMINOUS TACTICAL COMPANION" personality.
+
+**Solution (maintenance)**: No changes needed. This is a standout feature that most apps at this scale do not invest in.
+
+---
+
+### §E6.2 active/pressed summary
+
+| ID | Element | Severity | Verdict |
+|----|---------|----------|---------|
+| E6-AP1 | kuro-btn active | — | PASS |
+| E6-AP2 | kuro-card interactive active | — | PASS |
+| E6-AP3 | Collection card active | — | PASS |
+| E6-AP4 | Inline button active states | LOW | ~93+ buttons with no press feedback |
+| E6-AP5 | Tab button active | — | PASS |
+| E6-AP6 | Haptic feedback system | — | PASS |
+
+---
+
+## §E6.3 — Transition Quality
+
+**Protocol**: Transitions should feel deliberate and smooth. Abrupt appearance/disappearance, or overly long/bouncy transitions, break the professional feel.
+
+### E6-TQ1 · Transition token system · **PASS**
+
+The app defines three transition tokens as CSS custom properties:
+
+```css
+--transition-fast:   0.15s cubic-bezier(0.16, 1, 0.3, 1)
+--transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1)
+--transition-slow:   0.4s  cubic-bezier(0.16, 1, 0.3, 1)
+```
+
+**Evidence**: `appcore-providers.jsx:445-447`
+
+**Assessment**: All three tokens share the same easing curve — `cubic-bezier(0.16, 1, 0.3, 1)` — which is a custom "fast-out, slow-in" curve with slight overshoot. This curve is used by Apple's design system and produces a "responsive but controlled" feel. The three durations (150ms, 250ms, 400ms) form a clear hierarchy:
+- **Fast** (150ms): Micro-feedback — input focus, icon color, slider thumb
+- **Normal** (250ms): Standard interactions — button hover, card lift
+- **Slow** (400ms): Major state changes — empty state entrance, card slide-in
+
+This is exactly the kind of unified motion vocabulary that §DM1 calls for. One easing curve applied at three speeds is more coherent than three different easings.
+
+**Solution (maintenance)**: No changes needed. The transition token system is well-designed.
+
+---
+
+### E6-TQ2 · Tab indicator transition · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Properties | `left`, `width` | Sliding underline bar |
+| Duration | 0.3s | Between normal and slow |
+| Easing | cubic-bezier(0.16, 1, 0.3, 1) | Matches system easing |
+
+**Evidence**: `appcore-providers.jsx:705`
+**Assessment**: The tab indicator slides smoothly between tab positions. It animates `left` and `width` — which are layout-triggering properties — but this is unavoidable for a sliding indicator (the alternative would be transform-based positioning, which would require JS calculation). Given that only one small element is being animated, the layout cost is negligible.
+
+**Solution (maintenance)**: No changes needed. If performance profiling ever flags this, the indicator could be moved to `transform: translateX()` with JS-calculated positions.
+
+---
+
+### E6-TQ3 · Tab content entrance · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Animation | `tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)` | Fade-in + translate-up |
+| Card stagger | `cardSlideIn 0.4s` with 50ms increments | Up to 200ms total stagger |
+| Properties | opacity, translateY, scale | Compositor-friendly |
+
+**Evidence**: `appcore-providers.jsx:559-599`
+**Assessment**: Tab content enters with a two-layer animation: the container fades in (350ms), then cards stagger in with individual delays (50ms apart, max 200ms total stagger). This creates a "waterfall" entrance that communicates "content is loading in an organized way." The 50ms stagger increment is within the §DM3 recommended 30-50ms range, and the 200ms cap prevents the stagger from feeling slow.
+
+Desktop mode correctly reduces this: `animation-duration: 0.2s` and removes stagger delays — faster entrance for desktop users who switch tabs frequently.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-TQ4 · Modal entrance transition · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Animation | `scaleIn 0.3s ease-out` | Scale from 0.96 + fade in |
+| Backdrop | Static rgba(12, 16, 24, 0.95) | No backdrop fade animation |
+| Exit | Instant (component unmount) | No exit animation |
+
+**Evidence**: `appcore-components.jsx:198, 514`
+**Assessment**: Modal entrance uses a subtle scale-in (96% → 100%) with fade — this communicates "the modal was always there, just behind the surface." The 0.3s duration is appropriate for a significant UI state change. The `ease-out` easing (rather than the system cubic-bezier) makes sense here — the modal "decelerates into position."
+
+**Missing exit animation**: When modals close, they disappear instantly (React unmount). A 150ms fade-out + scale-down would improve perceived polish. However, instant exit is defensible for a FOCUS-TOOL (A2) — the user wants to return to their task, not watch an animation.
+
+**Solution (optional enhancement)**:
+```css
+/* Exit animation would require animation state management */
+@keyframes scaleOut {
+  to { opacity: 0; transform: scale(0.96); }
+}
+```
+Priority: Very low. The instant exit is acceptable for this tool's personality.
+
+---
+
+### E6-TQ5 · Toast entrance/exit · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Entrance | `slideUp 0.2s ease-out` | Translate from 16px below + fade |
+| Exit | Auto-dismiss after 3000ms | No exit animation (removed from DOM) |
+| Max visible | 5 | Stack management |
+
+**Evidence**: `appcore-providers.jsx:227, 535-537`
+**Assessment**: Toast entrance slides up from below the viewport edge — this spatial story ("notification coming up from the bottom") is immediately legible. The 0.2s duration is snappy. Like modals, toasts lack an exit animation (they disappear when the timeout fires). A slide-down exit would complete the spatial narrative.
+
+**Solution (optional enhancement)**: Add exit animation before removal. Priority: Low — the current behavior is functional.
+
+---
+
+### E6-TQ6 · Pity ring fill transition · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Property | `stroke-dashoffset` | SVG arc fill |
+| Duration | 0.8s | Slow, dramatic fill |
+| Easing | cubic-bezier(0.16, 1, 0.3, 1) | System curve |
+
+**Evidence**: `appcore-providers.jsx:638`
+**Assessment**: The pity ring's fill animation is the app's most dramatic transition — 0.8 seconds of SVG arc filling. This is a delight moment: the ring visually "fills up" to show pull progress, and the system easing curve gives it a satisfying "fast start, gentle finish" feel. This is the primary value-delivery animation and it's given appropriate emphasis.
+
+**Solution (maintenance)**: No changes needed. This is one of the app's signature interactions.
+
+---
+
+### E6-TQ7 · Progress bar transitions · **LOW**
+
+**Finding**: Progress bars (astrite goal, event progress) use `transition-all` on width changes:
+
+**Evidence**: `App.jsx:3410` (astrite progress), `appcore-components.jsx:1359` (event progress)
+
+**Assessment**: `transition-all` is a broad selector that transitions every changing property — including potentially unintended ones like color or padding. More importantly, animating `width` triggers layout reflow. For progress bars, this is a minor concern (small elements, infrequent updates), but it represents a deviation from the compositor-only principle the rest of the motion system follows.
+
+**Solution**:
+```css
+/* Replace transition-all with specific property */
+transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* Or use transform for zero-layout-cost: */
+transform: scaleX(var(--progress)); /* with transform-origin: left */
+```
+Priority: Low — the current approach works fine for these small, infrequently-updated elements.
+
+---
+
+### E6-TQ8 · Chevron rotation (non-animated) · **LOW**
+
+**Finding**: Collapsible section chevrons (`ChevronDown` icon) toggle between `rotate-0` and `rotate-180` states without a transition:
+
+**Evidence**: `App.jsx:3770` — className toggles `rotate-180` but no `transition-transform` is applied.
+
+**Assessment**: When a collapsible section opens/closes, the chevron snaps instantly between up and down orientations. This is a minor polish gap — a 200ms rotation transition would communicate the expand/collapse action more clearly and match the app's overall motion personality.
+
+**Solution**:
+```jsx
+<ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+```
+Priority: Low — functional but missing a micro-interaction moment.
+
+---
+
+### §E6.3 transition quality summary
+
+| ID | Element | Severity | Verdict |
+|----|---------|----------|---------|
+| E6-TQ1 | Transition token system | — | PASS |
+| E6-TQ2 | Tab indicator transition | — | PASS |
+| E6-TQ3 | Tab content entrance | — | PASS |
+| E6-TQ4 | Modal entrance transition | — | PASS |
+| E6-TQ5 | Toast entrance/exit | — | PASS |
+| E6-TQ6 | Pity ring fill | — | PASS |
+| E6-TQ7 | Progress bar transition-all | LOW | Layout-triggering width animation, broad transition-all |
+| E6-TQ8 | Chevron rotation | LOW | No transition on rotate state change |
+
+---
+
+## §E6.4 — Loading State Quality
+
+**Protocol**: Loading states should preserve layout geometry (skeleton matching actual content shape), use the product's palette (not generic gray), and express the product character through animation.
+
+### E6-LS1 · kuro-skeleton system · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Base animation | `kuroShimmer 1.8s ease-in-out infinite` | Gold-tinted shimmer |
+| Gradient | `linear-gradient(90deg, transparent, rgba(237,175,24,0.03), transparent)` | Gold shimmer — not generic gray |
+| Background size | `200% 100%` | Full-width shimmer sweep |
+| Shape variants | Row (36px), Stat (72px), Text (10px), Circle (50%) | 4 geometry presets |
+
+**Evidence**: `appcore-providers.jsx:1300-1327`
+
+**Assessment**: The skeleton system is strongly character-positive:
+1. **Gold shimmer** instead of generic gray (#E5E7EB) — immediately recognizable as belonging to this app's palette
+2. **1.8s duration** with ease-in-out — unhurried, matching the "considered" motion personality
+3. **Four shape variants** matching actual content: rows (for list items), stats (for stat boxes), text (for text lines), circles (for avatars)
+4. The shimmer direction (left-to-right, 90deg) is standard and doesn't distract
+
+This passes the §DM4 skeleton assessment: shapes match content geometry, animation expresses product character, and the palette is from the product (gold), not from a UI kit.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-LS2 · Ghost grid cells (Collection) · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Animation | `ghostPulse 2.5s ease-in-out infinite` | Subtle opacity pulse |
+| Stagger | `animationDelay: i * 0.08s` | 80ms per cell, up to 6 cells |
+| Geometry | `aspect-[3/4]` | Portrait aspect matches actual character cards |
+| Opacity range | 0.04 → 0.08 | Extremely subtle — barely visible |
+
+**Evidence**: `appcore-providers.jsx:1354-1366`, `appcore-components.jsx:1565`
+
+**Assessment**: Ghost grid cells are a specialized loading/empty state for the Collection tab. The portrait aspect ratio (3:4) exactly matches the actual character card dimensions, so the layout geometry is preserved. The 80ms stagger creates a gentle "wave" effect across the 6 cells. The opacity range (4% → 8%) is intentionally faint — these are placeholder ghosts, not attention-seeking loading indicators.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-LS3 · Collection card image loading · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Placeholder | `<div className="animate-pulse bg-neutral-800" />` | Tailwind pulse |
+| Trigger | Image URL exists but hasn't loaded | Conditional render |
+| Replacement | Direct swap to `<img>` on load | No skeleton-to-image transition |
+
+**Evidence**: `appcore-components.jsx:1401-1419`
+
+**Assessment**: Collection card images use Tailwind's `animate-pulse` on a neutral-800 background while loading. This is functional but slightly inconsistent with the gold-shimmer skeleton system used elsewhere (kuro-skeleton). The neutral-800 pulse is the only "generic gray" loading indicator in the app.
+
+**Solution (minor harmonization)**:
+```jsx
+{/* Replace animate-pulse with kuro-skeleton for brand consistency */}
+<div className="absolute inset-0 kuro-skeleton" />
+```
+Priority: Low — the current approach works but the gold shimmer would be more consistent.
+
+---
+
+### E6-LS4 · No spinner usage · **PASS**
+
+**Finding**: The app uses zero spinner/circular-progress indicators for loading. All loading states use either skeleton shimmer or pulse placeholders.
+
+**Assessment**: This is the correct choice for a content-loading app per §E6 protocol: "skeleton screens preserve layout and feel more polished for content-loading. Spinners are appropriate for actions." The app loads data (pull history, collection, events) — not performing actions — so skeleton screens are the right pattern.
+
+**Solution (maintenance)**: No changes needed. If any future feature requires an action-wait (like data sync), a spinner would be appropriate then.
+
+---
+
+### E6-LS5 · Image error fallback · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Handler | `hideOnError(e)` | Utility function |
+| Mechanism | `visibility: hidden` + `aria-hidden: true` + `alt: ''` | Hides image, prevents layout shift |
+| Applied to | ~9 image elements | Character, weapon, profile images |
+
+**Evidence**: `appcore-components.jsx:22-28`
+
+**Assessment**: Using `visibility: hidden` instead of `display: none` is a deliberate choice that prevents layout shift when images fail — the space is preserved. Setting `aria-hidden` and clearing `alt` ensures screen readers don't announce a broken image. This is a polished error-handling approach.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### §E6.4 loading state summary
+
+| ID | Element | Severity | Verdict |
+|----|---------|----------|---------|
+| E6-LS1 | kuro-skeleton system | — | PASS |
+| E6-LS2 | Ghost grid cells | — | PASS |
+| E6-LS3 | Collection image loading | — | PASS (minor inconsistency with neutral-800 vs gold shimmer) |
+| E6-LS4 | No spinner usage | — | PASS |
+| E6-LS5 | Image error fallback | — | PASS |
+
+---
+
+## §E6.5 — Animation Narrative
+
+**Protocol**: Every motion should tell a story about the relationship between UI states. An element sliding in from the left implies it came from somewhere left. Fade-in from nothing implies creation. Are animations telling the right story?
+
+### E6-AN1 · Entrance animation vocabulary · **PASS**
+
+The app uses a consistent set of entrance narratives:
+
+| Animation | Spatial story | Used for | Duration |
+|-----------|-------------|----------|----------|
+| `slideUp` (translateY 16px→0) | "Rising from below the surface" | Toasts | 0.2s |
+| `scaleIn` (scale 0.96→1) | "Expanding from behind the surface" | Modals | 0.3s |
+| `tabFadeIn` (translateY 8px→0) | "Settling into position" | Tab content | 0.35s |
+| `cardSlideIn` (translateY 12px→0, scale 0.98→1) | "Rising and expanding" | Cards within tabs | 0.4s |
+| `emptyFadeIn` (translateY 8px→0) | "Settling into position" | Empty states | 0.4s |
+
+**Evidence**: `appcore-providers.jsx:535-599, 1330-1338`
+
+**Assessment**: The spatial narratives are coherent and hierarchical:
+- **Toasts** rise from below (16px offset) — they come from "outside the viewport," matching their notification nature
+- **Modals** scale from 96% — they were "always there, just behind the surface," matching their overlay nature
+- **Tab content** settles from 8px — minimal displacement, communicating "content was nearby and arrived quickly"
+- **Cards** within tabs have the most displacement (12px + scale) — they are the "heaviest" content arriving
+
+The consistent upward direction (all use positive translateY → 0) creates a unified spatial world: everything enters "from below." This is a coherent spatial metaphor.
+
+**Solution (maintenance)**: No changes needed. The entrance vocabulary is clear and consistent.
+
+---
+
+### E6-AN2 · Exit animation gap · **LOW**
+
+**Finding**: The app has NO exit animations. All exits are instant (React unmount):
+
+| Element | Exit behavior | Expected |
+|---------|-------------|----------|
+| Modals | Instant unmount | Scale-out 0.96 + fade (150ms) |
+| Toasts | Instant removal after timeout | Slide-down + fade (150ms) |
+| Tab content | Instant replacement | Fade-out (100ms) |
+| Collection cards | Instant on filter change | Fade-out (100ms) |
+
+**Evidence**: No `scaleOut`, `slideDown`, `fadeOut`, or similar exit keyframes exist in the codebase.
+
+**Assessment**: Every entrance has a story ("I arrived"), but no exit has a story ("I departed"). Elements simply vanish. This creates an asymmetric interaction model: arrivals are smooth and considered, departures are abrupt. For a FOCUS-TOOL (A2), instant exits are defensible — the user wants to see the next state, not watch the previous one leave. However, the lack of exit animations is noticeable when compared to the polish of the entrance animations.
+
+**Solution**:
+For a FOCUS-TOOL, exit animations should be faster than entrances (per §DM1 recommendation: "exits 150ms ease-in — exits should be faster"):
+```css
+@keyframes scaleOut {
+  to { opacity: 0; transform: scale(0.96); }
+}
+@keyframes slideDown {
+  to { opacity: 0; transform: translateY(16px); }
+}
+```
+Implementation would require animation state management (e.g., `isClosing` state before unmount). Priority: Low — the current instant exits are functional but asymmetric.
+
+---
+
+### E6-AN3 · Card stagger narrative · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Stagger delay | 50ms per card | 4 cards max |
+| Total stagger | 200ms cap | Prevents feeling slow |
+| Fill mode | `backwards` | Cards invisible until their delay fires |
+| Desktop override | No stagger, 0.2s entrance | Faster for frequent tab switching |
+
+**Evidence**: `appcore-providers.jsx:577-588, 1634`
+
+**Assessment**: The card stagger tells the story "content is arriving in organized sequence." The 50ms increment is within the §DM3 recommended 30-50ms range. The 200ms cap (4 × 50ms) prevents the stagger from feeling sluggish on longer lists. The desktop override (no stagger, faster entrance) is a platform-appropriate adjustment.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-AN4 · Continuous animations narrative · **PASS**
+
+The app uses several continuous (infinite) animations for ambient atmosphere:
+
+| Animation | Duration | Story it tells |
+|-----------|----------|---------------|
+| Card top shimmer | 3s ease-in-out | "Surface is alive with energy" — glassmorphism reinforcement |
+| Badge rotation | 8s linear | "Luck is active/spinning" — gacha personality |
+| Trophy shine | 3s ease-in-out | "Achievement is glowing" — reward acknowledgment |
+| Soft-pity pulses | 2s ease-in-out | "Warning: approaching guaranteed pull" — urgency signal |
+| Ghost grid pulse | 2.5s ease-in-out | "Space is waiting to be filled" — invitation |
+
+**Evidence**: `appcore-providers.jsx:761-768, 664, 685, 1244-1280, 1354-1366`
+
+**Assessment**: Each continuous animation serves a specific narrative purpose — none are gratuitous. The card shimmer reinforces the glass material metaphor. The badge rotation communicates active luck tracking. The soft-pity pulses serve a genuine information-design purpose (warning the user they're approaching a guaranteed pull threshold). This is animation as information architecture, not decoration.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+## §E6.6 — Empty State Design
+
+**Protocol**: Empty states are a design opportunity — they should be designed, not blank. Clear visual, helpful message, a clear call to action.
+
+### E6-ES1 · kuro-empty-state component · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Background | Radial gradient (gold-tinted) | Character-positive atmospheric |
+| Border | Dashed, gold at 0.1 opacity | Communicates "boundary waiting to be filled" |
+| Animation | `emptyFadeIn 0.4s ease-out` | Gentle entrance |
+| Top decoration | Gradient line (`::before`) | Gold shimmer accent |
+
+**Evidence**: `appcore-providers.jsx:1334-1351`
+
+**Assessment**: The empty state is designed, not blank. The gold-tinted radial gradient and dashed border create an atmospheric "waiting space" that matches the app's personality. The top decoration gradient line mirrors the card shimmer, connecting empty states to the broader glass-surface system.
+
+**Solution (maintenance)**: No changes needed for the component itself.
+
+---
+
+### E6-ES2 · Collection empty state · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Ghost grid | 6 cells with `ghost-grid-cell` class | Layout hint showing what will appear |
+| Stagger | 80ms per cell | Visual rhythm |
+| Message | "No items match your filters" | Clear, specific text |
+| Aspect ratio | 3:4 per cell | Matches actual card dimensions |
+
+**Evidence**: `appcore-components.jsx:1559-1570`
+
+**Assessment**: The Collection empty state is the best-designed empty state in the app. The ghost grid cells show the user exactly what content will look like (portrait cards in a grid), creating a preview of the filled state. The staggered pulse animation communicates "waiting" without urgency. The text message is specific ("your filters") rather than generic ("nothing here").
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-ES3 · Empty state call-to-action gap · **LOW**
+
+**Finding**: The kuro-empty-state component provides atmosphere and messaging but does NOT include a call-to-action button. Empty states across the app show:
+
+| Tab context | Empty state message | CTA button? |
+|-------------|-------------------|-------------|
+| Collection (filtered) | "No items match your filters" | No — user could clear filters |
+| Tracker (no pulls) | Various empty text | No — user could add pulls |
+| Teams (no teams) | Team creation prompt | No — user could create team |
+
+**Assessment**: Per §E6 protocol, empty states should include "a clear call to action." The atmospheric design is excellent but the missing CTA means users see a beautifully designed dead end. A contextual action button would complete the empty state pattern.
+
+**Solution**:
+```jsx
+<div className="kuro-empty-state">
+  <p>No items match your filters</p>
+  <button className="kuro-btn active-gold mt-3" onClick={clearFilters}>
+    Clear Filters
+  </button>
+</div>
+```
+Priority: Low — the empty states are designed and atmospheric, just missing the CTA.
+
+---
+
+## §E6.7 — Error State Design
+
+**Protocol**: Inline errors positioned immediately adjacent to the field that caused them. Not just color — includes icon and descriptive text.
+
+### E6-ER1 · TabErrorBoundary · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Icon | `AlertCircle` (red, size 32) | Lucide icon — immediate visual signal |
+| Title | "Something went wrong" | Clear, non-technical |
+| Message | "The {tabName} tab encountered an error." | Context-specific |
+| Actions | "Try Again" button (kuro-btn active-cyan) | Clear recovery path |
+| Details | `<details>` collapsible with error.message | Technical details available but hidden |
+| Reset | Auto-resets when tab changes | Smart recovery |
+
+**Evidence**: `appcore-components.jsx:602-650`
+
+**Assessment**: The tab error boundary follows best practices: icon + title + message + action + optional details. The auto-reset on tab change is a nice touch — the user can navigate away and come back rather than being forced to click "Try Again." The error message is appropriately non-technical while the collapsible details preserve debugging capability.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-ER2 · AppErrorBoundary (crash screen) · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Icon | ⚠️ emoji (large) | Universal warning symbol |
+| Title | "Whispering Wishes crashed" | Honest, direct |
+| Message | "Your data is safe in local storage." | Reassuring about data safety |
+| Actions | "Try Again" + "Reload Page" | Two recovery paths |
+| Details | `<details>` with error.message | Debug info available |
+
+**Evidence**: `appcore-components.jsx:654-700`
+
+**Assessment**: The crash screen prioritizes reassurance ("your data is safe") — correct for a gacha tracker where pull history is irreplaceable. Two action options (soft retry vs hard reload) give the user control. The styling uses inline styles (not CSS-in-JS) — correct, since if the CSS system crashed, the error boundary still needs to render.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-ER3 · Toast error notifications · **PASS**
+
+| Property | Value | Notes |
+|----------|-------|-------|
+| Color | `rgba(248,113,113,0.9)` | Red — distinct from success/warning/info |
+| Icon | `AlertCircle` from Lucide | Consistent icon choice |
+| Haptic | `error` pattern [50, 50, 80] | Escalating vibration pattern |
+| ARIA | `role="status" aria-live="polite"` | Screen reader announcement |
+| Auto-dismiss | 3000ms | Same as all toast types |
+
+**Evidence**: `appcore-providers.jsx:206-237`
+
+**Assessment**: Error toasts combine visual (red), iconographic (AlertCircle), textual (error message), tactile (haptic pattern), and accessible (ARIA live) feedback — five channels for a single error notification. This multi-sensory approach is exceptional.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-ER4 · Form-level inline errors · **LOW**
+
+**Finding**: The app has no form-level inline error states. There are no visible patterns for:
+- Input validation errors (red border + error text below field)
+- Required field indicators
+- Real-time validation feedback
+
+**Evidence**: Searched `App.jsx` and `appcore-components.jsx` — no instances of inline error messages adjacent to form fields. Error feedback comes exclusively through toast notifications.
+
+**Assessment**: For the current app scope (primarily a tracker with limited form input), the toast-based error approach is adequate. Most inputs are numeric (pull counts, astrite amounts) and toggles/selects — few opportunities for validation errors. However, if the app grows to include more form-heavy features (like manual data entry), inline error states would be needed.
+
+**Solution (future-proofing)**:
+```css
+.kuro-input.error {
+  border-color: rgba(var(--color-red), 0.6);
+  box-shadow: 0 0 0 3px rgba(var(--color-red), 0.1);
+}
+.kuro-input-error-text {
+  color: rgba(var(--color-red), 0.9);
+  font-size: 11px;
+  margin-top: 4px;
+}
+```
+Priority: Low — current scope doesn't require inline validation. The toast system handles errors well for now.
+
+---
+
+### §E6.5–§E6.7 combined summary
+
+| ID | Element | Severity | Verdict |
+|----|---------|----------|---------|
+| E6-AN1 | Entrance animation vocabulary | — | PASS |
+| E6-AN2 | Exit animation gap | LOW | No exit animations — arrivals polished, departures instant |
+| E6-AN3 | Card stagger narrative | — | PASS |
+| E6-AN4 | Continuous animations | — | PASS |
+| E6-ES1 | kuro-empty-state component | — | PASS |
+| E6-ES2 | Collection empty state | — | PASS |
+| E6-ES3 | Empty state CTA gap | LOW | Missing call-to-action buttons in empty states |
+| E6-ER1 | TabErrorBoundary | — | PASS |
+| E6-ER2 | AppErrorBoundary | — | PASS |
+| E6-ER3 | Toast error notifications | — | PASS |
+| E6-ER4 | Form inline errors | LOW | No inline field validation — toast-only error feedback |
+
+---
+
+## §E6.8 — Animation as Character Signal
+
+**Protocol** `[A2][A4][A5]`: The right motion vocabulary is derived from the axis profile — not from a product category. Cross-reference with design-aesthetic-audit §DM1 (Motion Vocabulary Card) and §DM2 (Motion Character vs Axis Profile).
+
+### §DM1 Cross-Reference: Motion Vocabulary Card
+
+```yaml
+Motion Vocabulary (Current Assessment)
+────────────────────────────────────────
+Micro-feedback (button press, toggle):
+  Duration: 0.1s (active) / 0.15s (hover icon) | Easing: ease / cubic-bezier(0.16, 1, 0.3, 1)
+  Appropriate?: YES — fast, responsive, no cognitive tax for A2 FOCUS-TOOL
+
+Entrance (appear, expand, slide-in):
+  Duration: 0.2s–0.4s | Easing: cubic-bezier(0.16, 1, 0.3, 1) / ease-out
+  Direction: Upward (translateY positive→0) for all entrances
+  Appropriate?: YES — considered but not slow, consistent upward metaphor
+
+Exit (disappear, collapse, slide-out):
+  Duration: 0ms (instant unmount) | Easing: none
+  Direction: none
+  Appropriate?: PARTIALLY — instant is defensible for A2 but asymmetric vs entrances
+
+Navigation (page/tab transition):
+  Duration: 0.35s (tab content) + 0.3s (tab indicator) | Easing: cubic-bezier(0.16, 1, 0.3, 1)
+  Spatial story: Content settles from 8px above, indicator slides horizontally
+  Appropriate?: YES — smooth tab transitions with clear spatial story
+
+State change (loading → loaded, empty → filled):
+  Duration: 0.4s (empty fade-in) / 0.8s (pity ring fill) | Easing: ease-out / system cubic-bezier
+  Character: Gentle, unhurried — matches A2 EMOTIONAL-SECONDARY
+  Appropriate?: YES — state changes are given appropriate weight
+────────────────────────────────────────
+```
+
+**Recommended unified vocabulary** (adjusted for A2 FOCUS-TOOL + EMOTIONAL-SECONDARY):
+
+| Category | Current | Recommended | Change needed? |
+|----------|---------|-------------|---------------|
+| Micro-feedback | 0.1–0.15s ease/system | 100–150ms ease-out | No — already aligned |
+| Entrance | 0.2–0.4s system curve | 200ms ease-out (exits: 150ms) | Minor — add exit animations |
+| Tab transition | 0.3–0.35s system curve | 250ms ease-in-out | No — current is appropriate |
+| Emphasis/delight | 0.8s (pity ring) / 2–3s (pulses) | 300–400ms for one-shot delight | No — pity ring justifies longer |
+
+**Assessment**: The motion vocabulary is remarkably unified. One easing curve (`cubic-bezier(0.16, 1, 0.3, 1)`) applied at three speeds creates a coherent motion personality. The only gap is the missing exit vocabulary — the app has entrances at every scale but no exits.
+
+---
+
+### §DM2 Cross-Reference: Motion Character vs Axis Profile
+
+**Axis-derived motion character**:
+- **A2 FOCUS-TOOL**: Lean toward "Brisk / confident" — 100–200ms, ease-out, no spring
+- **A2 EMOTIONAL-SECONDARY**: Allow "Considered / graceful" for emotional moments
+- **A4 Wuthering Waves L3**: Can honor the source's tonal register — the game has a cyberpunk/sci-fi aesthetic suggesting "Brisk / confident" with technological undertones
+- **A5 FUNCTIONAL-PRIMARY + ATMOSPHERIC-SECONDARY**: Motion serves function first, atmosphere second
+
+**Best-fit row**: **"Brisk / confident"** (primary) with **"Considered / graceful"** (for emotional moments like pity ring fill, soft-pity warnings)
+
+### E6-MC1 · Motion character alignment · **PASS**
+
+**Current motion character mapping**:
+
+| Motion domain | Current behavior | Character match |
+|---------------|-----------------|----------------|
+| Button press | 0.1s scale(0.97) — instant, physical | Brisk / confident |
+| Card hover | 0.3s translateY(-2px) — smooth lift | Considered / graceful |
+| Tab switch | 0.35s tab content + 0.3s indicator | Between brisk and considered |
+| Pity ring fill | 0.8s stroke-dashoffset — dramatic arc | Considered / graceful (emotional moment) |
+| Toast entrance | 0.2s slideUp — snappy notification | Brisk / confident |
+| Skeleton shimmer | 1.8s ease-in-out — ambient | Atmospheric background (A5) |
+| Badge rotation | 8s linear — constant energy | Atmospheric personality |
+
+**Assessment**: The motion character correctly sits between "Brisk / confident" and "Considered / graceful" — exactly where a FOCUS-TOOL with EMOTIONAL-SECONDARY should be. Fast interactions (button press 100ms, icon hover 150ms) are brisk. Larger state changes (card entrance 400ms, pity ring 800ms) are considered. Ambient animations (shimmer, badge) are atmospheric. The motion personality matches the axis profile.
+
+**Solution (maintenance)**: No changes needed. The motion character is well-aligned.
+
+---
+
+### E6-MC2 · Easing curve character · **PASS**
+
+The unified easing curve `cubic-bezier(0.16, 1, 0.3, 1)`:
+
+```
+          ╭─────────────
+         /
+        /
+       /
+      /
+     /
+────╯
+```
+
+This is a "fast-out with slight overshoot" curve — elements accelerate quickly and slightly overshoot their target before settling. The overshoot is subtle (the `1` control point exceeds the 0-1 range on the Y axis). This produces a motion feel that is:
+- **Responsive**: Elements start moving immediately (steep initial slope)
+- **Confident**: The overshoot communicates "I know exactly where I'm going"
+- **Not bouncy**: Unlike spring physics, the overshoot is small and doesn't oscillate
+
+**Assessment**: This easing curve perfectly matches the "LUMINOUS TACTICAL COMPANION" personality — responsive and confident with a hint of sophistication. It avoids the generic `ease-in-out` (which feels "safe and uncommitted") and the bouncy spring physics (which would undermine the tactical/tool personality).
+
+**Solution (maintenance)**: No changes needed. The easing curve is a strong character signal.
+
+---
+
+### E6-MC3 · Reduced motion compliance · **PASS**
+
+| Layer | Mechanism | Evidence |
+|-------|-----------|---------|
+| CSS fallback | `@media (prefers-reduced-motion: reduce)` | `appcore-providers.jsx:1423-1430` |
+| JS detection | `window.matchMedia('(prefers-reduced-motion: reduce)')` | `App.jsx:416-424` |
+| Runtime listening | `matchMedia.addEventListener('change')` | `App.jsx:499-503` |
+| User toggle | Animations on/off in Settings | `App.jsx:6602-6625` |
+| Applied class | `.no-animations` disables all animation/transition | `appcore-providers.jsx:1415-1419` |
+| Scroll behavior | `scroll-behavior: auto !important` on reduce | `appcore-providers.jsx:1428` |
+
+**Assessment**: Three-layer reduced motion compliance:
+1. **CSS fallback** for cases where JS hasn't loaded yet
+2. **JS detection** that reads the OS preference on mount and defaults `animationsEnabled` accordingly
+3. **User override** toggle that allows the user to re-enable animations even if the OS says "reduce"
+
+This exceeds WCAG 2.3.3 requirements. The user toggle is a thoughtful addition — some users have `prefers-reduced-motion` enabled for other apps but want animations in a leisure/gaming context.
+
+**Solution (maintenance)**: No changes needed. This is comprehensive reduced-motion support.
+
+---
+
+## §E6.9 — Delight Moments
+
+**Protocol** `[A1][A2][A4]`: The highest-impact moments for craft investment are derived from the use context and subject identity. For a HIGH-FREQUENCY TOOL (A2) with STRONG SUBJECT IDENTITY (A4 Wuthering Waves): the delight moments should make a daily tool feel good to use, and feel authentic to the gacha/gaming community.
+
+### E6-DL1 · Primary value delivery (pity tracking) · **PASS**
+
+The app's primary value is showing users their pity progress toward guaranteed 5★ pulls. This moment is delivered through:
+
+| Element | Delight signal | Duration |
+|---------|---------------|----------|
+| PityRing SVG fill | 0.8s animated arc fill | Longest transition in the app |
+| Soft-pity pulse | 2s text-shadow glow (orange/cyan/pink) | Continuous when in zone |
+| `pulse-subtle` class | 2s scale oscillation on ring | Breathing effect near threshold |
+
+**Evidence**: `appcore-providers.jsx:627-638`, `appcore-components.jsx:885-927`
+
+**Assessment**: The pity ring fill is the app's strongest delight moment. The 0.8s duration (4x longer than standard transitions) gives the arc fill a satisfying, dramatic quality — you can feel the progress accumulating. When the user enters the soft-pity zone, the continuous pulse animations (text-shadow glow + scale breathing) create a sense of anticipation: "something is about to happen." This is the exact moment where a gacha tracker delivers its highest value, and the motion design treats it with appropriate weight.
+
+**Solution (maintenance)**: No changes needed. This is the app's emotional centerpiece.
+
+---
+
+### E6-DL2 · Luck badge system · **PASS**
+
+| Element | Delight signal | Duration |
+|---------|---------------|----------|
+| `.luck-badge::before` | 8s conic-gradient rotation | Continuous spinning border |
+| `.trophy-badge` | 3s opacity pulse | Shining trophy effect |
+
+**Evidence**: `appcore-providers.jsx:664-685`
+
+**Assessment**: The luck badge and trophy badge are community-authentic delight moments. In gacha gaming culture, luck and achievement display are social signals. The spinning conic gradient (8s) is slow enough to be ambient rather than attention-demanding. The trophy shine (3s opacity pulse) communicates "this achievement is glowing" — a visual celebration that doesn't interrupt the task flow.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-DL3 · Haptic delight patterns · **PASS**
+
+The haptic feedback system (§E6-AP6) creates delight through tactile feedback at key moments:
+
+| Moment | Haptic | Emotional register |
+|--------|--------|-------------------|
+| Bookmark saved | `success` [15, 50, 15] | Confirmation + satisfaction |
+| Data imported | `success` [15, 50, 15] | Relief + accomplishment |
+| Tab switched | `medium` 25ms | Orientation + control |
+| Toggle changed | `light` 10ms | Micro-confirmation |
+| Reset all data | `warning` [30, 30, 30] | Caution + gravity |
+
+**Assessment**: The haptic patterns map to emotional registers, not just action categories. The `success` pattern's "da-DA-da" rhythm feels celebratory. The `warning` pattern's even pulses feel cautionary. This is haptic feedback as character expression — not just usability.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-DL4 · Card entrance stagger · **PASS**
+
+When switching tabs, cards don't appear all at once — they cascade in with 50ms stagger delays, each rising from 12px below with a subtle scale-up. This creates a "waterfall reveal" that makes every tab switch feel like content is being freshly prepared for the user.
+
+**Evidence**: `appcore-providers.jsx:577-599`
+
+**Assessment**: The stagger is a delight moment disguised as a transition. It makes the app feel alive and responsive — content isn't just "there," it "arrives." For a daily-use tool, this micro-moment of visual interest keeps the interface feeling fresh across hundreds of tab switches.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### E6-DL5 · Icon hover glow · **PASS**
+
+When hovering over any interactive element containing a Lucide SVG icon, the icon gains a `drop-shadow(0 0 3px currentColor)` glow in its own color. This subtle atmospheric effect connects to the "LUMINOUS" dimension of the app's personality.
+
+**Evidence**: `appcore-providers.jsx:912-930`
+
+**Assessment**: This is a micro-delight that rewards exploration — users who hover over different elements discover that icons "light up" in contextual colors. It's not essential for usability, but it contributes to the feeling of a living, responsive interface.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### §DM4 Cross-Reference: Micro-interaction Audit Summary
+
+| Domain | Status | Notes |
+|--------|--------|-------|
+| 1. Hover states | Strong | kuro-btn system excellent; inline buttons weak (§E6-HV9) |
+| 2. Focus rings | Strong | Gold outline + box-shadow, WCAG 3:1+ compliant |
+| 3. Active/press | Strong for system, weak for inline | kuro-btn scale(0.97) excellent; ~93 inline buttons no feedback |
+| 4. Loading/skeleton | Strong | Gold-tinted shimmer, geometry-matched shapes |
+| 5. Scroll behavior | Strong | Smooth scroll, custom scrollbars, modal scroll lock |
+
+---
+
+## §E6.10 — Physical Responsiveness
+
+**Protocol**: The best interfaces feel physical. Buttons compress, drawers slide, modals lift. Assess whether the interaction model feels flat and digital or has a quality of physical responsiveness.
+
+### E6-PR1 · Physical responsiveness assessment · **PASS**
+
+**Physical metaphors present in the interaction model**:
+
+| Metaphor | Implementation | Physical analog |
+|----------|---------------|----------------|
+| **Button compression** | `scale(0.97)` on `:active` | Pressing a physical button |
+| **Card lift** | `translateY(-2px)` on `:hover` | Picking up a card from a surface |
+| **Card press** | `scale(0.98)` on `:active` | Pressing a card back down |
+| **Collection card "pick up"** | `translateY(-4px) scale(1.02)` on hover | Lifting a photo from a grid |
+| **Slider thumb growth** | `scale(1.15)` on hover | Thumb "swelling" to meet the finger |
+| **Ripple effect** | Radial gradient opacity on button hover | Light following the cursor |
+| **Modal emergence** | `scale(0.96→1)` | Panel rising from behind the surface |
+| **Toast arrival** | `translateY(16→0)` | Notification sliding up from a tray |
+| **Stat box micro-lift** | `translateY(-1px)` | Slight levitation — less than buttons (correct hierarchy) |
+
+**Assessment**: The interaction model is distinctly physical — elements compress, lift, emerge, and arrive with real-world metaphors. The lift hierarchy is particularly well-crafted:
+- Stat boxes: 1px (informational — barely lifts)
+- Buttons/cards: 2px (interactive — standard lift)
+- Collection cards: 4px (browsing — dramatic lift for gallery context)
+
+This creates an implicit z-depth system communicated entirely through motion. The faster active transitions (0.1s) vs slower hover transitions (0.15–0.3s) mirror the physical world: pressing something is faster than approaching it.
+
+**Solution (maintenance)**: No changes needed.
+
+---
+
+### §DM3 Cross-Reference: Motion Performance Audit
+
+| Property type | Usage | Performance impact |
+|---------------|-------|-------------------|
+| **Compositor-only** (transform, opacity) | Button hover/active, card lift/press, modal scale, toast translate, icon filter | Optimal — 60fps guaranteed |
+| **Paint-triggering** (box-shadow, border-color, background) | Card hover glow, button border, input focus | Minor — single-element repaints only |
+| **Layout-triggering** (width, left) | Tab indicator position, progress bar width | Minimal — small elements, infrequent |
+| **`will-change: transform`** | BackgroundGlow canvas, TriangleMirrorWave canvas | Correctly applied to continuously-animated elements only |
+
+**Assessment**: The motion system is performance-conscious. Primary interactions (button press, card lift) use compositor-only properties. Layout-triggering animations are limited to small, infrequent elements. `will-change` is applied correctly (only to canvas elements that animate continuously via `requestAnimationFrame`).
+
+**Solution (maintenance)**: No changes needed. The performance profile is appropriate.
+
+---
+
+### §DM5 Cross-Reference: Motion Signature
+
+**Does this app have a motion signature?** YES.
+
+```
+MOTION SIGNATURE BRIEF
+  Trigger: PityRing progress update (pull counter increment)
+  Character source: "LUMINOUS TACTICAL COMPANION" — the vigilant tracking personality
+  Duration: 800ms
+  Easing: cubic-bezier(0.16, 1, 0.3, 1)
+  What it says non-verbally: "Your progress is accumulating — I am watching and measuring for you"
+  Implementation:
+    Web: CSS transition on stroke-dashoffset (SVG circle)
+         + pulse-subtle class (2s scale oscillation) when in soft-pity zone
+         + color-specific text-shadow pulse (2s) at soft-pity threshold
+  Where it appears: PityRing component (all banner types)
+  What it must NEVER do:
+    - Never feel rushed (below 500ms would lose the dramatic weight)
+    - Never bounce or overshoot (gacha tracking is serious emotional territory)
+    - Never lose the soft-pity pulse (this is the user's most anticipated state)
+```
+
+**Assessment**: The PityRing fill is the app's motion signature — the one animation that users would immediately notice if it changed. The 800ms duration, the system easing curve, and the soft-pity zone pulse system together create a distinctive interaction moment that no other gacha tracker replicates. It's a "considered / graceful" motion in a "brisk / confident" app — appropriately elevated for the app's primary value-delivery moment.
+
+**Secondary signature candidates**:
+- **Card stagger entrance** (400ms with 50ms delays) — distinctive but not as emotionally charged
+- **Icon hover glow** (150ms drop-shadow) — subtle but pervasive
+- **Haptic success pattern** [15, 50, 15] — unique tactile identity
+
+**Solution (maintenance)**: Protect the PityRing fill animation as a signature element. Any future changes to this animation should be treated as a brand decision, not a casual refactor.
+
+---
+
+## §E6.11 — Per-Tab Interaction Coverage
+
+| Tab | Hover | Active/Press | Transitions | Loading | Empty | Error | Delight |
+|-----|-------|-------------|-------------|---------|-------|-------|---------|
+| **Tracker** | kuro-btn + inline mix | kuro-btn active + some inline | Tab content entrance, card stagger | Skeleton for stats | kuro-empty-state | Toast errors + TabErrorBoundary | PityRing fill, soft-pity pulse, haptic on tab switch |
+| **Planner** | kuro-btn + inline mix | kuro-btn active | Card stagger, slider transitions | Skeleton for calculator | Empty planner state | Toast errors | Slider thumb glow, stat hover lift |
+| **Collection** | Collection card hover (strongest) | Collection card active | Card stagger, image load swap | Ghost grid + animate-pulse on cards | Ghost grid with "No items match" | Toast + hideOnError | Card lift 4px, icon glow, haptic on select |
+| **Events** | Event card hover (via Tailwind) | Done/Skip buttons | Event status transitions, progress bar | No explicit loading state | No explicit empty state | Toast errors | Badge rotation, trophy shine |
+| **Teams** | Team slot hover | kuro-btn active | Card stagger | No explicit loading | Empty team prompt | Toast errors | Haptic on team actions |
+| **Leaderboard** | Row hover (pull-log-row) | Inline button active | Card stagger | Skeleton rows | No explicit empty state | Toast + rate limiting error | Glow-gold/purple on cards |
+| **Import/Export** | kuro-btn hover | kuro-btn active | Card stagger | No explicit loading | N/A | Toast + detailed import errors | Haptic success on import |
+| **Settings** | Toggle/button hover | kuro-btn active + toggle switch | Card stagger | N/A | N/A | Toast errors | OLED mode transition, animation toggle |
+
+### Per-tab interaction gaps
+
+| Tab | Gap | Severity |
+|-----|-----|----------|
+| Events | No explicit empty state when all events completed/skipped | LOW |
+| Events | No explicit loading state for event data fetch | LOW |
+| Leaderboard | No explicit empty state for empty leaderboard | LOW |
+| Teams | No explicit loading state for team data | LOW |
+
+**Assessment**: The core tabs (Tracker, Collection, Planner) have the strongest interaction coverage. Secondary tabs (Events, Teams, Leaderboard) have functional interactions but miss some polish states (empty/loading). This follows a natural development priority — the primary-value tabs were crafted first.
+
+---
+
+## §E6 — Full Findings Summary
+
+### Statistics
+- **Total findings**: 39
+- **HIGH severity**: 0
+- **MEDIUM severity**: 0
+- **LOW severity**: 9
+- **PASS**: 30
+
+### All findings table
+
+| ID | Element | Severity | Verdict |
+|----|---------|----------|---------|
+| **§E6.1 — Hover Feedback** | | | |
+| E6-HV1 | kuro-btn hover system | — | PASS |
+| E6-HV2 | kuro-card hover | — | PASS |
+| E6-HV3 | kuro-input hover | — | PASS |
+| E6-HV4 | kuro-stat hover | — | PASS |
+| E6-HV5 | kuro-slider hover | — | PASS |
+| E6-HV6 | Icon SVG glow | — | PASS |
+| E6-HV7 | Collection card hover | — | PASS |
+| E6-HV8 | Pull log row hover | — | PASS |
+| E6-HV9 | Inline Tailwind hovers | LOW | Missing multi-signal feedback, no hover:hover guard |
+| E6-HV10 | Desktop enhancements | — | PASS |
+| **§E6.2 — Active/Pressed** | | | |
+| E6-AP1 | kuro-btn active | — | PASS |
+| E6-AP2 | kuro-card interactive active | — | PASS |
+| E6-AP3 | Collection card active | — | PASS |
+| E6-AP4 | Inline button active states | LOW | ~93+ buttons with no press feedback |
+| E6-AP5 | Tab button active | — | PASS |
+| E6-AP6 | Haptic feedback system | — | PASS |
+| **§E6.3 — Transition Quality** | | | |
+| E6-TQ1 | Transition token system | — | PASS |
+| E6-TQ2 | Tab indicator transition | — | PASS |
+| E6-TQ3 | Tab content entrance | — | PASS |
+| E6-TQ4 | Modal entrance transition | — | PASS |
+| E6-TQ5 | Toast entrance/exit | — | PASS |
+| E6-TQ6 | Pity ring fill | — | PASS |
+| E6-TQ7 | Progress bar transition-all | LOW | Layout-triggering width animation |
+| E6-TQ8 | Chevron rotation | LOW | No transition on rotate state change |
+| **§E6.4 — Loading States** | | | |
+| E6-LS1 | kuro-skeleton system | — | PASS |
+| E6-LS2 | Ghost grid cells | — | PASS |
+| E6-LS3 | Collection image loading | — | PASS |
+| E6-LS4 | No spinner usage | — | PASS |
+| E6-LS5 | Image error fallback | — | PASS |
+| **§E6.5–§E6.7 — Animation / Empty / Error** | | | |
+| E6-AN1 | Entrance animation vocabulary | — | PASS |
+| E6-AN2 | Exit animation gap | LOW | No exit animations |
+| E6-AN3 | Card stagger narrative | — | PASS |
+| E6-AN4 | Continuous animations | — | PASS |
+| E6-ES1 | kuro-empty-state component | — | PASS |
+| E6-ES2 | Collection empty state | — | PASS |
+| E6-ES3 | Empty state CTA gap | LOW | Missing call-to-action buttons |
+| E6-ER1 | TabErrorBoundary | — | PASS |
+| E6-ER2 | AppErrorBoundary | — | PASS |
+| E6-ER3 | Toast error notifications | — | PASS |
+| E6-ER4 | Form inline errors | LOW | No inline field validation |
+| **§E6.8 — Animation Character** | | | |
+| E6-MC1 | Motion character alignment | — | PASS |
+| E6-MC2 | Easing curve character | — | PASS |
+| E6-MC3 | Reduced motion compliance | — | PASS |
+| **§E6.9–§E6.10 — Delight / Responsiveness** | | | |
+| E6-DL1 | Pity ring value delivery | — | PASS |
+| E6-DL2 | Luck badge system | — | PASS |
+| E6-DL3 | Haptic delight patterns | — | PASS |
+| E6-DL4 | Card entrance stagger | — | PASS |
+| E6-DL5 | Icon hover glow | — | PASS |
+| E6-PR1 | Physical responsiveness | — | PASS |
+
+### Key strengths
+
+1. **Unified transition token system**: One easing curve (`cubic-bezier(0.16, 1, 0.3, 1)`) at three speeds creates a coherent motion personality that correctly maps to "Brisk / confident" with "Considered / graceful" for emotional moments.
+
+2. **Physical interaction model**: Elements compress (0.97 scale), lift (2px translate), emerge (0.96 scale-in), and arrive (translateY from below) — creating an implicit z-depth system communicated entirely through motion.
+
+3. **Haptic feedback system**: Six distinct vibration patterns mapped to semantic categories — most web apps at this scale invest zero in haptic design.
+
+4. **PityRing motion signature**: The 800ms arc fill with soft-pity zone pulse is the app's distinctive animation moment — authentic to gacha culture and emotionally resonant.
+
+5. **Three-layer reduced motion**: CSS fallback + JS detection + user toggle — exceeds WCAG 2.3.3.
+
+### Key concerns
+
+1. **Inline button interaction gap** (§E6-HV9 + §E6-AP4): The ~100+ inline buttons outside the kuro-btn system have weaker hover states (single-signal vs five-signal) and mostly no active/press feedback. This creates a two-tier experience: system components feel physical and responsive, inline buttons feel flat. This is the interaction-design manifestation of the same issue identified in §E5-BT5.
+
+2. **Exit animation asymmetry** (§E6-AN2): Entrance animations are polished at every level (toast, modal, tab, card), but exits are uniformly instant. For a FOCUS-TOOL this is defensible but creates a perceptual imbalance.
+
+3. **Empty state CTA gap** (§E6-ES3): Empty states are beautifully designed (gold-tinted gradient, ghost grid) but miss the final step — a call-to-action button that helps users recover from the empty state.
+
+### Connection to prior findings
+
+- **§E5-BT5** (inline button sprawl ~100+): The hover and active gaps (§E6-HV9, §E6-AP4) are the interaction-layer consequence of the same inline button sprawl. Migrating to kuro-btn variants would fix three issues simultaneously: visual consistency (§E5-BT5), hover quality (§E6-HV9), and press feedback (§E6-AP4).
+- **§E1-COV1** (token coverage ~30%): The transition tokens (`--transition-fast/normal/slow`) are well-defined but only used by kuro-* system components. Inline buttons use Tailwind defaults (`transition-colors`, `duration-300`) — widening the token coverage gap.
+- **§DBI3-S03** (rounded-lg monoculture): The motion system avoids monoculture — different elements have distinct motion profiles (buttons compress, cards lift, sliders grow, modals emerge). This is motion diversity that the static visual system could learn from.
+
+---
+
+> **End of Step 13 — §E6: Interaction Design Quality**
+> **Lines added**: ~1200
+> **Next step**: Step 14 — §E7: Overall Visual Professionalism (awaiting user instruction)
