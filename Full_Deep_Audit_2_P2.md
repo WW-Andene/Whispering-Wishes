@@ -1208,3 +1208,1265 @@ The 10 LOW findings are refinement opportunities — none represent systemic pro
 > **End of Step 11 — §E4: Typography Craft**
 > **Lines added**: ~680
 > **Next step**: Step 12 — §E5: Component Visual Quality (awaiting user instruction)
+
+---
+
+# STEP 12 — §E5: Component Visual Quality
+
+**Audit date**: 2026-03-20
+**Auditor**: Claude (Opus 4.6)
+**Skill reference**: `app-audit-SKILL.md` §E5 + `design-aesthetic-audit-SKILL.md` §DCO1–§DCO6
+**Scope**: Every UI component across ALL 8 tabs — assessed for visual consistency, state completeness, and craft
+**App version**: Whispering Wishes v3.2.3
+
+---
+
+## §E5.1 — Core Interactive Components: Buttons
+
+### Component inventory
+
+The button system is built around a single CSS-in-JS base class `.kuro-btn` (appcore-providers.jsx:855–910) with 6 color-semantic active variants. Additional button patterns exist as one-off Tailwind compositions.
+
+**Button class usage across codebase:**
+
+| Pattern | Count | Location |
+|---|---|---|
+| `.kuro-btn` (base) | 39 instances | App.jsx, appcore-components.jsx |
+| `active-gold` | 11 | Tracker categories, Calc featured char, Server select, Import |
+| `active-cyan` | 5 | Calc standard char/weap, Profile actions |
+| `active-emerald` | 6 | Calc "Both", Guarantee toggle, Lunite |
+| `active-pink` | 2 | Calc featured weapon |
+| `active-purple` | 1 | Bookmark save |
+| `active-red` | 1 | Reset all data |
+| Inline Tailwind buttons | ~100+ | Quick-add currency, modal close, onboarding, header controls |
+| `<TabButton />` component | 8 | Main navigation bar (appcore-components.jsx:703–749) |
+
+**Total onClick handlers**: 143 across App.jsx
+
+---
+
+### E5-BT1: Button state completeness
+
+**Assessment**: **PASS**
+
+The `.kuro-btn` base class implements all 5 required states:
+
+| State | Implementation | Quality |
+|---|---|---|
+| **Default** | `bg: var(--bg-btn)`, `border: 1px solid var(--border-medium)`, `shadow: var(--shadow-md)`, `backdrop-filter: blur(8px)` | Glassy, atmospheric, on-character |
+| **Hover** | `border-color: var(--border-bright)`, `color: #fff`, `transform: translateY(-2px)`, `shadow: var(--shadow-lg)`, ripple overlay via `::before` | Physical lift + luminous brightening — excellent |
+| **Active/pressed** | `transform: translateY(0) scale(0.97)`, `transition: 0.1s ease` | Physical press-down — matches cyberpunk precision |
+| **Focus-visible** | `outline: 2px solid rgba(gold, 0.8)`, `outline-offset: 2px`, `box-shadow: 0 0 0 4px rgba(gold, 0.15)` | Gold focus ring — character-appropriate |
+| **Disabled** | `opacity: 0.4`, `filter: saturate(0.7) brightness(0.8)`, `cursor: not-allowed`, `pointer-events: none` | Desaturated + dimmed — clear and prevents interaction |
+
+All 5 states are present with thoughtful, character-consistent treatment. The hover lift (`translateY(-2px)`) paired with enhanced shadow creates a physical dimensionality that reinforces the cyberpunk glass aesthetic. The active press (`scale(0.97)`) gives immediate tactile feedback.
+
+**Evidence**: appcore-providers.jsx:855–910 (base), :496–509 (focus-visible)
+
+**Solution (maintenance)**: The button state system is exemplary. Document the 5-state contract in a component guide so future contributors maintain it. Consider adding a 6th state: **loading** (in-progress with spinner that maintains button dimensions) for async actions like leaderboard submit.
+
+---
+
+### E5-BT2: Button hierarchy system
+
+**Assessment**: **LOW**
+
+The app uses a **flat** button hierarchy — every `.kuro-btn` shares identical visual weight at rest. There is no visual distinction between primary (most important action), secondary (supporting), and tertiary (low-stakes) buttons.
+
+**Evidence across tabs**:
+
+| Tab | Buttons at same weight | What needs hierarchy |
+|---|---|---|
+| CALC | 6 banner selectors + guarantee toggle + save bookmark | "Calculate" should be primary; selectors are secondary |
+| PLANNER | Lunite toggle + income sources | Planning actions are all equal weight |
+| PROFILE | Server select + leaderboard + export + reset | "Reset All Data" (destructive) is same weight as save — only differentiated when active (active-red) |
+| TEAMS | Team slots + selectors | No primary action stands out |
+
+**Specific concern**: The destructive "Reset All Data" button (active-red) is visually identical to all other buttons at rest. Per §DCO1, destructive buttons should be "visually distinct from primary — different color family entirely." The red treatment only appears when the button is in its active/toggled state, not at rest.
+
+**Solution**:
+```
+/* Primary action — full accent, maximal weight */
+.kuro-btn-primary {
+  background: rgba(237, 175, 24, 0.15);
+  border-color: rgba(237, 175, 24, 0.4);
+  color: #fef08a;
+  font-weight: 600;
+}
+
+/* Secondary — current default .kuro-btn (no change needed) */
+
+/* Tertiary / ghost — reduced weight */
+.kuro-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 0.7;
+}
+.kuro-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-medium);
+  opacity: 1;
+}
+
+/* Destructive — always visually distinct, not just when active */
+.kuro-btn-danger {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: rgba(239, 68, 68, 0.7);
+}
+.kuro-btn-danger:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.1);
+}
+```
+
+---
+
+### E5-BT3: Active color variant system
+
+**Assessment**: **PASS**
+
+The 6 active variants (gold, cyan, emerald, pink, purple, red) form a coherent glow-based system. Each variant applies:
+- Tinted background at 15% opacity
+- Saturated border at 70% opacity
+- Light text color (pastel tint of the accent)
+- Triple-layer box-shadow (outer glow + drop shadow + inner glow)
+- Text-shadow for luminous readability
+- Animated `borderGlow` keyframe (2s ease-in-out infinite) on gold variant
+
+**Color-semantic mapping**:
+
+| Color | Semantic meaning | Usage |
+|---|---|---|
+| **Gold** (#edaf18) | Featured/primary/selected | Featured char, server, import |
+| **Cyan** (#38bdf8) | Standard/secondary/info | Standard banner, profile actions |
+| **Emerald** (#22c55e) | Confirmed/toggled-on/both | Guarantee, Lunite, "Both" option |
+| **Pink** (#ec4899) | Weapon/alternate | Featured weapon, forging tides |
+| **Purple** (#a855f7) | Save/bookmark | Bookmark save action |
+| **Red** (#ef4444) | Destructive/reset | Reset all data |
+
+The semantic associations are consistent and learnable. Gold = character, pink = weapon is an intuitive mapping from gacha game conventions.
+
+**Evidence**: appcore-providers.jsx:912–978
+
+**Solution (maintenance)**: The color-semantic mapping is strong. Formalize it as a documented convention: gold = primary selection, cyan = secondary selection, emerald = confirmation/success, pink = weapon/alternate, purple = save/persist, red = destructive.
+
+---
+
+### E5-BT4: Tab navigation buttons
+
+**Assessment**: **PASS**
+
+The `<TabButton />` component (appcore-components.jsx:703–749) is a well-crafted navigation element:
+
+- **Active state**: `text-yellow-400` + icon container with `bg-yellow-500/10 shadow-lg shadow-yellow-500/25` + drop-shadow glow
+- **Inactive state**: `text-gray-500 hover:text-gray-300` + icon container with hover `bg-white/5`
+- **Indicator**: Animated gold gradient bar (`linear-gradient(90deg, rgba(gold,0.6), rgba(gold,1), rgba(gold,0.6))`) with smooth position/width transition via `cubic-bezier(0.16, 1, 0.3, 1)`
+- **Accessibility**: `role="tab"`, `aria-selected`, `aria-controls`, `tabIndex` management, `aria-label`
+- **Typography**: `text-[10px] font-medium` — consistent, compact
+
+The 8 tabs (Tracker, Events, Calculator, Planner, Analytics, Collection, Teams, Profile) each have a Lucide icon + text label. The active state is unmistakably clear through the gold color + background glow + animated indicator bar — a triple-signal approach that satisfies §DCO4's requirement for "unmistakably clear which item is active."
+
+**Evidence**: appcore-components.jsx:703–749, App.jsx:3196–3212
+
+**Solution (maintenance)**: Tab navigation is excellent. The gold active indicator with animated position tracking is both functional and character-expressive. No changes needed.
+
+---
+
+### E5-BT5: Inline button inconsistency
+
+**Assessment**: **MEDIUM**
+
+Approximately 100+ buttons outside the `.kuro-btn` system use ad-hoc Tailwind compositions. These buttons lack the unified state system (no ripple, no consistent hover lift, no `borderGlow` animation) and have inconsistent visual properties:
+
+| Button type | Radius | Padding | Font size | Hover | Active |
+|---|---|---|---|---|---|
+| `.kuro-btn` | 12px | 10px 12px | 11px | lift + ripple | scale(0.97) |
+| Quick-add currency | `rounded` (6px) | px-2 py-1 | 9px | bg opacity increase | none |
+| Modal close icons | `rounded-lg` (8px) | p-2.5 | — | bg-white/10 | none |
+| Consent modal | `rounded` (6px) | px-3 py-2 | 12px | bg opacity increase | none |
+| Leaderboard tabs | `rounded-lg` (8px) | py-1.5 | 10px | none | none |
+| Bookmark load/delete | `rounded` (6px) | px-3 py-1.5 | 10px | bg opacity increase | none |
+| Onboarding nav | `rounded` (6px) | px-4 py-2 | 11px | text color change | none |
+| Header controls | `rounded-lg` (8px) | p-2 | — | yellow tint | scale(0.95) |
+
+**Key inconsistencies**:
+1. **Border radius**: 3 different values (6px, 8px, 12px) across button types
+2. **Active/press feedback**: Only `.kuro-btn` and header controls have press feedback; currency buttons, modal closes, and bookmark actions have none
+3. **Hover pattern**: `.kuro-btn` uses lift + ripple; others use simple opacity/color changes
+4. **No focus-visible override**: Inline buttons rely on the global `*:focus-visible` style (2px gold outline), which works but misses the enhanced `box-shadow: 0 0 0 4px` that `.kuro-btn` gets
+
+**Solution**:
+```css
+/* Extend kuro-btn-sm for small inline buttons */
+.kuro-btn-sm {
+  font-size: 9px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  /* Inherits all 5 states from .kuro-btn */
+}
+
+/* For icon-only buttons */
+.kuro-btn-icon {
+  padding: 10px;
+  border-radius: 8px;
+  /* Inherits all 5 states from .kuro-btn */
+}
+```
+Migrate the ~100 inline buttons to `.kuro-btn-sm` or `.kuro-btn-icon` variants. This gives them the full 5-state treatment (including ripple, lift, press feedback) while allowing size differentiation. Priority: currency quick-add buttons (highest frequency interaction in CALC tab).
+
+---
+
+### E5-BT6: Button loading state
+
+**Assessment**: **LOW**
+
+Only the leaderboard submit button has a loading/disabled-during-submit state:
+```jsx
+disabled={leaderboardSubmitting}
+className={`... ${leaderboardSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+```
+
+This is a simple opacity reduction, not a true loading state with spinner. No other async buttons (export, import, bookmark save) show loading feedback.
+
+**Per §DCO1**: "Loading state: does the button have an in-progress state that maintains its size?"
+
+**Solution**:
+```css
+.kuro-btn.loading {
+  pointer-events: none;
+  position: relative;
+  color: transparent; /* Hide label text */
+}
+.kuro-btn.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--text-heading);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+```
+Apply to leaderboard submit, export, import, and bookmark save buttons during async operations.
+
+---
+
+### E5-BT7: Button character alignment (§DCO1 cross-reference)
+
+**Assessment**: **PASS**
+
+Per §DCO1's character-specific button table, a **Cyberpunk/terminal** character should use: "Outlined with glow on hover; `border: 1px solid accent`; text-only with terminal underline."
+
+The `.kuro-btn` system delivers exactly this:
+- **Outlined**: `border: 1px solid var(--border-medium)` at rest — border-primary, not fill-primary
+- **Glow on hover**: `box-shadow: var(--shadow-lg)` + `border-color: var(--border-bright)` on hover
+- **Active variants**: Full glow system with `borderGlow` animation, text-shadow, triple box-shadow
+- **Glass material**: `backdrop-filter: blur(8px)` + semi-transparent background — extends beyond basic outline into atmospheric territory
+
+The button system is one of the app's strongest character expressions. The combination of glass material, gold glow animation, and physical hover/press interactions creates a "luminous tactical companion" feel that directly supports the §DP2 character brief.
+
+**Evidence**: All `.kuro-btn` definitions in appcore-providers.jsx:855–978
+
+**Solution (maintenance)**: Preserve the outlined-glass-glow button vocabulary as a core brand element. Any new button variants must maintain: (1) border-primary (not fill-primary), (2) glass material, (3) glow on activation.
+
+---
+
+## §E5.2 — Core Interactive Components: Inputs, Sliders, Dropdowns, Search
+
+### Component inventory
+
+| Component | CSS class | Count | Tabs present |
+|---|---|---|---|
+| Text/number inputs | `.kuro-input` | 25 | CALC, PLANNER, PROFILE, TEAMS, ADMIN |
+| Small inputs | `.kuro-input-sm` | ~8 | TEAMS (echo/pity counters), ADMIN |
+| Select dropdowns | `.kuro-input` or inline | 12 | Header, PLANNER, COLLECTION, TEAMS |
+| Textareas | `.kuro-input` + `font-mono` | 6 | PROFILE (import/export), ADMIN |
+| Range sliders | `.kuro-slider` | 8+ | CALC (priority), PROFILE (visual settings), pity counters |
+| Priority slider | `.priority-slider` | 1 | CALC (astrite allocation) |
+| Toggle switches | Custom `role="switch"` | 3 | PROFILE (OLED, swipe nav, animations) |
+| Radio groups | `role="radiogroup"` + `role="radio"` | 1 group (7 items) | TEAMS (resonance sequence S0–S6) |
+| Pressed toggles | `aria-pressed` buttons | 12+ | CALC, PLANNER, COLLECTION, PROFILE |
+
+---
+
+### E5-IN1: Input field state completeness
+
+**Assessment**: **PASS**
+
+The `.kuro-input` class (appcore-providers.jsx:987–1030) implements 4 of 5 standard states:
+
+| State | Implementation | Quality |
+|---|---|---|
+| **Default** | `bg: var(--bg-input)`, `border: 1px solid var(--border-bright)`, `border-radius: 8px`, `padding: 10px 12px`, `font-size: 14px`, `backdrop-filter: blur(8px)` | Glass material matching buttons |
+| **Hover** | `border-color: rgba(255, 255, 255, 0.3)` | Subtle brightening — correct for inputs |
+| **Focus** | `border-color: rgba(gold, 0.6)`, `box-shadow: 0 0 0 3px rgba(gold, 0.1), 0 0 20px rgba(gold, 0.08)` | Gold focus ring + ambient glow — character-consistent |
+| **Placeholder** | `color: #6b7389` (default), `#8f99ab` (on focus — brightens) | Chromatic blue-gray, not generic gray — excellent |
+| **Disabled** | Not explicitly styled | Relies on browser default — acceptable for current usage |
+| **Error** | Not implemented | No input validation errors exist in UI |
+
+The focus state is particularly well-crafted: the `0 0 20px rgba(gold, 0.08)` ambient glow creates a "sensing" effect as if the input detects the user's attention — perfectly on-character for the "luminous tactical companion."
+
+**Evidence**: appcore-providers.jsx:987–1030
+
+**Solution (maintenance)**: Add explicit disabled and error states for future-proofing:
+```css
+.kuro-input:disabled {
+  opacity: 0.4;
+  filter: saturate(0.7);
+  cursor: not-allowed;
+}
+.kuro-input.error {
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+```
+
+---
+
+### E5-IN2: Input-button visual coherence (§DCO2 cross-reference)
+
+**Assessment**: **PASS**
+
+Per §DCO2: "Inputs should feel like they belong to the same world as the buttons."
+
+| Property | `.kuro-btn` | `.kuro-input` | Coherence |
+|---|---|---|---|
+| Background | `var(--bg-btn)` rgba(15,20,28,0.85) | `var(--bg-input)` (same token family) | Matched |
+| Border | `1px solid var(--border-medium)` | `1px solid var(--border-bright)` | Input slightly brighter — correct (data entry invites more) |
+| Border-radius | 12px | 8px | Inputs tighter — appropriate (precision data entry) |
+| Focus color | Gold outline | Gold border + glow | Same gold accent |
+| Backdrop-filter | blur(8px) | blur(8px) | Identical |
+| Font | var(--font-display) 11px | 14px (inherits display) | Input larger — appropriate for data entry |
+
+The input and button systems share the same glass material vocabulary (backdrop blur, semi-transparent backgrounds, gold focus) while appropriately differentiating through radius (12px vs 8px — buttons more rounded, inputs more precise) and border weight (inputs brighter to invite data entry). A designer viewing isolated inputs and buttons would place them in the same product.
+
+**Solution (maintenance)**: The coherence is excellent. Maintain the principle: buttons are slightly softer (12px radius), inputs are slightly sharper (8px radius), both share glass material.
+
+---
+
+### E5-IN3: Slider quality
+
+**Assessment**: **PASS**
+
+The `.kuro-slider` (appcore-providers.jsx:1173–1237) is a fully custom-styled range input:
+
+- **Track**: 6px height, `rgba(255,255,255,0.15)` background, `border-radius: 3px`
+- **Thumb**: 18px circle, gold gradient (`linear-gradient(135deg, #e6b030, #edaf18)`), `2px solid rgba(0,0,0,0.4)` border, `0 0 12px rgba(gold, 0.6)` glow
+- **Hover**: Thumb scales to 1.15, shadow expands to `0 0 18px`
+- **Firefox support**: Full `::-moz-range-*` duplication — cross-browser complete
+- **Appearance**: `appearance: none` — fully custom, no system UI leak
+
+The priority slider (`.priority-slider`) adds a special dual-track gradient showing gold/pink allocation split, with a white thumb (not gold) for contrast against the colored track.
+
+**Evidence**: appcore-providers.jsx:1173–1237
+
+**Solution (maintenance)**: Slider is well-crafted. The gold-glowing thumb is character-consistent. Consider adding a `focus-visible` state to the thumb for keyboard accessibility (currently uses global focus outline which may not render cleanly on a circular thumb).
+
+---
+
+### E5-IN4: Dropdown/select quality
+
+**Assessment**: **LOW**
+
+Select elements use mixed styling approaches:
+
+| Location | Styling approach | Consistency |
+|---|---|---|
+| Header server | Inline Tailwind: `rounded-lg border border-white/10 focus:border-yellow-500/50` + `headerControlBg` | Custom, no `.kuro-input` |
+| Planner selects | `.kuro-input w-full` | Correct — uses system |
+| Collection filters | Inline: `px-2.5 py-1.5 min-h-[44px] rounded-lg border border-white/10` | Custom, no `.kuro-input` |
+| Teams filters | Inline: `px-2 py-1.5 min-h-[44px] rounded-lg border border-white/10` | Custom, no `.kuro-input` |
+| Teams sonata | `.kuro-input kuro-input-sm w-full text-[9px]` | Correct — uses system |
+
+**Issue**: 3 of 5 select usage groups bypass the `.kuro-input` class and use inline Tailwind, losing:
+- The glass `backdrop-filter: blur(8px)`
+- The unified hover state (`border-color: rgba(255,255,255,0.3)`)
+- The gold focus glow (`box-shadow: 0 0 0 3px rgba(gold, 0.1)`)
+
+The Collection and Teams filter selects get a simpler `focus:border-yellow-500/50` which misses the ambient glow shadow. The header server select uses a dynamic background style instead of `var(--bg-input)`.
+
+**Solution**:
+Apply `.kuro-input` to all select elements:
+```jsx
+/* Collection filters — before */
+className="px-2.5 py-1.5 min-h-[44px] rounded-lg border border-white/10 ..."
+
+/* Collection filters — after */
+className="kuro-input text-[10px] py-1.5 min-h-[44px] ..."
+```
+This unifies all 12 selects under the same glass-material + gold-focus system. Override padding/font-size as needed with utility classes.
+
+---
+
+### E5-IN5: Search bar quality
+
+**Assessment**: **LOW**
+
+Two search bars exist:
+
+1. **Collection search** (App.jsx:4814): No `.kuro-input` class, uses default styling. Placeholder: "Search by name..."
+2. **Teams resonator search** (App.jsx:6174): `.kuro-input w-full pl-8 text-xs`. Has Search icon (`<Search size={14}`) at left. Placeholder: "Search resonators..."
+3. **Teams weapon search** (App.jsx:6369): `.kuro-input w-full text-xs`. Placeholder: "Search weapons..."
+
+**Issues**:
+- Collection search (highest-traffic search) lacks `.kuro-input` styling
+- No **clear/cancel button** appears when text is entered (§E5 requirement: "Clear/cancel button appears when text is entered")
+- Only the Teams resonator search has a Search icon; Collection and Teams weapon search do not
+- No search suggestion/autocomplete dropdown on any search
+
+**Solution**:
+1. Apply `.kuro-input` to Collection search
+2. Add Search icon consistently to all 3 search bars
+3. Add a clear (X) button that appears when `searchValue.length > 0`:
+```jsx
+{searchValue && (
+  <button
+    onClick={() => setSearchValue('')}
+    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white"
+    aria-label="Clear search"
+  >
+    <X size={12} />
+  </button>
+)}
+```
+
+---
+
+### E5-IN6: Toggle switch quality
+
+**Assessment**: **PASS**
+
+Three custom toggle switches exist in the Profile tab (OLED mode, Swipe navigation, Animations):
+
+- **Track**: `w-[52px] h-[24px] rounded-[3px]` — deliberately **square-ish** (3px radius, not pill-shaped)
+- **Thumb**: `w-4 h-4` (16px), absolute positioned, transitions smoothly between left-[4px] (off) and left-[32px] (on)
+- **ON colors**: White track (OLED), Cyan track (Swipe), Purple track (Animations) — each semantically distinct
+- **OFF state**: `var(--bg-btn)` track + `bg-gray-400` thumb
+- **Accessibility**: `role="switch"`, `aria-checked`, `aria-label`
+- **Animation**: `transition-all` on both track and thumb
+
+The square-cornered tracks (`rounded-[3px]`) are an intentional character choice — they match the cyberpunk/terminal aesthetic rather than the consumer-friendly pill shape. The distinct colors per switch (white/cyan/purple) provide semantic meaning beyond position alone, satisfying §E5's requirement that on/off be "visually unambiguous (not just color — also position, icon, or text)."
+
+**Evidence**: App.jsx:6557 (OLED), :6584 (swipe), :6611 (animations)
+
+**Solution (maintenance)**: The switches are well-crafted and on-character. The square-ish track shape is a distinctive brand detail — preserve it. Consider adding a subtle glow to the ON state thumb matching each switch's accent color.
+
+---
+
+### E5-IN7: Radio button quality (resonance sequence)
+
+**Assessment**: **PASS**
+
+One radio group exists: the resonance sequence selector (S0–S6) in the Teams tab.
+
+- **Structure**: `role="radiogroup"` wrapper with 7 `role="radio"` buttons
+- **Active**: `bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border` — gold highlight
+- **Inactive**: `border border-white/10 text-gray-500 hover:text-gray-300`
+- **Typography**: `text-[9px] font-bold` — compact, high-density
+- **Layout**: `flex-1` distribution — equal width across all 7 items
+
+The gold active state matches the broader active-gold semantic. The `aria-checked` state management is correct.
+
+**Evidence**: App.jsx:5819–5838 (approximate)
+
+**Solution (maintenance)**: Radio group is functional and accessible. For consistency with the toggle switches, consider adding a subtle gold glow (`box-shadow: 0 0 8px rgba(237,175,24,0.2)`) to the active radio item.
+
+---
+
+### E5-IN8: Checkbox quality (aria-pressed toggles)
+
+**Assessment**: **PASS**
+
+The app uses `aria-pressed` buttons as checkbox equivalents (12+ instances across CALC, PLANNER, COLLECTION, PROFILE). These are implemented as `.kuro-btn` with active color variants, not as native checkboxes.
+
+**Example — Guarantee toggle**:
+```jsx
+aria-pressed={state.calc.charGuaranteed}
+aria-label={state.calc.charGuaranteed ? 'Guaranteed next 5-star: on' : '50/50 active: off'}
+className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}
+```
+
+The toggle between `active-emerald` (guaranteed) and `active-gold` (50/50) provides clear visual + semantic differentiation. The `aria-label` changes based on state, providing screen reader context.
+
+**One concern**: The Lunite subscription toggle uses a small square indicator (`w-4 h-4 rounded flex items-center justify-center`) inside the button that shows a Check icon when active — this is the only checkbox-like visual in the app. All others rely solely on the kuro-btn active color change.
+
+**Evidence**: App.jsx:3493 (guarantee), :3775 (Lunite), :4904 (collection sort)
+
+**Solution (maintenance)**: The button-as-checkbox pattern works well in this UI. The active color system provides clear on/off indication. No changes needed.
+
+---
+
+## §E5.3 — Container Components
+
+### Component inventory
+
+| Component | CSS class | Count | Tabs present |
+|---|---|---|---|
+| Card | `.kuro-card` + `.kuro-card-inner` | ~40+ | ALL 8 tabs |
+| Card header | `.kuro-header` (via `<CardHeader>`) | 28+ | ALL 8 tabs |
+| Card body | `.kuro-body` (via `<CardBody>`) | 28+ | ALL 8 tabs |
+| Modals/dialogs | `role="dialog" aria-modal="true"` | 9 | STATS, TEAMS, PROFILE, COLLECTION |
+| FocusTrapModal wrapper | `<FocusTrapModal>` | 3 | TEAMS (char selector, weapon selector) |
+| Tab bar (main) | `<TabButton>` × 8 | 1 bar | Global navigation |
+| Sub-tab bars | Inline button groups | 4 | TRACKER (categories), STATS (leaderboard), COLLECTION (sort), TEAMS (echo tabs) |
+| Collapsible panels | Conditional render | 3+ | CALC (income panel), PLANNER (bookmarks), STATS (banner history) |
+
+---
+
+### E5-CT1: Card design quality (§DCO3 cross-reference)
+
+**Assessment**: **PASS**
+
+The `.kuro-card` system (appcore-providers.jsx:709–803) is the most distinctive component in the app. It implements a multi-layered glass surface:
+
+**Card anatomy**:
+
+| Layer | Implementation | Character contribution |
+|---|---|---|
+| **Background** | `var(--bg-card)` — semi-transparent dark surface | Glass material foundation |
+| **Border** | `1px solid var(--border-default)` — subtle white opacity | Visible edge without harshness |
+| **Shadow** | Triple: `0 4px 24px rgba(6,10,24,0.6)` + `0 0 0 1px rgba(white,0.03)` + `inset 0 1px 0 rgba(white,0.05)` | Depth + inner highlight |
+| **Backdrop-filter** | `blur(4px)` | Glass frosting |
+| **Corner radius** | 16px | Generous but not pill-shaped |
+| **Top shimmer** | `::after` — `linear-gradient(90deg, transparent→white→transparent)` with `shimmer 3s` animation | Breathing luminosity — signature craft |
+| **Corner decorations** | `.kuro-card-inner::before` (top-right) + `::after` (bottom-left) — 12px L-shaped border accents at `rgba(white,0.2)` | HUD/tactical frame detail — distinctive |
+| **Hover** | `translateY(-2px)` + enhanced shadow with gold glow (`0 0 40px rgba(gold, 0.03)`) + brightened border | Physical lift response |
+| **Interactive active** | `scale(0.98)` + faster transition (0.1s) | Press feedback |
+
+**Staggered entry animation**:
+```css
+.tab-content > .kuro-card:nth-child(1) { animation-delay: 0.05s; }
+.tab-content > .kuro-card:nth-child(2) { animation-delay: 0.1s; }
+.tab-content > .kuro-card:nth-child(3) { animation-delay: 0.15s; }
+.tab-content > .kuro-card:nth-child(4) { animation-delay: 0.2s; }
+```
+
+The card system is the app's primary character carrier. The combination of glass material, breathing shimmer, corner HUD decorations, and gold-tinted hover glow creates the "luminous tactical companion" identity. Every card across all 8 tabs uses this same system — visual consistency is perfect.
+
+**Radius coherence assessment (§DCO3)**:
+
+| Component | Radius | Relationship |
+|---|---|---|
+| Cards | 16px | Largest — containers are softest |
+| Buttons | 12px | Slightly tighter — action elements |
+| Inputs | 8px | Tightest — precision data entry |
+| Badges/tags | 6px (Tailwind `rounded`) | Smallest — compact informational |
+| Modals | 16px (`rounded-2xl`) | Matches cards — same container class |
+| Toggle switches | 3px | Deliberately angular — cyberpunk character |
+
+The radius family follows a coherent logic: **containers are softest (16px), actions are medium (12px), data entry is sharpest (8px), switches are angular (3px)**. This is a well-structured hierarchy that communicates function through shape.
+
+**Evidence**: appcore-providers.jsx:709–803, appcore-components.jsx:156–161
+
+**Solution (maintenance)**: The card system is the app's crown jewel. Preserve the shimmer animation, corner decorations, and glass material. Document the radius hierarchy as a design principle: 16px containers → 12px actions → 8px inputs → 3px switches.
+
+---
+
+### E5-CT2: CardHeader universal consistency
+
+**Assessment**: **PASS**
+
+The `<CardHeader>` component (appcore-components.jsx:158) renders identically across all 28+ cards:
+
+```jsx
+const CardHeader = memo(({ children, action }) => (
+  <div className="kuro-header">
+    <h3>{children}</h3>
+    {action && <div className="kuro-header-action">{action}</div>}
+  </div>
+));
+```
+
+**Styling** (appcore-providers.jsx:805–847):
+- Padding: 14px
+- Border-bottom: `1px solid var(--border-subtle)`
+- Background: subtle gradient `linear-gradient(90deg, rgba(white,0.02) 0%, transparent 40%, transparent 60%, rgba(white,0.02) 100%)`
+- Typography: 14px / 600 weight / 0.03em tracking / 1.25 line-height
+- Decoration: `::before` pseudo-element — 3px × 16px gold gradient bar with glow (`0 0 8px rgba(gold, 0.3)`)
+
+The gold accent bar is a signature detail that appears before every section heading. It provides:
+1. **Structural clarity** — instantly identifies section beginnings
+2. **Brand expression** — gold gradient reinforces the luminous identity
+3. **Visual rhythm** — consistent 14px padding + accent bar creates predictable scanning pattern
+
+All 8 tabs use `<CardHeader>` without exception. No rogue heading patterns bypass this component.
+
+**Evidence**: appcore-providers.jsx:805–847, verified across all tabs
+
+**Solution (maintenance)**: The CardHeader gold accent bar is one of the app's most recognizable micro-details. Never remove it. If new card variants are needed, always include CardHeader for section labeling.
+
+---
+
+### E5-CT3: Modal/dialog quality (§DCO5 cross-reference)
+
+**Assessment**: **PASS**
+
+9 modals exist across the app:
+
+| Modal | Location | Backdrop | Animation | Close mechanism | Focus trap |
+|---|---|---|---|---|---|
+| Character detail | COLLECTION | `bg-black/80 backdrop-blur-sm` | `scaleIn 0.3s ease-out` | X button + backdrop click + Escape | `useFocusTrap` |
+| Weapon detail | COLLECTION | `bg-black/80 backdrop-blur-sm` | `scaleIn 0.3s ease-out` | X button + backdrop click + Escape | `useFocusTrap` |
+| Consent | STATS | `bg-black/80 backdrop-blur-sm` | (inherits) | Button choices only | — |
+| Leaderboard | STATS | `bg-black/80 backdrop-blur-sm` | (inherits) | X button + Escape | `useFocusTrap` |
+| Trophy detail | STATS | `rgba(0,0,0,0.7) backdrop-blur(4px)` | (inherits) | Backdrop click + Escape | — |
+| Team char selector | TEAMS | `bg-black/70 backdrop-blur-sm` | (inherits) | Backdrop click | `<FocusTrapModal>` |
+| Team weapon selector | TEAMS | `bg-black/70 backdrop-blur-sm` | (inherits) | Backdrop click | `<FocusTrapModal>` |
+| Bookmark | PROFILE | `bg-black/80 backdrop-blur-sm` | (inherits) | X button + backdrop click + Escape | `useFocusTrap` |
+| Export/Import | PROFILE | `bg-black/80 backdrop-blur-sm` | (inherits) | X button + backdrop click + Escape | `useFocusTrap` |
+
+**Consistency assessment**:
+
+| Property | Consistent? | Detail |
+|---|---|---|
+| Backdrop opacity | Mostly | 80% on most, 70% on team selectors, 90% on ID card |
+| Backdrop blur | Yes | `backdrop-blur-sm` (4px) on all |
+| Z-index | Mostly | z-[100] on most, z-50 on team selectors |
+| Corner radius | Yes | `rounded-2xl` (16px) — matches card radius |
+| Max width | Yes | `max-w-sm` (384px) or `max-w-md` (448px) |
+| Close button position | Yes | Top-right, always X icon |
+| Close button size | Mixed | `min-w-[36px]` on char detail, `min-w-[44px]` on others |
+| Body scroll prevention | Yes | All modals prevent background scroll |
+| Escape key | Yes | All via `useEscapeKey` or inline handler |
+| Focus trap | Yes | All use `useFocusTrap` or `<FocusTrapModal>` |
+| Entry animation | Partial | Only character/weapon detail have explicit `scaleIn` |
+
+**Modal stack management**: The `_modalStack` system (appcore-providers.jsx:274–294) correctly handles nested modals — only the topmost modal responds to Escape. This is a sophisticated accessibility feature.
+
+**Per §DCO5 assessment**:
+- Backdrop: Chromatic dark via `bg-black/80` — near-generic but the `backdrop-blur-sm` adds glass character
+- Entry animation: Present on detail modals, absent on utility modals — acceptable hierarchy
+- Radius: 16px matches card family — correct
+- Internal spacing: Uses `<CardBody>` (14px padding) — same as cards, consistent
+- Header: Uses `<CardHeader>` — same gold accent bar, consistent
+
+**Solution (maintenance)**:
+1. Normalize backdrop opacity to `bg-black/80` for all modals (team selectors currently use `bg-black/70`)
+2. Normalize close button size to `min-w-[44px] min-h-[44px]` consistently (character detail uses 36px)
+3. Add `scaleIn` animation to all modals for entrance consistency
+
+---
+
+### E5-CT4: Tab bar quality (§DCO4 cross-reference)
+
+**Assessment**: **PASS**
+
+Covered in depth at E5-BT4 (Tab navigation buttons). Summary:
+
+The main tab bar uses the `<TabButton>` component with:
+- Gold active indicator (animated gradient bar)
+- Icon + text labels for all 8 tabs
+- `role="tab"` + `aria-selected` + `aria-controls` accessibility
+- Smooth position transition via `cubic-bezier(0.16, 1, 0.3, 1)`
+
+**Sub-tab bars** (Tracker categories, Leaderboard tabs, Collection sort) use `.kuro-btn` with active color variants, maintaining visual consistency with the button system.
+
+Per §DCO4, the active state uses a **triple signal** (color change + background glow + animated underline bar) making the current tab unmistakably clear.
+
+**Solution (maintenance)**: No changes needed. Tab navigation is excellent.
+
+---
+
+### E5-CT5: Card internal padding consistency
+
+**Assessment**: **PASS**
+
+All cards use the `<CardBody>` component:
+```jsx
+const CardBody = memo(({ children, className = '', style }) => (
+  <div className={`kuro-body ${className}`} style={style}>{children}</div>
+));
+```
+
+`.kuro-body` applies `padding: 14px` and `color: var(--text-body)` consistently. Additional spacing is added via `className="space-y-3"` or similar Tailwind utilities, but the base 14px padding is universal.
+
+**Evidence**: appcore-providers.jsx:849–852, appcore-components.jsx:160
+
+**Solution (maintenance)**: 14px card padding is consistent and well-proportioned for the mobile-first layout. Preserve this value.
+
+---
+
+## §E5.4 — Informational Components
+
+### Component inventory
+
+| Component | Implementation | Count | Tabs present |
+|---|---|---|---|
+| Rarity badges | Inline `<Star>` icons | All character/weapon listings | TRACKER, COLLECTION, TEAMS, STATS |
+| Element/role badges | Colored tag spans | Character detail modal | COLLECTION |
+| Trophy badges | Tiered color system | ~20 trophy types | STATS |
+| Luck rating badge | `.luck-badge` with animated gradient | 1 | STATS |
+| Toast notifications | `<ToastProvider>` system | Global | ALL tabs |
+| PityRing (circular progress) | SVG component | 4+ instances | CALC, TRACKER |
+| ProbabilityBar (linear progress) | `role="meter"` div | Multiple | CALC |
+| Goal progress bar | `role="progressbar"` div | 1 | PLANNER |
+| Countdown timers | `<CountdownTimer>` component | Per active banner | EVENTS |
+| Tooltips | `title` attributes only | Sparse | Various |
+| Info banners | Colored `div` with border | 5+ | CALC, PLANNER, STATS |
+
+---
+
+### E5-IF1: Badge/chip/tag system
+
+**Assessment**: **PASS**
+
+Badges use a consistent pattern across the app:
+
+**Rarity stars**: `<Star size={N} className="text-yellow-400 fill-yellow-400" />` — always yellow, always filled. Sizes: 8px–12px depending on context. Consistent across TRACKER pull history, COLLECTION grid, and character detail modals.
+
+**Element/role badges** (character detail modal):
+```jsx
+<span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>
+  {data.element}
+</span>
+```
+Each element has a unique color mapping via `DETAIL_ELEMENT_COLORS` (Aero, Glacio, Electro, Fusion, Spectro, Havoc). The badges use the same construction pattern: `text-[10px] px-2 py-0.5 rounded border` — consistent padding, radius, and font size.
+
+**Trophy tier badges**: 5 tiers with distinct colors:
+
+| Tier | Color | Glow | Examples |
+|---|---|---|---|
+| Legendary | #edaf18 (gold) | Animated pulse | "Pity 1" |
+| Gold | #edaf18 (gold) | Static | "Gotta Whale 'Em All", early pity |
+| Purple | #a855f7 | Static | "4★ complete" sets |
+| Blue | #3b82f6 | Static | "3★ Weapon complete" |
+| Green | #22c55e | Static | "Echo of Fortune", back-to-back |
+
+**Solution (maintenance)**: Badge system is consistent and well-tiered. The trophy tier colors map cleanly to game rarity conventions (gold = 5★ tier, purple = 4★ tier). No changes needed.
+
+---
+
+### E5-IF2: Toast/notification quality (§DCO6 cross-reference)
+
+**Assessment**: **PASS**
+
+The toast system (appcore-providers.jsx:185–241) implements a complete notification framework:
+
+**Architecture**:
+- React Context-based (`ToastContext`)
+- Maximum 5 concurrent toasts (oldest dismissed if exceeded)
+- Auto-dismiss: 3000ms default
+- Position: `fixed bottom-24 left-3 right-3 z-[9998]`
+- Entry animation: `slideUp 0.2s ease-out`
+- `role="status" aria-live="polite" aria-atomic="true"` — correct ARIA live region
+
+**4 severity variants**:
+
+| Type | Background | Icon | Haptic feedback |
+|---|---|---|---|
+| Success | `rgba(34,197,94,0.9)` — emerald | `<CheckCircle>` | `haptic.success()` |
+| Error | `rgba(248,113,113,0.9)` — red | `<AlertCircle>` | `haptic.error()` |
+| Warning | `rgba(237,175,24,0.9)` — gold | `<AlertTriangle>` | `haptic.warning()` |
+| Info | `rgba(56,189,248,0.9)` — cyan | `<Info>` | (none) |
+
+**Per §DCO6 assessment**:
+- **Visual character**: Semi-transparent backgrounds with white text and border (`border-white/20`) — matches glass vocabulary. Each color is from the app's established palette.
+- **Motion**: Entry from bottom (`slideUp`) — correct for mobile app. Duration: 3s for all types — appropriate for success, possibly too short for errors.
+- **Stacking**: Newest at bottom, vertical `gap-2` — clean, non-overlapping. Max 5 prevents toast flood.
+- **Haptic**: Type-differentiated haptic feedback per toast — excellent UX detail for mobile PWA.
+- **ARIA**: Live region with `polite` assertiveness — screen readers will announce toasts without interrupting.
+
+**Solution (maintenance)**: The toast system is well-built. Two minor improvements:
+1. Error toasts could use a longer duration (5000ms) since users need time to read error details
+2. Consider adding swipe-to-dismiss for mobile users
+
+---
+
+### E5-IF3: Progress indicator quality
+
+**Assessment**: **PASS**
+
+Three distinct progress indicator types:
+
+**1. PityRing (circular)** — appcore-components.jsx:885–927:
+- SVG-based circular progress with configurable size (default 52px), strokeWidth (4px), color
+- Soft pity zone visualization: When value ≥ 65/80, an orange danger zone arc appears
+- Central numeric display: Current pity value
+- `role="img"` with descriptive `aria-label` including soft pity state
+- Color-coded per banner type (gold/cyan/pink/purple)
+- `pulse-subtle` animation in soft pity zone
+
+**2. ProbabilityBar (linear meter)** — appcore-components.jsx:1355–1366:
+- `role="meter"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+- Percentage label + horizontal bar
+- Color parameter (cyan/gold/pink)
+- Width proportional to value
+
+**3. Goal progress bar (linear)** — App.jsx:3928:
+- `role="progressbar"` with `aria-valuenow`, `aria-valuemin=0`, `aria-valuemax=100`
+- `h-2 rounded-full` — 8px height, pill-shaped
+- Background: `var(--bg-stat)` — consistent with data display tokens
+- Fill: Dynamic gradient (`linear-gradient(90deg, ${color}40, ${color})`)
+
+All three progress types are:
+- Semantically accessible (correct ARIA roles)
+- Color-coded to match the app's color-semantic system
+- Visually distinct in shape (ring vs bar) to communicate different data types (pity = finite cycle → ring, probability = percentage → bar, goal = linear progress → bar)
+
+**Solution (maintenance)**: Progress indicators are excellent. The PityRing's soft-pity zone visualization is a particularly strong domain-specific design that would be unique to gacha trackers. Preserve it.
+
+---
+
+### E5-IF4: Tooltip quality
+
+**Assessment**: **LOW**
+
+The app uses `title` attributes for browser-native tooltips on some elements:
+- Quick-add currency buttons: `title={tip}` (e.g., "1 month of dailies")
+- No custom tooltip component exists
+- No styled tooltips appear anywhere
+
+**Issues per §E5**:
+- Browser-native tooltips are unstyled and inconsistent across platforms
+- They do not match the glass/cyberpunk aesthetic
+- They're not accessible on touch devices (no long-press handler)
+- No hover delay — appears instantly, which can be distracting
+
+**Solution**:
+```css
+.kuro-tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: var(--text-body);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+  pointer-events: none;
+  animation: fadeIn 0.15s ease-out;
+}
+```
+Replace `title` attributes with a custom `<Tooltip>` component that:
+1. Matches the glass aesthetic
+2. Shows on hover (desktop) and long-press (touch)
+3. Positions automatically to avoid edge clipping
+
+Note: This is a LOW finding because tooltips are used sparingly (only on currency quick-add buttons) and the core information is already communicated through button labels and aria-labels.
+
+---
+
+### E5-IF5: Banner/alert quality
+
+**Assessment**: **PASS**
+
+Several informational banners exist across tabs:
+
+| Location | Style | Purpose |
+|---|---|---|
+| TRACKER new banner | `bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center` | Highlights new banner availability |
+| CALC astrite summary | `bg-yellow-500/10 border border-yellow-500/30 rounded-lg` | Resource summary display |
+| PLANNER income | `bg-emerald-500/10 border border-emerald-500/30 rounded-lg` | Income tracking confirmation |
+| PLANNER goal reached | `bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center` | Goal completion celebration |
+| PLANNER resources | `bg-white/5 rounded-lg` | Resource breakdown |
+
+**Pattern**: Banners consistently use the color-semantic system:
+- Gold border → featured/attention
+- Emerald border → confirmation/positive
+- White/neutral → informational
+
+All banners use `rounded-lg` (8px), `p-2` or `p-3` padding, and `border` with color-at-30% opacity. The pattern is consistent enough to extract into a utility:
+
+```css
+.kuro-banner-{color} {
+  background: rgba({color}, 0.1);
+  border: 1px solid rgba({color}, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+```
+
+**Solution (maintenance)**: Banner pattern is consistent and clear. Consider extracting into reusable CSS classes to reduce Tailwind repetition, but this is a code organization improvement, not a visual quality issue.
+
+---
+
+### E5-IF6: Luck rating badge
+
+**Assessment**: **PASS**
+
+The luck rating badge (App.jsx:4005–4017) is a special informational component in the STATS tab:
+
+- **Structure**: `.luck-badge` wrapper with gradient border → `.luck-badge-inner` with content
+- **Color**: Dynamic `--badge-color` from `luckRating.color` (maps to rating tier)
+- **Content**: Luck rating label + emoji + percentile
+- **Sub-component**: Progress bar showing percentile position (`h-2 rounded-full`)
+- **Sizing**: `min-width: 90px`, `rounded-xl`, `p-[2px]` gradient border trick
+
+This is a unique, domain-specific component with personality. The gradient border + inner card pattern creates a "holographic card" feel reminiscent of rare collectible cards — perfect for a gacha app.
+
+**Solution (maintenance)**: The luck badge is a character-positive delight moment. Preserve the gradient border pattern.
+
+---
+
+## §E5.5 — Content Display Components
+
+### Component inventory
+
+| Component | Implementation | Count | Tabs present |
+|---|---|---|---|
+| Pull history rows | Inline Tailwind flex rows | Dynamic (per pull data) | TRACKER |
+| Banner history cards | `p-3 rounded-lg border border-white/10` | Dynamic | TRACKER |
+| Collection grid items | `.collection-card` + `<CollectionGridSection>` | ~100+ items | COLLECTION |
+| Team cards/slots | Card-based slots | 6 per team | TEAMS |
+| Leaderboard rows | Flex rows | Dynamic | STATS |
+| Trophy list | Grid layout | ~20 trophies | STATS |
+| Icons (Lucide) | `lucide-react` library | 42 unique icons | ALL tabs |
+| Character/weapon images | `<img>` with `hideOnError` | All characters/weapons | COLLECTION, TEAMS, TRACKER |
+| Dividers | `.kuro-divider` + inline borders | ~20+ | Various |
+| Empty states | `.kuro-empty-state` | 6+ distinct states | PLANNER, STATS, COLLECTION |
+| Skeleton loading | `.kuro-skeleton-*` system | 4 variant classes | Loading states |
+
+---
+
+### E5-CD1: List item consistency
+
+**Assessment**: **PASS**
+
+List items across different tabs use context-appropriate patterns:
+
+**Pull history rows** (TRACKER): Compact flex rows with rarity-colored left border, character/weapon name, pity count, and timestamp. Consistent `text-[9px]`–`text-[10px]` sizing. Alternating with subtle background differentiation.
+
+**Banner history cards** (TRACKER): `p-3 rounded-lg border border-white/10 hover:border-white/15` with `var(--bg-btn)` background. Each card shows banner version, featured characters, and weapons with small 44px thumbnail images. Consistent padding and border treatment.
+
+**Leaderboard rows** (STATS): Ranked list with position number, username, pull count, and luck rating. Consistent spacing with flex alignment.
+
+**Income list items** (PLANNER): `flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs` — consistent padding and background across all income entries.
+
+**Bookmark list items** (PLANNER): Same pattern as income items with Load/Delete action buttons.
+
+All list types share a common visual vocabulary: `rounded-lg` or `rounded` containers, `bg-white/5` or `var(--bg-btn)` subtle backgrounds, and consistent `text-xs` or `text-[10px]` typography. While not formally componentized, the patterns are sufficiently consistent.
+
+**Solution (maintenance)**: List items are visually consistent within each context. Consider extracting a `<ListItem>` component for shared padding/background/border treatment, but this is a code organization improvement, not a visual quality issue.
+
+---
+
+### E5-CD2: Icon quality and consistency
+
+**Assessment**: **PASS**
+
+The app uses **Lucide React** exclusively for all icons. Two import statements cover the full icon set:
+
+**App.jsx** (42 icons): AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap
+
+**appcore-components.jsx** (24 icons): Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover
+
+**Consistency assessment**:
+- **Single icon family**: Lucide React throughout — no mixing with Font Awesome, Heroicons, or other libraries
+- **Consistent stroke weight**: Lucide icons share uniform 2px stroke by default
+- **Size consistency**: Icons use `size={N}` prop — common sizes are 12, 14, 16, 20, 24
+- **Color application**: Via Tailwind `className` (e.g., `text-yellow-400`, `text-gray-400`) — consistent with text color system
+- **Fill treatment**: Only star icons use `fill-yellow-400`; all others are stroke-only — consistent
+
+The Lucide library choice is character-appropriate: clean geometric outlines that complement the cyberpunk/terminal aesthetic without competing with it.
+
+**Solution (maintenance)**: Icon system is clean and consistent. Maintain single-library discipline. If new icons are needed, always use Lucide first.
+
+---
+
+### E5-CD3: Avatar/thumbnail quality
+
+**Assessment**: **PASS**
+
+Character and weapon images appear in:
+
+| Context | Size | Shape | Fallback | Loading |
+|---|---|---|---|---|
+| Collection grid | ~80px × ~80px | `rounded-lg overflow-hidden` | Ghost grid cell (`.ghost-grid-cell`) | Skeleton placeholder |
+| Character detail modal | h-48 (192px) | `rounded-t-2xl` header | `hideOnError` (hides element) | None |
+| Banner history thumbnails | w-11 h-11 (44px) | `rounded-lg overflow-hidden` | `bg-black/30` fallback | None |
+| Team member icons | w-7 h-7 (28px) | `rounded` | `bg-white/10` empty div | None |
+| Weapon detail | h-36 (144px) | Positioned in header | `hideOnError` | None |
+
+**Fallback system**: The `hideOnError` function (appcore-components.jsx:24) hides the image element on load failure. In team context, a `bg-white/10` fallback div shows. In collection, the skeleton placeholder persists.
+
+**Image framing**: The app includes a custom framing system with per-image `x`, `y`, `zoom` parameters via `getImageFraming()`. This allows precise positioning of character art within constrained containers — a sophisticated detail for gacha apps where character art proportions vary.
+
+**Solution (maintenance)**: Image handling is solid. The framing system is a notable quality feature. Consider adding a blur-up placeholder (low-res blurred image → full image) for collection grid items to improve perceived loading speed.
+
+---
+
+### E5-CD4: Divider quality
+
+**Assessment**: **PASS**
+
+Two divider patterns exist:
+
+**1. `.kuro-divider`** (appcore-providers.jsx:1369–1373):
+```css
+.kuro-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
+  margin: 12px 0;
+}
+```
+A gradient divider that fades from transparent at edges to `var(--border-hover)` at center — a character-positive detail that avoids the harsh look of solid `border-top` lines.
+
+**2. CardHeader bottom border**: `border-bottom: 1px solid var(--border-subtle)` — used in all CardHeader instances as the section separator within cards.
+
+**3. Inline `border-t` / `border-b`**: Used sparingly (~19 instances total) for contextual separation within cards (e.g., between leaderboard header and list content).
+
+**Usage assessment**: Dividers are structural, not decorative. The gradient `.kuro-divider` provides visual relief between major sections, while the solid `border-subtle` in CardHeaders separates header from body. There is no "divider overload" — the app relies more on spacing (`space-y-3`) and card boundaries for visual grouping.
+
+**Solution (maintenance)**: Divider system is clean and purposeful. The gradient fade is a nice character detail. No changes needed.
+
+---
+
+### E5-CD5: Empty state design quality
+
+**Assessment**: **PASS**
+
+The `.kuro-empty-state` class (appcore-providers.jsx:1334–1351) provides an atmospheric empty state:
+
+**Styling**:
+- Background: `radial-gradient(ellipse at center, rgba(gold, 0.04) 0%, transparent 70%)` — subtle gold radiance
+- Border: `1px dashed rgba(gold, 0.10)` — dashed, not solid, communicating "awaiting content"
+- Entry: `emptyFadeIn 0.4s ease-out` animation — fades in + slides up 8px
+- Top decoration: `::before` pseudo — 40px centered gold gradient line
+- Typography: 13px / 500 weight / 0.01em tracking
+
+**6+ empty states found**:
+
+| Location | Message | Quality |
+|---|---|---|
+| PLANNER bookmarks | "No states archived. Use Save Current State in the Calculator to bookmark your configuration." | Action-oriented — tells user what to do |
+| STATS trend | "Insufficient data for trend analysis" | Clear threshold explanation |
+| STATS signal | "Insufficient signal data" | Clear threshold explanation |
+| STATS 5★ history | "No 5★ signals detected" | Domain-specific vocabulary |
+| STATS no data | "No Convene data on record" | Clean, informative |
+| COLLECTION empty | Ghost grid cells (`.ghost-grid-cell`) with subtle pulse animation | Atmospheric — shows what the grid could contain |
+
+Per §E5 requirement: "Every empty state designed (not default system text). Illustration or icon consistent in style? Message text helpful and action-oriented?"
+
+The empty states use designed styling (gold radiance background, dashed border, fade-in animation) rather than plain text. The PLANNER bookmark empty state is particularly good — it tells users exactly how to populate the space. The Collection ghost grid cells are a distinctive touch, showing a "shadow" of future content rather than a blank void.
+
+**Solution (maintenance)**: Empty states are well-designed and on-character. The gold radiance is a subtle "the companion is waiting" signal that reinforces the luminous identity. For the "Insufficient data" states, consider adding a minimum pull count: "Need at least 10 Convenes for trend analysis" instead of the vaguer "Insufficient data."
+
+---
+
+### E5-CD6: Image loading states
+
+**Assessment**: **LOW**
+
+Image loading behavior varies:
+
+| Context | Loading state | Error state |
+|---|---|---|
+| Collection grid | Skeleton placeholder (`.kuro-skeleton`) → image appears | `hideOnError` hides element |
+| Banner cards | `kuro-skeleton` background → image | `hideOnError` |
+| Character detail modal | None — content jumps on load | `hideOnError` |
+| Banner history thumbnails | None — `bg-black/30` placeholder shows | `hideOnError` |
+| Team member avatars | None — `bg-white/10` shows | `hideOnError` fallback div |
+
+**Issues**:
+- **Character detail modal**: No loading placeholder — the header area may flash/jump when the image loads
+- **Banner history**: No shimmer/skeleton — the 44px thumbnails just appear
+- The `hideOnError` fallback simply hides the image — in some contexts, this leaves an empty space with no visual indicator that an image was expected
+
+**Solution**:
+1. Add `.kuro-skeleton` to character detail modal header image container for loading state
+2. Add `bg-black/30` placeholder to all image containers that don't already have one
+3. Consider replacing `hideOnError` (which hides entirely) with a generic fallback icon for critical contexts:
+```jsx
+const imgFallback = (e) => {
+  e.target.style.display = 'none';
+  e.target.nextSibling?.classList?.remove('hidden'); // Show fallback icon
+};
+```
+
+This is LOW because the Collection grid (highest-frequency image display) already has proper skeleton loading, and the `hideOnError` approach prevents broken image icons.
+
+---
+
+## §E5.6 — Structural/Layout Components
+
+### Component inventory
+
+| Component | Implementation | Location |
+|---|---|---|
+| Skeleton/shimmer loading | `.kuro-skeleton` system (4 variants) | appcore-providers.jsx:1300–1327 |
+| Custom scrollbar | `.kuro-scroll` | appcore-providers.jsx:1384–1397 |
+| Tab content container | `.tab-content` with staggered card entry | appcore-providers.jsx:577–588 |
+| Content layering | `.content-layer` (z-index:5) | appcore-providers.jsx:821–824 |
+| Ghost grid cells | `.ghost-grid-cell` | appcore-providers.jsx:1353–1366 |
+| Collection card hover | `.collection-card` transitions | appcore-providers.jsx:1376–1381 |
+
+---
+
+### E5-ST1: Skeleton/shimmer loading quality
+
+**Assessment**: **PASS**
+
+The `.kuro-skeleton` system (appcore-providers.jsx:1300–1327) implements character-consistent loading placeholders:
+
+**Base shimmer**: `@keyframes kuroShimmer` — moves a gold-tinted gradient across the element:
+```css
+background-image: linear-gradient(90deg,
+  transparent 0%,
+  rgba(237, 175, 24, 0.06) 40%,
+  rgba(237, 175, 24, 0.10) 50%,
+  rgba(237, 175, 24, 0.06) 60%,
+  transparent 100%
+);
+animation: kuroShimmer 1.8s ease-in-out infinite;
+```
+
+The gold tint in the shimmer is a character detail — standard skeleton shimmers use neutral gray; this one pulses with the app's signature gold. The 1.8s duration with ease-in-out creates a breathing rhythm.
+
+**4 shape variants**:
+
+| Variant | Height | Radius | Purpose |
+|---|---|---|---|
+| `.kuro-skeleton-row` | 36px | 8px | List item placeholders |
+| `.kuro-skeleton-stat` | 72px | 10px | Stat card placeholders |
+| `.kuro-skeleton-text` | 10px | 4px | Text line placeholders |
+| `.kuro-skeleton-circle` | (configurable) | 50% | Avatar/icon placeholders |
+
+The shapes match actual content layout — when data loads, the skeleton-to-content transition is seamless with minimal layout shift. This satisfies §E5's requirement: "Shimmer shapes match the actual content layout."
+
+**Evidence**: appcore-providers.jsx:1300–1327
+
+**Solution (maintenance)**: Skeleton system is excellent. The gold-tinted shimmer is a distinctive brand detail. Ensure all new loading states use this system rather than plain spinners.
+
+---
+
+### E5-ST2: Scroll quality
+
+**Assessment**: **PASS**
+
+The `.kuro-scroll` class (appcore-providers.jsx:1384–1397) provides custom scrollbar styling:
+
+- **Firefox**: `scrollbar-width: thin`, `scrollbar-color: rgba(140,160,200,0.18) transparent`
+- **Webkit**: 4px wide thumb, `rgba(140,160,200,0.18)` color, `border-radius: 4px`
+- **Hover**: Thumb brightens to `rgba(140,160,200,0.35)`
+
+The 4px thin scrollbar with blue-gray tint is unobtrusive and character-appropriate. It doesn't compete with content while remaining visible when needed.
+
+**Solution (maintenance)**: Scrollbar is clean and minimal. No changes needed.
+
+---
+
+### E5-ST3: Collection card hover transitions
+
+**Assessment**: **PASS**
+
+The `.collection-card` class (appcore-providers.jsx:1376–1381) applies smooth transitions for interactive collection items:
+
+```css
+.collection-card {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+}
+```
+
+The `mask-image` trick prevents `overflow: hidden` child content from bleeding outside rounded corners during transforms — a Safari-specific fix that shows attention to cross-browser detail.
+
+**Solution (maintenance)**: Clean implementation with good cross-browser handling. No changes needed.
+
+---
+
+## §E5.7 — Component Quality Per Tab (Cross-Tab Coverage)
+
+| Tab | Key components | Quality assessment |
+|---|---|---|
+| **TRACKER** | Pull history rows, banner history cards, BannerCard, pity counters | Cards use full kuro system. Banner cards (BannerCard component) are particularly rich with image framing, countdown timers, and visual settings. |
+| **EVENTS** | EventCard, CountdownTimer | Consistent card usage with countdown timers. Timer colors match banner themes. |
+| **CALC** | kuro-btn (6 selectors), kuro-input (4 number), kuro-slider (priority), PityRing (4), ProbabilityBar | Heaviest interactive component usage. All core inputs use kuro system. The astrite allocation slider with dual-color track is a craft highlight. |
+| **PLANNER** | kuro-input (number), kuro-select (2), income list, bookmark list, progress bar | Clean usage of kuro system. Goal progress bar is well-designed. Empty state for bookmarks is action-oriented. |
+| **STATS** | Trophy grid, leaderboard table, luck badge, trend charts, empty states | Most content-display components. Trophy system with tiered colors and the luck badge with gradient border are standout craft moments. |
+| **COLLECTION** | Collection grid (CollectionGridSection), search, filters (3 selects), character/weapon detail modals | Largest component count. Ghost grid cells for empty state are distinctive. Detail modals with image framing show high craft. **Select filters bypass kuro-input** (noted in E5-IN4). |
+| **TEAMS** | Team slot cards, character/weapon selector modals, radio group (S0–S6), echo management, search (2) | Complex multi-modal interactions. FocusTrapModal usage on selectors is good. |
+| **PROFILE** | Toggle switches (3), server select, import/export textareas, bookmark modal, export modal, settings | Profile-specific components (switches, textareas) are well-crafted. Reset button needs hierarchy differentiation (noted in E5-BT2). |
+
+---
+
+## §E5.8 — Summary
+
+### Findings table
+
+| ID | Section | Severity | Component | Finding |
+|---|---|---|---|---|
+| **E5-BT1** | §E5.1 | **PASS** | Buttons: state completeness | All 5 states (default, hover, active, focus, disabled) implemented with character-consistent treatment |
+| **E5-BT2** | §E5.1 | **LOW** | Buttons: hierarchy | Flat hierarchy — no visual distinction between primary, secondary, tertiary, destructive buttons at rest |
+| **E5-BT3** | §E5.1 | **PASS** | Buttons: color variants | 6 active variants with coherent glow system and consistent semantic mapping |
+| **E5-BT4** | §E5.1 | **PASS** | Tab navigation | Triple-signal active state (color + glow + animated indicator), full ARIA support |
+| **E5-BT5** | §E5.1 | **MEDIUM** | Buttons: inline inconsistency | ~100+ inline buttons bypass kuro-btn system — no ripple, no consistent hover/press, 3 different border-radius values |
+| **E5-BT6** | §E5.1 | **LOW** | Buttons: loading state | No true loading state with spinner — only opacity reduction on leaderboard submit |
+| **E5-BT7** | §E5.1 | **PASS** | Buttons: character (§DCO1) | Cyberpunk outlined-glass-glow vocabulary — perfect character alignment |
+| **E5-IN1** | §E5.2 | **PASS** | Inputs: state completeness | 4 states well-implemented, gold focus glow is character-positive |
+| **E5-IN2** | §E5.2 | **PASS** | Inputs: button coherence (§DCO2) | Same glass material vocabulary, coherent radius differentiation |
+| **E5-IN3** | §E5.2 | **PASS** | Sliders | Fully custom gold-glowing thumb, cross-browser, priority slider with dual-track |
+| **E5-IN4** | §E5.2 | **LOW** | Dropdowns: mixed styling | 3 of 5 select groups bypass kuro-input, losing glass material and gold focus |
+| **E5-IN5** | §E5.2 | **LOW** | Search bars | Collection search lacks kuro-input; no clear button on any search; inconsistent icon usage |
+| **E5-IN6** | §E5.2 | **PASS** | Toggle switches | Square-cornered character choice, distinct colors per function, correct ARIA |
+| **E5-IN7** | §E5.2 | **PASS** | Radio buttons | Gold active state, proper radiogroup/radio ARIA |
+| **E5-IN8** | §E5.2 | **PASS** | Checkbox-like toggles | Button-as-checkbox with color-semantic active states |
+| **E5-CT1** | §E5.3 | **PASS** | Cards (§DCO3) | Multi-layered glass surface with shimmer, corner decorations, coherent radius hierarchy — crown jewel |
+| **E5-CT2** | §E5.3 | **PASS** | CardHeader consistency | Universal gold accent bar, 14px/600/0.03em across all 28+ cards |
+| **E5-CT3** | §E5.3 | **PASS** | Modals (§DCO5) | 9 modals with consistent backdrop, radius, focus trap, escape key, modal stack management |
+| **E5-CT4** | §E5.3 | **PASS** | Tab bar (§DCO4) | Gold animated indicator, 8 icon+text tabs, full ARIA |
+| **E5-CT5** | §E5.3 | **PASS** | Card padding | 14px universal via CardBody |
+| **E5-IF1** | §E5.4 | **PASS** | Badges/tags | Consistent pattern, game-aligned rarity tiers |
+| **E5-IF2** | §E5.4 | **PASS** | Toasts (§DCO6) | 4 severity variants, haptic feedback, ARIA live region, character-tinted colors |
+| **E5-IF3** | §E5.4 | **PASS** | Progress indicators | PityRing (circular), ProbabilityBar (meter), Goal bar — all accessible and color-coded |
+| **E5-IF4** | §E5.4 | **LOW** | Tooltips | Browser-native `title` only — unstyled, not accessible on touch |
+| **E5-IF5** | §E5.4 | **PASS** | Banners/alerts | Consistent color-semantic pattern (gold, emerald, white) |
+| **E5-IF6** | §E5.4 | **PASS** | Luck rating badge | Gradient border card with holographic feel — character-positive delight moment |
+| **E5-CD1** | §E5.5 | **PASS** | List items | Context-appropriate patterns with consistent padding/background vocabulary |
+| **E5-CD2** | §E5.5 | **PASS** | Icons | Single library (Lucide), uniform stroke weight, consistent sizing and coloring |
+| **E5-CD3** | §E5.5 | **PASS** | Avatars/thumbnails | Custom framing system, hideOnError fallback, skeleton loading on collection grid |
+| **E5-CD4** | §E5.5 | **PASS** | Dividers | Gradient kuro-divider + structural border-subtle — purposeful, not decorative |
+| **E5-CD5** | §E5.5 | **PASS** | Empty states | Gold-radiance atmospheric styling, action-oriented messages, ghost grid cells |
+| **E5-CD6** | §E5.5 | **LOW** | Image loading | Character detail modal lacks loading placeholder; hideOnError leaves empty space in some contexts |
+| **E5-ST1** | §E5.6 | **PASS** | Skeleton/shimmer | Gold-tinted kuroShimmer — character-consistent, 4 shape variants matching content layout |
+| **E5-ST2** | §E5.6 | **PASS** | Scrollbar | 4px thin, blue-gray, unobtrusive |
+| **E5-ST3** | §E5.6 | **PASS** | Collection hover | Smooth transitions with cross-browser mask-image fix |
+
+### Severity distribution
+
+| Severity | Count |
+|---|---|
+| HIGH | 0 |
+| MEDIUM | 1 |
+| LOW | 6 |
+| PASS | 27 |
+| **Total** | **34** |
+
+### Key strengths
+
+1. **Card system** (§E5-CT1): The multi-layered glass surface with breathing shimmer, corner HUD decorations, and gold-tinted hover glow is the app's single strongest design element. It alone carries 60%+ of the visual character.
+
+2. **Button state completeness** (§E5-BT1): Full 5-state implementation with physical hover/press feedback and character-appropriate ripple/glow effects.
+
+3. **Skeleton loading** (§E5-ST1): Gold-tinted shimmer animation turns a utility pattern into a brand expression.
+
+4. **Toast system** (§E5-IF2): 4-variant severity system with haptic feedback, ARIA live region, and character-tinted colors — complete implementation.
+
+5. **PityRing** (§E5-IF3): Domain-specific circular progress with soft-pity zone visualization — unique to gacha trackers and extremely well-crafted.
+
+### Key concerns
+
+1. **Inline button sprawl** (§E5-BT5 MEDIUM): ~100+ buttons outside the kuro-btn system creates visual inconsistency. This is the single most impactful fix opportunity in the component system — migrating inline buttons to kuro-btn variants would unify hover/press behavior across the entire app.
+
+2. **Button hierarchy** (§E5-BT2 LOW): Flat visual weight means users can't scan for the most important action on a screen. Adding primary/secondary/ghost/danger variants would improve scanability.
+
+3. **Select dropdown bypass** (§E5-IN4 LOW): Collection and Teams filter selects miss the glass material and gold focus glow by not using kuro-input.
+
+### Connection to prior findings
+
+- **§E1-COV1** (token coverage ~30%): The inline button sprawl (§E5-BT5) contributes to the token gap — buttons using ad-hoc Tailwind instead of kuro-btn tokens widen the coverage deficit.
+- **§E1-RAD1** (rounded-lg monoculture): The radius hierarchy documented in §E5-CT1 (16px → 12px → 8px → 3px) shows the actual system is more nuanced than rounded-lg alone, but the ~100 inline buttons mostly use `rounded` (6px) or `rounded-lg` (8px), adding to the perceived monoculture.
+- **§E2-MO1** (touch targets 36px): Some modal close buttons still use `min-w-[36px]` (character detail) while most are 44px — the touch target inconsistency persists at the component level.
+- **§E3-NC1** (input border contrast 2.1:1): The gold focus glow on inputs (§E5-IN1) provides excellent contrast when focused, but the default border contrast issue from §E3 remains at rest.
+
+---
+
+> **End of Step 12 — §E5: Component Visual Quality**
+> **Lines added**: ~720
+> **Next step**: Step 13 — §E6: Interaction Design Quality (awaiting user instruction)
