@@ -1576,7 +1576,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       </button>
       {open && (
         <div
-          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1 p-1"
+          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5"
           role="listbox"
           aria-label={ariaLabel}
         >
@@ -1589,11 +1589,14 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
                 role="option"
                 aria-selected={active}
                 onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`w-full text-left px-3 py-2.5 text-sm rounded-xl border transition-colors shadow-lg ${active ? 'text-cyan-400 border-cyan-500/60 border-l-[3px] border-l-cyan-400' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
+                className={`w-full text-left px-3 py-2.5 text-sm rounded-xl border overflow-hidden transition-colors shadow-lg ${active ? 'border-[rgba(237,175,24,0.3)]' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
                 style={{
-                  background: 'var(--bg-card)',
+                  background: active ? 'rgba(237,175,24,0.1)' : 'var(--bg-card)',
                   backdropFilter: 'blur(2px) brightness(0.6)',
                   WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
+                  color: active ? '#edaf18' : undefined,
+                  borderLeft: active ? '3px solid #edaf18' : undefined,
+                  boxShadow: active ? '0 0 12px rgba(237,175,24,0.15)' : undefined,
                 }}
               >
                 {opt.label}
