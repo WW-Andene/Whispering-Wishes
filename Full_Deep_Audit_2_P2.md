@@ -4414,7 +4414,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 
 1. **Two-layer coherence gap** (§E7-DC1 ✅, §E7-PD1 ✅): The kuro-* system covers ~70% of the UI. The remaining ~30% (inline Tailwind buttons, badges, progress bars, filter selects) uses a simpler design vocabulary that doesn't benefit from design tokens, multi-signal hover, or physical active states. This is the single most impactful professionalism gap and the one that cascades across multiple prior findings (§E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E1-COV1).
 
-2. **Gray text volume** (§E7-BC4): 459 achromatic gray text instances weaken the gold brand identity. This is a cosmetic issue that compounds across the entire app — the overall color impression is "gray with gold highlights" rather than "gold with gray support."
+2. **Gray text volume** (§E7-BC4 ✅): 459 achromatic gray text instances weaken the gold brand identity. This is a cosmetic issue that compounds across the entire app — the overall color impression is "gray with gold highlights" rather than "gold with gray support."
 
 3. **Desktop grid overflow risk** (§E7-CD2): The `minmax(420px)` and `minmax(380px)` values in desktop grids could overflow on narrow desktop/tablet windows where sidebar (72px) + content + ad margin (160px) compress the content area.
 
@@ -4423,7 +4423,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 - **§E5-BT5 ✅** (inline button sprawl): The professionalism impact of the button sprawl is confirmed — it's the primary source of the two-layer coherence gap (§E7-DC1 ✅) and the primary polish lever (§E7-PD1 ✅).
 - **§E6-HV9 ✅ + §E6-AP4 ✅** (hover/active gaps): These interaction-layer consequences of the button sprawl now have a professionalism framing — they create a perceptible polish gradient within each screen.
 - **§E1-COV1** (token coverage ~30%): The professionalism audit confirms that token coverage is the root cause of the coherence gap. Extending the kuro-* system to cover inline elements would simultaneously fix multiple findings.
-- **§DBI3-S07 + §E1-COL1** (gray text): The brand consistency assessment (§E7-BC4) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
+- **§DBI3-S07 + §E1-COL1** (gray text): The brand consistency assessment (§E7-BC4 ✅) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
 - **§DBI3-S03** (rounded-lg monoculture): The radius audit (§E7-AD1 ✅, §E7-AD2 ✅) shows the kuro-* system has a deliberate 5-level hierarchy — the monoculture is in the inline Tailwind layer's default `rounded-lg`.
 
 ---
@@ -4489,7 +4489,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 > **Finding E8-CI1 ✅** · LOW
 > **First-impression credibility is strong but not flawless**: The composition signals "trusted tool" through 6/6 first-impression vectors (header, background, cards, typography, navigation, data visualization). The credibility gap is in the inline Tailwind layer (§E7-DC1 ✅) which creates a visible quality gradient on tabs with mixed kuro-btn and inline buttons.
 > **Evidence**: Header (`App.jsx:3166–3211`) uses custom glassmorphic styling, branded gold glow, dual-font system. First card (BannerCard) uses full kuro-card system. Tab bar uses custom animated indicator.
-> **Solution**: No new action — the kuro-btn migration recommended in §E7-PD1 is the primary credibility lever. Completing that migration eliminates the visible polish gradient.
+> **Solution**: No new action — the kuro-btn migration recommended in §E7-PD1 ✅ is the primary credibility lever. Completing that migration eliminates the visible polish gradient.
 
 > **Finding E8-CI2** · MEDIUM
 > **Missing apple-touch-icon.png breaks mobile home screen identity**: The PWA manifest (`manifest.webmanifest:19`) and HTML (`index.html:24`) reference `/apple-touch-icon.png` but the file doesn't exist. iOS users adding to home screen see a blank or screenshot-based icon instead of the branded "W" mark.
@@ -4514,7 +4514,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 > **Finding E8-VT2 ✅** · LOW
 > **Spacing rhythm is inconsistent between layers**: The kuro-* system uses deliberate spacing tiers (14px, 12px, 10×12px) but inline elements use Tailwind spacing utilities (p-2=8px, p-3=12px, px-4=16px, py-2=8px) which don't align to the same scale. This creates perceptible spacing inconsistency — two buttons in the same view can have different internal padding.
 > **Evidence**: `kuro-btn` uses `padding: 10px 12px` (`appcore-providers.jsx:870`). Inline buttons use `px-4 py-2` (16px 8px) or `p-2` (8px) (`App.jsx` passim). The ratio difference (10:12 vs 8:16) is visible.
-> **Solution**: When migrating inline buttons to kuro-btn variants (§E7-PD1), the spacing inconsistency resolves automatically. For buttons that remain inline, standardize on `px-3 py-2.5` (12px 10px) to approximate the kuro-btn rhythm.
+> **Solution**: When migrating inline buttons to kuro-btn variants (§E7-PD1 ✅), the spacing inconsistency resolves automatically. For buttons that remain inline, standardize on `px-3 py-2.5` (12px 10px) to approximate the kuro-btn rhythm.
 
 #### §E8.1.3 Competitive visual benchmark
 
@@ -4530,7 +4530,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 > **Finding E8-CB1** · PASS
 > **Competitive visual position is strong**: Whispering Wishes leads the WuWa tracker niche in visual craft. The design investment (custom component system, motion library, atmospheric treatments, dual-font typography) exceeds what comparable community tools offer. This is consistent with §E7-CC1.
 > **Evidence**: Competitive references in code (`App.jsx:6634` — wuwatracker.com import URL, `App.jsx:6793` — GenGamer). The 9-component kuro-* system, 114 trophies, and PityRing visualization represent design investment atypical for community fan tools.
-> **Solution**: Maintain this competitive advantage. The kuro-btn migration (§E7-PD1) would further widen the craft gap.
+> **Solution**: Maintain this competitive advantage. The kuro-btn migration (§E7-PD1 ✅) would further widen the craft gap.
 
 #### §E8.1.4 Conversion/commitment blockers
 
@@ -5073,7 +5073,7 @@ For a community fan tool, the distribution channels are:
 > **Three defaulting signals undermine "made with intent" impression**: The inline Tailwind layer's `transition-colors`, `rounded-lg`, and `text-gray-400` trio creates a "default Tailwind" fingerprint visible in ~30% of the UI. These aren't wrong — they're functional — but they look like decisions that weren't made rather than decisions that were. The contrast with the deliberate kuro-* system makes the defaulting more visible than it would be in an all-Tailwind app.
 > **Evidence**: `transition-colors` appears ~80+ times in `App.jsx`. `rounded-lg` appears ~120+ times. `text-gray-400` appears ~200+ times. In contrast, `var(--transition-fast)`, custom radius values, and `var(--text-body)` appear only within kuro-* components.
 > **Cross-reference**: §E7-DC1 ✅ (two-layer coherence gap), §E1-COV1 (token coverage ~30%), §DBI3-S03 (rounded-lg monoculture), §E7-BC4 ✅ (gray text volume).
-> **Solution**: This finding converges with the kuro-btn migration (§E7-PD1). When migrating inline buttons to kuro-btn variants, the transition, radius, and color tokens migrate simultaneously. For non-button elements (badges, progress bars, filter selects), create `kuro-badge`, `kuro-progress`, and `kuro-select` classes that reference design tokens instead of Tailwind defaults. This is the single most impactful "intent" improvement.
+> **Solution**: This finding converges with the kuro-btn migration (§E7-PD1 ✅). When migrating inline buttons to kuro-btn variants, the transition, radius, and color tokens migrate simultaneously. For non-button elements (badges, progress bars, filter selects), create `kuro-badge`, `kuro-progress`, and `kuro-select` classes that reference design tokens instead of Tailwind defaults. This is the single most impactful "intent" improvement.
 
 #### §E8.7.2 App icon / favicon quality
 
@@ -5997,7 +5997,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 ### Connection to Prior Findings
 
 - **§E1-COV1** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1). Token migration is the single highest-impact improvement.
-- **§E7-PD1** (button migration): The native `<select>` (§E9-MC-F1) is the same class of issue — a non-branded native element breaking the design system.
+- **§E7-PD1 ✅** (button migration): The native `<select>` (§E9-MC-F1 ✅) is the same class of issue — a non-branded native element breaking the design system.
 - **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2) — the radius monoculture prevents shape from serving as an identity signal.
 - **§E7-PL1 ✅** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
@@ -9068,7 +9068,7 @@ Competitive positioning map:
 
 | # | Pattern | Steps Affected | Inconsistency | Normalized Severity |
 |---|---------|---------------|---------------|-------------------|
-| SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 (MEDIUM), §E9-AG-F1 (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
+| SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 ✅ (MEDIUM), §E9-AG-F1 ✅ (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
 | SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
