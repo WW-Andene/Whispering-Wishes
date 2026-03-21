@@ -3854,7 +3854,7 @@ A comprehensive CSS-in-JS design system providing:
 > **Card padding alignment**: `kuro-header` and `kuro-body` both use exactly `14px` padding. `kuro-stat` also uses `14px`. Buttons and inputs share `10px 12px`. Two padding tiers are internally consistent.
 > **Solution**: None needed — the two-tier system (14px containers, 10px×12px interactive) is logical.
 
-> **Finding E7-AD4** · LOW
+> **Finding E7-AD4 ✅** · LOW
 > **Badge padding inconsistency**: Element badges use `px-2 py-0.5` (8px horizontal) while buff badges in the same modal use `px-1.5 py-0.5` (6px horizontal) (`appcore-components.jsx:216` vs `244`). The 2px difference creates subtle misalignment when badges appear near each other.
 > **Solution**: Standardize all badges to `px-1.5 py-0.5` (the more compact option fits the data-dense aesthetic better), or create a `.kuro-badge` class with fixed padding.
 
@@ -4359,9 +4359,9 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 | E7-DC1 | Two-layer coherence gap (kuro-* vs Tailwind) | MEDIUM | ISSUE |
 | E7-DC2 | Component-level coherence | — | PASS |
 | E7-AD1 ✅ | Non-standard 10px stat radius | LOW | ISSUE |
-| E7-AD2 | No radius tokens | LOW | ISSUE |
+| E7-AD2 ✅ | No radius tokens | LOW | ISSUE |
 | E7-AD3 | Card padding alignment | — | PASS |
-| E7-AD4 | Badge padding inconsistency | LOW | ISSUE |
+| E7-AD4 ✅ | Badge padding inconsistency | LOW | ISSUE |
 | E7-AD5 | Shadow token hierarchy | — | PASS |
 | E7-AD6 | Shadow token under-usage | LOW | ISSUE |
 | E7-AD7 | Mixed units across paradigms | LOW | ISSUE |
@@ -9069,7 +9069,7 @@ Competitive positioning map:
 | # | Pattern | Steps Affected | Inconsistency | Normalized Severity |
 |---|---------|---------------|---------------|-------------------|
 | SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 (MEDIUM), §E9-AG-F1 (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
-| SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
+| SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
@@ -9106,7 +9106,7 @@ Competitive positioning map:
 
 **Severity adjustments needed (5)**:
 1. §E6-AP4 ✅: LOW → **MEDIUM** (inline button press feedback)
-2. §E7-AD2: LOW → **MEDIUM** (radius token absence)
+2. §E7-AD2 ✅: LOW → **MEDIUM** (radius token absence)
 3. §E10-NV-F3: LOW → **MEDIUM** (Stats missing kuro-number)
 4. §E9-AC-F2: POLISH → **LOW** (favicon gold mismatch)
 5. §CK-F2: LOW → **MEDIUM** (touch targets — from §19.1)
@@ -9766,7 +9766,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | CK-F2 touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
 | E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
-| E7-AD2 radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 |
+| E7-AD2 ✅ radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 |
 | E10-NV-F3 kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 |
 | E9 overall score: 8.1 → 7.8/10 | Score adjustment | 3 HIGH findings pull below 8.0 |
 | BR-F1 body font: MEDIUM → REJECTED | Identity protection | Violates P3 (protected font pairing) |
@@ -10105,7 +10105,7 @@ All three token values carry blue hue (≈250°), matching the background's chro
 
 Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual surface), then `--radius-sm` to buttons/inputs, then spacing tokens to card padding.
 
-**Cross-references**: E1-RAD1, E1-ZDX1, E7-AD2, TK-F1, TK-F2, WB-F1
+**Cross-references**: E1-RAD1, E1-ZDX1, E7-AD2 ✅, TK-F1, TK-F2, WB-F1
 
 ---
 
@@ -11039,7 +11039,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
 | 65 | E7-AD1 ✅ | Non-standard 10px stat radius (not in 8/12/16 scale) | STATS | Standardize to `var(--radius-lg)` (12px) |
-| 66 | E7-AD2 | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 (radius tokens) |
+| 66 | E7-AD2 ✅ | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 (radius tokens) |
 | 67 | E7-AD4 | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
 | 68 | E7-AD6 | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
 | 69 | E7-AD7 | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
