@@ -4658,13 +4658,13 @@ function WhisperingWishesInner() {
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Convenes</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm">{overallStats.won5050}</div><div className="text-gray-400 text-[9px]">Won 50/50</div></div>
-                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
+                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[9px]">Won 50/50</div></div>
+                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
                     </div>
                     {overallStats.winRate != null && <div className="text-center text-xs text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.winRate}%</span></div>}
                   </CardBody>
@@ -4688,12 +4688,13 @@ function WhisperingWishesInner() {
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
-                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-[9px] font-bold flex-shrink-0" aria-label="Won 50/50">W<span className="sr-only"> (Won 50/50)</span></span>}
-                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-[9px] font-bold flex-shrink-0" aria-label="Lost 50/50">L<span className="sr-only"> (Lost 50/50)</span></span>}
+                                  {/* MED-34: Enlarged W/L badges with icon backup for colorblind accessibility */}
+                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
+                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
                                   {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[9px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                  <span className={`font-bold ${pityTextColor}`}>{p.pity ?? '?'}</span>
+                                  <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
                                   {p.timestamp && <span className="text-gray-400 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>

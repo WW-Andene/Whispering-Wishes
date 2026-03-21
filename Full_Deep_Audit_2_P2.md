@@ -6329,7 +6329,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-EP-F1 | **MEDIUM** | Stats tab empty states ("Insufficient data for trend analysis", "Insufficient signal data") are plain text with no icon, no illustration, and clinical language — they feel like spreadsheet error messages, not a designed experience | **Add icons + rewrite copy**: Each Stats empty state should include a contextual icon (e.g., TrendingUp for trend, Star for 5★) at 24px with gold glow, followed by game-lore copy. "Insufficient data for trend analysis" → "Not enough signals to chart your journey — keep pulling to reveal patterns." This matches the Collection ghost grid's emotional quality |
+| §E10-EP-F1 ✅ | **MEDIUM** | Stats tab empty states ("Insufficient data for trend analysis", "Insufficient signal data") are plain text with no icon, no illustration, and clinical language — they feel like spreadsheet error messages, not a designed experience | **Add icons + rewrite copy**: Each Stats empty state should include a contextual icon (e.g., TrendingUp for trend, Star for 5★) at 24px with gold glow, followed by game-lore copy. "Insufficient data for trend analysis" → "Not enough signals to chart your journey — keep pulling to reveal patterns." This matches the Collection ghost grid's emotional quality |
 | §E10-EP-F2 ✅ | **LOW** | No visual ceremony when data first populates — the `cardSlideIn` animation is the same whether it's the first load or a return visit; there's no "first data" moment | **Add a first-population flash**: On first data load (detect via `history.length === 0` → `history.length > 0` transition), trigger a brief gold glow pulse on the newly populated cards. Use a one-time `@keyframes firstDataGlow` with `box-shadow` gold expansion. This celebrates the moment data appears for the first time |
 
 ---
@@ -6365,7 +6365,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-ER-F1 | **MEDIUM** | Admin lockout (5-minute cooldown after 5 failed attempts) is communicated as a 3-second auto-dismiss toast — the most persistent security state uses the most transient notification | **Add persistent lockout indicator**: When lockout is active, display a persistent red banner below the input field showing "Locked — try again in X:XX" with a countdown. The toast can still fire, but the persistent indicator ensures the user sees the state even after the toast dismisses |
+| §E10-ER-F1 ✅ | **MEDIUM** | Admin lockout (5-minute cooldown after 5 failed attempts) is communicated as a 3-second auto-dismiss toast — the most persistent security state uses the most transient notification | **Add persistent lockout indicator**: When lockout is active, display a persistent red banner below the input field showing "Locked — try again in X:XX" with a countdown. The toast can still fire, but the persistent indicator ensures the user sees the state even after the toast dismisses |
 | §E10-ER-F2 ✅ | **LOW** | Rate limit error uses red "error" toast type instead of gold "warning" — rate limiting is a temporary wait condition, not a failure state | **Change to warning type**: Switch rate limit from `toast.addToast(msg, 'error')` to `toast.addToast(msg, 'warning')`. Gold + AlertTriangle communicates "wait a moment" better than red + AlertCircle which communicates "something broke" |
 | §E10-ER-F3 ✅ | **LOW** | Tab-level error boundary and app-level error boundary have identical visual weight — a single tab crashing looks the same as the entire app crashing | **Escalate app crash visually**: Add a red border or red gradient accent to the app-level error boundary. Include an app icon/logo to reassure the user this is still Whispering Wishes (not a browser error). Add "The app encountered an unexpected error" vs the tab-level "Something went wrong in this section" |
 
@@ -6400,7 +6400,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-CB-F1 | **MEDIUM** | Won 50/50 (emerald) vs Lost 50/50 (red) relies on color + tiny "W"/"L" letters at `text-[9px]` — the letter backup is too small to be a reliable secondary encoding for colorblind users | **Enlarge W/L badges or add icons**: Increase "W"/"L" badges from `text-[9px]` to `text-xs` with a background pill (green bg for W, red bg for L). Alternatively, add a ✓ icon for Won and ✗ icon for Lost — shape differentiation is the most robust colorblind backup |
+| §E10-CB-F1 ✅ | **MEDIUM** | Won 50/50 (emerald) vs Lost 50/50 (red) relies on color + tiny "W"/"L" letters at `text-[9px]` — the letter backup is too small to be a reliable secondary encoding for colorblind users | **Enlarge W/L badges or add icons**: Increase "W"/"L" badges from `text-[9px]` to `text-xs` with a background pill (green bg for W, red bg for L). Alternatively, add a ✓ icon for Won and ✗ icon for Lost — shape differentiation is the most robust colorblind backup |
 | §E10-CB-F2 ✅ | **LOW** | Pity gradient lime (#84cc16) and gold (#edaf18) are nearly identical in grayscale (~10 luma difference) — users cannot distinguish "lucky average" from "average" by color alone | **Widen the luma gap**: Replace lime (#84cc16) with a brighter green (#4ade80, ~190 luma) for the 21–40 range. This creates a clearer grayscale progression: bright green → gold → orange → dark red. The numeric value always provides full recovery |
 | §E10-CB-F3 ✅ | **LOW** | Six element colors have no icon/shape backup — purely text labels. In contexts where labels are truncated or absent, elements are color-only | **Add element icons**: Create or assign simple geometric shapes per element (e.g., Fusion = flame, Electro = bolt, Aero = wind swirl, Glacio = snowflake, Havoc = spiral, Spectro = star). These already exist in WuWa's game UI and would strengthen both identity and accessibility |
 
@@ -6444,7 +6444,7 @@ The application uses several data-dense tabular layouts. While none use a litera
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-DT-F1 | **MEDIUM** | Leaderboard avg pity numbers (App.jsx:4135) and Pull Log pity numbers (App.jsx:4688) lack `.kuro-number` class — they render in the default font without `tabular-nums`, causing digits to shift horizontally as values change (e.g., "45.2" vs "8.1" won't column-align) | **Add `.kuro-number` to all tabular numeric cells**: On leaderboard `entry.avgPity.toFixed(1)`, add `kuro-number` to the parent span. On Pull Log `{p.pity ?? '?'}`, add `kuro-number`. This ensures `tabular-nums` + JetBrains Mono across all data tables, matching the Stats grid and Planner which already use it |
+| §E10-DT-F1 ✅ | **MEDIUM** | Leaderboard avg pity numbers (App.jsx:4135) and Pull Log pity numbers (App.jsx:4688) lack `.kuro-number` class — they render in the default font without `tabular-nums`, causing digits to shift horizontally as values change (e.g., "45.2" vs "8.1" won't column-align) | **Add `.kuro-number` to all tabular numeric cells**: On leaderboard `entry.avgPity.toFixed(1)`, add `kuro-number` to the parent span. On Pull Log `{p.pity ?? '?'}`, add `kuro-number`. This ensures `tabular-nums` + JetBrains Mono across all data tables, matching the Stats grid and Planner which already use it |
 | §E10-DT-F2 ✅ | **LOW** | Pull Log scroll container (`max-h-60 overflow-y-auto`) has no scroll affordance — no `kuro-scroll` class, no bottom fade, no "scroll for more" indicator; the admin list uses `kuro-scroll` but Pull Log and Leaderboard don't | **Add `kuro-scroll` + bottom fade**: Add `kuro-scroll` class to both the Pull Log and Leaderboard scroll containers. Add a `pointer-events-none` gradient overlay at the bottom (`linear-gradient(transparent 80%, var(--bg-card) 100%)`) when content overflows, hinting at more rows below |
 | §E10-DT-F3 ✅ | **POLISH** | None of the data tables use semantic `<table>` / `<thead>` / `<tbody>` — they're all flex/grid constructs with no column headers. The Pull Log has no header row explaining what "W" / "L" / the number columns mean | **Add visually subtle header row**: For the Pull Log, add a single header row at `text-[9px] text-gray-500` with "Name | Banner | 50/50 | Pity | Date". Use `role="table"`, `role="rowgroup"`, `role="row"`, `role="cell"` ARIA roles on the flex structure to preserve screen reader semantics without switching to literal `<table>` elements |
 
@@ -6485,7 +6485,7 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-RD-F1 | **MEDIUM** | Recharts area charts use fixed `h-32` (128px) and `h-24` (96px) containers — on wide viewports the aspect ratio becomes extremely horizontal (e.g., 800×128), making trends harder to read; on narrow viewports the same height wastes vertical space relative to content width | **Use aspect-ratio responsive heights**: Replace fixed `h-32` with `aspect-[4/1]` (or a `min-h-32 max-h-48` clamp). This keeps charts proportional to their width. For the admin `h-24` chart, use `aspect-[5/1]` with `min-h-20 max-h-32`. The `ResponsiveContainer` already handles width — it just needs a proportional height container |
+| §E10-RD-F1 ✅ | **MEDIUM** | Recharts area charts use fixed `h-32` (128px) and `h-24` (96px) containers — on wide viewports the aspect ratio becomes extremely horizontal (e.g., 800×128), making trends harder to read; on narrow viewports the same height wastes vertical space relative to content width | **Use aspect-ratio responsive heights**: Replace fixed `h-32` with `aspect-[4/1]` (or a `min-h-32 max-h-48` clamp). This keeps charts proportional to their width. For the admin `h-24` chart, use `aspect-[5/1]` with `min-h-20 max-h-32`. The `ResponsiveContainer` already handles width — it just needs a proportional height container |
 | §E10-RD-F2 ✅ | **LOW** | Planner projection grids (`grid-cols-3` with `text-2xl kuro-number`) can squeeze on narrow viewports (~320px) — three columns of 24px numbers with comma formatting (e.g., "1,440") may overflow cells | **Add `text-xl sm:text-2xl` responsive sizing**: Scale projection numbers from `text-xl` on mobile to `text-2xl` on wider viewports. Alternatively, add `whitespace-nowrap overflow-hidden text-ellipsis` to prevent mid-number wrapping, ensuring numbers are never broken across lines |
 | §E10-RD-F3 | **POLISH** | Tab navigation uses `scrollbar-hide` on 8 tabs — on narrow viewports the last tabs (Profile, Teams) are hidden with no visual indication of horizontal scrollability | **Add edge gradient fade**: Apply a `pointer-events-none` gradient fade on the right edge of the tab nav (`linear-gradient(to left, var(--bg-card) 0%, transparent 32px)`) when scroll position hasn't reached the end. This is a standard mobile pattern that hints "swipe right for more tabs" |
 
@@ -6526,8 +6526,8 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-NF-F1 | **MEDIUM** | Crit Rate/Crit Damage values use `.toFixed(0)` in stat breakdown (App.jsx:6056–6057) but `.toFixed(1)` in team overview pills (App.jsx:5741–5742) — the same data type shows different precision in different views, which can confuse users comparing values | **Standardize to `.toFixed(1)` everywhere for CR/CD**: These are percentage values where the decimal matters (e.g., 44.8% vs 45.2% are meaningfully different). Use `.toFixed(1)` in both the stat breakdown and the team pill views. The extra digit costs minimal space at `text-[9px]` |
-| §E10-NF-F2 | **MEDIUM** | Stats tab core numbers (avg pity, win rate, total convenes, total Astrite) use `font-bold` without `.kuro-number` — these are the highest-value data points in the Stats tab but don't get the monospace tabular-nums treatment that Calculator and Teams data receive | **Add `.kuro-number` to Stats tab primary values**: Apply `kuro-number` class to: `overallStats.totalPulls.toLocaleString()` (App.jsx:4653), `overallStats.totalAstrite.toLocaleString()` (App.jsx:4654), `overallStats.avgPity` (App.jsx:4659), and `overallStats.winRate` (App.jsx:4661). This aligns Stats with the established data typography system |
+| §E10-NF-F1 ✅ | **MEDIUM** | Crit Rate/Crit Damage values use `.toFixed(0)` in stat breakdown (App.jsx:6056–6057) but `.toFixed(1)` in team overview pills (App.jsx:5741–5742) — the same data type shows different precision in different views, which can confuse users comparing values | **Standardize to `.toFixed(1)` everywhere for CR/CD**: These are percentage values where the decimal matters (e.g., 44.8% vs 45.2% are meaningfully different). Use `.toFixed(1)` in both the stat breakdown and the team pill views. The extra digit costs minimal space at `text-[9px]` |
+| §E10-NF-F2 ✅ | **MEDIUM** | Stats tab core numbers (avg pity, win rate, total convenes, total Astrite) use `font-bold` without `.kuro-number` — these are the highest-value data points in the Stats tab but don't get the monospace tabular-nums treatment that Calculator and Teams data receive | **Add `.kuro-number` to Stats tab primary values**: Apply `kuro-number` class to: `overallStats.totalPulls.toLocaleString()` (App.jsx:4653), `overallStats.totalAstrite.toLocaleString()` (App.jsx:4654), `overallStats.avgPity` (App.jsx:4659), and `overallStats.winRate` (App.jsx:4661). This aligns Stats with the established data typography system |
 | §E10-NF-F3 | **POLISH** | Goal progress percentage (App.jsx:3933) renders at `text-gray-100` without `kuro-number` or any emphasis — this is a progress completion value that deserves the same treatment as other key percentages | **Add `kuro-number` + color coding**: Apply `kuro-number` to the goal progress percentage. Add color coding: `text-red-400` below 25%, `text-orange-400` at 25–50%, `text-yellow-400` at 50–75%, `text-emerald-400` at 75%+. This transforms a neutral number into a motivational progress signal |
 
 ---
@@ -6601,22 +6601,22 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 | 9 | §E10-CH-F2 ✅ | **LOW** | §E10.3 | Histogram summary line at `text-[10px]` placed below bars — easy to miss |
 | 10 | §E10-PC-F1 ✅ | **MEDIUM** | §E10.4 | Planner shows all complexity at once — no progressive disclosure |
 | 11 | §E10-DD-F1 | **POLISH** | §E10.5 | Collection grid tight spacing may cause visual fatigue at 40+ items |
-| 12 | §E10-EP-F1 | **MEDIUM** | §E10.6 | Stats empty states lack personality — clinical "Insufficient data" messages |
+| 12 | §E10-EP-F1 ✅ | **MEDIUM** | §E10.6 | Stats empty states lack personality — clinical "Insufficient data" messages |
 | 13 | §E10-EP-F2 ✅ | **LOW** | §E10.6 | No visual ceremony for first data population |
-| 14 | §E10-ER-F1 | **MEDIUM** | §E10.7 | Admin lockout uses transient 3s toast for 5-minute security state |
+| 14 | §E10-ER-F1 ✅ | **MEDIUM** | §E10.7 | Admin lockout uses transient 3s toast for 5-minute security state |
 | 15 | §E10-ER-F2 ✅ | **LOW** | §E10.7 | Rate limit error uses red "error" instead of gold "warning" type |
 | 16 | §E10-ER-F3 ✅ | **LOW** | §E10.7 | Tab-level and app-level error boundaries have identical visual weight |
-| 17 | §E10-CB-F1 | **MEDIUM** | §E10.8 | W/L colorblind backup badges at `text-[9px]` too small to be reliable |
+| 17 | §E10-CB-F1 ✅ | **MEDIUM** | §E10.8 | W/L colorblind backup badges at `text-[9px]` too small to be reliable |
 | 18 | §E10-CB-F2 ✅ | **LOW** | §E10.8 | Pity gradient lime/gold nearly identical in grayscale (~10 luma gap) |
 | 19 | §E10-CB-F3 ✅ | **LOW** | §E10.8 | Six element colors have no icon/shape backup |
-| 20 | §E10-DT-F1 | **MEDIUM** | §E10.9 | Leaderboard + Pull Log numeric columns lack `.kuro-number` tabular-nums |
+| 20 | §E10-DT-F1 ✅ | **MEDIUM** | §E10.9 | Leaderboard + Pull Log numeric columns lack `.kuro-number` tabular-nums |
 | 21 | §E10-DT-F2 ✅ | **LOW** | §E10.9 | Pull Log + Leaderboard scroll containers missing `kuro-scroll` + fade hint |
 | 22 | §E10-DT-F3 ✅ | **POLISH** | §E10.9 | Data tables lack semantic roles and visible column headers |
-| 23 | §E10-RD-F1 | **MEDIUM** | §E10.10 | Recharts charts use fixed `h-32`/`h-24` height — extreme aspect ratios on wide viewports |
+| 23 | §E10-RD-F1 ✅ | **MEDIUM** | §E10.10 | Recharts charts use fixed `h-32`/`h-24` height — extreme aspect ratios on wide viewports |
 | 24 | §E10-RD-F2 ✅ | **LOW** | §E10.10 | Planner projection grids squeeze `text-2xl` numbers on narrow viewports |
 | 25 | §E10-RD-F3 | **POLISH** | §E10.10 | Tab navigation `scrollbar-hide` on 8 tabs — no horizontal scroll indicator |
-| 26 | §E10-NF-F1 | **MEDIUM** | §E10.11 | CR/CD values use different decimal precision (`.toFixed(0)` vs `.toFixed(1)`) in different views |
-| 27 | §E10-NF-F2 | **MEDIUM** | §E10.11 | Stats tab primary numbers missing `.kuro-number` class |
+| 26 | §E10-NF-F1 ✅ | **MEDIUM** | §E10.11 | CR/CD values use different decimal precision (`.toFixed(0)` vs `.toFixed(1)`) in different views |
+| 27 | §E10-NF-F2 ✅ | **MEDIUM** | §E10.11 | Stats tab primary numbers missing `.kuro-number` class |
 | 28 | §E10-NF-F3 | **POLISH** | §E10.11 | Goal progress percentage has no color coding or `.kuro-number` treatment |
 | 29 | §E10-RT-F1 ✅ | **LOW** | §E10.12 | Active players count updates with no transition animation |
 | 30 | §E10-RT-F2 | **POLISH** | §E10.12 | CountdownTimer "Ended" state has least dramatic visual for most dramatic event |
@@ -6658,12 +6658,12 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 | §E10 Finding | Connected Prior Finding | Relationship |
 |-------------|----------------------|--------------|
 | §E10-NV-F3 ✅ (Stats missing kuro-number) | §E8-TK-F2 ✅ (typography token gaps) | Same root cause — `kuro-number` was designed but not propagated to all numeric surfaces |
-| §E10-NF-F2 (Stats missing kuro-number) | §E8-TK-F2 ✅ | Duplicate of NV-F3 from a formatting angle — reinforce priority |
-| §E10-DT-F1 (tables missing kuro-number) | §E8-TK-F2 ✅ | Third instance — `kuro-number` needs a systematic audit-and-apply pass |
+| §E10-NF-F2 ✅ (Stats missing kuro-number) | §E8-TK-F2 ✅ | Duplicate of NV-F3 from a formatting angle — reinforce priority |
+| §E10-DT-F1 ✅ (tables missing kuro-number) | §E8-TK-F2 ✅ | Third instance — `kuro-number` needs a systematic audit-and-apply pass |
 | §E10-CH-F1 ✅ (chart missing tooltips) | §E7-IN-F2 (interaction feedback gaps) | Charts lack the hover feedback that buttons and cards already have |
-| §E10-EP-F1 (clinical empty states) | §E9-VE-F7 (empty states lack brand personality) | Same finding from visual identity angle — empty states are generic |
+| §E10-EP-F1 ✅ (clinical empty states) | §E9-VE-F7 (empty states lack brand personality) | Same finding from visual identity angle — empty states are generic |
 | §E10-RD-F3 (tab scroll affordance) | §E7-IN-F4 (horizontal scroll missing indicators) | Same affordance gap in tab navigation |
-| §E10-CB-F1 (W/L badge too small) | §E3-A11Y-F3 (touch targets under 44px) | Small interactive/informational elements pattern |
+| §E10-CB-F1 ✅ (W/L badge too small) | §E3-A11Y-F3 (touch targets under 44px) | Small interactive/informational elements pattern |
 | §E10-HI-F1 ✅ (flat grid anti-pattern) | §E4-PERF-F1 (unnecessary re-renders) | Planner tab has both visual and performance issues — candidate for redesign |
 
 ### Top 3 Impact Fixes for §E10
@@ -9043,7 +9043,7 @@ Competitive positioning map:
 | GC2 | §DC4-ICO1 ✅ LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 ✅ POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 ✅ should be upgraded from POLISH → LOW. ✅ FIXED |
 | GC3 | §E2-MO1 ✅ MEDIUM: "Touch targets 36px on touch devices (below 44px)" | §CK-F2 ✅ LOW (Step 18): "Touch targets at 36px, below 44px" | Same finding, different severity (MEDIUM vs LOW) | **E2 severity is correct.** Touch target compliance is a WCAG 2.5.8 requirement. A 36px target on `pointer: coarse` devices is a genuine accessibility gap that affects every touch interaction. **Reconciled: MEDIUM.** Step 18 §CK-F2 ✅ should be upgraded from LOW → MEDIUM. |
 | GC4 | §DS2-F8 MEDIUM: "~240 hardcoded color values" | §E1-COL1 HIGH: "66 unique hex colors, only 18 tokenized — 73% unmanaged" | Same root issue, different quantification (240 instances vs 66 unique values) | **Both are correct at different levels.** DS2 counts *instances* (how many times hardcoded values appear). E1 counts *unique values* (how many distinct colors exist). 66 unique colors × average 3.6 uses each ≈ 240 instances. **No quantification error.** But the severity differs: DS2 says MEDIUM, E1 says HIGH. **Reconciled: HIGH** — 73% unmanaged palette is a systemic token architecture issue, not a moderate concern. |
-| GC5 | §E9-EA-F4 ✅ LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
+| GC5 | §E9-EA-F4 ✅ LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 ✅ MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
 
 ### 19.1.3 — Contradiction Summary
 
@@ -9072,8 +9072,8 @@ Competitive positioning map:
 | SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 ✅ (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 ✅ (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
-| SI5 | **Missing kuro-number propagation** | §E10-NV-F3 ✅ (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
-| SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
+| SI5 | **Missing kuro-number propagation** | §E10-NV-F3 ✅ (LOW), §E10-NF-F2 ✅ (MEDIUM), §E10-DT-F1 ✅ (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
+| SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1 ✅) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
 
 ### 19.2.2 — Score-to-Finding Alignment Audit
 
@@ -9360,11 +9360,11 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
 ```
 ROOT CAUSE: kuro-number class designed but inconsistently applied
     │
-    ├──→ TYPOGRAPHY: Stats tab numbers lack tabular-nums (§E10-NV-F3 ✅ / §E10-NF-F2)
+    ├──→ TYPOGRAPHY: Stats tab numbers lack tabular-nums (§E10-NV-F3 ✅ / §E10-NF-F2 ✅)
     │       │
     │       └──→ DATA QUALITY: Numbers shift horizontally on value change — visual instability
     │
-    ├──→ TABLES: Leaderboard + Pull Log lack kuro-number (§E10-DT-F1)
+    ├──→ TABLES: Leaderboard + Pull Log lack kuro-number (§E10-DT-F1 ✅)
     │       │
     │       └──→ ALIGNMENT: Numeric columns can't align properly without monospace treatment
     │
@@ -9374,14 +9374,14 @@ ROOT CAUSE: kuro-number class designed but inconsistently applied
     │               │
     │               └──→ DECISION-MAKING: Users must squint to find the information that determines whether they should pull
     │
-    └──→ FORMATTING: Inconsistent decimal precision across views (§E10-NF-F1)
+    └──→ FORMATTING: Inconsistent decimal precision across views (§E10-NF-F1 ✅)
             │
             └──→ TRUST: Same metric shown with different precision creates doubt about accuracy
 ```
 
 **Chain impact**: 7+ findings across 2 steps (concentrated in Step 17)
 **Single fix**: Systematic `kuro-number` propagation pass — grep for numeric displays and add the class
-**Cascade resolution**: Fixes §E10-NV-F3 ✅, §E10-NF-F2, §E10-DT-F1 and improves §E10-NV-F1 ✅, §E10-NF-F1
+**Cascade resolution**: Fixes §E10-NV-F3 ✅, §E10-NF-F2 ✅, §E10-DT-F1 ✅ and improves §E10-NV-F1 ✅, §E10-NF-F1 ✅
 
 ---
 
@@ -9723,8 +9723,8 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Duplicate Group | Findings | Recommended Consolidated Finding | Consolidated Severity |
 |----------------|----------|--------------------------------|----------------------|
 | **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 ✅ (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 ✅ (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
-| **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 ✅ (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
-| **kuro-number propagation** | §E10-NV-F3 ✅, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
+| **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 ✅ (clinical Stats empty), §E9-EA-F4 ✅ (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
+| **kuro-number propagation** | §E10-NV-F3 ✅, §E10-NF-F2 ✅, §E10-DT-F1 ✅ | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 ✅ (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
 | **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
 
@@ -9767,7 +9767,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
 | E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
 | E7-AD2 ✅ radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 ✅ |
-| E10-NV-F3 ✅ kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 |
+| E10-NV-F3 ✅ kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 ✅ |
 | E9 overall score: 8.1 → 7.8/10 | Score adjustment | 3 HIGH findings pull below 8.0 |
 | BR-F1 body font: MEDIUM → REJECTED | Identity protection | Violates P3 (protected font pairing) |
 | R4 E4-PERF-F1 cross-reference: REMOVED | Erroneous reference | Finding does not exist |
@@ -10672,7 +10672,7 @@ Position prominently below the pity ring, not buried in the stats row.
 
 ---
 
-#### MED-32: §E10-EP-F1 — Stats Empty States Lack Personality
+#### MED-32: §E10-EP-F1 ✅ — Stats Empty States Lack Personality
 **Step**: 17 (§E10) | **Tabs**: STATS
 
 **Problem**: Stats tab empty states use clinical messages like "Insufficient data" with no personality or warmth. This contradicts the designed empty states used elsewhere (warm copy + icons + CTAs).
@@ -10684,7 +10684,7 @@ Add the standard empty state composition (Lucide icon + warm title + descriptive
 
 ---
 
-#### MED-33: §E10-ER-F1 — Admin Lockout Uses Transient Toast for Persistent State
+#### MED-33: §E10-ER-F1 ✅ — Admin Lockout Uses Transient Toast for Persistent State
 **Step**: 17 (§E10) | **Tabs**: ADMIN
 
 **Problem**: Admin lockout (a 5-minute security timeout) is communicated via a 3-second toast that disappears. Users have no persistent indicator of the lockout state.
@@ -10699,7 +10699,7 @@ Add the standard empty state composition (Lucide icon + warm title + descriptive
 
 ---
 
-#### MED-34: §E10-CB-F1 — W/L Colorblind Backup Badges Too Small
+#### MED-34: §E10-CB-F1 ✅ — W/L Colorblind Backup Badges Too Small
 **Step**: 17 (§E10) | **Tabs**: STATS
 
 **Problem**: Won/Lost 50/50 badges use color (emerald/red) plus tiny "W"/"L" letters at `text-[9px]`. The letter backup is too small to serve as a reliable secondary encoding for colorblind users.
@@ -10714,7 +10714,7 @@ The ✓/✗ icons provide shape differentiation — the most robust colorblind b
 
 ---
 
-#### MED-35: §E10-DT-F1 — Leaderboard + Pull Log Lack `.kuro-number`
+#### MED-35: §E10-DT-F1 ✅ — Leaderboard + Pull Log Lack `.kuro-number`
 **Step**: 17 (§E10) | **Chain**: #4 | **Tabs**: STATS
 
 **Problem**: Numeric columns in the Leaderboard and Pull Log tables don't use `.kuro-number` class. Without `tabular-nums`, numbers shift when values change, and the columns lack the JetBrains Mono data typography.
@@ -10727,7 +10727,7 @@ This is part of the systematic kuro-number propagation pass (Chain #4).
 
 ---
 
-#### MED-36: §E10-RD-F1 — Charts Use Fixed Height (Extreme Aspect Ratios on Wide Viewports)
+#### MED-36: §E10-RD-F1 ✅ — Charts Use Fixed Height (Extreme Aspect Ratios on Wide Viewports)
 **Step**: 17 (§E10) | **Tabs**: STATS
 
 **Problem**: Recharts charts use fixed `h-32`/`h-24` height classes. On wide viewports (1200px+), charts become extremely wide and short, creating illegible aspect ratios.
@@ -10743,7 +10743,7 @@ This is part of the systematic kuro-number propagation pass (Chain #4).
 
 ---
 
-#### MED-37: §E10-NF-F1 — CR/CD Values Use Inconsistent Decimal Precision
+#### MED-37: §E10-NF-F1 ✅ — CR/CD Values Use Inconsistent Decimal Precision
 **Step**: 17 (§E10) | **Tabs**: STATS, CALC
 
 **Problem**: The same metrics use `.toFixed(0)` in some views and `.toFixed(1)` in others. Pity averages round differently across Tracker and Stats tabs.
@@ -10756,7 +10756,7 @@ This is part of the systematic kuro-number propagation pass (Chain #4).
 
 ---
 
-#### MED-38: §E10-NF-F2 — Stats Tab Primary Numbers Missing `.kuro-number`
+#### MED-38: §E10-NF-F2 ✅ — Stats Tab Primary Numbers Missing `.kuro-number`
 **Step**: 17 (§E10) | **Chain**: #4 | **Tabs**: STATS
 
 **Problem**: Stats tab "Overall" section numbers use `font-bold` without `.kuro-number`. They render in Rajdhani (proportional) instead of JetBrains Mono (tabular), breaking column alignment.

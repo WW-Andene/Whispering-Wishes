@@ -449,6 +449,9 @@ const KuroStyles = memo(({ oledMode }) => (
        Navy void #080c14 (OKLCH 8% 0.02 260°) — depth, cosmic emptiness, high contrast
        Cyan accent #38bdf8 — cool complement for standard/info states
        Purple accent #a855f7 — 4-star rarity + Electro element (dual semantic, see §E9-AC-F1)
+       MED-37: Numeric precision convention —
+       Pity counts: integers (.toFixed(0)), Probabilities: 1 decimal (.toFixed(1)),
+       Percentages: 1 decimal (.toFixed(1)), Currency: integers + locale separators.
        §E10-CB-F3: Element icon/shape backup for colorblind accessibility:
        Fusion=Flame, Electro=Bolt, Aero=Wind, Glacio=Snowflake, Havoc=Spiral, Spectro=Star */
     :root {
@@ -1551,6 +1554,24 @@ const KuroStyles = memo(({ oledMode }) => (
       padding: 12px;
       backdrop-filter: blur(var(--blur-sm));
       -webkit-backdrop-filter: blur(var(--blur-sm));
+    }
+
+    /* MED-33: Persistent admin lockout inline banner */
+    .kuro-lockout-banner {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      text-align: center;
+      color: var(--color-warning);
+      font-size: 13px;
+    }
+
+    /* MED-36: Chart container with responsive aspect ratio */
+    .kuro-chart-container {
+      aspect-ratio: 16 / 9;
+      max-height: 300px;
+      min-height: 150px;
     }
 
     /* MED-22: Pity danger zone — progressive visual urgency */
