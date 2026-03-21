@@ -30,7 +30,7 @@ export {
 
 // --- appcore-providers.jsx ---
 export {
-  PWAProvider, ToastProvider, useToast,
+  PWAProvider, usePWA, ToastProvider, useToast,
   useFocusTrap, useEscapeKey, FocusTrapModal,
   OnboardingModal, KuroStyles,
 } from './appcore-providers.jsx';

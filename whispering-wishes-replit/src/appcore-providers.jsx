@@ -10,6 +10,10 @@ import { haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 // P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
 // Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
 
+// PWA Context — exposes install prompt to settings UI
+const PWAContext = createContext(null);
+const usePWA = () => useContext(PWAContext);
+
 // PWA Provider Component
 const PWAProvider = ({ children }) => {
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -114,9 +118,15 @@ const PWAProvider = ({ children }) => {
     try { return window.self !== window.top; } catch { return true; }
   });
   const [iframeBannerDismissed, setIframeBannerDismissed] = useState(false);
-  
+
+  const pwaValue = useMemo(() => ({
+    canInstall: !!installPrompt && !isInstalled,
+    isInstalled,
+    promptInstall,
+  }), [installPrompt, isInstalled, promptInstall]);
+
   return (
-    <>
+    <PWAContext.Provider value={pwaValue}>
       {children}
       {/* Offline indicator */}
       {!isOnline && (
@@ -176,7 +186,7 @@ const PWAProvider = ({ children }) => {
           </div>
         </div>
       )}
-    </>
+    </PWAContext.Provider>
   );
 };
 
@@ -2349,7 +2359,7 @@ const KuroStyles = memo(({ oledMode }) => (
 KuroStyles.displayName = 'KuroStyles';
 
 export {
-  PWAProvider, ToastContext, ToastProvider, useToast,
+  PWAProvider, usePWA, ToastContext, ToastProvider, useToast,
   useFocusTrap, useEscapeKey, FocusTrapModal,
   OnboardingModal, KuroStyles,
 };

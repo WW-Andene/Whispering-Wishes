@@ -27,6 +27,7 @@ import {
   HEADER_ICON,
   haptic,
   PWAProvider,
+  usePWA,
   ToastProvider,
   useToast,
   useFocusTrap,
@@ -284,6 +285,7 @@ function WhisperingWishesInner() {
   });
   
   const toast = useToast();
+  const pwa = usePWA();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -6635,6 +6637,33 @@ function WhisperingWishesInner() {
                 )}
                 {visualSettings.animationsEnabled && (
                   <p className="text-purple-400 text-[9px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
+                )}
+
+                {/* Install App on Device */}
+                {pwa?.canInstall && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                        <Download size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Install App</div>
+                        <div className="text-gray-400 text-[9px]">Add to home screen for offline use</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const accepted = await pwa.promptInstall();
+                        if (accepted) toast?.('App installed successfully!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                    >
+                      Install
+                    </button>
+                  </div>
+                )}
+                {pwa?.isInstalled && (
+                  <p className="text-emerald-400 text-[9px] text-center">✓ App is installed on your device</p>
                 )}
               </CardBody>
             </Card>
