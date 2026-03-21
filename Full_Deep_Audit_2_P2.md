@@ -11243,7 +11243,7 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
-| **4A** | Systematic `.kuro-number` propagation | Chain #4, MED-35, MED-38, #51, #89, #90 |
+| **4A** | Systematic `.kuro-number` propagation | Chain #4, MED-35 ✅, MED-38 ✅, #51, #89, #90 |
 | **4B** | Escalate guarantee prediction to prominent badge | MED-27 ✅ |
 | **4C** | Emphasize 30-day projection in Planner | MED-29 ✅ |
 | **4D** | Add chart tooltips + gridlines | MED-30 ✅ |
