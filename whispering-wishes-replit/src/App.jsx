@@ -7123,7 +7123,7 @@ Example: {"pulls":[...]}'
 
       {/* Resonator ID Card Modal */}
       <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="bg-black/90" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
-          <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '380px', maxHeight: '85vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
+          <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '380px', maxHeight: '85vh' }} onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
               <div className="kuro-card-inner">
