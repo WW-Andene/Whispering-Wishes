@@ -1214,46 +1214,158 @@ const ECHO_SETS = {
   'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
 };
 
-// [SECTION:ECHO_LISTS] — All echoes grouped by cost tier
+// [SECTION:ECHO_LISTS] — All echoes grouped by cost tier (newest first)
 const ALL_4COST_ECHOES = [
-  'Mourning Aix', 'Feilian Beringal', 'Tempest Mephis', 'Thundering Mephis',
-  'Inferno Rider', 'Bell-Borne Geochelone', 'Impermanence Heron',
-  'Lampylumen Myriad', 'Mech Abomination', 'Crownless',
-  'Sentinel Jué', 'Fallacy of No Return', 'Sentry Construct',
-  'Nightmare: Impermanence Heron', 'Nightmare: Lampylumen Myriad',
-  'Dragon of Dirge', 'Nightmare: Hecate', 'Capitaneus',
-  'Reminiscence: Fleurdelys', 'Lioness of Glory', 'The False Sovereign',
-  'Lady of the Sea', 'Corrosaurus', 'Threnodian: Leviathan',
-  'Hyvatia', 'Twin Nova: Nebulous Cannon', 'Sigillum',
+  // v3.0+ — Lahai-Roi
+  'Sigillum', 'Twin Nova: Nebulous Cannon', 'Hyvatia',
+  // v2.8 — Chronorift
+  'Threnodian: Leviathan',
+  // v2.6 — Sanguis Plateaus
+  'Corrosaurus', 'Lady of the Sea', 'The False Sovereign', 'Lioness of Glory',
+  // v2.1–2.5 — Rinascita expansion
+  'Capitaneus', 'Reminiscence: Fleurdelys', 'Dragon of Dirge', 'Nightmare: Hecate',
+  // v2.0 — Rinascita
+  'Nightmare: Lampylumen Myriad', 'Nightmare: Impermanence Heron', 'Sentry Construct',
+  // v1.2–1.3
+  'Fallacy of No Return', 'Sentinel Jué',
+  // v1.0 — Launch
+  'Crownless', 'Mech Abomination', 'Lampylumen Myriad', 'Impermanence Heron',
+  'Bell-Borne Geochelone', 'Inferno Rider', 'Thundering Mephis', 'Tempest Mephis',
+  'Feilian Beringal', 'Mourning Aix',
 ];
 
 const ALL_3COST_ECHOES = [
-  'Havoc Dreadmane', 'Lumiscale Construct', 'Tambourinist',
-  'Spearback', 'Carapace', 'Roseshroom',
-  'Violet-Feathered Heron', 'Cyan-Feathered Heron',
-  'Flautist', 'Hoochief', 'Stonewall Bracer',
-  'Autopuppet Scout', 'Mist Avatar', 'Viridblaze Saurian',
-  'Lava Larva', 'Glacio Dreadmane', 'Fusion Dreadmane',
-  'Electro Predator', 'Havoc Warrior', 'Spectro Prism',
-  'Chasm Guardian', 'Abyssal Mercenary', 'Dreamless',
-  'Nightmare: Crownless', 'Mourning Proxy', 'Nightmare: Mourning Aix',
-  'Nightmare: Feilian Beringal', 'Nightmare: Inferno Rider',
-  'Nightmare: Tempest Mephis', 'Nightmare: Thundering Mephis',
-  'Nightmare: Jué', 'Nightmare: Fallacy of No Return',
+  // v3.1+
   'Loong Cub', 'Gulpuff Guardian', 'Ice-Fire Duet',
+  // v2.1–2.5 — Nightmare variants & new echoes
+  'Nightmare: Fallacy of No Return', 'Nightmare: Jué',
+  'Nightmare: Thundering Mephis', 'Nightmare: Tempest Mephis',
+  'Nightmare: Inferno Rider', 'Nightmare: Feilian Beringal',
+  'Nightmare: Mourning Aix', 'Mourning Proxy', 'Nightmare: Crownless',
+  // v2.0 — Rinascita
+  'Dreamless', 'Abyssal Mercenary', 'Chasm Guardian',
+  // v1.1–1.3
+  'Electro Predator', 'Fusion Dreadmane', 'Glacio Dreadmane', 'Lava Larva',
+  'Havoc Warrior', 'Spectro Prism',
+  // v1.0 — Launch
+  'Viridblaze Saurian', 'Mist Avatar', 'Autopuppet Scout',
+  'Stonewall Bracer', 'Hoochief', 'Flautist',
+  'Cyan-Feathered Heron', 'Violet-Feathered Heron',
+  'Roseshroom', 'Carapace', 'Spearback',
+  'Tambourinist', 'Lumiscale Construct', 'Havoc Dreadmane',
 ];
 
 const ALL_1COST_ECHOES = [
-  'Whiff Whaff', 'Cruisewing', 'Chirpuff',
+  // v2.0+ — Newer 1-cost echoes
+  'Lottie', 'Chest Mimic', 'Tidal Clam', 'Bell-Borne Cub',
+  'Aero Prism', 'Electro Prism',
+  // v1.1 — Mt. Firmament
+  'Clang Bang', 'Dwarf Cassowary', 'Excarat',
+  'Baby Viridblaze Saurian', 'Young Roseshroom',
+  // v1.0 — Launch
+  'Fusion Prism', 'Glacio Prism', 'Havoc Prism', 'Spectro Prism',
+  'Snip Snap', 'Zig Zag', 'Hooscamp',
   'Fusion Warrior', 'Glacio Warrior', 'Aero Warrior',
   'Electro Warrior', 'Havoc Warrior', 'Spectro Warrior',
-  'Snip Snap', 'Zig Zag', 'Hooscamp',
-  'Fusion Prism', 'Glacio Prism', 'Aero Prism',
-  'Electro Prism', 'Havoc Prism', 'Spectro Prism',
-  'Baby Viridblaze Saurian', 'Young Roseshroom', 'Clang Bang',
-  'Dwarf Cassowary', 'Excarat', 'Lottie',
-  'Chest Mimic', 'Tidal Clam', 'Bell-Borne Cub',
+  'Whiff Whaff', 'Cruisewing', 'Chirpuff',
 ];
+
+// [SECTION:ECHO_DATA] — Per-echo sonata set & buff type data
+const ECHO_DATA = {
+  // ── 4-Cost Echoes ──
+  'Mourning Aix':                    { sets: ['Celestial Light'], buff: 'Spectro DMG' },
+  'Feilian Beringal':                { sets: ['Sierra Gale'], buff: 'Aero DMG' },
+  'Tempest Mephis':                  { sets: ['Void Thunder'], buff: 'Electro DMG' },
+  'Thundering Mephis':               { sets: ['Void Thunder'], buff: 'Electro DMG' },
+  'Inferno Rider':                   { sets: ['Molten Rift'], buff: 'Fusion DMG' },
+  'Bell-Borne Geochelone':           { sets: ['Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Shield' },
+  'Impermanence Heron':              { sets: ['Moonlit Clouds'], buff: 'Spectro DMG' },
+  'Lampylumen Myriad':               { sets: ['Freezing Frost'], buff: 'Glacio DMG' },
+  'Mech Abomination':                { sets: ['Lingering Tunes'], buff: 'Electro DMG' },
+  'Crownless':                       { sets: ['Havoc Eclipse'], buff: 'Havoc DMG' },
+  'Sentinel Jué':                    { sets: ['Celestial Light'], buff: 'Spectro DMG' },
+  'Fallacy of No Return':            { sets: ['Rejuvenating Glow'], buff: 'Havoc DMG' },
+  'Sentry Construct':                { sets: ['Frosty Resolve'], buff: 'Glacio DMG' },
+  'Nightmare: Impermanence Heron':   { sets: ['Midnight Veil'], buff: 'Spectro DMG' },
+  'Nightmare: Lampylumen Myriad':    { sets: ['Empyrean Anthem', 'Frosty Resolve'], buff: 'Glacio DMG' },
+  'Dragon of Dirge':                 { sets: ['Tidebreaking Courage'], buff: 'Spectro DMG' },
+  'Nightmare: Hecate':               { sets: ['Empyrean Anthem'], buff: 'Electro DMG' },
+  'Capitaneus':                      { sets: ['Eternal Radiance', 'Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Aero DMG' },
+  'Reminiscence: Fleurdelys':        { sets: ['Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Aero DMG' },
+  'Lioness of Glory':                { sets: ['Flaming Clawprint'], buff: 'Fusion DMG' },
+  'The False Sovereign':             { sets: ['Crown of Valor'], buff: 'Electro DMG' },
+  'Lady of the Sea':                 { sets: ['Crown of Valor'], buff: 'Aero DMG' },
+  'Corrosaurus':                     { sets: ['Flaming Clawprint', "Flamewing's Shadow"], buff: 'Fusion DMG' },
+  'Threnodian: Leviathan':           { sets: ["Flamewing's Shadow", 'Thread of Severed Fate'], buff: 'Havoc DMG' },
+  'Hyvatia':                         { sets: ['Pact of Neonlight Leap', 'Rite of Gilded Revelation'], buff: 'Spectro DMG' },
+  'Twin Nova: Nebulous Cannon':      { sets: ['Trailblazing Star', 'Chromatic Foam'], buff: 'Spectro DMG' },
+  'Sigillum':                        { sets: ['Trailblazing Star'], buff: 'Fusion DMG' },
+  // ── 3-Cost Echoes ──
+  'Havoc Dreadmane':                 { sets: ['Molten Rift', 'Havoc Eclipse'], buff: 'Havoc DMG' },
+  'Lumiscale Construct':             { sets: ['Freezing Frost', 'Void Thunder'], buff: 'Glacio DMG' },
+  'Tambourinist':                    { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Havoc DMG' },
+  'Spearback':                       { sets: ['Moonlit Clouds', 'Lingering Tunes'], buff: 'Electro DMG' },
+  'Carapace':                        { sets: ['Sierra Gale', 'Moonlit Clouds'], buff: 'Aero DMG' },
+  'Roseshroom':                      { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Havoc DMG' },
+  'Violet-Feathered Heron':          { sets: ['Molten Rift', 'Void Thunder'], buff: 'Fusion DMG' },
+  'Cyan-Feathered Heron':            { sets: ['Sierra Gale', 'Celestial Light'], buff: 'Aero DMG' },
+  'Flautist':                        { sets: ['Void Thunder', 'Lingering Tunes'], buff: 'Electro DMG' },
+  'Hoochief':                        { sets: ['Sierra Gale', 'Rejuvenating Glow'], buff: 'Aero DMG' },
+  'Stonewall Bracer':                { sets: ['Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Shield' },
+  'Autopuppet Scout':                { sets: ['Freezing Frost', 'Celestial Light'], buff: 'Glacio DMG' },
+  'Mist Avatar':                     { sets: ['Havoc Eclipse', 'Moonlit Clouds'], buff: 'Havoc DMG' },
+  'Viridblaze Saurian':              { sets: ['Molten Rift', 'Moonlit Clouds'], buff: 'Fusion DMG' },
+  'Lava Larva':                      { sets: ['Molten Rift', 'Lingering Tunes'], buff: 'Fusion DMG' },
+  'Glacio Dreadmane':                { sets: ['Freezing Frost', 'Moonlit Clouds'], buff: 'Glacio DMG' },
+  'Fusion Dreadmane':                { sets: ['Molten Rift', 'Rejuvenating Glow'], buff: 'Fusion DMG' },
+  'Electro Predator':                { sets: ['Molten Rift', 'Void Thunder'], buff: 'Electro DMG' },
+  'Chasm Guardian':                  { sets: ['Rejuvenating Glow', 'Lingering Tunes'], buff: 'Glacio DMG' },
+  'Abyssal Mercenary':               { sets: ['Eternal Radiance', 'Frosty Resolve'], buff: 'Spectro DMG' },
+  'Dreamless':                       { sets: ['Havoc Eclipse', 'Midnight Veil'], buff: 'Havoc DMG' },
+  'Nightmare: Crownless':            { sets: ['Havoc Eclipse'], buff: 'Havoc DMG' },
+  'Mourning Proxy':                  { sets: ['Celestial Light', 'Eternal Radiance'], buff: 'Spectro DMG' },
+  'Nightmare: Mourning Aix':         { sets: ['Eternal Radiance'], buff: 'Spectro DMG' },
+  'Nightmare: Feilian Beringal':     { sets: ['Sierra Gale'], buff: 'Aero DMG' },
+  'Nightmare: Inferno Rider':        { sets: ['Molten Rift'], buff: 'Fusion DMG' },
+  'Nightmare: Tempest Mephis':       { sets: ['Void Thunder', 'Empyrean Anthem'], buff: 'Electro DMG' },
+  'Nightmare: Thundering Mephis':    { sets: ['Void Thunder'], buff: 'Electro DMG' },
+  'Nightmare: Jué':                  { sets: ['Celestial Light'], buff: 'Spectro DMG' },
+  'Nightmare: Fallacy of No Return': { sets: ['Rejuvenating Glow', 'Tidebreaking Courage'], buff: 'Havoc DMG' },
+  'Loong Cub':                       { sets: ['Celestial Light', 'Eternal Radiance'], buff: 'Spectro DMG' },
+  'Gulpuff Guardian':                { sets: ['Rejuvenating Glow', 'Freezing Frost'], buff: 'Glacio DMG' },
+  'Ice-Fire Duet':                   { sets: ['Freezing Frost', 'Molten Rift'], buff: 'Glacio DMG' },
+  // ── 1-Cost Echoes ──
+  'Whiff Whaff':                     { sets: ['Sierra Gale', 'Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Aero DMG' },
+  'Cruisewing':                      { sets: ['Celestial Light', 'Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Aero DMG' },
+  'Chirpuff':                        { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Aero DMG' },
+  'Fusion Warrior':                  { sets: ['Molten Rift', 'Void Thunder', 'Sierra Gale'], buff: 'Fusion DMG' },
+  'Glacio Warrior':                  { sets: ['Freezing Frost', 'Celestial Light'], buff: 'Glacio DMG' },
+  'Aero Warrior':                    { sets: ['Sierra Gale', 'Moonlit Clouds'], buff: 'Aero DMG' },
+  'Electro Warrior':                 { sets: ['Void Thunder', 'Lingering Tunes'], buff: 'Electro DMG' },
+  'Spectro Warrior':                 { sets: ['Celestial Light', 'Rejuvenating Glow'], buff: 'Spectro DMG' },
+  'Snip Snap':                       { sets: ['Molten Rift', 'Rejuvenating Glow', 'Lingering Tunes'], buff: 'Electro DMG' },
+  'Zig Zag':                         { sets: ['Celestial Light', 'Moonlit Clouds', 'Lingering Tunes'], buff: 'Electro DMG' },
+  'Hooscamp':                        { sets: ['Sierra Gale', 'Lingering Tunes'], buff: 'Aero DMG' },
+  'Fusion Prism':                    { sets: ['Freezing Frost', 'Molten Rift', 'Lingering Tunes'], buff: 'Fusion DMG' },
+  'Glacio Prism':                    { sets: ['Havoc Eclipse', 'Moonlit Clouds'], buff: 'Glacio DMG' },
+  'Aero Prism':                      { sets: ['Tidebreaking Courage', 'Eternal Radiance'], buff: 'Aero DMG' },
+  'Electro Prism':                   { sets: ['Void Thunder', 'Empyrean Anthem'], buff: 'Electro DMG' },
+  'Havoc Prism':                     { sets: ['Void Thunder', 'Celestial Light'], buff: 'Havoc DMG' },
+  'Spectro Prism':                   { sets: ['Molten Rift', 'Void Thunder', 'Celestial Light'], buff: 'Spectro DMG' },
+  'Baby Viridblaze Saurian':         { sets: ['Molten Rift', 'Void Thunder'], buff: 'Fusion DMG' },
+  'Young Roseshroom':                { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Havoc DMG' },
+  'Clang Bang':                      { sets: ['Freezing Frost', 'Celestial Light'], buff: 'Glacio DMG' },
+  'Dwarf Cassowary':                 { sets: ['Sierra Gale', 'Rejuvenating Glow'], buff: 'Aero DMG' },
+  'Excarat':                         { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Glacio DMG' },
+  'Lottie':                          { sets: ['Tidebreaking Courage', 'Frosty Resolve'], buff: 'Glacio DMG' },
+  'Chest Mimic':                     { sets: ['Empyrean Anthem', 'Frosty Resolve', 'Midnight Veil'], buff: 'Havoc DMG' },
+  'Tidal Clam':                      { sets: ['Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Glacio DMG' },
+  'Bell-Borne Cub':                  { sets: ['Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Glacio DMG' },
+};
+
+// All unique echo sonata sets (for filter dropdown, includes sets beyond ECHO_SETS)
+const ALL_ECHO_SONATA_SETS = [...new Set(Object.values(ECHO_DATA).flatMap(e => e.sets))].sort();
+const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).map(e => e.buff))].sort();
 
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
@@ -2286,7 +2398,7 @@ export {
   DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER, WEAPON_RELEASE_ORDER,
   ALL_5STAR_RESONATORS, ALL_5STAR_WEAPONS,
   ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES,
+  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES,
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
