@@ -326,7 +326,7 @@ function WhisperingWishesInner() {
   // Validate server name — surface warning if corrupted
   useEffect(() => {
     if (state.server && !SERVERS[state.server]) {
-      toast?.(`Unknown server "${state.server}" — defaulting to Europe. Please update in Settings.`, 'warning');
+      toast?.addToast?.(`Unknown server "${state.server}" — defaulting to Europe. Please update in Settings.`, 'warning');
       dispatch({ type: 'SET_SERVER', server: 'Europe' });
     }
   }, [state.server, toast]);
@@ -3184,11 +3184,11 @@ function WhisperingWishesInner() {
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
                   const accepted = await pwa.promptInstall();
-                  if (accepted) toast?.('App installed successfully!', 'success');
+                  if (accepted) toast?.addToast?.('App installed successfully!', 'success');
                 } else if (pwa?.isInstalled) {
-                  toast?.('App is already installed', 'success');
+                  toast?.addToast?.('App is already installed', 'success');
                 } else {
-                  toast?.('Use your browser menu to add to home screen', 'info');
+                  toast?.addToast?.('Use your browser menu to add to home screen', 'info');
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
@@ -6734,7 +6734,7 @@ function WhisperingWishesInner() {
                     <button
                       onClick={async () => {
                         const accepted = await pwa.promptInstall();
-                        if (accepted) toast?.('App installed successfully!', 'success');
+                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
                       }}
                       className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
                     >
