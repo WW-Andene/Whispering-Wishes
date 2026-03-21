@@ -5072,7 +5072,6 @@ function WhisperingWishesInner() {
                           { value: 'weapon', label: 'Weapon' },
                         ]}
                         ariaLabel="Filter by category"
-                        center
                       />
 
                       {/* Type Filter */}
