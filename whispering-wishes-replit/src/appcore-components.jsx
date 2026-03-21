@@ -178,7 +178,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
   
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/60" onClick={onClose} ariaLabel={`${name} character details`} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} character details`} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-y-auto border ${colors.border}`}
         onClick={e => e.stopPropagation()}
@@ -478,7 +478,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/60" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-y-auto border ${colors.border}`}
         onClick={e => e.stopPropagation()}
