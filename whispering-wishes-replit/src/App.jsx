@@ -19,7 +19,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 import {
@@ -4129,9 +4128,9 @@ function WhisperingWishesInner() {
                 )}
                 
                 {/* P13-FIX: MEDIUM-4 — Accessible consent modal (replaces window.confirm) */}
-                {showConsentModal && createPortal(
+                {showConsentModal && (
                   <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Leaderboard consent">
-                    <div className="w-full max-w-sm p-5 space-y-4 rounded-2xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                    <div className="kuro-card w-full max-w-sm p-5 space-y-4">
                       <h3 className="text-white font-semibold text-sm">Leaderboard — Data Sharing Notice</h3>
                       <div className="text-gray-300 text-xs space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
@@ -4147,13 +4146,12 @@ function WhisperingWishesInner() {
                         <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
                       </div>
                     </div>
-                  </div>,
-                  document.body
+                  </div>
                 )}
 
                 {/* Luck Leaderboard Modal */}
                 <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
-                    <div className="w-full sm:max-w-sm h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', backdropFilter: 'blur(var(--blur-sm))' }} onClick={(e) => e.stopPropagation()}>
+                    <div className="kuro-card w-full sm:max-w-sm h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
                       <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
                       <div className="p-4 pb-2 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
