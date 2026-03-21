@@ -488,7 +488,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
       >
         <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
         {/* Header */}
-        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" data-sheet-header>
+        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
