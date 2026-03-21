@@ -3224,7 +3224,7 @@ function WhisperingWishesInner() {
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile"><User size={18} /> Profile</TabButton>
           </nav>
           {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
-          {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[9px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
+          {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[10px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
         </div>
       </header>
 
@@ -3354,7 +3354,7 @@ function WhisperingWishesInner() {
                                 {img ? (
                                   <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-yellow-400">{c[0]}</div>
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
                                 )}
                               </div>
                               <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
@@ -3382,7 +3382,7 @@ function WhisperingWishesInner() {
                   {/* View All button */}
                   <button
                     onClick={() => setShowBannerHistory(true)}
-                    className="w-full py-2.5 rounded-lg border border-[var(--border-medium)] text-gray-400 text-[11px] font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-lg border border-[var(--border-medium)] text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
                     <Archive size={12} /> View All Banners ({BANNER_HISTORY.length})
@@ -3418,7 +3418,7 @@ function WhisperingWishesInner() {
                                 {img ? (
                                   <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-yellow-400">{c[0]}</div>
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
                                 )}
                               </div>
                               <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
@@ -3491,7 +3491,7 @@ function WhisperingWishesInner() {
                       <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
                       </div>
-                      <span className="text-gray-400 text-[9px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
+                      <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
                     </div>
                   )}
                 </div>
@@ -3636,9 +3636,9 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {/* AUDIT-FIX M32+L20: Use "Convene(s)" consistently, capitalize Astrite */}
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt} Astrite (${tip})`}>+{amt}<span className="text-yellow-600 ml-0.5 text-[9px]">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt} Astrite (${tip})`}>+{amt}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
+                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
                     </div>
                   </div>
 
@@ -3651,7 +3651,7 @@ function WhisperingWishesInner() {
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -3662,7 +3662,7 @@ function WhisperingWishesInner() {
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
                             ))}
                           </div>
                         </div>
@@ -3677,7 +3677,7 @@ function WhisperingWishesInner() {
                       <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[9px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
                         ))}
                       </div>
                     </div>
@@ -3726,28 +3726,28 @@ function WhisperingWishesInner() {
                         <div className="text-center">
                           <div className="text-yellow-400 kuro-number text-xl">{charPulls}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls} + {+state.calc.radiant || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-pink-400 kuro-number text-xl">{weapPulls}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls} + {+state.calc.forging || 0} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls} + {astriteAllocation.stdCharLustrous} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[9px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls} + {astriteAllocation.stdWeapLustrous} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -3804,7 +3804,7 @@ function WhisperingWishesInner() {
                       </div>
                     </div>
                     <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
-                      <p className="text-emerald-400/80 text-[9px]">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
+                      <p className="text-emerald-400/80 text-[10px]">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
                     </div>
                 </CardBody>
               </Card>
@@ -3939,18 +3939,18 @@ function WhisperingWishesInner() {
                   <div className="grid grid-cols-3 gap-2">
                     <div className="kuro-stat p-2 text-center">
                       <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd}</div>
-                      <div className="text-gray-400 text-[9px]">Total Convenes</div>
+                      <div className="text-gray-400 text-[10px]">Total Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
                       <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
-                      <div className="text-gray-400 text-[9px]">Earned Convenes</div>
+                      <div className="text-gray-400 text-[10px]">Earned Convenes</div>
                     </div>
                     <div className="kuro-stat p-2 text-center">
                       <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
-                      <div className="text-gray-400 text-[9px]">Total Astrite</div>
+                      <div className="text-gray-400 text-[10px]">Total Astrite</div>
                     </div>
                   </div>
-                  <div className="text-gray-400 text-[9px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+                  <div className="text-gray-400 text-[10px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
                 </CardBody>
               </Card>
             )}
@@ -3965,8 +3965,8 @@ function WhisperingWishesInner() {
                     <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
                       <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
                       <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
-                      <div className="text-gray-400 text-[9px]">Convenes</div>
-                      <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
+                      <div className="text-gray-400 text-[10px]">Convenes</div>
+                      <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
                     </div>
                   ))}
                 </div>
@@ -4088,7 +4088,7 @@ function WhisperingWishesInner() {
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
                             <div className="text-xs font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-display)'}}>{luckRating.tier}</div>
-                            <div className="text-[39px] font-extrabold kuro-number" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
+                            <div className="text-[30px] font-extrabold kuro-number" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 min-w-0 space-y-2">
@@ -4103,7 +4103,7 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400 text-[10px]">Avg Pity</span>
                             <span className="text-gray-200 text-xs font-medium">{overallStats?.avgPity}</span>
                           </div>
-                          <p className="text-[9px] text-center" style={{color: `${luckRating.color}90`}}>
+                          <p className="text-[10px] text-center" style={{color: `${luckRating.color}90`}}>
                             {luckRating.percentile >= 80 ? `Luckier than ${luckRating.percentile}% of players — incredible!`
                               : luckRating.percentile >= 60 ? `Luckier than ${luckRating.percentile}% of players — above average!`
                               : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
@@ -4209,7 +4209,7 @@ function WhisperingWishesInner() {
                                         <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
                                           {isYou ? (entry.id?.slice(0, 4) + '*** (You)') : (entry.id?.slice(0, 4) + '***')}
                                         </span>
-                                        {isYou && <span className="text-[9px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded">YOU</span>}
+                                        {isYou && <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded">YOU</span>}
                                       </div>
                                       <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
                                     </div>
@@ -4217,7 +4217,7 @@ function WhisperingWishesInner() {
                                       <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
                                         {entry.avgPity.toFixed(1)}
                                       </div>
-                                      <div className="text-[9px] text-gray-400">avg pity</div>
+                                      <div className="text-[10px] text-gray-400">avg pity</div>
                                     </div>
                                   </div>
                                 );
@@ -4243,7 +4243,7 @@ function WhisperingWishesInner() {
                               </div>
                             ) : (
                               <>
-                                <p className="text-gray-400 text-[9px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
+                                <p className="text-gray-400 text-[10px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
                                 {communityPulls.chars.length > 0 && (
                                   <>
                                     <p className="text-[10px] text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
@@ -4307,25 +4307,25 @@ function WhisperingWishesInner() {
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-yellow-400 font-bold text-xs">{communityStats.avgPityAll}</div>
-                              <div className="text-gray-400 text-[9px]">Global Avg Pity</div>
+                              <div className="text-gray-400 text-[10px]">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate ?? '—'}%</div>
-                              <div className="text-gray-400 text-[9px]">50/50 Win Rate</div>
+                              <div className="text-gray-400 text-[10px]">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-cyan-400 font-bold text-xs">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-400 text-[9px]">Total 5★</div>
+                              <div className="text-gray-400 text-[10px]">Total 5★</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
-                            <div className="flex justify-between text-[9px]">
+                            <div className="flex justify-between text-[10px]">
                               <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
                           {communityStats.luckiest && communityStats.unluckiest && communityStats.totalPlayers >= 2 && (
-                            <div className="flex justify-between text-[9px] gap-2">
+                            <div className="flex justify-between text-[10px] gap-2">
                               <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={10} /> Luckiest: {communityStats.luckiest.avgPity.toFixed(1)}</span>
                               <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={10} /> Unluckiest: {communityStats.unluckiest.avgPity.toFixed(1)}</span>
                             </div>
@@ -4346,7 +4346,7 @@ function WhisperingWishesInner() {
                             >
                               {leaderboardSubmitting ? 'Submitting…' : 'Submit My Score'}
                             </button>
-                            <p className="text-gray-400 text-[9px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
+                            <p className="text-gray-400 text-[10px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
                         ) : (
                           <p className="text-gray-500 text-[10px] text-center">Import convene history to participate</p>
@@ -4390,7 +4390,7 @@ function WhisperingWishesInner() {
                               >
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
-                              <div className="text-[9px] font-bold text-white truncate">{trophy.name}</div>
+                              <div className="text-[10px] font-bold text-white truncate">{trophy.name}</div>
                             </div>
                           );
                         })}
@@ -4427,7 +4427,7 @@ function WhisperingWishesInner() {
                               </div>
                               <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
                               <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-[9px] text-gray-400">tap outside or ✕ to close</div>
+                              <div className="mt-3 text-[10px] text-gray-400">tap outside or ✕ to close</div>
                             </div>
                           </FocusTrapModal>
                         );
@@ -4488,7 +4488,7 @@ function WhisperingWishesInner() {
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {count > 0 && (
                                     <div 
-                                      className="absolute left-0 right-0 text-[9px] text-center font-bold"
+                                      className="absolute left-0 right-0 text-[10px] text-center font-bold"
                                       style={{
                                         bottom: `${height}%`,
                                         marginBottom: '4px',
@@ -4531,7 +4531,7 @@ function WhisperingWishesInner() {
                         {/* X-axis labels */}
                         <div className="flex gap-1.5">
                           {allBuckets.map(label => (
-                            <div key={label} className="flex-1 text-[9px] text-gray-400 text-center">
+                            <div key={label} className="flex-1 text-[10px] text-gray-400 text-center">
                               {label.split('-')[0]}
                             </div>
                           ))}
@@ -4541,20 +4541,20 @@ function WhisperingWishesInner() {
                         <div className="mt-3 pt-3 border-t border-[var(--border-medium)] grid grid-cols-3 gap-2 text-center">
                           <div>
                             <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)', fontFamily: 'var(--font-data)' }}>{minPity}</div>
-                            <div className="text-gray-400 text-[9px]">Lowest</div>
+                            <div className="text-gray-400 text-[10px]">Lowest</div>
                           </div>
                           <div>
                             <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(237,175,24,0.5)', fontFamily: 'var(--font-data)' }}>{avgPity}</div>
-                            <div className="text-gray-400 text-[9px]">Average</div>
+                            <div className="text-gray-400 text-[10px]">Average</div>
                           </div>
                           <div>
                             <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)', fontFamily: 'var(--font-data)' }}>{maxPity}</div>
-                            <div className="text-gray-400 text-[9px]">Highest</div>
+                            <div className="text-gray-400 text-[10px]">Highest</div>
                           </div>
                         </div>
                         
                         {/* Pity zone legend - neon dots (all 5 tiers) */}
-                        <div className="mt-2 flex items-center justify-center gap-2 text-[9px] flex-wrap">
+                        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] flex-wrap">
                           <span className="flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span> 
                             <span className="text-gray-400">1-20</span>
@@ -4711,7 +4711,7 @@ function WhisperingWishesInner() {
                             </ResponsiveContainer>
                           </div>
                           {allData.length > maxVisible && (
-                            <div className="text-center text-[9px] text-gray-400 mt-1">
+                            <div className="text-center text-[10px] text-gray-400 mt-1">
                               {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
                             </div>
                           )}
@@ -4726,13 +4726,13 @@ function WhisperingWishesInner() {
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[9px]">Astrite Spent</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Astrite Spent</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[9px]">Won 50/50</div></div>
-                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
+                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[10px]">Won 50/50</div></div>
+                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-[10px]">Lost 50/50</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-[10px]">Avg. Pity</div></div>
                     </div>
                     {overallStats.winRate != null && <div className="text-center text-xs text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.winRate}%</span></div>}
                   </CardBody>
@@ -4759,11 +4759,11 @@ function WhisperingWishesInner() {
                                   {/* MED-34: Enlarged W/L badges with icon backup for colorblind accessibility */}
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
                                   {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[9px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[10px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-400 text-[9px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-400 text-[10px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );
@@ -4781,17 +4781,17 @@ function WhisperingWishesInner() {
                     {(() => {
                       const { totalObtained } = statsTabData;
                       return (<>
-                    <p className="text-gray-400 text-[9px] mb-1.5">Resonators</p>
+                    <p className="text-gray-400 text-[10px] mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.res5}</div><div className="text-gray-400 text-[9px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.res4}</div><div className="text-gray-400 text-[9px]">4★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.res5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.res4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
                     </div>
                     
-                    <p className="text-gray-400 text-[9px] mb-1.5">Weapons</p>
+                    <p className="text-gray-400 text-[10px] mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.wep5}</div><div className="text-gray-400 text-[9px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.wep4}</div><div className="text-gray-400 text-[9px]">4★</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm">{totalObtained.wep3}</div><div className="text-gray-400 text-[9px]">3★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.wep5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.wep4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm">{totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">3★</div></div>
                     </div>
                       </>);
                     })()}
@@ -4817,7 +4817,7 @@ function WhisperingWishesInner() {
                             <span className="text-xs font-medium" style={{color: colorHex}}>{banner.name}</span>
                             <span className="text-gray-400 text-[10px]">{hist.length} Convenes</span>
                           </div>
-                          <div className="flex gap-2 text-[9px]">
+                          <div className="flex gap-2 text-[10px]">
                             <span className="text-yellow-400">{hist.filter(p => p.rarity === 5).length} 5★</span>
                             <span className="text-purple-400">{hist.filter(p => p.rarity === 4).length} 4★</span>
                             <span className="text-gray-400">Pity: {pity}/80</span>
@@ -4871,7 +4871,7 @@ function WhisperingWishesInner() {
                       <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center text-[9px]">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center text-[10px]">
                         <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
                         <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
@@ -4954,7 +4954,7 @@ function WhisperingWishesInner() {
                       {hasActiveFilters && (
                         <button
                           onClick={clearCollectionFilters}
-                          className="px-2 py-1 rounded-lg text-[9px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                          className="px-2 py-1 rounded-lg text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
                         >
                           Clear
                         </button>
@@ -5257,7 +5257,7 @@ function WhisperingWishesInner() {
                                 aria-label={`Add resonator to slot ${slotIdx + 1}`}
                               >
                                 <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                                <span className="text-[9px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                                <span className="text-[10px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
                               </button>
                             );
                           }
@@ -5292,7 +5292,7 @@ function WhisperingWishesInner() {
                               </button>
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                                <div className="text-[9px] truncate text-gray-200">{charName}</div>
+                                <div className="text-[10px] truncate text-gray-200">{charName}</div>
                               </div>
                             </div>
                           );
@@ -5305,7 +5305,7 @@ function WhisperingWishesInner() {
                           {teamSlots.filter(s => s).map((name, i) => {
                             const d = CHARACTER_DATA[name];
                             return d ? (
-                              <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-medium"
+                              <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium"
                                 style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
                                 {d.element}
                               </div>
@@ -5753,7 +5753,7 @@ function WhisperingWishesInner() {
                                         {collectionImages[m.name] ? (
                                           <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                         ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{m.name[0]}</div>
+                                          <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">{m.name[0]}</div>
                                         )}
                                       </div>
                                       <div>
@@ -5762,15 +5762,15 @@ function WhisperingWishesInner() {
                                           <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                         </div>
                                         <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
-                                          <span className={`text-[9px] px-2 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
-                                          <span className="text-[9px] px-2 py-0.5 rounded font-medium"
+                                          <span className={`text-[10px] px-2 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
+                                          <span className="text-[10px] px-2 py-0.5 rounded font-medium"
                                             style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                             {m.d.element}
                                           </span>
                                         </div>
                                       </div>
                                     </div>
-                                    <span className="text-[9px] text-gray-400">{m.d.weapon}</span>
+                                    <span className="text-[10px] text-gray-400">{m.d.weapon}</span>
                                   </div>
                                   {/* Description */}
                                   <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
@@ -5778,12 +5778,12 @@ function WhisperingWishesInner() {
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Damage Focus</div>
                                     <div className="flex flex-wrap gap-1">
-                                      <span className="text-[9px] px-2 py-0.5 rounded font-medium"
+                                      <span className="text-[10px] px-2 py-0.5 rounded font-medium"
                                         style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                         {m.d.element} DMG
                                       </span>
                                       {(m.d.dmgFocus || []).map((df, di) => (
-                                        <span key={di} className="text-[9px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
+                                        <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
                                       ))}
                                     </div>
                                   </div>
@@ -5793,7 +5793,7 @@ function WhisperingWishesInner() {
                                       <div className="kuro-label">Buffs</div>
                                       <div className="flex flex-wrap gap-1">
                                         {m.d.buffs.map((b, bi) => (
-                                          <span key={bi} className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
+                                          <span key={bi} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
                                         ))}
                                       </div>
                                     </div>
@@ -5804,7 +5804,7 @@ function WhisperingWishesInner() {
                                       <div className="kuro-label">Debuffs</div>
                                       <div className="flex flex-wrap gap-1">
                                         {m.d.debuffs.map((db, di) => (
-                                          <span key={di} className="text-[9px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 6px rgba(239,68,68,0.12)" }}>{db}</span>
+                                          <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 6px rgba(239,68,68,0.12)" }}>{db}</span>
                                         ))}
                                       </div>
                                     </div>
@@ -5814,19 +5814,19 @@ function WhisperingWishesInner() {
                                     <div className="mb-1.5">
                                       <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
                                       <div className="flex flex-wrap gap-1">
-                                        <span className="text-[9px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400" style={{ boxShadow: "0 0 8px rgba(234,179,8,0.15)" }}>Eff.ATK {effAtk.toLocaleString()}</span>
-                                        <span className="text-[9px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CR {cr.toFixed(1)}%</span>
-                                        <span className="text-[9px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CD {cd.toFixed(1)}%</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400" style={{ boxShadow: "0 0 8px rgba(234,179,8,0.15)" }}>Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CR {cr.toFixed(1)}%</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CD {cd.toFixed(1)}%</span>
                                         <span className="text-[8px] px-2 py-0.5 rounded font-medium"
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                                           {m.d.element} +{elemDmg.toFixed(0)}%
                                         </span>
-                                        {skillDmg > 0 && <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 8px rgba(245,158,11,0.15)" }}>Skill +{skillDmg.toFixed(0)}%</span>}
-                                        {atkPct > 0 && <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 8px rgba(34,197,94,0.15)" }}>ATK% +{atkPct.toFixed(0)}%</span>}
-                                        {deepen > 0 && <span className="text-[9px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400" style={{ boxShadow: "0 0 8px rgba(168,85,247,0.15)" }}>Deepen +{deepen.toFixed(0)}%</span>}
-                                        {defShred > 0 && <span className="text-[9px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Shred {defShred}%</span>}
-                                        {resShred > 0 && <span className="text-[9px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>RES Shred {resShred}%</span>}
-                                        {defIgnore > 0 && <span className="text-[9px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Ignore {defIgnore}%</span>}
+                                        {skillDmg > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 8px rgba(245,158,11,0.15)" }}>Skill +{skillDmg.toFixed(0)}%</span>}
+                                        {atkPct > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 8px rgba(34,197,94,0.15)" }}>ATK% +{atkPct.toFixed(0)}%</span>}
+                                        {deepen > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400" style={{ boxShadow: "0 0 8px rgba(168,85,247,0.15)" }}>Deepen +{deepen.toFixed(0)}%</span>}
+                                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Shred {defShred}%</span>}
+                                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>RES Shred {resShred}%</span>}
+                                        {defIgnore > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Ignore {defIgnore}%</span>}
                                       </div>
                                     </div>
                                   )}
@@ -5837,10 +5837,10 @@ function WhisperingWishesInner() {
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
-                                      <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                      <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
-                                      <span className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
-                                      <span className="text-[9px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
                                     </div>
                                   </div>
                                   {/* Equipment slots: 1 weapon + 5 echoes */}
@@ -5869,12 +5869,12 @@ function WhisperingWishesInner() {
                                             ) : equippedWeap ? (
                                               <>
                                                 <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
-                                                <span className="text-[9px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                                <span className="text-[10px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
                                               </>
                                             ) : (
                                               <>
                                                 <Sword size={14} className="text-gray-500" />
-                                                <span className="text-[9px] text-gray-500">Weapon</span>
+                                                <span className="text-[10px] text-gray-500">Weapon</span>
                                               </>
                                             )}
                                           </div>
@@ -5885,14 +5885,14 @@ function WhisperingWishesInner() {
                                               title={'Echo slot ' + (ei + 1) + ' — coming soon'}
                                             >
                                               <Diamond size={12} className="text-gray-600" />
-                                              <span className="text-[9px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
+                                              <span className="text-[10px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
                                             </div>
                                           ))}
                                         </div>
                                         {/* S0-S6 toggle */}
                                         {/* P6-FIX: Increased sequence button size for touch targets (F-P6-055) */}
                                         <div>
-                                          <div className="text-[9px] text-gray-400 mb-0.5">Sequence</div>
+                                          <div className="text-[10px] text-gray-400 mb-0.5">Sequence</div>
                                           <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
                                             {[0,1,2,3,4,5,6].map(s => {
                                               const isActive = (eq.sequence || 0) === s;
@@ -5900,7 +5900,7 @@ function WhisperingWishesInner() {
                                                 <button key={s}
                                                   role="radio"
                                                   aria-checked={isActive}
-                                                  className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                                   onClick={() => {
                                                     setTeamEquipment(prev => {
                                                       const n = { ...prev };
@@ -5917,7 +5917,7 @@ function WhisperingWishesInner() {
                                         </div>
                                         {/* Sonata Set selector */}
                                         <div>
-                                          <div className="text-[9px] text-gray-400 mb-0.5">Sonata Set</div>
+                                          <div className="text-[10px] text-gray-400 mb-0.5">Sonata Set</div>
                                           <select
                                             value={eq.echoSet || ''}
                                             onChange={e => {
@@ -5929,7 +5929,7 @@ function WhisperingWishesInner() {
                                               });
                                               haptic.light();
                                             }}
-                                            className="kuro-input kuro-input-sm w-full text-[9px]"
+                                            className="kuro-input kuro-input-sm w-full text-[10px]"
                                             aria-label={`${m.name} sonata echo set`}
                                           >
                                             <option value="">Auto (from recommended)</option>
@@ -5940,14 +5940,14 @@ function WhisperingWishesInner() {
                                         </div>
                                         {/* Weapon info */}
                                         {equippedWeap && (
-                                          <div className="text-[9px]">
+                                          <div className="text-[10px]">
                                             <span className="text-gray-500">Weapon: </span>
                                             <span className="text-yellow-400/80">{eq.weapon}</span>
                                             <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
                                           </div>
                                         )}
                                         {!equippedWeap && m.d.bestWeapon && (
-                                          <div className="text-[9px]">
+                                          <div className="text-[10px]">
                                             <span className="text-gray-500">Rec: </span>
                                             <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
                                             {m.d.bestEchoes && (
@@ -5973,7 +5973,7 @@ function WhisperingWishesInner() {
                                 <div className="kuro-label">Team Buffs</div>
                                 <div className="flex flex-wrap gap-1">
                                   {allBuffs.map((b, i) => (
-                                    <span key={i} className="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                                    <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
                                       {b.buff} <span className="text-gray-500">({b.source})</span>
                                     </span>
                                   ))}
@@ -5985,7 +5985,7 @@ function WhisperingWishesInner() {
                                 <div className="kuro-label">Enemy Debuffs</div>
                                 <div className="flex flex-wrap gap-1">
                                   {allDebuffs.map((b, i) => (
-                                    <span key={i} className="text-[9px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                                    <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
                                       {b.debuff} <span className="text-gray-500">({b.source})</span>
                                     </span>
                                   ))}
@@ -5996,17 +5996,17 @@ function WhisperingWishesInner() {
                             {/* Damage Score: Raw + Full DPS — single row */}
                             <div className="grid grid-cols-3 gap-2">
                               <div className="kuro-stat kuro-stat-gold p-2 text-center">
-                                <div className="text-gray-400 text-[9px]">Raw Power</div>
+                                <div className="text-gray-400 text-[10px]">Raw Power</div>
                                 <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{score.toLocaleString()}</div>
                                 <div className="text-gray-500 text-[8px]">stat multipliers</div>
                               </div>
                               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
-                                <div className="text-gray-400 text-[9px]">Full DPS</div>
+                                <div className="text-gray-400 text-[10px]">Full DPS</div>
                                 <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString()}</div>
                                 <div className="text-gray-500 text-[8px]">dmg/sec</div>
                               </div>
                               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
-                                <div className="text-gray-400 text-[9px]">Synergy</div>
+                                <div className="text-gray-400 text-[10px]">Synergy</div>
                                 <div className={`text-lg font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}</div>
                               </div>
                             </div>
@@ -6015,14 +6015,14 @@ function WhisperingWishesInner() {
                             {warnings.length > 0 && (
                               <div className="flex flex-wrap gap-1">
                                 {warnings.map((w, i) => (
-                                  <span key={i} className="text-[9px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
+                                  <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
                                     <AlertTriangle size={12} /> {w}
                                   </span>
                                 ))}
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[9px] text-gray-500 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats.</p>
+                            <p className="text-[10px] text-gray-500 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats.</p>
                           </div>
                         </CardBody>
                       </Card>
@@ -6070,7 +6070,7 @@ function WhisperingWishesInner() {
                                               background: rarity5 ? 'linear-gradient(to top, rgba(237,175,24,0.15), rgba(237,175,24,0.05))' : 'linear-gradient(to top, rgba(168,85,247,0.15), rgba(168,85,247,0.05))',
                                               boxShadow: rarity5 ? '0 0 12px rgba(237,175,24,0.15), inset 0 0 10px rgba(237,175,24,0.05)' : '0 0 12px rgba(168,85,247,0.15), inset 0 0 10px rgba(168,85,247,0.05)'
                                             }}>
-                                            <div className="text-[9px] font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
+                                            <div className="text-[10px] font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
                                             <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                             <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
                                           </div>
@@ -6128,12 +6128,12 @@ function WhisperingWishesInner() {
 
                                     {/* Quick stats */}
                                     <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-[var(--border-medium)]">
-                                      <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
-                                      <div className="text-[9px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
-                                      {s.defShred > 0 && <div className="text-[9px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{s.defShred}%</span></div>}
+                                      <div className="text-[10px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
+                                      <div className="text-[10px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
+                                      <div className="text-[10px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
+                                      <div className="text-[10px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
+                                      <div className="text-[10px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
+                                      {s.defShred > 0 && <div className="text-[10px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{s.defShred}%</span></div>}
                                     </div>
                                   </div>
                                 );
@@ -6204,7 +6204,7 @@ function WhisperingWishesInner() {
                                       {collectionImages[m] ? (
                                         <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400 font-medium">{m[0]}</div>
+                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400 font-medium">{m[0]}</div>
                                       )}
                                     </div>
                                   );
@@ -6333,7 +6333,7 @@ function WhisperingWishesInner() {
                           </div>
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (
-                            <div className="flex items-center gap-1.5 text-[9px] text-orange-400">
+                            <div className="flex items-center gap-1.5 text-[10px] text-orange-400">
                               <Star size={10} className="text-orange-400" fill="currentColor" />
                               <span>Orange glow = recommended teammate</span>
                             </div>
@@ -6508,13 +6508,13 @@ function WhisperingWishesInner() {
                                         )}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5">
-                                            <span className="text-white text-[11px] font-semibold truncate">{name}</span>
+                                            <span className="text-white text-xs font-semibold truncate">{name}</span>
                                             <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                            {isBest && <span className="text-[9px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                            {isBest && <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-[9px] text-gray-400">ATK {w.baseAtk}</span>
-                                            <span className="text-[9px] text-cyan-400/80">{w.stat} {w.subStatValue}</span>
+                                            <span className="text-[10px] text-gray-400">ATK {w.baseAtk}</span>
+                                            <span className="text-[10px] text-cyan-400/80">{w.stat} {w.subStatValue}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -6558,7 +6558,7 @@ function WhisperingWishesInner() {
                     className="kuro-input w-full"
                   />
                   {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                  <p className="text-gray-400 text-[9px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
+                  <p className="text-gray-400 text-[10px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -6575,11 +6575,11 @@ function WhisperingWishesInner() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
-                      <p className="text-gray-400 text-[9px] mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      <p className="text-gray-400 text-[10px] mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
                       {state.profile.profilePic && (
                         <button
                           onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
-                          className="text-red-400/70 text-[9px] hover:text-red-400 mt-0.5"
+                          className="text-red-400/70 text-[10px] hover:text-red-400 mt-0.5"
                         >Reset to default</button>
                       )}
                     </div>
@@ -6623,7 +6623,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">OLED Mode</div>
-                      <div className="text-gray-400 text-[9px]">True black (#000) for OLED screens</div>
+                      <div className="text-gray-400 text-[10px]">True black (#000) for OLED screens</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -6639,7 +6639,7 @@ function WhisperingWishesInner() {
                   </button>
                 </div>
                 {visualSettings.oledMode && (
-                  <p className="text-emerald-400 text-[9px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
+                  <p className="text-emerald-400 text-[10px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
                 )}
                 
                 {/* Swipe Navigation Toggle */}
@@ -6650,7 +6650,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">Swipe Navigation</div>
-                      <div className="text-gray-400 text-[9px]">Swipe left/right to switch tabs</div>
+                      <div className="text-gray-400 text-[10px]">Swipe left/right to switch tabs</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -6666,7 +6666,7 @@ function WhisperingWishesInner() {
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
-                  <p className="text-cyan-400 text-[9px] text-center">✓ Swipe left/right on content area to navigate</p>
+                  <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
                 
                 {/* Animations Toggle */}
@@ -6677,7 +6677,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">Animations</div>
-                      <div className="text-gray-400 text-[9px]">Background effects, transitions & glow</div>
+                      <div className="text-gray-400 text-[10px]">Background effects, transitions & glow</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -6693,10 +6693,10 @@ function WhisperingWishesInner() {
                   </button>
                 </div>
                 {!visualSettings.animationsEnabled && (
-                  <p className="text-gray-400 text-[9px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
+                  <p className="text-gray-400 text-[10px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
                 )}
                 {visualSettings.animationsEnabled && (
-                  <p className="text-purple-400 text-[9px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
+                  <p className="text-purple-400 text-[10px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
                 )}
 
                 {/* Install App on Device */}
@@ -6708,7 +6708,7 @@ function WhisperingWishesInner() {
                       </div>
                       <div>
                         <div className="text-white text-xs font-medium">Install App</div>
-                        <div className="text-gray-400 text-[9px]">Add to home screen for offline use</div>
+                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
                       </div>
                     </div>
                     <button
@@ -6723,7 +6723,7 @@ function WhisperingWishesInner() {
                   </div>
                 )}
                 {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-[9px] text-center">✓ App is installed on your device</p>
+                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
                 )}
               </CardBody>
             </Card>
@@ -6771,7 +6771,7 @@ function WhisperingWishesInner() {
                       <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
                         <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '60%', height: '12px' }} />
                         <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
-                        <p className="text-gray-500 text-[9px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
+                        <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
                       </div>
                     ) : (
                     <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
@@ -6815,7 +6815,7 @@ Example: {"pulls":[...]}'
                         </button>
                       )}
                     </div>
-                    <p className="text-gray-400 text-[9px]">
+                    <p className="text-gray-400 text-[10px]">
                       💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
                     </p>
                   </div>
@@ -6830,7 +6830,7 @@ Example: {"pulls":[...]}'
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
-                  <p className="text-gray-400 text-[9px] mt-2">View detailed stats in the Stats tab</p>
+                  <p className="text-gray-400 text-[10px] mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
             )}
@@ -6867,25 +6867,25 @@ Example: {"pulls":[...]}'
                 
                 <div className="kuro-divider" />
                 
-                <div className="space-y-2 text-[9px] text-gray-400">
+                <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Disclaimer</p>
                   <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
                   <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{currentYear}. All rights reserved.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-400">
+                <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Data & Privacy</p>
                   <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
                   <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
                   <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-400">
+                <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Third-Party Services</p>
                   <p>This app recommends wuwatracker.com for data export. We are not affiliated with wuwatracker.com and are not responsible for their services, data handling, or availability.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-400">
+                <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
@@ -6895,7 +6895,7 @@ Example: {"pulls":[...]}'
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>
                 
-                <div className="space-y-2 text-[9px] text-gray-400">
+                <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">License</p>
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
@@ -6936,7 +6936,7 @@ Example: {"pulls":[...]}'
               <textarea
                 value={exportData}
                 readOnly
-                className="kuro-input w-full h-24 text-[9px] font-mono"
+                className="kuro-input w-full h-24 text-[10px] font-mono"
                 onClick={e => e.target.select()}
                 aria-label="Export backup data"
               />
@@ -6963,7 +6963,7 @@ Example: {"pulls":[...]}'
               
               <div className="relative my-1">
                 <div className="kuro-divider" />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[9px] text-gray-400 uppercase tracking-wider">Restore</span>
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[10px] text-gray-400 uppercase tracking-wider">Restore</span>
               </div>
               
               <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
@@ -6971,7 +6971,7 @@ Example: {"pulls":[...]}'
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
                 placeholder="Paste backup JSON here..."
-                className="kuro-input w-full h-20 text-[9px] font-mono"
+                className="kuro-input w-full h-20 text-[10px] font-mono"
                 aria-label="Paste backup data to restore"
               />
               <button
@@ -7330,7 +7330,7 @@ Example: {"pulls":[...]}'
                                 <div className="rounded-full flex items-center justify-center mb-1.5" style={{ width: '36px', height: '36px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
                                   <IconComponent size={18} style={{ color: trophy.color }} />
                                 </div>
-                                <div className="text-[9px] font-bold text-white truncate w-full px-1">{trophy.name}</div>
+                                <div className="text-[10px] font-bold text-white truncate w-full px-1">{trophy.name}</div>
                               </div>
                             );
                           })}
@@ -7427,31 +7427,31 @@ Example: {"pulls":[...]}'
                   <div className="flex gap-2 border-b border-[var(--border-medium)] pb-2 flex-wrap">
                     <button
                       onClick={() => setAdminTab('banners')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'banners' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'banners' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Banners
                     </button>
                     <button
                       onClick={() => setAdminTab('collection')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'collection' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'collection' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Collection
                     </button>
                     <button
                       onClick={() => setAdminTab('visuals')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Visual Settings
                     </button>
                     <button
                       onClick={() => setAdminTab('trophies')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Trophies
                     </button>
                     <button
                       onClick={() => setAdminTab('players')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players
                     </button>
@@ -7591,10 +7591,10 @@ Example: {"pulls":[...]}'
                         <div className="text-gray-400 text-xs mt-1">
                           {activePlayersCount === 1 ? 'Open Session' : 'Open Sessions'}
                         </div>
-                        <div className="text-gray-400 text-[9px] mt-1 leading-relaxed">
+                        <div className="text-gray-400 text-[10px] mt-1 leading-relaxed">
                           Anyone browsing the app — includes visitors who haven't imported data or submitted to the leaderboard
                         </div>
-                        <div className="text-gray-400 text-[9px] mt-1">
+                        <div className="text-gray-400 text-[10px] mt-1">
                           Updates every 30s • Heartbeat: 60s • Timeout: 2min
                         </div>
                       </div>
@@ -7633,7 +7633,7 @@ Example: {"pulls":[...]}'
                       <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Registered Players</div>
-                          <div className="text-gray-400 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
+                          <div className="text-gray-400 text-[10px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
                         </div>
                         {!adminPlayerList ? (
                           <div className="space-y-1.5 py-2" aria-label="Loading player list">
@@ -7653,17 +7653,17 @@ Example: {"pulls":[...]}'
                               <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-gray-400 text-[9px] w-4 text-right flex-shrink-0">{i + 1}</span>
-                                    <span className="text-white text-[11px] font-mono font-medium truncate">{p.uid || p.id}</span>
+                                    <span className="text-gray-400 text-[10px] w-4 text-right flex-shrink-0">{i + 1}</span>
+                                    <span className="text-white text-xs font-mono font-medium truncate">{p.uid || p.id}</span>
                                     {p.uid && p.id !== p.uid && (
                                       <span className="text-gray-500 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-3 ml-6 mt-0.5">
-                                    <span className="text-gray-400 text-[9px]">Avg: <span className="text-yellow-400">{typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity}</span></span>
-                                    <span className="text-gray-400 text-[9px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
-                                    <span className="text-gray-400 text-[9px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
-                                    <span className="text-gray-400 text-[9px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
+                                    <span className="text-gray-400 text-[10px]">Avg: <span className="text-yellow-400">{typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity}</span></span>
+                                    <span className="text-gray-400 text-[10px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
+                                    <span className="text-gray-400 text-[10px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
+                                    <span className="text-gray-400 text-[10px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                                   </div>
                                 </div>
                                 <div className="text-gray-500 text-[8px] text-right flex-shrink-0 ml-2">
@@ -7676,7 +7676,7 @@ Example: {"pulls":[...]}'
                       </div>
                       
                       {/* Privacy Notice */}
-                      <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3 text-[9px] text-gray-400 space-y-1">
+                      <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3 text-[10px] text-gray-400 space-y-1">
                         <div className="text-gray-400 font-medium">🔒 Privacy</div>
                         <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
                         <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
@@ -7687,9 +7687,9 @@ Example: {"pulls":[...]}'
                         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-[10px] text-red-400 space-y-1.5">
                           <div className="font-medium">⚠ Presence Error</div>
                           <p>{presenceError}</p>
-                          <div className="text-red-400/70 text-[9px] space-y-0.5">
+                          <div className="text-red-400/70 text-[10px] space-y-0.5">
                             <p className="font-medium">Fix: Add this Firebase rule:</p>
-                            <pre className="bg-black/30 rounded p-2 text-[9px] overflow-x-auto font-mono whitespace-pre">
+                            <pre className="bg-black/30 rounded p-2 text-[10px] overflow-x-auto font-mono whitespace-pre">
 {`"presence": {
   ".read": true,
   ".write": true
@@ -7715,7 +7715,7 @@ Example: {"pulls":[...]}'
                           <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-[var(--border-medium)] p-2 space-y-0.5">
                             {(trophies?.list || []).map(t => (
                               <div key={t.id} className="flex items-center gap-2 py-0.5">
-                                <span className="text-[9px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
+                                <span className="text-[10px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
                                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
                                 <span className={`text-[10px] flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
                                 <span className="text-[8px] text-gray-500 flex-shrink-0">{t.name.length}ch</span>
@@ -7743,13 +7743,13 @@ Example: {"pulls":[...]}'
                         {/* JSON import textarea */}
                         <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Import Overrides (JSON)</div>
                         <textarea
-                          className="kuro-input w-full h-40 text-[9px] font-mono"
+                          className="kuro-input w-full h-40 text-[10px] font-mono"
                           value={trophyJsonInput}
                           onChange={(e) => setTrophyJsonInput(e.target.value)}
                           placeholder={'{\n  "pity1": { "name": "New Name Here", "desc": "New description" },\n  "win7": { "name": "Another Name" }\n}'}
                           aria-label="Trophy overrides JSON input"
                         />
-                        <p className="text-gray-400 text-[9px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
+                        <p className="text-gray-400 text-[10px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
 
                         <div className="flex gap-2">
                           <button
@@ -7845,7 +7845,7 @@ Example: {"pulls":[...]}'
                   <div className="space-y-2">
                     <h3 className="text-white text-sm font-medium">Featured Resonators (JSON)</h3>
                     <textarea
-                      className="kuro-input w-full h-32 text-[9px] font-mono"
+                      className="kuro-input w-full h-32 text-[10px] font-mono"
                       value={bannerForm.charsJson}
                       onChange={(e) => updateBannerForm('charsJson', e.target.value)}
                       placeholder="Paste characters array JSON"
@@ -7856,7 +7856,7 @@ Example: {"pulls":[...]}'
                   <div className="space-y-2">
                     <h3 className="text-white text-sm font-medium">Featured Weapons (JSON)</h3>
                     <textarea
-                      className="kuro-input w-full h-32 text-[9px] font-mono"
+                      className="kuro-input w-full h-32 text-[10px] font-mono"
                       value={bannerForm.weapsJson}
                       onChange={(e) => updateBannerForm('weapsJson', e.target.value)}
                       placeholder="Paste weapons array JSON"
@@ -8007,7 +8007,7 @@ Example: {"pulls":[...]}'
                         />
                       </div>
                     </div>
-                    <p className="text-gray-400 text-[9px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
+                    <p className="text-gray-400 text-[10px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -8155,7 +8155,7 @@ Example: {"pulls":[...]}'
             {/* Framing Controls - show when image selected */}
             {framingMode && editingImage && (
               <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                <div className="text-emerald-400 text-[9px] font-medium mb-2 truncate">
+                <div className="text-emerald-400 text-[10px] font-medium mb-2 truncate">
                   Editing: {editingImage.replace('collection-', '')}
                 </div>
                 {/* Position controls — P6-FIX: Added aria-labels for D-pad clarity (HIGH-22) */}
@@ -8192,7 +8192,7 @@ Example: {"pulls":[...]}'
               const infoF = getImageFraming(infoKey);
               return (
                 <div className="p-2 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                  <div className="text-orange-400 text-[9px] font-medium mb-2 truncate">
+                  <div className="text-orange-400 text-[10px] font-medium mb-2 truncate">
                     Info Panel: {detailModal.name}
                   </div>
                   <div className="grid grid-cols-3 gap-1 mb-2">
@@ -8242,7 +8242,7 @@ Example: {"pulls":[...]}'
             {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
             <button 
               onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
-              className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+              className="w-full py-1.5 rounded text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
               ↻ Reset All to Defaults
             </button>

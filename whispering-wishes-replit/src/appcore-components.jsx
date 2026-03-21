@@ -34,8 +34,8 @@ const MaterialItem = ({ name, qty }) => {
     <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-[var(--border-medium)] min-w-0">
       {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
       <div className="min-w-0 flex-1">
-        <div className="text-[9px] text-gray-300 truncate leading-tight">{name}</div>
-        {qty != null && qty > 0 && <div className="text-[9px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
+        <div className="text-[10px] text-gray-300 truncate leading-tight">{name}</div>
+        {qty != null && qty > 0 && <div className="text-[10px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
       </div>
     </div>
   );
@@ -232,7 +232,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
-            <div className="text-[9px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
+            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
               <span className={`text-[10px] px-2 py-0.5 rounded font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
@@ -240,25 +240,25 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
             {data.buffs?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-400 mb-1">Buffs</div>
+                <div className="text-[10px] text-gray-400 mb-1">Buffs</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.buffs.map((b, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>)}
+                  {data.buffs.map((b, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>)}
                 </div>
               </div>
             )}
             {data.debuffs?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-400 mb-1">Debuffs</div>
+                <div className="text-[10px] text-gray-400 mb-1">Debuffs</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.debuffs.map((db, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>)}
+                  {data.debuffs.map((db, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>)}
                 </div>
               </div>
             )}
             {data.dmgFocus?.length > 0 && (
               <div>
-                <div className="text-[9px] text-gray-400 mb-1">Damage Focus</div>
+                <div className="text-[10px] text-gray-400 mb-1">Damage Focus</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.dmgFocus.map((df, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
+                  {data.dmgFocus.map((df, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
                 </div>
               </div>
             )}
@@ -267,22 +267,22 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           {/* Base Stats (Lv.90) */}
           {data.baseAtk && (
             <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-[9px] text-gray-500">HP</div>
+                  <div className="text-[10px] text-gray-500">HP</div>
                   <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString()}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-[9px] text-gray-500">ATK</div>
+                  <div className="text-[10px] text-gray-500">ATK</div>
                   <div className="text-sm font-bold text-white">{data.baseAtk}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-[9px] text-gray-500">DEF</div>
+                  <div className="text-[10px] text-gray-500">DEF</div>
                   <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString()}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-[9px] text-gray-500">Energy</div>
+                  <div className="text-[10px] text-gray-500">Energy</div>
                   <div className="text-sm font-bold text-white">{data.maxEnergy || '?'}</div>
                 </div>
               </div>
@@ -292,7 +292,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           {/* Resonance Chain (S1-S6) */}
           {RESONANCE_CHAIN_DATA[name] && (
             <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
               <div className="space-y-1.5">
                 {[1,2,3,4,5,6].map(s => {
                   const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
@@ -315,7 +315,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
           {CHAR_BUFF_TABLE[name]?.note && (
             <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
               <p className="text-[10px] text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
             </div>
           )}
@@ -340,7 +340,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 {weaponData && (
                   <>
                     <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.baseAtk ? `${weaponData.baseAtk} Base ATK` : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
-                    <div className="text-gray-400 text-[9px] mt-1 leading-relaxed">{weaponData.passive}</div>
+                    <div className="text-gray-400 text-[10px] mt-1 leading-relaxed">{weaponData.passive}</div>
                   </>
                 )}
               </div>
@@ -350,7 +350,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Best Echoes - enhanced */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
+            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
@@ -358,7 +358,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
                 <div>
                   <div className="text-cyan-400 text-xs font-bold">{data.bestEchoes[0]}</div>
-                  <div className="text-gray-400 text-[9px]">Main Echo</div>
+                  <div className="text-gray-400 text-[10px]">Main Echo</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
                 <div>
                   <div className="text-purple-400 text-xs font-bold">{data.bestEchoes[1]}</div>
-                  <div className="text-gray-400 text-[9px]">Echo Set</div>
+                  <div className="text-gray-400 text-[10px]">Echo Set</div>
                 </div>
               </div>
             </div>
@@ -637,7 +637,7 @@ class TabErrorBoundary extends React.Component {
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left">
-                    <summary className="text-gray-400 text-[9px] cursor-pointer">Error details</summary>
+                    <summary className="text-gray-400 text-[10px] cursor-pointer">Error details</summary>
                     <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}</pre>
                   </details>
                 )}
@@ -921,8 +921,8 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
         <circle className="pity-ring-fill" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} stroke={color} strokeDasharray={circumference} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{'--ring-glow': glowColor}} />
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.36} fill={color}>{safeValue}</text>
       </svg>
-      {label && <div className="text-gray-300 text-[9px] mt-0.5">{label}</div>}
-      {sublabel && <div className="text-gray-400 text-[9px]">{sublabel}</div>}
+      {label && <div className="text-gray-300 text-[10px] mt-0.5">{label}</div>}
+      {sublabel && <div className="text-gray-400 text-[10px]">{sublabel}</div>}
     </div>
   );
 });
@@ -1205,7 +1205,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            {item.isNew && <span className="text-[9px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
+            {item.isNew && <span className="text-[10px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`text-[10px] px-2 py-0.5 rounded ${style.text} border`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>{isChar ? item.element : item.type}</span>
           </div>
           <h4 className="font-bold text-base text-white leading-tight">{item.name}</h4>
@@ -1213,9 +1213,9 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
         
         <div className={stats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-[9px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
+          <div className="text-gray-300 text-[10px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
-            {item.featured4Stars.map(n => <span key={n} className="text-[9px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+            {item.featured4Stars.map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
       </div>
@@ -1225,19 +1225,19 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-base kuro-number ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
-                  <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
+                  <div className={`font-bold text-base kuro-number ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                  <div className="text-gray-400 text-[10px] mt-0.5">5★ Pity</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[9px]">/10</span></div>
-                  <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
+                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>
+                  <div className="text-gray-400 text-[10px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">
                   <div className="text-white font-bold text-sm">{stats.totalPulls}</div>
-                  <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
+                  <div className="text-gray-400 text-[10px] mt-0.5">Convenes</div>
                 </div>
               </div>
-              {/* MED-27: Escalated from text-[9px] to text-xs font-bold for visual weight */}
+              {/* MED-27: Escalated from text-[10px] to text-xs font-bold for visual weight */}
               {isChar && (
                 <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
@@ -1318,27 +1318,27 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-gray-400 text-[9px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+            <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
             <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
           </div>
         </div>
         
         <div className="flex justify-between items-end">
-          <div className={`inline-block px-2 py-0.5 rounded text-[9px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
+          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
             {event.rewards}
           </div>
           {onStatusChange && (
             <div className="flex gap-1">
               {status ? (
-                <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[9px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
+                <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
                   Undo
                 </button>
               ) : (
                 <>
-                  <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[9px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
+                  <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
                     <Check size={10} className="inline -mt-0.5" /> Done
                   </button>
-                  <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[9px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
+                  <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
                     <X size={10} className="inline -mt-0.5" /> Skip
                   </button>
                 </>
@@ -1346,7 +1346,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             </div>
           )}
           {!onStatusChange && (
-            <div className="text-gray-400 text-[9px]">{event.resetType}</div>
+            <div className="text-gray-400 text-[10px]">{event.resetType}</div>
           )}
         </div>
       </div>
@@ -1360,7 +1360,7 @@ const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
     <span className="text-gray-400 text-[10px] w-12">{label}</span>
     <div className="flex-1 h-5 bg-neutral-800 rounded overflow-hidden">
       <div className={`h-full ${color === 'cyan' ? 'bg-cyan-500' : color === 'pink' ? 'bg-pink-500' : 'bg-yellow-500'} transition-[width] duration-300 flex items-center justify-end pr-1`} style={{ width: `${Math.max(value, 1)}%` }}>
-        {value > 10 && <span className="text-[9px] text-black font-bold">{value}%</span>}
+        {value > 10 && <span className="text-[10px] text-black font-bold">{value}%</span>}
       </div>
     </div>
     {value <= 10 && <span className="text-[10px] text-gray-400 w-10">{value}%</span>}
@@ -1446,7 +1446,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       ) : (
         <div className="text-gray-500 font-bold text-xl">—</div>
       )}
-      <div className={`text-[9px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
+      <div className={`text-[10px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
     </div>
   </div>
 ), (prev, next) => 
@@ -1485,11 +1485,11 @@ const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVis
   if (compact) {
     return (
       <div className="space-y-2 border-t border-[var(--border-medium)] pt-2">
-        <h4 className={`${c.text} text-[9px] font-medium uppercase tracking-wider`}>{title}</h4>
+        <h4 className={`${c.text} text-[10px] font-medium uppercase tracking-wider`}>{title}</h4>
         {directionControl && (
           <div className="flex gap-1 mb-1.5">
-            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1 rounded text-[9px] ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to top`} aria-pressed={visualSettings[directionControl.key] === 'top'}>↑ Top</button>
-            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1 rounded text-[9px] ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to bottom`} aria-pressed={visualSettings[directionControl.key] === 'bottom'}>↓ Bottom</button>
+            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1 rounded text-[10px] ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to top`} aria-pressed={visualSettings[directionControl.key] === 'top'}>↑ Top</button>
+            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1 rounded text-[10px] ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to bottom`} aria-pressed={visualSettings[directionControl.key] === 'bottom'}>↓ Bottom</button>
           </div>
         )}
         <div className="space-y-1.5">{sliders.map(renderSlider)}</div>
@@ -1660,17 +1660,17 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
       </div>
       {isFeatured ? (
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span><div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div></div>
-          <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{stats.featuredFourStarCount}</span><div className="text-gray-400 text-[9px] mt-0.5">Featured 4★</div></div>
+          <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span><div className="text-gray-400 text-[10px] mt-0.5">4★ Expected</div></div>
+          <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{stats.featuredFourStarCount}</span><div className="text-gray-400 text-[10px] mt-0.5">Featured 4★</div></div>
         </div>
       ) : (
         <div className="kuro-stat kuro-stat-purple text-xs">
           <span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span>
-          <div className="text-gray-400 text-[9px] mt-0.5">4★ Expected</div>
+          <div className="text-gray-400 text-[10px] mt-0.5">4★ Expected</div>
         </div>
       )}
       {/* AUDIT-FIX M33: Accurate method label — DP is exact for ≤500 pulls, MC simulation for larger values */}
-      <p className="text-[9px] text-gray-400 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
+      <p className="text-[10px] text-gray-400 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
     </CardBody>
   </Card>
 ));
@@ -1701,9 +1701,9 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <h4 className="font-bold text-base text-white leading-tight">{title}</h4>
         </div>
         <div className={hasStats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-[9px] mb-0.5 uppercase tracking-wider">Available 5★</div>
+          <div className="text-gray-300 text-[10px] mb-0.5 uppercase tracking-wider">Available 5★</div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-            {items.map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-[9px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
+            {items.map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
           </div>
         </div>
       </div>
@@ -1712,16 +1712,16 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
               <div className="text-center">
-                <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
-                <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
+                <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                <div className="text-gray-400 text-[10px] mt-0.5">5★ Pity</div>
               </div>
               <div className="text-center">
-                <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[9px]">/10</span></div>
-                <div className="text-gray-400 text-[9px] mt-0.5">4★ Pity</div>
+                <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>
+                <div className="text-gray-400 text-[10px] mt-0.5">4★ Pity</div>
               </div>
               <div className="text-center">
                 <div className="text-white font-bold text-sm">{profileData.history.length}</div>
-                <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
+                <div className="text-gray-400 text-[10px] mt-0.5">Convenes</div>
               </div>
             </div>
           </div>
@@ -1778,7 +1778,7 @@ const ImportGuide = memo(({ platform }) => {
           <p>{step}</p>
         </div>
       ))}
-      {guide.footer && <p className="text-gray-400 text-[9px] pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
+      {guide.footer && <p className="text-gray-400 text-[10px] pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
     </div>
   );
 });
