@@ -6697,7 +6697,7 @@ function WhisperingWishesInner() {
                     style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}
                     aria-label="Toggle animations: off, on, full"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px] bg-white' : 'left-[32px] bg-white'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : 'left-[32px] bg-white'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
