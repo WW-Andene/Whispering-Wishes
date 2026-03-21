@@ -6136,7 +6136,7 @@ The app defines two dedicated typography classes for numeric display (appcore-pr
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-HI-F1 | **HIGH** | Tracker tab's guarantee prediction ("50/50" vs "✓ Guaranteed") is at `text-[9px]` — the most actionable insight is the smallest element | **Escalate guarantee badge**: Increase to `text-xs font-bold` with a colored background pill (emerald for guaranteed, orange for 50/50). Position it prominently below the pity ring, not buried in the stats row. This is the single most important piece of information for deciding whether to pull |
-| §E10-HI-F2 | **LOW** | Planner Layer 3 (time projections) is a flat grid — no signal about which timeframe is most relevant | **Same solution as §E10-NV-F3**: Emphasize 30-day as the primary planning horizon |
+| §E10-HI-F2 ✅ | **LOW** | Planner Layer 3 (time projections) is a flat grid — no signal about which timeframe is most relevant | **Same solution as §E10-NV-F3**: Emphasize 30-day as the primary planning horizon |
 
 ---
 
@@ -6203,7 +6203,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-CH-F1 | **LOW** | Convene History AreaChart has no Y-axis gridlines — values must be estimated by eye rather than read against a reference | **Add subtle gridlines**: Add `<CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />` to the AreaChart. The ultra-subtle stroke ensures gridlines don't compete with the data |
-| §E10-CH-F2 | **POLISH** | Pity histogram uses custom HTML bars instead of Recharts BarChart — this works well but creates an inconsistency in chart technology (Recharts vs custom) | **Accept as intentional**: The custom HTML implementation allows element-specific color coding per bar and fine-grained layout control that Recharts BarChart doesn't easily provide. No change needed |
+| §E10-CH-F2 ✅ | **POLISH** | Pity histogram uses custom HTML bars instead of Recharts BarChart — this works well but creates an inconsistency in chart technology (Recharts vs custom) | **Accept as intentional**: The custom HTML implementation allows element-specific color coding per bar and fine-grained layout control that Recharts BarChart doesn't easily provide. No change needed |
 
 ---
 
@@ -6330,7 +6330,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-EP-F1 | **MEDIUM** | Stats tab empty states ("Insufficient data for trend analysis", "Insufficient signal data") are plain text with no icon, no illustration, and clinical language — they feel like spreadsheet error messages, not a designed experience | **Add icons + rewrite copy**: Each Stats empty state should include a contextual icon (e.g., TrendingUp for trend, Star for 5★) at 24px with gold glow, followed by game-lore copy. "Insufficient data for trend analysis" → "Not enough signals to chart your journey — keep pulling to reveal patterns." This matches the Collection ghost grid's emotional quality |
-| §E10-EP-F2 | **LOW** | No visual ceremony when data first populates — the `cardSlideIn` animation is the same whether it's the first load or a return visit; there's no "first data" moment | **Add a first-population flash**: On first data load (detect via `history.length === 0` → `history.length > 0` transition), trigger a brief gold glow pulse on the newly populated cards. Use a one-time `@keyframes firstDataGlow` with `box-shadow` gold expansion. This celebrates the moment data appears for the first time |
+| §E10-EP-F2 ✅ | **LOW** | No visual ceremony when data first populates — the `cardSlideIn` animation is the same whether it's the first load or a return visit; there's no "first data" moment | **Add a first-population flash**: On first data load (detect via `history.length === 0` → `history.length > 0` transition), trigger a brief gold glow pulse on the newly populated cards. Use a one-time `@keyframes firstDataGlow` with `box-shadow` gold expansion. This celebrates the moment data appears for the first time |
 
 ---
 
@@ -6366,8 +6366,8 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-ER-F1 | **MEDIUM** | Admin lockout (5-minute cooldown after 5 failed attempts) is communicated as a 3-second auto-dismiss toast — the most persistent security state uses the most transient notification | **Add persistent lockout indicator**: When lockout is active, display a persistent red banner below the input field showing "Locked — try again in X:XX" with a countdown. The toast can still fire, but the persistent indicator ensures the user sees the state even after the toast dismisses |
-| §E10-ER-F2 | **LOW** | Rate limit error uses red "error" toast type instead of gold "warning" — rate limiting is a temporary wait condition, not a failure state | **Change to warning type**: Switch rate limit from `toast.addToast(msg, 'error')` to `toast.addToast(msg, 'warning')`. Gold + AlertTriangle communicates "wait a moment" better than red + AlertCircle which communicates "something broke" |
-| §E10-ER-F3 | **LOW** | Tab-level error boundary and app-level error boundary have identical visual weight — a single tab crashing looks the same as the entire app crashing | **Escalate app crash visually**: Add a red border or red gradient accent to the app-level error boundary. Include an app icon/logo to reassure the user this is still Whispering Wishes (not a browser error). Add "The app encountered an unexpected error" vs the tab-level "Something went wrong in this section" |
+| §E10-ER-F2 ✅ | **LOW** | Rate limit error uses red "error" toast type instead of gold "warning" — rate limiting is a temporary wait condition, not a failure state | **Change to warning type**: Switch rate limit from `toast.addToast(msg, 'error')` to `toast.addToast(msg, 'warning')`. Gold + AlertTriangle communicates "wait a moment" better than red + AlertCircle which communicates "something broke" |
+| §E10-ER-F3 ✅ | **LOW** | Tab-level error boundary and app-level error boundary have identical visual weight — a single tab crashing looks the same as the entire app crashing | **Escalate app crash visually**: Add a red border or red gradient accent to the app-level error boundary. Include an app icon/logo to reassure the user this is still Whispering Wishes (not a browser error). Add "The app encountered an unexpected error" vs the tab-level "Something went wrong in this section" |
 
 ---
 
@@ -6401,8 +6401,8 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-CB-F1 | **MEDIUM** | Won 50/50 (emerald) vs Lost 50/50 (red) relies on color + tiny "W"/"L" letters at `text-[9px]` — the letter backup is too small to be a reliable secondary encoding for colorblind users | **Enlarge W/L badges or add icons**: Increase "W"/"L" badges from `text-[9px]` to `text-xs` with a background pill (green bg for W, red bg for L). Alternatively, add a ✓ icon for Won and ✗ icon for Lost — shape differentiation is the most robust colorblind backup |
-| §E10-CB-F2 | **LOW** | Pity gradient lime (#84cc16) and gold (#edaf18) are nearly identical in grayscale (~10 luma difference) — users cannot distinguish "lucky average" from "average" by color alone | **Widen the luma gap**: Replace lime (#84cc16) with a brighter green (#4ade80, ~190 luma) for the 21–40 range. This creates a clearer grayscale progression: bright green → gold → orange → dark red. The numeric value always provides full recovery |
-| §E10-CB-F3 | **LOW** | Six element colors have no icon/shape backup — purely text labels. In contexts where labels are truncated or absent, elements are color-only | **Add element icons**: Create or assign simple geometric shapes per element (e.g., Fusion = flame, Electro = bolt, Aero = wind swirl, Glacio = snowflake, Havoc = spiral, Spectro = star). These already exist in WuWa's game UI and would strengthen both identity and accessibility |
+| §E10-CB-F2 ✅ | **LOW** | Pity gradient lime (#84cc16) and gold (#edaf18) are nearly identical in grayscale (~10 luma difference) — users cannot distinguish "lucky average" from "average" by color alone | **Widen the luma gap**: Replace lime (#84cc16) with a brighter green (#4ade80, ~190 luma) for the 21–40 range. This creates a clearer grayscale progression: bright green → gold → orange → dark red. The numeric value always provides full recovery |
+| §E10-CB-F3 ✅ | **LOW** | Six element colors have no icon/shape backup — purely text labels. In contexts where labels are truncated or absent, elements are color-only | **Add element icons**: Create or assign simple geometric shapes per element (e.g., Fusion = flame, Electro = bolt, Aero = wind swirl, Glacio = snowflake, Havoc = spiral, Spectro = star). These already exist in WuWa's game UI and would strengthen both identity and accessibility |
 
 ---
 
@@ -6445,7 +6445,7 @@ The application uses several data-dense tabular layouts. While none use a litera
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-DT-F1 | **MEDIUM** | Leaderboard avg pity numbers (App.jsx:4135) and Pull Log pity numbers (App.jsx:4688) lack `.kuro-number` class — they render in the default font without `tabular-nums`, causing digits to shift horizontally as values change (e.g., "45.2" vs "8.1" won't column-align) | **Add `.kuro-number` to all tabular numeric cells**: On leaderboard `entry.avgPity.toFixed(1)`, add `kuro-number` to the parent span. On Pull Log `{p.pity ?? '?'}`, add `kuro-number`. This ensures `tabular-nums` + JetBrains Mono across all data tables, matching the Stats grid and Planner which already use it |
-| §E10-DT-F2 | **LOW** | Pull Log scroll container (`max-h-60 overflow-y-auto`) has no scroll affordance — no `kuro-scroll` class, no bottom fade, no "scroll for more" indicator; the admin list uses `kuro-scroll` but Pull Log and Leaderboard don't | **Add `kuro-scroll` + bottom fade**: Add `kuro-scroll` class to both the Pull Log and Leaderboard scroll containers. Add a `pointer-events-none` gradient overlay at the bottom (`linear-gradient(transparent 80%, var(--bg-card) 100%)`) when content overflows, hinting at more rows below |
+| §E10-DT-F2 ✅ | **LOW** | Pull Log scroll container (`max-h-60 overflow-y-auto`) has no scroll affordance — no `kuro-scroll` class, no bottom fade, no "scroll for more" indicator; the admin list uses `kuro-scroll` but Pull Log and Leaderboard don't | **Add `kuro-scroll` + bottom fade**: Add `kuro-scroll` class to both the Pull Log and Leaderboard scroll containers. Add a `pointer-events-none` gradient overlay at the bottom (`linear-gradient(transparent 80%, var(--bg-card) 100%)`) when content overflows, hinting at more rows below |
 | §E10-DT-F3 | **POLISH** | None of the data tables use semantic `<table>` / `<thead>` / `<tbody>` — they're all flex/grid constructs with no column headers. The Pull Log has no header row explaining what "W" / "L" / the number columns mean | **Add visually subtle header row**: For the Pull Log, add a single header row at `text-[9px] text-gray-500` with "Name | Banner | 50/50 | Pity | Date". Use `role="table"`, `role="rowgroup"`, `role="row"`, `role="cell"` ARIA roles on the flex structure to preserve screen reader semantics without switching to literal `<table>` elements |
 
 ---
@@ -6486,7 +6486,7 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E10-RD-F1 | **MEDIUM** | Recharts area charts use fixed `h-32` (128px) and `h-24` (96px) containers — on wide viewports the aspect ratio becomes extremely horizontal (e.g., 800×128), making trends harder to read; on narrow viewports the same height wastes vertical space relative to content width | **Use aspect-ratio responsive heights**: Replace fixed `h-32` with `aspect-[4/1]` (or a `min-h-32 max-h-48` clamp). This keeps charts proportional to their width. For the admin `h-24` chart, use `aspect-[5/1]` with `min-h-20 max-h-32`. The `ResponsiveContainer` already handles width — it just needs a proportional height container |
-| §E10-RD-F2 | **LOW** | Planner projection grids (`grid-cols-3` with `text-2xl kuro-number`) can squeeze on narrow viewports (~320px) — three columns of 24px numbers with comma formatting (e.g., "1,440") may overflow cells | **Add `text-xl sm:text-2xl` responsive sizing**: Scale projection numbers from `text-xl` on mobile to `text-2xl` on wider viewports. Alternatively, add `whitespace-nowrap overflow-hidden text-ellipsis` to prevent mid-number wrapping, ensuring numbers are never broken across lines |
+| §E10-RD-F2 ✅ | **LOW** | Planner projection grids (`grid-cols-3` with `text-2xl kuro-number`) can squeeze on narrow viewports (~320px) — three columns of 24px numbers with comma formatting (e.g., "1,440") may overflow cells | **Add `text-xl sm:text-2xl` responsive sizing**: Scale projection numbers from `text-xl` on mobile to `text-2xl` on wider viewports. Alternatively, add `whitespace-nowrap overflow-hidden text-ellipsis` to prevent mid-number wrapping, ensuring numbers are never broken across lines |
 | §E10-RD-F3 | **POLISH** | Tab navigation uses `scrollbar-hide` on 8 tabs — on narrow viewports the last tabs (Profile, Teams) are hidden with no visual indication of horizontal scrollability | **Add edge gradient fade**: Apply a `pointer-events-none` gradient fade on the right edge of the tab nav (`linear-gradient(to left, var(--bg-card) 0%, transparent 32px)`) when scroll position hasn't reached the end. This is a standard mobile pattern that hints "swipe right for more tabs" |
 
 ---
@@ -6578,7 +6578,7 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-RT-F1 | **LOW** | Active players count (App.jsx:7490) updates as a raw number swap with no transition — when the count changes, it jumps from one value to another without any visual interpolation or flash to indicate the change occurred | **Add brief flash on change**: Wrap the active players number in a `<span>` with a CSS `transition: color 0.3s`. When the value changes (via useEffect on count), briefly set the color to emerald-400 (for increase) or red-400 (for decrease), then fade back to white. This signals "a change just happened" without requiring a full CountUp animation |
+| §E10-RT-F1 ✅ | **LOW** | Active players count (App.jsx:7490) updates as a raw number swap with no transition — when the count changes, it jumps from one value to another without any visual interpolation or flash to indicate the change occurred | **Add brief flash on change**: Wrap the active players number in a `<span>` with a CSS `transition: color 0.3s`. When the value changes (via useEffect on count), briefly set the color to emerald-400 (for increase) or red-400 (for decrease), then fade back to white. This signals "a change just happened" without requiring a full CountUp animation |
 | §E10-RT-F2 | **POLISH** | CountdownTimer full-size displays "Ended" as plain `text-gray-400 text-xs font-medium uppercase tracking-wider` text (appcore-components.jsx:833) when a banner expires — this is the most dramatic state change (banner ending) but has the least dramatic visual treatment | **Add expired visual state**: When timer reaches 00:00:00, instead of just "Ended" text, show the timer boxes with "00" values in red (`text-red-400`) with a subtle pulse animation. This maintains the boxed layout shape (avoiding layout shift) while clearly communicating the expired state |
 | §E10-RT-F3 | **POLISH** | Admin activity chart (App.jsx:7511–7530) redraws without animation when new data points arrive — Recharts `AreaChart` default behavior is to snap-redraw, creating a visual discontinuity when a new data point pushes the chart | **Add Recharts `isAnimationActive` prop**: Set `<Area isAnimationActive={true} animationDuration={500} animationEasing="ease-out" />` on the admin activity chart. This makes new data points animate smoothly into the chart rather than causing a full redraw snap |
 
@@ -6596,29 +6596,29 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 | 4 | §E10-NV-F4 ✅ | **LOW** | §E10.1 | Planner daily income rate displayed inline at `text-[10px]` — key economic metric lacks emphasis |
 | 5 | §E10-NV-F5 ✅ | **POLISH** | §E10.1 | Luck Rating badge uses `text-shadow` glow but is semantically a `<span>` — no tooltip/explanation |
 | 6 | §E10-HI-F1 | **MEDIUM** | §E10.2 | Flat grid anti-pattern in Planner projections — 7/30/90 day values at equal visual weight |
-| 7 | §E10-HI-F2 | **LOW** | §E10.2 | Stats tab lacks narrative header summarizing "Your story so far" |
+| 7 | §E10-HI-F2 ✅ | **LOW** | §E10.2 | Stats tab lacks narrative header summarizing "Your story so far" |
 | 8 | §E10-CH-F1 | **MEDIUM** | §E10.3 | Convene History AreaChart has no axis labels/tooltips — meaning requires external context |
-| 9 | §E10-CH-F2 | **LOW** | §E10.3 | Histogram summary line at `text-[10px]` placed below bars — easy to miss |
+| 9 | §E10-CH-F2 ✅ | **LOW** | §E10.3 | Histogram summary line at `text-[10px]` placed below bars — easy to miss |
 | 10 | §E10-PC-F1 | **MEDIUM** | §E10.4 | Planner shows all complexity at once — no progressive disclosure |
 | 11 | §E10-DD-F1 | **POLISH** | §E10.5 | Collection grid tight spacing may cause visual fatigue at 40+ items |
 | 12 | §E10-EP-F1 | **MEDIUM** | §E10.6 | Stats empty states lack personality — clinical "Insufficient data" messages |
-| 13 | §E10-EP-F2 | **LOW** | §E10.6 | No visual ceremony for first data population |
+| 13 | §E10-EP-F2 ✅ | **LOW** | §E10.6 | No visual ceremony for first data population |
 | 14 | §E10-ER-F1 | **MEDIUM** | §E10.7 | Admin lockout uses transient 3s toast for 5-minute security state |
-| 15 | §E10-ER-F2 | **LOW** | §E10.7 | Rate limit error uses red "error" instead of gold "warning" type |
-| 16 | §E10-ER-F3 | **LOW** | §E10.7 | Tab-level and app-level error boundaries have identical visual weight |
+| 15 | §E10-ER-F2 ✅ | **LOW** | §E10.7 | Rate limit error uses red "error" instead of gold "warning" type |
+| 16 | §E10-ER-F3 ✅ | **LOW** | §E10.7 | Tab-level and app-level error boundaries have identical visual weight |
 | 17 | §E10-CB-F1 | **MEDIUM** | §E10.8 | W/L colorblind backup badges at `text-[9px]` too small to be reliable |
-| 18 | §E10-CB-F2 | **LOW** | §E10.8 | Pity gradient lime/gold nearly identical in grayscale (~10 luma gap) |
-| 19 | §E10-CB-F3 | **LOW** | §E10.8 | Six element colors have no icon/shape backup |
+| 18 | §E10-CB-F2 ✅ | **LOW** | §E10.8 | Pity gradient lime/gold nearly identical in grayscale (~10 luma gap) |
+| 19 | §E10-CB-F3 ✅ | **LOW** | §E10.8 | Six element colors have no icon/shape backup |
 | 20 | §E10-DT-F1 | **MEDIUM** | §E10.9 | Leaderboard + Pull Log numeric columns lack `.kuro-number` tabular-nums |
-| 21 | §E10-DT-F2 | **LOW** | §E10.9 | Pull Log + Leaderboard scroll containers missing `kuro-scroll` + fade hint |
+| 21 | §E10-DT-F2 ✅ | **LOW** | §E10.9 | Pull Log + Leaderboard scroll containers missing `kuro-scroll` + fade hint |
 | 22 | §E10-DT-F3 | **POLISH** | §E10.9 | Data tables lack semantic roles and visible column headers |
 | 23 | §E10-RD-F1 | **MEDIUM** | §E10.10 | Recharts charts use fixed `h-32`/`h-24` height — extreme aspect ratios on wide viewports |
-| 24 | §E10-RD-F2 | **LOW** | §E10.10 | Planner projection grids squeeze `text-2xl` numbers on narrow viewports |
+| 24 | §E10-RD-F2 ✅ | **LOW** | §E10.10 | Planner projection grids squeeze `text-2xl` numbers on narrow viewports |
 | 25 | §E10-RD-F3 | **POLISH** | §E10.10 | Tab navigation `scrollbar-hide` on 8 tabs — no horizontal scroll indicator |
 | 26 | §E10-NF-F1 | **MEDIUM** | §E10.11 | CR/CD values use different decimal precision (`.toFixed(0)` vs `.toFixed(1)`) in different views |
 | 27 | §E10-NF-F2 | **MEDIUM** | §E10.11 | Stats tab primary numbers missing `.kuro-number` class |
 | 28 | §E10-NF-F3 | **POLISH** | §E10.11 | Goal progress percentage has no color coding or `.kuro-number` treatment |
-| 29 | §E10-RT-F1 | **LOW** | §E10.12 | Active players count updates with no transition animation |
+| 29 | §E10-RT-F1 ✅ | **LOW** | §E10.12 | Active players count updates with no transition animation |
 | 30 | §E10-RT-F2 | **POLISH** | §E10.12 | CountdownTimer "Ended" state has least dramatic visual for most dramatic event |
 | 31 | §E10-RT-F3 | **POLISH** | §E10.12 | Admin activity chart redraws without animation on new data |
 
@@ -9436,7 +9436,7 @@ ROOT CAUSE: No dedicated visual treatment for emotional peak moments
     │       │
     │       └──→ PROGRESS: Collecting all characters in an element has no acknowledgment
     │
-    ├──→ EMPTY→POPULATED: No first-data ceremony (§E10-EP-F2)
+    ├──→ EMPTY→POPULATED: No first-data ceremony (§E10-EP-F2 ✅)
     │       │
     │       └──→ ONBOARDING: Transition from "nothing" to "your data" is uncelebrated
     │
@@ -11085,16 +11085,16 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 |---|-----|------------|------|----------|
 | 89 | §E10-NV-F4 ✅ | Daily income under-weighted (`text-sm`, not `.kuro-number`) | PLANNER | Apply `.kuro-number text-base` to daily income display |
 | 90 | §E10-NV-F5 ✅ | Win Rate % at `text-xs` (smallest readable size for key metric) | STATS | Escalate to `text-sm font-bold kuro-number` |
-| 91 | §E10-HI-F2 | Stats tab lacks narrative header | STATS | Add "Your Convene Story" or summary sentence above stats overview |
-| 92 | §E10-CH-F2 | Histogram summary line at `text-[10px]` below bars | STATS | Move summary above histogram; increase to `text-xs` |
-| 93 | §E10-EP-F2 | No visual ceremony for first data population | ALL | Trigger brief entrance celebration when data first appears (gold pulse + stagger cards) |
-| 94 | §E10-ER-F2 | Rate limit error uses red "error" instead of gold "warning" | ALL | Change from `toast.addToast(msg, 'error')` to `toast.addToast(msg, 'warning')` |
-| 95 | §E10-ER-F3 | Tab-level and app-level error boundaries identical visual weight | ALL | Escalate app-level: add red border accent + app logo to distinguish from tab crash |
-| 96 | §E10-CB-F2 | Pity gradient lime/gold nearly identical in grayscale | STATS | Replace lime (#84cc16) with brighter green (#4ade80, ~190 luma) for wider grayscale gap |
-| 97 | §E10-CB-F3 | Six element colors have no icon/shape backup | ALL | Add element icons: Fusion=flame, Electro=bolt, Aero=wind, Glacio=snowflake, Havoc=spiral, Spectro=star |
-| 98 | §E10-DT-F2 | Pull Log scroll containers missing scroll affordance | STATS | Add `kuro-scroll` class + gradient edge-fade hint on scrollable containers |
-| 99 | §E10-RD-F2 | Planner projection grids squeeze on narrow viewports | PLANNER | Add responsive breakpoint: stack grid vertically below 400px viewport |
-| 100 | §E10-RT-F1 | Active players count updates with no transition animation | STATS | Add `transition: opacity 0.3s` fade-in/out when value changes |
+| 91 | §E10-HI-F2 ✅ | Stats tab lacks narrative header | STATS | Add "Your Convene Story" or summary sentence above stats overview |
+| 92 | §E10-CH-F2 ✅ | Histogram summary line at `text-[10px]` below bars | STATS | Move summary above histogram; increase to `text-xs` |
+| 93 | §E10-EP-F2 ✅ | No visual ceremony for first data population | ALL | Trigger brief entrance celebration when data first appears (gold pulse + stagger cards) |
+| 94 | §E10-ER-F2 ✅ | Rate limit error uses red "error" instead of gold "warning" | ALL | Change from `toast.addToast(msg, 'error')` to `toast.addToast(msg, 'warning')` |
+| 95 | §E10-ER-F3 ✅ | Tab-level and app-level error boundaries identical visual weight | ALL | Escalate app-level: add red border accent + app logo to distinguish from tab crash |
+| 96 | §E10-CB-F2 ✅ | Pity gradient lime/gold nearly identical in grayscale | STATS | Replace lime (#84cc16) with brighter green (#4ade80, ~190 luma) for wider grayscale gap |
+| 97 | §E10-CB-F3 ✅ | Six element colors have no icon/shape backup | ALL | Add element icons: Fusion=flame, Electro=bolt, Aero=wind, Glacio=snowflake, Havoc=spiral, Spectro=star |
+| 98 | §E10-DT-F2 ✅ | Pull Log scroll containers missing scroll affordance | STATS | Add `kuro-scroll` class + gradient edge-fade hint on scrollable containers |
+| 99 | §E10-RD-F2 ✅ | Planner projection grids squeeze on narrow viewports | PLANNER | Add responsive breakpoint: stack grid vertically below 400px viewport |
+| 100 | §E10-RT-F1 ✅ | Active players count updates with no transition animation | STATS | Add `transition: opacity 0.3s` fade-in/out when value changes |
 
 ---
 
@@ -11181,7 +11181,7 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 | E8-CI2 (missing apple-touch-icon) | MEDIUM | → merged with §E9-IC-F1 | Same root: missing icon variants |
 | §E10-NV-F5 ✅ (Win Rate at text-xs) | LOW | **POLISH** | Smallest text for important metric, but not decision-critical |
 | §E10-DD-F1 (collection grid tight) | LOW | **POLISH** | Appropriate for expert audience; no change needed |
-| §E10-CH-F2 (histogram custom HTML) | LOW | **POLISH** | Intentional — custom implementation is better than Recharts for this case |
+| §E10-CH-F2 ✅ (histogram custom HTML) | LOW | **POLISH** | Intentional — custom implementation is better than Recharts for this case |
 
 ### Gaps Found: 13
 

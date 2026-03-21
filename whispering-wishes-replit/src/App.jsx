@@ -1310,7 +1310,7 @@ function WhisperingWishesInner() {
     if (submittingRef.current) return; // prevent double-submit
     // P13-FIX: HIGH-2 — Rate limit leaderboard writes
     if (!checkFirebaseRateLimit('leaderboard-submit')) {
-      toast?.addToast?.('Please wait a few seconds before submitting again', 'error');
+      toast?.addToast?.('Please wait a few seconds before submitting again', 'warning'); /* §E10-ER-F2 */
       return;
     }
 
@@ -2353,7 +2353,7 @@ function WhisperingWishesInner() {
         const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
         const bucket=parseInt(lab)||0;
-        const bc=bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
+        const bc=bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
         // Semi-transparent gradient fill with outer glow (single fill, no stacking)
         ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;
         const barGrad=ctx.createLinearGradient(0,by2+bh,0,by2);
@@ -3996,6 +3996,11 @@ function WhisperingWishesInner() {
               </Card>
             ) : (
               <div className="space-y-3">
+                {/* §E10-HI-F2: Narrative header for Stats tab */}
+                <div className="text-center py-1">
+                  <h2 className="text-white font-semibold text-sm">Your Convene Story</h2>
+                  <p className="text-gray-400 text-[10px] mt-0.5">{overallStats.totalPulls.toLocaleString()} Convenes across {Object.keys(state.profile).filter(k => state.profile[k]?.history?.length > 0).length} banner types</p>
+                </div>
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
@@ -4385,7 +4390,7 @@ function WhisperingWishesInner() {
                   const getBarColor = (label) => {
                     const start = parseInt(label.split('-')[0], 10);
                     if (start <= 20) return '#22c55e'; // Green - very lucky
-                    if (start <= 40) return '#84cc16'; // Lime - lucky
+                    if (start <= 40) return '#4ade80'; // Lime - lucky
                     if (start <= 50) return '#edaf18'; // Yellow - average
                     if (start <= 60) return '#f97316'; // Orange - unlucky
                     return '#ef4444'; // Red - soft pity / hard pity
@@ -4486,7 +4491,7 @@ function WhisperingWishesInner() {
                             <span className="text-gray-400">1-20</span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#84cc16', boxShadow: '0 0 6px #84cc16' }}></span> 
+                            <span className="w-2 h-2 rounded-full" style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }}></span> 
                             <span className="text-gray-400">21-40</span>
                           </span>
                           <span className="flex items-center gap-1">
@@ -4670,11 +4675,11 @@ function WhisperingWishesInner() {
                       const fiveStars = statsTabData.pullLogFiveStars;
                       if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
                       return (
-                        <div className="space-y-1 max-h-60 overflow-y-auto">
+                        <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
                           {fiveStars.map((p, i) => {
                             // P2-FIX: Unified pity color thresholds — matches histogram
-                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#84cc16' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
-                            const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-lime-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
+                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#4ade80' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
+                            const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-green-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
                               <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
@@ -7132,12 +7137,16 @@ Example: {"pulls":[...]}'
                           <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Pity Distribution</span>
                         </div>
+                        {/* §E10-CH-F2: Summary moved above histogram, escalated to text-xs */}
+                        <div className="text-right mb-1.5">
+                          <span className="text-xs text-gray-400 kuro-number" style={{ fontFamily: 'var(--font-data)' }}>Lo {lo} · Avg {avg} · Hi {hi}</span>
+                        </div>
                         <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
                           {labs.map((lab, i) => {
                             const cnt = bk[lab]||0;
                             const height = mx > 0 ? (cnt / mx) * 100 : 0;
                             const bucket = parseInt(lab)||81;
-                            const color = bucket<=20?'#22c55e':bucket<=40?'#84cc16':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
+                            const color = bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
                             return (
                               <div key={i} className="flex-1 flex flex-col items-center">
                                 <div className="w-full relative" style={{ height: '96px' }}>
@@ -7166,9 +7175,7 @@ Example: {"pulls":[...]}'
                             <div key={i} className="flex-1 text-center" style={{ fontSize: '7px', color: '#6b7280' }}>{lab.split('-')[0]}</div>
                           ))}
                         </div>
-                        <div style={{ textAlign: 'right', marginTop: '4px' }}>
-                          <span style={{ fontSize: '8px', color: '#6b7280', fontFamily: 'var(--font-data)' }}>Lo {lo} | Avg {avg} | Hi {hi}</span>
-                        </div>
+                        {/* Summary moved above histogram per §E10-CH-F2 */}
                       </div>
                     );
                   })()}
@@ -7493,7 +7500,7 @@ Example: {"pulls":[...]}'
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
                           <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Live</span>
                         </div>
-                        <div className="text-5xl font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 20px rgba(52,211,153,0.4)' }}>
+                        <div className="text-5xl font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 20px rgba(52,211,153,0.4)', transition: 'opacity 0.3s ease' }}>
                           {activePlayersCount !== null ? activePlayersCount : '—'}
                         </div>
                         <div className="text-gray-400 text-xs mt-1">

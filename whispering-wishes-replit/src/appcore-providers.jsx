@@ -440,7 +440,9 @@ const KuroStyles = memo(({ oledMode }) => (
        Primary gold #edaf18 (OKLCH 78% 0.17 85°) — warmth, aspiration, gacha reward
        Navy void #080c14 (OKLCH 8% 0.02 260°) — depth, cosmic emptiness, high contrast
        Cyan accent #38bdf8 — cool complement for standard/info states
-       Purple accent #a855f7 — 4-star rarity + Electro element (dual semantic, see §E9-AC-F1) */
+       Purple accent #a855f7 — 4-star rarity + Electro element (dual semantic, see §E9-AC-F1)
+       §E10-CB-F3: Element icon/shape backup for colorblind accessibility:
+       Fusion=Flame, Electro=Bolt, Aero=Wind, Glacio=Snowflake, Havoc=Spiral, Spectro=Star */
     :root {
       --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
@@ -1597,11 +1599,32 @@ const KuroStyles = memo(({ oledMode }) => (
       background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
     }
 
+    /* §E10-RD-F2: Stack planner projection grids vertically on narrow viewports */
+    @media (max-width: 400px) {
+      .kuro-calc .grid.grid-cols-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* E6-AP4: Active press feedback for non-kuro buttons */
     .kuro-calc button:not(.kuro-btn):active {
       transform: scale(0.97);
       transition: transform 0.1s ease;
     }
+
+    /* §E10-EP-F2: Entrance celebration — staggered gold pulse for first data population */
+    @keyframes kuroEntrance {
+      0% { opacity: 0; transform: translateY(12px) scale(0.97); }
+      60% { opacity: 1; transform: translateY(-2px) scale(1.01); box-shadow: 0 0 16px rgba(237,175,24,0.12); }
+      100% { opacity: 1; transform: translateY(0) scale(1); box-shadow: none; }
+    }
+    .kuro-entrance > * {
+      animation: kuroEntrance 0.4s ease-out both;
+    }
+    .kuro-entrance > *:nth-child(2) { animation-delay: 0.08s; }
+    .kuro-entrance > *:nth-child(3) { animation-delay: 0.16s; }
+    .kuro-entrance > *:nth-child(4) { animation-delay: 0.24s; }
+    .kuro-entrance > *:nth-child(5) { animation-delay: 0.32s; }
 
     /* E8-CO1: Gold shimmer on import success card */
     @keyframes importCelebrate {
