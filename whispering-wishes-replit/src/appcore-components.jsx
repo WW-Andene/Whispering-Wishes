@@ -1595,10 +1595,11 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
                   backdropFilter: 'blur(2px) brightness(0.6)',
                   WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
                   color: active ? '#edaf18' : undefined,
+                  paddingLeft: active ? '16px' : undefined,
                   boxShadow: active ? '0 0 12px rgba(237,175,24,0.15)' : undefined,
                 }}
               >
-                {active && <span className="absolute left-0 top-[15%] bottom-[15%] w-[3px]" style={{ background: 'linear-gradient(180deg, rgba(237,175,24,0.6), #edaf18, rgba(237,175,24,0.6))', boxShadow: '0 0 8px rgba(237,175,24,0.5)' }} />}
+                {active && <span className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ background: 'linear-gradient(180deg, rgba(237,175,24,0.6), #edaf18, rgba(237,175,24,0.6))', boxShadow: '0 0 8px rgba(237,175,24,0.5)' }} />}
                 {opt.label}
               </button>
             );
