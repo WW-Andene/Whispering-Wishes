@@ -714,6 +714,10 @@ function WhisperingWishesInner() {
         if (data.role === 'Sub DPS') tags.push('sub', 'off-field', 'coordinated');
         // Desc keywords
         if (data.desc) tags.push(data.desc.toLowerCase());
+        // Damage focus tags
+        if (data.damageFocus) data.damageFocus.forEach(d => tags.push(d.toLowerCase()));
+        // Stat scaling
+        if (data.statScaling) tags.push(data.statScaling.toLowerCase(), data.statScaling.toLowerCase() + ' scaling');
         // Buff-related tags from CHAR_BUFF_TABLE
         const buffs = CHAR_BUFF_TABLE[name];
         if (buffs) {
@@ -752,38 +756,26 @@ function WhisperingWishesInner() {
     return tags.join(' ');
   }, []);
 
-  // Damage type mapping for characters
+  // Damage type matching for characters using damageFocus field
   const charMatchesDamage = useCallback((name, damageType) => {
     const data = CHARACTER_DATA[name];
-    if (!data) return true;
-    const desc = (data.desc || '').toLowerCase();
-    const buffs = CHAR_BUFF_TABLE[name];
-    const allBuffStats = buffs ? [...(buffs.outroBuffs || []), ...(buffs.libBuffs || []), ...(buffs.selfBuffs || [])].map(b => b.stat) : [];
-    switch (damageType) {
-      case 'Basic ATK': return desc.includes('basic') || allBuffStats.includes('basicDmg');
-      case 'Heavy ATK': return desc.includes('heavy') || desc.includes('charged') || allBuffStats.includes('heavyDmg');
-      case 'Skill': return allBuffStats.includes('skillDmg') || desc.includes('resonance skill');
-      case 'Liberation': return desc.includes('burst') || desc.includes('liberation') || desc.includes('incarnation') || allBuffStats.includes('libDmg');
-      case 'Echo': return allBuffStats.includes('echoDmg') || desc.includes('echo');
-      case 'Coordinated': return desc.includes('coordinated') || allBuffStats.includes('coordDmg') || desc.includes('off-field');
-      default: return true;
-    }
+    if (!data || !data.damageFocus) return false;
+    const mapping = {
+      'Basic ATK': 'Basic ATK',
+      'Heavy ATK': 'Heavy ATK',
+      'Skill': 'Skill',
+      'Liberation': 'Liberation',
+      'Echo': 'Echo',
+      'Coordinated': 'Coordinated ATK',
+    };
+    return data.damageFocus.includes(mapping[damageType] || damageType);
   }, []);
 
-  // Stat matching for characters (HP/DEF/ATK scaling) and weapons (sub stat)
+  // Stat matching for characters using statScaling field, and weapons using sub stat
   const charMatchesStat = useCallback((name, statType) => {
     const data = CHARACTER_DATA[name];
-    if (!data) return true;
-    const desc = (data.desc || '').toLowerCase();
-    switch (statType) {
-      case 'ATK': return !desc.includes('hp-scaling') && !desc.includes('def-scaling');
-      case 'HP': return desc.includes('hp') || desc.includes('health');
-      case 'DEF': return desc.includes('def') || desc.includes('defense');
-      case 'Crit Rate': return false; // characters don't have main stat crit
-      case 'Crit DMG': return false;
-      case 'Energy Regen': return desc.includes('energy') || desc.includes('battery');
-      default: return true;
-    }
+    if (!data || !data.statScaling) return false;
+    return data.statScaling === statType;
   }, []);
 
   // Filter function for collection items

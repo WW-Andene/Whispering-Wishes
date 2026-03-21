@@ -355,7 +355,7 @@ const CHARACTER_DATA = {
     bestEchoes: ['Dragon of Dirge', 'Tidebreaking Courage 5pc'], bestWeapon: 'Unflickering Valor',
     teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
   'Cantarella': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Head of the Fisalia family. Havoc sub-DPS with coordinated attacks and healing.',
+    desc: 'Head of the Fisalia family. Havoc sub-DPS with Coordinated ATK and healing.',
     skills: ['Shadow Strike', 'Venomous Dart', 'Lethal Masquerade', 'Twilight Veil'],
     ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Helix' },
@@ -531,14 +531,14 @@ const CHARACTER_DATA = {
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Marcato',
     teams: ['Youhu + Carlotta + Zhezhi', 'Youhu + Lingyang + Sanhua'] },
   'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
-    desc: 'Lollo Logistics navigator. Electro sub-DPS with Res. Skill DMG Amp via Outro.',
+    desc: 'Lollo Logistics navigator. Electro sub-DPS with Resonance Skill DMG Amp via Outro.',
     skills: ['Electro Slash', 'Thundering Voyage', 'Storm Navigator', 'Arc Discharge'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Howler Core', specialty: 'Terraspawn Fungus' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Discord',
     teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Jinhsi + Verina'] },
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Taoist of Mengzhou. Black Shores Consultant, feng shui master. Universal support with Electro Flare and Res. Skill DMG buff.',
+    desc: 'Taoist of Mengzhou. Black Shores Consultant, feng shui master. Universal support with Electro Flare and Resonance Skill DMG buff.',
     skills: ['Trigram Attacks', 'Thundershock Wave', 'Flashing Thunder Seal', 'Yin-Yang Balance'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Helix' },
@@ -548,15 +548,15 @@ const CHARACTER_DATA = {
 
 // Structured combat data — derived from desc fields. Merged into CHARACTER_DATA.
 // Format: [name, dmgFocus[], buffs[], debuffs[]]
-// dmgFocus: Normal ATK, Heavy ATK, Res. Skill, Liberation, Echo Skill, Coordinated ATK
+// dmgFocus: Basic ATK, Heavy ATK, Res. Skill, Liberation, Echo Skill, Coordinated ATK
 [
   // 5★
   ['Rover',         ['Res. Skill', 'Liberation'],    [],                                      []],
   ['Jiyan',         ['Heavy ATK'],                   [],                                      []],
   ['Calcharo',      ['Liberation'],                  [],                                      []],
-  ['Encore',        ['Normal ATK'],                  [],                                      []],
+  ['Encore',        ['Basic ATK'],                  [],                                      []],
   ['Jianxin',       [],                              ['Shield', 'Grouping', 'Aero Buff'],     []],
-  ['Lingyang',      ['Normal ATK'],                  [],                                      []],
+  ['Lingyang',      ['Basic ATK'],                  [],                                      []],
   ['Verina',        [],                              ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
   ['Yinlin',        ['Coordinated ATK', 'Res. Skill'], ['Coordinated ATK'],                   []],
   ['Jinhsi',        ['Res. Skill'],                  [],                                      []],
@@ -564,15 +564,15 @@ const CHARACTER_DATA = {
   ['Zhezhi',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
   ['Xiangli Yao',   ['Liberation'],                  [],                                      []],
   ['Shorekeeper',   [],                              ['Crit Buff', 'Heal'],                   []],
-  ['Camellya',      ['Normal ATK'],                  [],                                      []],
+  ['Camellya',      ['Basic ATK'],                  [],                                      []],
   ['Carlotta',      ['Res. Skill'],                  [],                                      []],
   ['Roccia',        [],                              ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Res. Skill'],                  [],                                      ['Frazzle']],
-  ['Brant',         ['Normal ATK'],                   ['Self-heal'],                           []],
+  ['Brant',         ['Basic ATK'],                   ['Self-heal'],                           []],
   ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
   ['Zani',          ['Res. Skill', 'Heavy ATK'],     [],                                      ['Frazzle']],
   ['Ciaccona',      [],                              ['Aero Buff'],                           ['Erosion']],
-  ['Cartethyia',    ['Normal ATK'],                   [],                                      ['Erosion']],
+  ['Cartethyia',    ['Basic ATK'],                   [],                                      ['Erosion']],
   ['Lupa',          ['Liberation'],                  ['DMG Buff'],                            ['Fusion RES Shred']],
   ['Phrolova',      ['Echo Skill'],                  [],                                      []],
   ['Augusta',       ['Heavy ATK'],                   ['Shield'],                              []],
@@ -582,7 +582,7 @@ const CHARACTER_DATA = {
   ['Chisa',         [],                              [],                                      ['DEF Shred']],
   ['Lynae',         [],                              ['Tune Break DMG Buff'],                 ['Off-Tune']],
   ['Mornye',        [],                              ['Heal'],                                ['Off-Tune']],
-  ['Luuk Herssen',  ['Normal ATK'],                  [],                                      []],
+  ['Luuk Herssen',  ['Basic ATK'],                  [],                                      []],
   ['Aemeath',       ['Res. Skill', 'Liberation'],    [],                                      ['Fusion Burst']],
   // 4★
   ['Aalto',         [],                              [],                                      []],
@@ -668,11 +668,11 @@ const CHARACTER_DATA = {
   ['Xiangli Yao',   2900, 25, 17],  // Mech form Liberation
   ['Camellya',      3100, 26, 19],  // Budding + Blossom full rotation
   ['Carlotta',      3400, 23, 14],  // Burst gunslinger, fast rotation
-  ['Brant',         2700, 24, 17],  // Normal ATK chains + self-heal
+  ['Brant',         2700, 24, 17],  // Basic ATK chains + self-heal
   ['Cartethyia',    2500, 25, 16],  // HP scaling + Erosion
   ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
-  ['Luuk Herssen',  2400, 23, 16],  // Normal ATK chains
+  ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
   // 5★ Sub DPS — moderate totalMult, short onField
   ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
@@ -710,6 +710,62 @@ const CHARACTER_DATA = {
   ['Buling',        600,  25, 4],
 ].forEach(([name, totalMult, rotTime, onField]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { totalMult, rotTime, onField });
+});
+
+// [SECTION:CHAR_TAGS] — Per-character damage focus + stat scaling for filtering
+// damageFocus: primary damage types the character focuses on
+// statScaling: which stat the character scales from (ATK default, HP, DEF)
+[
+  // 5★ Main DPS
+  ['Jiyan',          ['Heavy ATK', 'Liberation'],  'ATK'],
+  ['Calcharo',       ['Liberation', 'Basic ATK'],  'ATK'],
+  ['Encore',         ['Basic ATK', 'Skill'],       'ATK'],
+  ['Lingyang',       ['Basic ATK'],                 'ATK'],
+  ['Jinhsi',         ['Skill', 'Liberation'],       'ATK'],
+  ['Xiangli Yao',    ['Skill', 'Liberation'],       'ATK'],
+  ['Camellya',       ['Basic ATK', 'Skill'],        'ATK'],
+  ['Carlotta',       ['Skill', 'Liberation'],       'ATK'],
+  ['Brant',          ['Basic ATK', 'Skill'],        'ATK'],
+  ['Zani',           ['Skill', 'Heavy ATK'],        'ATK'],
+  ['Cartethyia',     ['Basic ATK'],                 'HP'],
+  ['Phrolova',       ['Echo', 'Skill'],             'ATK'],
+  ['Augusta',        ['Heavy ATK', 'Liberation'],   'ATK'],
+  ['Galbrena',       ['Echo', 'Heavy ATK'],         'ATK'],
+  ['Luuk Herssen',   ['Basic ATK'],                 'ATK'],
+  ['Aemeath',        ['Liberation', 'Skill'],       'ATK'],
+  ['Chixia',         ['Skill', 'Basic ATK'],        'ATK'],
+  // 5★ Sub DPS
+  ['Rover',          ['Skill', 'Liberation'],       'ATK'],
+  ['Yinlin',         ['Coordinated ATK', 'Skill'],  'ATK'],
+  ['Changli',        ['Skill'],                     'ATK'],
+  ['Zhezhi',         ['Coordinated ATK', 'Skill'],  'ATK'],
+  ['Roccia',         ['Basic ATK'],                 'ATK'],
+  ['Phoebe',         ['Skill'],                     'ATK'],
+  ['Cantarella',     ['Coordinated ATK'],           'ATK'],
+  ['Ciaccona',       ['Coordinated ATK', 'Skill'],  'ATK'],
+  ['Lupa',           ['Liberation', 'Skill'],       'ATK'],
+  ['Iuno',           ['Heavy ATK'],                 'ATK'],
+  ['Qiuyuan',        ['Echo'],                      'ATK'],
+  ['Chisa',          ['Skill'],                     'ATK'],
+  ['Lynae',          ['Liberation', 'Skill'],       'ATK'],
+  ['Danjin',         ['Basic ATK', 'Heavy ATK'],    'ATK'],
+  ['Mortefi',        ['Heavy ATK', 'Coordinated ATK'], 'ATK'],
+  ['Sanhua',         ['Basic ATK'],                 'ATK'],
+  ['Aalto',          ['Coordinated ATK'],           'ATK'],
+  ['Lumi',           ['Skill'],                     'ATK'],
+  ['Yangyang',       ['Skill'],                     'ATK'],
+  // 5★ Support / Healer
+  ['Verina',         ['Liberation'],                'ATK'],
+  ['Shorekeeper',    ['Liberation'],                'HP'],
+  ['Jianxin',        ['Skill'],                     'ATK'],
+  ['Mornye',         ['Liberation'],                'DEF'],
+  ['Baizhi',         ['Skill'],                     'HP'],
+  ['Taoqi',          ['Skill'],                     'DEF'],
+  ['Yuanwu',         ['Coordinated ATK'],           'ATK'],
+  ['Youhu',          ['Coordinated ATK'],           'HP'],
+  ['Buling',         ['Skill'],                     'ATK'],
+].forEach(([name, damageFocus, statScaling]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { damageFocus, statScaling });
 });
 
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
@@ -957,6 +1013,34 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 15% Deepen. Heal. Res. Skill buff.',
   },
+  'Aalto': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Aero DMG +12%' }],
+    debuffs: [],
+    note: 'Off-field Aero applicator. Mist clone Coordinated ATK.',
+  },
+  'Chixia': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 15, target: 'self', duration: 10, condition: 'Inherent: ATK buff after Resonance Skill' }],
+    debuffs: [],
+    note: 'Fusion DPS. Resonance Skill burst. Whizzing Fight Spirit sustained fire.',
+  },
+  'Lumi': {
+    outroBuffs: [{ stat: 'skillDmg', value: 38, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 38% Resonance Skill DMG Amp to next. Electro sub-DPS.',
+  },
+  'Youhu': {
+    outroBuffs: [],
+    libBuffs: [{ stat: 'atkPct', value: 12, target: 'team', duration: 15 }],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Glacio healer. Coordinated ATK Amp. Lib: 12% ATK teamwide.',
+  },
   // ── 5★ Main DPS missing from initial table ──
   'Aemeath': {
     outroBuffs: [],
@@ -989,14 +1073,14 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Cosmos Rampage mode Normal ATK DPS.',
+    note: 'Cosmos Rampage mode Basic ATK DPS.',
   },
   'Lingyang': {
     outroBuffs: [],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Lion Form aerial Normal ATK DPS.',
+    note: 'Lion Form aerial Basic ATK DPS.',
   },
   'Cartethyia': {
     outroBuffs: [],
@@ -1010,7 +1094,7 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Fusion DMG +12%' }],
     debuffs: [],
-    note: 'Fusion Normal ATK DPS. Self-heal. ATK speed +10% from weapon.',
+    note: 'Fusion Basic ATK DPS. Self-heal. ATK speed +10% from weapon.',
   },
   'Augusta': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
