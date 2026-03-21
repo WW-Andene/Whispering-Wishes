@@ -761,7 +761,8 @@ function WhisperingWishesInner() {
   // Damage type matching for characters using damageFocus field
   const charMatchesDamage = useCallback((name, damageType) => {
     const data = CHARACTER_DATA[name];
-    if (!data || !data.damageFocus) return false;
+    const focus = data?.dmgFocus;
+    if (!focus) return false;
     const mapping = {
       'Basic ATK': 'Basic ATK',
       'Heavy ATK': 'Heavy ATK',
@@ -770,7 +771,7 @@ function WhisperingWishesInner() {
       'Echo': 'Echo',
       'Coordinated': 'Coordinated ATK',
     };
-    return data.damageFocus.includes(mapping[damageType] || damageType);
+    return focus.includes(mapping[damageType] || damageType);
   }, []);
 
   // Stat matching for characters using statScaling field, and weapons using sub stat
@@ -5071,6 +5072,7 @@ function WhisperingWishesInner() {
                           { value: 'weapon', label: 'Weapon' },
                         ]}
                         ariaLabel="Filter by category"
+                        className="min-w-[90px]"
                       />
 
                       {/* Type Filter */}
