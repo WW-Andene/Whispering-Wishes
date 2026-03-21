@@ -5111,7 +5111,7 @@ For a community fan tool, the distribution channels are:
 |----------|----------|---------|
 | Tracker ↔ Stats | **High** — both use kuro-cards, gold accent, PityRing/luck badge as hero elements | Same design system, same data-hero pattern |
 | Events ↔ Calculator | **High** — both use Card components with CardHeader/CardBody | Same card structure, same font system |
-| Collection ↔ Profile | **Moderate** — Collection uses inline progress box (§E7-BC1) while Profile uses proper Card. Both use filter/settings UI but with different component levels | Recognizable as same app, but Collection feels slightly "less kuro-*" |
+| Collection ↔ Profile | **Moderate** — Collection uses inline progress box (§E7-BC1 ✅) while Profile uses proper Card. Both use filter/settings UI but with different component levels | Recognizable as same app, but Collection feels slightly "less kuro-*" |
 | Calculator ↔ Tracker | **Moderate-High** — Calculator is the most input-dense tab, Tracker is the most display-focused. Different UI density but same font, color, and card system | Functional contrast, visual coherence maintained |
 | Teams ↔ any other tab | **Moderate** — Teams is the simplest tab with limited content | Less atmospheric investment, but uses same card system |
 | Any tab ↔ Modal overlays | **High** — modals use kuro-card, glassmorphic overlay, gold accents | Consistent modal system across all contexts |
@@ -11043,7 +11043,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 67 | E7-AD4 ✅ | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
 | 68 | E7-AD6 ✅ | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
 | 69 | E7-AD7 ✅ | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
-| 70 | E7-BC1 | Collection summary bypasses kuro-card system | COLLECTION | Wrap Collection Progress in `<Card>` component to gain shimmer line + corner decorations |
+| 70 | E7-BC1 ✅ | Collection summary bypasses kuro-card system | COLLECTION | Wrap Collection Progress in `<Card>` component to gain shimmer line + corner decorations |
 | 71 | E7-FI2 | Subtitle gray dilutes first impression | HEADER | Change subtitle from `text-gray-400` to muted gold: `text-yellow-400/50` |
 | 72 | E7-SQ2 | Calculator lacks visual hero moment | CALC | Add gold-accented result card with larger probability display + subtle glow |
 | 73 | E7-VN2 | Stacked text shadows reduce clarity | TRACKER, COLLECTION | Reduce to single `text-shadow` per element (remove outer shadow) |
