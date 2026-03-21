@@ -1214,6 +1214,47 @@ const ECHO_SETS = {
   'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
 };
 
+// [SECTION:ECHO_LISTS] — All echoes grouped by cost tier
+const ALL_4COST_ECHOES = [
+  'Mourning Aix', 'Feilian Beringal', 'Tempest Mephis', 'Thundering Mephis',
+  'Inferno Rider', 'Bell-Borne Geochelone', 'Impermanence Heron',
+  'Lampylumen Myriad', 'Mech Abomination', 'Crownless',
+  'Sentinel Jué', 'Fallacy of No Return', 'Sentry Construct',
+  'Nightmare: Impermanence Heron', 'Nightmare: Lampylumen Myriad',
+  'Dragon of Dirge', 'Nightmare: Hecate', 'Capitaneus',
+  'Reminiscence: Fleurdelys', 'Lioness of Glory', 'The False Sovereign',
+  'Lady of the Sea', 'Corrosaurus', 'Threnodian: Leviathan',
+  'Hyvatia', 'Twin Nova: Nebulous Cannon', 'Sigillum',
+];
+
+const ALL_3COST_ECHOES = [
+  'Havoc Dreadmane', 'Lumiscale Construct', 'Tambourinist',
+  'Spearback', 'Carapace', 'Roseshroom',
+  'Violet-Feathered Heron', 'Cyan-Feathered Heron',
+  'Flautist', 'Hoochief', 'Stonewall Bracer',
+  'Autopuppet Scout', 'Mist Avatar', 'Viridblaze Saurian',
+  'Lava Larva', 'Glacio Dreadmane', 'Fusion Dreadmane',
+  'Electro Predator', 'Havoc Warrior', 'Spectro Prism',
+  'Chasm Guardian', 'Abyssal Mercenary', 'Dreamless',
+  'Nightmare: Crownless', 'Mourning Proxy', 'Nightmare: Mourning Aix',
+  'Nightmare: Feilian Beringal', 'Nightmare: Inferno Rider',
+  'Nightmare: Tempest Mephis', 'Nightmare: Thundering Mephis',
+  'Nightmare: Jué', 'Nightmare: Fallacy of No Return',
+  'Loong Cub', 'Gulpuff Guardian', 'Ice-Fire Duet',
+];
+
+const ALL_1COST_ECHOES = [
+  'Whiff Whaff', 'Cruisewing', 'Chirpuff',
+  'Fusion Warrior', 'Glacio Warrior', 'Aero Warrior',
+  'Electro Warrior', 'Havoc Warrior', 'Spectro Warrior',
+  'Snip Snap', 'Zig Zag', 'Hooscamp',
+  'Fusion Prism', 'Glacio Prism', 'Aero Prism',
+  'Electro Prism', 'Havoc Prism', 'Spectro Prism',
+  'Baby Viridblaze Saurian', 'Young Roseshroom', 'Clang Bang',
+  'Dwarf Cassowary', 'Excarat', 'Lottie',
+  'Chest Mimic', 'Tidal Clam', 'Bell-Borne Cub',
+];
+
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
   // 5★ Weapons
@@ -2245,6 +2286,7 @@ export {
   DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER, WEAPON_RELEASE_ORDER,
   ALL_5STAR_RESONATORS, ALL_5STAR_WEAPONS,
   ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
+  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES,
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,

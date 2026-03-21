@@ -98,6 +98,9 @@ import {
   ALL_3STAR_WEAPONS,
   ALL_2STAR_WEAPONS,
   ALL_1STAR_WEAPONS,
+  ALL_4COST_ECHOES,
+  ALL_3COST_ECHOES,
+  ALL_1COST_ECHOES,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
   STANDARD_5STAR_WEAPONS,
@@ -5210,15 +5213,73 @@ function WhisperingWishesInner() {
                   </div>
                 </div>
 
-                {collectionView === 'echoes' && (
-                  <Card>
-                    <CardBody className="text-center py-8">
-                      <Sparkles size={32} className="mx-auto mb-2 text-gray-500" />
-                      <p className="text-gray-400 text-sm">Echoes coming soon</p>
-                      <p className="text-gray-500 text-xs mt-1">Echo collection tracking is in development</p>
-                    </CardBody>
-                  </Card>
-                )}
+                {collectionView === 'echoes' && (<>
+                {/* 4-Cost Echoes */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-yellow-400">4</span> Cost Echoes
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={(collectionSearch ? ALL_4COST_ECHOES.filter(n => n.toLowerCase().includes(collectionSearch.toLowerCase())) : ALL_4COST_ECHOES).map(name => [name, 0])}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
+                      countColor="text-yellow-400" countPrefix="" totalCount={ALL_4COST_ECHOES.length}
+                      hasActiveFilters={!!collectionSearch} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={() => {}}
+                      dataLookup={{}} dataType="echo" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 3-Cost Echoes */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-purple-400">3</span> Cost Echoes
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={(collectionSearch ? ALL_3COST_ECHOES.filter(n => n.toLowerCase().includes(collectionSearch.toLowerCase())) : ALL_3COST_ECHOES).map(name => [name, 0])}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
+                      countColor="text-purple-400" countPrefix="" totalCount={ALL_3COST_ECHOES.length}
+                      hasActiveFilters={!!collectionSearch} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={() => {}}
+                      dataLookup={{}} dataType="echo" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 1-Cost Echoes */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-cyan-400">1</span> Cost Echoes
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={(collectionSearch ? ALL_1COST_ECHOES.filter(n => n.toLowerCase().includes(collectionSearch.toLowerCase())) : ALL_1COST_ECHOES).map(name => [name, 0])}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="" ownedBg="bg-cyan-500/10" ownedBorder="border-cyan-500/30"
+                      countColor="text-cyan-400" countPrefix="" totalCount={ALL_1COST_ECHOES.length}
+                      hasActiveFilters={!!collectionSearch} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={() => {}}
+                      dataLookup={{}} dataType="echo" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+                </>)}
 
                 {collectionView === 'items' && (<>
                 {/* 5★ Resonators */}
