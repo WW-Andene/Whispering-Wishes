@@ -5016,6 +5016,7 @@ function WhisperingWishesInner() {
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
                     />
                   </CardBody>
                 </Card>
@@ -5037,6 +5038,7 @@ function WhisperingWishesInner() {
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
                     />
                   </CardBody>
                 </Card>
@@ -5058,6 +5060,7 @@ function WhisperingWishesInner() {
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
                     />
                   </CardBody>
                 </Card>
@@ -5079,6 +5082,7 @@ function WhisperingWishesInner() {
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
                     />
                   </CardBody>
                 </Card>
@@ -5100,6 +5104,7 @@ function WhisperingWishesInner() {
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
                       dataLookup={{}} dataType="weapon" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
                     />
                   </CardBody>
                 </Card>
@@ -6696,13 +6701,13 @@ function WhisperingWishesInner() {
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-[10px] text-center">OFF — All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-[10px] text-center">ON — Background effects, transitions & glow</p>
+                  <p className="text-purple-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-[10px] text-center">FULL — 2× animation intensity</p>
+                  <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity</p>
                 )}
 
                 {/* Install App on Device */}

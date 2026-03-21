@@ -169,14 +169,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 
-  const focusTrapRef = useFocusTrap(true);
-  useEscapeKey(true, onClose);
-  // Prevent body scroll while modal is open
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = originalOverflow; };
-  }, []);
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
   const weaponData = bestWeapon ? WEAPON_DATA[bestWeapon] : null;
@@ -186,21 +178,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
   
   return (
-    <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${name} character details`}
-      ref={focusTrapRef}
-    >
-      <div 
-        className={`relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border ${colors.border}`}
-        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'scaleIn 0.3s ease-out' }}
+    <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/80" onClick={onClose} ariaLabel={`${name} character details`}>
+      <div
+        className={`relative w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
+        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
         onClick={e => e.stopPropagation()}
       >
+        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
         {/* Header with image */}
-        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }}>
+        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
@@ -475,7 +461,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           </div>
         </div>
       </div>
-    </div>
+    </FocusTrapModal>
   );
 };
 
@@ -491,32 +477,18 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   const data = WEAPON_DATA[name];
   if (!data) return null;
 
-  const focusTrapRef = useFocusTrap(true);
-  useEscapeKey(true, onClose);
-  // Prevent body scroll while modal is open
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = originalOverflow; };
-  }, []);
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
-  
+
   return (
-    <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${name} weapon details`}
-      ref={focusTrapRef}
-    >
-      <div 
-        className={`relative w-full max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border ${colors.border}`}
-        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'scaleIn 0.3s ease-out' }}
+    <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/80" onClick={onClose} ariaLabel={`${name} weapon details`}>
+      <div
+        className={`relative w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
+        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
         onClick={e => e.stopPropagation()}
       >
+        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
         {/* Header */}
-        <div className="relative h-40 overflow-hidden rounded-t-2xl">
+        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
@@ -595,7 +567,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           </div>
         </div>
       </div>
-    </div>
+    </FocusTrapModal>
   );
 };
 
@@ -1551,7 +1523,8 @@ const VISUAL_SLIDER_CONFIGS = [
 ];
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, collapsible = false }) => {
+  const [expanded, setExpanded] = useState(true);
   if (items.length === 0) return (
     <div className="kuro-empty-state relative py-3">
       {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
@@ -1564,11 +1537,16 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
     </div>
   );
   const ownedCount = items.filter(([_, c]) => c > 0).length;
+  // When collapsed, show 3 rows worth of items (3 cols on mobile = 9 items)
+  const COLLAPSED_ROWS = 3;
+  const collapsedCount = COLLAPSED_ROWS * 3; // 3 cols on mobile
+  const showItems = collapsible && !expanded ? items.slice(0, collapsedCount) : items;
+  const canCollapse = collapsible && items.length > collapsedCount;
   return (
     <>
       <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{items.length} shown{hasActiveFilters ? ` (${totalCount} total)` : ''}</div>
       <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
-        {items.map(([name, count]) => {
+        {showItems.map(([name, count]) => {
           const imgUrl = collectionImages[name];
           const imageKey = `collection-${name}`;
           const isNew = isCharacter
@@ -1591,6 +1569,15 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
           );
         })}
       </div>
+      {canCollapse && (
+        <button
+          onClick={() => setExpanded(prev => !prev)}
+          className="w-full mt-2 py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-[10px] font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1"
+          style={{ background: 'var(--bg-btn)' }}
+        >
+          {expanded ? 'Show Less' : `Show All (${items.length})`}
+        </button>
+      )}
     </>
   );
 });
@@ -1662,7 +1649,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
         </div>
       )}
       {/* AUDIT-FIX M33: Accurate method label — DP is exact for ≤500 pulls, MC simulation for larger values */}
-      <p className="text-[10px] text-gray-400 text-center">Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
+      <p className="text-[10px] text-gray-400 text-center mx-auto" style={{maxWidth: 'none'}}>Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
     </CardBody>
   </Card>
 ));
