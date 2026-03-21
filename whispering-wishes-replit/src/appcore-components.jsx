@@ -949,8 +949,6 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
       bw = Math.ceil(w * BLUR_SCALE);
       bh = Math.ceil(h * BLUR_SCALE);
       buf.width = bw;
@@ -1052,8 +1050,6 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
       cols = Math.ceil(w / HALF) + 4;
       rows = Math.ceil(h / TH) + 4;
       seeds = new Float32Array(cols * rows);
