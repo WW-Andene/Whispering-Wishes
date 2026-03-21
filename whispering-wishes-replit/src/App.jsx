@@ -3404,7 +3404,7 @@ function WhisperingWishesInner() {
 
             {/* Banner History Modal */}
             <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)} centered>
-              <div className="w-full max-w-md rounded-2xl overflow-hidden max-h-[90vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={e => e.stopPropagation()}>
+              <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
@@ -3454,7 +3454,7 @@ function WhisperingWishesInner() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div></div>
             </FocusTrapModal>
           </div>
           </TabErrorBoundary>
