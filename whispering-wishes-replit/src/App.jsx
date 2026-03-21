@@ -726,7 +726,7 @@ function WhisperingWishesInner() {
           const allBuffs = [...(buffs.outroBuffs || []), ...(buffs.libBuffs || []), ...(buffs.selfBuffs || [])];
           allBuffs.forEach(b => {
             if (b.stat) tags.push(b.stat.toLowerCase());
-            if (b.stat === 'basicDmg') tags.push('basic atk', 'normal atk', 'basic attack');
+            if (b.stat === 'basicDmg') tags.push('basic atk', 'basic attack');
             if (b.stat === 'heavyDmg') tags.push('heavy atk', 'heavy attack', 'charged');
             if (b.stat === 'libDmg') tags.push('liberation');
             if (b.stat === 'echoDmg') tags.push('echo');
@@ -5732,13 +5732,13 @@ function WhisperingWishesInner() {
 
                       // Map DPS's dmgFocus to the right skill DMG bonus
                       const focus = mainDps.d.dmgFocus || [];
-                      if (focus.includes('Normal ATK') || focus.includes('Basic ATK')) skillDmg += basicDmg;
+                      if (focus.includes('Basic ATK')) skillDmg += basicDmg;
                       else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5; // partial benefit
                       if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
                       else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
                       if (focus.includes('Liberation')) skillDmg += libDmg;
                       else if (libDmg > 0) skillDmg += libDmg * 0.3; // partial — some rotation damage is Lib
-                      if (focus.includes('Echo Skill')) skillDmg += echoDmg;
+                      if (focus.includes('Echo')) skillDmg += echoDmg;
 
                       // Support echo set contributions
                       mems.forEach(m => {
@@ -6544,11 +6544,11 @@ function WhisperingWishesInner() {
                               onChange={setTeamDmgFilter}
                               options={[
                                 { value: 'all', label: 'Dmg Focus' },
-                                { value: 'Normal ATK', label: 'Normal ATK' },
+                                { value: 'Basic ATK', label: 'Basic ATK' },
                                 { value: 'Heavy ATK', label: 'Heavy ATK' },
-                                { value: 'Res. Skill', label: 'Res. Skill' },
+                                { value: 'Skill', label: 'Skill' },
                                 { value: 'Liberation', label: 'Liberation' },
-                                { value: 'Echo Skill', label: 'Echo Skill' },
+                                { value: 'Echo', label: 'Echo' },
                                 { value: 'Coordinated ATK', label: 'Coordinated ATK' },
                               ]}
                               ariaLabel="Filter by damage focus"
