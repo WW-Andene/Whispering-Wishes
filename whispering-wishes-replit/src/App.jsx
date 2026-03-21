@@ -593,6 +593,7 @@ function WhisperingWishesInner() {
     'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
     'collection-Qiuyuan': { x: -6, y: -26, zoom: 210 },
     'collection-Lynae': { x: -12, y: -26, zoom: 190 },
+    'collection-Sigrika': { x: 0, y: -20, zoom: 210 },
     'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
     // 4★ Resonators
     'collection-Aalto': { x: 4, y: -24, zoom: 210 },
@@ -613,6 +614,7 @@ function WhisperingWishesInner() {
     'info-Calcharo': { x: -24, y: -68, zoom: 250 },
     'info-Aemeath': { x: -26, y: -60, zoom: 230 },
     'info-Lynae': { x: -14, y: -62, zoom: 210 },
+    'info-Sigrika': { x: -10, y: -54, zoom: 210 },
     'info-Chisa': { x: -30, y: -66, zoom: 230 },
     'info-Iuno': { x: -18, y: -56, zoom: 190 },
     'info-Augusta': { x: -12, y: -64, zoom: 250 },
@@ -1899,6 +1901,7 @@ function WhisperingWishesInner() {
       'Mornye': { name: 'Rhythm of Regret', desc: 'S6 Mornye — the beat dropped and so did your balance', color: '#f97316' },
       'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#edaf18' },
       'Aemeath': { name: 'Rode Into Bankruptcy', desc: 'S6 Aemeath — the Exostrider ran over your finances', color: '#f97316' },
+      'Sigrika': { name: 'Rune Bankruptcy', desc: 'S6 Sigrika — deciphered every rune except your bank statement', color: '#22c55e' },
     };
     
     // Check each character for S6
@@ -2093,6 +2096,7 @@ function WhisperingWishesInner() {
       ['Augusta', 'Thunderflare Dominion'], ['Iuno', "Moongazer's Sigil"], ['Galbrena', 'Lux & Umbra'],
       ['Qiuyuan', 'Emerald Sentence'], ['Chisa', 'Kumokiri'], ['Lynae', 'Spectrum Blaster'],
       ['Mornye', 'Starfield Calibrator'], ['Luuk Herssen', 'Everbright Polestar'], ['Aemeath', "Daybreaker's Spine"],
+      ['Sigrika', 'Solsworn Ciphers'],
     ];
     const sigCount = sigPairs.filter(([char, weap]) => owned5StarChars.has(char) && owned5StarWeaps.has(weap)).length;
     if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#edaf18', tier: 'gold' });

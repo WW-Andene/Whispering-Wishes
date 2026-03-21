@@ -148,8 +148,8 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'sigrika', name: 'Sigrika', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/27WC0nVY/G0-Ec-Fat-W4-AAubh-M.jpg', imagePosition: 'center 15%' },
-    { id: 'qiuyuan', name: 'Qiuyuan', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/KxqVsJPs/HA8o-Hi-Ybs-AMv-Uf-J.jpg', imagePosition: 'center 15%' },
+    { id: 'sigrika', name: 'Sigrika', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/KxqVsJPs/HA8o-Hi-Ybs-AMv-Uf-J.jpg', imagePosition: 'center 15%' },
+    { id: 'qiuyuan', name: 'Qiuyuan', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/27WC0nVY/G0-Ec-Fat-W4-AAubh-M.jpg', imagePosition: 'center 15%' },
   ],
   weapons: [
     { id: 'solsworn-ciphers', name: 'Solsworn Ciphers', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Sigrika', element: 'Aero', isNew: true, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/8LYrgYdN/e7a3b-17738194413502-1920.jpg' },
@@ -577,6 +577,7 @@ const CHARACTER_DATA = {
   ['Galbrena',      ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Luuk Herssen',  ['Basic ATK'],                   [],                                      []],
   ['Aemeath',       ['Liberation', 'Skill'],         [],                                      ['Fusion Burst']],
+  ['Sigrika',       ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
   // 5★ Sub DPS
   ['Rover',         ['Skill', 'Liberation'],         [],                                      []],
@@ -647,6 +648,7 @@ const CHARACTER_DATA = {
   ['Mornye',        15375, 288, 1356, 125],
   ['Luuk Herssen',  10300, 463, 1112, 125],
   ['Aemeath',       11025, 425, 1149, 125],
+  ['Sigrika',       10500, 438, 1185, 125],
   // 4★
   ['Aalto',         9850,  263, 1075, 150],
   ['Baizhi',        12813, 213, 1002, 175],
@@ -685,6 +687,7 @@ const CHARACTER_DATA = {
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
+  ['Sigrika',       2800, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
   // 5★ Sub DPS — moderate totalMult, short onField
   ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
   ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
@@ -744,6 +747,7 @@ const CHARACTER_DATA = {
   ['Galbrena',       'ATK'],
   ['Luuk Herssen',   'ATK'],
   ['Aemeath',        'ATK'],
+  ['Sigrika',        'ATK'],
   ['Chixia',         'ATK'],
   // 5★ Sub DPS
   ['Rover',          'ATK'],
@@ -1130,6 +1134,16 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Spectro Gauntlets DPS. Tune Strain focused.',
   },
+  'Sigrika': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [
+      { stat: 'echoDmg', value: 50, target: 'self', duration: 15, condition: 'Inherent: +2% Echo Skill DMG per 1% ER above 125% (up to 50%)' },
+      { stat: 'defIgnore', value: 10, target: 'self', duration: 6, condition: 'Sig weapon: Aero DMG ignores 10% DEF on Echo Skill hit' },
+    ],
+    debuffs: [],
+    note: 'Rune-consuming Echo Skill hypercarry. Inherent: up to 50% Echo DMG from ER. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes.',
+  },
   'Phrolova': {
     outroBuffs: [],
     libBuffs: [],
@@ -1182,6 +1196,7 @@ const RESONANCE_CHAIN_DATA = {
   'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 20 }, s3: { critDmg: 20 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
   'Galbrena':     { s1: { echoDmg: 15 }, s2: { totalMult: 20 }, s3: { critRate: 12 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 20 } },
   'Iuno':         { s1: { heavyDmg: 20 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 20 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Sigrika':      { s1: { echoDmg: 15 }, s2: { totalMult: 20 }, s3: { critRate: 12 }, s4: { echoDmg: 20 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
   'Luuk Herssen': { s1: { atkPct: 15 }, s2: { totalMult: 20 }, s3: { critDmg: 25 }, s4: { basicDmg: 20 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
   'Lupa':         { s1: { elemDmg: 12 }, s2: { totalMult: 20 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 20 } },
   // Supports — less personal DMG but team contribution changes
