@@ -937,8 +937,10 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,6)';
     
     const init = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
+      // Use canvas bounding rect to include safe-area insets covered by fixed inset-0
+      const rect = canvas.getBoundingClientRect();
+      w = Math.ceil(rect.width) || window.innerWidth;
+      h = Math.ceil(rect.height) || window.innerHeight;
       canvas.width = w;
       canvas.height = h;
       bw = Math.ceil(w * BLUR_SCALE);
@@ -1038,8 +1040,10 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
     let w, h, cols, rows, seeds;
     
     const init = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
+      // Use canvas bounding rect to include safe-area insets covered by fixed inset-0
+      const rect = canvas.getBoundingClientRect();
+      w = Math.ceil(rect.width) || window.innerWidth;
+      h = Math.ceil(rect.height) || window.innerHeight;
       canvas.width = w;
       canvas.height = h;
       cols = Math.ceil(w / HALF) + 4;
