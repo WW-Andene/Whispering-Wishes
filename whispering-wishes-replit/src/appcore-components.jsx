@@ -1589,16 +1589,16 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
                 role="option"
                 aria-selected={active}
                 onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`w-full text-left px-3 py-2.5 text-sm rounded-xl border overflow-hidden transition-colors shadow-lg ${active ? 'border-[rgba(237,175,24,0.3)]' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
+                className={`relative w-full text-left px-3 py-2.5 text-sm rounded-xl border overflow-hidden transition-colors shadow-lg ${active ? 'border-[rgba(237,175,24,0.3)]' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
                 style={{
                   background: active ? 'rgba(237,175,24,0.1)' : 'var(--bg-card)',
                   backdropFilter: 'blur(2px) brightness(0.6)',
                   WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
                   color: active ? '#edaf18' : undefined,
-                  borderLeft: active ? '3px solid #edaf18' : undefined,
                   boxShadow: active ? '0 0 12px rgba(237,175,24,0.15)' : undefined,
                 }}
               >
+                {active && <span className="absolute left-0 top-[15%] bottom-[15%] w-[3px]" style={{ background: 'linear-gradient(180deg, rgba(237,175,24,0.6), #edaf18, rgba(237,175,24,0.6))', boxShadow: '0 0 8px rgba(237,175,24,0.5)' }} />}
                 {opt.label}
               </button>
             );
