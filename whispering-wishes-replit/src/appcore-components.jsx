@@ -215,7 +215,17 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         {/* Content */}
         <div className="p-4 space-y-4">
           {/* Description */}
-          <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>
+          {data.desc && (() => {
+            const dot = data.desc.indexOf('. ');
+            const lore = dot > 0 ? data.desc.slice(0, dot + 1) : null;
+            const gameplay = dot > 0 ? data.desc.slice(dot + 2) : data.desc;
+            return (
+              <div className="text-sm space-y-1">
+                {lore && <p className="text-gray-400 italic leading-relaxed">{lore}</p>}
+                <p className="text-gray-300 leading-relaxed">{gameplay}</p>
+              </div>
+            );
+          })()}
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
