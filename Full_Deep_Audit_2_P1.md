@@ -4210,14 +4210,14 @@ The app does not merely present data (Sage) or empower through bold action (Hero
 
 The archetype is well-expressed. Two minor opportunities to strengthen it:
 
-> **Finding DBI1-ARC2** · Severity: **LOW**
+> **Finding DBI1-ARC2 ✅** · Severity: **LOW**
 > **Magician "reveal moment" is underutilized.** The Magician archetype is strongest when it shows explicit transformation — the moment data becomes insight. Currently, stat boxes appear pre-calculated. A brief "calculating..." → result reveal with a subtle gold flash would reinforce the Magician's transformative quality.
 > **Solution**:
 > - Option A (minimal): Add a 200ms fade-in with gold glow pulse when stat values first render after data import
 > - Option B (full ownership): Implement a "data alchemy" micro-animation sequence where numbers count up briefly before settling, with a gold shimmer sweep across the stat box — reinforcing the transformation metaphor
 > - Apply to: `.kuro-stat` boxes on first data load, achievement unlock moments
 
-> **Finding DBI1-ARC3** · Severity: **LOW**
+> **Finding DBI1-ARC3 ✅** · Severity: **LOW**
 > **Hero "call to action" moments lack visual weight.** Primary action buttons (Import, Save, Calculate) use the same `.kuro-btn` styling as secondary actions. The Hero archetype demands that key moments feel bold and distinctive.
 > **Solution**:
 > - Option A (minimal): Add `.kuro-btn-primary` variant with gold border glow (`box-shadow: 0 0 12px rgba(237, 175, 24, 0.2)`) and slightly larger padding for the 3-5 most important actions
@@ -4247,7 +4247,7 @@ The archetype is well-expressed. Two minor opportunities to strengthen it:
 
 **Impact on character**: Low — these appear in secondary data contexts (3-star items, which users care least about). The Magician character is not undermined because primary accent (gold) is fully owned.
 
-> **Finding DBI3-S01** · Severity: **LOW**
+> **Finding DBI3-S01 ✅** · Severity: **LOW**
 > **Tailwind blue defaults used for 3-star/standard tier — semantically correct but uncalibrated.**
 > 30 occurrences of `#3b82f6`/`#60a5fa` across achievement badges, banner stats, and collection display. The blue-for-standard mapping is correct gacha convention, but the exact Tailwind hex values lack ownership.
 > **Solution**:
@@ -4369,7 +4369,7 @@ The archetype is well-expressed. Two minor opportunities to strengthen it:
 
 **Impact on character**: Low-moderate — the LUMINOUS TACTICAL COMPANION should have icons that feel either more geometric/sharp (tactical) or more atmospheric (luminous). Default Lucide is neutral.
 
-> **Finding DBI3-S06** · Severity: **LOW**
+> **Finding DBI3-S06 ✅** · Severity: **LOW**
 > **Lucide icons at default stroke-width — correct library, unmodified presentation.**
 > 10+ Lucide icons used with default `strokeWidth={2}`. The hover glow effect (`drop-shadow(0 0 3px currentColor)`) adds atmospheric personality, but the icons themselves are stock.
 > **Solution**:
@@ -4502,7 +4502,7 @@ The archetype is well-expressed. Two minor opportunities to strengthen it:
 
 **Impact on character**: Moderate — separators are high-frequency visual elements. When they're all identical, the visual hierarchy flattens. The LUMINOUS TACTICAL COMPANION should have separation that reflects importance: section breaks should feel different from item dividers.
 
-> **Finding DBI3-S11** · Severity: **LOW**
+> **Finding DBI3-S11 ✅** · Severity: **LOW**
 > **`border-white/10` accounts for ~70% of all separators despite a 5-level opacity scale being defined.** The `.kuro-divider` class exists but is used only twice. Separator hierarchy is architecturally present but not adopted in markup.
 > **Solution**:
 > - Option A (minimal): Audit the 35+ separator instances and reassign to the existing token scale:
@@ -4552,7 +4552,7 @@ Since Whispering Wishes is a dark-mode-only app, these additional signals are as
 
 **Status: PARTIAL** — This exact value appears as `--border-medium` and is the dominant border across the app. However, a 5-level border opacity scale exists (6%/8%/10%/15%/20%), showing intentional architecture even if adoption is skewed toward the 10% level.
 
-> **Finding DBI3-D02** · Severity: **LOW**
+> **Finding DBI3-D02 ✅** · Severity: **LOW**
 > **`rgba(255,255,255,0.1)` borders dominate (~70% of instances) despite a 5-level scale.** This specific value is shared with hundreds of dark-mode dashboards. Shifting the dominant border to use the app's navy hue — `rgba(100, 140, 200, 0.08)` instead of `rgba(255, 255, 255, 0.1)` — would make borders chromatic and owned.
 > **Solution**:
 > - Option A (minimal): Keep white-alpha borders but shift the default from 10% to 8% (`--border-default`) — creates subtle differentiation from the ubiquitous 10% pattern
@@ -4622,7 +4622,7 @@ The plan requires assessment across ALL 8 tabs. Below is a per-tab genericness s
 
 > **Finding DBI3-TAB1** · Severity: **LOW**
 > **All 8 tabs share the same genericness pattern: achromatic gray text + uniform white/10 borders.** The owned elements vary per tab (pity rings, trophy glows, element colors), but the generic elements are identical across all tabs. This creates a "custom foreground, generic background" split.
-> **Solution**: Fixing DBI3-S07 (chromatic grays) and DBI3-S11 (separator hierarchy) would eliminate the cross-tab genericness pattern in a single systematic pass. No per-tab fixes needed — the solution is architectural.
+> **Solution**: Fixing DBI3-S07 (chromatic grays) and DBI3-S11 ✅ (separator hierarchy) would eliminate the cross-tab genericness pattern in a single systematic pass. No per-tab fixes needed — the solution is architectural.
 
 ---
 
@@ -4687,22 +4687,22 @@ Both are fixable with systematic find-and-replace operations. The app's custom e
 | ID | Finding | Severity | Section |
 |---|---|---|---|
 | DBI1-ARC1 | Archetype alignment strong (Magician+Hero+Jester) | **PASS** | §DBI1.4 |
-| DBI1-ARC2 | Magician "reveal moment" underutilized | **LOW** | §DBI1.5 |
-| DBI1-ARC3 | Hero "call to action" buttons lack visual weight | **LOW** | §DBI1.5 |
-| DBI3-S01 | Tailwind blue defaults for 3-star tier — uncalibrated | **LOW** | §DBI3 S1 |
+| DBI1-ARC2 ✅ | Magician "reveal moment" underutilized | **LOW** | §DBI1.5 |
+| DBI1-ARC3 ✅ | Hero "call to action" buttons lack visual weight | **LOW** | §DBI1.5 |
+| DBI3-S01 ✅ | Tailwind blue defaults for 3-star tier — uncalibrated | **LOW** | §DBI3 S1 |
 | DBI3-S02 | Typography fully owned (Rajdhani + JetBrains Mono) | **PASS** | §DBI3 S2 |
 | DBI3-S03 | 109× `rounded-lg` creates radius monoculture | **MEDIUM** | §DBI3 S3 |
 | DBI3-S04 | Custom 14px spacing baseline | **PASS** | §DBI3 S4 |
 | DBI3-S05 | Shadow system fully custom + color glows | **PASS** | §DBI3 S5 |
-| DBI3-S06 | Lucide icons at default stroke-width | **LOW** | §DBI3 S6 |
+| DBI3-S06 ✅ | Lucide icons at default stroke-width | **LOW** | §DBI3 S6 |
 | DBI3-S07 | 459 achromatic gray text instances — highest genericness signal | **HIGH** | §DBI3 S7 |
 | DBI3-S08 | Background system fully owned (`#080c14`) | **PASS** | §DBI3 S8 |
 | DBI3-S09 | Transition system fully custom (cubic-bezier + specific properties) | **PASS** | §DBI3 S9 |
 | DBI3-S10 | Button sizing strategic (12% full-width) | **PASS** | §DBI3 S10 |
-| DBI3-S11 | Separator hierarchy defined but 70% uses single pattern | **LOW** | §DBI3 S11 |
+| DBI3-S11 ✅ | Separator hierarchy defined but 70% uses single pattern | **LOW** | §DBI3 S11 |
 | DBI3-S12 | Placeholder colors custom with focus-state differentiation | **PASS** | §DBI3 S12 |
 | DBI3-D01 | Pure black correctly scoped to OLED opt-in | **PASS** | §DBI3.D |
-| DBI3-D02 | `rgba(255,255,255,0.1)` borders dominate despite scale | **LOW** | §DBI3.D |
+| DBI3-D02 ✅ | `rgba(255,255,255,0.1)` borders dominate despite scale | **LOW** | §DBI3.D |
 | DBI3-D04 | Gold is unambiguous primary accent (not blue) | **PASS** | §DBI3.D |
 | DBI3-TAB1 | All 8 tabs share same genericness pattern (gray text + white/10 borders) | **LOW** | §DBI3.T |
 
@@ -6492,7 +6492,7 @@ This is a well-established dark UI pattern: cool backgrounds recede, warm accent
 > **Finding**: The warm-dominant (1.3:1) palette on a cool navy background follows the established "cool field + warm island" dark UI pattern. Temperature tension is intentional and well-calibrated. Cross-reference: §DC1-TMP1 (PASS).
 > **Solution**: No action needed. The bimodal temperature model is a design strength.
 
-> **E3-CT2** · LOW
+> **E3-CT2 ✅** · LOW
 > **Finding**: Cool accents (cyan, purple) on the cool navy background have lower temperature contrast than warm accents, making them perceptually quieter. Cyan's role as a secondary accent (45+ instances, §DC5-TN1) is partially undermined by this temperature similarity.
 > **Solution**: For high-importance cyan elements (e.g., "Standard banner" stat values, info-toast text), consider using `cyan-300` (`#67e8f9`, L~82%) instead of `cyan-400` (`#22d3ee`, L~65%) to increase luminance contrast. This compensates for the low temperature contrast without changing the hue.
 
@@ -6573,7 +6573,7 @@ All colored-text-on-colored-background combinations pass comfortably. The low-op
 > **Finding**: All 22 text/background combinations tested meet WCAG AA (4.5:1 for normal text, 3:1 for large text). 100% AA compliance. The dark navy background provides excellent contrast for both light text and saturated accents.
 > **Solution**: No action needed. This is strong accessibility compliance.
 
-> **E3-WC2** · LOW
+> **E3-WC2 ✅** · LOW
 > **Finding**: `text-gray-500` (`#6b7280`) at 5.2:1 passes AA with only 0.7:1 margin. It's used 107 times at small sizes (text-xs, text-[9px]) where readability is already challenged. Cross-reference: §DBI3-S07 (HIGH) flagged 459 gray text instances as the single biggest genericness liability.
 > **Solution**: Replace `text-gray-500` with `text-gray-400` (`#9ca3af`, 10.6:1) or a custom token `--text-muted: #8a91a0` (~7.5:1) that provides better contrast while maintaining the subdued appearance. This simultaneously fixes the WCAG margin issue and the genericness liability from §DBI3-S07.
 
@@ -6599,7 +6599,7 @@ All colored-text-on-colored-background combinations pass comfortably. The low-op
 **Context**: These low-contrast borders are used for:
 - `--border-subtle` (0.06): Card header/body separator — purely decorative
 - `--border-default` (0.08): Default card border — provides subtle card edge
-- `--border-medium` / `border-white/10` (0.1): 70% of all borders in the app (§DBI3-S11)
+- `--border-medium` / `border-white/10` (0.1): 70% of all borders in the app (§DBI3-S11 ✅)
 
 **Mitigating factor**: Cards are identifiable through multiple cues (backdrop-blur, shadow, padding, content grouping) — borders are not the sole identifier. WCAG 1.4.11 applies when the border is the *only* visual cue for identifying a UI component. For cards with other visual affordances, the low-contrast border is supplementary.
 
@@ -6680,7 +6680,7 @@ Lucide icons use `currentColor` (inheriting text color). Since all text colors p
 > **Finding**: Error (red), success (emerald), and info (cyan) state colors are distinct, consistent, and on-brand. Each has a CSS custom property token and uses 2–3 shade variants for hierarchy. The hover→active transition cycle (lift→compress) provides satisfying physical feedback.
 > **Solution**: No action needed. The error/success/info system is well-designed.
 
-> **E3-SC3** · LOW
+> **E3-SC3 ✅** · LOW
 > **Finding**: Card hover always uses gold micro-glow regardless of card content. This creates a minor semantic conflict with `.kuro-stat-gold:hover`, where both card and stat glow gold for different reasons (decorative vs data-classification).
 > **Solution**: Change default `.kuro-card:hover` glow from gold to a neutral navy (`rgba(140, 160, 200, 0.08)`) or use `currentColor`-based glow. Reserve gold glow for explicitly gold-themed elements (`.kuro-stat-gold`, `.glow-gold`, `.active-gold`).
 
@@ -6776,7 +6776,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 
 **Overall**: The bespoke colors (gold, emerald, pink) are well-calibrated. The Tailwind-sourced colors are standard but not distinctive. The one true outlier (`#ff0000`) has been flagged repeatedly.
 
-> **E3-SA1** · LOW
+> **E3-SA1 ✅** · LOW
 > **Finding**: 5 instances of pure `#ff0000` (100% saturation) in trophy displays. This is the definition of "uncalibrated" per the skill reference — maximum saturation signals placeholder color, not intentional design. Cross-reference: §E1-COL4 ✅ (LOW).
 > **Solution**: Replace `#ff0000` with `#ef4444` (Tailwind red-500, 84% saturation) or the existing `--color-red` token (`#f87171`). Both are significantly more refined while remaining visually "red."
 
@@ -6802,15 +6802,15 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-AC1 (MEDIUM) — Gold warning collision | DC5-TN1 (MEDIUM) — Cyan overused | 🔗 **Related** — both are accent overextension issues; gold and cyan each serve too many roles |
 | E3-AC2 ✅ (LOW) — Focus/active gold blend | DC2-BD1 ✅ (LOW) — No `--border-focus` token | 🔗 **Related** — both highlight lack of focus-specific design |
 | E3-CT1 (PASS) — Temperature coherence | DC1-TMP1 (PASS) — Bimodal temperature | ✅ **Confirmed** |
-| E3-CT2 (LOW) — Cool accents quiet | DC1-AC1 (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
+| E3-CT2 ✅ (LOW) — Cool accents quiet | DC1-AC1 (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
 | E3-WC1 (PASS) — WCAG AA 100% | DC1-TX1 (PASS) — Text perceptually calibrated | ✅ **Confirmed** |
-| E3-WC2 (LOW) — Gray-500 marginal | DBI3-S07 (HIGH) — 459 gray instances | 🔗 **Converges** — the same gray text issue seen from accessibility vs genericness angles |
+| E3-WC2 ✅ (LOW) — Gray-500 marginal | DBI3-S07 (HIGH) — 459 gray instances | 🔗 **Converges** — the same gray text issue seen from accessibility vs genericness angles |
 | E3-NC1 (MEDIUM) — Low border contrast | DC2-AC1 ✅ (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
 | E3-SC1 (MEDIUM) — Warning=accent collision | DC1-SM1 (PASS) — Semantic colors reuse accent tokens | ⚠️ **Partial contradiction** — DC1 rated semantic reuse as PASS; E3 finds the warning-accent overlap is problematic. The earlier assessment didn't weigh the collision risk. |
 | E3-CP1 (PASS) — Psychology alignment | DC5-ST2 (PASS) — Engagement temperature correct | ✅ **Confirmed** |
-| E3-SA1 (LOW) — #ff0000 oversaturated | E1-COL4 ✅ (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives. ✅ FIXED |
+| E3-SA1 ✅ (LOW) — #ff0000 oversaturated | E1-COL4 ✅ (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives. ✅ FIXED |
 
-**Key convergence**: The gray text issue (E3-WC2 + DBI3-S07 + E1-COL3) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
+**Key convergence**: The gray text issue (E3-WC2 ✅ + DBI3-S07 + E1-COL3) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
 
 **One partial contradiction**: DC1-SM1 rated semantic color reuse as PASS, but E3-SC1 finds the warning-accent overlap problematic. The difference is analytical scope: DC1 assessed the *architecture* (tokens exist and are reused — structurally clean), while E3 assessed the *perceptual outcome* (user can't distinguish warning from accent — functionally problematic). Both assessments are correct within their scope.
 
@@ -6826,14 +6826,14 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-AC1 | §E3.3 | MEDIUM | Gold serves 4 signals (focus/selection/data/warning) — warning collision | Separate warning to amber-500; create `--color-warning` token |
 | E3-AC2 ✅ | §E3.3 | LOW | Gold focus ring blends into gold active-state borders | Use 4px outline-offset or white universal focus ring |
 | E3-CT1 | §E3.4 | PASS | Warm-dominant (1.3:1) on cool navy — intentional | Cross-ref DC1-TMP1 |
-| E3-CT2 | §E3.4 | LOW | Cool accents (cyan/purple) perceptually quiet on navy | Use cyan-300 for high-importance cyan elements |
+| E3-CT2 ✅ | §E3.4 | LOW | Cool accents (cyan/purple) perceptually quiet on navy | Use cyan-300 for high-importance cyan elements |
 | E3-WC1 | §E3.5 | PASS | WCAG AA 100% (22/22 combinations tested) | — |
-| E3-WC2 | §E3.5 | LOW | text-gray-500 at 5.2:1 — marginal AA margin | Replace with `--text-muted: #8a91a0` (~7.5:1); cross-ref DBI3-S07 |
+| E3-WC2 ✅ | §E3.5 | LOW | text-gray-500 at 5.2:1 — marginal AA margin | Replace with `--text-muted: #8a91a0` (~7.5:1); cross-ref DBI3-S07 |
 | E3-NC1 | §E3.6 | MEDIUM | Input border 2.1:1 fails WCAG 1.4.11 (3:1 required) | Increase input default border to `--border-hover` (0.15 opacity) |
 | E3-NC2 | §E3.6 | PASS | Focus indicators + icons pass 3:1 comfortably | — |
 | E3-SC1 | §E3.7 | MEDIUM | Warning color = accent color (both gold) | Assign amber-500 to warnings; create `--color-warning` token |
 | E3-SC2 | §E3.7 | PASS | Error/success/info state colors distinct and consistent | — |
-| E3-SC3 | §E3.7 | LOW | Card hover glow always gold regardless of content | Change card hover to neutral navy glow |
+| E3-SC3 ✅ | §E3.7 | LOW | Card hover glow always gold regardless of content | Change card hover to neutral navy glow |
 | E3-CP1 | §E3.8 | PASS | Color psychology aligns with gacha domain conventions | — |
 | E3-SA1 ✅ | §E3.9 | LOW | 5× pure #ff0000 (100% saturation) — uncalibrated | Replace with #ef4444 or `--color-red`; cross-ref E1-COL4 ✅ |
 | E3-SA2 | §E3.9 | PASS | Bespoke colors (gold, emerald, pink) well-calibrated | — |

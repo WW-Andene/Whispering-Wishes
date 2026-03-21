@@ -3163,7 +3163,7 @@ function WhisperingWishesInner() {
       </a>
       
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10" style={{backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)'}}>
+      <header className="sticky top-0 z-50 border-b border-[var(--border-medium)]" style={{backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)'}}>
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3">
           <div className="header-top flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
@@ -3179,10 +3179,10 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-white/10 focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
+              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
                 {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-[var(--border-medium)] text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
             </div>
@@ -3321,7 +3321,7 @@ function WhisperingWishesInner() {
               <CardBody>
                 <div className="space-y-2">
                   {BANNER_HISTORY.map((b, i) => (
-                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-white/10 hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
@@ -3838,7 +3838,7 @@ function WhisperingWishesInner() {
                       </div>
                     </div>
                   ))}
-                  <div className="pt-2 border-t border-white/10 flex justify-between text-xs">
+                  <div className="pt-2 border-t border-[var(--border-medium)] flex justify-between text-xs">
                     <span className="text-gray-400">Total Spent</span>
                     <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + i.price, 0).toFixed(2)}</span>
                   </div>
@@ -4060,7 +4060,7 @@ function WhisperingWishesInner() {
                 {showLeaderboard && (
                   <div ref={leaderboardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-busy={leaderboardLoading} aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
                     <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
-                      <div className="p-4 pb-2 border-b border-white/10">
+                      <div className="p-4 pb-2 border-b border-[var(--border-medium)]">
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <h3 className="text-white font-semibold text-sm">Community</h3>
@@ -4216,7 +4216,7 @@ function WhisperingWishesInner() {
                       </div>
                       {/* Community Stats */}
                       {communityStats && leaderboardTab === 'rankings' && (
-                        <div className="px-4 py-3 border-t border-white/10 space-y-2">
+                        <div className="px-4 py-3 border-t border-[var(--border-medium)] space-y-2">
                           <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                             <BarChart3 size={10} /> Community Stats
                             <span className="text-gray-500 font-normal">• {communityStats.totalPlayers} players</span>
@@ -4249,7 +4249,7 @@ function WhisperingWishesInner() {
                           )}
                         </div>
                       )}
-                      <div className="p-4 border-t border-white/10 space-y-2">
+                      <div className="p-4 border-t border-[var(--border-medium)] space-y-2">
                         {effectiveLeaderboardId && overallStats?.avgPity && overallStats.avgPity !== '—' ? (
                           <>
                             <div className="flex items-center justify-between text-[10px]">
@@ -4361,7 +4361,7 @@ function WhisperingWishesInner() {
                       
                       {/* Current 50/50 Streak */}
                       {trophies.stats.currentStreak.type && (
-                        <div className="mt-3 pt-3 border-t border-white/10">
+                        <div className="mt-3 pt-3 border-t border-[var(--border-medium)]">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-400 text-[10px]">Current 50/50 Streak</span>
                             <span className={`text-sm font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -4464,7 +4464,7 @@ function WhisperingWishesInner() {
                         </div>
                         
                         {/* Stats summary */}
-                        <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
+                        <div className="mt-3 pt-3 border-t border-[var(--border-medium)] grid grid-cols-3 gap-2 text-center">
                           <div>
                             <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)', fontFamily: 'var(--font-data)' }}>{minPity}</div>
                             <div className="text-gray-400 text-[9px]">Lowest</div>
@@ -4786,7 +4786,7 @@ function WhisperingWishesInner() {
                   const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length;
                   const pct = totalItems > 0 ? Math.round((totalOwned / totalItems) * 100) : 0;
                   return (
-                    <div className="p-3 rounded-lg border border-white/10 bg-white/5 content-layer">
+                    <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5 content-layer">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-white text-xs font-medium">Collection Progress</span>
                         <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
@@ -4815,7 +4815,7 @@ function WhisperingWishesInner() {
                       value={collectionSearch}
                       onChange={(e) => setCollectionSearch(e.target.value)}
                       placeholder="Search by name..."
-                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-white/10 text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
+                      className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-[var(--border-medium)] text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
                       style={{ background: 'var(--bg-btn)' }}
                       aria-label="Search collection by name"
                     />
@@ -4834,7 +4834,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionElementFilter}
                         onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by element"
                       >
                         <option value="all">All Elements</option>
@@ -4850,7 +4850,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionWeaponFilter}
                         onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by weapon type"
                       >
                         <option value="all">All Weapons</option>
@@ -4865,7 +4865,7 @@ function WhisperingWishesInner() {
                       <select
                         value={collectionOwnershipFilter}
                         onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
                         aria-label="Filter by ownership"
                       >
                         <option value="all">All Items</option>
@@ -4888,7 +4888,7 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="px-2 py-1 rounded-lg text-[10px] text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/10 transition-all"
+                        className="px-2 py-1 rounded-lg text-[10px] text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-[var(--border-medium)] transition-all"
                         style={{ background: 'var(--bg-btn)' }}
                         title="Refresh images if they don't load"
                         aria-label="Refresh images"
@@ -4897,7 +4897,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 border border-[var(--border-medium)]'}`}
                         style={collectionSort !== 'copies' ? { background: 'var(--bg-btn)' } : undefined}
                         title="Sort by copies"
                         aria-label="Sort by copies"
@@ -4907,7 +4907,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 border border-white/10'}`}
+                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 border border-[var(--border-medium)]'}`}
                         style={collectionSort !== 'release' ? { background: 'var(--bg-btn)' } : undefined}
                         title="Sort by release date"
                         aria-label="Sort by release date"
@@ -5760,9 +5760,9 @@ function WhisperingWishesInner() {
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
                                       <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
                                     </div>
                                   </div>
@@ -5804,7 +5804,7 @@ function WhisperingWishesInner() {
                                           {/* 5 Echo slots (placeholder) */}
                                           {[0, 1, 2, 3, 4].map(ei => (
                                             <div key={ei}
-                                              className={`${slotStyle} border-dashed border-white/10 opacity-60 cursor-default`}
+                                              className={`${slotStyle} border-dashed border-[var(--border-medium)] opacity-60 cursor-default`}
                                               title={'Echo slot ' + (ei + 1) + ' — coming soon'}
                                             >
                                               <Diamond size={12} className="text-gray-600" />
@@ -5823,7 +5823,7 @@ function WhisperingWishesInner() {
                                                 <button key={s}
                                                   role="radio"
                                                   aria-checked={isActive}
-                                                  className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                  className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                                   onClick={() => {
                                                     setTeamEquipment(prev => {
                                                       const n = { ...prev };
@@ -5975,7 +5975,7 @@ function WhisperingWishesInner() {
                                 const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
                                 const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
                                 return (
-                                  <div key={entry.id} className="p-2.5 rounded-lg border border-white/10 relative" style={{ background: 'var(--bg-stat)' }}>
+                                  <div key={entry.id} className="p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
                                       className="absolute top-1.5 right-1.5 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
                                       aria-label="Remove this team from comparison">
@@ -6050,7 +6050,7 @@ function WhisperingWishesInner() {
                                     </div>
 
                                     {/* Quick stats */}
-                                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-white/10">
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-[var(--border-medium)]">
                                       <div className="text-[9px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
                                       <div className="text-[9px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
                                       <div className="text-[9px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
@@ -6114,7 +6114,7 @@ function WhisperingWishesInner() {
                                 });
                                 haptic.success();
                               }}
-                              className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-white/10 hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
+                              className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-[var(--border-medium)] hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
                               style={{ background: 'var(--bg-stat)' }}
                             >
                               <div className="flex gap-1 flex-shrink-0">
@@ -6156,7 +6156,7 @@ function WhisperingWishesInner() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-3 border-b border-white/10">
+                        <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]">
                           <div>
                             <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
                             <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
@@ -6185,7 +6185,7 @@ function WhisperingWishesInner() {
                             <select
                               value={teamElementFilter}
                               onChange={(e) => setTeamElementFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
                               aria-label="Filter by element"
                             >
@@ -6200,7 +6200,7 @@ function WhisperingWishesInner() {
                             <select
                               value={teamRarityFilter}
                               onChange={(e) => setTeamRarityFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
                               aria-label="Filter by rarity"
                             >
@@ -6211,7 +6211,7 @@ function WhisperingWishesInner() {
                             <select
                               value={teamDmgFilter}
                               onChange={(e) => setTeamDmgFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
                               aria-label="Filter by damage focus"
                             >
@@ -6226,7 +6226,7 @@ function WhisperingWishesInner() {
                             <select
                               value={teamBuffFilter}
                               onChange={(e) => setTeamBuffFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
                               aria-label="Filter by buff type"
                             >
@@ -6243,7 +6243,7 @@ function WhisperingWishesInner() {
                             <select
                               value={teamDebuffFilter}
                               onChange={(e) => setTeamDebuffFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-white/10 focus:border-yellow-500/50 focus:outline-none"
+                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
                               style={{ background: 'var(--bg-btn)' }}
                               aria-label="Filter by debuff type"
                             >
@@ -6331,7 +6331,7 @@ function WhisperingWishesInner() {
                                   {/* Role tag */}
                                   {cd?.role && (
                                     <div className="absolute bottom-4 inset-x-0 flex justify-center">
-                                      <span className="text-[8px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-white/10">{cd.role}</span>
+                                      <span className="text-[8px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span>
                                     </div>
                                   )}
                                   {/* Name */}
@@ -6357,8 +6357,8 @@ function WhisperingWishesInner() {
                   <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)}>
                     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
                       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWeaponSelectorOpen(false)} />
-                      <div className="relative w-full max-w-md max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-white/10 flex flex-col" style={{ background: 'var(--bg-card, #101218)' }}>
-                        <div className="p-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+                      <div className="relative w-full max-w-md max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }}>
+                        <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0">
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
                             <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
@@ -6516,7 +6516,7 @@ function WhisperingWishesInner() {
                 {/* View ID Card Button */}
                 <button
                   onClick={() => setShowIdCard(true)}
-                  className="kuro-btn w-full py-2.5 text-xs active-gold flex items-center justify-center gap-2"
+                  className="kuro-btn kuro-btn-hero w-full text-xs flex items-center justify-center gap-2"
                 >
                   <Award size={14} /> View Resonator ID Card
                 </button>
@@ -6543,7 +6543,7 @@ function WhisperingWishesInner() {
               <CardHeader><Settings size={14} className="text-gray-400" /> Display Settings</CardHeader>
               <CardBody className="space-y-3">
                 {/* OLED Mode Toggle */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Monitor size={16} />
@@ -6570,7 +6570,7 @@ function WhisperingWishesInner() {
                 )}
                 
                 {/* Swipe Navigation Toggle */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
                       <ChevronDown size={16} className="-rotate-90" />
@@ -6597,7 +6597,7 @@ function WhisperingWishesInner() {
                 )}
                 
                 {/* Animations Toggle */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
@@ -7332,34 +7332,34 @@ Example: {"pulls":[...]}'
                   </div>
 
                   {/* Admin Tab Switcher */}
-                  <div className="flex gap-2 border-b border-white/10 pb-2 flex-wrap">
+                  <div className="flex gap-2 border-b border-[var(--border-medium)] pb-2 flex-wrap">
                     <button
                       onClick={() => setAdminTab('banners')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'banners' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'banners' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Banners
                     </button>
                     <button
                       onClick={() => setAdminTab('collection')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'collection' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'collection' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Collection
                     </button>
                     <button
                       onClick={() => setAdminTab('visuals')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Visual Settings
                     </button>
                     <button
                       onClick={() => setAdminTab('trophies')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       Trophies
                     </button>
                     <button
                       onClick={() => setAdminTab('players')}
-                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-white/10'}`}
+                      className={`px-3 py-1.5 rounded text-[9px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players
                     </button>
@@ -7509,7 +7509,7 @@ Example: {"pulls":[...]}'
                       
                       {/* Activity Chart */}
                       {activePlayersHistory.length > 1 && (
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3">
                           <div className="text-gray-400 text-[10px] font-medium mb-2 uppercase tracking-wider">Session Activity</div>
                           <div className="h-24">
                             <ResponsiveContainer width="100%" height="100%">
@@ -7538,7 +7538,7 @@ Example: {"pulls":[...]}'
                       </button>
                       
                       {/* Admin Player List — full UIDs visible only here */}
-                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                      <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Registered Players</div>
                           <div className="text-gray-400 text-[9px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
@@ -7584,7 +7584,7 @@ Example: {"pulls":[...]}'
                       </div>
                       
                       {/* Privacy Notice */}
-                      <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-[9px] text-gray-400 space-y-1">
+                      <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3 text-[9px] text-gray-400 space-y-1">
                         <div className="text-gray-400 font-medium">🔒 Privacy</div>
                         <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
                         <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
@@ -7620,7 +7620,7 @@ Example: {"pulls":[...]}'
                         {/* Current trophies list — read-only reference */}
                         <div className="mb-3">
                           <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Current Trophies ({trophies?.list?.length || 0})</div>
-                          <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-white/10 p-2 space-y-0.5">
+                          <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-[var(--border-medium)] p-2 space-y-0.5">
                             {(trophies?.list || []).map(t => (
                               <div key={t.id} className="flex items-center gap-2 py-0.5">
                                 <span className="text-[9px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
@@ -7643,7 +7643,7 @@ Example: {"pulls":[...]}'
                             navigator.clipboard?.writeText(JSON.stringify(data, null, 2));
                             toast?.addToast?.('Trophy data copied to clipboard', 'success');
                           }}
-                          className="w-full mb-3 px-3 py-1.5 bg-white/5 border border-white/10 text-gray-300 rounded text-[10px] hover:bg-white/10 transition-colors"
+                          className="w-full mb-3 px-3 py-1.5 bg-white/5 border border-[var(--border-medium)] text-gray-300 rounded text-[10px] hover:bg-white/10 transition-colors"
                         >
                           Export Current Trophies as JSON
                         </button>
@@ -8056,7 +8056,7 @@ Example: {"pulls":[...]}'
             {/* Framing Mode Toggle - only for Collection tab */}
             <button 
               onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}
-              className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'}`}
+              className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
             >
               {framingMode ? '✓ Framing Mode ON (Collection only)' : '⊞ Enable Framing Mode (Collection)'}
             </button>
@@ -8090,7 +8090,7 @@ Example: {"pulls":[...]}'
             )}
             
             {framingMode && !editingImage && (
-              <div className="p-2 bg-white/5 border border-white/10 rounded-lg text-center">
+              <div className="p-2 bg-white/5 border border-[var(--border-medium)] rounded-lg text-center">
                 <div className="text-gray-400 text-[10px]">Go to Collection tab and tap an image to frame it</div>
               </div>
             )}
@@ -8191,7 +8191,7 @@ Example: {"pulls":[...]}'
       )}
 
       {/* Footer */}
-      <footer className="app-footer-mobile relative z-10 py-4 px-4 text-center border-t border-white/10" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
+      <footer className="app-footer-mobile relative z-10 py-4 px-4 text-center border-t border-[var(--border-medium)]" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
           <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>

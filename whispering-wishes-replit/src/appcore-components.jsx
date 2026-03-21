@@ -31,7 +31,7 @@ const hideOnError = (e) => {
 const MaterialItem = ({ name, qty }) => {
   const img = MATERIAL_IMAGES[name];
   return (
-    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-white/10 min-w-0">
+    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-[var(--border-medium)] min-w-0">
       {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
       <div className="min-w-0 flex-1">
         <div className="text-[9px] text-gray-300 truncate leading-tight">{name}</div>
@@ -214,8 +214,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.role}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -230,12 +230,12 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2">
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
             <div className="text-[9px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
               <span className={`text-[10px] px-2 py-0.5 rounded font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">{data.role}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
             </div>
             {data.buffs?.length > 0 && (
               <div>
@@ -265,7 +265,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Base Stats (Lv.90) */}
           {data.baseAtk && (
-            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
               <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
@@ -290,7 +290,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Resonance Chain (S1-S6) */}
           {RESONANCE_CHAIN_DATA[name] && (
-            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
               <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
               <div className="space-y-1.5">
                 {[1,2,3,4,5,6].map(s => {
@@ -313,7 +313,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
           {CHAR_BUFF_TABLE[name]?.note && (
-            <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
               <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
               <p className="text-[10px] text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
             </div>
@@ -332,7 +332,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
               {weaponImg && (
-                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-white/10 flex-shrink-0" onError={hideOnError} />
+                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0" onError={hideOnError} />
               )}
               <div className="flex-1 min-w-0">
                 <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
@@ -348,7 +348,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           )}
 
           {/* Best Echoes - enhanced */}
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -382,7 +382,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 const members = parseTeamMembers(team);
                 const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m] || (m.includes('Rover') && DEFAULT_COLLECTION_IMAGES['Rover']));
                 return (
-                  <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div key={i} className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
                     {hasImages ? (
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {
@@ -391,11 +391,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
-                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10" style={{ contain: 'paint', position: 'relative' }}>
+                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)]" style={{ contain: 'paint', position: 'relative' }}>
                                   <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                 </div>
                               ) : (
-                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/10 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
                                   {/* AUDIT-FIX H12: gray-600 fails WCAG AA contrast on dark bg */}
                                   <User size={14} className="text-gray-500" />
                                 </div>
@@ -421,7 +421,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </h3>
             <div className="flex flex-wrap gap-1">
               {data.skills.map((skill, i) => (
-                <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-white/10">{skill}</span>
+                <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
               ))}
             </div>
           </div>
@@ -527,8 +527,8 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
-              {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.baseAtk} Base ATK</span>}
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
+              {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.baseAtk} Base ATK</span>}
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -541,7 +541,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         <div className="p-4 space-y-3">
           <p className="text-gray-300 text-sm">{data.desc}</p>
           
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
             <div className={`text-xs ${colors.text}`}>{data.passive}</div>
           </div>
@@ -851,24 +851,24 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
       {time.days > 0 && (
         <>
-          <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+          <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
             <div className="text-white kuro-scoreboard">{time.days}</div>
             <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">{time.days === 1 ? 'Day' : 'Days'}</div>
           </div>
           <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
         </>
       )}
-      <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+      <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.hours).padStart(2, '0')}</div>
         <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Hr</div>
       </div>
       <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
-      <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+      <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.minutes).padStart(2, '0')}</div>
         <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Min</div>
       </div>
       <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
-      <div className="rounded-lg px-2.5 py-1.5 text-center border border-white/10" style={TIMER_BOX_STYLE}>
+      <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
         <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Sec</div>
       </div>
@@ -1481,7 +1481,7 @@ const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVis
 
   if (compact) {
     return (
-      <div className="space-y-2 border-t border-white/10 pt-2">
+      <div className="space-y-2 border-t border-[var(--border-medium)] pt-2">
         <h4 className={`${c.text} text-[9px] font-medium uppercase tracking-wider`}>{title}</h4>
         {directionControl && (
           <div className="flex gap-1 mb-1.5">
@@ -1767,7 +1767,7 @@ const ImportGuide = memo(({ platform }) => {
   const guide = IMPORT_GUIDE_DATA[platform];
   if (!guide) return null;
   return (
-    <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-[10px] text-gray-200 space-y-2">
+    <div className="p-3 bg-white/5 border border-[var(--border-medium)] rounded-lg text-[10px] text-gray-200 space-y-2">
       <p className="text-gray-100 font-medium text-xs">{guide.title}</p>
       {guide.steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
@@ -1775,7 +1775,7 @@ const ImportGuide = memo(({ platform }) => {
           <p>{step}</p>
         </div>
       ))}
-      {guide.footer && <p className="text-gray-400 text-[9px] pt-1 border-t border-white/10">{guide.footer}</p>}
+      {guide.footer && <p className="text-gray-400 text-[9px] pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
     </div>
   );
 });

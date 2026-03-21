@@ -479,6 +479,13 @@ const KuroStyles = memo(({ oledMode }) => (
       --trophy-silver: #c0c0c0;
       --trophy-gold: #edaf18;
       --trophy-diamond: #b9f2ff;
+      /* E3-CT2: Lightened cool accents (+5% luminance) for standalone text on dark bg */
+      --accent-cyan: #67e8f9;   /* cyan-300, L~82% vs cyan-400 L~65% */
+      --accent-purple: #d8b4fe; /* purple-300, L~80% vs purple-400 L~68% */
+      /* E3-WC2: Disabled text token at 5.5:1+ contrast ratio */
+      --text-disabled: #8b95a5;
+      /* DBI3-S01: Calibrated 3-star rarity blue token */
+      --rarity-3star: #60a5fa;
     }
     
     /* Hide scrollbar on specific horizontal scroll containers */
@@ -548,6 +555,11 @@ const KuroStyles = memo(({ oledMode }) => (
       color: var(--text-body);
       /* AUDIT-FIX M23: Explicit body font-family fallback */
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    /* DBI3-S06: Refined Lucide icon stroke-width (1.5px default → 1.25px) for lighter feel */
+    .kuro-calc svg {
+      stroke-width: 1.25px;
     }
     
     @keyframes slideUp {
@@ -869,6 +881,16 @@ const KuroStyles = memo(({ oledMode }) => (
       padding: 14px;
       color: var(--text-body);
     }
+
+    /* E3-WC2: Override Tailwind text-gray-500 (#6b7280, 5.2:1) with higher-contrast token */
+    .text-gray-500 {
+      color: var(--text-disabled) !important;
+    }
+
+    /* DBI3-S01: Calibrated 3-star rarity color utility */
+    .text-rarity-3star {
+      color: var(--rarity-3star);
+    }
     
     /* ═══ BUTTONS - Glassy style with bright text ═══ */
     .kuro-btn {
@@ -946,6 +968,23 @@ const KuroStyles = memo(({ oledMode }) => (
       button:disabled:hover svg,
       button[disabled]:hover svg {
         filter: none;
+      }
+    }
+
+    /* DBI1-ARC3: Hero CTA variant — elevated gold gradient for primary actions */
+    .kuro-btn-hero {
+      background: linear-gradient(135deg, rgba(237, 175, 24, 0.2), rgba(237, 175, 24, 0.1));
+      border-color: rgba(237, 175, 24, 0.7);
+      color: #fef08a;
+      box-shadow: 0 0 20px rgba(237, 175, 24, 0.2), 0 4px 16px rgba(0,0,0,0.3);
+      text-shadow: 0 0 12px rgba(237, 175, 24, 0.5);
+      padding: 12px 20px;
+      font-weight: 600;
+    }
+    @media (hover: hover) {
+      .kuro-btn-hero:hover {
+        box-shadow: 0 0 30px rgba(237, 175, 24, 0.35), 0 6px 20px rgba(0,0,0,0.4);
+        border-color: rgba(237, 175, 24, 0.9);
       }
     }
 
@@ -1081,11 +1120,12 @@ const KuroStyles = memo(({ oledMode }) => (
       padding: 16px;
     }
 
+    /* E3-SC3: Neutral hover for default stat boxes; gold reserved for .kuro-stat-gold */
     @media (hover: hover) {
       .kuro-stat:hover {
         transform: translateY(-1px);
         border-color: var(--border-bright);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 16px rgba(100, 140, 200, 0.08);
       }
     }
 
@@ -1492,6 +1532,16 @@ const KuroStyles = memo(({ oledMode }) => (
       background: linear-gradient(90deg, transparent 0%, rgba(var(--color-gold), 0.08) 25%, rgba(var(--color-gold), 0.15) 50%, rgba(var(--color-gold), 0.08) 75%, transparent 100%);
       background-size: 200% 100%;
       animation: anticipationShimmer 0.5s ease-out;
+    }
+
+    /* DBI1-ARC2: Stat reveal animation — gold glow pulse on first render */
+    @keyframes statReveal {
+      0% { opacity: 0; box-shadow: 0 0 0 rgba(var(--color-gold), 0); }
+      40% { opacity: 1; box-shadow: 0 0 16px rgba(var(--color-gold), 0.15); }
+      100% { opacity: 1; box-shadow: var(--shadow-sm); }
+    }
+    .kuro-stat {
+      animation: statReveal 0.3s ease-out both;
     }
 
     /* DC3-OLED2: OLED-aware toast backgrounds — darker base with higher contrast */

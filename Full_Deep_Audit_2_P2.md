@@ -3934,7 +3934,7 @@ The app's brand identity is defined by 6 signals:
 
 > **Finding E7-BC4** · MEDIUM
 > **Gray text vs brand identity**: 459 instances of achromatic gray text classes (`text-gray-300`, `text-gray-400`, `text-gray-500`) across the app. While gray is appropriate for secondary/tertiary text, the sheer volume means most of the app's visible text is achromatic — weakening the gold brand identity. This was previously identified in §DBI3-S07 (HIGH) and §E1-COL1 (HIGH).
-> **Cross-ref**: §DBI3-S07, §E1-COL1, §E1-COL3, §E3-WC2.
+> **Cross-ref**: §DBI3-S07, §E1-COL1, §E1-COL3, §E3-WC2 ✅.
 > **Solution**: Replace `text-gray-300` with `text-[var(--text-body)]` (which maps to `#dfe5ef` — a cool-tinted near-white), and `text-gray-400`/`text-gray-500` with opacity-reduced versions of `--text-body`. This maintains the hierarchy while adding a cool-tint that aligns with the navy-and-gold palette. Prioritize high-visibility text (tab labels, card descriptions, stat labels).
 
 ---
@@ -10976,16 +10976,16 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
 | 30 | E3-AC2 ✅ | Gold focus ring blends into gold active borders | ALL | Add a 2px dark gap between focus ring and element border using `outline-offset: 3px` |
-| 31 | E3-CT2 | Cool accents perceptually quiet on navy background | ALL | Increase cyan/purple lightness by +5% when used as standalone text on dark backgrounds |
-| 32 | E3-WC2 | `text-gray-500` at 5.2:1 — marginal AA margin | ALL | Replace with `--text-disabled` token at 5.5:1+ or use `--text-muted` at 6.5:1 |
-| 33 | E3-SC3 | Card hover always gold regardless of content | ALL | Keep gold for default cards; use element-specific color on element-tagged cards (e.g., Fusion cards glow red on hover) |
-| 34 | E3-SA1 | 5× pure `#ff0000` (100% saturation) uncalibrated | ALL | Same as #14 — replace with `var(--state-error)` |
-| 35 | DBI1-ARC2 | Magician "reveal moment" underutilized | TRACKER | Add a brief 300ms "veil" animation before showing pull results — shimmer → reveal |
-| 36 | DBI1-ARC3 | Hero "call to action" buttons lack visual weight | ALL | Apply gold gradient background to primary CTAs: `bg-gradient-to-r from-yellow-600 to-yellow-500` |
-| 37 | DBI3-S01 | Tailwind blue defaults for 3-star tier — uncalibrated | COLLECTION, STATS | Replace `text-blue-400` with a calibrated 3-star blue: `--rarity-3star: #60a5fa` |
-| 38 | DBI3-S06 | Lucide icons at default stroke-width (1.5px) | ALL | Set consistent stroke-width to 1.25px for a lighter, more refined feel matching Rajdhani's condensed character |
-| 39 | DBI3-S11 | 70% of separators use single `border-white/10` pattern | ALL | Apply the 5-level border opacity scale: `--border-subtle` for section dividers, `--border-medium` for card borders |
-| 40 | DBI3-D02 | `rgba(255,255,255,0.1)` borders dominate despite token scale | ALL | Replace raw `border-white/10` with `border-[var(--border-medium)]` token reference |
+| 31 | E3-CT2 ✅ | Cool accents perceptually quiet on navy background | ALL | Increase cyan/purple lightness by +5% when used as standalone text on dark backgrounds |
+| 32 | E3-WC2 ✅ | `text-gray-500` at 5.2:1 — marginal AA margin | ALL | Replace with `--text-disabled` token at 5.5:1+ or use `--text-muted` at 6.5:1 |
+| 33 | E3-SC3 ✅ | Card hover always gold regardless of content | ALL | Keep gold for default cards; use element-specific color on element-tagged cards (e.g., Fusion cards glow red on hover) |
+| 34 | E3-SA1 ✅ | 5× pure `#ff0000` (100% saturation) uncalibrated | ALL | Same as #14 — replace with `var(--state-error)` |
+| 35 | DBI1-ARC2 ✅ | Magician "reveal moment" underutilized | TRACKER | Add a brief 300ms "veil" animation before showing pull results — shimmer → reveal |
+| 36 | DBI1-ARC3 ✅ | Hero "call to action" buttons lack visual weight | ALL | Apply gold gradient background to primary CTAs: `bg-gradient-to-r from-yellow-600 to-yellow-500` |
+| 37 | DBI3-S01 ✅ | Tailwind blue defaults for 3-star tier — uncalibrated | COLLECTION, STATS | Replace `text-blue-400` with a calibrated 3-star blue: `--rarity-3star: #60a5fa` |
+| 38 | DBI3-S06 ✅ | Lucide icons at default stroke-width (1.5px) | ALL | Set consistent stroke-width to 1.25px for a lighter, more refined feel matching Rajdhani's condensed character |
+| 39 | DBI3-S11 ✅ | 70% of separators use single `border-white/10` pattern | ALL | Apply the 5-level border opacity scale: `--border-subtle` for section dividers, `--border-medium` for card borders |
+| 40 | DBI3-D02 ✅ | `rgba(255,255,255,0.1)` borders dominate despite token scale | ALL | Replace raw `border-white/10` with `border-[var(--border-medium)]` token reference |
 | 41 | DBI3-TAB1 | All 8 tabs share same genericness pattern | ALL | Resolved by HIGH-1 (gray text) and #39 (separator tokens) |
 
 ---
