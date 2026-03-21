@@ -4151,7 +4151,7 @@ function WhisperingWishesInner() {
 
                 {/* Luck Leaderboard Modal */}
                 <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
-                    <div className="kuro-card w-full sm:max-w-sm h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="kuro-card w-full sm:max-w-sm max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
                       <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
                       <div className="p-4 pb-2 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
