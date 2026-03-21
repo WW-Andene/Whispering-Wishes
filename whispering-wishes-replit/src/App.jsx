@@ -4931,35 +4931,6 @@ function WhisperingWishesInner() {
                   
                   {/* Filter & Sort Controls */}
                   <div className="space-y-1.5">
-                    {/* Sort Controls */}
-                    <div className="flex gap-1.5 items-center">
-                      <button
-                        onClick={refreshImages}
-                        className="kuro-btn flex-1 flex items-center justify-center min-h-[44px] text-gray-400 hover:text-emerald-400 transition-all"
-                        title="Refresh images if they don't load"
-                        aria-label="Refresh images"
-                      >
-                        <RefreshCcw size={16} />
-                      </button>
-                      <button
-                        onClick={() => setCollectionSort('copies')}
-                        className={`kuro-btn flex-1 flex items-center justify-center min-h-[44px] text-sm font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
-                        title="Sort by copies"
-                        aria-label="Sort by copies"
-                        aria-pressed={collectionSort === 'copies'}
-                      >
-                        #
-                      </button>
-                      <button
-                        onClick={() => setCollectionSort('release')}
-                        className={`kuro-btn flex-1 flex items-center justify-center min-h-[44px] transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
-                        title="Sort by release date"
-                        aria-label="Sort by release date"
-                        aria-pressed={collectionSort === 'release'}
-                      >
-                        <Calendar size={16} />
-                      </button>
-                    </div>
                     {/* Filter Dropdowns */}
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {/* Element Filter */}
@@ -5014,6 +4985,35 @@ function WhisperingWishesInner() {
                           Clear
                         </button>
                       )}
+                    </div>
+                    {/* Sort Controls */}
+                    <div className="flex gap-1.5 items-center justify-end">
+                      <button
+                        onClick={refreshImages}
+                        className="kuro-btn flex items-center justify-center w-9 h-9 text-gray-400 hover:text-emerald-400 transition-all"
+                        title="Refresh images if they don't load"
+                        aria-label="Refresh images"
+                      >
+                        <RefreshCcw size={14} />
+                      </button>
+                      <button
+                        onClick={() => setCollectionSort('copies')}
+                        className={`kuro-btn flex items-center justify-center w-9 h-9 text-xs font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Sort by copies"
+                        aria-label="Sort by copies"
+                        aria-pressed={collectionSort === 'copies'}
+                      >
+                        #
+                      </button>
+                      <button
+                        onClick={() => setCollectionSort('release')}
+                        className={`kuro-btn flex items-center justify-center w-9 h-9 transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Sort by release date"
+                        aria-label="Sort by release date"
+                        aria-pressed={collectionSort === 'release'}
+                      >
+                        <Calendar size={14} />
+                      </button>
                     </div>
                   </div>
                 </div>
