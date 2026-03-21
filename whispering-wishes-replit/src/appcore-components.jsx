@@ -1015,7 +1015,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
   }, [oledMode, animationsEnabled]);
   
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform', width: '100vw', height: '100dvh'}} aria-hidden="true" role="presentation" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
 BackgroundGlow.displayName = 'BackgroundGlow';
 
@@ -1143,7 +1143,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
   }, [oledMode, animationsEnabled]);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2, willChange: 'transform', width: '100vw', height: '100dvh'}} aria-hidden="true" role="presentation" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
