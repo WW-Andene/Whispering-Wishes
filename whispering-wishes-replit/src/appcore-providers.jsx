@@ -306,7 +306,7 @@ const useEscapeKey = (isOpen, onClose) => {
 };
 
 // P12-FIX: Reusable modal wrapper with focus trapping + escape handling for inline modals (Step 11 audit — MEDIUM-6d)
-const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick }) => {
+const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick, centered = false }) => {
   const focusTrapRef = useFocusTrap(isOpen);
   useEscapeKey(isOpen, onClose);
   const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
@@ -363,7 +363,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   return createPortal(
     <div
       ref={focusTrapRef}
-      className={`fixed inset-0 z-[100] flex sm:items-center sm:justify-center sm:p-4 items-end ${className}`}
+      className={`fixed inset-0 z-[100] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} ${className}`}
       style={{ backdropFilter: 'blur(3px) brightness(0.7)', WebkitBackdropFilter: 'blur(3px) brightness(0.7)' }}
       role="dialog"
       aria-modal="true"

@@ -4406,7 +4406,7 @@ function WhisperingWishesInner() {
                         if (!t) return null;
                         const Icon = TROPHY_ICON_MAP[t.icon] || Star;
                         return (
-                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="bg-black/70" onClick={() => setSelectedTrophy(null)} ariaLabel={`Trophy: ${t.name}`}>
+                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="bg-black/70" onClick={() => setSelectedTrophy(null)} ariaLabel={`Trophy: ${t.name}`} centered>
                             <div
                               className="relative mx-6 p-5 rounded-xl text-center max-w-xs w-full"
                               onClick={(e) => e.stopPropagation()}
@@ -7122,8 +7122,8 @@ Example: {"pulls":[...]}'
       </FocusTrapModal>
 
       {/* Resonator ID Card Modal */}
-      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="bg-black/90 overflow-y-auto" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card">
-          <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="bg-black/90" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
+          <div className="w-full max-w-xs overflow-y-auto rounded-2xl" style={{ maxHeight: '85vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
               <div className="kuro-card-inner">
