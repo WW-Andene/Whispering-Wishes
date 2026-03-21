@@ -846,7 +846,7 @@ function WhisperingWishesInner() {
       const data = ECHO_DATA[name];
       if (!data) return true; // no data → show it
       if (collectionEchoSetFilter !== 'all' && !data.sets.includes(collectionEchoSetFilter)) return false;
-      if (collectionEchoBuffFilter !== 'all' && data.buff !== collectionEchoBuffFilter) return false;
+      if (collectionEchoBuffFilter !== 'all' && !(Array.isArray(data.buff) ? data.buff.includes(collectionEchoBuffFilter) : data.buff === collectionEchoBuffFilter)) return false;
       return true;
     });
   }, [collectionSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);

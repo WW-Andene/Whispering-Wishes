@@ -1315,7 +1315,7 @@ const ECHO_DATA = {
   'Twin Nova: Nebulous Cannon':      { sets: ['Rite of Gilded Revelation', 'Chromatic Foam'], buff: 'Spectro DMG', desc: 'The ranged model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies twice for 80% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Basic ATK DMG. Pairing with Collapsar Blade enables combo attacks and Dyad Origins stacks (+10% Echo Skill DMG each, up to 6).' },
   'Sigillum':                        { sets: ['Trailblazing Star'], buff: 'Fusion DMG', desc: 'A Calamity-class star guardian sealed beyond the Gate of the Lost Star. Skill summons Sigillum for two attacks dealing 68%/205% Fusion DMG. When equipped by Aemeath, grants +25% Resonance Liberation DMG.' },
   // ── 3-Cost Echoes ──
-  'Capitaneus':                      { sets: ['Eternal Radiance', 'Gusts of Welkin'], buff: 'Spectro DMG', desc: 'The supreme commander of the Order, carrying out judgment on transgressors. Skill summons Capitaneus to jump and smash for 118% Spectro DMG, generating 4 Merciless Judgements at 59% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Heavy ATK DMG.' },
+  'Capitaneus':                      { sets: ['Eternal Radiance', 'Gusts of Welkin'], buff: ['Spectro DMG', 'Aero DMG'], desc: 'The supreme commander of the Order, carrying out judgment on transgressors. Skill summons Capitaneus to jump and smash for 118% Spectro DMG, generating 4 Merciless Judgements at 59% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Heavy ATK DMG.' },
   'Havoc Dreadmane':                 { sets: ['Molten Rift', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A dark-maned lion-like beast radiating Havoc energy. Skill transforms into Havoc Dreadmane for 2 tail strikes, each dealing 116% Havoc DMG plus 77% bonus Havoc DMG on hit.' },
   'Lumiscale Construct':             { sets: ['Freezing Frost', 'Void Thunder'], buff: 'Glacio DMG', desc: 'An armored construct with luminous scales. Skill transforms into a Parry Stance; slash deals 553% Glacio DMG, or counterattack on hit deals 553% + 276% Glacio DMG.' },
   'Tambourinist':                    { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A rhythmic humanoid Tacet Discord that weaponizes sound. Skill summons Tambourinist playing Melodies of Annihilation; when a Resonator hits a target, deals 14% Havoc DMG up to 10 times over 10s.' },
@@ -1380,7 +1380,7 @@ const ECHO_DATA = {
 
 // All unique echo sonata sets (for filter dropdown, includes sets beyond ECHO_SETS)
 const ALL_ECHO_SONATA_SETS = [...new Set(Object.values(ECHO_DATA).flatMap(e => e.sets))].sort();
-const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).map(e => e.buff))].sort();
+const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).flatMap(e => Array.isArray(e.buff) ? e.buff : [e.buff]))].sort();
 
 // [SECTION:WEAPON_DATA]
 const WEAPON_DATA = {
