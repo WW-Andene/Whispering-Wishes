@@ -80,6 +80,7 @@ import {
   TabBackground,
   BackgroundGlow,
   TriangleMirrorWave,
+  KuroSelect,
   CollectionGridSection,
   CharacterDetailModal,
   WeaponDetailModal,
@@ -3995,19 +3996,33 @@ function WhisperingWishesInner() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="kuro-label">Base Convenes (per copy)</label>
-                    <select value={state.planner.goalPulls} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +e.target.value })} className="kuro-input w-full" aria-label="Base Convenes per copy">
-                      <option value={HARD_PITY}>{HARD_PITY} (Hard Pity)</option>
-                      <option value={HARD_PITY * 2}>{HARD_PITY * 2} (Guaranteed)</option>
-                      <option value={240}>240 (Char + Signature)</option>
-                    </select>
+                    <KuroSelect
+                      value={state.planner.goalPulls}
+                      onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +v })}
+                      options={[
+                        { value: HARD_PITY, label: `${HARD_PITY} (Hard Pity)` },
+                        { value: HARD_PITY * 2, label: `${HARD_PITY * 2} (Guaranteed)` },
+                        { value: 240, label: '240 (Char + Signature)' },
+                      ]}
+                      className="w-full"
+                      ariaLabel="Base Convenes per copy"
+                      small
+                    />
                   </div>
                   <div>
                     <label className="kuro-label">Multiplier</label>
-                    <select value={state.planner.goalModifier} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +e.target.value })} className="kuro-input w-full" aria-label="Copies multiplier">
-                      <option value={1}>×1</option>
-                      <option value={2}>×2</option>
-                      <option value={3}>×3</option>
-                    </select>
+                    <KuroSelect
+                      value={state.planner.goalModifier}
+                      onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
+                      options={[
+                        { value: 1, label: '×1' },
+                        { value: 2, label: '×2' },
+                        { value: 3, label: '×3' },
+                      ]}
+                      className="w-full"
+                      ariaLabel="Copies multiplier"
+                      small
+                    />
                   </div>
                 </div>
                 <div className="p-2 bg-white/5 rounded-lg text-[10px] text-gray-400 text-center">
@@ -4918,47 +4933,47 @@ function WhisperingWishesInner() {
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {/* Element Filter */}
-                      <select
+                      <KuroSelect
                         value={collectionElementFilter}
-                        onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
-                        aria-label="Filter by element"
-                      >
-                        <option value="all">All Elements</option>
-                        <option value="Aero">Aero</option>
-                        <option value="Glacio">Glacio</option>
-                        <option value="Electro">Electro</option>
-                        <option value="Fusion">Fusion</option>
-                        <option value="Spectro">Spectro</option>
-                        <option value="Havoc">Havoc</option>
-                      </select>
+                        onChange={setCollectionElementFilter}
+                        options={[
+                          { value: 'all', label: 'All Elements' },
+                          { value: 'Aero', label: 'Aero' },
+                          { value: 'Glacio', label: 'Glacio' },
+                          { value: 'Electro', label: 'Electro' },
+                          { value: 'Fusion', label: 'Fusion' },
+                          { value: 'Spectro', label: 'Spectro' },
+                          { value: 'Havoc', label: 'Havoc' },
+                        ]}
+                        ariaLabel="Filter by element"
+                      />
 
                       {/* Weapon Filter */}
-                      <select
+                      <KuroSelect
                         value={collectionWeaponFilter}
-                        onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
-                        aria-label="Filter by weapon type"
-                      >
-                        <option value="all">All Weapons</option>
-                        <option value="Broadblade">Broadblade</option>
-                        <option value="Sword">Sword</option>
-                        <option value="Pistols">Pistols</option>
-                        <option value="Gauntlets">Gauntlets</option>
-                        <option value="Rectifier">Rectifier</option>
-                      </select>
+                        onChange={setCollectionWeaponFilter}
+                        options={[
+                          { value: 'all', label: 'All Weapons' },
+                          { value: 'Broadblade', label: 'Broadblade' },
+                          { value: 'Sword', label: 'Sword' },
+                          { value: 'Pistols', label: 'Pistols' },
+                          { value: 'Gauntlets', label: 'Gauntlets' },
+                          { value: 'Rectifier', label: 'Rectifier' },
+                        ]}
+                        ariaLabel="Filter by weapon type"
+                      />
 
                       {/* Ownership Filter */}
-                      <select
+                      <KuroSelect
                         value={collectionOwnershipFilter}
-                        onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
-                        aria-label="Filter by ownership"
-                      >
-                        <option value="all">All Items</option>
-                        <option value="owned">Owned</option>
-                        <option value="missing">Missing</option>
-                      </select>
+                        onChange={setCollectionOwnershipFilter}
+                        options={[
+                          { value: 'all', label: 'All Items' },
+                          { value: 'owned', label: 'Owned' },
+                          { value: 'missing', label: 'Missing' },
+                        ]}
+                        ariaLabel="Filter by ownership"
+                      />
                       
                       {/* Clear Filters */}
                       {hasActiveFilters && (
@@ -5933,25 +5948,25 @@ function WhisperingWishesInner() {
                                         {/* Sonata Set selector */}
                                         <div>
                                           <div className="text-[10px] text-gray-400 mb-0.5">Sonata Set</div>
-                                          <select
+                                          <KuroSelect
                                             value={eq.echoSet || ''}
-                                            onChange={e => {
+                                            onChange={v => {
                                               setTeamEquipment(prev => {
                                                 const n = { ...prev };
-                                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: e.target.value || '' };
+                                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
                                                 try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                                                 return n;
                                               });
                                               haptic.light();
                                             }}
-                                            className="kuro-input kuro-input-sm w-full text-[10px]"
-                                            aria-label={`${m.name} sonata echo set`}
-                                          >
-                                            <option value="">Auto (from recommended)</option>
-                                            {Object.keys(ECHO_SETS).map(setName => (
-                                              <option key={setName} value={setName}>{setName}</option>
-                                            ))}
-                                          </select>
+                                            options={[
+                                              { value: '', label: 'Auto (from recommended)' },
+                                              ...Object.keys(ECHO_SETS).map(setName => ({ value: setName, label: setName })),
+                                            ]}
+                                            className="w-full"
+                                            ariaLabel={`${m.name} sonata echo set`}
+                                            small
+                                          />
                                         </div>
                                         {/* Weapon info */}
                                         {equippedWeap && (
@@ -6271,78 +6286,78 @@ function WhisperingWishesInner() {
                             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                           </div>
                           <div className="flex flex-wrap gap-1.5">
-                            <select
+                            <KuroSelect
                               value={teamElementFilter}
-                              onChange={(e) => setTeamElementFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by element"
-                            >
-                              <option value="all">All Elements</option>
-                              <option value="Aero">Aero</option>
-                              <option value="Glacio">Glacio</option>
-                              <option value="Electro">Electro</option>
-                              <option value="Fusion">Fusion</option>
-                              <option value="Spectro">Spectro</option>
-                              <option value="Havoc">Havoc</option>
-                            </select>
-                            <select
+                              onChange={setTeamElementFilter}
+                              options={[
+                                { value: 'all', label: 'All Elements' },
+                                { value: 'Aero', label: 'Aero' },
+                                { value: 'Glacio', label: 'Glacio' },
+                                { value: 'Electro', label: 'Electro' },
+                                { value: 'Fusion', label: 'Fusion' },
+                                { value: 'Spectro', label: 'Spectro' },
+                                { value: 'Havoc', label: 'Havoc' },
+                              ]}
+                              ariaLabel="Filter by element"
+                              small
+                            />
+                            <KuroSelect
                               value={teamRarityFilter}
-                              onChange={(e) => setTeamRarityFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by rarity"
-                            >
-                              <option value="all">All Rarity</option>
-                              <option value="5">5★</option>
-                              <option value="4">4★</option>
-                            </select>
-                            <select
+                              onChange={setTeamRarityFilter}
+                              options={[
+                                { value: 'all', label: 'All Rarity' },
+                                { value: '5', label: '5★' },
+                                { value: '4', label: '4★' },
+                              ]}
+                              ariaLabel="Filter by rarity"
+                              small
+                            />
+                            <KuroSelect
                               value={teamDmgFilter}
-                              onChange={(e) => setTeamDmgFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by damage focus"
-                            >
-                              <option value="all">Dmg Focus</option>
-                              <option value="Normal ATK">Normal ATK</option>
-                              <option value="Heavy ATK">Heavy ATK</option>
-                              <option value="Res. Skill">Res. Skill</option>
-                              <option value="Liberation">Liberation</option>
-                              <option value="Echo Skill">Echo Skill</option>
-                              <option value="Coordinated ATK">Coordinated ATK</option>
-                            </select>
-                            <select
+                              onChange={setTeamDmgFilter}
+                              options={[
+                                { value: 'all', label: 'Dmg Focus' },
+                                { value: 'Normal ATK', label: 'Normal ATK' },
+                                { value: 'Heavy ATK', label: 'Heavy ATK' },
+                                { value: 'Res. Skill', label: 'Res. Skill' },
+                                { value: 'Liberation', label: 'Liberation' },
+                                { value: 'Echo Skill', label: 'Echo Skill' },
+                                { value: 'Coordinated ATK', label: 'Coordinated ATK' },
+                              ]}
+                              ariaLabel="Filter by damage focus"
+                              small
+                            />
+                            <KuroSelect
                               value={teamBuffFilter}
-                              onChange={(e) => setTeamBuffFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by buff type"
-                            >
-                              <option value="all">All Buffs</option>
-                              <option value="Heal">Heal</option>
-                              <option value="Shield">Shield</option>
-                              <option value="Coordinated ATK">Coordinated ATK</option>
-                              <option value="ATK Buff">ATK Buff</option>
-                              <option value="Crit">Crit</option>
-                              <option value="DMG">DMG Buff</option>
-                              <option value="Energy Regen">Energy Regen</option>
-                              <option value="Grouping">Grouping</option>
-                            </select>
-                            <select
+                              onChange={setTeamBuffFilter}
+                              options={[
+                                { value: 'all', label: 'All Buffs' },
+                                { value: 'Heal', label: 'Heal' },
+                                { value: 'Shield', label: 'Shield' },
+                                { value: 'Coordinated ATK', label: 'Coordinated ATK' },
+                                { value: 'ATK Buff', label: 'ATK Buff' },
+                                { value: 'Crit', label: 'Crit' },
+                                { value: 'DMG', label: 'DMG Buff' },
+                                { value: 'Energy Regen', label: 'Energy Regen' },
+                                { value: 'Grouping', label: 'Grouping' },
+                              ]}
+                              ariaLabel="Filter by buff type"
+                              small
+                            />
+                            <KuroSelect
                               value={teamDebuffFilter}
-                              onChange={(e) => setTeamDebuffFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by debuff type"
-                            >
-                              <option value="all">All Debuffs</option>
-                              <option value="Frazzle">Frazzle</option>
-                              <option value="Erosion">Erosion</option>
-                              <option value="Off-Tune">Off-Tune</option>
-                              <option value="DEF Shred">DEF Shred</option>
-                              <option value="RES Shred">RES Shred</option>
-                            </select>
+                              onChange={setTeamDebuffFilter}
+                              options={[
+                                { value: 'all', label: 'All Debuffs' },
+                                { value: 'Frazzle', label: 'Frazzle' },
+                                { value: 'Erosion', label: 'Erosion' },
+                                { value: 'Off-Tune', label: 'Off-Tune' },
+                                { value: 'DEF Shred', label: 'DEF Shred' },
+                                { value: 'RES Shred', label: 'RES Shred' },
+                              ]}
+                              ariaLabel="Filter by debuff type"
+                              small
+                            />
                           </div>
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (

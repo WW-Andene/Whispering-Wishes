@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
@@ -1538,6 +1538,82 @@ const VISUAL_SLIDER_CONFIGS = [
   },
 ];
 
+// Custom styled select dropdown — replaces native <select> with kuro-card backdrop
+const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find(o => o.value === value);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('pointerdown', handler);
+    return () => document.removeEventListener('pointerdown', handler);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className={`flex items-center justify-between gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-[10px]' : 'px-2.5 py-1.5 text-[10px] min-h-[44px]'}`}
+        style={{ background: 'var(--bg-btn)' }}
+        aria-label={ariaLabel}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="truncate">{selected?.label ?? value}</span>
+        <ChevronDown size={12} className={`flex-shrink-0 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 right-0 mt-1 z-[200] rounded-xl border border-[var(--border-medium)] py-1 shadow-xl"
+          style={{
+            background: 'var(--bg-card)',
+            backdropFilter: 'blur(2px) brightness(0.6)',
+            WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
+          }}
+          role="listbox"
+          aria-label={ariaLabel}
+        >
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              role="option"
+              aria-selected={opt.value === value}
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-2.5 text-sm transition-colors border-b border-[var(--border-default)] last:border-b-0 ${opt.value === value ? 'text-cyan-400' : 'text-gray-300 active:bg-white/5'}`}
+            >
+              <span className="flex items-center justify-between">
+                {opt.label}
+                {opt.value === value && (
+                  <span className="w-3 h-3 rounded-full border-2 border-cyan-400 flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  </span>
+                )}
+                {opt.value !== value && (
+                  <span className="w-3 h-3 rounded-full border border-gray-600" />
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+KuroSelect.displayName = 'KuroSelect';
+
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
 const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, collapsible = false }) => {
   const [expanded, setExpanded] = useState(false);
@@ -1816,7 +1892,7 @@ export {
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  CollectionGridSection, PityCounterInput, CalcResultsCard,
+  KuroSelect, CollectionGridSection, PityCounterInput, CalcResultsCard,
   StandardBannerSection, ImportGuide,
   getActiveBanners,
   hideOnError,

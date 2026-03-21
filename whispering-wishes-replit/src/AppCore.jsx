@@ -46,7 +46,7 @@ export {
   BackgroundGlow, TriangleMirrorWave,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
-  CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
+  KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
   PityCounterInput, CalcResultsCard, StandardBannerSection,
   ImportGuide, getActiveBanners,
   hideOnError,
