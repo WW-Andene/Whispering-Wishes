@@ -1233,15 +1233,18 @@ const ECHO_SETS = {
 // [SECTION:ECHO_LISTS] — All echoes grouped by cost tier (newest first)
 const ALL_4COST_ECHOES = [
   // v3.0+ — Lahai-Roi
-  'Sigillum', 'Twin Nova: Nebulous Cannon', 'Hyvatia',
+  'Sigillum', 'Hyvatia',
   // v2.8 — Chronorift
   'Threnodian: Leviathan',
   // v2.6 — Sanguis Plateaus
-  'Corrosaurus', 'Lady of the Sea', 'The False Sovereign', 'Lioness of Glory',
+  'Lady of the Sea', 'The False Sovereign', 'Lioness of Glory',
   // v2.1–2.5 — Rinascita expansion
   'Reminiscence: Fleurdelys', 'Dragon of Dirge', 'Nightmare: Hecate',
+  'Nightmare: Thundering Mephis', 'Nightmare: Tempest Mephis',
+  'Nightmare: Inferno Rider', 'Nightmare: Feilian Beringal',
+  'Nightmare: Mourning Aix', 'Nightmare: Crownless',
   // v2.0 — Rinascita
-  'Nightmare: Lampylumen Myriad', 'Nightmare: Impermanence Heron', 'Sentry Construct',
+  'Dreamless', 'Nightmare: Lampylumen Myriad', 'Nightmare: Impermanence Heron', 'Sentry Construct',
   // v1.2–1.3
   'Fallacy of No Return', 'Sentinel Jué',
   // v1.0 — Launch
@@ -1251,15 +1254,14 @@ const ALL_4COST_ECHOES = [
 ];
 
 const ALL_3COST_ECHOES = [
-  // v3.1+
-  'Loong Cub', 'Gulpuff Guardian', 'Ice-Fire Duet',
-  // v2.1–2.5 — Nightmare variants & new echoes
-  'Capitaneus', 'Nightmare: Fallacy of No Return', 'Nightmare: Jué',
-  'Nightmare: Thundering Mephis', 'Nightmare: Tempest Mephis',
-  'Nightmare: Inferno Rider', 'Nightmare: Feilian Beringal',
-  'Nightmare: Mourning Aix', 'Mourning Proxy', 'Nightmare: Crownless',
+  // v3.0+ — Lahai-Roi
+  'Twin Nova: Nebulous Cannon',
+  // v2.6 — Sanguis Plateaus
+  'Corrosaurus',
+  // v2.1–2.5 — Rinascita expansion
+  'Capitaneus',
   // v2.0 — Rinascita
-  'Dreamless', 'Abyssal Mercenary', 'Chasm Guardian',
+  'Abyssal Mercator', 'Chasm Guardian',
   // v1.1–1.3
   'Electro Predator', 'Fusion Dreadmane', 'Glacio Dreadmane', 'Lava Larva',
   // v1.0 — Launch
@@ -1305,6 +1307,13 @@ const ECHO_DATA = {
   'Nightmare: Lampylumen Myriad':    { sets: ['Empyrean Anthem', 'Frosty Resolve'], buff: 'Glacio DMG', desc: 'A nightmare variant of the luminous jellyfish. Skill transforms and attacks surrounding enemies for 273% Glacio DMG. Main slot passively grants +12% Glacio DMG and +30% Coordinated ATK DMG.' },
   'Dragon of Dirge':                 { sets: ['Tidebreaking Courage'], buff: 'Fusion DMG', desc: 'A grieving dragon from the depths of Rinascita. Skill transforms and summons a Grief Rift lasting 5s, periodically dealing 36% Fusion DMG to enemies in the area. Main slot grants +12% Fusion DMG and +12% Basic ATK DMG.' },
   'Nightmare: Hecate':               { sets: ['Dream of the Lost'], buff: 'Havoc DMG', desc: 'A nightmare variant of the three-headed witch of the deep. Skill transforms into Nightmare Hecate, leaping up and smashing down for 3 stages of Havoc DMG (152% each). Main slot passively grants +12% Havoc DMG and +20% Echo Skill DMG.' },
+  'Nightmare: Crownless':            { sets: ['Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A nightmare variant of the faceless Havoc Overlord. Skill transforms and attacks enemies in front for 405% Havoc DMG. 3 charges (1 per 12s). On hit, +20% DMG for 2s. Main slot grants +12% Havoc DMG and +12% Basic ATK DMG.' },
+  'Nightmare: Mourning Aix':         { sets: ['Eternal Radiance'], buff: 'Spectro DMG', desc: 'A nightmare variant of the spectral avian. Skill summons Nightmare: Mourning Aix dealing 273% Spectro DMG. DMG to enemies with Spectro Frazzle is increased by 100%. Main slot grants +12% Spectro DMG.' },
+  'Nightmare: Feilian Beringal':     { sets: ['Sierra Gale'], buff: 'Aero DMG', desc: 'A nightmare variant of the wind ape. Skill summons Nightmare: Feilian Beringal dealing 164% Aero DMG, leaving a Whirlwind Beam that attacks 5 more times for 21% Aero DMG each. Main slot grants +12% Aero DMG and +12% Heavy ATK DMG.' },
+  'Nightmare: Inferno Rider':        { sets: ['Molten Rift'], buff: 'Fusion DMG', desc: 'A nightmare variant of the blazing knight. Skill transforms and jumps to attack for 405% Fusion DMG. Hold to enter Riding Mode (exit deals 283% Fusion DMG). Main slot grants +12% Fusion DMG and +12% Resonance Skill DMG.' },
+  'Nightmare: Tempest Mephis':       { sets: ['Void Thunder', 'Empyrean Anthem'], buff: 'Electro DMG', desc: 'A nightmare variant of the lightning wolf. Skill transforms and attacks surrounding enemies for 405% Electro DMG. Main slot grants +12% Electro DMG and +12% Resonance Skill DMG.' },
+  'Nightmare: Thundering Mephis':    { sets: ['Void Thunder'], buff: 'Electro DMG', desc: 'A nightmare variant of the thunder wolf. Skill transforms and attacks enemies in front for 405% Electro DMG. Main slot grants +12% Electro DMG and +12% Resonance Liberation DMG.' },
+  'Dreamless':                       { sets: ['Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A humanoid Calamity of pure Havoc tied to Rover\'s past. Skill transforms for 6 strikes: first 5 deal 54% Havoc DMG each, final hit deals 270% Havoc DMG. DMG increased by 50% within 5s of Rover: Havoc\'s Resonance Liberation.' },
   'Reminiscence: Fleurdelys':        { sets: ['Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Aero DMG', desc: 'An echo of the ancient flower-dragon guardian. Skill summons the Windcleaver for 8 hits of 27% Aero DMG plus one hit of 136% Aero DMG. Main slot grants +10% Aero DMG (+20% if Rover: Aero or Cartethyia).' },
   'Lioness of Glory':                { sets: ['Flaming Clawprint'], buff: 'Fusion DMG', desc: 'A proud leonine Overlord wielding the Halberd of Glory. Skill summons the Halberd to crush an area for 82% Fusion DMG, then blasts off for 191% Fusion DMG. Main slot grants +12% Fusion DMG and +12% Resonance Liberation DMG.' },
   'The False Sovereign':             { sets: ['Crown of Valor'], buff: 'Electro DMG', desc: 'A puppet-king Overlord infused with Electro. Skill transforms and dashes forward in a spinning strike dealing 55% Electro DMG x4. Upon casting Intro Skill, also summons the False Sovereign for 405% Electro DMG. Main slot grants +12% Electro DMG and +12% Heavy ATK DMG. 2 charges, 1 per 8s.' },
@@ -1334,21 +1343,8 @@ const ECHO_DATA = {
   'Glacio Dreadmane':                { sets: ['Freezing Frost', 'Moonlit Clouds'], buff: 'Glacio DMG', desc: 'An icy lion-like beast from Mt. Firmament. Skill lacerates enemies for 214% Glacio DMG with 2 charges. Deals +20% DMG mid-air and generates 6 Icicles on landing (32% Glacio DMG each).' },
   'Fusion Dreadmane':                { sets: ['Molten Rift', 'Rejuvenating Glow'], buff: 'Fusion DMG', desc: 'A fiery lion-like Howler Tacet Discord. Skill summons Fusion Dreadmane to fiercely strike the enemy dealing 32% + 64 Fusion DMG.' },
   'Electro Predator':                { sets: ['Molten Rift', 'Void Thunder'], buff: 'Electro DMG', desc: 'A nimble humanoid Tacet Discord with electrical projectiles. Skill summons Electro Predator to shoot 5 times: first 4 deal 17% Electro DMG, last deals 46% Electro DMG.' },
-  'Chasm Guardian':                  { sets: ['Rejuvenating Glow', 'Lingering Tunes'], buff: 'Glacio DMG', desc: 'A boulder-like construct from the abyss, built to crush rather than protect. Skill transforms for a Leap Strike dealing 273% Havoc DMG at cost of 10% HP, then restores up to 10% Max HP over 5s.' },
-  'Abyssal Mercenary':               { sets: ['Eternal Radiance', 'Frosty Resolve'], buff: 'Spectro DMG', desc: 'A battle-hardened combatant from the depths. Skill summons an Abyssal Mercenary to attack enemies, dealing Spectro DMG with swift strikes.' },
-  'Dreamless':                       { sets: ['Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A humanoid Calamity of pure Havoc tied to Rover\'s past. Skill transforms for 6 strikes: first 5 deal 54% Havoc DMG each, final hit deals 270% Havoc DMG. DMG increased by 50% within 5s of Rover: Havoc\'s Resonance Liberation.' },
-  'Nightmare: Crownless':            { sets: ['Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A nightmare variant of the faceless Havoc Overlord. Skill transforms and attacks enemies in front for 405% Havoc DMG. 3 charges (1 per 12s). On hit, +20% DMG for 2s. Main slot grants +12% Havoc DMG and +12% Basic ATK DMG.' },
-  'Mourning Proxy':                  { sets: ['Celestial Light', 'Eternal Radiance'], buff: 'Spectro DMG', desc: 'A spectral proxy entity that channels grief into Spectro energy. Skill summons a Mourning Proxy to attack surrounding enemies, dealing Spectro DMG.' },
-  'Nightmare: Mourning Aix':         { sets: ['Eternal Radiance'], buff: 'Spectro DMG', desc: 'A nightmare variant of the spectral avian. Skill summons Nightmare: Mourning Aix dealing 273% Spectro DMG. DMG to enemies with Spectro Frazzle is increased by 100%. Main slot grants +12% Spectro DMG.' },
-  'Nightmare: Feilian Beringal':     { sets: ['Sierra Gale'], buff: 'Aero DMG', desc: 'A nightmare variant of the wind ape. Skill summons Nightmare: Feilian Beringal dealing 164% Aero DMG, leaving a Whirlwind Beam that attacks 5 more times for 21% Aero DMG each. Main slot grants +12% Aero DMG and +12% Heavy ATK DMG.' },
-  'Nightmare: Inferno Rider':        { sets: ['Molten Rift'], buff: 'Fusion DMG', desc: 'A nightmare variant of the blazing knight. Skill transforms and jumps to attack for 405% Fusion DMG. Hold to enter Riding Mode (exit deals 283% Fusion DMG). Main slot grants +12% Fusion DMG and +12% Resonance Skill DMG.' },
-  'Nightmare: Tempest Mephis':       { sets: ['Void Thunder', 'Empyrean Anthem'], buff: 'Electro DMG', desc: 'A nightmare variant of the lightning wolf. Skill transforms and attacks surrounding enemies for 405% Electro DMG. Main slot grants +12% Electro DMG and +12% Resonance Skill DMG.' },
-  'Nightmare: Thundering Mephis':    { sets: ['Void Thunder'], buff: 'Electro DMG', desc: 'A nightmare variant of the thunder wolf. Skill transforms and attacks enemies in front for 405% Electro DMG. Main slot grants +12% Electro DMG and +12% Resonance Liberation DMG.' },
-  'Nightmare: Jué':                  { sets: ['Celestial Light'], buff: 'Spectro DMG', desc: 'A nightmare variant of the ancient dragon guardian. Skill summons Nightmare: Jué to attack enemies, dealing Spectro DMG. Main slot passively grants Spectro DMG Bonus.' },
-  'Nightmare: Fallacy of No Return': { sets: ['Rejuvenating Glow', 'Tidebreaking Courage'], buff: 'Havoc DMG', desc: 'A nightmare variant of the reality-bending Overlord. Skill summons Nightmare: Fallacy of No Return to attack enemies, dealing Spectro DMG scaled on Max HP. Grants Energy Regen and ATK buffs to the team.' },
-  'Loong Cub':                       { sets: ['Celestial Light', 'Eternal Radiance'], buff: 'Spectro DMG', desc: 'A young dragon hatchling from the Frostlands. Skill summons a Loong Cub to attack enemies, dealing Spectro DMG with playful draconic strikes.' },
-  'Gulpuff Guardian':                { sets: ['Rejuvenating Glow', 'Freezing Frost'], buff: 'Glacio DMG', desc: 'An enlarged guardian variant of the bubble-blowing Gulpuff. Skill summons a Gulpuff Guardian to attack enemies, dealing Glacio DMG with defensive bubble blasts.' },
-  'Ice-Fire Duet':                   { sets: ['Freezing Frost', 'Molten Rift'], buff: 'Glacio DMG', desc: 'A dual-elemental Tacet Discord that wields both ice and fire. Skill summons the Ice-Fire Duet to attack enemies, dealing alternating Glacio and Fusion DMG.' },
+  'Chasm Guardian':                  { sets: ['Rejuvenating Glow', 'Lingering Tunes'], buff: 'Havoc DMG', desc: 'A boulder-like construct from the abyss, built to crush rather than protect. Skill transforms for a Leap Strike dealing 273% Havoc DMG at cost of 10% HP, then restores up to 10% Max HP over 5s.' },
+  'Abyssal Mercator':                { sets: ['Frosty Resolve', 'Eternal Radiance'], buff: 'Glacio DMG', desc: 'A battle-hardened combatant from the depths. Skill summons an Abyssal Mercator to attack enemies, dealing Glacio DMG with swift strikes.' },
   // ── 1-Cost Echoes ──
   'Whiff Whaff':                     { sets: ['Sierra Gale', 'Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Aero DMG', desc: 'A hovering humanoid TD that manipulates wind. Skill summons Whiff Whaff for an air explosion (51% Aero DMG) creating a Low-pressure Zone that pulls enemies in for 2s, dealing 19% Aero DMG up to 6 times.' },
   'Cruisewing':                      { sets: ['Celestial Light', 'Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Aero DMG', desc: 'A gentle avian Tacet Discord. Skill summons Cruisewing to heal all team members for 1.8% Max HP + 80 HP, up to 4 times.' },
