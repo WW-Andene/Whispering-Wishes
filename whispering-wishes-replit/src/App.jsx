@@ -4150,9 +4150,8 @@ function WhisperingWishesInner() {
                 )}
 
                 {/* Luck Leaderboard Modal */}
-                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
-                    <div className="kuro-card w-full sm:max-w-sm h-screen sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-                      <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard" centered>
+                    <div className="kuro-card w-full max-w-sm max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                       <div className="p-4 pb-2 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -6240,13 +6239,11 @@ function WhisperingWishesInner() {
                   </Card>
 
                   {/* Character Selector Modal — FIX: pass isOpen prop */}
-                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="bg-black/70" onClick={() => setTeamSelectorOpen(false)}>
+                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="bg-black/70" onClick={() => setTeamSelectorOpen(false)} centered>
                       <div
-                        className="w-full sm:max-w-lg h-screen sm:max-h-[80vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
-                        style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
+                        className="kuro-card w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
@@ -6445,9 +6442,8 @@ function WhisperingWishesInner() {
                   </FocusTrapModal>
 
                   {/* Weapon Selector Modal */}
-                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="bg-black/70" onClick={() => setWeaponSelectorOpen(false)}>
-                      <div className="w-full sm:max-w-md h-screen sm:max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="bg-black/70" onClick={() => setWeaponSelectorOpen(false)} centered>
+                      <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
@@ -6932,9 +6928,8 @@ Example: {"pulls":[...]}'
       </main>
 
       {/* Bookmark Modal */}
-      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="bg-black/80" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark">
-          <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="bg-black/80" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark" centered>
+          <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
@@ -7427,8 +7422,8 @@ Example: {"pulls":[...]}'
       </FocusTrapModal>
 
       {/* Admin Panel Modal */}
-      <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="bg-black/80" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel">
-          <div className="kuro-card w-full max-w-2xl h-screen sm:max-h-[90vh]" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
+      <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="bg-black/80" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel" centered>
+          <div className="kuro-card w-full max-w-2xl max-h-[90vh]" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
