@@ -5512,7 +5512,7 @@ For a Wuthering Waves gacha companion, the ideal emotional arc is:
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E9-EA-F1 | **HIGH** | No dedicated celebration animation for the most important gacha moment — pulling a 5★ / hitting guaranteed pity. The success toast is the same generic green toast used for all successes (import, profile pic, etc.) | **Create a dedicated 5★ celebration**: When the pull log shows a 5★ acquisition, trigger a gold particle burst animation + screen-edge glow flash + the character's element color accent + gold confetti. Use a `@keyframes celebrateGold` animation with scale + glow + particle effects. This is the app's emotional peak — it deserves its own visual moment |
+| §E9-EA-F1 ✅ | **HIGH** | No dedicated celebration animation for the most important gacha moment — pulling a 5★ / hitting guaranteed pity. The success toast is the same generic green toast used for all successes (import, profile pic, etc.) | **Create a dedicated 5★ celebration**: When the pull log shows a 5★ acquisition, trigger a gold particle burst animation + screen-edge glow flash + the character's element color accent + gold confetti. Use a `@keyframes celebrateGold` animation with scale + glow + particle effects. This is the app's emotional peak — it deserves its own visual moment |
 | §E9-EA-F2 ✅ | **MEDIUM** | No visual indicator for pity "danger zone" (approaching hard pity) beyond the pity ring fill level — no escalating urgency in the UI | **Add progressive urgency**: As pity count enters the soft-pity range (60+), add a subtle gold pulse to the pity ring border (`kuroPulseGold` animation); at hard pity approach (70+), increase pulse frequency and add a glow halo. This creates anticipation/excitement as the guarantee approaches |
 | §E9-EA-F3 ✅ | **MEDIUM** | No "collection milestone" celebration — reaching 50%, 75%, or 100% collection completion has no visual acknowledgment | **Add collection milestone states**: When collection completion crosses 25/50/75/100% thresholds, trigger a brief celebration animation on the collection tab header + update a progress badge with the milestone color (bronze/silver/gold/diamond). This rewards the long-term collector journey |
 | §E9-EA-F4 ✅ | **LOW** | Empty states use game-lore language ("operatives", "signals") but some messages are clinical ("Insufficient data for trend analysis") — inconsistent tone | **Unify empty state voice**: Rewrite clinical messages to match the game-lore tone. "Insufficient data for trend analysis" → "Not enough Convene signals to chart your destiny" — maintains immersion while communicating the same information |
@@ -5958,8 +5958,8 @@ This creates a distinctive **temperature personality**: the app feels meditative
 | ID | Finding | Solution |
 |----|---------|----------|
 | §E9-IC-F1 ✅ | Missing 192×192 and 512×512 PNG icons | Generate PNG variants; add to manifest |
-| §E9-BS-F2 | OG image externally hosted, not version-controlled | Create local 1200×630 OG image with brand design |
-| §E9-EA-F1 | No dedicated 5★ celebration animation — the emotional peak of a gacha tracker has no visual climax | Create gold particle burst + screen glow for 5★ pull moments |
+| §E9-BS-F2 ✅ | OG image externally hosted, not version-controlled | Create local 1200×630 OG image with brand design |
+| §E9-EA-F1 ✅ | No dedicated 5★ celebration animation — the emotional peak of a gacha tracker has no visual climax | Create gold particle burst + screen glow for 5★ pull moments |
 
 #### MEDIUM (8 findings)
 | ID | Finding | Solution |
@@ -6000,7 +6000,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 - **§E7-PD1 ✅** (button migration): The native `<select>` (§E9-MC-F1 ✅) is the same class of issue — a non-branded native element breaking the design system.
 - **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2 ✅) — the radius monoculture prevents shape from serving as an identity signal.
-- **§E7-PL1 ✅** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
+- **§E7-PL1 ✅** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1 ✅) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
 - **§E8-CI2** (PWA identity broken): Expanded here with full brand scalability audit (§E9.10) — missing PNG variants, external OG image, and no splash screen compound into a weak multi-platform presence.
 
 ---
@@ -9191,8 +9191,8 @@ Competitive positioning map:
 | §DBI3-S07 ✅: 459 achromatic gray text | Replace with chromatic text tokens | **LOW RISK to P4** — new chromatic tokens must be cool-tinted (blue-gray), not warm or neutral. Solution should specify: use existing cool gray scale (e.g., `coolGray-400` at `#8e99af`) rather than Tailwind `gray-400` (`#9ca3af` which is warmer) | **ALIGNED with constraint**: New `--text-muted` token MUST use cool-tinted gray from the established scale |
 | §E10-NV-F1 ✅: Guarantee prediction at 9px | Promote to text-xs with gold background | NONE — increases visibility of existing data | **ALIGNED** |
 | §E9-IC-F1 ✅ / §E9-BS-F1: Missing PNG icons | Generate PNG variants | NONE — extends existing SVG to new sizes | **ALIGNED** |
-| §E9-BS-F2: OG image externally hosted | Create local OG image with brand design | NONE — strengthens brand presence | **ALIGNED** |
-| §E9-EA-F1: No 5★ celebration animation | Gold particle burst + screen glow | **LOW RISK to P5** — celebration must stay within cyberpunk-luxe vocabulary (gold glow, geometric particles, not confetti or cartoony effects) | **ALIGNED with constraint**: Use gold color (#edaf18) particles with geometric shapes (triangles, lines), not circular confetti |
+| §E9-BS-F2 ✅: OG image externally hosted | Create local OG image with brand design | NONE — strengthens brand presence | **ALIGNED** |
+| §E9-EA-F1 ✅: No 5★ celebration animation | Gold particle burst + screen glow | **LOW RISK to P5** — celebration must stay within cyberpunk-luxe vocabulary (gold glow, geometric particles, not confetti or cartoony effects) | **ALIGNED with constraint**: Use gold color (#edaf18) particles with geometric shapes (triangles, lines), not circular confetti |
 
 #### MEDIUM Findings — Identity Risk Assessment
 
@@ -9214,7 +9214,7 @@ Competitive positioning map:
 | §E9-VS-F1 ✅: ~30% generic Tailwind surface | Token migration | Same mechanism as E1-COV1 ✅ | **ALIGNED** |
 | §E9-MC-F1 ✅: Native select breaks HUD metaphor | Create custom .kuro-select | **STRENGTHENS P5** — replaces generic OS control with branded component | **ALIGNED** |
 | §E9-EA-F2 ✅: No escalating pity urgency | Progressive gold pulse as pity approaches | **STRENGTHENS P2** — gold as urgency signal is on-brand | **ALIGNED** |
-| §E9-EA-F3 ✅: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 — must be cyberpunk-geometric | **ALIGNED with constraint** |
+| §E9-EA-F3 ✅: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 ✅ — must be cyberpunk-geometric | **ALIGNED with constraint** |
 | §E9-AG-F1 ✅: ~492 text-gray-400 | Create --text-muted token | Same as DBI3-S07 ✅ | **ALIGNED with constraint** |
 | §E9-AG-F2 ✅: ~360 rounded-lg monoculture | Create radius scale tokens | **NONE** — formalizing existing values | **ALIGNED** |
 | §E9-MO-F1 ✅: Desktop easing differs | Unify to branded cubic-bezier | **STRENGTHENS P5** — consistent motion identity | **ALIGNED** |
@@ -9402,7 +9402,7 @@ ROOT CAUSE: Brand assets incomplete for multi-platform presence
     │       │
     │       └──→ HOME SCREEN: iOS bookmark shows generic Safari icon
     │
-    ├──→ SOCIAL: OG image externally hosted (§E9-BS-F2 / §E8-DC1)
+    ├──→ SOCIAL: OG image externally hosted (§E9-BS-F2 ✅ / §E8-DC1)
     │       │
     │       └──→ SHARING: Reddit/Discord link previews may show no image or broken image
     │
@@ -9413,7 +9413,7 @@ ROOT CAUSE: Brand assets incomplete for multi-platform presence
 
 **Chain impact**: 8+ findings across 4 steps
 **Single fix**: Asset generation sprint — create all missing brand assets from the existing SVG favicon design
-**Cascade resolution**: Fixes §E8-FV1, §E9-BS-F1, §E9-BS-F2, §E8-CI2, §E8-DC1, §E9-BS-F3, §DC4-ICO1 ✅, §E9-AC-F2 ✅
+**Cascade resolution**: Fixes §E8-FV1, §E9-BS-F1, §E9-BS-F2 ✅, §E8-CI2, §E8-DC1, §E9-BS-F3, §DC4-ICO1 ✅, §E9-AC-F2 ✅
 
 ---
 
@@ -9426,7 +9426,7 @@ ROOT CAUSE: No dedicated visual treatment for emotional peak moments
     │       │
     │       └──→ CONVERSION: The "sign-up equivalent" moment has no reward signal
     │
-    ├──→ 5-STAR: No 5★ pull celebration (§E9-EA-F1 HIGH)
+    ├──→ 5-STAR: No 5★ pull celebration (§E9-EA-F1 ✅ HIGH)
     │       │
     │       └──→ EMOTIONAL: The gacha tracker's emotional peak has no visual climax
     │               │
@@ -10223,7 +10223,7 @@ These findings affect significant visual quality, usability, or brand consistenc
 
 **Problem**: Both `text-gray-*` and `text-slate-*` Tailwind classes appear. Gray is achromatic; slate carries blue hue. Mixing creates inconsistent text temperature — some secondary text is warm-neutral, some is cool-tinted.
 
-**Solution**: Standardize on the chromatic text tokens from HIGH-1 (`--text-secondary`, `--text-muted`, `--text-disabled`). For any remaining Tailwind usage, prefer `slate-*` over `gray-*` to match the cool palette hue.
+**Solution**: Standardize on the chromatic text tokens from HIGH-1 ✅ (`--text-secondary`, `--text-muted`, `--text-disabled`). For any remaining Tailwind usage, prefer `slate-*` over `gray-*` to match the cool palette hue.
 
 ---
 
@@ -10232,7 +10232,7 @@ These findings affect significant visual quality, usability, or brand consistenc
 
 **Problem**: The KuroStyles CSS-in-JS defines a clean 4-level radius hierarchy (8/10/12/16px), but Tailwind markup uses 12 unique radius values. `rounded-lg` (8px) appears 109 times, dominating all other values and creating a radius monoculture.
 
-**Solution**: Enforce the radius token scale from HIGH-3. Map Tailwind classes to tokens:
+**Solution**: Enforce the radius token scale from HIGH-3 ✅. Map Tailwind classes to tokens:
 - Buttons/inputs: `rounded-[var(--radius-sm)]` (6px)
 - Tab items: `rounded-[var(--radius-md)]` (8px)
 - Inner cards/toasts: `rounded-[var(--radius-lg)]` (12px)
@@ -10250,7 +10250,7 @@ Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy lev
 
 **Problem**: Toast notifications and the PWA install prompt both use `z-index: 9998`. If both are visible simultaneously, they overlap unpredictably.
 
-**Solution**: Assign distinct z-index values using the token scale from HIGH-3:
+**Solution**: Assign distinct z-index values using the token scale from HIGH-3 ✅:
 ```css
 --z-toast: 9500;    /* toast notifications */
 --z-install: 9800;  /* PWA install prompt (should overlay toasts) */
@@ -10264,7 +10264,7 @@ Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy lev
 
 **Problem**: The design system (KuroStyles) defines a strong, distinctive character. But ~30% of the UI uses inline Tailwind values that bypass the system, creating a "custom foreground, generic background" split.
 
-**Solution**: This is the root cause addressed by Chain #1 (inline button migration) and Chain #2 (gray text tokenization). Fixing HIGH-1 and HIGH-2 resolves this finding. No additional action needed beyond those two initiatives.
+**Solution**: This is the root cause addressed by Chain #1 (inline button migration) and Chain #2 (gray text tokenization). Fixing HIGH-1 ✅ and HIGH-2 ✅ resolves this finding. No additional action needed beyond those two initiatives.
 
 **Cross-references**: E7-DC1 ✅, E7-PD1 ✅
 
@@ -10454,9 +10454,9 @@ The 8px increase has negligible visual impact but significantly improves mobile 
 #### MED-17 ✅: E7-BC4 ✅ — 459+ Gray Text Instances Dilute Brand
 **Step**: 14 (§E7) | **Tabs**: ALL
 
-**Problem**: Same root as HIGH-1. The gray text volume makes the app read as "Tailwind template with custom cards" rather than "fully designed product."
+**Problem**: Same root as HIGH-1 ✅. The gray text volume makes the app read as "Tailwind template with custom cards" rather than "fully designed product."
 
-**Solution**: Resolved by HIGH-1 (chromatic text tokens). No additional action.
+**Solution**: Resolved by HIGH-1 ✅ (chromatic text tokens). No additional action.
 
 ---
 
@@ -10491,7 +10491,7 @@ This allows 2-column layouts from ~760px viewport width, eliminating the awkward
 
 **Problem**: About 30% of the UI surface area uses raw Tailwind classes (`bg-white/5`, `border-white/10`, `rounded-lg`, `transition-colors`) rather than the design-system tokens. This creates a "generic Tailwind" texture on those surfaces.
 
-**Solution**: Migrate the ~30% generic surface to design tokens. The fix cascades from HIGH-1 (text tokens), HIGH-3 (spacing/radius tokens), MED-3 ✅ (radius), and MED-6 ✅ (buttons). No additional action beyond those initiatives.
+**Solution**: Migrate the ~30% generic surface to design tokens. The fix cascades from HIGH-1 ✅ (text tokens), HIGH-3 ✅ (spacing/radius tokens), MED-3 ✅ (radius), and MED-6 ✅ (buttons). No additional action beyond those initiatives.
 
 **Cross-references**: §E9-MC-F2
 
@@ -10567,9 +10567,9 @@ Store milestone state in localStorage to trigger only once per threshold.
 #### MED-24 ✅: §E9-AG-F1 ✅ — ~492 `text-gray-400` Instances Lack Brand Personality
 **Step**: 16 (§E9) | **Tabs**: ALL
 
-**Problem**: Same root as HIGH-1. The sheer volume of `text-gray-400` creates a "Tailwind template" texture.
+**Problem**: Same root as HIGH-1 ✅. The sheer volume of `text-gray-400` creates a "Tailwind template" texture.
 
-**Solution**: Resolved by HIGH-1. All `text-gray-400` → `text-[var(--text-muted)]`.
+**Solution**: Resolved by HIGH-1 ✅. All `text-gray-400` → `text-[var(--text-muted)]`.
 
 ---
 
@@ -10578,7 +10578,7 @@ Store milestone state in localStorage to trigger only once per threshold.
 
 **Problem**: Same root as MED-3 ✅. The `rounded-lg` monoculture makes all components feel the same shape regardless of their role.
 
-**Solution**: Resolved by MED-3 ✅ and HIGH-3. Radius tokens create a 5-level hierarchy.
+**Solution**: Resolved by MED-3 ✅ and HIGH-3 ✅. Radius tokens create a 5-level hierarchy.
 
 ---
 
@@ -10835,7 +10835,7 @@ if (prefersReduced) {
 
 **Problem**: Current tokens have only the semantic layer. No `--hue-base`, `--hue-accent`, `--radius-base`, `--space-base` primitives exist for derivation.
 
-**Solution**: Resolved by HIGH-3. The 3-layer token architecture adds primitives.
+**Solution**: Resolved by HIGH-3 ✅. The 3-layer token architecture adds primitives.
 
 ---
 
@@ -10916,9 +10916,9 @@ Store a backup snapshot before executing destructive actions. Auto-delete backup
 #### MED-50: WB-F1 — Token System Lacks 3-Layer Architecture
 **Step**: 18 (§ADE.22) | **Chain**: #3 | **Tabs**: ALL
 
-**Problem**: Same root as MED-44 / HIGH-3. Current tokens have only the semantic layer.
+**Problem**: Same root as MED-44 / HIGH-3 ✅. Current tokens have only the semantic layer.
 
-**Solution**: Resolved by HIGH-3. 3-layer architecture (primitives → semantic → component).
+**Solution**: Resolved by HIGH-3 ✅. 3-layer architecture (primitives → semantic → component).
 
 ---
 
@@ -10986,7 +10986,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 38 | DBI3-S06 ✅ | Lucide icons at default stroke-width (1.5px) | ALL | Set consistent stroke-width to 1.25px for a lighter, more refined feel matching Rajdhani's condensed character |
 | 39 | DBI3-S11 ✅ | 70% of separators use single `border-white/10` pattern | ALL | Apply the 5-level border opacity scale: `--border-subtle` for section dividers, `--border-medium` for card borders |
 | 40 | DBI3-D02 ✅ | `rgba(255,255,255,0.1)` borders dominate despite token scale | ALL | Replace raw `border-white/10` with `border-[var(--border-medium)]` token reference |
-| 41 | DBI3-TAB1 ✅ | All 8 tabs share same genericness pattern | ALL | Resolved by HIGH-1 (gray text) and #39 (separator tokens) |
+| 41 | DBI3-TAB1 ✅ | All 8 tabs share same genericness pattern | ALL | Resolved by HIGH-1 ✅ (gray text) and #39 (separator tokens) |
 
 ---
 
@@ -11039,7 +11039,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
 | 65 | E7-AD1 ✅ | Non-standard 10px stat radius (not in 8/12/16 scale) | STATS | Standardize to `var(--radius-lg)` (12px) |
-| 66 | E7-AD2 ✅ | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 (radius tokens) |
+| 66 | E7-AD2 ✅ | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 ✅ (radius tokens) |
 | 67 | E7-AD4 ✅ | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
 | 68 | E7-AD6 ✅ | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
 | 69 | E7-AD7 ✅ | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
@@ -11059,7 +11059,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
 | 78 | E8-CI1 ✅ | First-impression credibility strong but polish gradient visible | ALL | Resolved by Chain #1 (inline button migration) |
-| 79 | E8-VT2 ✅ | Spacing rhythm inconsistent between kuro-* and Tailwind layers | ALL | Resolved by HIGH-3 (spacing tokens) |
+| 79 | E8-VT2 ✅ | Spacing rhythm inconsistent between kuro-* and Tailwind layers | ALL | Resolved by HIGH-3 ✅ (spacing tokens) |
 | 80 | E8-CO1 ✅ | Import success lacks celebration animation | TRACKER | Add brief gold shimmer on the data import success card |
 
 ---
@@ -11113,7 +11113,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 109 | LT-F1 ✅ | Light source direction ambiguous across systems | ALL | Resolved by #107 (ambient light model) |
 | 110 | SH-F1 ✅ | No non-rectangular elements exist (zero clip-path/asymmetric radius) | ALL | Add asymmetric radius on tab active indicator: `border-radius: 12px 12px 0 0` |
 | 111 | CP-F1 ✅ | Section-to-component gap ratio too low (~2×, should be 3–5×) | ALL | Increase between-section spacing: `.section + .section { margin-top: 36px; }` |
-| 112 | TK-F2 ✅ | No component-level token abstraction | ALL | Add `--card-radius`, `--card-padding`, `--btn-radius` to `:root` (part of HIGH-3) |
+| 112 | TK-F2 ✅ | No component-level token abstraction | ALL | Add `--card-radius`, `--card-padding`, `--btn-radius` to `:root` (part of HIGH-3 ✅) |
 | 113 | AT-F1 ✅ | Atmosphere has no CSS fallback layer | ALL | Same as #108 — CSS radial-gradient fallback |
 | 114 | DV-F1 ✅ | No game-world visual references beyond color and terminology | ALL | Add angular corner brackets to featured cards (WuWa-inspired frame treatment) |
 | 115 | SR-F1 ✅ | Two key game motifs (angular frames, wave patterns) not transferred | ALL | (1) Corner brackets on cards (#114), (2) Wave-pattern section divider using repeating-linear-gradient |
@@ -11177,7 +11177,7 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 |---------|----------|----------|--------|
 | §E10-NV-F1 ✅ (guarantee at 9px) | MEDIUM | **HIGH** | Most actionable user insight at smallest size — outsized impact |
 | §E9-IC-F1 ✅ (missing PNG icons) | MEDIUM | **HIGH** | PWA installation broken without icons — binary fail state |
-| §E9-BS-F2 (OG image external) | MEDIUM | **HIGH** | Social sharing broken — first-impression for new users |
+| §E9-BS-F2 ✅ (OG image external) | MEDIUM | **HIGH** | Social sharing broken — first-impression for new users |
 | E8-CI2 (missing apple-touch-icon) | MEDIUM | → merged with §E9-IC-F1 ✅ | Same root: missing icon variants |
 | §E10-NV-F5 ✅ (Win Rate at text-xs) | LOW | **POLISH** | Smallest text for important metric, but not decision-critical |
 | §E10-DD-F1 (collection grid tight) | LOW | **POLISH** | Appropriate for expert audience; no change needed |
@@ -11214,9 +11214,9 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
-| **1A** | Create chromatic text tokens (`--text-secondary`, `--text-muted`, `--text-disabled`) | HIGH-1, MED-17 ✅, MED-24 ✅ |
-| **1B** | Create radius, spacing, z-index tokens | HIGH-3, MED-3 ✅, MED-4 ✅ |
-| **1C** | Consolidate color palette to ~40 managed tokens | HIGH-2 |
+| **1A** | Create chromatic text tokens (`--text-secondary`, `--text-muted`, `--text-disabled`) | HIGH-1 ✅, MED-17 ✅, MED-24 ✅ |
+| **1B** | Create radius, spacing, z-index tokens | HIGH-3 ✅, MED-3 ✅, MED-4 ✅ |
+| **1C** | Consolidate color palette to ~40 managed tokens | HIGH-2 ✅ |
 | **1D** | Replace `text-gray-*` with chromatic tokens (459 instances) | Chain #2 |
 
 ### Phase 2: Component Migration (MEDIUM impact, highest visual improvement)
@@ -11234,8 +11234,8 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
-| **3A** | Generate PNG icons (192, 512, maskable) | HIGH-4 |
-| **3B** | Create local OG image (1200×630) | HIGH-5 |
+| **3A** | Generate PNG icons (192, 512, maskable) | HIGH-4 ✅ |
+| **3B** | Create local OG image (1200×630) | HIGH-5 ✅ |
 | **3C** | Fix favicon gold (#fbbf24 → #edaf18) | POLISH-1, MED-1 ✅ |
 
 ### Phase 4: Data Quality (MEDIUM impact)
@@ -11253,7 +11253,7 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
-| **5A** | Add 5★ celebration animation | HIGH-6 |
+| **5A** | Add 5★ celebration animation | HIGH-6 ✅ |
 | **5B** | Add pity danger zone visual escalation | MED-22 ✅ |
 | **5C** | Replace `rgba(0,0,0,...)` with palette-derived shadows | MED-40 |
 | **5D** | Tighten transition durations | #122 |
