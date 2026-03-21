@@ -5658,7 +5658,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | §E9-IC-F1 ✅ | **HIGH** | Missing 192×192 and 512×512 PNG icons in manifest — Android PWA install will use a generic placeholder or degrade | **Generate PNG icon variants**: Create 192×192 and 512×512 PNGs from the SVG favicon. Add to manifest.webmanifest with `"purpose": "any maskable"`. Use a build script or manual export from the SVG |
 | §E9-IC-F2 | **MEDIUM** | Favicon uses `#fbbf24` (Tailwind amber) instead of brand gold `#edaf18` — the browser tab icon is technically off-brand | **Align favicon gold**: Change `fill="#fbbf24"` to `fill="#edaf18"` in favicon.svg. This is the same finding as §E9-AC-F2 ✅ — a single-line fix |
 | §E9-IC-F3 | **MEDIUM** | Favicon uses `system-ui, sans-serif` font family — if Rajdhani is the brand font, the "W" letterform in the icon doesn't match the app's typography | **Use Rajdhani in favicon**: Either embed Rajdhani as a `<style>` in the SVG or render the "W" as a `<path>` traced from the Rajdhani glyph. This ensures the letterform is identical to in-app headings |
-| §E9-IC-F4 | **MEDIUM** | OG image points to external URL (`https://whisperingwishes.vercel.app/og-image.png`) — not version-controlled, could be outdated or missing | **Create local OG image**: Design a 1200×630px social card with brand elements (gold accent bar, dark navy background, "Whispering Wishes" text, optional character art). Save as `public/og-image.png` and update meta tags to relative path |
+| §E9-IC-F4 ✅ | **MEDIUM** | OG image points to external URL (`https://whisperingwishes.vercel.app/og-image.png`) — not version-controlled, could be outdated or missing | **Create local OG image**: Design a 1200×630px social card with brand elements (gold accent bar, dark navy background, "Whispering Wishes" text, optional character art). Save as `public/og-image.png` and update meta tags to relative path |
 | §E9-IC-F5 ✅ | **LOW** | No dedicated PWA splash screen design — relies on manifest icon + background_color | **Verify splash screen quality**: Test the PWA install on Chrome Android and check that the splash screen uses the gold "W" icon on `#080c14` background. If the icon looks too small, consider creating a larger splash-specific image |
 
 ---
@@ -5926,7 +5926,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-BS-F1 | **HIGH** | Missing 192×192 and 512×512 PNG icon variants — Android PWA install degrades without these | **Generate PNG icons**: Export the SVG favicon to 192×192 and 512×512 PNGs. Add to `public/` directory and update manifest.webmanifest with additional icon entries including `"purpose": "any maskable"`. For maskable icons, ensure the "W" lettermark fits within the safe zone (center 80% of the image) |
-| §E9-BS-F2 | **HIGH** | OG image (`og-image.png`) is hosted externally at `whisperingwishes.vercel.app` — not version-controlled, may be outdated or absent | **Create local OG image**: Design a 1200×630px social card. Spec: `#080c14` background, 4px gold (#edaf18) accent bar at top, "Whispering Wishes" in Rajdhani Bold at ~48px centered, "Wuthering Waves Companion" subtitle in JetBrains Mono at ~20px below, gold "W" logo at bottom-right. Save as `public/og-image.png` and update `index.html` meta tags to use relative URL `/og-image.png` |
+| §E9-BS-F2 ✅ | **HIGH** | OG image (`og-image.png`) is hosted externally at `whisperingwishes.vercel.app` — not version-controlled, may be outdated or absent | **Create local OG image**: Design a 1200×630px social card. Spec: `#080c14` background, 4px gold (#edaf18) accent bar at top, "Whispering Wishes" in Rajdhani Bold at ~48px centered, "Wuthering Waves Companion" subtitle in JetBrains Mono at ~20px below, gold "W" logo at bottom-right. Save as `public/og-image.png` and update `index.html` meta tags to use relative URL `/og-image.png` |
 | §E9-BS-F3 | **MEDIUM** | No branded PWA loading/splash screen — first load shows generic skeleton shimmer instead of brand moment | **Add branded splash**: Create a simple splash overlay that shows on first render before data loads: centered gold "W" with `glow-gold` box-shadow on `#080c14` background, with a small gold progress bar or dot animation at the bottom. Dismiss once React mounts and initial data loads |
 | §E9-BS-F4 | **LOW** | Theme-color meta tag uses `#080c14` (dark navy) — this is the background, not the accent. Some PWA contexts display this color in the status bar, making the brand invisible | **Consider gold theme-color**: Change `<meta name="theme-color">` to `#edaf18` (gold) for mobile browsers. Note: This is already done for msapplication-TileColor but not for the primary theme-color. Test on Chrome Android to verify the gold status bar looks good against the dark app |
 | §E9-BS-F5 | **LOW** | Corner bracket motif (the most unique visual element) doesn't survive reduction to icon/card sizes — the brand's most distinctive decorative element is lost outside the app viewport | **Create a "bracket W" mark**: Design a version of the "W" lettermark that incorporates corner bracket elements — e.g., the "W" with thin L-shaped brackets at its corners. This would carry the most distinctive visual element into the icon/card contexts where it currently can't exist |
@@ -5957,7 +5957,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 #### HIGH (3 findings)
 | ID | Finding | Solution |
 |----|---------|----------|
-| §E9-IC-F1 | Missing 192×192 and 512×512 PNG icons | Generate PNG variants; add to manifest |
+| §E9-IC-F1 ✅ | Missing 192×192 and 512×512 PNG icons | Generate PNG variants; add to manifest |
 | §E9-BS-F2 | OG image externally hosted, not version-controlled | Create local 1200×630 OG image with brand design |
 | §E9-EA-F1 | No dedicated 5★ celebration animation — the emotional peak of a gacha tracker has no visual climax | Create gold particle burst + screen glow for 5★ pull moments |
 
@@ -9190,7 +9190,7 @@ Competitive positioning map:
 | §E1-COV1 ✅: Token coverage ~30% | Add 25+ spacing/radius/z-index tokens | NONE — tokens formalize existing patterns | **ALIGNED** |
 | §DBI3-S07 ✅: 459 achromatic gray text | Replace with chromatic text tokens | **LOW RISK to P4** — new chromatic tokens must be cool-tinted (blue-gray), not warm or neutral. Solution should specify: use existing cool gray scale (e.g., `coolGray-400` at `#8e99af`) rather than Tailwind `gray-400` (`#9ca3af` which is warmer) | **ALIGNED with constraint**: New `--text-muted` token MUST use cool-tinted gray from the established scale |
 | §E10-NV-F1 ✅: Guarantee prediction at 9px | Promote to text-xs with gold background | NONE — increases visibility of existing data | **ALIGNED** |
-| §E9-IC-F1 / §E9-BS-F1: Missing PNG icons | Generate PNG variants | NONE — extends existing SVG to new sizes | **ALIGNED** |
+| §E9-IC-F1 ✅ / §E9-BS-F1: Missing PNG icons | Generate PNG variants | NONE — extends existing SVG to new sizes | **ALIGNED** |
 | §E9-BS-F2: OG image externally hosted | Create local OG image with brand design | NONE — strengthens brand presence | **ALIGNED** |
 | §E9-EA-F1: No 5★ celebration animation | Gold particle burst + screen glow | **LOW RISK to P5** — celebration must stay within cyberpunk-luxe vocabulary (gold glow, geometric particles, not confetti or cartoony effects) | **ALIGNED with constraint**: Use gold color (#edaf18) particles with geometric shapes (triangles, lines), not circular confetti |
 
@@ -11176,9 +11176,9 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 | Finding | Original | Adjusted | Reason |
 |---------|----------|----------|--------|
 | §E10-NV-F1 ✅ (guarantee at 9px) | MEDIUM | **HIGH** | Most actionable user insight at smallest size — outsized impact |
-| §E9-IC-F1 (missing PNG icons) | MEDIUM | **HIGH** | PWA installation broken without icons — binary fail state |
+| §E9-IC-F1 ✅ (missing PNG icons) | MEDIUM | **HIGH** | PWA installation broken without icons — binary fail state |
 | §E9-BS-F2 (OG image external) | MEDIUM | **HIGH** | Social sharing broken — first-impression for new users |
-| E8-CI2 (missing apple-touch-icon) | MEDIUM | → merged with §E9-IC-F1 | Same root: missing icon variants |
+| E8-CI2 (missing apple-touch-icon) | MEDIUM | → merged with §E9-IC-F1 ✅ | Same root: missing icon variants |
 | §E10-NV-F5 ✅ (Win Rate at text-xs) | LOW | **POLISH** | Smallest text for important metric, but not decision-critical |
 | §E10-DD-F1 (collection grid tight) | LOW | **POLISH** | Appropriate for expert audience; no change needed |
 | §E10-CH-F2 ✅ (histogram custom HTML) | LOW | **POLISH** | Intentional — custom implementation is better than Recharts for this case |
