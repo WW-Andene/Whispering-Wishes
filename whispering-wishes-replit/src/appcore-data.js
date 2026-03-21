@@ -129,12 +129,12 @@ const getServerOffset = (server, atDate) => {
 
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
-  version: '3.1', phase: 2, // Game version (not app version)
+  version: '3.2', phase: 1, // Game version (not app version)
   // Times from wuwatracker.com (Europe CET/CEST reference, converted to UTC)
-  // Feb is CET (UTC+1) — these conversions are correct for winter
-  // Banner: Thu, 26 Feb 2026 10:00 - Wed, 18 Mar 2026 11:59 (Europe CET)
-  startDate: '2026-02-26T09:00:00Z', // Feb 26, 10:00 Europe = 09:00 UTC
-  endDate: '2026-03-18T10:59:00Z',   // Mar 18, 11:59 Europe = 10:59 UTC
+  // Mar is CET (UTC+1) — these conversions are correct for winter
+  // Banner: Wed, 19 Mar 2026 10:00 - Thu, 09 Apr 2026 11:59 (Europe CEST)
+  startDate: '2026-03-19T08:00:00Z', // Mar 19, 10:00 Europe CEST = 08:00 UTC
+  endDate: '2026-04-09T09:59:00Z',   // Apr 09, 11:59 Europe CEST = 09:59 UTC
   characterBannerImage: '',
   weaponBannerImage: '',
   eventBannerImage: '',
@@ -148,12 +148,12 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'luuk-herssen', name: 'Luuk Herssen', title: 'Should That Molten Gold Drip', element: 'Spectro', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/Kc4nxTrD/post-lament-anthropocene-stars-intertwined-luuk-herssen-v0-b4p94ck3quag1.jpg', imagePosition: 'center 15%' },
-    { id: 'galbrena', name: 'Galbrena', title: 'Fiend of Ever-Burning Flame', element: 'Fusion', weaponType: 'Pistols', isNew: false, featured4Stars: ['Sanhua', 'Lumi', 'Yuanwu'], imageUrl: 'https://i.ibb.co/rGyhGWWd/galbrena-drip-marketing-v0-xcdhhporc2nf1.jpg', imagePosition: 'center 15%' },
+    { id: 'sigrika', name: 'Sigrika', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/27WC0nVY/G0-Ec-Fat-W4-AAubh-M.jpg', imagePosition: 'center 15%' },
+    { id: 'qiuyuan', name: 'Qiuyuan', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/KxqVsJPs/HA8o-Hi-Ybs-AMv-Uf-J.jpg', imagePosition: 'center 15%' },
   ],
   weapons: [
-    { id: 'daybreakers-spine', name: "Daybreaker's Spine", title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Luuk Herssen', element: 'Spectro', isNew: true, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/Z6ZQGVLK/Absolute-Pulsation-Daybreaker-s-Spine-2026-02-26.webp' },
-    { id: 'lux-umbra', name: 'Lux & Umbra', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Galbrena', element: 'Fusion', isNew: false, featured4Stars: ['Overture', 'Jinzhou Keeper', 'Hollow Mirage'], imageUrl: 'https://i.ibb.co/cSWsQcds/HB6tgp-Baw-AASr-C.jpg' },
+    { id: 'solsworn-ciphers', name: 'Solsworn Ciphers', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Sigrika', element: 'Aero', isNew: true, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/8LYrgYdN/e7a3b-17738194413502-1920.jpg' },
+    { id: 'emerald-sentence', name: 'Emerald Sentence', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Qiuyuan', element: 'Aero', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/9HyYC5vt/Absolute-Pulsation-Emerald-Sentence-2026-03-19.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -175,6 +175,8 @@ const CURRENT_BANNERS = {
 
 // [SECTION:HISTORY]
 const BANNER_HISTORY = [
+  // Version 3.2
+  { id: 'v3.2-p1', version: '3.2', phase: 1, characters: ['Sigrika', 'Qiuyuan'], weapons: ['Solsworn Ciphers', 'Emerald Sentence'], startDate: '2026-03-19', endDate: '2026-04-09' },
   // Version 3.1
   { id: 'v3.1-p2', version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18' },
   { id: 'v3.1-p1', version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26' },
@@ -459,6 +461,13 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Polarizer' },
     bestEchoes: ['Sigillum', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
     teams: ['Aemeath + Lynae + Mornye', 'Aemeath + Lupa + Mornye'] },
+  'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
+    desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. Rune-consuming Echo Skill hypercarry with crowd control and Aero burst.',
+    skills: ['One, Two, Three', 'BOOMY BOOM!', 'Where Trust Leads Me!', 'Learn My True Name'],
+    ascension: { boss: 'Our Choice', common: 'Exoswarm Pendant', specialty: 'Arithmetic Shell' },
+    skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
+    bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
+    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Ciaccona + Shorekeeper'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Applies Aero off-field while maintaining a charming facade.',
@@ -2096,6 +2105,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Phrolova': 'https://i.ibb.co/Nd0HbF4v/Phrolova-Full-Sprite.webp',
   'Qiuyuan': 'https://i.ibb.co/JRvP5fnx/Qiuyuan-Full-Sprite.webp',
   'Lynae': 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp',
+  'Sigrika': 'https://i.ibb.co/TBhhKSk6/Sigrika-Full-Sprite.webp',
   // 4★ Resonators
   'Aalto': 'https://i.ibb.co/v81v3Hq/Aalto-Full-Sprite.webp',
   'Baizhi': 'https://i.ibb.co/4Ztm8DCG/Baizhi-Full-Sprite.webp',
@@ -2136,13 +2146,14 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Thunderflare Dominion': 'https://i.ibb.co/d062x9ZH/Thunderflare-Dominion.webp',
   "Moongazer's Sigil": 'https://i.ibb.co/zhF435g4/Moongazers-Sigil.webp',
   'Lux & Umbra': 'https://i.ibb.co/FqVkK4Tn/Lux-Umbra.webp',
-  'Emerald Sentence': 'https://i.ibb.co/chmx3GgM/Emerald-Sentence.webp',
+  'Emerald Sentence': 'https://i.ibb.co/rKmyDNs5/Emerald-Sentence.webp',
   'Kumokiri': 'https://i.ibb.co/VWxG9pSF/Kumokiri.webp',
   'Spectrum Blaster': 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp',
   'Starfield Calibrator': 'https://i.ibb.co/tTDkFQ7W/Starfield-Calibrator.webp',
-  // v3.1 weapons - using placeholder until official images available
+  // v3.1+ weapons
   'Everbright Polestar': 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp',
   "Daybreaker's Spine": 'https://i.ibb.co/tpn30Lrm/6982b58a79a3b099e1bd0d48i-CAFZ7lo03.webp',
+  'Solsworn Ciphers': 'https://i.ibb.co/8n2cT6yR/Solsworn-Ciphers.webp',
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
@@ -2497,7 +2508,7 @@ const ALL_5STAR_RESONATORS = [
   'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
   'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
   'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
-  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
+  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath', 'Sigrika',
 ];
 
 const ALL_4STAR_RESONATORS = [
