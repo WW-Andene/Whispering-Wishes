@@ -561,6 +561,11 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-calc svg {
       stroke-width: 1.25px;
     }
+
+    /* E4-LH2: Relaxed line-height for multi-line small text (8-9px) */
+    .kuro-calc p, .kuro-calc .text-\\[8px\\], .kuro-calc .text-\\[9px\\] {
+      line-height: 1.625;
+    }
     
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(16px); }
@@ -860,7 +865,7 @@ const KuroStyles = memo(({ oledMode }) => (
       font-size: 14px;
       font-weight: 600;
       line-height: 1.25;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking at 14px */
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1229,6 +1234,10 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ LABELS - Bright for readability ═══ */
+    /* E4-HH2: Font micro-scale (8–12px) is intentional "instrument display" density.
+       8px: badge counters, star indicators   9px: metadata, timestamps
+       10px: labels, categories, button text  11px: secondary info (snapped to 12px)
+       12px: compact body text                14px: primary values, card content */
     /* E2-PR1: Label at 10px vs value at 14px = 1.4:1 ratio (was 12px = 1.17:1) */
     .kuro-label {
       color: var(--text-body);

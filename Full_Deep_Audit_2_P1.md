@@ -4620,7 +4620,7 @@ The plan requires assessment across ALL 8 tabs. Below is a per-tab genericness s
 
 **Cross-tab pattern**: The genericness signal is remarkably consistent — `text-gray-400/500` and `border-white/10` appear on EVERY tab. Fixing Signal 7 (chromatic grays) and Signal 11 (separator hierarchy) would lift ALL 8 tabs simultaneously.
 
-> **Finding DBI3-TAB1** · Severity: **LOW**
+> **Finding DBI3-TAB1** ✅ · Severity: **LOW**
 > **All 8 tabs share the same genericness pattern: achromatic gray text + uniform white/10 borders.** The owned elements vary per tab (pity rings, trophy glows, element colors), but the generic elements are identical across all tabs. This creates a "custom foreground, generic background" split.
 > **Solution**: Fixing DBI3-S07 (chromatic grays) and DBI3-S11 ✅ (separator hierarchy) would eliminate the cross-tab genericness pattern in a single systematic pass. No per-tab fixes needed — the solution is architectural.
 
@@ -4704,7 +4704,7 @@ Both are fixable with systematic find-and-replace operations. The app's custom e
 | DBI3-D01 | Pure black correctly scoped to OLED opt-in | **PASS** | §DBI3.D |
 | DBI3-D02 ✅ | `rgba(255,255,255,0.1)` borders dominate despite scale | **LOW** | §DBI3.D |
 | DBI3-D04 | Gold is unambiguous primary accent (not blue) | **PASS** | §DBI3.D |
-| DBI3-TAB1 | All 8 tabs share same genericness pattern (gray text + white/10 borders) | **LOW** | §DBI3.T |
+| DBI3-TAB1 ✅ | All 8 tabs share same genericness pattern (gray text + white/10 borders) | **LOW** | §DBI3.T |
 
 **Severity distribution**: 1 HIGH, 1 MEDIUM, 7 LOW, 10 PASS — **19 total findings**
 

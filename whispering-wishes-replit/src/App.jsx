@@ -3210,7 +3210,7 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -3549,7 +3549,7 @@ function WhisperingWishesInner() {
               <CardBody className="space-y-3">
                   <div>
                     <label className="kuro-label">Astrite</label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Astrite amount" />
+                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
                     <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL)} Convenes{Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL) > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS})</span> : ''}</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {/* AUDIT-FIX M32+L20: Use "Convene(s)" consistently, capitalize Astrite */}
@@ -3699,11 +3699,11 @@ function WhisperingWishesInner() {
                 <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">
-                        <div className="text-2xl kuro-number text-emerald-400">{combined.both}%</div>
+                        <div className="text-2xl kuro-number text-emerald-400 font-extrabold">{combined.both}%</div>
                         <div className="text-gray-400 text-[10px] mt-1">Get Both</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gold">
-                        <div className="text-yellow-400 text-2xl kuro-number">{combined.atLeastOne}%</div>
+                        <div className="text-yellow-400 text-2xl kuro-number font-extrabold">{combined.atLeastOne}%</div>
                         <div className="text-gray-400 text-[10px] mt-1">At Least One</div>
                       </div>
                     </div>
@@ -3743,7 +3743,7 @@ function WhisperingWishesInner() {
               <CardHeader>Daily Income</CardHeader>
               <CardBody className="space-y-3">
                 <div>
-                  <label className="kuro-label">Base Daily Astrite (Commissions, etc.)</label>
+                  <label className="kuro-label" title="Includes Commissions, Dailies, etc.">Daily Astrite</label>
                   <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, +e.target.value || 0) })} className="kuro-input w-full" aria-label="Daily Astrite income" />
                 </div>
                 {state.planner.luniteActive && (
@@ -3881,7 +3881,7 @@ function WhisperingWishesInner() {
                   {[7, 30, 90].map(days => (
                     <div key={days} className="kuro-stat p-3 text-center">
                       <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
-                      <div className="text-2xl kuro-number text-yellow-400">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
+                      <div className="text-2xl kuro-number text-yellow-400 font-extrabold">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Convenes</div>
                       <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
                     </div>
@@ -4005,7 +4005,7 @@ function WhisperingWishesInner() {
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
                             <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-display)'}}>{luckRating.tier}</div>
-                            <div className="text-xl font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
+                            <div className="text-xl font-extrabold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 min-w-0 space-y-2">
@@ -5735,7 +5735,7 @@ function WhisperingWishesInner() {
                                   {/* Main DPS: expanded damage stats */}
                                   {isMain && (
                                     <div className="mb-1.5">
-                                      <div className="kuro-label">Damage Stats (with team buffs)</div>
+                                      <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
                                       <div className="flex flex-wrap gap-1">
                                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400" style={{ boxShadow: "0 0 8px rgba(234,179,8,0.15)" }}>Eff.ATK {effAtk.toLocaleString()}</span>
                                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CR {cr.toFixed(1)}%</span>
@@ -7725,7 +7725,7 @@ Example: {"pulls":[...]}'
                       />
                       <input
                         type="number"
-                        placeholder="Phase"
+                        placeholder="e.g. 1"
                         value={bannerForm.phase}
                         onChange={(e) => updateBannerForm('phase', e.target.value)}
                         className="kuro-input text-[10px] py-1"

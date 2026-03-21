@@ -73,7 +73,7 @@
 
 ### Findings
 
-#### Finding E4-HH1: Semantic Heading Tags Minimal — LOW
+#### Finding E4-HH1 ✅: Semantic Heading Tags Minimal — LOW
 
 **Issue**: Only 5 semantic heading tags (`<h1>`, `<h2>`, `<h3>`) in ~8000 lines of JSX. Visual hierarchy is communicated entirely through CSS classes and the CardHeader component, not HTML semantics. Screen readers and SEO tools cannot parse the document structure.
 
@@ -96,7 +96,7 @@ Assign `h2` to primary tab-level sections and `h3` to sub-sections within cards.
 
 ---
 
-#### Finding E4-HH2: Font Size Scale Not Ratio-Based — LOW
+#### Finding E4-HH2 ✅: Font Size Scale Not Ratio-Based — LOW
 
 **Issue**: The 12 unique font sizes (8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 30) do not follow a standard typographic ratio (Major Third 1.25× or Perfect Fourth 1.333×).
 
@@ -128,7 +128,7 @@ This would reduce 12 raw sizes to 9 named tokens while preserving the existing v
 
 ---
 
-#### Finding E4-HH3: Weight Hierarchy Narrow — LOW
+#### Finding E4-HH3 ✅: Weight Hierarchy Narrow — LOW
 
 **Issue**: Only 3 font-weight values used across the entire app (500, 600, 700), creating a narrow weight contrast range.
 
@@ -228,7 +228,7 @@ Using Rajdhani's average character width (~0.48em for proportional sans):
 
 ### Findings
 
-#### Finding E4-LL1: Desktop Line Length Unconstrained for Small Text — LOW
+#### Finding E4-LL1 ✅: Desktop Line Length Unconstrained for Small Text — LOW
 
 **Issue**: On desktop (≥1024px), `lg:max-w-none` removes all width constraints from the primary content area. For 9-10px text in full-width containers, this could theoretically produce lines >150 characters — far above the 75-character optimal maximum.
 
@@ -357,7 +357,7 @@ This progression follows best practice:
 
 ---
 
-#### Finding E4-LH2: Small Text (8-9px) Relies on Default Line-Height — LOW
+#### Finding E4-LH2 ✅: Small Text (8-9px) Relies on Default Line-Height — LOW
 
 **Issue**: The 243 instances of 8-9px text (text-[8px] + text-[9px]) mostly rely on Tailwind's implicit line-height rather than an explicit `leading-*` class. At these very small sizes, the default 1.5 line-height produces only 12-13.5px of line spacing, which is technically correct but can feel cramped when text wraps to multiple lines.
 
@@ -497,7 +497,7 @@ JetBrains Mono (via `var(--font-data)`):
 
 ### Findings
 
-#### Finding E4-LS1: CardHeader Positive Tracking Unconventional — LOW
+#### Finding E4-LS1 ✅: CardHeader Positive Tracking Unconventional — LOW
 
 **Issue**: `.kuro-header h3` uses `letter-spacing: 0.03em` (positive/widening) at 14px. Typographic convention recommends **negative** tracking (-0.01em to -0.03em) for heading text, as larger text optically appears more spaced-out than body text.
 
@@ -587,7 +587,7 @@ Both values fall within the -0.01em to -0.03em recommended range for display tex
 
 ---
 
-#### Finding E4-TR2: Missing `text-rendering: optimizeLegibility` — LOW
+#### Finding E4-TR2 ✅: Missing `text-rendering: optimizeLegibility` — LOW
 
 **Issue**: `text-rendering: optimizeLegibility` is not applied anywhere. This property enables kerning and ligatures for improved text quality, particularly at display sizes.
 
@@ -705,7 +705,7 @@ There is no mixing within tiers. Every kuro-label renders uppercase, every CardH
 
 ---
 
-#### Finding E4-LQ2: Two Overly Long Uppercase Labels — LOW
+#### Finding E4-LQ2 ✅: Two Overly Long Uppercase Labels — LOW
 
 **Issue**: Two kuro-label texts are 30+ characters, which when rendered in all-caps with 0.08em tracking becomes visually heavy and hard to scan:
 
@@ -734,7 +734,7 @@ After:  "DAMAGE STATS" with subtitle "incl. team buffs" in text-[9px] text-gray-
 
 ---
 
-#### Finding E4-LQ3: Two Weak Placeholders — LOW
+#### Finding E4-LQ3 ✅: Two Weak Placeholders — LOW
 
 **Issue**: Two placeholder texts fail to guide user input:
 
@@ -1046,8 +1046,8 @@ Geometric ←————●———————————→ Humanist
 
 | §DT2 Criterion | §E4 Finding | Assessment |
 |----------------|-------------|------------|
-| Scale follows ratio? | E4-HH2 LOW: 12 sizes, linear 1px steps at bottom | ⚠️ Non-standard but intentional |
-| Weight contrast ≥2 steps between levels? | E4-HH3 LOW: Only 3 weights (500/600/700), 1-step gaps | ⚠️ Narrow range |
+| Scale follows ratio? | E4-HH2 ✅ LOW: 12 sizes, linear 1px steps at bottom | ⚠️ Non-standard but intentional |
+| Weight contrast ≥2 steps between levels? | E4-HH3 ✅ LOW: Only 3 weights (500/600/700), 1-step gaps | ⚠️ Narrow range |
 | Body tracking: 0 to +0.01em? | E4-LS: empty-state 0.01em, tab 0.02em | ✅ Near norm |
 | UI labels (10-12px): +0.03 to +0.06em? | E4-LS: tab 0.02em (slightly under) | ⚠️ Slightly below norm |
 | Headings (24px+): -0.01 to -0.03em? | E4-LS3 PASS: scoreboard -0.02em | ✅ Correct |
@@ -1059,7 +1059,7 @@ Geometric ←————●———————————→ Humanist
 - At 14px and 18px, the two systems converge; elsewhere they diverge
 - This is the same "dual-system coherence" pattern identified in spacing — the typography has its own parallel issue
 
-**Verdict**: ⚠️ Two LOW findings (E4-HH2, E4-HH3) map to §DT2 concerns. The scale is pragmatically effective but not ratio-based.
+**Verdict**: ⚠️ Two LOW findings (E4-HH2 ✅, E4-HH3 ✅) map to §DT2 concerns. The scale is pragmatically effective but not ratio-based.
 
 ---
 
@@ -1072,11 +1072,11 @@ Geometric ←————●———————————→ Humanist
 | §DT3 Criterion | §E4 Finding | Assessment |
 |----------------|-------------|------------|
 | Tabular nums for number columns | E4-TC1 PASS: Monospace strategy provides inherent tabular alignment | ✅ |
-| Kerning enabled | E4-TR2 LOW: No explicit `text-rendering: optimizeLegibility` | ⚠️ Relies on browser default |
+| Kerning enabled | E4-TR2 ✅ LOW: No explicit `text-rendering: optimizeLegibility` | ⚠️ Relies on browser default |
 | Ligatures in display text | E4-TC2 PASS: Not applicable (static fonts) | ✅ N/A |
 | Orphan/widow control | E4-LL4 PASS: Not needed for current content | ✅ Acceptable |
 | `-webkit-font-smoothing: antialiased` | E4-TR1 PASS: Dual-layer application | ✅ Excellent |
-| `text-rendering: optimizeLegibility` | E4-TR2 LOW: Missing but low impact | ⚠️ |
+| `text-rendering: optimizeLegibility` | E4-TR2 ✅ LOW: Missing but low impact | ⚠️ |
 
 **Cross-reference with §E1 (Design Token System)**:
 - §E1-COV1 HIGH noted that spacing/radius/z-index have 0% token coverage
@@ -1106,7 +1106,7 @@ Geometric ←————●———————————→ Humanist
 
 **Typography as composition element:**
 - **Scale contrast**: 8px micro labels alongside 24px hero numbers creates compositional energy ✅
-- **Weight contrast**: Bold stat numbers + medium labels create hierarchy ✅ (though narrow range per E4-HH3)
+- **Weight contrast**: Bold stat numbers + medium labels create hierarchy ✅ (though narrow range per E4-HH3 ✅)
 - **Alignment**: No intentional alignment breaks detected — all text is left-aligned or centered ⚠️ (missed opportunity for emphasis through alignment variation)
 
 **Typographic personality moments:**
@@ -1134,8 +1134,8 @@ Geometric ←————●———————————→ Humanist
 | §DT Section | §E4 Alignment | Key Cross-References | Gap? |
 |-------------|--------------|---------------------|------|
 | §DT1 Type Personality | ✅ Full agreement | E4-CS1 PASS, E4-CS2 PASS | No |
-| §DT2 Scale & Rhythm | ⚠️ Partial | E4-HH2 LOW (scale), E4-HH3 LOW (weight), E4-LS2 PASS | Minor |
-| §DT3 Craft Signals | ✅ Mostly strong | E4-TC1 PASS, E4-TR1 PASS, E4-TR2 LOW | Minor |
+| §DT2 Scale & Rhythm | ⚠️ Partial | E4-HH2 ✅ LOW (scale), E4-HH3 ✅ LOW (weight), E4-LS2 PASS | Minor |
+| §DT3 Craft Signals | ✅ Mostly strong | E4-TC1 PASS, E4-TR1 PASS, E4-TR2 ✅ LOW | Minor |
 | §DT4 Voice & Expression | ⚠️ Mixed | E4-CS1 PASS (character), E4-LL2 PASS (measure) | Empty/error states |
 
 **Prior-step cross-references surfaced:**
@@ -1153,26 +1153,26 @@ Geometric ←————●———————————→ Humanist
 
 | ID | Section | Severity | Title |
 |----|---------|----------|-------|
-| E4-HH1 | §E4.1 | LOW | Semantic heading tags minimal |
-| E4-HH2 | §E4.1 | LOW | Font size scale not ratio-based |
-| E4-HH3 | §E4.1 | LOW | Weight hierarchy narrow (500-700) |
+| E4-HH1 ✅ | §E4.1 | LOW | Semantic heading tags minimal |
+| E4-HH2 ✅ | §E4.1 | LOW | Font size scale not ratio-based |
+| E4-HH3 ✅ | §E4.1 | LOW | Weight hierarchy narrow (500-700) |
 | E4-HH4 | §E4.1 | PASS | CardHeader provides excellent consistency |
-| E4-LL1 | §E4.2 | LOW | Desktop line length unconstrained for small text |
+| E4-LL1 ✅ | §E4.2 | LOW | Desktop line length unconstrained for small text |
 | E4-LL2 | §E4.2 | PASS | Mobile line length well-controlled |
 | E4-LL3 | §E4.2 | PASS | Long-form text blocks properly constrained |
 | E4-LL4 | §E4.2 | PASS | No orphan/widow control (acceptable) |
 | E4-LH1 | §E4.3 | PASS | Line height system well-calibrated |
-| E4-LH2 | §E4.3 | LOW | Small text (8-9px) relies on default line-height |
+| E4-LH2 ✅ | §E4.3 | LOW | Small text (8-9px) relies on default line-height |
 | E4-FP1 | §E4.4 | PASS | Rajdhani + JetBrains Mono excellent pairing |
 | E4-FP2 | §E4.4 | PASS | Font role boundaries clean |
-| E4-LS1 | §E4.5 | LOW | CardHeader positive tracking unconventional |
+| E4-LS1 ✅ | §E4.5 | LOW | CardHeader positive tracking unconventional |
 | E4-LS2 | §E4.5 | PASS | All-caps tracking properly applied |
 | E4-LS3 | §E4.5 | PASS | Display text tightening correct |
 | E4-TR1 | §E4.6 | PASS | Font smoothing properly applied |
-| E4-TR2 | §E4.6 | LOW | Missing text-rendering: optimizeLegibility |
+| E4-TR2 ✅ | §E4.6 | LOW | Missing text-rendering: optimizeLegibility |
 | E4-LQ1 | §E4.7 | PASS | Label casing consistent within each system |
-| E4-LQ2 | §E4.7 | LOW | Two overly long uppercase labels |
-| E4-LQ3 | §E4.7 | LOW | Two weak placeholders |
+| E4-LQ2 ✅ | §E4.7 | LOW | Two overly long uppercase labels |
+| E4-LQ3 ✅ | §E4.7 | LOW | Two weak placeholders |
 | E4-LQ4 | §E4.7 | PASS | Comprehensive aria-labels |
 | E4-CS1 | §E4.8 | PASS | Rajdhani alignment with character profile |
 | E4-CS2 | §E4.8 | PASS | JetBrains Mono reinforces analytical identity |
@@ -9030,7 +9030,7 @@ Competitive positioning map:
 |---|-----------|-----------|----------------------|------------|
 | C1 | §DS2-F14 PASS: "Detail level appropriate for Cyberpunk/Terminal" | §E8-MI1 MEDIUM: "Three defaulting signals undermine 'made with intent'" | DS2 says detail level is appropriate; E8 says defaulting signals are visible | **No contradiction.** DS2 assesses the *kuro-\** system's detail level (which IS appropriate). E8 assesses the *inline Tailwind layer* outside that system (which IS defaulting). Both are correct for their respective scopes. The gap is between layers, not within either layer. |
 | C2 | §DP1-V1 PASS: "Visual terseness matches FOCUS-TOOL intent" | §E10-NV-F1 HIGH: "Guarantee prediction at text-[9px] — most actionable insight is smallest element" | DP1 says terseness is on-target; E10 says critical data is too small | **No contradiction.** Terseness as a *character trait* is correct — the app should be dense and efficient. But 9px text isn't "terse," it's *invisible*. Terseness doesn't mean hiding important data; it means eliminating unnecessary data. E10's finding is a violation of the character's own principle. |
-| C3 | §E4-LH1 PASS: "Line height system well-calibrated" | §E4-LH2 LOW: "Small text (8-9px) relies on default line-height" | Same step says line height is both "well-calibrated" and has a gap | **No contradiction.** The system-level line height tiers (1.1/1.3/1.4/1.5/1.6) are well-calibrated. The 8-9px text is an edge case outside the system where no explicit line-height is set. Both findings stand — the system is good, but it doesn't cover the smallest text. |
+| C3 | §E4-LH1 PASS: "Line height system well-calibrated" | §E4-LH2 ✅ LOW: "Small text (8-9px) relies on default line-height" | Same step says line height is both "well-calibrated" and has a gap | **No contradiction.** The system-level line height tiers (1.1/1.3/1.4/1.5/1.6) are well-calibrated. The 8-9px text is an edge case outside the system where no explicit line-height is set. Both findings stand — the system is good, but it doesn't cover the smallest text. |
 | C4 | §E3-WC1 PASS: "WCAG AA 100% (22/22 combinations)" | §E3-NC1 MEDIUM: "Input border 2.1:1 fails WCAG 1.4.11" | E3 says 100% WCAG pass but also has a WCAG failure | **No contradiction.** WC1 tests text contrast (WCAG 1.4.3, SC 4.5:1). NC1 tests non-text contrast (WCAG 1.4.11, SC 3:1). Different WCAG criteria with different thresholds. Text passes; non-text UI components have a gap. |
 | C5 | §DBI3-S05 PASS: "Shadow system fully custom + color glows" | §E1-SHD1 ✅ LOW: "4 shadow tokens defined, only 1 used — 34 hardcoded values" | DBI3 says shadow system is fully custom; E1 says tokens are underused | **No contradiction.** The shadow *values* are indeed custom (color-matched to #060a18, not generic black). But the shadow *tokens* that wrap those values are underused. The design intent is custom; the implementation is ad-hoc. ✅ Shadow tokens now applied to kuro-card (--shadow-lg) and kuro-stat (--shadow-sm). |
 | C6 | §E5-CT1 PASS: "Card system — crown jewel" | §CD-F1 LOW (Step 18): "Cards lack purpose-based differentiation" | Step 12 says cards are the strongest element; Step 18 says they lack differentiation | **No contradiction.** Cards are the crown jewel in terms of *craft* (multi-layer glass, shimmer, corner decorations). They lack differentiation in terms of *semantic purpose* (data card vs settings card vs collection card all look identical). Excellent execution, but no semantic hierarchy. Both are true. |
@@ -9135,7 +9135,7 @@ Competitive positioning map:
 | G3 | **Service Worker cache strategy and its visual impact** | Step 1 §0: "Service Worker: Custom SW for offline/caching" | Service worker is listed as a tech stack component but never analyzed for its impact on visual freshness | **No step audited**: (1) What happens visually when the service worker serves stale content? (2) Is there a visual indicator for "offline mode"? (3) Does the update prompt have brand-consistent styling? The §VIII cross-cutting concern "Stale cache on deploy" is relevant but was not assessed visually | LOW | **Add to implementation scope**: Verify that (1) the SW update prompt uses the kuro-card + kuro-btn design system, (2) an "Offline" badge appears in the header or tab bar when the SW is serving cached content, (3) font/CSS files are cache-busted correctly to prevent style drift between versions. |
 | G4 | **External CDN image failure states** | §E5-CD3 PASS: "hideOnError fallback" and §E5-CD6 LOW: "hideOnError leaves empty space" | Image loading failures are noted in Step 12 but the visual impact of CDN failures across the Collection grid was not deeply analyzed | **No step simulated a full CDN outage** to check: (1) Does the Collection grid degrade gracefully with 50%+ failed images? (2) Is there a visual indicator distinguishing "loading" from "failed"? (3) Does the character detail modal show anything meaningful when its image fails? | LOW | **Add to implementation scope**: (1) Add a branded fallback placeholder (e.g., silhouette with "?" icon on #080c14 background) instead of empty space when `hideOnError` triggers. (2) Add a "retry" affordance or visual state for failed images. (3) Test Collection grid appearance with simulated CDN failure — ensure the ghost-grid pattern activates rather than showing broken image outlines. |
 | G5 | **Print stylesheet / PDF export appearance** | Not mentioned anywhere | A gacha tracker with Stats and Planner data might reasonably be printed or exported | **No step checked for `@media print` styles.** Dark backgrounds print poorly without explicit `@media print` adjustments (white backgrounds, dark text, hidden decorative elements) | LOW | **Add to implementation backlog**: If print support is desired, add a `@media print` stylesheet that: (1) Sets `background: white`, `color: black` on all containers, (2) Hides canvas animations and decorative overlays, (3) Shows all collapsed/tabbed content, (4) Uses `break-inside: avoid` on cards. If print is NOT needed, add a print-suppression rule: `@media print { body { display: none; } body::after { content: "Visit whisperingwishes.vercel.app"; display: block; } }` |
-| G6 | **Text truncation and overflow handling** | §E4-LL1 (Step 11): "Desktop line length unconstrained" | Line length was audited, but **text overflow/truncation** behavior was not systematically checked | **No step verified**: (1) Do long character names truncate gracefully? (2) Do long trophy names overflow their containers? (3) Does the event title text wrap correctly in narrow viewports? (4) Are `text-overflow: ellipsis` rules applied consistently? | LOW | **Spot-check truncation**: Verify `truncate` (Tailwind) or `text-overflow: ellipsis` is applied to: (1) Character names in Collection grid, (2) Trophy display names, (3) Event titles, (4) Banner names in Tracker. Where truncation is missing, add `truncate` class. Where truncation hides critical information, consider `line-clamp-2` instead. |
+| G6 | **Text truncation and overflow handling** | §E4-LL1 ✅ (Step 11): "Desktop line length unconstrained" | Line length was audited, but **text overflow/truncation** behavior was not systematically checked | **No step verified**: (1) Do long character names truncate gracefully? (2) Do long trophy names overflow their containers? (3) Does the event title text wrap correctly in narrow viewports? (4) Are `text-overflow: ellipsis` rules applied consistently? | LOW | **Spot-check truncation**: Verify `truncate` (Tailwind) or `text-overflow: ellipsis` is applied to: (1) Character names in Collection grid, (2) Trophy display names, (3) Event titles, (4) Banner names in Tracker. Where truncation is missing, add `truncate` class. Where truncation hides critical information, consider `line-clamp-2` instead. |
 | G7 | **Scroll behavior and scroll-linked effects** | §E6-TQ7 (Step 13): "Progress bar transition-all" and §E10-RD-F3: "scrollbar-hide" | Scroll containers are mentioned but scroll *behavior* was not systematically audited | **No step checked**: (1) `scroll-behavior: smooth` presence or absence, (2) Whether tab content scrolls to top on tab switch, (3) Whether long list views (pull history, collection grid) have scroll-to-top affordance, (4) Whether sticky headers exist for long scrollable sections | LOW | **Add scroll audit items**: (1) Verify `scroll-behavior: smooth` is set globally or on scroll containers, (2) Add scroll-to-top behavior on tab switch if not present, (3) For lists with 20+ items (pull history, collection grid, leaderboard), consider a floating scroll-to-top button that appears after scrolling 2+ viewport heights. |
 | G8 | **Internationalization readiness of visual layout** | Step 1 §0: "Locale: English only" | The app is documented as English-only, but visual readiness for potential i18n was not assessed | **No step checked**: (1) Are fixed-width layouts dependent on English string lengths? (2) Would RTL languages break the tab bar? (3) Are date/time formats hardcoded to US English? | POLISH | **Document as future consideration**: The app is correctly English-only for its current WuWa audience. If i18n is ever considered: (1) Audit fixed-width containers for string length assumptions, (2) Verify Rajdhani has adequate glyph coverage for target languages, (3) Use `dir="auto"` on text containers. No immediate action needed. |
 | G9 | **Animation performance on low-end devices** | §PF-F1 (Step 18): "backdrop-filter: blur() on many elements" | Performance concern for backdrop-filter is noted, but no step assessed animation smoothness on low-end devices | **No step measured**: (1) FPS during canvas animations on low-end mobile, (2) Layout thrashing from `transition: all` instances, (3) Paint cost of multiple stacked `backdrop-filter` layers | LOW | **Add performance audit to implementation phase**: (1) Test on a throttled Chrome DevTools profile (4× CPU slowdown, 3G network) to simulate low-end devices, (2) If canvas animations drop below 30fps, reduce particle count or disable on low-end devices via `navigator.hardwareConcurrency < 4`, (3) Limit simultaneous `backdrop-filter` layers to max 3 in the DOM at any time. |
@@ -9726,7 +9726,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | **Empty state CTA** | §E6-ES3 (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
-| **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
+| **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
 
 ### 19.8.5 — Final Reconciled Finding Count
 
@@ -10020,7 +10020,7 @@ Replacement mapping:
 
 All three token values carry blue hue (≈250°), matching the background's chromatic temperature. The visual change is subtle (achromatic gray → blue-tinted gray) but the cumulative effect makes the entire UI feel unified and intentional rather than template-derived.
 
-**Cross-references**: E7-BC4, §E9-AG-F1, DBI3-TAB1
+**Cross-references**: E7-BC4, §E9-AG-F1, DBI3-TAB1 ✅
 
 ---
 
@@ -10986,7 +10986,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 38 | DBI3-S06 ✅ | Lucide icons at default stroke-width (1.5px) | ALL | Set consistent stroke-width to 1.25px for a lighter, more refined feel matching Rajdhani's condensed character |
 | 39 | DBI3-S11 ✅ | 70% of separators use single `border-white/10` pattern | ALL | Apply the 5-level border opacity scale: `--border-subtle` for section dividers, `--border-medium` for card borders |
 | 40 | DBI3-D02 ✅ | `rgba(255,255,255,0.1)` borders dominate despite token scale | ALL | Replace raw `border-white/10` with `border-[var(--border-medium)]` token reference |
-| 41 | DBI3-TAB1 | All 8 tabs share same genericness pattern | ALL | Resolved by HIGH-1 (gray text) and #39 (separator tokens) |
+| 41 | DBI3-TAB1 ✅ | All 8 tabs share same genericness pattern | ALL | Resolved by HIGH-1 (gray text) and #39 (separator tokens) |
 
 ---
 
@@ -10994,15 +10994,15 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 42 | E4-HH1 | Semantic heading tags minimal (only 5 `<h>` tags in ~8000 lines) | ALL | Add `as` prop to CardHeader component to render semantic `<h2>`/`<h3>` elements |
-| 43 | E4-HH2 | Font size scale not ratio-based (12 sizes, linear at bottom) | ALL | Accept tight lower range (8–12px) as "instrument display micro-scale"; document intent |
-| 44 | E4-HH3 | Weight hierarchy narrow (only 3 active weights: 500/600/700) | ALL | Introduce `font-normal` (400) for body descriptions and `font-extrabold` (800) for hero numbers to expand range |
-| 45 | E4-LL1 | Desktop line length unconstrained for small text | CALC, STATS | Add `max-w-3xl` constraint to desktop content areas with body-length text |
-| 46 | E4-LH2 | Small text (8–9px) relies on default line-height | COLLECT, EVENTS | Ensure multi-line small text uses `leading-relaxed` (1.625) |
-| 47 | E4-LS1 | CardHeader positive tracking (0.03em) unconventional at 14px | ALL | Document as intentional terminal-style tracking, or tighten to -0.01em |
-| 48 | E4-TR2 | Missing `text-rendering: optimizeLegibility` | ALL | Add to global CSS: `body { text-rendering: optimizeLegibility; }` |
-| 49 | E4-LQ2 | Two overly long uppercase labels (30+ characters) | CALC | Shorten primary label, move detail to tooltip |
-| 50 | E4-LQ3 | Two weak placeholders ("0" for Astrite, "Phase" for Admin) | CALC, ADMIN | Use descriptive placeholders: "e.g. 1600" and "e.g. 1" |
+| 42 | E4-HH1 ✅ | Semantic heading tags minimal (only 5 `<h>` tags in ~8000 lines) | ALL | Add `as` prop to CardHeader component to render semantic `<h2>`/`<h3>` elements |
+| 43 | E4-HH2 ✅ | Font size scale not ratio-based (12 sizes, linear at bottom) | ALL | Accept tight lower range (8–12px) as "instrument display micro-scale"; document intent |
+| 44 | E4-HH3 ✅ | Weight hierarchy narrow (only 3 active weights: 500/600/700) | ALL | Introduce `font-normal` (400) for body descriptions and `font-extrabold` (800) for hero numbers to expand range |
+| 45 | E4-LL1 ✅ | Desktop line length unconstrained for small text | CALC, STATS | Add `max-w-3xl` constraint to desktop content areas with body-length text |
+| 46 | E4-LH2 ✅ | Small text (8–9px) relies on default line-height | COLLECT, EVENTS | Ensure multi-line small text uses `leading-relaxed` (1.625) |
+| 47 | E4-LS1 ✅ | CardHeader positive tracking (0.03em) unconventional at 14px | ALL | Document as intentional terminal-style tracking, or tighten to -0.01em |
+| 48 | E4-TR2 ✅ | Missing `text-rendering: optimizeLegibility` | ALL | Add to global CSS: `body { text-rendering: optimizeLegibility; }` |
+| 49 | E4-LQ2 ✅ | Two overly long uppercase labels (30+ characters) | CALC | Shorten primary label, move detail to tooltip |
+| 50 | E4-LQ3 ✅ | Two weak placeholders ("0" for Astrite, "Phase" for Admin) | CALC, ADMIN | Use descriptive placeholders: "e.g. 1600" and "e.g. 1" |
 | 51 | E4-TC4 | Rajdhani inline numbers use proportional figures | STATS, CALC | Apply `.kuro-number` to column-aligned Rajdhani numbers for tabular alignment |
 
 ---
@@ -11165,7 +11165,7 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 
 | Finding A | Finding B | Contradiction | Resolution |
 |-----------|-----------|---------------|------------|
-| E4-HH3 "add 400 weight" | §DP0 "3 weights are intentional" | Weight range debate | Expand to 400–800 range while keeping 500/600/700 as primary trio |
+| E4-HH3 ✅ "add 400 weight" | §DP0 "3 weights are intentional" | Weight range debate | Expand to 400–800 range while keeping 500/600/700 as primary trio |
 | BR-F1 "add body font" | §DP2 "Rajdhani dual-role is protected" | Typography identity | **REJECTED BR-F1** — Rajdhani dual-role is PROTECTED. No body font addition |
 | DC5-TN1 "reduce cyan to 3–5 uses" | §E9 "cyan is Glacio element color" | Semantic vs decorative usage | Restrict decorative cyan; preserve domain-semantic element color usage |
 | E2-MO1 "44px touch targets" | §DENSITY "expert users accept dense layouts" | Accessibility vs density | Increase to 44px on `(pointer: coarse)` only — desktop stays dense |

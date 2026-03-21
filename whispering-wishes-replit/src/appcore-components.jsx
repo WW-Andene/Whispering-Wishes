@@ -155,7 +155,8 @@ const TabBackground = ({ id, glowColor = 'neutral' }) => {
 // [SECTION:COMPONENTS]
 const Card = memo(({ children, className = '', style = {} }) => <div className={`kuro-card ${className}`} style={style}><div className="kuro-card-inner">{children}</div></div>);
 Card.displayName = 'Card';
-const CardHeader = memo(({ children, action }) => <div className="kuro-header"><h3>{children}</h3>{action && <div className="kuro-header-action">{action}</div>}</div>);
+/* E4-HH1: `as` prop enables semantic heading tags (h2/h3) for accessibility */
+const CardHeader = memo(({ children, action, as: Tag = 'h3' }) => <div className="kuro-header"><Tag>{children}</Tag>{action && <div className="kuro-header-action">{action}</div>}</div>);
 CardHeader.displayName = 'CardHeader';
 const CardBody = memo(({ children, className = '', style }) => <div className={`kuro-body ${className}`} style={style}>{children}</div>);
 CardBody.displayName = 'CardBody';
