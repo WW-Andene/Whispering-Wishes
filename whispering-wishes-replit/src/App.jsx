@@ -4193,7 +4193,7 @@ function WhisperingWishesInner() {
                               <div className="space-y-2 py-2" aria-label="Loading leaderboard">
                                 {[...Array(6)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
-                                    <div className="kuro-skeleton kuro-skeleton-circle w-7 h-7 flex-shrink-0" />
+                                    <div className="kuro-skeleton kuro-skeleton-circle w-8 h-8 flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1.5">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
@@ -4218,7 +4218,7 @@ function WhisperingWishesInner() {
                                     className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
                                   >
                                     <div 
-                                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                                       style={{
                                         background: i < 3 ? `linear-gradient(135deg, ${(MEDAL_COLORS[i] ?? '#9ca3af')}40, ${(MEDAL_COLORS[i] ?? '#9ca3af')}20)` : 'rgba(255,255,255,0.1)',
                                         color: i < 3 ? MEDAL_COLORS[i] : '#9ca3af',
@@ -4257,7 +4257,7 @@ function WhisperingWishesInner() {
                                 {[...Array(5)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-2.5 py-1.5">
                                     <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
-                                    <div className="kuro-skeleton w-7 h-7 rounded-md flex-shrink-0" />
+                                    <div className="kuro-skeleton w-8 h-8 rounded-md flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
                                       <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
@@ -4277,7 +4277,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-8 h-8 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -4301,7 +4301,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-8 h-8 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -4990,7 +4990,7 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="kuro-btn flex items-center justify-center w-7 h-7 !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
+                        className="kuro-btn flex items-center justify-center w-8 h-8 !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
                         title="Refresh images if they don't load"
                         aria-label="Refresh images"
                       >
@@ -4998,7 +4998,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`kuro-btn flex items-center justify-center w-7 h-7 !p-0 !rounded-lg text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                        className={`kuro-btn flex items-center justify-center w-8 h-8 !p-0 !rounded-lg text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                         title="Sort by copies"
                         aria-label="Sort by copies"
                         aria-pressed={collectionSort === 'copies'}
@@ -5007,7 +5007,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`kuro-btn flex items-center justify-center w-7 h-7 !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
+                        className={`kuro-btn flex items-center justify-center w-8 h-8 !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
                         title="Sort by release date"
                         aria-label="Sort by release date"
                         aria-pressed={collectionSort === 'release'}
@@ -5309,10 +5309,10 @@ function WhisperingWishesInner() {
                                   onError={hideOnError}
                                 />
                               )}
-                              {/* P6-FIX: Increased from w-5 h-5 to w-7 h-7 for touch targets (F-P6-050) */}
+                              {/* P6-FIX: Increased from w-5 h-5 to w-8 h-8 for touch targets (F-P6-050) */}
                               <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                className="absolute top-1 right-1 z-20 w-8 h-8 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />
@@ -6081,7 +6081,7 @@ function WhisperingWishesInner() {
                                 return (
                                   <div key={entry.id} className="p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                      className="absolute top-1.5 right-1.5 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                                      className="absolute top-1.5 right-1.5 z-20 w-8 h-8 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
                                       aria-label="Remove this team from comparison">
                                       <X size={12} />
                                     </button>
