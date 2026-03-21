@@ -1576,37 +1576,30 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       </button>
       {open && (
         <div
-          className="absolute left-0 right-0 mt-1 z-[200] rounded-xl border border-[var(--border-medium)] py-1 shadow-xl"
-          style={{
-            background: 'var(--bg-card)',
-            backdropFilter: 'blur(2px) brightness(0.6)',
-            WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
-          }}
+          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1 p-1"
           role="listbox"
           aria-label={ariaLabel}
         >
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              role="option"
-              aria-selected={opt.value === value}
-              onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 text-sm transition-colors border-b border-[var(--border-default)] last:border-b-0 ${opt.value === value ? 'text-cyan-400' : 'text-gray-300 active:bg-white/5'}`}
-            >
-              <span className="flex items-center justify-between">
+          {options.map(opt => {
+            const active = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-3 py-2.5 text-sm rounded-xl border transition-colors shadow-lg ${active ? 'text-cyan-400 border-cyan-500/60 border-l-[3px] border-l-cyan-400' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
+                style={{
+                  background: 'var(--bg-card)',
+                  backdropFilter: 'blur(2px) brightness(0.6)',
+                  WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
+                }}
+              >
                 {opt.label}
-                {opt.value === value && (
-                  <span className="w-3 h-3 rounded-full border-2 border-cyan-400 flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  </span>
-                )}
-                {opt.value !== value && (
-                  <span className="w-3 h-3 rounded-full border border-gray-600" />
-                )}
-              </span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
