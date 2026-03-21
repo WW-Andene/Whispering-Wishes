@@ -96,6 +96,8 @@ import {
   ALL_4STAR_RESONATORS,
   ALL_4STAR_WEAPONS,
   ALL_3STAR_WEAPONS,
+  ALL_2STAR_WEAPONS,
+  ALL_1STAR_WEAPONS,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
   STANDARD_5STAR_WEAPONS,
@@ -2198,7 +2200,7 @@ function WhisperingWishesInner() {
     const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
     const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
     const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
-    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false);
+    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false), w2=countUniqueOwned(weapHist,2,false), w1=countUniqueOwned(weapHist,1,false);
     const newestRes = [...new Set(charHist.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
     const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
     const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
@@ -2444,8 +2446,8 @@ function WhisperingWishesInner() {
 
     // Collection row
     const drawColl = (cx2,cy2,cw2) => {
-      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
-      const g2=6,iw=(cw2-4*g2)/5;
+      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'},{l:'2* Wep',o:w2,t:ALL_2STAR_WEAPONS.length,c:'#4ade80'},{l:'1* Wep',o:w1,t:ALL_1STAR_WEAPONS.length,c:'#9ca3af'}];
+      const g2=6,iw=(cw2-(items.length-1)*g2)/items.length;
       items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,48,it.o+'/'+it.t,it.l,it.c,16);});
       return 48;
     };
@@ -2788,7 +2790,9 @@ function WhisperingWishesInner() {
     return {
       chars5Counts: chars5, chars4Counts: countItems(charHistory, 4, true),
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
-      weaps3Counts: countItems(weapHistory, 3, false), sortItems
+      weaps3Counts: countItems(weapHistory, 3, false),
+      weaps2Counts: countItems(weapHistory, 2, false),
+      weaps1Counts: countItems(weapHistory, 1, false), sortItems
     };
   }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
 
@@ -4983,8 +4987,10 @@ function WhisperingWishesInner() {
                   const ownedWeaps5 = Object.keys(collectionData.weaps5Counts).length;
                   const ownedWeaps4 = Object.keys(collectionData.weaps4Counts).length;
                   const ownedWeaps3 = Object.keys(collectionData.weaps3Counts).length;
-                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5 + ownedWeaps4 + ownedWeaps3;
-                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length;
+                  const ownedWeaps2 = Object.keys(collectionData.weaps2Counts).length;
+                  const ownedWeaps1 = Object.keys(collectionData.weaps1Counts).length;
+                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5 + ownedWeaps4 + ownedWeaps3 + ownedWeaps2 + ownedWeaps1;
+                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length + ALL_2STAR_WEAPONS.length + ALL_1STAR_WEAPONS.length;
                   const pct = totalItems > 0 ? Math.round((totalOwned / totalItems) * 100) : 0;
                   return (
                     <Card><CardBody>
@@ -4995,12 +5001,14 @@ function WhisperingWishesInner() {
                       <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center text-[10px]">
+                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-[10px]">
                         <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
                         <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">4★ Wep</div></div>
                         <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">3★ Wep</div></div>
+                        <div><div className="text-green-400 font-bold">{ownedWeaps2}<span className="text-gray-500 font-normal">/{ALL_2STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">2★ Wep</div></div>
+                        <div><div className="text-gray-400 font-bold">{ownedWeaps1}<span className="text-gray-500 font-normal">/{ALL_1STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">1★ Wep</div></div>
                       </div>
                     </CardBody></Card>
                   );
@@ -5294,6 +5302,50 @@ function WhisperingWishesInner() {
                       collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                       glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30"
                       countColor="text-blue-400" countPrefix="R" totalCount={ALL_3STAR_WEAPONS.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={setDetailModal}
+                      dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 2★ Weapons */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-green-400">★★</span> Weapons
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={collectionData.sortItems(filterCollectionItems(ALL_2STAR_WEAPONS, collectionData.weaps2Counts, false).map(name => [name, collectionData.weaps2Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="" ownedBg="bg-green-500/10" ownedBorder="border-green-500/30"
+                      countColor="text-green-400" countPrefix="R" totalCount={ALL_2STAR_WEAPONS.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={setDetailModal}
+                      dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 1★ Weapons */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-gray-400">★</span> Weapons
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={collectionData.sortItems(filterCollectionItems(ALL_1STAR_WEAPONS, collectionData.weaps1Counts, false).map(name => [name, collectionData.weaps1Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="" ownedBg="bg-gray-500/10" ownedBorder="border-gray-500/30"
+                      countColor="text-gray-400" countPrefix="R" totalCount={ALL_1STAR_WEAPONS.length}
                       hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
                       withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}

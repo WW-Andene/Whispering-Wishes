@@ -2141,17 +2141,27 @@ const ALL_4STAR_WEAPONS = [
   'Stonard', 'Amity Accord', 'Marcato', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Cadenza',
   'Discord', 'Helios Cleaver', 'Dauntless Evernight',
   'Autumntrace', 'Solar Flame', 'Feather Edge',
+  // Craftable 4★
+  'Sword#18', 'Rectifier#25', 'Gauntlets#21', 'Pistols#26',
+  // Battle Pass 4★
+  'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
 ];
 
 const ALL_3STAR_WEAPONS = [
-  'Training Sword', 'Tyro Sword', 'Guardian Sword', 'Sword of Voyager', 'Originite: Type II',
-  'Sword of Night', 'Sword#18', 'Training Rectifier', 'Tyro Rectifier', 'Guardian Rectifier',
-  'Rectifier of Voyager', 'Rectifier of Night', 'Originite: Type V', 'Rectifier#25',
-  'Training Gauntlets', 'Tyro Gauntlets', 'Guardian Gauntlets', 'Gauntlets of Voyager',
-  'Gauntlets of Night', 'Originite: Type III', 'Gauntlets#21', 'Training Pistols', 'Tyro Pistols',
-  'Guardian Pistols', 'Pistols of Voyager', 'Pistols of Night', 'Originite: Type IV', 'Pistols#26',
-  'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I', 'Guardian Broadblade', 'Beguiling Melody',
-  'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
+  'Guardian Sword', 'Sword of Voyager', 'Originite: Type II', 'Sword of Night',
+  'Guardian Rectifier', 'Rectifier of Voyager', 'Rectifier of Night', 'Originite: Type V',
+  'Guardian Gauntlets', 'Gauntlets of Voyager', 'Gauntlets of Night', 'Originite: Type III',
+  'Guardian Pistols', 'Pistols of Voyager', 'Pistols of Night', 'Originite: Type IV',
+  'Guardian Broadblade', 'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I',
+  'Beguiling Melody',
+];
+
+const ALL_2STAR_WEAPONS = [
+  'Tyro Sword', 'Tyro Rectifier', 'Tyro Gauntlets', 'Tyro Pistols',
+];
+
+const ALL_1STAR_WEAPONS = [
+  'Training Sword', 'Training Rectifier', 'Training Gauntlets', 'Training Pistols',
 ];
 
 // Weapon release order for sorting (based on first banner appearance)
@@ -2230,7 +2240,7 @@ export {
   HARD_PITY_4STAR, FEATURED_4STAR_RATE,
   DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER, WEAPON_RELEASE_ORDER,
   ALL_5STAR_RESONATORS, ALL_5STAR_WEAPONS,
-  ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS,
+  ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
