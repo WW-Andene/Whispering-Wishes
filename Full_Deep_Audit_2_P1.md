@@ -4403,7 +4403,7 @@ The archetype is well-expressed. Two minor opportunities to strengthen it:
 
 **Impact on character**: **HIGH** — The LUMINOUS TACTICAL COMPANION should never feel "gray." Every text element should carry a trace of the navy-blue hue family (`#080c14` → hue ~230°). Pure Tailwind grays are achromatic — they belong to no palette, no identity. When 459 text elements are achromatic gray, the app's identity is diluted across every screen.
 
-> **Finding DBI3-S07** · Severity: **HIGH**
+> **Finding DBI3-S07** ✅ · Severity: **HIGH**
 > **459 instances of achromatic Tailwind gray text classes overwhelm the custom chromatic text tokens.** `text-gray-400` alone appears 229 times. The KuroStyles CSS defines chromatic alternatives (`--text-body: #dfe5ef`), but markup-level Tailwind classes bypass them entirely.
 > **Solution**:
 > - Option A (minimal): Define chromatic gray replacements as CSS custom properties and create Tailwind utility overrides:
@@ -4563,7 +4563,7 @@ Since Whispering Wishes is a dark-mode-only app, these additional signals are as
 
 **Status: PARTIAL** — Covered under Signal 7. The 459 Tailwind gray instances create an undifferentiated muted-text landscape. The CSS variables (`--text-body`, `--text-heading`) are chromatic, but markup-level classes override them.
 
-> **Finding DBI3-D03** · Severity: **N/A** (covered by DBI3-S07)
+> **Finding DBI3-D03** · Severity: **N/A** (covered by DBI3-S07 ✅)
 
 **D4. `blue-400` / `#60a5fa` as dark-mode accent**
 
@@ -4622,7 +4622,7 @@ The plan requires assessment across ALL 8 tabs. Below is a per-tab genericness s
 
 > **Finding DBI3-TAB1** ✅ · Severity: **LOW**
 > **All 8 tabs share the same genericness pattern: achromatic gray text + uniform white/10 borders.** The owned elements vary per tab (pity rings, trophy glows, element colors), but the generic elements are identical across all tabs. This creates a "custom foreground, generic background" split.
-> **Solution**: Fixing DBI3-S07 (chromatic grays) and DBI3-S11 ✅ (separator hierarchy) would eliminate the cross-tab genericness pattern in a single systematic pass. No per-tab fixes needed — the solution is architectural.
+> **Solution**: Fixing DBI3-S07 ✅ (chromatic grays) and DBI3-S11 ✅ (separator hierarchy) would eliminate the cross-tab genericness pattern in a single systematic pass. No per-tab fixes needed — the solution is architectural.
 
 ---
 
@@ -4695,7 +4695,7 @@ Both are fixable with systematic find-and-replace operations. The app's custom e
 | DBI3-S04 | Custom 14px spacing baseline | **PASS** | §DBI3 S4 |
 | DBI3-S05 | Shadow system fully custom + color glows | **PASS** | §DBI3 S5 |
 | DBI3-S06 ✅ | Lucide icons at default stroke-width | **LOW** | §DBI3 S6 |
-| DBI3-S07 | 459 achromatic gray text instances — highest genericness signal | **HIGH** | §DBI3 S7 |
+| DBI3-S07 ✅ | 459 achromatic gray text instances — highest genericness signal | **HIGH** | §DBI3 S7 |
 | DBI3-S08 | Background system fully owned (`#080c14`) | **PASS** | §DBI3 S8 |
 | DBI3-S09 | Transition system fully custom (cubic-bezier + specific properties) | **PASS** | §DBI3 S9 |
 | DBI3-S10 | Button sizing strategic (12% full-width) | **PASS** | §DBI3 S10 |
@@ -4872,7 +4872,7 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 
 **Consolidation**: `#edaf18`, `#eab308`, `#e6b030` are within 5° hue and 1% lightness — should be 1 token. `#f97316` (orange) is 30° away and serves a different semantic role (achievement badges) — keep separate.
 
-**CLUSTER 2: Gray text stack** (highest token debt — see §DBI3-S07)
+**CLUSTER 2: Gray text stack** (highest token debt — see §DBI3-S07 ✅)
 
 | Hex | Tailwind Class | Count | Role |
 |---|---|---|---|
@@ -4944,7 +4944,7 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 
 ### Color Architecture Findings
 
-> **Finding E1-COL1** · Severity: **HIGH**
+> **Finding E1-COL1** ✅ · Severity: **HIGH**
 > **66 unique hex colors with only 18 governed by CSS custom properties — 73% of the palette is unmanaged.** Near-duplicate clusters exist in gold (3 values), gray (9+ values mixing gray/slate families), green (6 values), purple (5 values mixing purple/violet families), red (6 values), and dark backgrounds (10+ values). This creates a maintenance burden and visual inconsistency.
 > **Solution**:
 > - Define a comprehensive token palette covering all color needs:
@@ -4952,7 +4952,7 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 >   /* Accent tokens (already exist — keep) */
 >   --color-gold, --color-pink, --color-cyan, --color-purple, --color-emerald, --color-red
 >
->   /* NEW: Gray hierarchy (chromatic, replacing Tailwind grays — per §DBI3-S07) */
+>   /* NEW: Gray hierarchy (chromatic, replacing Tailwind grays — per §DBI3-S07 ✅) */
 >   --text-primary: #edf1f8;    --text-secondary: #9da8b9;
 >   --text-muted: #7d8a9f;      --text-subtle: #5f6d82;
 >   --text-ghost: #445064;
@@ -4975,7 +4975,7 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 
 > **Finding E1-COL3 ✅** · Severity: **MEDIUM**
 > **Tailwind gray and slate families mixed in the same text hierarchy.** `gray-*` (achromatic) and `slate-*` (blue-tinted) have different color temperatures. 29 instances of `#6b7280` (gray-500) alongside 6 instances of `#e2e8f0` (slate-200) and 7 of `#f1f5f9` (slate-50) create thermal inconsistency.
-> **Solution**: Choose one family. Given the app's navy base (`#080c14` at ~240° hue), slate (blue-tinted) is the correct choice. Migrate all `gray-*` to `slate-*` equivalents, or better: to the chromatic custom tokens proposed in §DBI3-S07.
+> **Solution**: Choose one family. Given the app's navy base (`#080c14` at ~240° hue), slate (blue-tinted) is the correct choice. Migrate all `gray-*` to `slate-*` equivalents, or better: to the chromatic custom tokens proposed in §DBI3-S07 ✅.
 
 > **Finding E1-COL4 ✅** · Severity: **LOW**
 > **5 instances of `#ff0000` (pure red) — uncalibrated color.** Pure saturated red signals low craft. It appears in trophy/achievement badge colors.
@@ -5428,10 +5428,10 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 
 **Overall CSS custom property coverage**: ~30% of design decisions are token-governed. The remaining 70% are hardcoded values scattered across markup and CSS-in-JS.
 
-> **Finding E1-COV1** · Severity: **HIGH**
+> **Finding E1-COV1** ✅ · Severity: **HIGH**
 > **CSS custom property coverage is ~30% — spacing, radius, and z-index have zero token governance.** Text colors (18%), shadows (12%), and dark surface variants are critically undertokenized. This means any design system change requires finding and replacing hundreds of scattered values.
 > **Solution**:
-> - **Priority 1** (highest impact): Add text color tokens (replaces 459 gray instances — see §DBI3-S07)
+> - **Priority 1** (highest impact): Add text color tokens (replaces 459 gray instances — see §DBI3-S07 ✅)
 > - **Priority 2**: Add spacing tokens (at least `--space-base: 14px` and the 2px grid scale)
 > - **Priority 3**: Add radius tokens (7-level scale from §E1-RAD1 ✅)
 > - **Priority 4**: Add z-index tokens (from §E1-ZDX1 ✅)
@@ -5446,7 +5446,7 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 |---|---|---|---|
 | E1-SP1 ✅ | Spacing uses 2px base grid (not 4px) — undocumented but consistent | **LOW** | §E1.1 |
 | E1-SP2 ✅ | 3 subpixel/odd spacing values (1.5px, 3px, -1px) | **LOW** | §E1.1 |
-| E1-COL1 | 66 unique hex colors, only 18 tokenized — 73% unmanaged palette | **HIGH** | §E1.2 |
+| E1-COL1 ✅ | 66 unique hex colors, only 18 tokenized — 73% unmanaged palette | **HIGH** | §E1.2 |
 | E1-COL2 ✅ | 3 near-duplicate gold values where 1 token exists | **MEDIUM** | §E1.2 |
 | E1-COL3 ✅ | Tailwind gray and slate families mixed in same hierarchy | **MEDIUM** | §E1.2 |
 | E1-COL4 ✅ | 5 instances of uncalibrated pure `#ff0000` red | **LOW** | §E1.2 |
@@ -5463,7 +5463,7 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 | E1-ANI1 ✅ | `--transition-slow` unused via token; 6 `ease` curves inconsistent | **LOW** | §E1.7 |
 | E1-ANI2 | Animation system well-structured (15 keyframes, dual easing) | **PASS** | §E1.7 |
 | E1-NAM1 | Token naming hybrid (presentational colors + semantic rest) — appropriate | **PASS** | §E1.8 |
-| E1-COV1 | CSS custom property coverage ~30% — spacing/radius/z-index at 0% | **HIGH** | §E1.9 |
+| E1-COV1 ✅ | CSS custom property coverage ~30% — spacing/radius/z-index at 0% | **HIGH** | §E1.9 |
 
 **Severity distribution**: 2 HIGH, 4 MEDIUM, 9 LOW, 5 PASS — **20 total findings**
 
@@ -6574,8 +6574,8 @@ All colored-text-on-colored-background combinations pass comfortably. The low-op
 > **Solution**: No action needed. This is strong accessibility compliance.
 
 > **E3-WC2 ✅** · LOW
-> **Finding**: `text-gray-500` (`#6b7280`) at 5.2:1 passes AA with only 0.7:1 margin. It's used 107 times at small sizes (text-xs, text-[9px]) where readability is already challenged. Cross-reference: §DBI3-S07 (HIGH) flagged 459 gray text instances as the single biggest genericness liability.
-> **Solution**: Replace `text-gray-500` with `text-gray-400` (`#9ca3af`, 10.6:1) or a custom token `--text-muted: #8a91a0` (~7.5:1) that provides better contrast while maintaining the subdued appearance. This simultaneously fixes the WCAG margin issue and the genericness liability from §DBI3-S07.
+> **Finding**: `text-gray-500` (`#6b7280`) at 5.2:1 passes AA with only 0.7:1 margin. It's used 107 times at small sizes (text-xs, text-[9px]) where readability is already challenged. Cross-reference: §DBI3-S07 ✅ (HIGH) flagged 459 gray text instances as the single biggest genericness liability.
+> **Solution**: Replace `text-gray-500` with `text-gray-400` (`#9ca3af`, 10.6:1) or a custom token `--text-muted: #8a91a0` (~7.5:1) that provides better contrast while maintaining the subdued appearance. This simultaneously fixes the WCAG margin issue and the genericness liability from §DBI3-S07 ✅.
 
 ---
 
@@ -6804,13 +6804,13 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-CT1 (PASS) — Temperature coherence | DC1-TMP1 (PASS) — Bimodal temperature | ✅ **Confirmed** |
 | E3-CT2 ✅ (LOW) — Cool accents quiet | DC1-AC1 ✅ (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
 | E3-WC1 (PASS) — WCAG AA 100% | DC1-TX1 (PASS) — Text perceptually calibrated | ✅ **Confirmed** |
-| E3-WC2 ✅ (LOW) — Gray-500 marginal | DBI3-S07 (HIGH) — 459 gray instances | 🔗 **Converges** — the same gray text issue seen from accessibility vs genericness angles |
+| E3-WC2 ✅ (LOW) — Gray-500 marginal | DBI3-S07 ✅ (HIGH) — 459 gray instances | 🔗 **Converges** — the same gray text issue seen from accessibility vs genericness angles |
 | E3-NC1 ✅ (MEDIUM) — Low border contrast | DC2-AC1 ✅ (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
 | E3-SC1 ✅ (MEDIUM) — Warning=accent collision | DC1-SM1 (PASS) — Semantic colors reuse accent tokens | ⚠️ **Partial contradiction** — DC1 rated semantic reuse as PASS; E3 finds the warning-accent overlap is problematic. The earlier assessment didn't weigh the collision risk. |
 | E3-CP1 (PASS) — Psychology alignment | DC5-ST2 (PASS) — Engagement temperature correct | ✅ **Confirmed** |
 | E3-SA1 ✅ (LOW) — #ff0000 oversaturated | E1-COL4 ✅ (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives. ✅ FIXED |
 
-**Key convergence**: The gray text issue (E3-WC2 ✅ + DBI3-S07 + E1-COL3 ✅) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
+**Key convergence**: The gray text issue (E3-WC2 ✅ + DBI3-S07 ✅ + E1-COL3 ✅) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
 
 **One partial contradiction**: DC1-SM1 rated semantic color reuse as PASS, but E3-SC1 ✅ finds the warning-accent overlap problematic. The difference is analytical scope: DC1 assessed the *architecture* (tokens exist and are reused — structurally clean), while E3 assessed the *perceptual outcome* (user can't distinguish warning from accent — functionally problematic). Both assessments are correct within their scope.
 
@@ -6828,7 +6828,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-CT1 | §E3.4 | PASS | Warm-dominant (1.3:1) on cool navy — intentional | Cross-ref DC1-TMP1 |
 | E3-CT2 ✅ | §E3.4 | LOW | Cool accents (cyan/purple) perceptually quiet on navy | Use cyan-300 for high-importance cyan elements |
 | E3-WC1 | §E3.5 | PASS | WCAG AA 100% (22/22 combinations tested) | — |
-| E3-WC2 ✅ | §E3.5 | LOW | text-gray-500 at 5.2:1 — marginal AA margin | Replace with `--text-muted: #8a91a0` (~7.5:1); cross-ref DBI3-S07 |
+| E3-WC2 ✅ | §E3.5 | LOW | text-gray-500 at 5.2:1 — marginal AA margin | Replace with `--text-muted: #8a91a0` (~7.5:1); cross-ref DBI3-S07 ✅ |
 | E3-NC1 ✅ | §E3.6 | MEDIUM | Input border 2.1:1 fails WCAG 1.4.11 (3:1 required) | Increase input default border to `--border-hover` (0.15 opacity) |
 | E3-NC2 | §E3.6 | PASS | Focus indicators + icons pass 3:1 comfortably | — |
 | E3-SC1 ✅ | §E3.7 | MEDIUM | Warning color = accent color (both gold) | Assign amber-500 to warnings; create `--color-warning` token |

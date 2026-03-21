@@ -471,10 +471,17 @@ const KuroStyles = memo(({ oledMode }) => (
       --transition-fast: 0.1s var(--ease-branded);   /* TR-F1: Tightened from 0.15s */
       --transition-normal: 0.18s var(--ease-branded); /* TR-F1: Tightened from 0.25s */
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      /* MED-4: Z-index scale — distinct values to prevent collision */
+      /* HIGH-3 + MED-4: Complete z-index token scale */
+      --z-base: 0;
+      --z-elevated: 10;
+      --z-sticky: 100;
+      --z-overlay: 1000;
+      --z-modal: 9000;
       --z-toast: 9500;
       --z-install: 9800;
       --z-max: 9999;
+      /* Radius: --radius-full for badges/avatars */
+      --radius-full: 100px;
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
       --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
@@ -514,6 +521,7 @@ const KuroStyles = memo(({ oledMode }) => (
       --space-md: 12px;
       --space-lg: 16px;
       --space-xl: 24px;
+      --space-2xl: 32px;
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
       --radius-sm: 6px;
       --radius-md: 8px;
@@ -523,15 +531,29 @@ const KuroStyles = memo(({ oledMode }) => (
       --card-padding: 14px;
       --btn-radius: var(--radius-md);
       --stat-radius: var(--radius-lg);
-      /* CL-F2 + MED-11: Palette-calibrated semantic state colors */
-      --state-error: #f87171;   /* oklch(68% 0.18 15°) — cooler red */
-      --state-success: #2dd4bf; /* oklch(72% 0.16 170°) — teal-shifted green */
-      --color-warning: #f59e0b; /* oklch(75% 0.16 80°) — MED-11/13: amber, distinct from brand gold */
+      /* HIGH-2: Domain-semantic color tokens — consolidated from 66 unique hex values */
+      /* Element colors */
+      --element-fusion: #ef4444;
+      --element-electro: #a855f7;
+      --element-aero: #10b981;
+      --element-glacio: #38bdf8;
+      --element-havoc: #ec4899;
+      --element-spectro: #edaf18;
+      /* Rarity colors */
+      --rarity-5star: rgba(var(--color-gold), 1);
+      --rarity-4star: rgba(var(--color-purple), 1);
+      /* State colors — CL-F2 + MED-11 */
+      --state-error: #f87171;   /* oklch(68% 0.18 15°) */
+      --state-success: #2dd4bf; /* oklch(72% 0.16 170°) */
+      --state-info: #38bdf8;    /* oklch(76% 0.14 230°) */
+      --color-warning: #f59e0b; /* oklch(75% 0.16 80°) — amber, distinct from brand gold */
       /* E3-CT2 + MED-7: Lightened cool accents for AAA contrast on dark bg */
       --accent-cyan: #67e8f9;   /* cyan-300, ~8:1 contrast */
       --accent-purple: #c084fc; /* purple-300, ~8:1 contrast (was #d8b4fe, adjusted for AAA) */
-      /* E3-WC2: Disabled text token at 5.5:1+ contrast ratio */
-      --text-disabled: #8b95a5;
+      /* HIGH-1: Chromatic text tokens — blue-hinted grays (hue ≈250°) */
+      --text-secondary: #c5ccda; /* oklch(82% 0.010 250) — replaces text-gray-300 */
+      --text-muted: #8f99ab;     /* oklch(65% 0.012 250) — replaces text-gray-400 */
+      --text-disabled: #646e7f;  /* oklch(50% 0.010 250) — replaces text-gray-500 */
       /* DBI3-S01: Calibrated 3-star rarity blue token */
       --rarity-3star: #60a5fa;
     }
@@ -989,7 +1011,13 @@ const KuroStyles = memo(({ oledMode }) => (
       color: var(--text-body);
     }
 
-    /* E3-WC2: Override Tailwind text-gray-500 (#6b7280, 5.2:1) with higher-contrast token */
+    /* HIGH-1: Override achromatic Tailwind grays with chromatic blue-hinted tokens */
+    .text-gray-300 {
+      color: var(--text-secondary) !important;
+    }
+    .text-gray-400 {
+      color: var(--text-muted) !important;
+    }
     .text-gray-500 {
       color: var(--text-disabled) !important;
     }
@@ -1719,6 +1747,20 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-calc button:not(.kuro-btn):active {
       transform: scale(0.97);
       transition: transform 0.1s ease;
+    }
+
+    /* HIGH-6: 5-star celebration animation — gold screen-edge glow */
+    @keyframes celebrateGold {
+      0%   { box-shadow: 0 0 0 0 rgba(237,175,24,0.6); }
+      50%  { box-shadow: 0 0 40px 20px rgba(237,175,24,0.2); }
+      100% { box-shadow: 0 0 0 0 rgba(237,175,24,0); }
+    }
+    .celebrate-5star {
+      animation: celebrateGold 1.5s var(--ease-branded);
+    }
+    /* Lucky pull — subtle gold border pulse on early-pity entries */
+    .celebrate-lucky {
+      animation: celebrateGold 0.8s var(--ease-branded);
     }
 
     /* §E10-EP-F2: Entrance celebration — staggered gold pulse for first data population */

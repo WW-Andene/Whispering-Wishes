@@ -450,6 +450,8 @@ function WhisperingWishesInner() {
       document.title = 'Whispering Wishes';
       
       // Web manifest (Android home screen) - dark background icon
+      // HIGH-4: TODO — Generate icon-192x192.png, icon-512x512.png, and icon-maskable-512x512.png
+      // from favicon.svg (gold "W" on #080c14). Currently using dynamic canvas-generated PNG.
       const manifest = {
         name: 'Whispering Wishes',
         short_name: 'Whispering Wishes',

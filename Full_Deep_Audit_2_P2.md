@@ -1079,7 +1079,7 @@ Geometric ←————●———————————→ Humanist
 | `text-rendering: optimizeLegibility` | E4-TR2 ✅ LOW: Missing but low impact | ⚠️ |
 
 **Cross-reference with §E1 (Design Token System)**:
-- §E1-COV1 HIGH noted that spacing/radius/z-index have 0% token coverage
+- §E1-COV1 ✅ HIGH noted that spacing/radius/z-index have 0% token coverage
 - Typography tokens are partially covered: `--font-display` and `--font-data` exist, but font sizes, weights, and line-heights have no token abstraction
 - This reinforces the "30% token coverage" finding — typography contributes to the gap
 
@@ -1139,7 +1139,7 @@ Geometric ←————●———————————→ Humanist
 | §DT4 Voice & Expression | ⚠️ Mixed | E4-CS1 PASS (character), E4-LL2 PASS (measure) | Empty/error states |
 
 **Prior-step cross-references surfaced:**
-- §E1-COV1 HIGH (token coverage) — typography tokens contribute to gap
+- §E1-COV1 ✅ HIGH (token coverage) — typography tokens contribute to gap
 - §E2-VR1 ✅ LOW (dual-rhythm) — CSS-in-JS vs Tailwind type sizes mirror the spacing duality
 - §DS1 (Cyberpunk/Terminal) — typography strongly reinforces primary classification
 - §DP2 (LUMINOUS TACTICAL COMPANION) — Rajdhani + JetBrains Mono fully embody this character
@@ -2460,7 +2460,7 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 
 ### Connection to prior findings
 
-- **§E1-COV1** (token coverage ~30%): The inline button sprawl (§E5-BT5 ✅) contributes to the token gap — buttons using ad-hoc Tailwind instead of kuro-btn tokens widen the coverage deficit.
+- **§E1-COV1 ✅** (token coverage ~30%): The inline button sprawl (§E5-BT5 ✅) contributes to the token gap — buttons using ad-hoc Tailwind instead of kuro-btn tokens widen the coverage deficit.
 - **§E1-RAD1 ✅** (rounded-lg monoculture): The radius hierarchy documented in §E5-CT1 (16px → 12px → 8px → 3px) shows the actual system is more nuanced than rounded-lg alone, but the ~100 inline buttons mostly use `rounded` (6px) or `rounded-lg` (8px), adding to the perceived monoculture.
 - **§E2-MO1 ✅** (touch targets 36px): Some modal close buttons still use `min-w-[36px]` (character detail) while most are 44px — the touch target inconsistency persists at the component level.
 - **§E3-NC1 ✅** (input border contrast 2.1:1): The gold focus glow on inputs (§E5-IN1) provides excellent contrast when focused, but the default border contrast issue from §E3 remains at rest.
@@ -3742,7 +3742,7 @@ MOTION SIGNATURE BRIEF
 ### Connection to prior findings
 
 - **§E5-BT5 ✅** (inline button sprawl ~100+): The hover and active gaps (§E6-HV9 ✅, §E6-AP4 ✅) are the interaction-layer consequence of the same inline button sprawl. Migrating to kuro-btn variants would fix three issues simultaneously: visual consistency (§E5-BT5 ✅), hover quality (§E6-HV9 ✅), and press feedback (§E6-AP4 ✅).
-- **§E1-COV1** (token coverage ~30%): The transition tokens (`--transition-fast/normal/slow`) are well-defined but only used by kuro-* system components. Inline buttons use Tailwind defaults (`transition-colors`, `duration-300`) — widening the token coverage gap.
+- **§E1-COV1 ✅** (token coverage ~30%): The transition tokens (`--transition-fast/normal/slow`) are well-defined but only used by kuro-* system components. Inline buttons use Tailwind defaults (`transition-colors`, `duration-300`) — widening the token coverage gap.
 - **§DBI3-S03** (rounded-lg monoculture): The motion system avoids monoculture — different elements have distinct motion profiles (buttons compress, cards lift, sliders grow, modals emerge). This is motion diversity that the static visual system could learn from.
 
 ---
@@ -3933,8 +3933,8 @@ The app's brand identity is defined by 6 signals:
 > **Solution**: None needed.
 
 > **Finding E7-BC4 ✅** · MEDIUM
-> **Gray text vs brand identity**: 459 instances of achromatic gray text classes (`text-gray-300`, `text-gray-400`, `text-gray-500`) across the app. While gray is appropriate for secondary/tertiary text, the sheer volume means most of the app's visible text is achromatic — weakening the gold brand identity. This was previously identified in §DBI3-S07 (HIGH) and §E1-COL1 (HIGH).
-> **Cross-ref**: §DBI3-S07, §E1-COL1, §E1-COL3 ✅, §E3-WC2 ✅.
+> **Gray text vs brand identity**: 459 instances of achromatic gray text classes (`text-gray-300`, `text-gray-400`, `text-gray-500`) across the app. While gray is appropriate for secondary/tertiary text, the sheer volume means most of the app's visible text is achromatic — weakening the gold brand identity. This was previously identified in §DBI3-S07 ✅ (HIGH) and §E1-COL1 ✅ (HIGH).
+> **Cross-ref**: §DBI3-S07 ✅, §E1-COL1 ✅, §E1-COL3 ✅, §E3-WC2 ✅.
 > **Solution**: Replace `text-gray-300` with `text-[var(--text-body)]` (which maps to `#dfe5ef` — a cool-tinted near-white), and `text-gray-400`/`text-gray-500` with opacity-reduced versions of `--text-body`. This maintains the hierarchy while adding a cool-tint that aligns with the navy-and-gold palette. Prioritize high-visibility text (tab labels, card descriptions, stat labels).
 
 ---
@@ -4212,7 +4212,7 @@ The WuWa tracker ecosystem includes:
 | Toggle switch description alignment → consistent left padding | Detail alignment | Trivial |
 
 > **Finding E7-PD1 ✅** · MEDIUM
-> **Primary polish lever — inline button migration**: The single change with the highest impact across ALL tabs is creating `kuro-btn-ghost` and `kuro-btn-sm` variants and migrating the ~100+ inline buttons. This simultaneously improves: hover quality (§E6-HV9 ✅), active feedback (§E6-AP4 ✅), visual consistency (§E5-BT5 ✅), token coverage (§E1-COV1), and the two-layer coherence gap (§E7-DC1 ✅). Every tab has at least 2–5 inline buttons that would benefit.
+> **Primary polish lever — inline button migration**: The single change with the highest impact across ALL tabs is creating `kuro-btn-ghost` and `kuro-btn-sm` variants and migrating the ~100+ inline buttons. This simultaneously improves: hover quality (§E6-HV9 ✅), active feedback (§E6-AP4 ✅), visual consistency (§E5-BT5 ✅), token coverage (§E1-COV1 ✅), and the two-layer coherence gap (§E7-DC1 ✅). Every tab has at least 2–5 inline buttons that would benefit.
 > **Solution**: Priority migration order: Calculator tab (most inline buttons in a data-focused context) → Events tab → Collection tab → remaining tabs.
 
 > **Finding E7-PD2 ✅** · LOW
@@ -4412,7 +4412,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 
 ### Key concerns
 
-1. **Two-layer coherence gap** (§E7-DC1 ✅, §E7-PD1 ✅): The kuro-* system covers ~70% of the UI. The remaining ~30% (inline Tailwind buttons, badges, progress bars, filter selects) uses a simpler design vocabulary that doesn't benefit from design tokens, multi-signal hover, or physical active states. This is the single most impactful professionalism gap and the one that cascades across multiple prior findings (§E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E1-COV1).
+1. **Two-layer coherence gap** (§E7-DC1 ✅, §E7-PD1 ✅): The kuro-* system covers ~70% of the UI. The remaining ~30% (inline Tailwind buttons, badges, progress bars, filter selects) uses a simpler design vocabulary that doesn't benefit from design tokens, multi-signal hover, or physical active states. This is the single most impactful professionalism gap and the one that cascades across multiple prior findings (§E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E1-COV1 ✅).
 
 2. **Gray text volume** (§E7-BC4 ✅): 459 achromatic gray text instances weaken the gold brand identity. This is a cosmetic issue that compounds across the entire app — the overall color impression is "gray with gold highlights" rather than "gold with gray support."
 
@@ -4422,8 +4422,8 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 
 - **§E5-BT5 ✅** (inline button sprawl): The professionalism impact of the button sprawl is confirmed — it's the primary source of the two-layer coherence gap (§E7-DC1 ✅) and the primary polish lever (§E7-PD1 ✅).
 - **§E6-HV9 ✅ + §E6-AP4 ✅** (hover/active gaps): These interaction-layer consequences of the button sprawl now have a professionalism framing — they create a perceptible polish gradient within each screen.
-- **§E1-COV1** (token coverage ~30%): The professionalism audit confirms that token coverage is the root cause of the coherence gap. Extending the kuro-* system to cover inline elements would simultaneously fix multiple findings.
-- **§DBI3-S07 + §E1-COL1** (gray text): The brand consistency assessment (§E7-BC4 ✅) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
+- **§E1-COV1 ✅** (token coverage ~30%): The professionalism audit confirms that token coverage is the root cause of the coherence gap. Extending the kuro-* system to cover inline elements would simultaneously fix multiple findings.
+- **§DBI3-S07 ✅ + §E1-COL1 ✅** (gray text): The brand consistency assessment (§E7-BC4 ✅) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
 - **§DBI3-S03** (rounded-lg monoculture): The radius audit (§E7-AD1 ✅, §E7-AD2 ✅) shows the kuro-* system has a deliberate 5-level hierarchy — the monoculture is in the inline Tailwind layer's default `rounded-lg`.
 
 ---
@@ -5072,7 +5072,7 @@ For a community fan tool, the distribution channels are:
 > **Finding E8-MI1** · MEDIUM
 > **Three defaulting signals undermine "made with intent" impression**: The inline Tailwind layer's `transition-colors`, `rounded-lg`, and `text-gray-400` trio creates a "default Tailwind" fingerprint visible in ~30% of the UI. These aren't wrong — they're functional — but they look like decisions that weren't made rather than decisions that were. The contrast with the deliberate kuro-* system makes the defaulting more visible than it would be in an all-Tailwind app.
 > **Evidence**: `transition-colors` appears ~80+ times in `App.jsx`. `rounded-lg` appears ~120+ times. `text-gray-400` appears ~200+ times. In contrast, `var(--transition-fast)`, custom radius values, and `var(--text-body)` appear only within kuro-* components.
-> **Cross-reference**: §E7-DC1 ✅ (two-layer coherence gap), §E1-COV1 (token coverage ~30%), §DBI3-S03 (rounded-lg monoculture), §E7-BC4 ✅ (gray text volume).
+> **Cross-reference**: §E7-DC1 ✅ (two-layer coherence gap), §E1-COV1 ✅ (token coverage ~30%), §DBI3-S03 (rounded-lg monoculture), §E7-BC4 ✅ (gray text volume).
 > **Solution**: This finding converges with the kuro-btn migration (§E7-PD1 ✅). When migrating inline buttons to kuro-btn variants, the transition, radius, and color tokens migrate simultaneously. For non-button elements (badges, progress bars, filter selects), create `kuro-badge`, `kuro-progress`, and `kuro-select` classes that reference design tokens instead of Tailwind defaults. This is the single most impactful "intent" improvement.
 
 #### §E8.7.2 App icon / favicon quality
@@ -5177,7 +5177,7 @@ For a community fan tool, the distribution channels are:
 
 #### Key concerns
 
-1. **"Made with intent" gap in inline layer** (§E8-MI1): The `transition-colors` + `rounded-lg` + `text-gray-400` trio in the inline Tailwind layer signals "Tailwind defaults" rather than "deliberate design." This is the most visible "unintentional" signal and it compounds across ~30% of the UI. Converges with §E7-DC1 ✅, §E7-PD1 ✅, §E1-COV1.
+1. **"Made with intent" gap in inline layer** (§E8-MI1): The `transition-colors` + `rounded-lg` + `text-gray-400` trio in the inline Tailwind layer signals "Tailwind defaults" rather than "deliberate design." This is the most visible "unintentional" signal and it compounds across ~30% of the UI. Converges with §E7-DC1 ✅, §E7-PD1 ✅, §E1-COV1 ✅.
 
 2. **PWA identity is broken** (§E8-CI2, §E8-FV1): Missing apple-touch-icon.png + wrong favicon gold color = the app's most-seen representations (browser tab, home screen) don't match the brand. This is a quick-fix, high-impact issue.
 
@@ -5186,7 +5186,7 @@ For a community fan tool, the distribution channels are:
 #### Connection to prior findings
 
 - **§E7-DC1 ✅ + §E7-PD1 ✅** (two-layer gap, button migration): The §E8 "made with intent" test (§E8-MI1) confirms that the Tailwind default fingerprint is the primary "unintentional" signal. The button migration remains the single most impactful improvement across both professionalism (§E7) and product aesthetics (§E8).
-- **§E1-COV1** (token coverage ~30%): The axis-driven assessment confirms that the token gap isn't just a technical issue — it's a product aesthetics issue visible through the A1 (credibility), A2 (intent), and Universal (made-with-intent) lenses.
+- **§E1-COV1 ✅** (token coverage ~30%): The axis-driven assessment confirms that the token gap isn't just a technical issue — it's a product aesthetics issue visible through the A1 (credibility), A2 (intent), and Universal (made-with-intent) lenses.
 - **§E7-PL1 ✅** (no success animation): Confirmed as a commitment-flow gap (§E8-CO1 ✅) — the import success moment is the app's "conversion" equivalent.
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as a "defaulting" signal (§E8-MI1) — the monoculture is visible as "unintentional" rather than "coherent."
 
@@ -5996,7 +5996,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 
 ### Connection to Prior Findings
 
-- **§E1-COV1** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1 ✅). Token migration is the single highest-impact improvement.
+- **§E1-COV1 ✅** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1 ✅). Token migration is the single highest-impact improvement.
 - **§E7-PD1 ✅** (button migration): The native `<select>` (§E9-MC-F1 ✅) is the same class of issue — a non-branded native element breaking the design system.
 - **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2 ✅) — the radius monoculture prevents shape from serving as an identity signal.
@@ -9052,7 +9052,7 @@ Competitive positioning map:
   - GC1: E6-MC3 reduced-motion PASS → PARTIAL PASS (canvas gap)
   - GC2: E9-AC-F2 ✅ favicon POLISH → LOW (severity alignment)
   - GC3: CK-F2 ✅ touch targets LOW → MEDIUM (WCAG compliance)
-  - GC4: DS2-F8 hardcoded colors MEDIUM → HIGH (aligns with E1-COL1)
+  - GC4: DS2-F8 hardcoded colors MEDIUM → HIGH (aligns with E1-COL1 ✅)
   - GC5: Both severities retained (different scopes)
 
 **Solution for all contradictions**: When implementing fixes, use the **higher severity** from the reconciled assessment. The reconciliation log above serves as the authoritative reference.
@@ -9068,9 +9068,9 @@ Competitive positioning map:
 
 | # | Pattern | Steps Affected | Inconsistency | Normalized Severity |
 |---|---------|---------------|---------------|-------------------|
-| SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 ✅ (MEDIUM), §E9-AG-F1 ✅ (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
+| SI1 | **Gray text genericness** | §DBI3-S07 ✅ (HIGH), §E7-BC4 ✅ (MEDIUM), §E9-AG-F1 ✅ (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
 | SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 ✅ (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
-| SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
+| SI3 | **Token coverage gap** | §E1-COV1 ✅ (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 ✅ (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 ✅ (LOW), §E10-NF-F2 ✅ (MEDIUM), §E10-DT-F1 ✅ (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
 | SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1 ✅) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
@@ -9094,10 +9094,10 @@ Competitive positioning map:
 
 | Metric | Step A Value | Step B Value | Consistent? |
 |--------|-------------|-------------|-------------|
-| Gray text instances | §DBI3-S07: "459 achromatic" | §E9-AG-F1 ✅: "~492 text-gray-400" | **MINOR DISCREPANCY** — DBI3 counts all achromatic gray (gray-300/400/500). E9 counts only text-gray-400. 459 ⊃ 492 is impossible if E9 is a subset. **Resolution**: E9's "~492" likely includes text-gray-300 and text-gray-500 as well, making it a recount rather than a subset. Counts are approximate (tilde-prefixed). **No material difference** — both establish "~450-500 instances" as the magnitude. |
-| Hardcoded colors | §DS2-F8: "~240 hardcoded" | §E1-COL1: "66 unique hex" | **CONSISTENT** — 240 instances ÷ 66 unique = 3.6 avg uses per color. Plausible. |
+| Gray text instances | §DBI3-S07 ✅: "459 achromatic" | §E9-AG-F1 ✅: "~492 text-gray-400" | **MINOR DISCREPANCY** — DBI3 counts all achromatic gray (gray-300/400/500). E9 counts only text-gray-400. 459 ⊃ 492 is impossible if E9 is a subset. **Resolution**: E9's "~492" likely includes text-gray-300 and text-gray-500 as well, making it a recount rather than a subset. Counts are approximate (tilde-prefixed). **No material difference** — both establish "~450-500 instances" as the magnitude. |
+| Hardcoded colors | §DS2-F8: "~240 hardcoded" | §E1-COL1 ✅: "66 unique hex" | **CONSISTENT** — 240 instances ÷ 66 unique = 3.6 avg uses per color. Plausible. |
 | Inline buttons | §E5-BT5 ✅: "~100+" | §E6-HV9 ✅: "~100+" | §E6-AP4 ✅: "~93+" | **CONSISTENT** — all approximate the same population. |
-| Token coverage | §E1-COV1: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1 ✅: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
+| Token coverage | §E1-COV1 ✅: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1 ✅: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
 | Rounded-lg count | §DBI3-S03: "109× rounded-lg" | §E9-AG-F2 ✅: "~360 rounded-lg" | **DISCREPANCY** — 109 vs 360 is a 3.3× difference. **Resolution**: DBI3 likely counts `rounded-lg` class instances. E9 may count all `rounded-*` instances including `rounded`, `rounded-md`, `rounded-xl`, etc. **Clarification needed** — the finding should specify: §DBI3-S03 counts `rounded-lg` specifically (109); §E9-AG-F2 ✅ should count `rounded-lg` specifically to maintain consistency. If E9 includes all rounded-* variants, note this explicitly. |
 | Touch targets | §E2-MO1 ✅: "36px" | §CK-F2 ✅: "36px" | **CONSISTENT** — same measurement. |
 | Surface elevation band | §DC3-EL1 ✅: "3.7% lightness band" | §CL-F1: "Surface elevation steps too small" | **CONSISTENT** — qualitative and quantitative descriptions align. |
@@ -9186,9 +9186,9 @@ Competitive positioning map:
 
 | Finding | Recommended Solution | Identity Risk | Alignment Verdict |
 |---------|---------------------|---------------|-------------------|
-| §E1-COL1: 73% unmanaged palette | Tokenize to 70%+ coverage | NONE — tokenization wraps existing values, doesn't change them | **ALIGNED** |
-| §E1-COV1: Token coverage ~30% | Add 25+ spacing/radius/z-index tokens | NONE — tokens formalize existing patterns | **ALIGNED** |
-| §DBI3-S07: 459 achromatic gray text | Replace with chromatic text tokens | **LOW RISK to P4** — new chromatic tokens must be cool-tinted (blue-gray), not warm or neutral. Solution should specify: use existing cool gray scale (e.g., `coolGray-400` at `#8e99af`) rather than Tailwind `gray-400` (`#9ca3af` which is warmer) | **ALIGNED with constraint**: New `--text-muted` token MUST use cool-tinted gray from the established scale |
+| §E1-COL1 ✅: 73% unmanaged palette | Tokenize to 70%+ coverage | NONE — tokenization wraps existing values, doesn't change them | **ALIGNED** |
+| §E1-COV1 ✅: Token coverage ~30% | Add 25+ spacing/radius/z-index tokens | NONE — tokens formalize existing patterns | **ALIGNED** |
+| §DBI3-S07 ✅: 459 achromatic gray text | Replace with chromatic text tokens | **LOW RISK to P4** — new chromatic tokens must be cool-tinted (blue-gray), not warm or neutral. Solution should specify: use existing cool gray scale (e.g., `coolGray-400` at `#8e99af`) rather than Tailwind `gray-400` (`#9ca3af` which is warmer) | **ALIGNED with constraint**: New `--text-muted` token MUST use cool-tinted gray from the established scale |
 | §E10-NV-F1 ✅: Guarantee prediction at 9px | Promote to text-xs with gold background | NONE — increases visibility of existing data | **ALIGNED** |
 | §E9-IC-F1 / §E9-BS-F1: Missing PNG icons | Generate PNG variants | NONE — extends existing SVG to new sizes | **ALIGNED** |
 | §E9-BS-F2: OG image externally hosted | Create local OG image with brand design | NONE — strengthens brand presence | **ALIGNED** |
@@ -9206,7 +9206,7 @@ Competitive positioning map:
 | §E3-SC1 ✅: Warning = accent (both gold) | Assign amber-500 to warnings | Same as E3-AC1 ✅ above | **ALIGNED with constraint** |
 | §E5-BT5 ✅: Inline button sprawl ~100+ | Migrate to kuro-btn variants | **STRENGTHENS P5** — brings inline elements into the design system's cyberpunk vocabulary | **ALIGNED** |
 | §E7-DC1 ✅: Two-layer coherence gap | Extend kuro-* system to inline layer | Same mechanism as E5-BT5 ✅ | **ALIGNED** |
-| §E7-BC4 ✅: Gray text vs brand identity | Create chromatic --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
+| §E7-BC4 ✅: Gray text vs brand identity | Create chromatic --text-muted token | Same as DBI3-S07 ✅ | **ALIGNED with constraint** |
 | §E7-CD2 ✅: Desktop grid overflow risk | Add `min(420px, 100%)` safeguard | **NONE** — purely defensive layout fix | **ALIGNED** |
 | §E8-CI2: Missing apple-touch-icon.png | Generate from brand design | **STRENGTHENS P2** — extends gold brand to iOS | **ALIGNED** |
 | §E8-FV1: Favicon wrong gold + system font | Update to brand gold + consider Rajdhani-derived mark | **STRENGTHENS P2 + P3** | **ALIGNED** |
@@ -9215,7 +9215,7 @@ Competitive positioning map:
 | §E9-MC-F1 ✅: Native select breaks HUD metaphor | Create custom .kuro-select | **STRENGTHENS P5** — replaces generic OS control with branded component | **ALIGNED** |
 | §E9-EA-F2 ✅: No escalating pity urgency | Progressive gold pulse as pity approaches | **STRENGTHENS P2** — gold as urgency signal is on-brand | **ALIGNED** |
 | §E9-EA-F3 ✅: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 — must be cyberpunk-geometric | **ALIGNED with constraint** |
-| §E9-AG-F1 ✅: ~492 text-gray-400 | Create --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
+| §E9-AG-F1 ✅: ~492 text-gray-400 | Create --text-muted token | Same as DBI3-S07 ✅ | **ALIGNED with constraint** |
 | §E9-AG-F2 ✅: ~360 rounded-lg monoculture | Create radius scale tokens | **NONE** — formalizing existing values | **ALIGNED** |
 | §E9-MO-F1 ✅: Desktop easing differs | Unify to branded cubic-bezier | **STRENGTHENS P5** — consistent motion identity | **ALIGNED** |
 | §E10 MEDIUM findings (12 total) | Various data storytelling fixes | **NONE** — all improve data display without altering visual identity | **ALIGNED** |
@@ -9298,7 +9298,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
 ### 19.5.2 — Chain 2: The Gray Text Cascade (SECOND HIGHEST)
 
 ```
-ROOT CAUSE: 459+ achromatic gray text instances (§DBI3-S07)
+ROOT CAUSE: 459+ achromatic gray text instances (§DBI3-S07 ✅)
     │
     ├──→ AESTHETIC: Overall color impression is "gray with gold highlights" (§E7-BC4 ✅)
     │       │
@@ -9310,14 +9310,14 @@ ROOT CAUSE: 459+ achromatic gray text instances (§DBI3-S07)
     │       │
     │       └──→ MAINTENANCE: No central control point for text color updates
     │
-    └──→ GENERICNESS: Highest single genericness signal in the app (§DBI3-S07 rated HIGH)
+    └──→ GENERICNESS: Highest single genericness signal in the app (§DBI3-S07 ✅ rated HIGH)
             │
             └──→ COMPETITIVE: Visually indistinguishable from any Tailwind dark-mode template at the text level
 ```
 
 **Chain impact**: 6+ findings across 5 steps
 **Single fix**: Create `--text-muted`, `--text-secondary`, `--text-disabled` tokens using cool-tinted chromatic grays and apply via `.kuro-text-muted` etc.
-**Cascade resolution**: Fixes §DBI3-S07, §E7-BC4 ✅, §E9-AG-F1 ✅, §DC2-TX1 and contributes to §E1-COV1, §E1-COL1
+**Cascade resolution**: Fixes §DBI3-S07 ✅, §E7-BC4 ✅, §E9-AG-F1 ✅, §DC2-TX1 and contributes to §E1-COV1 ✅, §E1-COL1 ✅
 
 ---
 
@@ -9733,7 +9733,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Severity | Steps 1-10 | Steps 11-18 | Step 19 Adjustments | Reconciled Total |
 |----------|-----------|-------------|--------------------|--------------------|
 | **CRITICAL** | 0 | 0 | 0 | **0** |
-| **HIGH** | 3 (E1-COL1, DBI3-S07, E1-COV1) | 4 (E10-NV-F1 ✅, E9-IC-F1, E9-BS-F2, E9-EA-F1) | +1 (DS2-F8 upgraded) | **8** |
+| **HIGH** | 3 (E1-COL1 ✅, DBI3-S07 ✅, E1-COV1 ✅) | 4 (E10-NV-F1 ✅, E9-IC-F1 ✅, E9-BS-F2 ✅, E9-EA-F1 ✅) | +1 (DS2-F8 upgraded) | **8** |
 | **MEDIUM** | ~25 | ~40 | +5 (upgrades from §19.2), -1 (BR-F1 rejected) | **~69** |
 | **LOW** | ~50 | ~65 | -5 (duplicate consolidation) | **~110** |
 | **POLISH** | ~5 | ~16 | 0 | **~21** |
@@ -9764,7 +9764,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | E6-MC3 reduced motion: PASS → PARTIAL PASS | Contradiction fix | Canvas gap now documented |
 | E9-AC-F2 ✅ favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 ✅ |
 | CK-F2 ✅ touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
-| DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
+| DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 ✅ |
 | E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
 | E7-AD2 ✅ radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 ✅ |
 | E10-NV-F3 ✅ kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 ✅ |
@@ -9996,7 +9996,7 @@ These findings have the broadest impact and should be addressed first. Each reso
 
 ---
 
-### HIGH-1: DBI3-S07 — 459 Achromatic Gray Text Instances
+### HIGH-1: DBI3-S07 ✅ — 459 Achromatic Gray Text Instances
 **Step**: 7 (§DBI3) | **Chain**: #2 | **Tabs**: ALL 8
 
 **Problem**: 459 instances of achromatic `text-gray-400`, `text-gray-500`, and `text-gray-300` Tailwind classes create a "Tailwind template" texture. These pure-gray values carry zero hue, making them visually disconnected from the chromatic blue-tinted palette (#080c14 bg, #edf1f8 text).
@@ -10024,7 +10024,7 @@ All three token values carry blue hue (≈250°), matching the background's chro
 
 ---
 
-### HIGH-2: E1-COL1 — 66 Unique Hex Colors, Only 18 Tokenized (73% Unmanaged)
+### HIGH-2: E1-COL1 ✅ — 66 Unique Hex Colors, Only 18 Tokenized (73% Unmanaged)
 **Step**: 8 (§E1) | **Chain**: #3 | **Tabs**: ALL 8
 
 **Problem**: The codebase contains 66 unique hex color values. Only 18 are defined as CSS custom properties. The remaining 48 are hardcoded inline — either in Tailwind classes, CSS-in-JS, or inline styles. This creates a maintenance burden and inconsistency risk.
@@ -10066,7 +10066,7 @@ All three token values carry blue hue (≈250°), matching the background's chro
 
 ---
 
-### HIGH-3: E1-COV1 — ~30% CSS Custom Property Coverage (Spacing, Radius, Z-Index at 0%)
+### HIGH-3: E1-COV1 ✅ — ~30% CSS Custom Property Coverage (Spacing, Radius, Z-Index at 0%)
 **Step**: 8 (§E1) | **Chain**: #3 | **Tabs**: ALL 8
 
 **Problem**: The design token system covers colors and shadows well but has zero tokens for spacing, border radius, and z-index. All spacing values are hardcoded Tailwind classes. All border radius values are hardcoded. The z-index scale is documented in comments but not tokenized.
@@ -10109,7 +10109,7 @@ Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual s
 
 ---
 
-### HIGH-4: §E9-IC-F1 — Missing 192×192 and 512×512 PNG Icons
+### HIGH-4: §E9-IC-F1 ✅ — Missing 192×192 and 512×512 PNG Icons
 **Step**: 16 (§E9) | **Chain**: #5 | **Tabs**: PWA
 
 **Problem**: The PWA manifest references icon files but only an SVG favicon and apple-touch-icon exist. No 192×192 or 512×512 PNG icons are present. These sizes are required for Android home screen installation, Chrome's "Add to Home Screen" prompt, and the PWA splash screen.
@@ -10134,7 +10134,7 @@ Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual s
 
 ---
 
-### HIGH-5: §E9-BS-F2 / §E9-IC-F4 — OG Image Externally Hosted
+### HIGH-5: §E9-BS-F2 ✅ / §E9-IC-F4 ✅ — OG Image Externally Hosted
 **Step**: 16 (§E9) | **Chain**: #5 | **Tabs**: SOCIAL/META
 
 **Problem**: The Open Graph image (used for social media link previews — Discord, Twitter, Reddit) is hosted externally rather than being a version-controlled local asset. If the external host goes down or changes, all social media previews break.
@@ -10161,7 +10161,7 @@ Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual s
 
 ---
 
-### HIGH-6: §E9-EA-F1 — No 5★ Celebration Animation (Emotional Peak Unvisual)
+### HIGH-6: §E9-EA-F1 ✅ — No 5★ Celebration Animation (Emotional Peak Unvisual)
 **Step**: 16 (§E9) | **Chain**: #6 | **Tabs**: TRACKER
 
 **Problem**: Pulling a 5★ character/weapon is the most emotionally significant moment in gacha gameplay. When this data is imported into the tracker, there is no visual celebration — the pull appears in the log like any other entry. The emotional peak has no visual climax.
