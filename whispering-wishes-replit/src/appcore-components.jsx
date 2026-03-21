@@ -1583,25 +1583,25 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
           {options.map(opt => {
             const active = opt.value === value;
             return (
-              <button
-                key={opt.value}
-                type="button"
-                role="option"
-                aria-selected={active}
-                onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`relative w-full text-left px-3 py-2.5 text-sm rounded-xl border overflow-hidden transition-colors shadow-lg ${active ? 'border-[rgba(237,175,24,0.3)]' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
-                style={{
-                  background: active ? 'rgba(237,175,24,0.1)' : 'var(--bg-card)',
-                  backdropFilter: 'blur(2px) brightness(0.6)',
-                  WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
-                  color: active ? '#edaf18' : undefined,
-                  paddingLeft: active ? '16px' : undefined,
-                  boxShadow: active ? '0 0 12px rgba(237,175,24,0.15)' : undefined,
-                }}
-              >
-                {active && <span className="absolute left-0 top-0 bottom-0 w-[2px]" style={{ background: 'linear-gradient(180deg, rgba(237,175,24,0.6), #edaf18, rgba(237,175,24,0.6))', boxShadow: '0 0 8px rgba(237,175,24,0.5)' }} />}
-                {opt.label}
-              </button>
+              <div key={opt.value} className="flex items-stretch gap-[2px]">
+                {active && <span className="w-[2px] flex-shrink-0 rounded-full" style={{ background: 'linear-gradient(180deg, rgba(237,175,24,0.6), #edaf18, rgba(237,175,24,0.6))', boxShadow: '0 0 8px rgba(237,175,24,0.5)' }} />}
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  className={`flex-1 text-left px-3 py-2.5 text-sm rounded-xl border transition-colors shadow-lg ${active ? 'border-[rgba(237,175,24,0.3)]' : 'text-gray-300 border-[var(--border-medium)] active:bg-white/5'}`}
+                  style={{
+                    background: active ? 'rgba(237,175,24,0.1)' : 'var(--bg-card)',
+                    backdropFilter: 'blur(2px) brightness(0.6)',
+                    WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
+                    color: active ? '#edaf18' : undefined,
+                    boxShadow: active ? '0 0 12px rgba(237,175,24,0.15)' : undefined,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              </div>
             );
           })}
         </div>
