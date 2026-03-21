@@ -309,6 +309,8 @@ const useEscapeKey = (isOpen, onClose) => {
 const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick }) => {
   const focusTrapRef = useFocusTrap(isOpen);
   useEscapeKey(isOpen, onClose);
+  const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
+  const sheetRef = useRef(null);
   // Prevent background scroll when modal is open (fixes iOS Safari scroll bleed)
   useEffect(() => {
     if (!isOpen) return;
@@ -325,18 +327,60 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
       window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
+
+  // Drag-to-dismiss handlers (mobile bottom sheet)
+  const onTouchStart = useCallback((e) => {
+    // Only handle drag on the sheet handle area or when scrolled to top
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+    const scrollable = sheet.querySelector('[data-sheet-scroll]');
+    if (scrollable && scrollable.scrollTop > 0) return;
+    dragRef.current = { startY: e.touches[0].clientY, currentY: 0, dragging: true };
+  }, []);
+  const onTouchMove = useCallback((e) => {
+    if (!dragRef.current.dragging) return;
+    const dy = e.touches[0].clientY - dragRef.current.startY;
+    if (dy < 0) return; // only drag down
+    dragRef.current.currentY = dy;
+    const sheet = sheetRef.current;
+    if (sheet) sheet.style.transform = `translateY(${dy}px)`;
+  }, []);
+  const onTouchEnd = useCallback(() => {
+    if (!dragRef.current.dragging) return;
+    dragRef.current.dragging = false;
+    const sheet = sheetRef.current;
+    if (dragRef.current.currentY > 100) {
+      // Dismiss
+      if (sheet) sheet.style.transform = 'translateY(100%)';
+      setTimeout(onClose, 150);
+    } else {
+      // Snap back
+      if (sheet) sheet.style.transform = '';
+    }
+    dragRef.current.currentY = 0;
+  }, [onClose]);
+
   if (!isOpen) return null;
   return createPortal(
     <div
       ref={focusTrapRef}
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
+      className={`fixed inset-0 z-[100] flex sm:items-center sm:justify-center sm:p-4 items-end ${className}`}
       style={{ backdropFilter: 'blur(3px) brightness(0.7)', WebkitBackdropFilter: 'blur(3px) brightness(0.7)' }}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
       onClick={onClick}
     >
-      {children}
+      <div
+        ref={sheetRef}
+        className="sm:contents"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ transition: 'transform 0.2s ease-out', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+      >
+        {children}
+      </div>
     </div>,
     document.body
   );
@@ -616,6 +660,18 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ TOUCH OPTIMIZATION ═══ */
+    /* Native-app feel: prevent text selection and context menu on UI chrome */
+    *, *::before, *::after {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    /* Allow text selection only on actual content and inputs */
+    input, textarea, [contenteditable="true"], pre, code, .selectable {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
     button, select, input, textarea, a, [role="tab"], [role="button"] {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
@@ -704,6 +760,18 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Bottom sheet slide-up for mobile modals */
+    @keyframes sheetSlideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    @media (min-width: 640px) {
+      @keyframes sheetSlideUp {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
+      }
     }
 
     @keyframes scaleIn {
@@ -2360,8 +2428,52 @@ const KuroStyles = memo(({ oledMode }) => (
 ));
 KuroStyles.displayName = 'KuroStyles';
 
+// [SECTION:CONFIRM-DIALOG] — Native-style confirmation modal (replaces window.confirm)
+const ConfirmContext = createContext(null);
+const useConfirm = () => useContext(ConfirmContext);
+
+const ConfirmProvider = ({ children }) => {
+  const [state, setState] = useState(null);
+  const resolveRef = useRef(null);
+
+  const confirm = useCallback(({ title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false }) => {
+    return new Promise((resolve) => {
+      resolveRef.current = resolve;
+      setState({ title, message, confirmLabel, cancelLabel, destructive });
+    });
+  }, []);
+
+  const handleClose = useCallback((result) => {
+    resolveRef.current?.(result);
+    resolveRef.current = null;
+    setState(null);
+  }, []);
+
+  return (
+    <ConfirmContext.Provider value={confirm}>
+      {children}
+      <FocusTrapModal isOpen={!!state} onClose={() => handleClose(false)} className="bg-black/80" onClick={() => handleClose(false)} ariaLabel={state?.title || 'Confirm'}>
+        {state && (
+          <div className="w-full sm:max-w-xs rounded-t-2xl sm:rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
+            <div className="p-5 text-center">
+              <h3 className="text-white font-semibold text-sm mb-2">{state.title}</h3>
+              <p className="text-gray-400 text-xs leading-relaxed whitespace-pre-line">{state.message}</p>
+            </div>
+            <div className="border-t border-[var(--border-medium)] flex">
+              <button onClick={() => handleClose(false)} className="flex-1 py-3.5 text-sm text-gray-300 font-medium border-r border-[var(--border-medium)] active:bg-white/5 transition-colors">{state.cancelLabel}</button>
+              <button onClick={() => handleClose(true)} className={`flex-1 py-3.5 text-sm font-semibold active:bg-white/5 transition-colors ${state.destructive ? 'text-red-400' : 'text-cyan-400'}`}>{state.confirmLabel}</button>
+            </div>
+          </div>
+        )}
+      </FocusTrapModal>
+    </ConfirmContext.Provider>
+  );
+};
+
 export {
   PWAProvider, usePWA, ToastContext, ToastProvider, useToast,
   useFocusTrap, useEscapeKey, FocusTrapModal,
   OnboardingModal, KuroStyles,
+  ConfirmProvider, useConfirm,
 };

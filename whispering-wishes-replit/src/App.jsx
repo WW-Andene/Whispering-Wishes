@@ -34,6 +34,8 @@ import {
   useEscapeKey,
   FocusTrapModal,
   OnboardingModal,
+  ConfirmProvider,
+  useConfirm,
   calculateLuckRating,
   KuroStyles,
   SERVERS,
@@ -285,6 +287,7 @@ function WhisperingWishesInner() {
   });
   
   const toast = useToast();
+  const confirm = useConfirm();
   const pwa = usePWA();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [storageLoaded, setStorageLoaded] = useState(false);
@@ -3828,7 +3831,7 @@ function WhisperingWishesInner() {
             {state.planner.addedIncome.length > 0 && (
               <Card>
                 {/* AUDIT-FIX H6: Confirm before clearing all purchases */}
-                <CardHeader action={<button onClick={() => { if (window.confirm('Remove all added purchases?')) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
+                <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear purchases', message: 'Remove all added purchases?', confirmLabel: 'Remove All', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
                 <CardBody className="space-y-2">
                   {state.planner.addedIncome.map(i => (
                     <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
@@ -3838,7 +3841,7 @@ function WhisperingWishesInner() {
                         {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                         {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
                         {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
-                        <button onClick={() => { if (window.confirm(`Remove "${i.label}"?`)) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                        <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                       </div>
                     </div>
                   ))}
@@ -3972,7 +3975,7 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1">
                       <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">Load</button>
                       {/* AUDIT-FIX H6: Confirm before deleting bookmark */}
-                      <button onClick={() => { if (window.confirm(`Delete bookmark "${b.name}"?`)) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
+                      <button onClick={async () => { if (await confirm({ title: 'Delete bookmark', message: `Delete bookmark "${b.name}"?`, confirmLabel: 'Delete', destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
                     </div>
                   </div>
                 ))}
@@ -4063,7 +4066,8 @@ function WhisperingWishesInner() {
 
                 {/* Luck Leaderboard Modal */}
                 <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
-                    <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+                    <div className="kuro-card w-full sm:max-w-sm max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                      <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
                       <div className="p-4 pb-2 border-b border-[var(--border-medium)]">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -6147,10 +6151,11 @@ function WhisperingWishesInner() {
                   {/* Character Selector Modal — FIX: pass isOpen prop */}
                   <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="bg-black/70" onClick={() => setTeamSelectorOpen(false)}>
                       <div
-                        className="w-full max-w-lg max-h-[85vh] rounded-2xl border border-white/15 overflow-hidden flex flex-col"
+                        className="w-full sm:max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
                         style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]">
                           <div>
@@ -6350,7 +6355,8 @@ function WhisperingWishesInner() {
 
                   {/* Weapon Selector Modal */}
                   <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="bg-black/70" onClick={() => setWeaponSelectorOpen(false)}>
-                      <div className="w-full max-w-md max-h-[80vh] rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
+                      <div className="w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
                         <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0">
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
@@ -6745,7 +6751,7 @@ Example: {"pulls":[...]}'
 
             {state.profile.importedAt && (
               <Card>
-                <CardHeader action={<button onClick={() => { if (window.confirm('Clear all imported Convene history? This cannot be undone.')) { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); } }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
+                <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear history', message: 'Clear all imported Convene history?\nThis cannot be undone.', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); } }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
@@ -6759,7 +6765,7 @@ Example: {"pulls":[...]}'
                 <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
                   <Download size={14} /> Export Backup
                 </button>
-                <button onClick={() => { if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone.')) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
+                <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
                   Reset All Data
                 </button>
               </CardBody>
@@ -6831,7 +6837,8 @@ Example: {"pulls":[...]}'
 
       {/* Bookmark Modal */}
       <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="bg-black/80" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark">
-          <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
@@ -6846,7 +6853,8 @@ Example: {"pulls":[...]}'
 
       {/* Export Modal */}
       <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="bg-black/80" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore">
-          <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
@@ -6891,8 +6899,8 @@ Example: {"pulls":[...]}'
                 className="kuro-input w-full h-20 text-[9px] font-mono"
                 aria-label="Paste backup data to restore"
               />
-              <button 
-                onClick={() => {
+              <button
+                onClick={async () => {
                   if (!restoreText.trim()) {
                     toast?.addToast?.('Please paste backup data first', 'error');
                     return;
@@ -6939,15 +6947,12 @@ Example: {"pulls":[...]}'
                     } catch {} // best-effort — don't block restore if backup fails
 
                     // Confirmation dialog
-                    const confirmed = window.confirm(
-                      `Restore backup from v${backupVersion}?\n\n` +
-                      `This will REPLACE all current data:\n` +
-                      `• ${pullCount} total Convenes\n` +
-                      `• ${s.bookmarks?.length || 0} bookmarks\n` +
-                      `• All calculator & planner settings\n\n` +
-                      `A pre-restore backup has been saved automatically.\n` +
-                      `Continue?`
-                    );
+                    const confirmed = await confirm({
+                      title: `Restore backup (v${backupVersion})`,
+                      message: `This will REPLACE all current data:\n• ${pullCount} total Convenes\n• ${s.bookmarks?.length || 0} bookmarks\n• All calculator & planner settings`,
+                      confirmLabel: 'Restore',
+                      destructive: true,
+                    });
                     if (!confirmed) return;
                     
                     // P10-FIX: Sanitize all nested objects to prevent prototype pollution (matches loadFromStorage pattern)
@@ -7009,13 +7014,13 @@ Example: {"pulls":[...]}'
                 try { return !!localStorage.getItem('whispering-wishes-pre-import-backup'); } catch { return false; }
               })() && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     try {
                       const raw = localStorage.getItem('whispering-wishes-pre-import-backup');
                       if (!raw) { toast?.addToast?.('No pre-import backup found', 'error'); return; }
                       const data = JSON.parse(raw);
                       if (!data?.state || typeof data.state !== 'object') { toast?.addToast?.('Invalid pre-import backup', 'error'); return; }
-                      if (!window.confirm(`Restore pre-import backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown date'}?\n\nThis will revert to the state before your last import.`)) return;
+                      if (!await confirm({ title: 'Restore pre-import backup', message: `Restore backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown date'}?\nThis will revert to the state before your last import.`, confirmLabel: 'Restore', destructive: true })) return;
                       dispatch({ type: 'LOAD_STATE', state: data.state });
                       toast?.addToast?.('Pre-import backup restored!', 'success');
                       setShowExportModal(false);
@@ -7447,7 +7452,7 @@ Example: {"pulls":[...]}'
                       
                       <div className="flex gap-2">
                         <button
-                          onClick={() => { if (window.confirm('Clear all custom image overrides?')) saveCollectionImages({}); }}
+                          onClick={async () => { if (await confirm({ title: 'Clear overrides', message: 'Clear all custom image overrides?', confirmLabel: 'Clear', destructive: true })) saveCollectionImages({}); }}
                           className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
                         >
                           Clear Custom Overrides
@@ -7488,7 +7493,7 @@ Example: {"pulls":[...]}'
                           🗗 Mini Window
                         </button>
                         <button
-                          onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
+                          onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
                           className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
                         >
                           Reset to Defaults
@@ -7698,8 +7703,8 @@ Example: {"pulls":[...]}'
                             Apply Overrides
                           </button>
                           <button
-                            onClick={() => {
-                              if (!window.confirm('Clear all trophy name overrides?')) return;
+                            onClick={async () => {
+                              if (!await confirm({ title: 'Clear overrides', message: 'Clear all trophy name overrides?', confirmLabel: 'Clear', destructive: true })) return;
                               setTrophyOverrides({});
                               setTrophyJsonInput('');
                               try { localStorage.removeItem(TROPHY_OVERRIDES_KEY); } catch {}
@@ -8004,8 +8009,8 @@ Example: {"pulls":[...]}'
                       Save Banner Updates
                     </button>
                     <button
-                      onClick={() => {
-                        if (!window.confirm('Reset to default banners? Custom banner data will be lost.')) return;
+                      onClick={async () => {
+                        if (!await confirm({ title: 'Reset banners', message: 'Reset to default banners?\nCustom banner data will be lost.', confirmLabel: 'Reset', destructive: true })) return;
                         if (storageAvailable) {
                           try { localStorage.removeItem(ADMIN_BANNER_KEY); } catch {}
                         }
@@ -8161,7 +8166,7 @@ Example: {"pulls":[...]}'
               <>
             {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
             <button 
-              onClick={() => { if (window.confirm('Reset all visual settings to defaults?')) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
+              onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
               className="w-full py-1.5 rounded text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
               ↻ Reset All to Defaults
@@ -8228,7 +8233,9 @@ export default function WhisperingWishes() {
     <AppErrorBoundary>
       <PWAProvider>
         <ToastProvider>
-          <WhisperingWishesInner />
+          <ConfirmProvider>
+            <WhisperingWishesInner />
+          </ConfirmProvider>
         </ToastProvider>
       </PWAProvider>
     </AppErrorBoundary>
