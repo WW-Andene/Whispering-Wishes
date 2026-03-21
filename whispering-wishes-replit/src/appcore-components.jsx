@@ -385,11 +385,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
-                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)]" style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden" style={{ contain: 'paint', position: 'relative' }}>
+                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                 </div>
                               ) : (
-                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
+                                <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
                                   {/* AUDIT-FIX H12: gray-600 fails WCAG AA contrast on dark bg */}
                                   <User size={14} className="text-gray-500" />
                                 </div>

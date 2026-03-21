@@ -3466,7 +3466,7 @@ function WhisperingWishesInner() {
                           const img = collectionImages[c];
                           return (
                             <div key={c} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                 {img ? (
                                   <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                 ) : (
@@ -3481,7 +3481,7 @@ function WhisperingWishesInner() {
                           const img = collectionImages[w];
                           return (
                             <div key={w} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                 {img ? (
                                   <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
                                 ) : (
@@ -3529,7 +3529,7 @@ function WhisperingWishesInner() {
                           const img = collectionImages[c];
                           return (
                             <div key={c} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                 {img ? (
                                   <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                 ) : (
@@ -3544,7 +3544,7 @@ function WhisperingWishesInner() {
                           const img = collectionImages[w];
                           return (
                             <div key={w} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                 {img ? (
                                   <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
                                 ) : (
