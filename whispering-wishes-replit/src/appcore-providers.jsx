@@ -610,7 +610,8 @@ const KuroStyles = memo(({ oledMode }) => (
       pointer-events: none;
     }
 
-    /* E5-IN4: Apply kuro-input base styles to all select elements */
+    /* E5-IN4 + MED-21: Custom select styling — replaces native chrome with HUD aesthetic */
+    .kuro-select,
     .kuro-calc select {
       background: var(--bg-input);
       border: 1px solid var(--border-bright);
@@ -627,6 +628,12 @@ const KuroStyles = memo(({ oledMode }) => (
       padding-right: 32px;
     }
 
+    .kuro-select:focus-visible,
+    .kuro-calc select:focus-visible {
+      border-color: rgba(var(--color-gold), 0.5);
+      outline: none;
+    }
+
     /* Ensure minimum 44px touch targets for filter selects on touch devices */
     @media (pointer: coarse) {
       .kuro-body select {
@@ -634,7 +641,7 @@ const KuroStyles = memo(({ oledMode }) => (
       }
       /* P10-FIX: Ensure all standalone buttons meet minimum 36px touch target on touch devices (Step 10 audit — MEDIUM-5b) */
       .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn) {
-        min-height: 36px;
+        min-height: 44px; /* MED-15: iOS HIG 44px minimum */
       }
     }
     
@@ -1544,6 +1551,41 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-backdrop-filter: blur(var(--blur-sm));
     }
 
+    /* MED-22: Pity danger zone — progressive visual urgency */
+    .pity-danger {
+      filter: drop-shadow(0 0 8px rgba(237,175,24,0.4));
+      animation: pityPulse 0.5s ease-in-out infinite alternate;
+    }
+    .pity-critical {
+      filter: drop-shadow(0 0 12px rgba(237,175,24,0.6));
+      animation: pityPulse 0.3s ease-in-out infinite alternate;
+    }
+    @keyframes pityPulse {
+      to { filter: drop-shadow(0 0 16px rgba(237,175,24,0.8)); }
+    }
+
+    /* MED-23: Collection milestone celebration */
+    @keyframes milestoneShimmer {
+      0% { box-shadow: 0 0 0 rgba(237,175,24,0); }
+      50% { box-shadow: 0 0 32px rgba(237,175,24,0.15), inset 0 0 16px rgba(237,175,24,0.05); }
+      100% { box-shadow: 0 0 0 rgba(237,175,24,0); }
+    }
+    .kuro-milestone {
+      animation: milestoneShimmer 1s ease-out;
+    }
+
+    /* MED-14: Sticky result summary bar for above-fold results */
+    .kuro-sticky-result {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--blur-lg));
+      -webkit-backdrop-filter: blur(var(--blur-lg));
+      border-bottom: 1px solid var(--border-default);
+      padding: 8px 12px;
+    }
+
     /* E7-SQ2: Gold-accented result hero for Calculator probability display */
     .kuro-stat-hero {
       padding: 20px;
@@ -2095,7 +2137,7 @@ const KuroStyles = memo(({ oledMode }) => (
       }
       .desktop-layout .desktop-grid-2 > * { margin-top: 0 !important; }
       .desktop-layout .banner-grid {
-        display: grid !important; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
+        display: grid !important; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr) /* MED-18: Reduced from 420px for smoother 2-col transition */) !important;
         gap: 0.75rem !important; align-items: start !important;
       }
       .desktop-layout .banner-grid > * { margin-top: 0 !important; }

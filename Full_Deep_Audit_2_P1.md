@@ -5973,7 +5973,7 @@ Elements that appear to lack visual anchoring:
 | TEAMS | Equal-weight team slots | ⚠️ DIFFUSE |
 | PROFILE | Server config above profile display | ⚠️ SPLIT |
 
-> **E2-FP1** · MEDIUM
+> **E2-FP1 ✅** · MEDIUM
 > **Finding**: CALC and PLANNER tabs place input controls above the fold and push computed results (the primary value — percentages and pull projections) below. The input sections are visually heavier than necessary, competing with or obscuring the focal output.
 > **Solution**: For both tabs, consider a **results-first layout** — show the most recent/default calculation result at the top (as a hero stat card with `text-2xl` numbers), with the input controls below or in a collapsible section. Alternatively, make the result section sticky so it remains visible while adjusting inputs.
 
@@ -6115,13 +6115,13 @@ viewport meta: width=device-width, initial-scale=1, viewport-fit=cover
 
 **Full safe-area coverage** — all four insets handled. This is exemplary mobile craft.
 
-> **E2-MO1** · MEDIUM
+> **E2-MO1 ✅** · MEDIUM
 > **Finding**: Touch targets for `kuro-btn` and `kuro-input` are 36px on touch devices (`@media (pointer: coarse)`), **8px below** the recommended 44px minimum (Apple HIG) and **12px below** 48dp (Material Design). Only `<select>` elements correctly enforce 44px. This affects every interactive element in the app except the tab bar.
 > **Solution**: In the `@media (pointer: coarse)` block, change `min-height: 36px` to `min-height: 44px` for `.kuro-btn`, `.kuro-input`, and generic buttons. This is a single CSS change that improves touch accuracy across the entire app. Consider `min-height: 48px` if Material Design compliance is desired.
 
 > **E2-MO2 ✅** · LOW
 > **Finding**: CALC and PLANNER tabs push primary results below the ~496px mobile fold. Users must scroll past inputs to see computed outputs (the value proposition). Only 2 primary items are visible above the fold on these tabs.
-> **Solution**: Cross-reference with E2-FP1 solution. Show a compact "last result" summary above the input section, or make the result section sticky at the bottom of the viewport. Either approach ensures the computed value is always visible.
+> **Solution**: Cross-reference with E2-FP1 ✅ solution. Show a compact "last result" summary above the input section, or make the result section sticky at the bottom of the viewport. Either approach ensures the computed value is always visible.
 
 > **E2-MO3** · PASS
 > **Finding**: Safe area inset handling is comprehensive — all four edges (top, bottom, left, right) use `env()` with fallbacks. The `viewport-fit: cover` meta tag enables edge-to-edge rendering. This is exemplary PWA mobile craft.
@@ -6256,14 +6256,14 @@ Screen edge
 | E2-WS2 | §E2.4 | PASS | Gestalt proximity grouping effective | — |
 | E2-PR1 ✅ | §E2.5 | LOW | 5/12 label+value pairs at ≤1.11:1 ratio (weak distinction) | Increase value sizes or add font-weight differentiation |
 | E2-PR2 | §E2.5 | PASS | Icon+text proportions consistent (1:1 default) | — |
-| E2-FP1 | §E2.6 | MEDIUM | CALC + PLANNER push results below fold — split focal point | Results-first layout or sticky result section |
+| E2-FP1 ✅ | §E2.6 | MEDIUM | CALC + PLANNER push results below fold — split focal point | Results-first layout or sticky result section |
 | E2-FP2 ✅ | §E2.6 | LOW | TEAMS tab has diffuse focus — all slots equal weight | Add `kuro-card-active` variant with glow for selected team |
 | E2-FP3 ✅ | §E2.6 | LOW | PROFILE: Server config above identity display | Reorder: Profile first, Server second |
 | E2-FP4 | §E2.6 | PASS | STATS luck badge is strongest focal element in app | Reference example for other tabs |
 | E2-VW1 ✅ | §E2.7 | LOW | PLANNER: scattered yellow numbers without hierarchy | Differentiate primary (`text-2xl` + glow) from secondary (`text-lg`) |
 | E2-VW2 | §E2.7 | PASS | 4/8 tabs have excellent visual weight distribution | — |
-| E2-MO1 | §E2.8 | MEDIUM | Touch targets 36px on touch devices (below 44px guideline) | Change `min-height: 36px` → `44px` in `@media (pointer: coarse)` |
-| E2-MO2 ✅ | §E2.8 | LOW | CALC + PLANNER: only 2 items above fold | Show compact result summary above inputs (cross-ref E2-FP1) |
+| E2-MO1 ✅ | §E2.8 | MEDIUM | Touch targets 36px on touch devices (below 44px guideline) | Change `min-height: 36px` → `44px` in `@media (pointer: coarse)` |
+| E2-MO2 ✅ | §E2.8 | LOW | CALC + PLANNER: only 2 items above fold | Show compact result summary above inputs (cross-ref E2-FP1 ✅) |
 | E2-MO3 | §E2.8 | PASS | Safe area inset handling exemplary (all 4 edges) | — |
 | E2-EE1 | §E2.9 | PASS | Edge-to-edge technique well-crafted (85.6% efficiency) | — |
 | E2-EE2 | §E2.9 | PASS | 3-tier responsive breakpoint system well-implemented | — |
