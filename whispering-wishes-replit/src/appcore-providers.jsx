@@ -892,36 +892,17 @@ const KuroStyles = memo(({ oledMode }) => (
     .luck-badge::before {
       content: '';
       position: absolute;
-      inset: -2px;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        var(--badge-color) 25%,
-        #fff 50%,
-        var(--badge-color) 75%,
-        transparent 100%
-      );
-      background-size: 200% 100%;
-      animation: luckShimmer 3s ease-in-out infinite;
-      opacity: 0.6;
-      filter: blur(6px);
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
+      animation: badgeRotate var(--badge-speed, 12s) linear infinite;
+      opacity: 0.7;
+      filter: blur(4px);
     }
-    .luck-badge::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      box-shadow: inset 0 0 12px var(--badge-color), 0 0 8px var(--badge-color);
-      animation: luckPulse 2.5s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes luckShimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    @keyframes luckPulse {
-      0%, 100% { opacity: 0.3; }
-      50%      { opacity: 0.8; }
+    @keyframes badgeRotate {
+      to { transform: rotate(360deg); }
     }
     .luck-badge-inner {
       position: relative;
@@ -2270,6 +2251,12 @@ const KuroStyles = memo(({ oledMode }) => (
       100% { opacity: 1; box-shadow: var(--shadow-sm); }
     }
 
+
+    /* Luck badge: stronger glow */
+    .animations-full .luck-badge::before {
+      opacity: 0.9;
+      filter: blur(3px);
+    }
 
     /* Pulse subtle: more pronounced */
     .animations-full .pulse-subtle {
