@@ -167,7 +167,7 @@ CardBody.displayName = 'CardBody';
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
 // Character Detail Modal
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage }) => {
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 
@@ -187,8 +187,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
       >
        <div className="overflow-y-auto max-h-[90vh]">
         {/* Header with image */}
-        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+          onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
+        >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          {framingMode && editingImage === `info-${name}` && (
+            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+              <span className="text-black text-[10px]">✓</span>
+            </div>
+          )}
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
               transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,

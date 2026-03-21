@@ -19,6 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 import {
@@ -582,18 +583,18 @@ function WhisperingWishesInner() {
     'collection-Ciaccona': { x: 10, y: -24, zoom: 230 },
     'collection-Cartethyia': { x: -4, y: -26, zoom: 210 },
     'collection-Lupa': { x: 0, y: -12, zoom: 210 },
-    'collection-Augusta': { x: 4, y: -30, zoom: 250 },
-    'collection-Galbrena': { x: 12, y: -24, zoom: 230 },
-    'collection-Iuno': { x: -4, y: -22, zoom: 190 },
-    'collection-Luuk Herssen': { x: 2, y: -2, zoom: 110 },
-    'collection-Aemeath': { x: -12, y: -20, zoom: 190 },
-    'collection-Mornye': { x: 2, y: -20, zoom: 170 },
+    'collection-Augusta': { x: 4, y: -30, zoom: 240 },
+    'collection-Galbrena': { x: 14, y: -24, zoom: 230 },
+    'collection-Iuno': { x: -2, y: -24, zoom: 190 },
+    'collection-Luuk Herssen': { x: 2, y: 0, zoom: 120 },
+    'collection-Aemeath': { x: -12, y: -22, zoom: 190 },
+    'collection-Mornye': { x: 4, y: -20, zoom: 170 },
     'collection-Rover': { x: 24, y: -24, zoom: 230 },
-    'collection-Chisa': { x: -4, y: -24, zoom: 210 },
+    'collection-Chisa': { x: -4, y: -26, zoom: 220 },
     'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
-    'collection-Qiuyuan': { x: -6, y: -26, zoom: 210 },
-    'collection-Lynae': { x: -12, y: -26, zoom: 190 },
-    'collection-Sigrika': { x: 0, y: -20, zoom: 210 },
+    'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
+    'collection-Lynae': { x: -10, y: -28, zoom: 190 },
+    'collection-Sigrika': { x: 0, y: -26, zoom: 180 },
     'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
     // 4★ Resonators
     'collection-Aalto': { x: 4, y: -24, zoom: 210 },
@@ -604,8 +605,8 @@ function WhisperingWishesInner() {
     'collection-Sanhua': { x: 12, y: -26, zoom: 190 },
     'collection-Taoqi': { x: 4, y: -26, zoom: 190 },
     'collection-Yuanwu': { x: 2, y: -24, zoom: 210 },
-    'collection-Mortefi': { x: 0, y: -28, zoom: 210 },
-    'collection-Youhu': { x: 0, y: -22, zoom: 150 },
+    'collection-Mortefi': { x: -2, y: -28, zoom: 210 },
+    'collection-Youhu': { x: 0, y: -24, zoom: 160 },
     'collection-Lumi': { x: 0, y: -24, zoom: 170 },
     'collection-Buling': { x: 0, y: -22, zoom: 170 },
     // Info panel framing
@@ -5660,10 +5661,21 @@ function WhisperingWishesInner() {
                           return (
                             <div
                               key={slotIdx}
-                              className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === `collection-${charName}` ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
                               style={{ height: '160px', contain: 'paint' }}
-                              onClick={() => openSelector(slotIdx)}
+                              onClick={() => {
+                                if (framingMode) {
+                                  setEditingImage(`collection-${charName}`);
+                                } else {
+                                  openSelector(slotIdx);
+                                }
+                              }}
                             >
+                              {framingMode && editingImage === `collection-${charName}` && (
+                                <div className="absolute top-1 left-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                                  <span className="text-black text-[10px]">✓</span>
+                                </div>
+                              )}
                               {imgUrl && (
                                 <img
                                   src={imgUrl}
@@ -5677,13 +5689,13 @@ function WhisperingWishesInner() {
                                 />
                               )}
                               {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
-                              <button
+                              {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
                                 className="absolute top-1 right-1 z-20 w-[28px] h-[28px] rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />
-                              </button>
+                              </button>}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-[10px] truncate text-gray-200">{charName}</div>
@@ -8531,9 +8543,9 @@ Example: {"pulls":[...]}'
           </div>
       </FocusTrapModal>
 
-      {/* Admin Mini Window */}
-      {showAdminPanel && adminMiniMode && adminUnlocked && (
-        <div 
+      {/* Admin Mini Window — portaled to body so it's never overlapped by detail modals */}
+      {showAdminPanel && adminMiniMode && adminUnlocked && createPortal(
+        <div
           className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
           style={{ 
             boxShadow: '0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3)'
@@ -8574,7 +8586,7 @@ Example: {"pulls":[...]}'
               onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}
               className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
             >
-              {framingMode ? '✓ Framing Mode ON (Collection only)' : '⊞ Enable Framing Mode (Collection)'}
+              {framingMode ? '✓ Framing Mode ON' : '⊞ Enable Framing Mode'}
             </button>
             
             {/* Framing Controls - show when image selected */}
@@ -8607,7 +8619,7 @@ Example: {"pulls":[...]}'
             
             {framingMode && !editingImage && (
               <div className="p-2 bg-white/5 border border-[var(--border-medium)] rounded-lg text-center">
-                <div className="text-gray-400 text-[10px]">Go to Collection tab and tap an image to frame it</div>
+                <div className="text-gray-400 text-[10px]">Tap any character image to frame it (Collection, Teams, or Detail modal)</div>
               </div>
             )}
 
@@ -8693,18 +8705,21 @@ Example: {"pulls":[...]}'
               </CardBody>
             </Card>
           </div>
-        </div>
-      )}
+        </div>,
+      document.body)}
 
       {/* Character/Weapon Detail Modal */}
       {detailModal.show && detailModal.type === 'character' && (
-        <CharacterDetailModal 
-          name={detailModal.name} 
+        <CharacterDetailModal
+          name={detailModal.name}
           imageUrl={detailModal.imageUrl}
           framing={detailModal.framing}
           infoFraming={getImageFraming(`info-${detailModal.name}`)}
           getImageFraming={getImageFraming}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })} 
+          framingMode={framingMode}
+          editingImage={editingImage}
+          setEditingImage={setEditingImage}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
         />
       )}
       {detailModal.show && detailModal.type === 'weapon' && (
