@@ -521,7 +521,20 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         
         {/* Content */}
         <div className="p-4 space-y-3">
-          <p className="text-gray-300 text-sm">{data.desc}</p>
+          {data.desc && (() => {
+            const sig = data.desc.match(/^(\w+ signature)\.\s*/);
+            const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
+            const dot = rest.indexOf('. ');
+            const lore = dot > 0 ? rest.slice(0, dot + 1) : null;
+            const effect = dot > 0 ? rest.slice(dot + 2) : rest;
+            return (
+              <div className="text-sm space-y-1">
+                {sig && <div className="text-[10px] text-gray-500 uppercase tracking-wider">{sig[1]}</div>}
+                {lore && <p className="text-gray-400 italic">{lore}</p>}
+                <p className="text-gray-300">{effect}</p>
+              </div>
+            );
+          })()}
           
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
@@ -656,7 +669,33 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
         {/* Content */}
         <div className="p-4 space-y-3">
           {/* Description */}
-          {data.desc && <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>}
+          {data.desc && (() => {
+            const parts = data.desc.split(/(?<=\.)\s+/);
+            const identity = parts[0] || '';
+            const skillParts = [];
+            const buffParts = [];
+            for (let i = 1; i < parts.length; i++) {
+              if (/grants?\s|Main slot/i.test(parts[i])) buffParts.push(parts[i]);
+              else skillParts.push(parts[i]);
+            }
+            return (
+              <div className="text-sm space-y-2">
+                <p className="text-gray-400 italic">{identity}</p>
+                {skillParts.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-white/5">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+                    <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
+                  </div>
+                )}
+                {buffParts.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-white/5">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
+                    <p className="text-gray-300 text-xs leading-relaxed">{buffParts.join(' ')}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Sonata Sets */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
