@@ -3403,9 +3403,8 @@ function WhisperingWishesInner() {
             </Card>
 
             {/* Banner History Modal */}
-            <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)}>
-              <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden h-screen sm:max-h-[80vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+            <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)} centered>
+              <div className="w-full max-w-md rounded-2xl overflow-hidden max-h-[90vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
