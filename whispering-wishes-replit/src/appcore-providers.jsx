@@ -349,10 +349,10 @@ const OnboardingModal = ({ onComplete }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel="Welcome to Whispering Wishes" className="bg-black/90">
       <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient} w-full max-w-xs`} style={{ backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
-        {/* Decorative gradient circles */}
+        {/* §E9-MC-F3: Angular decorative patterns matching HUD aesthetic */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none" aria-hidden="true">
-          <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full ${s.bg} blur-2xl opacity-40`} />
-          <div className={`absolute right-12 top-1/4 w-10 h-10 rounded-full ${s.bg} blur-xl opacity-25`} />
+          <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rotate-45 ${s.bg} blur-2xl opacity-40`} />
+          <div className={`absolute right-12 top-1/4 w-10 h-10 rotate-45 ${s.bg} blur-xl opacity-25`} />
         </div>
         
         {/* Skip button - always white */}
@@ -435,7 +435,12 @@ const KuroStyles = memo(({ oledMode }) => (
     /* E2-VR1: Dual-rhythm system — KuroStyles uses 14px base padding (dense tactical);
        Tailwind utilities use standard 4px grid. Both are intentional and coexist.
        E7-AD7: Unit conventions — px for spacing/radius/font-size in CSS-in-JS;
-       Tailwind scale (p-2, gap-3) for layout padding/margin in JSX. */
+       Tailwind scale (p-2, gap-3) for layout padding/margin in JSX.
+       §E9-VS-F3: LAHAI-ROI palette rationale — Gold-on-void:
+       Primary gold #edaf18 (OKLCH 78% 0.17 85°) — warmth, aspiration, gacha reward
+       Navy void #080c14 (OKLCH 8% 0.02 260°) — depth, cosmic emptiness, high contrast
+       Cyan accent #38bdf8 — cool complement for standard/info states
+       Purple accent #a855f7 — 4-star rarity + Electro element (dual semantic, see §E9-AC-F1) */
     :root {
       --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
@@ -944,6 +949,12 @@ const KuroStyles = memo(({ oledMode }) => (
     /* E3-WC2: Override Tailwind text-gray-500 (#6b7280, 5.2:1) with higher-contrast token */
     .text-gray-500 {
       color: var(--text-disabled) !important;
+    }
+
+    /* §E9-AG-F3: Override Tailwind transition-colors timing with branded curve */
+    .transition-colors {
+      transition-duration: 0.15s !important;
+      transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
 
     /* DBI3-S01: Calibrated 3-star rarity color utility */

@@ -460,8 +460,8 @@ function WhisperingWishesInner() {
         ],
         start_url: '/',
         display: 'standalone',
-        background_color: '#0a0a1a',
-        theme_color: '#0c0820'
+        background_color: '#080c14', /* §E9-IC-F5: Match app navy void */
+        theme_color: '#080c14'
       };
       const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
       let manifestLink = document.querySelector('link[rel="manifest"]');
@@ -3758,7 +3758,7 @@ function WhisperingWishesInner() {
                 <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <div className="flex justify-between items-center">
                     <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
-                    <span className="text-yellow-400 font-bold kuro-number">{dailyIncome} Astrite</span>
+                    <span className="text-yellow-400 font-bold kuro-number text-base">{dailyIncome} Astrite</span>
                   </div>
                   <div className="text-gray-400 text-[10px] mt-1">≈ <span className="kuro-number">{(dailyIncome / ASTRITE_PER_PULL).toFixed(2)}</span> Convenes/day • <span className="kuro-number">{Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)}</span> Convenes/month</div>
                 </div>
@@ -3957,7 +3957,7 @@ function WhisperingWishesInner() {
               <CardHeader>Saved States</CardHeader>
               <CardBody className="space-y-2">
                 {state.bookmarks.length === 0 ? (
-                  <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">No states archived. Use Save Current State in the Calculator to bookmark your configuration.</p>
+                  <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">Awaiting archived states. Save a configuration in the Calculator to create a bookmark.</p>
                 ) : state.bookmarks.map(b => (
                   <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
                     <div>
@@ -4516,7 +4516,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const allHist = statsTabData.allHist;
-                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Insufficient data for trend analysis</p>;
+                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting sufficient signal data for trend analysis</p>;
                       
                       const groupData = (range) => {
                         const grouped = {};
@@ -4570,7 +4570,7 @@ function WhisperingWishesInner() {
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Insufficient signal data</p>;
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting more Convene signals</p>;
                       
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
@@ -4658,7 +4658,7 @@ function WhisperingWishesInner() {
                       <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm">{overallStats.lost5050}</div><div className="text-gray-400 text-[9px]">Lost 50/50</div></div>
                       <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm">{overallStats.avgPity}</div><div className="text-gray-400 text-[9px]">Avg. Pity</div></div>
                     </div>
-                    {overallStats.winRate != null && <div className="text-center text-[10px] text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold">{overallStats.winRate}%</span></div>}
+                    {overallStats.winRate != null && <div className="text-center text-xs text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.winRate}%</span></div>}
                   </CardBody>
                 </Card>
 
@@ -4668,7 +4668,7 @@ function WhisperingWishesInner() {
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No 5★ signals detected</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto">
                           {fiveStars.map((p, i) => {
@@ -4768,7 +4768,7 @@ function WhisperingWishesInner() {
               <Card>
                 <CardBody className="text-center py-8">
                   <Archive size={32} className="mx-auto mb-2 text-gray-500" />
-                  <p className="text-gray-400 text-sm">No Convene data on record</p>
+                  <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
                   <p className="text-gray-500 text-xs mt-1">Import via Profile to initialize your archive</p>
                 </CardBody>
               </Card>
@@ -6167,7 +6167,7 @@ function WhisperingWishesInner() {
                         </div>
 
                         {/* Search & Filters */}
-                        <div className="p-3 space-y-2 border-b border-white/5">
+                        <div className="p-3 space-y-2 border-b border-[var(--border-subtle)]">
                           <div className="relative">
                             {/* P6-FIX: Use .kuro-input for consistency (F-P6-051) */}
                             <input
@@ -6365,7 +6365,7 @@ function WhisperingWishesInner() {
                           </div>
                           <button onClick={() => setWeaponSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close weapon selector"><X size={16} className="text-gray-400" /></button>
                         </div>
-                        <div className="p-2 border-b border-white/5 flex-shrink-0">
+                        <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
                           <input
                             value={weaponSearch}
                             onChange={e => setWeaponSearch(e.target.value)}
@@ -7554,7 +7554,7 @@ Example: {"pulls":[...]}'
                             ))}
                           </div>
                         ) : adminPlayerList.length === 0 ? (
-                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No operatives registered</p>
+                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting operative registration</p>
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (

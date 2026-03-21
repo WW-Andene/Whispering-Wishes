@@ -5279,8 +5279,8 @@ For a community fan tool, the distribution channels are:
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-VS-F1 | **MEDIUM** | ~30% of UI surface uses generic Tailwind (`rounded-lg`, `text-gray-400`, `transition-colors`) that dilutes the distinctive signature | **Migrate inline Tailwind to design-system classes**: Replace `text-gray-400` with `text-[var(--text-muted)]`; replace `rounded-lg` with `.kuro-radius-md` token; replace `transition-colors` with `transition: color var(--transition-fast)` — this shifts the "generic" surface to the branded token layer without changing appearance |
-| §E9-VS-F2 | **LOW** | Canvas animations are invisible to screen readers and non-visual users; they're also pure decoration with no fallback | **Add `prefers-reduced-motion` check** to BackgroundGlow/TriangleMirrorWave: skip `requestAnimationFrame` loop when reduced motion is preferred; use a static gradient fallback for the background layer |
-| §E9-VS-F3 | **LOW** | The LAHAI-ROI design language is documented only in a CSS comment (line 402) — not in any design documentation or README | **Surface the design language name**: Add a `<meta name="design-system" content="LAHAI-ROI">` tag or document in a design tokens file — this reinforces intentionality for any future contributor |
+| §E9-VS-F2 ✅ | **LOW** | Canvas animations are invisible to screen readers and non-visual users; they're also pure decoration with no fallback | **Add `prefers-reduced-motion` check** to BackgroundGlow/TriangleMirrorWave: skip `requestAnimationFrame` loop when reduced motion is preferred; use a static gradient fallback for the background layer |
+| §E9-VS-F3 ✅ | **LOW** | The LAHAI-ROI design language is documented only in a CSS comment (line 402) — not in any design documentation or README | **Surface the design language name**: Add a `<meta name="design-system" content="LAHAI-ROI">` tag or document in a design tokens file — this reinforces intentionality for any future contributor |
 
 ---
 
@@ -5346,7 +5346,7 @@ This dual-metaphor system (precision instrument + rarity hierarchy) is **intenti
 |----|----------|---------|----------|
 | §E9-MC-F1 | **HIGH** | Native `<select>` dropdown at App.jsx:3182 breaks the glassmorphism HUD metaphor with browser-default chrome | **Replace with custom dropdown**: Create a `.kuro-select` component using a `<button>` trigger + positioned `<div>` menu, styled with `var(--bg-card)`, `backdrop-filter: blur(4px)`, and border tokens — matching the card system. This is the single most visible metaphor violation |
 | §E9-MC-F2 | **MEDIUM** | ~30% of inline Tailwind surface (§E9-VS-F1) reads as "framework default" rather than "LAHAI-ROI designed" | **Same solution as §E9-VS-F1**: Migrate generic Tailwind to design-system tokens. The metaphor break and the signature dilution are the same underlying issue |
-| §E9-MC-F3 | **LOW** | Onboarding gradient circles (appcore-providers.jsx:352–356) use organic blob shapes that contrast with the geometric precision language | **Replace with geometric decorative elements**: Use angular gradient strips or triangle-mesh-inspired patterns instead of circular blurs — this keeps the onboarding visually distinct while staying within the geometric design language |
+| §E9-MC-F3 ✅ | **LOW** | Onboarding gradient circles (appcore-providers.jsx:352–356) use organic blob shapes that contrast with the geometric precision language | **Replace with geometric decorative elements**: Use angular gradient strips or triangle-mesh-inspired patterns instead of circular blurs — this keeps the onboarding visually distinct while staying within the geometric design language |
 
 ---
 
@@ -5409,7 +5409,7 @@ Gold (#edaf18) connects to WuWa's visual identity:
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E9-AC-F1 | **LOW** | Purple (#a855f7) carries dual semantics: "4★ rarity" AND "Electro element" — minor cognitive ambiguity | **Accept as intentional**: In context, users will always know which meaning applies (collection view = rarity, character card = element). If needed, differentiate by using a slightly shifted purple for Electro element badges (e.g., `#9333ea` for element vs `#a855f7` for rarity) |
+| §E9-AC-F1 ✅ | **LOW** | Purple (#a855f7) carries dual semantics: "4★ rarity" AND "Electro element" — minor cognitive ambiguity | **Accept as intentional**: In context, users will always know which meaning applies (collection view = rarity, character card = element). If needed, differentiate by using a slightly shifted purple for Electro element badges (e.g., `#9333ea` for element vs `#a855f7` for rarity) |
 | §E9-AC-F2 | **POLISH** | Favicon uses `#fbbf24` (Tailwind amber-400) instead of `#edaf18` (brand gold) — 2-hue offset | **Align favicon gold**: Change favicon.svg `fill` from `#fbbf24` to `#edaf18` to match the exact brand gold. This ensures the browser tab icon uses the same hue as the in-app accent |
 | §E9-AC-F3 | **POLISH** | Install prompt banner uses `from-yellow-500 to-amber-500` (Tailwind defaults) instead of brand gold `rgba(237,175,24,*)` | **Replace with brand tokens**: Use `background: linear-gradient(135deg, rgba(237,175,24,0.9), rgba(237,175,24,0.7))` instead of Tailwind color classes — ensures the install prompt is unmistakably branded |
 
@@ -5515,7 +5515,7 @@ For a Wuthering Waves gacha companion, the ideal emotional arc is:
 | §E9-EA-F1 | **HIGH** | No dedicated celebration animation for the most important gacha moment — pulling a 5★ / hitting guaranteed pity. The success toast is the same generic green toast used for all successes (import, profile pic, etc.) | **Create a dedicated 5★ celebration**: When the pull log shows a 5★ acquisition, trigger a gold particle burst animation + screen-edge glow flash + the character's element color accent + gold confetti. Use a `@keyframes celebrateGold` animation with scale + glow + particle effects. This is the app's emotional peak — it deserves its own visual moment |
 | §E9-EA-F2 | **MEDIUM** | No visual indicator for pity "danger zone" (approaching hard pity) beyond the pity ring fill level — no escalating urgency in the UI | **Add progressive urgency**: As pity count enters the soft-pity range (60+), add a subtle gold pulse to the pity ring border (`kuroPulseGold` animation); at hard pity approach (70+), increase pulse frequency and add a glow halo. This creates anticipation/excitement as the guarantee approaches |
 | §E9-EA-F3 | **MEDIUM** | No "collection milestone" celebration — reaching 50%, 75%, or 100% collection completion has no visual acknowledgment | **Add collection milestone states**: When collection completion crosses 25/50/75/100% thresholds, trigger a brief celebration animation on the collection tab header + update a progress badge with the milestone color (bronze/silver/gold/diamond). This rewards the long-term collector journey |
-| §E9-EA-F4 | **LOW** | Empty states use game-lore language ("operatives", "signals") but some messages are clinical ("Insufficient data for trend analysis") — inconsistent tone | **Unify empty state voice**: Rewrite clinical messages to match the game-lore tone. "Insufficient data for trend analysis" → "Not enough Convene signals to chart your destiny" — maintains immersion while communicating the same information |
+| §E9-EA-F4 ✅ | **LOW** | Empty states use game-lore language ("operatives", "signals") but some messages are clinical ("Insufficient data for trend analysis") — inconsistent tone | **Unify empty state voice**: Rewrite clinical messages to match the game-lore tone. "Insufficient data for trend analysis" → "Not enough Convene signals to chart your destiny" — maintains immersion while communicating the same information |
 
 ---
 
@@ -5588,8 +5588,8 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 |----|----------|---------|----------|
 | §E9-AG-F1 | **MEDIUM** | ~492 instances of `text-gray-400` create a "Tailwind template" texture across secondary text — the muted text has no brand personality | **Create `--text-muted` token**: Add `--text-muted: #9ca3af` (or the current gray-400 value) as a CSS custom property. Migrate `text-gray-400` → `text-[var(--text-muted)]` or add a utility class `.kuro-text-muted`. This doesn't change the color but moves it into the branded token layer, making it intentional rather than default |
 | §E9-AG-F2 | **MEDIUM** | ~360 instances of `rounded-lg` create a "same radius everywhere" pattern with no shape hierarchy | **Create radius scale tokens**: `--radius-sm: 8px`, `--radius-md: 12px`, `--radius-lg: 16px`. Cards already use 16px via `.kuro-card`; extend this to buttons (12px) and badges/chips (8px). The visual result is the same, but the shape system becomes documented and intentional |
-| §E9-AG-F3 | **LOW** | ~280 instances of `transition-colors` use browser-default timing instead of LAHAI-ROI motion tokens | **Replace with branded transitions**: `transition-colors` → `transition: color var(--transition-fast)`. The app already defines `--transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1)` — using it ensures every color transition has the app's signature "overshoot snap" feel |
-| §E9-AG-F4 | **LOW** | ~50 instances of raw `border-white/5` or `border-white/10` instead of using `var(--border-subtle)` / `var(--border-default)` tokens | **Migrate to border tokens**: Replace inline `border-white/5` with `border-[var(--border-subtle)]` and `border-white/10` with `border-[var(--border-default)]`. The token layer already exists — it's just not universally applied |
+| §E9-AG-F3 ✅ | **LOW** | ~280 instances of `transition-colors` use browser-default timing instead of LAHAI-ROI motion tokens | **Replace with branded transitions**: `transition-colors` → `transition: color var(--transition-fast)`. The app already defines `--transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1)` — using it ensures every color transition has the app's signature "overshoot snap" feel |
+| §E9-AG-F4 ✅ | **LOW** | ~50 instances of raw `border-white/5` or `border-white/10` instead of using `var(--border-subtle)` / `var(--border-default)` tokens | **Migrate to border tokens**: Replace inline `border-white/5` with `border-[var(--border-subtle)]` and `border-white/10` with `border-[var(--border-default)]`. The token layer already exists — it's just not universally applied |
 
 ---
 
@@ -5659,7 +5659,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | §E9-IC-F2 | **MEDIUM** | Favicon uses `#fbbf24` (Tailwind amber) instead of brand gold `#edaf18` — the browser tab icon is technically off-brand | **Align favicon gold**: Change `fill="#fbbf24"` to `fill="#edaf18"` in favicon.svg. This is the same finding as §E9-AC-F2 — a single-line fix |
 | §E9-IC-F3 | **MEDIUM** | Favicon uses `system-ui, sans-serif` font family — if Rajdhani is the brand font, the "W" letterform in the icon doesn't match the app's typography | **Use Rajdhani in favicon**: Either embed Rajdhani as a `<style>` in the SVG or render the "W" as a `<path>` traced from the Rajdhani glyph. This ensures the letterform is identical to in-app headings |
 | §E9-IC-F4 | **MEDIUM** | OG image points to external URL (`https://whisperingwishes.vercel.app/og-image.png`) — not version-controlled, could be outdated or missing | **Create local OG image**: Design a 1200×630px social card with brand elements (gold accent bar, dark navy background, "Whispering Wishes" text, optional character art). Save as `public/og-image.png` and update meta tags to relative path |
-| §E9-IC-F5 | **LOW** | No dedicated PWA splash screen design — relies on manifest icon + background_color | **Verify splash screen quality**: Test the PWA install on Chrome Android and check that the splash screen uses the gold "W" icon on `#080c14` background. If the icon looks too small, consider creating a larger splash-specific image |
+| §E9-IC-F5 ✅ | **LOW** | No dedicated PWA splash screen design — relies on manifest icon + background_color | **Verify splash screen quality**: Test the PWA install on Chrome Android and check that the splash screen uses the gold "W" icon on `#080c14` background. If the icon looks too small, consider creating a larger splash-specific image |
 
 ---
 
@@ -5736,7 +5736,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-MO-F1 | **MEDIUM** | Desktop layout uses Material Design easing `cubic-bezier(0.4, 0, 0.2, 1)` instead of branded `cubic-bezier(0.16, 1, 0.3, 1)` — motion personality changes on desktop | **Unify easing**: Replace the desktop layout easing at appcore-providers.jsx:1615 with `var(--transition-slow)` or the branded cubic-bezier value. The motion should feel the same regardless of viewport |
-| §E9-MO-F2 | **LOW** | ~280 instances of Tailwind `transition-colors` use browser-default timing instead of branded motion tokens (same as §E9-AG-F3) | **Same solution as §E9-AG-F3**: Migrate to `transition: color var(--transition-fast)` to inject branded easing into every color transition |
+| §E9-MO-F2 | **LOW** | ~280 instances of Tailwind `transition-colors` use browser-default timing instead of branded motion tokens (same as §E9-AG-F3 ✅) | **Same solution as §E9-AG-F3**: Migrate to `transition: color var(--transition-fast)` to inject branded easing into every color transition |
 | §E9-MO-F3 | **LOW** | No `prefers-reduced-motion` handling for canvas animations (BackgroundGlow, TriangleMirrorWave) or CSS ambient animations (shimmer, pulses) | **Add reduced-motion respect**: Wrap canvas `requestAnimationFrame` loops in a `matchMedia('(prefers-reduced-motion: reduce)')` check; add `@media (prefers-reduced-motion: reduce) { .kuro-card::after { animation: none; } }` for CSS ambient animations |
 | §E9-MO-F4 | **POLISH** | Slider animation uses bare `0.15s` with no easing instead of `var(--transition-fast)` | **Apply branded token**: Replace slider transition with `transition: all var(--transition-fast)` to include the overshoot easing |
 
@@ -5976,13 +5976,13 @@ This creates a distinctive **temperature personality**: the app feels meditative
 #### LOW (7 findings)
 | ID | Finding | Solution |
 |----|---------|----------|
-| §E9-VS-F2 | Canvas animations no reduced-motion fallback | Add `prefers-reduced-motion` check |
-| §E9-VS-F3 | LAHAI-ROI only documented in CSS comment | Surface in design docs or meta tag |
-| §E9-MC-F3 | Onboarding blob shapes conflict with geometric language | Use angular decorative patterns |
-| §E9-AC-F1 | Purple dual semantics (rarity + element) | Accept or use shifted purples |
-| §E9-EA-F4 | Inconsistent empty state voice (clinical vs game-lore) | Unify to game-lore tone |
-| §E9-AG-F3 / §E9-MO-F2 | `transition-colors` uses default timing | Migrate to branded motion tokens |
-| §E9-AG-F4 | Raw `border-white/5` instead of border tokens | Migrate to `var(--border-subtle)` |
+| §E9-VS-F2 ✅ | Canvas animations no reduced-motion fallback | Add `prefers-reduced-motion` check |
+| §E9-VS-F3 ✅ | LAHAI-ROI only documented in CSS comment | Surface in design docs or meta tag |
+| §E9-MC-F3 ✅ | Onboarding blob shapes conflict with geometric language | Use angular decorative patterns |
+| §E9-AC-F1 ✅ | Purple dual semantics (rarity + element) | Accept or use shifted purples |
+| §E9-EA-F4 ✅ | Inconsistent empty state voice (clinical vs game-lore) | Unify to game-lore tone |
+| §E9-AG-F3 ✅ / §E9-MO-F2 | `transition-colors` uses default timing | Migrate to branded motion tokens |
+| §E9-AG-F4 ✅ | Raw `border-white/5` instead of border tokens | Migrate to `var(--border-subtle)` |
 
 #### POLISH (6 findings)
 | ID | Finding | Solution |
@@ -6075,8 +6075,8 @@ The app defines two dedicated typography classes for numeric display (appcore-pr
 | §E10-NV-F1 | **MEDIUM** | Pity count is 18px in Tracker ring but 24px in Calculator input — same metric, inconsistent visual weight across the two most important surfaces | **Increase Tracker ring font**: Change PityRing SVG text `fontSize` from `size * 0.36` to `size * 0.42` (~22px in a 52px ring). This brings it closer to the Calculator's 24px without breaking the ring layout |
 | §E10-NV-F2 | **MEDIUM** | BannerCard stats (5★ Pity, 4★ Pity, Total Pulls) are all `text-sm` with the threshold "/80" at `text-[9px]` gray-400 — no visual hierarchy between current pity and supporting numbers | **Escalate pity number**: Change the pity count to `text-base font-bold` and keep the denominator at `text-[9px]`. Add a subtle color accent to the "/80" threshold (e.g., `text-gray-300` instead of `text-gray-400`) to make it more visible as a reference point |
 | §E10-NV-F3 | **MEDIUM** | Planner 7/30/90-day projections are all `text-2xl` with identical styling — no indication which timeframe is most relevant | **Emphasize 30-day projection**: Make the 30-day cell `text-3xl` with a `kuro-stat-gold` background border, while keeping 7-day and 90-day at `text-xl`. Add a subtle "Recommended" or "Monthly" label badge to the 30-day cell |
-| §E10-NV-F4 | **LOW** | Daily income (`text-sm`, not `.kuro-number`) and Astrite amounts (`text-[9px]`) are under-weighted for planning decisions | **Apply `.kuro-number` to daily income**: Change the daily income display from plain `text-sm font-bold` to `text-base kuro-number` to visually connect it to the data typography system |
-| §E10-NV-F5 | **LOW** | Win Rate % in Stats is displayed at `text-xs` (12px) — a key strategic insight at the smallest readable size | **Escalate win rate**: Change from `text-xs` to `text-sm font-bold` with the `.kuro-number` class. The 50/50 win rate is one of the most important strategic metrics for gacha players |
+| §E10-NV-F4 ✅ | **LOW** | Daily income (`text-sm`, not `.kuro-number`) and Astrite amounts (`text-[9px]`) are under-weighted for planning decisions | **Apply `.kuro-number` to daily income**: Change the daily income display from plain `text-sm font-bold` to `text-base kuro-number` to visually connect it to the data typography system |
+| §E10-NV-F5 ✅ | **LOW** | Win Rate % in Stats is displayed at `text-xs` (12px) — a key strategic insight at the smallest readable size | **Escalate win rate**: Change from `text-xs` to `text-sm font-bold` with the `.kuro-number` class. The 50/50 win rate is one of the most important strategic metrics for gacha players |
 
 ---
 
@@ -9039,11 +9039,11 @@ Competitive positioning map:
 
 | # | Finding A | Finding B | Contradiction | Reconciliation | Corrected Assessment |
 |---|-----------|-----------|---------------|----------------|---------------------|
-| GC1 | §E9-VS-F2 LOW: "Canvas animations no reduced-motion fallback" | §E6-MC3 PASS: "Reduced motion compliance" | E6 says reduced motion is compliant; E9 says canvas lacks it | **E6 is partially incorrect.** E6 assessed CSS animations + JS `prefersReducedMotion` detection (both present and correct). But canvas animations (`BackgroundGlow`, `TriangleMirrorWave`) run independently and do NOT check `prefers-reduced-motion`. The E6 PASS should be qualified: "CSS and JS reduced motion compliant; canvas layer non-compliant." **Corrected severity: E6-MC3 → PARTIAL PASS. Canvas reduced-motion gap confirmed at LOW.** |
+| GC1 | §E9-VS-F2 ✅ LOW: "Canvas animations no reduced-motion fallback" | §E6-MC3 PASS: "Reduced motion compliance" | E6 says reduced motion is compliant; E9 says canvas lacks it | **E6 is partially incorrect.** E6 assessed CSS animations + JS `prefersReducedMotion` detection (both present and correct). But canvas animations (`BackgroundGlow`, `TriangleMirrorWave`) run independently and do NOT check `prefers-reduced-motion`. The E6 PASS should be qualified: "CSS and JS reduced motion compliant; canvas layer non-compliant." **Corrected severity: E6-MC3 → PARTIAL PASS. Canvas reduced-motion gap confirmed at LOW.** |
 | GC2 | §DC4-ICO1 ✅ LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 should be upgraded from POLISH → LOW. ✅ FIXED |
 | GC3 | §E2-MO1 MEDIUM: "Touch targets 36px on touch devices (below 44px)" | §CK-F2 LOW (Step 18): "Touch targets at 36px, below 44px" | Same finding, different severity (MEDIUM vs LOW) | **E2 severity is correct.** Touch target compliance is a WCAG 2.5.8 requirement. A 36px target on `pointer: coarse` devices is a genuine accessibility gap that affects every touch interaction. **Reconciled: MEDIUM.** Step 18 §CK-F2 should be upgraded from LOW → MEDIUM. |
 | GC4 | §DS2-F8 MEDIUM: "~240 hardcoded color values" | §E1-COL1 HIGH: "66 unique hex colors, only 18 tokenized — 73% unmanaged" | Same root issue, different quantification (240 instances vs 66 unique values) | **Both are correct at different levels.** DS2 counts *instances* (how many times hardcoded values appear). E1 counts *unique values* (how many distinct colors exist). 66 unique colors × average 3.6 uses each ≈ 240 instances. **No quantification error.** But the severity differs: DS2 says MEDIUM, E1 says HIGH. **Reconciled: HIGH** — 73% unmanaged palette is a systemic token architecture issue, not a moderate concern. |
-| GC5 | §E9-EA-F4 LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
+| GC5 | §E9-EA-F4 ✅ LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
 
 ### 19.1.3 — Contradiction Summary
 
@@ -9073,7 +9073,7 @@ Competitive positioning map:
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
-| SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
+| SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
 
 ### 19.2.2 — Score-to-Finding Alignment Audit
 
@@ -9283,7 +9283,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5)
     │       │
     │       └──→ MAINTENANCE: Hardcoded values across ~240 instances (§DS2-F8 / §E1-COL1)
     │
-    └──→ MOTION: Inline buttons use Tailwind default durations, not branded easing (§E9-AG-F3)
+    └──→ MOTION: Inline buttons use Tailwind default durations, not branded easing (§E9-AG-F3 ✅)
             │
             └──→ IDENTITY: Motion identity inconsistent between system and inline layers (§E9-MO-F1)
 ```
@@ -9291,7 +9291,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5)
 **Chain impact**: 12+ findings across 8 steps share a single root cause
 **Single fix**: Migrate inline buttons to `kuro-btn` variants (primary/secondary/ghost/danger)
 **Estimated effort**: ~100 button elements, each requiring class migration from inline Tailwind to kuro-btn
-**Cascade resolution**: Fixes §E5-BT5, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1, §E7-PD1, §E8-MI1, §E9-VS-F1 (partially), §E9-AG-F3, and contributes to §E1-COV1
+**Cascade resolution**: Fixes §E5-BT5, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1, §E7-PD1, §E8-MI1, §E9-VS-F1 (partially), §E9-AG-F3 ✅, and contributes to §E1-COV1
 
 ---
 
@@ -9723,7 +9723,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Duplicate Group | Findings | Recommended Consolidated Finding | Consolidated Severity |
 |----------------|----------|--------------------------------|----------------------|
 | **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
-| **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
+| **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 ✅ (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
 | **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
@@ -10130,7 +10130,7 @@ Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual s
    ]
    ```
 
-**Cross-references**: §E9-IC-F2, §E9-IC-F5, E8-CI2
+**Cross-references**: §E9-IC-F2, §E9-IC-F5 ✅, E8-CI2
 
 ---
 
@@ -11068,9 +11068,9 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 81 | §E9-VS-F2 | Canvas animations no reduced-motion fallback | ALL | Resolved by MED-42 |
-| 82 | §E9-VS-F3 | LAHAI-ROI palette only documented in CSS comment | DOCS | Surface palette rationale in a design guide or BRAND.md |
-| 83 | §E9-MC-F3 | Onboarding blob shapes conflict with geometric language | ONBOARDING | Replace blob shapes with angular decorative patterns matching HUD aesthetic |
+| 81 | §E9-VS-F2 ✅ | Canvas animations no reduced-motion fallback | ALL | Resolved by MED-42 |
+| 82 | §E9-VS-F3 ✅ | LAHAI-ROI palette only documented in CSS comment | DOCS | Surface palette rationale in a design guide or BRAND.md |
+| 83 | §E9-MC-F3 ✅ | Onboarding blob shapes conflict with geometric language | ONBOARDING | Replace blob shapes with angular decorative patterns matching HUD aesthetic |
 | 84 | §E9-AC-F1 | Purple dual semantics (rarity + element) | ALL | Accept minor ambiguity — context (collection vs combat) disambiguates. Document in design guide |
 | 85 | §E9-EA-F4 | Inconsistent empty state voice (game-lore vs clinical) | ALL | Unify all empty state copy to game-lore tone: "Awaiting data..." not "No data found" |
 | 86 | §E9-AG-F3 | ~280 `transition-colors` use Tailwind default timing | ALL | Migrate to `transition-colors duration-[var(--transition-fast)]` using branded timing |
