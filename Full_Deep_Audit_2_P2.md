@@ -2931,7 +2931,7 @@ Priority: Low — the current approach works fine for these small, infrequently-
 
 ---
 
-### E6-TQ8 · Chevron rotation (non-animated) · **LOW**
+### E6-TQ8 ✅ · Chevron rotation (non-animated) · **LOW**
 
 **Finding**: Collapsible section chevrons (`ChevronDown` icon) toggle between `rotate-0` and `rotate-180` states without a transition:
 
@@ -2958,7 +2958,7 @@ Priority: Low — functional but missing a micro-interaction moment.
 | E6-TQ5 | Toast entrance/exit | — | PASS |
 | E6-TQ6 | Pity ring fill | — | PASS |
 | E6-TQ7 ✅ | Progress bar transition-all | LOW | Layout-triggering width animation, broad transition-all |
-| E6-TQ8 | Chevron rotation | LOW | No transition on rotate state change |
+| E6-TQ8 ✅ | Chevron rotation | LOW | No transition on rotate state change |
 
 ---
 
@@ -3095,7 +3095,7 @@ The consistent upward direction (all use positive translateY → 0) creates a un
 
 ---
 
-### E6-AN2 · Exit animation gap · **LOW**
+### E6-AN2 ✅ · Exit animation gap · **LOW**
 
 **Finding**: The app has NO exit animations. All exits are instant (React unmount):
 
@@ -3199,7 +3199,7 @@ The app uses several continuous (infinite) animations for ambient atmosphere:
 
 ---
 
-### E6-ES3 · Empty state call-to-action gap · **LOW**
+### E6-ES3 ✅ · Empty state call-to-action gap · **LOW**
 
 **Finding**: The kuro-empty-state component provides atmosphere and messaging but does NOT include a call-to-action button. Empty states across the app show:
 
@@ -3283,7 +3283,7 @@ Priority: Low — the empty states are designed and atmospheric, just missing th
 
 ---
 
-### E6-ER4 · Form-level inline errors · **LOW**
+### E6-ER4 ✅ · Form-level inline errors · **LOW**
 
 **Finding**: The app has no form-level inline error states. There are no visible patterns for:
 - Input validation errors (red border + error text below field)
@@ -3315,16 +3315,16 @@ Priority: Low — current scope doesn't require inline validation. The toast sys
 | ID | Element | Severity | Verdict |
 |----|---------|----------|---------|
 | E6-AN1 | Entrance animation vocabulary | — | PASS |
-| E6-AN2 | Exit animation gap | LOW | No exit animations — arrivals polished, departures instant |
+| E6-AN2 ✅ | Exit animation gap | LOW | No exit animations — arrivals polished, departures instant |
 | E6-AN3 | Card stagger narrative | — | PASS |
 | E6-AN4 | Continuous animations | — | PASS |
 | E6-ES1 | kuro-empty-state component | — | PASS |
 | E6-ES2 | Collection empty state | — | PASS |
-| E6-ES3 | Empty state CTA gap | LOW | Missing call-to-action buttons in empty states |
+| E6-ES3 ✅ | Empty state CTA gap | LOW | Missing call-to-action buttons in empty states |
 | E6-ER1 | TabErrorBoundary | — | PASS |
 | E6-ER2 | AppErrorBoundary | — | PASS |
 | E6-ER3 | Toast error notifications | — | PASS |
-| E6-ER4 | Form inline errors | LOW | No inline field validation — toast-only error feedback |
+| E6-ER4 ✅ | Form inline errors | LOW | No inline field validation — toast-only error feedback |
 
 ---
 
@@ -3688,7 +3688,7 @@ MOTION SIGNATURE BRIEF
 | E6-TQ5 | Toast entrance/exit | — | PASS |
 | E6-TQ6 | Pity ring fill | — | PASS |
 | E6-TQ7 ✅ | Progress bar transition-all | LOW | Layout-triggering width animation |
-| E6-TQ8 | Chevron rotation | LOW | No transition on rotate state change |
+| E6-TQ8 ✅ | Chevron rotation | LOW | No transition on rotate state change |
 | **§E6.4 — Loading States** | | | |
 | E6-LS1 | kuro-skeleton system | — | PASS |
 | E6-LS2 | Ghost grid cells | — | PASS |
@@ -3697,16 +3697,16 @@ MOTION SIGNATURE BRIEF
 | E6-LS5 | Image error fallback | — | PASS |
 | **§E6.5–§E6.7 — Animation / Empty / Error** | | | |
 | E6-AN1 | Entrance animation vocabulary | — | PASS |
-| E6-AN2 | Exit animation gap | LOW | No exit animations |
+| E6-AN2 ✅ | Exit animation gap | LOW | No exit animations |
 | E6-AN3 | Card stagger narrative | — | PASS |
 | E6-AN4 | Continuous animations | — | PASS |
 | E6-ES1 | kuro-empty-state component | — | PASS |
 | E6-ES2 | Collection empty state | — | PASS |
-| E6-ES3 | Empty state CTA gap | LOW | Missing call-to-action buttons |
+| E6-ES3 ✅ | Empty state CTA gap | LOW | Missing call-to-action buttons |
 | E6-ER1 | TabErrorBoundary | — | PASS |
 | E6-ER2 | AppErrorBoundary | — | PASS |
 | E6-ER3 | Toast error notifications | — | PASS |
-| E6-ER4 | Form inline errors | LOW | No inline field validation |
+| E6-ER4 ✅ | Form inline errors | LOW | No inline field validation |
 | **§E6.8 — Animation Character** | | | |
 | E6-MC1 | Motion character alignment | — | PASS |
 | E6-MC2 | Easing curve character | — | PASS |
@@ -3735,9 +3735,9 @@ MOTION SIGNATURE BRIEF
 
 1. **Inline button interaction gap** (§E6-HV9 ✅ + §E6-AP4 ✅): The ~100+ inline buttons outside the kuro-btn system have weaker hover states (single-signal vs five-signal) and mostly no active/press feedback. This creates a two-tier experience: system components feel physical and responsive, inline buttons feel flat. This is the interaction-design manifestation of the same issue identified in §E5-BT5.
 
-2. **Exit animation asymmetry** (§E6-AN2): Entrance animations are polished at every level (toast, modal, tab, card), but exits are uniformly instant. For a FOCUS-TOOL this is defensible but creates a perceptual imbalance.
+2. **Exit animation asymmetry** (§E6-AN2 ✅): Entrance animations are polished at every level (toast, modal, tab, card), but exits are uniformly instant. For a FOCUS-TOOL this is defensible but creates a perceptual imbalance.
 
-3. **Empty state CTA gap** (§E6-ES3): Empty states are beautifully designed (gold-tinted gradient, ghost grid) but miss the final step — a call-to-action button that helps users recover from the empty state.
+3. **Empty state CTA gap** (§E6-ES3 ✅): Empty states are beautifully designed (gold-tinted gradient, ghost grid) but miss the final step — a call-to-action button that helps users recover from the empty state.
 
 ### Connection to prior findings
 
@@ -3827,11 +3827,11 @@ A comprehensive CSS-in-JS design system providing:
 | `collection-card` | Tailwind `rounded-lg` (8px) | No | Matches input tier |
 | Inline buttons | Tailwind `rounded-lg` (8px) or `rounded` (4px) | No | **Mixed** — two different radiuses |
 
-> **Finding E7-AD1** · LOW
+> **Finding E7-AD1 ✅** · LOW
 > **Non-standard 10px stat radius**: The `kuro-stat` uses `border-radius: 10px` (`appcore-providers.jsx:1039`), which doesn't fit cleanly into the 16→12→8→3px hierarchy. The 2px difference from inputs (8px) and 2px from buttons (12px) is visually imperceptible.
 > **Solution**: Standardize to either 12px (group with buttons) or 8px (group with inputs). Recommend 12px — stats are standalone display elements closer in visual weight to buttons than inputs.
 
-> **Finding E7-AD2** · LOW
+> **Finding E7-AD2 ✅** · LOW
 > **No radius tokens**: All 5 radius values are hardcoded in each component definition. The hierarchy is deliberate but not tokenized.
 > **Evidence**: `border-radius: 16px` (line 714), `12px` (line 859), `10px` (line 1039), `8px` (line 990), `3px` (switches in `App.jsx`).
 > **Solution**: Add radius tokens to `:root`: `--radius-card: 16px; --radius-btn: 12px; --radius-input: 8px; --radius-switch: 3px`. Reference these in component definitions. Enables future radius adjustments from a single location.
@@ -4358,7 +4358,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 |----|---------|----------|---------|
 | E7-DC1 | Two-layer coherence gap (kuro-* vs Tailwind) | MEDIUM | ISSUE |
 | E7-DC2 | Component-level coherence | — | PASS |
-| E7-AD1 | Non-standard 10px stat radius | LOW | ISSUE |
+| E7-AD1 ✅ | Non-standard 10px stat radius | LOW | ISSUE |
 | E7-AD2 | No radius tokens | LOW | ISSUE |
 | E7-AD3 | Card padding alignment | — | PASS |
 | E7-AD4 | Badge padding inconsistency | LOW | ISSUE |
@@ -4424,7 +4424,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 - **§E6-HV9 ✅ + §E6-AP4 ✅** (hover/active gaps): These interaction-layer consequences of the button sprawl now have a professionalism framing — they create a perceptible polish gradient within each screen.
 - **§E1-COV1** (token coverage ~30%): The professionalism audit confirms that token coverage is the root cause of the coherence gap. Extending the kuro-* system to cover inline elements would simultaneously fix multiple findings.
 - **§DBI3-S07 + §E1-COL1** (gray text): The brand consistency assessment (§E7-BC4) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
-- **§DBI3-S03** (rounded-lg monoculture): The radius audit (§E7-AD1, §E7-AD2) shows the kuro-* system has a deliberate 5-level hierarchy — the monoculture is in the inline Tailwind layer's default `rounded-lg`.
+- **§DBI3-S03** (rounded-lg monoculture): The radius audit (§E7-AD1 ✅, §E7-AD2 ✅) shows the kuro-* system has a deliberate 5-level hierarchy — the monoculture is in the inline Tailwind layer's default `rounded-lg`.
 
 ---
 
@@ -9073,7 +9073,7 @@ Competitive positioning map:
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
-| SI6 | **Empty state personality** | §E6-ES3 (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3) and voice inconsistency (E9-EA-F4) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
+| SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
 
 ### 19.2.2 — Score-to-Finding Alignment Audit
 
@@ -9723,7 +9723,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Duplicate Group | Findings | Recommended Consolidated Finding | Consolidated Severity |
 |----------------|----------|--------------------------------|----------------------|
 | **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
-| **Empty state CTA** | §E6-ES3 (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
+| **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
 | **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
@@ -10241,7 +10241,7 @@ These findings affect significant visual quality, usability, or brand consistenc
 
 Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy level.
 
-**Cross-references**: DBI3-S03, §E9-AG-F2, E7-AD1, E7-AD2
+**Cross-references**: DBI3-S03, §E9-AG-F2, E7-AD1 ✅, E7-AD2 ✅
 
 ---
 
@@ -11027,10 +11027,10 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 58 | E6-HV9 ✅ | Inline Tailwind hovers lack multi-signal feedback | ALL | Migrate to kuro-btn variants (MED-6); add `@media (hover: hover)` guard on all hover styles |
 | 59 | E6-AP4 ✅ | Inline button active states absent (~93+ buttons) | ALL | Add global rule: `button:not(.kuro-btn):active { transform: scale(0.97); }` |
 | 60 | E6-TQ7 ✅ | Progress bar `transition-all` on width (layout-triggering) | STATS, PLANNER | Use `transition: width 0.3s` or `transform: scaleX()` for GPU-composited animation |
-| 61 | E6-TQ8 | Chevron rotation has no transition | App.jsx:3770 | Add `transition-transform duration-200` to chevron elements |
-| 62 | E6-AN2 | Exit animation gap (instant removal everywhere) | ALL | Add exit animations for removed elements: `opacity 0 + translateY(-8px)` at 200ms |
-| 63 | E6-ES3 | Empty state CTA gap (missing call-to-action buttons) | ALL | Add primary CTA button to each empty state (e.g., "Import Data" on Stats empty) |
-| 64 | E6-ER4 | Form inline errors not implemented | CALC, PLANNER | Add inline field validation with red border + error message below invalid fields |
+| 61 | E6-TQ8 ✅ | Chevron rotation has no transition | App.jsx:3770 | Add `transition-transform duration-200` to chevron elements |
+| 62 | E6-AN2 ✅ | Exit animation gap (instant removal everywhere) | ALL | Add exit animations for removed elements: `opacity 0 + translateY(-8px)` at 200ms |
+| 63 | E6-ES3 ✅ | Empty state CTA gap (missing call-to-action buttons) | ALL | Add primary CTA button to each empty state (e.g., "Import Data" on Stats empty) |
+| 64 | E6-ER4 ✅ | Form inline errors not implemented | CALC, PLANNER | Add inline field validation with red border + error message below invalid fields |
 
 ---
 
@@ -11038,7 +11038,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 65 | E7-AD1 | Non-standard 10px stat radius (not in 8/12/16 scale) | STATS | Standardize to `var(--radius-lg)` (12px) |
+| 65 | E7-AD1 ✅ | Non-standard 10px stat radius (not in 8/12/16 scale) | STATS | Standardize to `var(--radius-lg)` (12px) |
 | 66 | E7-AD2 | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 (radius tokens) |
 | 67 | E7-AD4 | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
 | 68 | E7-AD6 | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
@@ -11169,7 +11169,7 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 | BR-F1 "add body font" | §DP2 "Rajdhani dual-role is protected" | Typography identity | **REJECTED BR-F1** — Rajdhani dual-role is PROTECTED. No body font addition |
 | DC5-TN1 "reduce cyan to 3–5 uses" | §E9 "cyan is Glacio element color" | Semantic vs decorative usage | Restrict decorative cyan; preserve domain-semantic element color usage |
 | E2-MO1 "44px touch targets" | §DENSITY "expert users accept dense layouts" | Accessibility vs density | Increase to 44px on `(pointer: coarse)` only — desktop stays dense |
-| E7-AD1 "standardize 10px radius" | §ADE "balanced radius profile correct" | Radius precision | Standardize 10px → 12px to match the 4-level token scale (6/8/12/16) |
+| E7-AD1 ✅ "standardize 10px radius" | §ADE "balanced radius profile correct" | Radius precision | Standardize 10px → 12px to match the 4-level token scale (6/8/12/16) |
 
 ### Severity Adjustments: 7
 

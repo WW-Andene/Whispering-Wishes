@@ -433,7 +433,9 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ CSS CUSTOM PROPERTIES ═══ */
     /* E1-SP1: Spacing base: 2px grid (2/4/6/8/10/12/14/16) */
     /* E2-VR1: Dual-rhythm system — KuroStyles uses 14px base padding (dense tactical);
-       Tailwind utilities use standard 4px grid. Both are intentional and coexist. */
+       Tailwind utilities use standard 4px grid. Both are intentional and coexist.
+       E7-AD7: Unit conventions — px for spacing/radius/font-size in CSS-in-JS;
+       Tailwind scale (p-2, gap-3) for layout padding/margin in JSX. */
     :root {
       --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
@@ -539,6 +541,18 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-tap-highlight-color: transparent;
     }
     
+    /* E6-ER4: Inline field validation error state */
+    .kuro-input-error {
+      border-color: rgba(239, 68, 68, 0.6) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    .kuro-field-error {
+      color: #fca5a5;
+      font-size: 10px;
+      margin-top: 4px;
+      display: block;
+    }
+
     /* E5-IN5: Search input wrapper for consistent icon placement */
     .kuro-search-wrap {
       position: relative;
@@ -792,13 +806,14 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     @media (hover: hover) {
+      /* E7-AD6: Use shadow token instead of raw values */
       .kuro-card:hover {
         border-color: var(--border-hover);
         transform: translateY(-2px);
         box-shadow:
-          0 8px 32px rgba(6, 10, 24, 0.7),
+          var(--shadow-xl),
           0 0 0 1px rgba(255, 255, 255, 0.06),
-          0 0 40px rgba(var(--color-gold), 0.03),
+          0 0 40px rgba(100, 140, 200, 0.03),
           inset 0 1px 0 rgba(255, 255, 255, 0.08);
       }
     }
@@ -1193,7 +1208,7 @@ const KuroStyles = memo(({ oledMode }) => (
       position: relative;
       background: var(--bg-stat);
       border: 1px solid var(--border-hover);
-      border-radius: 10px;
+      border-radius: 12px; /* E7-AD1: Standardized to 12px (8/12/16 scale) */
       padding: 14px;
       text-align: center;
       overflow: hidden;
@@ -1552,6 +1567,15 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-calc button:not(.kuro-btn):active {
       transform: scale(0.97);
       transition: transform 0.1s ease;
+    }
+
+    /* E6-AN2: Exit animation utility for removed elements */
+    @keyframes kuroExit {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-8px); }
+    }
+    .kuro-exit {
+      animation: kuroExit 0.2s ease-out forwards;
     }
 
     /* E6-HV9: Suppress hover effects on touch-only devices to prevent sticky states */
