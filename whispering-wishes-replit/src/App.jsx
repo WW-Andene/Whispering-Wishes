@@ -700,6 +700,7 @@ function WhisperingWishesInner() {
   const [collectionStatFilter, setCollectionStatFilter] = useState('all'); // 'all', 'ATK', 'HP', 'DEF', 'Crit Rate', 'Crit DMG', 'Energy Regen'
   const [collectionDamageFilter, setCollectionDamageFilter] = useState('all'); // 'all', 'Basic ATK', 'Heavy ATK', 'Skill', 'Liberation', 'Echo', 'Coordinated'
   const [collectionRoleFilter, setCollectionRoleFilter] = useState('all'); // 'all', 'Main DPS', 'Sub DPS', 'Support', 'Healer'
+  const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useState('all'); // 'all' or sonata set name
   const [collectionView, setCollectionView] = useState('items'); // 'items' (resonators+weapons), 'echoes'
   
   // Keyword tags for search matching (maps keywords to character/weapon properties)
@@ -833,12 +834,13 @@ function WhisperingWishesInner() {
     setCollectionStatFilter('all');
     setCollectionDamageFilter('all');
     setCollectionRoleFilter('all');
+    setCollectionEchoSetFilter('all');
   }, []);
 
   // Check if any filter is active
   const hasActiveFilters = useMemo(() =>
-    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all'),
-    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter]
+    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionEchoSetFilter !== 'all'),
+    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionEchoSetFilter]
   );
   
   // Cache-busting for images (version-based, only refreshes on manual refresh)
@@ -5053,7 +5055,7 @@ function WhisperingWishesInner() {
                     {/* View Toggle */}
                     <div className="flex gap-1.5">
                       <button
-                        onClick={() => setCollectionView('items')}
+                        onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); }}
                         className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'items' ? 'active-gold' : 'text-gray-400'}`}
                         title="Characters"
                         aria-label="View characters"
@@ -5071,7 +5073,7 @@ function WhisperingWishesInner() {
                         <Sword size={14} /> Weapons
                       </button>
                       <button
-                        onClick={() => setCollectionView('echoes')}
+                        onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); }}
                         className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'echoes' ? 'active-cyan' : 'text-gray-400'}`}
                         title="Echoes"
                         aria-label="View echoes"
@@ -5080,96 +5082,120 @@ function WhisperingWishesInner() {
                         <Sparkles size={14} /> Echoes
                       </button>
                     </div>
-                    {/* Filter Dropdowns */}
+                    {/* Filter Dropdowns — context-sensitive per view/category */}
                     <div className="grid grid-cols-3 gap-1.5">
-                      {/* Category Filter */}
-                      <KuroSelect
-                        value={collectionCategoryFilter}
-                        onChange={setCollectionCategoryFilter}
-                        options={[
-                          { value: 'all', label: 'All' },
-                          { value: 'character', label: 'Character' },
-                          { value: 'weapon', label: 'Weapon' },
-                        ]}
-                        ariaLabel="Filter by category"
-                      />
+                      {/* Items view: Category (char/weapon), Type, Element, Stat, Damage, Role */}
+                      {collectionView === 'items' && (<>
+                        {/* Category Filter */}
+                        <KuroSelect
+                          value={collectionCategoryFilter}
+                          onChange={(v) => { setCollectionCategoryFilter(v); if (v === 'weapon') { setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); } if (v === 'character') { setCollectionWeaponFilter('all'); } }}
+                          options={[
+                            { value: 'all', label: 'All' },
+                            { value: 'character', label: 'Character' },
+                            { value: 'weapon', label: 'Weapon' },
+                          ]}
+                          ariaLabel="Filter by category"
+                        />
 
-                      {/* Type Filter */}
-                      <KuroSelect
-                        value={collectionWeaponFilter}
-                        onChange={setCollectionWeaponFilter}
-                        options={[
-                          { value: 'all', label: 'All Types' },
-                          { value: 'Broadblade', label: 'Broadblade' },
-                          { value: 'Sword', label: 'Sword' },
-                          { value: 'Pistols', label: 'Pistols' },
-                          { value: 'Gauntlets', label: 'Gauntlets' },
-                          { value: 'Rectifier', label: 'Rectifier' },
-                        ]}
-                        ariaLabel="Filter by weapon type"
-                      />
+                        {/* Type Filter — visible for weapons & all */}
+                        {collectionCategoryFilter !== 'character' && (
+                          <KuroSelect
+                            value={collectionWeaponFilter}
+                            onChange={setCollectionWeaponFilter}
+                            options={[
+                              { value: 'all', label: 'All Types' },
+                              { value: 'Broadblade', label: 'Broadblade' },
+                              { value: 'Sword', label: 'Sword' },
+                              { value: 'Pistols', label: 'Pistols' },
+                              { value: 'Gauntlets', label: 'Gauntlets' },
+                              { value: 'Rectifier', label: 'Rectifier' },
+                            ]}
+                            ariaLabel="Filter by weapon type"
+                          />
+                        )}
 
-                      {/* Element Filter */}
-                      <KuroSelect
-                        value={collectionElementFilter}
-                        onChange={setCollectionElementFilter}
-                        options={[
-                          { value: 'all', label: 'All Elements' },
-                          { value: 'Aero', label: 'Aero' },
-                          { value: 'Glacio', label: 'Glacio' },
-                          { value: 'Electro', label: 'Electro' },
-                          { value: 'Fusion', label: 'Fusion' },
-                          { value: 'Spectro', label: 'Spectro' },
-                          { value: 'Havoc', label: 'Havoc' },
-                        ]}
-                        ariaLabel="Filter by element"
-                      />
+                        {/* Element Filter — characters only */}
+                        {collectionCategoryFilter !== 'weapon' && (
+                          <KuroSelect
+                            value={collectionElementFilter}
+                            onChange={setCollectionElementFilter}
+                            options={[
+                              { value: 'all', label: 'All Elements' },
+                              { value: 'Aero', label: 'Aero' },
+                              { value: 'Glacio', label: 'Glacio' },
+                              { value: 'Electro', label: 'Electro' },
+                              { value: 'Fusion', label: 'Fusion' },
+                              { value: 'Spectro', label: 'Spectro' },
+                              { value: 'Havoc', label: 'Havoc' },
+                            ]}
+                            ariaLabel="Filter by element"
+                          />
+                        )}
 
-                      {/* Stat Filter */}
-                      <KuroSelect
-                        value={collectionStatFilter}
-                        onChange={setCollectionStatFilter}
-                        options={[
-                          { value: 'all', label: 'All Stats' },
-                          { value: 'ATK', label: 'ATK' },
-                          { value: 'HP', label: 'HP' },
-                          { value: 'DEF', label: 'DEF' },
-                          { value: 'Crit Rate', label: 'Crit Rate' },
-                          { value: 'Crit DMG', label: 'Crit DMG' },
-                          { value: 'Energy Regen', label: 'Energy Regen' },
-                        ]}
-                        ariaLabel="Filter by main stat"
-                      />
+                        {/* Stat Filter */}
+                        <KuroSelect
+                          value={collectionStatFilter}
+                          onChange={setCollectionStatFilter}
+                          options={[
+                            { value: 'all', label: 'All Stats' },
+                            { value: 'ATK', label: 'ATK' },
+                            { value: 'HP', label: 'HP' },
+                            { value: 'DEF', label: 'DEF' },
+                            { value: 'Crit Rate', label: 'Crit Rate' },
+                            { value: 'Crit DMG', label: 'Crit DMG' },
+                            { value: 'Energy Regen', label: 'Energy Regen' },
+                          ]}
+                          ariaLabel="Filter by main stat"
+                        />
 
-                      {/* Damage Filter */}
-                      <KuroSelect
-                        value={collectionDamageFilter}
-                        onChange={setCollectionDamageFilter}
-                        options={[
-                          { value: 'all', label: 'All Damage' },
-                          { value: 'Basic ATK', label: 'Basic ATK' },
-                          { value: 'Heavy ATK', label: 'Heavy ATK' },
-                          { value: 'Skill', label: 'Skill' },
-                          { value: 'Liberation', label: 'Liberation' },
-                          { value: 'Echo', label: 'Echo' },
-                          { value: 'Coordinated', label: 'Coordinated' },
-                        ]}
-                        ariaLabel="Filter by damage type"
-                      />
+                        {/* Damage Filter — characters only */}
+                        {collectionCategoryFilter !== 'weapon' && (
+                          <KuroSelect
+                            value={collectionDamageFilter}
+                            onChange={setCollectionDamageFilter}
+                            options={[
+                              { value: 'all', label: 'All Damage' },
+                              { value: 'Basic ATK', label: 'Basic ATK' },
+                              { value: 'Heavy ATK', label: 'Heavy ATK' },
+                              { value: 'Skill', label: 'Skill' },
+                              { value: 'Liberation', label: 'Liberation' },
+                              { value: 'Echo', label: 'Echo' },
+                              { value: 'Coordinated', label: 'Coordinated' },
+                            ]}
+                            ariaLabel="Filter by damage type"
+                          />
+                        )}
 
-                      {/* Role Filter */}
-                      <KuroSelect
-                        value={collectionRoleFilter}
-                        onChange={setCollectionRoleFilter}
-                        options={[
-                          { value: 'all', label: 'All Roles' },
-                          { value: 'Main DPS', label: 'Main DPS' },
-                          { value: 'Sub DPS', label: 'Sub DPS' },
-                          { value: 'Support', label: 'Support' },
-                          { value: 'Healer', label: 'Healer' },
-                        ]}
-                        ariaLabel="Filter by role"
-                      />
+                        {/* Role Filter — characters only */}
+                        {collectionCategoryFilter !== 'weapon' && (
+                          <KuroSelect
+                            value={collectionRoleFilter}
+                            onChange={setCollectionRoleFilter}
+                            options={[
+                              { value: 'all', label: 'All Roles' },
+                              { value: 'Main DPS', label: 'Main DPS' },
+                              { value: 'Sub DPS', label: 'Sub DPS' },
+                              { value: 'Support', label: 'Support' },
+                              { value: 'Healer', label: 'Healer' },
+                            ]}
+                            ariaLabel="Filter by role"
+                          />
+                        )}
+                      </>)}
+
+                      {/* Echoes view: Sonata Set filter */}
+                      {collectionView === 'echoes' && (
+                        <KuroSelect
+                          value={collectionEchoSetFilter}
+                          onChange={setCollectionEchoSetFilter}
+                          options={[
+                            { value: 'all', label: 'All Sets' },
+                            ...Object.keys(ECHO_SETS).map(s => ({ value: s, label: s })),
+                          ]}
+                          ariaLabel="Filter by sonata set"
+                        />
+                      )}
 
                       {/* Clear Filters */}
                       {hasActiveFilters && (
