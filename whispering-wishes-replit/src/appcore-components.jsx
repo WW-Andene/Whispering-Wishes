@@ -944,11 +944,9 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const peakMul = isFull ? 0.30 : 0.22;
     const colorBoost = isFull ? 1.4 : 1.0;
 
-    // Use largest available height to prevent gap when mobile URL bar hides
-    const getH = () => Math.max(window.innerHeight, document.documentElement.clientHeight, window.visualViewport?.height || 0);
     const init = () => {
       w = window.innerWidth;
-      h = getH();
+      h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
       bw = Math.ceil(w * BLUR_SCALE);
@@ -958,7 +956,6 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
     init();
     window.addEventListener('resize', init);
-    window.visualViewport?.addEventListener('resize', init);
 
     let lastFrame = 0;
 
@@ -1012,7 +1009,6 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
-      window.visualViewport?.removeEventListener('resize', init);
       // P11-FIX: Explicitly release buffer canvas backing store memory (Step 7 audit — LOW-3h)
       buf.width = 0;
       buf.height = 0;
@@ -1049,11 +1045,9 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const HALF = TW / 2;
     let w, h, cols, rows, seeds;
     
-    // Use largest available height to prevent gap when mobile URL bar hides
-    const getH = () => Math.max(window.innerHeight, document.documentElement.clientHeight, window.visualViewport?.height || 0);
     const init = () => {
       w = window.innerWidth;
-      h = getH();
+      h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
       cols = Math.ceil(w / HALF) + 4;
@@ -1063,7 +1057,6 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
     init();
     window.addEventListener('resize', init);
-    window.visualViewport?.addEventListener('resize', init);
     
     // Full mode: boost specular and peak intensity
     const isFull = animationsEnabled === 'full';
@@ -1147,7 +1140,6 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
-      window.visualViewport?.removeEventListener('resize', init);
     };
   }, [oledMode, animationsEnabled]);
 
