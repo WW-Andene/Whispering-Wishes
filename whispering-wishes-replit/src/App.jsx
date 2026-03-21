@@ -6042,6 +6042,9 @@ function WhisperingWishesInner() {
                                       {(m.d.dmgFocus || []).map((df, di) => (
                                         <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
                                       ))}
+                                      {m.d.statScaling && m.d.statScaling !== 'ATK' && (
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400" style={{ boxShadow: "0 0 6px rgba(139,92,246,0.12)" }}>{m.d.statScaling} Scaling</span>
+                                      )}
                                     </div>
                                   </div>
                                   {/* Buffs */}
