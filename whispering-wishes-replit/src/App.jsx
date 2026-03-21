@@ -293,6 +293,7 @@ function WhisperingWishesInner() {
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
   const stateRef = useRef(state);
@@ -3174,11 +3175,21 @@ function WhisperingWishesInner() {
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3">
           <div className="header-top flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="relative group cursor-pointer">
+              <div className="relative group cursor-pointer" onClick={async () => {
+                if (pwa?.canInstall) {
+                  const accepted = await pwa.promptInstall();
+                  if (accepted) toast?.('App installed successfully!', 'success');
+                }
+              }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : ''}>
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
                 <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
+                {pwa?.canInstall && (
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center shadow-md" aria-hidden="true">
+                    <Download size={9} className="text-black" />
+                  </div>
+                )}
               </div>
               <div>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
@@ -3327,7 +3338,8 @@ function WhisperingWishesInner() {
               <CardHeader><Archive size={14} className="text-purple-400" /> Banner History</CardHeader>
               <CardBody>
                 <div className="space-y-2">
-                  {BANNER_HISTORY.map((b, i) => (
+                  {/* Show only the latest banner */}
+                  {BANNER_HISTORY.slice(0, 1).map(b => (
                     <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
@@ -3335,7 +3347,70 @@ function WhisperingWishesInner() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {b.characters.map(c => {
-                          const cd = CHARACTER_DATA[c];
+                          const img = collectionImages[c];
+                          return (
+                            <div key={c} className="flex items-center gap-1.5">
+                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                {img ? (
+                                  <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-yellow-400">{c[0]}</div>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
+                            </div>
+                          );
+                        })}
+                        {b.weapons.map(w => {
+                          const img = collectionImages[w];
+                          return (
+                            <div key={w} className="flex items-center gap-1.5">
+                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                {img ? (
+                                  <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-pink-400 font-medium">{w}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  {/* View All button */}
+                  <button
+                    onClick={() => setShowBannerHistory(true)}
+                    className="w-full py-2.5 rounded-lg border border-[var(--border-medium)] text-gray-400 text-[11px] font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    style={{ background: 'var(--bg-btn)' }}
+                  >
+                    <Archive size={12} /> View All Banners ({BANNER_HISTORY.length})
+                  </button>
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Banner History Modal */}
+            <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)}>
+              <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={e => e.stopPropagation()}>
+                <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
+                  <div className="flex items-center gap-2">
+                    <Archive size={14} className="text-purple-400" />
+                    <span className="text-white text-sm font-semibold">Banner History</span>
+                  </div>
+                  <button onClick={() => setShowBannerHistory(false)} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 space-y-2" data-sheet-scroll>
+                  {BANNER_HISTORY.map(b => (
+                    <div key={`bhm-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {b.characters.map(c => {
                           const img = collectionImages[c];
                           return (
                             <div key={c} className="flex items-center gap-1.5">
@@ -3369,8 +3444,8 @@ function WhisperingWishesInner() {
                     </div>
                   ))}
                 </div>
-              </CardBody>
-            </Card>
+              </div>
+            </FocusTrapModal>
           </div>
           </TabErrorBoundary>
           </div>
