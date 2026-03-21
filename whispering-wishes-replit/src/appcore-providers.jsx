@@ -1115,9 +1115,6 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ BUTTONS - Glassy style with bright text ═══ */
     .kuro-btn {
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       background: var(--bg-btn);
       border: 1px solid var(--border-medium);
       border-radius: 12px;
