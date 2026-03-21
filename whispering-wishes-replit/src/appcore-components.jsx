@@ -13,6 +13,7 @@ import {
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
   ECHO_DATA, ECHO_SETS,
+  ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
@@ -593,8 +594,9 @@ const ECHO_BUFF_COLORS = {
   'Aero DMG':    { bg: 'bg-emerald-500/10',  text: 'text-emerald-400', border: 'border-emerald-500/25' },
   'Spectro DMG': { bg: 'bg-yellow-500/10',   text: 'text-yellow-400',  border: 'border-yellow-500/25' },
   'Havoc DMG':   { bg: 'bg-pink-500/10',     text: 'text-pink-400',    border: 'border-pink-500/25' },
-  'Healing':     { bg: 'bg-green-500/10',     text: 'text-green-400',   border: 'border-green-500/25' },
-  'Shield':      { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
+  'Healing':      { bg: 'bg-green-500/10',     text: 'text-green-400',   border: 'border-green-500/25' },
+  'Shield':       { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
+  'Physical DMG': { bg: 'bg-slate-400/10',     text: 'text-slate-300',   border: 'border-slate-400/25' },
 };
 const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
   const data = ECHO_DATA[name];
@@ -602,6 +604,18 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
 
   const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
   const buffColors = ECHO_BUFF_COLORS[data.buff] || { bg: 'bg-white/10', text: 'text-gray-300', border: 'border-[var(--border-medium)]' };
+
+  // Get element-based colors for gradient header and border
+  const setColors = getEchoSetColors(name);
+  const primaryBuffColor = getBuffElementColor(Array.isArray(data.buff) ? data.buff[0] : data.buff);
+  const headerGradient = setColors.length >= 2
+    ? `linear-gradient(135deg, ${setColors[0]}25 0%, ${setColors[1]}25 ${setColors.length >= 3 ? '50%' : '100%'}${setColors.length >= 3 ? `, ${setColors[2]}25 100%` : ''})`
+    : setColors.length === 1
+      ? `linear-gradient(135deg, ${setColors[0]}25 0%, ${setColors[0]}10 100%)`
+      : undefined;
+  const borderColor = setColors.length >= 2
+    ? setColors[0]
+    : setColors.length === 1 ? setColors[0] : undefined;
 
   // Find characters that use this echo (referenced in bestEchoes)
   const usedBy = Object.entries(CHARACTER_DATA).filter(([, cd]) =>
@@ -611,13 +625,15 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} echo details`} centered>
       <div
-        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${costColors.border}`}
+        className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border"
+        style={borderColor ? { borderColor: `${borderColor}80` } : {}}
         onClick={e => e.stopPropagation()}
       >
        <div className="overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
-          <div className={`absolute inset-0 bg-gradient-to-br ${costColors.bg}`} />
+          <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
+          {!headerGradient && <div className={`absolute inset-0 bg-gradient-to-br ${costColors.bg}`} />}
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
@@ -628,7 +644,10 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
-              <span className={`text-[10px] px-2 py-0.5 rounded ${buffColors.bg} ${buffColors.text} border ${buffColors.border}`}>{data.buff}</span>
+              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
+                const bc = ECHO_BUFF_COLORS[b] || buffColors;
+                return <span key={b} className={`text-[10px] px-2 py-0.5 rounded ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
+              })}
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
           </div>
@@ -645,9 +664,10 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             <div className="space-y-2">
               {data.sets.map(setName => {
                 const setData = ECHO_SETS[setName];
+                const setColor = getSetElementColor(setName);
                 return (
-                  <div key={setName} className="p-2 rounded-lg bg-black/20">
-                    <div className={`text-xs font-bold ${costColors.text} mb-0.5`}>{setName}</div>
+                  <div key={setName} className="p-2 rounded-lg" style={{ background: `${setColor}10`, borderLeft: `3px solid ${setColor}80` }}>
+                    <div className="text-xs font-bold mb-0.5" style={{ color: setColor }}>{setName}</div>
                     {setData ? (
                       <div className="space-y-0.5">
                         {setData.p2 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
@@ -683,9 +703,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           </div>
 
           {/* Buff Description */}
-          <div className={`p-3 rounded-xl border ${buffColors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+          <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill Buff</div>
-            <div className={`text-xs font-medium ${buffColors.text}`}>{data.buff}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => (
+                <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
+              ))}
+            </div>
           </div>
 
           {/* Used By Characters */}

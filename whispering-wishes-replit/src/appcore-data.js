@@ -2499,10 +2499,38 @@ const ELEMENT_COLORS = {
   Glacio:  { hex: '#06b6d4', bg: 'rgba(6,182,212,0.15)',  border: 'rgba(6,182,212,0.4)' },
   Havoc:   { hex: '#ec4899', bg: 'rgba(236,72,153,0.15)', border: 'rgba(236,72,153,0.4)' },
   Spectro: { hex: '#edaf18', bg: 'rgba(237,175,24,0.15)',  border: 'rgba(237,175,24,0.4)' }, /* MED-1: brand gold */
+  Heal:    { hex: '#22c55e', bg: 'rgba(34,197,94,0.15)',  border: 'rgba(34,197,94,0.4)' },
+  Support: { hex: '#60a5fa', bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.4)' },
+  ATK:     { hex: '#ef4444', bg: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.4)' },
+  Shield:  { hex: '#3b82f6', bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.4)' },
+  Physical:{ hex: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: 'rgba(148,163,184,0.4)' },
 };
 const getElementColor = (el) => ELEMENT_COLORS[el]?.hex || '#6b7280';
 const getElementBg = (el) => ELEMENT_COLORS[el]?.bg || 'rgba(107,114,128,0.15)';
 const getElementBorder = (el) => ELEMENT_COLORS[el]?.border || 'rgba(107,114,128,0.4)';
+// Get element color for a sonata set name
+const getSetElementColor = (setName) => {
+  const setData = ECHO_SETS[setName];
+  return setData ? getElementColor(setData.element) : '#6b7280';
+};
+// Get unique element colors for an echo's sets (for multi-color gradients)
+const getEchoSetColors = (echoName) => {
+  const data = ECHO_DATA[echoName];
+  if (!data) return [];
+  const seen = new Set();
+  return data.sets.map(s => {
+    const el = ECHO_SETS[s]?.element;
+    const hex = getElementColor(el);
+    if (seen.has(hex)) return null;
+    seen.add(hex);
+    return hex;
+  }).filter(Boolean);
+};
+// Get buff element color (maps 'Glacio DMG' → Glacio, etc.)
+const getBuffElementColor = (buff) => {
+  const el = typeof buff === 'string' ? buff.replace(' DMG', '') : '';
+  return ELEMENT_COLORS[el]?.hex || ELEMENT_COLORS[buff]?.hex || '#6b7280';
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTS - Used by App.jsx (WhisperingWishesInner)
@@ -2526,5 +2554,5 @@ export {
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
   TAB_ORDER, MEDAL_COLORS,
-  ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder,
+  ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder, getSetElementColor, getEchoSetColors, getBuffElementColor,
 };
