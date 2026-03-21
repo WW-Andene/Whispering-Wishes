@@ -7312,6 +7312,15 @@ Example: {"pulls":[...]}'
                 <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
+
+            {/* Admin Panel Access */}
+            <button
+              onClick={() => setShowAdminPanel(true)}
+              className="w-full py-3 rounded-xl text-[11px] font-medium flex items-center justify-center gap-2 transition-all"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: '#6b7280' }}
+            >
+              <Settings size={14} /> Admin Panel
+            </button>
           </div>
           </TabErrorBoundary>
           </div>

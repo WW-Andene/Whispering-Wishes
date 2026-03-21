@@ -2491,8 +2491,10 @@ const RELEASE_ORDER = [
   'Chisa', 'Buling',
   // 3.0
   'Lynae', 'Mornye',
-  // 3.1 (unreleased)
+  // 3.1
   'Aemeath', 'Luuk Herssen',
+  // 3.2
+  'Sigrika',
 ];
 
 // All known character names (for filtering weapons vs characters)
@@ -2502,7 +2504,7 @@ const ALL_CHARACTERS = new Set([
   'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
   'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
   'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
-  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath',
+  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath', 'Sigrika',
   // 4★
   'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
   'Mortefi', 'Youhu', 'Lumi', 'Buling',
@@ -2601,7 +2603,7 @@ const WEAPON_RELEASE_ORDER = [
   // 2.5
   'Lethean Elegy', "Bloodpact's Pledge",
   // 2.6
-  'Thunderflare Dominion', "Moongazer's Sigil", 'Solsworn Ciphers',
+  'Thunderflare Dominion', "Moongazer's Sigil",
   // 2.7
   'Lux & Umbra', 'Emerald Sentence',
   // 2.8
@@ -2612,6 +2614,8 @@ const WEAPON_RELEASE_ORDER = [
   'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
   // 3.1
   'Everbright Polestar', "Daybreaker's Spine",
+  // 3.2
+  'Solsworn Ciphers',
 ];
 
 // Tab navigation order for swipe gestures
