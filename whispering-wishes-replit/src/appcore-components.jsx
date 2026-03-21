@@ -17,7 +17,7 @@ import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
   getNextDailyReset, getNextWeeklyReset, storageAvailable, sanitizeStateObj,
 } from './appcore-engine.js';
-import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
+import { useFocusTrap, useEscapeKey, FocusTrapModal } from './appcore-providers.jsx';
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 // AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
