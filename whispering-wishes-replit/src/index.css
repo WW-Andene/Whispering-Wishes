@@ -48,8 +48,6 @@ body::before {
   min-height: 100vh;
   min-height: 100dvh;
   isolation: isolate;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Accessible focus outlines — BT-F1: Extended to a, [role="button"] */

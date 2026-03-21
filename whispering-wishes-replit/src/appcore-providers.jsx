@@ -2175,7 +2175,7 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout {
         display: flex !important;
         flex-direction: column !important;
-        flex: 1 !important;
+        min-height: 100vh;
       }
       .desktop-layout > footer {
         margin-top: auto;
