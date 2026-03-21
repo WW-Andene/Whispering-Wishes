@@ -561,7 +561,7 @@ function WhisperingWishesInner() {
   const defaultFraming = useMemo(() => ({ x: 0, y: 0, zoom: 100 }), []);
   const DEFAULT_IMAGE_FRAMING = useMemo(() => ({
     // Collection framing
-    'collection-Jiyan': { x: 8, y: -26, zoom: 250 },
+    'collection-Jiyan': { x: 8, y: -24, zoom: 250 },
     'collection-Calcharo': { x: -2, y: -26, zoom: 220 },
     'collection-Encore': { x: -2, y: -20, zoom: 150 },
     'collection-Jianxin': { x: 2, y: -24, zoom: 210 },
@@ -587,14 +587,15 @@ function WhisperingWishesInner() {
     'collection-Galbrena': { x: 14, y: -24, zoom: 230 },
     'collection-Iuno': { x: -2, y: -24, zoom: 190 },
     'collection-Luuk Herssen': { x: 2, y: 0, zoom: 120 },
-    'collection-Aemeath': { x: -12, y: -22, zoom: 190 },
+    'collection-Aemeath': { x: -14, y: -20, zoom: 190 },
     'collection-Mornye': { x: 4, y: -20, zoom: 170 },
     'collection-Rover': { x: 24, y: -24, zoom: 230 },
-    'collection-Chisa': { x: -4, y: -26, zoom: 220 },
+    'collection-Chisa': { x: -6, y: -20, zoom: 230 },
     'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
     'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
-    'collection-Lynae': { x: -10, y: -28, zoom: 190 },
-    'collection-Sigrika': { x: 0, y: -26, zoom: 180 },
+    'collection-Lynae': { x: -12, y: -28, zoom: 190 },
+    'collection-Sigrika': { x: 2, y: -26, zoom: 180 },
+    'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
     'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
     // 4★ Resonators
     'collection-Aalto': { x: 4, y: -24, zoom: 210 },
@@ -615,7 +616,7 @@ function WhisperingWishesInner() {
     'info-Calcharo': { x: -24, y: -68, zoom: 250 },
     'info-Aemeath': { x: -26, y: -60, zoom: 230 },
     'info-Lynae': { x: -14, y: -62, zoom: 210 },
-    'info-Sigrika': { x: -10, y: -54, zoom: 210 },
+    'info-Sigrika': { x: -8, y: -60, zoom: 210 },
     'info-Chisa': { x: -30, y: -66, zoom: 230 },
     'info-Iuno': { x: -18, y: -56, zoom: 190 },
     'info-Augusta': { x: -12, y: -64, zoom: 250 },
