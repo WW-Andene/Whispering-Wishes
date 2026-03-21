@@ -887,7 +887,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .luck-badge {
       position: relative;
       overflow: hidden;
-      padding: 3px;
+      padding: 2px;
     }
     .luck-badge::before {
       content: '';
@@ -897,8 +897,9 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 200%;
       height: 200%;
       background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
-      animation: badgeRotate 8s linear infinite;
-      opacity: 0.8;
+      animation: badgeRotate var(--badge-speed, 12s) linear infinite;
+      opacity: 0.7;
+      filter: blur(4px);
     }
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
@@ -2250,10 +2251,10 @@ const KuroStyles = memo(({ oledMode }) => (
       100% { opacity: 1; box-shadow: var(--shadow-sm); }
     }
 
-    /* Luck badge: magnified */
+    /* Luck badge: stronger glow */
     .animations-full .luck-badge::before {
-      opacity: 1;
-      animation-duration: 4s;
+      opacity: 0.9;
+      filter: blur(3px);
     }
 
     /* Pulse subtle: more pronounced */
