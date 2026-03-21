@@ -401,6 +401,13 @@ const KuroStyles = memo(({ oledMode }) => (
   <style>{`
     /* ══════════════════════════════════════════════════════════════════════
        LAHAI-ROI DESIGN LANGUAGE - Black, White, Gold
+       ══════════════════════════════════════════════════════════════════════
+       BI-F1: BRAND GUIDELINES
+       Protected elements: Gold #edaf18, Navy void #080c14, Rajdhani display font
+       Emotional target: Tactical precision meets gacha anticipation
+       Visual signatures: Corner bracket frames, glassmorphic cards, gold glow accents
+       Archetype: Magician (transformation) + Sage (data mastery)
+       Voice: Game-lore tone ("Awaiting signal resonance" not "No data found")
        ══════════════════════════════════════════════════════════════════════ */
     
     /* Global - prevent white flash, hide scrollbars on mobile */
@@ -455,8 +462,8 @@ const KuroStyles = memo(({ oledMode }) => (
       --shadow-md: 0 0 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
       --shadow-lg: 0 0 24px rgba(6, 10, 24, 0.7), 0 0 12px rgba(var(--color-gold), 0.05);
       --shadow-xl: 0 0 40px rgba(6, 10, 24, 0.8), 0 0 16px rgba(var(--color-gold), 0.06);
-      --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-      --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-fast: 0.1s cubic-bezier(0.16, 1, 0.3, 1);   /* TR-F1: Tightened from 0.15s */
+      --transition-normal: 0.18s cubic-bezier(0.16, 1, 0.3, 1); /* TR-F1: Tightened from 0.25s */
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       /* Z-index scale: bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000) */
       --text-body: #dfe5ef;
@@ -496,6 +503,11 @@ const KuroStyles = memo(({ oledMode }) => (
       --space-md: 12px;
       --space-lg: 16px;
       --space-xl: 24px;
+      /* TK-F2: Component-level token abstraction */
+      --card-radius: 16px;
+      --card-padding: 14px;
+      --btn-radius: 8px;
+      --stat-radius: 12px;
       /* CL-F2: Palette-calibrated semantic state colors */
       --state-error: #f87171;   /* oklch(68% 0.18 15°) — cooler red */
       --state-success: #2dd4bf; /* oklch(72% 0.16 170°) — teal-shifted green */
@@ -961,7 +973,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* §E9-AG-F3: Override Tailwind transition-colors timing with branded curve */
     .transition-colors {
-      transition-duration: 0.15s !important;
+      transition-duration: 0.1s !important;
       transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
 
@@ -1360,7 +1372,10 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ LABELS - Bright for readability ═══ */
-    /* E4-HH2: Font micro-scale (8–12px) is intentional "instrument display" density.
+    /* TY-F2: Type scale — Primary: 14px base × 1.125 Major Second (14→16→18→20→24→30).
+       Micro "instrument display" range (8–12px) is linear by design for data-dense UIs.
+       PS-F1: 10px is the floor for functional text; 9px reserved for decorative labels only.
+       E4-HH2: Font micro-scale (8–12px) is intentional "instrument display" density.
        8px: badge counters, star indicators   9px: metadata, timestamps
        10px: labels, categories, button text  11px: secondary info (snapped to 12px)
        12px: compact body text                14px: primary values, card content */
@@ -1670,6 +1685,89 @@ const KuroStyles = memo(({ oledMode }) => (
         transform: none !important;
         filter: none !important;
       }
+    }
+
+    /* CP-F1: Increase between-section spacing ratio (3-5× component gap) */
+    .kuro-calc > .space-y-3 > * + * {
+      margin-top: 12px;
+    }
+
+    /* DV-F1 + SR-F1: Angular corner brackets on featured cards (WuWa-inspired) */
+    .card-featured {
+      position: relative;
+      border-left: 2px solid rgba(237, 175, 24, 0.5);
+    }
+    .card-featured::before,
+    .card-featured::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-color: rgba(237, 175, 24, 0.4);
+      border-style: solid;
+    }
+    .card-featured::before {
+      top: -1px;
+      left: -1px;
+      border-width: 2px 0 0 2px;
+    }
+    .card-featured::after {
+      bottom: -1px;
+      right: -1px;
+      border-width: 0 2px 2px 0;
+    }
+
+    /* SR-F1: Wave-pattern section divider */
+    .kuro-wave-divider {
+      height: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        rgba(237, 175, 24, 0.15) 4px,
+        transparent 8px,
+        rgba(140, 160, 200, 0.08) 12px,
+        transparent 16px
+      );
+      border-radius: 2px;
+      margin: 16px 0;
+    }
+
+    /* CD-F1: Purpose-based card variants */
+    .card-data {
+      padding: 10px;
+    }
+    .card-action {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* IN-F1: Filled-state visual distinction for inputs */
+    .kuro-input:not(:placeholder-shown) {
+      border-color: var(--border-hover);
+      background: rgba(15, 20, 28, 0.95);
+    }
+
+    /* TB-F1: Table row hover feedback */
+    @media (hover: hover) {
+      .pull-log-row:hover,
+      .kuro-calc tr:hover {
+        background: rgba(237, 175, 24, 0.04) !important;
+      }
+    }
+
+    /* FB-F1: Delete/removal slide-out animation */
+    @keyframes kuroSlideOut {
+      from { opacity: 1; transform: translateX(0); max-height: 100px; }
+      to { opacity: 0; transform: translateX(-20px); max-height: 0; overflow: hidden; }
+    }
+    .kuro-slide-out {
+      animation: kuroSlideOut 0.2s ease-out forwards;
+    }
+
+    /* RS-F1: Responsive typography compression for narrow viewports */
+    @media (max-width: 768px) {
+      .text-5xl { font-size: 36px !important; }
+      .text-4xl { font-size: 30px !important; }
+      .text-2xl { font-size: 20px !important; }
     }
 
     /* §DST1: Ghost-grid placeholder cells for collection empty state */

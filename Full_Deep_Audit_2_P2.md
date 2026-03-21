@@ -6657,9 +6657,9 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 
 | §E10 Finding | Connected Prior Finding | Relationship |
 |-------------|----------------------|--------------|
-| §E10-NV-F3 (Stats missing kuro-number) | §E8-TK-F2 (typography token gaps) | Same root cause — `kuro-number` was designed but not propagated to all numeric surfaces |
-| §E10-NF-F2 (Stats missing kuro-number) | §E8-TK-F2 | Duplicate of NV-F3 from a formatting angle — reinforce priority |
-| §E10-DT-F1 (tables missing kuro-number) | §E8-TK-F2 | Third instance — `kuro-number` needs a systematic audit-and-apply pass |
+| §E10-NV-F3 (Stats missing kuro-number) | §E8-TK-F2 ✅ (typography token gaps) | Same root cause — `kuro-number` was designed but not propagated to all numeric surfaces |
+| §E10-NF-F2 (Stats missing kuro-number) | §E8-TK-F2 ✅ | Duplicate of NV-F3 from a formatting angle — reinforce priority |
+| §E10-DT-F1 (tables missing kuro-number) | §E8-TK-F2 ✅ | Third instance — `kuro-number` needs a systematic audit-and-apply pass |
 | §E10-CH-F1 (chart missing tooltips) | §E7-IN-F2 (interaction feedback gaps) | Charts lack the hover feedback that buttons and cards already have |
 | §E10-EP-F1 (clinical empty states) | §E9-VE-F7 (empty states lack brand personality) | Same finding from visual identity angle — empty states are generic |
 | §E10-RD-F3 (tab scroll affordance) | §E7-IN-F4 (horizontal scroll missing indicators) | Same affordance gap in tab navigation |
@@ -7369,7 +7369,7 @@ Per §LIGHT: "Choose one light source direction. Apply it to ALL depth elements.
 
 ### Findings
 
-**CP-F1 — Section-to-component gap ratio is too low** [LOW]
+**CP-F1 ✅ — Section-to-component gap ratio is too low** [LOW]
 
 - **Evidence**: Between-section gap ≈16-24px. Within-component gap ≈ 8-12px. Ratio is ~2×. Per §COMPOSITION: "gap BETWEEN sections = 3-5× gap WITHIN components."
 - **Impact**: Sections blend together visually. The user must rely on card borders and headings to distinguish sections rather than spatial rhythm alone.
@@ -7437,7 +7437,7 @@ Per §LIGHT: "Choose one light source direction. Apply it to ALL depth elements.
   }
   ```
 
-**TK-F2 — No component-level token abstraction** [LOW]
+**TK-F2 ✅ — No component-level token abstraction** [LOW]
 
 - **Evidence**: Component visual properties are hardcoded as Tailwind classes. A button uses `rounded-lg p-2 bg-[rgba(15,20,28,0.85)]` directly. No `--btn-radius`, `--btn-padding`, `--btn-bg` tokens exist.
 - **Impact**: Component visual updates require grep-and-replace across thousands of lines. A single "make all cards slightly more rounded" request would require touching ~50+ locations.
@@ -7474,7 +7474,7 @@ The atmosphere is built BEFORE components (canvas renders behind everything, gla
 
 ### Findings
 
-**AT-F1 — Atmosphere has no CSS fallback layer** [LOW]
+**AT-F1 ✅ — Atmosphere has no CSS fallback layer** [LOW]
 
 - **Evidence**: The atmospheric depth (BackgroundGlow, TriangleMirrorWave) is entirely canvas-based. If JavaScript fails, if canvas is unsupported, or if reduced-motion disables the animation, the atmosphere becomes flat #080c14. Cross-references TX-F1 ✅ (same root issue).
 - **Solution**: (Same as TX-F1 ✅) Add a CSS radial-gradient fallback that renders the warm bottom glow without JavaScript:
@@ -7515,7 +7515,7 @@ The app's art direction IS derived from the subject matter. The cyberpunk-luxe a
 
 ### Findings
 
-**DV-F1 — No explicit game-world visual references beyond color** [LOW]
+**DV-F1 ✅ — No explicit game-world visual references beyond color** [LOW]
 
 - **Evidence**: The domain connection is expressed through: palette (dark + gold), terminology (pity, Convene, Astrite, Resonator), and element colors. But there are no visual motifs drawn from the game's actual UI patterns (the angular frames, the characteristic wave patterns, the Resonance system's visual language).
 - **Impact**: The app reads as "dark gold tracker" rather than "this is clearly a Wuthering Waves tool." Players who are deeply familiar with WuWa's UI may not feel the visual kinship beyond the color palette.
@@ -7712,7 +7712,7 @@ Mapping current type system to the §HIERARCHY template:
   .text-xl { letter-spacing: -0.01em; }
   ```
 
-**TY-F2 — Type scale lacks consistent ratio** [LOW]
+**TY-F2 ✅ — Type scale lacks consistent ratio** [LOW]
 
 - **Evidence**: Sizes 8/9/10/11/12/14/16/18/20/24/48px — the small end is nearly linear (1px steps), while larger sizes approximate various ratios. Per §SCALE: choose one ratio and generate all sizes from a base.
 - **Impact**: The scale works functionally (sizes are differentiated) but lacks the mathematical coherence of a designed scale. The 8/9/10/11px cluster is especially tight — four sizes spanning only 3px.
@@ -7795,11 +7795,11 @@ These sections evaluate how well the app's art direction traces to its source ma
 
 ### Findings
 
-**SR-F1 — Two key game motifs not transferred to tracker** [LOW]
+**SR-F1 ✅ — Two key game motifs not transferred to tracker** [LOW]
 
 - **Evidence**: Angular frame treatments (Layer 1) and musical/wave motifs (Layer 3) are defining elements of WuWa's visual identity that don't appear in the tracker. The TriangleMirrorWave canvas animation is the closest to a wave motif but it's subtle background texture, not a deliberate visual reference.
 - **Impact**: The tracker authenticates as "WuWa-related" through color and terminology but misses two visual hooks that would strengthen the kinship.
-- **Solution**: (1) Angular corner brackets on featured cards (detailed in DV-F1 above). (2) A subtle wave-pattern divider between major sections:
+- **Solution**: (1) Angular corner brackets on featured cards (detailed in DV-F1 ✅ above). (2) A subtle wave-pattern divider between major sections:
   ```css
   .section-divider {
     height: 2px;
@@ -7966,7 +7966,7 @@ Mapping the 5 root causes to Whispering Wishes:
 
 ### Findings
 
-**BT-F1 — Focus-visible styling exists but excludes anchor links and role="button"** [LOW]
+**BT-F1 ✅ — Focus-visible styling exists but excludes anchor links and role="button"** [LOW]
 
 - **Evidence**: Global `:focus-visible` IS defined (appcore-providers.jsx:502-509) for `button`, `select`, `input`, `textarea` with gold outline + glow. However, `<a>` elements and `[role="button"]` elements are NOT covered by this rule. Keyboard focus on link-buttons or div-buttons would show browser defaults.
 - **Impact**: Minor gap — most interactive elements are actual `<button>` elements, but any anchor or div acting as a button would miss the gold focus ring.
@@ -7980,7 +7980,7 @@ Mapping the 5 root causes to Whispering Wishes:
   }
   ```
 
-**BT-F2 — No loading spinner-in-button pattern** [LOW]
+**BT-F2 ✅ — No loading spinner-in-button pattern** [LOW]
 
 - **Evidence**: Buttons that trigger async operations (Import, Save, Export) show text changes but no spinner animation inside the button while loading. Button width is not preserved during loading state.
 - **Solution**: Create a `KuroButtonSpinner` component that replaces button text with a small accent-colored spinner while preserving min-width:
@@ -8005,7 +8005,7 @@ Mapping the 5 root causes to Whispering Wishes:
 
 ### Findings
 
-**CD-F1 — Cards lack purpose-based visual differentiation** [LOW]
+**CD-F1 ✅ — Cards lack purpose-based visual differentiation** [LOW]
 
 - **Evidence**: Banner cards, stat cards, event cards, collection cards all use the same glassmorphic treatment with identical bg opacity, border, and radius. Per §CARDS: "Vary cards by purpose: featured cards larger, data cards denser, action cards have accent border."
 - **Impact**: Visual monotony — every section looks the same at a distance. Users must read content to distinguish card types rather than recognizing them by visual treatment.
@@ -8031,7 +8031,7 @@ The input personality is **carved** (inset into surface) — matching §INPUTS' 
 
 ### Findings
 
-**IN-F1 — No filled-state visual distinction** [LOW]
+**IN-F1 ✅ — No filled-state visual distinction** [LOW]
 
 - **Evidence**: Empty and filled inputs look identical. Per §INPUTS: "Filled: Distinct from empty rest — slight bg tone change or persistent label."
 - **Solution**: Add a subtle visual cue for populated inputs:
@@ -8118,7 +8118,7 @@ Per §TABLES:
 
 ### Findings
 
-**TB-F1 — Table rows lack hover feedback** [LOW]
+**TB-F1 ✅ — Table rows lack hover feedback** [LOW]
 
 - **Evidence**: Pull Log and other data tables have no row hover highlighting. Per §TABLES: "subtle hover with accent tint (not gray)."
 - **Solution**:
@@ -8181,7 +8181,7 @@ Per §TABLES:
 
 Per §FOCUS: "Replace browser default. Use `:focus-visible` (keyboard only, not mouse clicks). NEVER remove focus styles without replacing them."
 
-**Assessment**: PASS — focus styling is designed and uses the accent color. Minor gap: `<a>` and `[role="button"]` elements are not covered (see BT-F1).
+**Assessment**: PASS — focus styling is designed and uses the accent color. Minor gap: `<a>` and `[role="button"]` elements are not covered (see BT-F1 ✅).
 
 ### §ACTIVE — Press Physics Assessment
 
@@ -8205,7 +8205,7 @@ Per §ACTIVE: `translateY(1px) scale(0.98)` with shadow shrinking. Current `scal
 
 ### Findings
 
-**TR-F1 — Transition durations are consistently too slow** [LOW]
+**TR-F1 ✅ — Transition durations are consistently too slow** [LOW]
 
 - **Evidence**: Multiple interaction durations exceed the §TRANSITIONS upper bounds. Transform hovers at 250ms (should be ≤180ms), entrances at 300-400ms (should be ≤250ms), micro-feedback at 150ms (should be ≤120ms).
 - **Impact**: The interface feels slightly sluggish. For an expert-audience precision tool, interactions should feel snappy. The current timings are closer to a "premium/luxury" feel which partially conflicts with the "precision instrument" character.
@@ -8266,7 +8266,7 @@ Per §STAGGER: "Delay per item: 30-50ms. Total cap: 150ms regardless of count."
 
 ### Findings
 
-**FB-F1 — No delete/removal animation** [LOW]
+**FB-F1 ✅ — No delete/removal animation** [LOW]
 
 - **Evidence**: When items are removed (pull log entries cleared, events marked done), they disappear instantly with no exit animation. Per §FEEDBACK: "Delete: item exit (slide/fade) at 200ms."
 - **Solution**: Add a slide-out animation for removed items:
@@ -8356,7 +8356,7 @@ The app is web-only (no native apps, no email, no social templates), so cross-co
 
 ### Findings
 
-**BI-F1 — No explicit brand guidelines document** [LOW]
+**BI-F1 ✅ — No explicit brand guidelines document** [LOW]
 
 - **Evidence**: Protected elements and brand rules exist only implicitly in code. No design token documentation, no brand guideline reference, no "what to change vs what to protect" guide.
 - **Impact**: Future contributors may unknowingly modify protected elements. As the project grows, brand consistency becomes harder to maintain without explicit documentation.
@@ -8421,7 +8421,7 @@ Per §GRID:
 
 ### Findings
 
-**VW-F1 — Stats tab lacks a clear focal point** [LOW]
+**VW-F1 ✅ — Stats tab lacks a clear focal point** [LOW]
 
 - **Evidence**: Stats tab shows multiple charts, stat grids, and data tables at similar visual weight. No single element is clearly the primary focal point.
 - **Impact**: Users must scan the entire tab to find the most important information. First-time visitors may feel overwhelmed by the competing visual elements.
@@ -8493,7 +8493,7 @@ Per §GRID:
 
 ### Findings
 
-**RS-F1 — No responsive typography compression** [LOW]
+**RS-F1 ✅ — No responsive typography compression** [LOW]
 
 - **Evidence**: Display sizes (text-5xl = 48px, text-2xl = 24px) remain constant across all viewports. Per §RESPONSIVE: "compress display sizes (3xl-5xl reduce 15-25%) while keeping body constant."
 - **Solution**:
@@ -8622,7 +8622,7 @@ Mapping to §EMOTION-MAP's "Focus" + "Power" hybrid:
 | Teams | Team cards | Team suggestions | Filters | PARTIAL |
 | Profile | Settings form | Data management | Version info | YES |
 
-**Assessment**: Tracker, Events, and Profile tabs have clear attention budgets. Stats, Collection, and Planner tabs have competing elements. Already identified in VW-F1.
+**Assessment**: Tracker, Events, and Profile tabs have clear attention budgets. Stats, Collection, and Planner tabs have competing elements. Already identified in VW-F1 ✅.
 
 ### §COGNITIVE — Cognitive Load Assessment
 
@@ -8660,7 +8660,7 @@ Mapping to §EMOTION-MAP's "Focus" + "Power" hybrid:
 
 ### Findings
 
-**PS-F1 — "Respects intelligence" value contradicted by 9px text** [LOW]
+**PS-F1 ✅ — "Respects intelligence" value contradicted by 9px text** [LOW]
 
 - **Evidence**: The "respects your intelligence" value is expressed through dense data, but text at 9px on mobile actively harms readability. Per §VALUES: "Contradictions create subconscious distrust."
 - **Impact**: Users feel respected by the data density but disrespected by the text size. This is a subtle tension.
@@ -8732,7 +8732,7 @@ Per §DEMOGRAPHICS Gen Z response:
 | Contrast 4.5:1 min (text) | PASS | Primary text #edf1f8 on #080c14 ≈ 13:1 |
 | Contrast 3:1 (large text, UI) | PASS | Gold on dark > 3:1. Muted text #8f99ab on #080c14 ≈ 4.5:1 |
 | Color not sole meaning | PARTIAL | Rarity uses color+star count. Element types use color+name. Some states rely on color alone. |
-| Focus visible | FAIL | No designed :focus-visible (see BT-F1) |
+| Focus visible | FAIL | No designed :focus-visible (see BT-F1 ✅) |
 | `prefers-reduced-motion` | PARTIAL | CSS animations covered (7 instances), canvas animations NOT covered (see CK-F3) |
 | Min 16px body (mobile) | FAIL | Body text at 14px (`text-sm`), micro text at 9-10px |
 | Line-height 1.4-1.6 | PASS | Default Tailwind body line-height |
@@ -8746,7 +8746,7 @@ Per §DEMOGRAPHICS Gen Z response:
 
 **AC-F1 — Accessibility score 5/10** [MEDIUM]
 
-- **Evidence**: Five accessibility checks fail: focus-visible, reduced-motion coverage, body text size, line width, touch targets. These are documented individually in BT-F1, CK-F2 ✅, CK-F3, TY-F4.
+- **Evidence**: Five accessibility checks fail: focus-visible, reduced-motion coverage, body text size, line width, touch targets. These are documented individually in BT-F1 ✅, CK-F2 ✅, CK-F3, TY-F4.
 - **Impact**: Keyboard users, motion-sensitive users, and mobile users face barriers. While the expert audience may tolerate some of these, accessibility is a baseline requirement regardless of audience expertise.
 - **Solution**: Priority fix order: (1) :focus-visible global rule — 1 CSS declaration, fixes keyboard nav. (2) Touch targets — add min-h-[44px] to interactive elements. (3) Canvas reduced-motion check — one JS condition. (4) Body text floor at 14px — already at 14px but micro text needs 10px floor. (5) Max-width 65ch on prose — simple CSS.
 
@@ -8912,36 +8912,36 @@ Competitive positioning map:
 | TX-F1 ✅ | §TEXTURE | No static texture layer exists | LOW |
 | LT-F1 ✅ | §LIGHT | Light source direction is ambiguous | LOW |
 | SH-F1 ✅ | §SHAPE | No non-rectangular elements exist | LOW |
-| CP-F1 | §COMPOSITION | Section-to-component gap ratio too low | LOW |
+| CP-F1 ✅ | §COMPOSITION | Section-to-component gap ratio too low | LOW |
 | CP-F2 | §COMPOSITION | No asymmetric/golden-ratio layout splits | POLISH |
 | TK-F1 | §TOKENS | No primitive token layer | MEDIUM |
-| TK-F2 | §TOKENS | No component-level token abstraction | LOW |
-| AT-F1 | §ATMOSPHERE | No CSS fallback layer | LOW |
-| DV-F1 | §DERIVE | No game-world visual references beyond color | LOW |
-| SR-F1 | §SOURCE | Two key game motifs not transferred | LOW |
+| TK-F2 ✅ | §TOKENS | No component-level token abstraction | LOW |
+| AT-F1 ✅ | §ATMOSPHERE | No CSS fallback layer | LOW |
+| DV-F1 ✅ | §DERIVE | No game-world visual references beyond color | LOW |
+| SR-F1 ✅ | §SOURCE | Two key game motifs not transferred | LOW |
 | AS-F1 | §ANTI-SLOP | Score 24/28 in "fix" range | MEDIUM |
 | TY-F1 | §TYPOGRAPHY | No negative tracking on display/heading | MEDIUM |
-| TY-F2 | §TYPOGRAPHY | Type scale lacks consistent ratio | LOW |
+| TY-F2 ✅ | §TYPOGRAPHY | Type scale lacks consistent ratio | LOW |
 | TY-F3 | §TYPOGRAPHY | No `text-wrap: balance` on headings | POLISH |
 | TY-F4 | §TYPOGRAPHY | No `max-width: 65ch` for prose | POLISH |
-| BT-F1 | §BUTTONS | Focus-visible excludes anchor/role="button" | LOW |
-| BT-F2 | §BUTTONS | No loading spinner-in-button pattern | LOW |
-| CD-F1 | §CARDS | Cards lack purpose-based differentiation | LOW |
-| IN-F1 | §INPUTS | No filled-state visual distinction | LOW |
-| TB-F1 | §TABLES | Table rows lack hover feedback | LOW |
+| BT-F1 ✅ | §BUTTONS | Focus-visible excludes anchor/role="button" | LOW |
+| BT-F2 ✅ | §BUTTONS | No loading spinner-in-button pattern | LOW |
+| CD-F1 ✅ | §CARDS | Cards lack purpose-based differentiation | LOW |
+| IN-F1 ✅ | §INPUTS | No filled-state visual distinction | LOW |
+| TB-F1 ✅ | §TABLES | Table rows lack hover feedback | LOW |
 | TB-F2 | §TABLES | Number alignment inconsistent | POLISH |
 | HV-F1 | §HOVER | Button hover scale too aggressive | POLISH |
 | HV-F2 | §HOVER | Hover enter/exit timing is symmetric | POLISH |
-| TR-F1 | §TRANSITIONS | Durations consistently too slow | LOW |
+| TR-F1 ✅ | §TRANSITIONS | Durations consistently too slow | LOW |
 | ST-F1 | §STAGGER | Card stagger has no delay cap | POLISH |
-| FB-F1 | §FEEDBACK | No delete/removal animation | LOW |
-| VW-F1 | §WEIGHT | Stats tab lacks clear focal point | LOW |
+| FB-F1 ✅ | §FEEDBACK | No delete/removal animation | LOW |
+| VW-F1 ✅ | §WEIGHT | Stats tab lacks clear focal point | LOW |
 | PF-F1 | §PERFORMANCE | `backdrop-filter: blur()` on many elements | MEDIUM |
-| RS-F1 | §RESPONSIVE | No responsive typography compression | LOW |
-| PS-F1 | §PSYCHOLOGY | "Respects intelligence" contradicted by 9px | LOW |
+| RS-F1 ✅ | §RESPONSIVE | No responsive typography compression | LOW |
+| PS-F1 ✅ | §PSYCHOLOGY | "Respects intelligence" contradicted by 9px | LOW |
 | AU-F1 | §AUDIENCE | No undo for destructive actions | MEDIUM |
 | AC-F1 | §ACCESSIBILITY | Accessibility score 5/10 | MEDIUM |
-| BI-F1 | §BRAND | No explicit brand guidelines document | LOW |
+| BI-F1 ✅ | §BRAND | No explicit brand guidelines document | LOW |
 | WB-F1 | §WEB | Token system lacks 3-layer architecture | MEDIUM |
 | WB-F2 | §WEB | No OKLCH fallback pattern | POLISH |
 
@@ -8980,7 +8980,7 @@ Competitive positioning map:
 
 | This Finding | Related Prior Finding | Relationship |
 |---|---|---|
-| BT-F1 (focus-visible) | §E6/§E7 interaction findings | Same root issue: missing keyboard navigation feedback |
+| BT-F1 ✅ (focus-visible) | §E6/§E7 interaction findings | Same root issue: missing keyboard navigation feedback |
 | CK-F2 ✅ (touch targets) | §E10-NV-F1 (9px text) | Same root: small interactive elements |
 | CK-F3 (reduced-motion) | §E6 interaction findings | Accessibility gap extends to canvas layer |
 | TK-F1 (no primitive tokens) | §E1 (P1 Step 8) token system | Deepens the token architecture analysis |
@@ -8991,7 +8991,7 @@ Competitive positioning map:
 
 ### Top 3 Highest-Impact Fixes
 
-1. **Global `:focus-visible` rule** (fixes BT-F1, improves AC-F1): One CSS declaration adds keyboard navigation visibility across the entire app. Addresses accessibility, anti-slop score, and professional completeness simultaneously.
+1. **Global `:focus-visible` rule** (fixes BT-F1 ✅, improves AC-F1): One CSS declaration adds keyboard navigation visibility across the entire app. Addresses accessibility, anti-slop score, and professional completeness simultaneously.
    ```css
    :focus-visible { outline: none; box-shadow: 0 0 0 2px #080c14, 0 0 0 4px rgba(237,175,24,0.6); }
    ```
@@ -9033,7 +9033,7 @@ Competitive positioning map:
 | C3 | §E4-LH1 PASS: "Line height system well-calibrated" | §E4-LH2 ✅ LOW: "Small text (8-9px) relies on default line-height" | Same step says line height is both "well-calibrated" and has a gap | **No contradiction.** The system-level line height tiers (1.1/1.3/1.4/1.5/1.6) are well-calibrated. The 8-9px text is an edge case outside the system where no explicit line-height is set. Both findings stand — the system is good, but it doesn't cover the smallest text. |
 | C4 | §E3-WC1 PASS: "WCAG AA 100% (22/22 combinations)" | §E3-NC1 MEDIUM: "Input border 2.1:1 fails WCAG 1.4.11" | E3 says 100% WCAG pass but also has a WCAG failure | **No contradiction.** WC1 tests text contrast (WCAG 1.4.3, SC 4.5:1). NC1 tests non-text contrast (WCAG 1.4.11, SC 3:1). Different WCAG criteria with different thresholds. Text passes; non-text UI components have a gap. |
 | C5 | §DBI3-S05 PASS: "Shadow system fully custom + color glows" | §E1-SHD1 ✅ LOW: "4 shadow tokens defined, only 1 used — 34 hardcoded values" | DBI3 says shadow system is fully custom; E1 says tokens are underused | **No contradiction.** The shadow *values* are indeed custom (color-matched to #060a18, not generic black). But the shadow *tokens* that wrap those values are underused. The design intent is custom; the implementation is ad-hoc. ✅ Shadow tokens now applied to kuro-card (--shadow-lg) and kuro-stat (--shadow-sm). |
-| C6 | §E5-CT1 PASS: "Card system — crown jewel" | §CD-F1 LOW (Step 18): "Cards lack purpose-based differentiation" | Step 12 says cards are the strongest element; Step 18 says they lack differentiation | **No contradiction.** Cards are the crown jewel in terms of *craft* (multi-layer glass, shimmer, corner decorations). They lack differentiation in terms of *semantic purpose* (data card vs settings card vs collection card all look identical). Excellent execution, but no semantic hierarchy. Both are true. |
+| C6 | §E5-CT1 PASS: "Card system — crown jewel" | §CD-F1 ✅ LOW (Step 18): "Cards lack purpose-based differentiation" | Step 12 says cards are the strongest element; Step 18 says they lack differentiation | **No contradiction.** Cards are the crown jewel in terms of *craft* (multi-layer glass, shimmer, corner decorations). They lack differentiation in terms of *semantic purpose* (data card vs settings card vs collection card all look identical). Excellent execution, but no semantic hierarchy. Both are true. |
 
 ### 19.1.2 — Genuine Contradictions Requiring Reconciliation
 
@@ -9131,7 +9131,7 @@ Competitive positioning map:
 | # | Topic | Where Mentioned | What Was Said | What's Missing | Severity of Gap | Solution |
 |---|-------|----------------|---------------|----------------|----------------|----------|
 | G1 | **OLED mode visual hierarchy preservation** | §DC3-OLED1 ✅ (Step 6): "OLED collapses all surfaces to 0%" | The finding notes that OLED mode collapses surface elevation to pure black, but doesn't audit whether the *visual hierarchy* still functions in OLED mode | **No step performed a dedicated OLED-mode walkthrough** across all 8 tabs to verify that cards, modals, inputs, and backgrounds remain distinguishable when `--bg-card`, `--bg-card-inner`, `--bg-btn`, `--bg-input`, `--bg-stat` all collapse to `#000000` or near-black values | MEDIUM | **Perform an OLED hierarchy spot-check**: In OLED mode, surface differentiation relies entirely on borders (`--border-subtle` at rgba(255,255,255,0.06)) and shadows. Verify that: (1) Card edges remain visible against the OLED background, (2) Modal overlay contrast is sufficient, (3) Input fields are visually distinct from card surfaces. If hierarchy fails, increase OLED border opacity to `--border-subtle: 0.10` in OLED mode. |
-| G2 | **Keyboard navigation flow** | §BT-F1 (Step 18): "Focus-visible excludes anchor/role='button'" and §E6-MC3 (Step 13): reduced motion compliance | Focus ring styling is audited, but **tab order and keyboard navigation flow** across the 8-tab interface was never explicitly tested | No step verified: (1) Can a keyboard user navigate between tabs? (2) Is focus trapped in modals? (3) Does tab order follow visual order? (4) Are skip navigation links functional? | MEDIUM | **Audit keyboard flow**: The `index.html` skip-nav link (lines 42-45) exists. Focus trap in modals was mentioned as PASS (§E5-CT3). But systematic tab-order verification across all 8 tabs was not performed. **Recommendation**: Add to implementation checklist — verify `tabindex` ordering, ensure no focus traps outside modals, verify escape-key dismissal works for all overlays. |
+| G2 | **Keyboard navigation flow** | §BT-F1 ✅ (Step 18): "Focus-visible excludes anchor/role='button'" and §E6-MC3 (Step 13): reduced motion compliance | Focus ring styling is audited, but **tab order and keyboard navigation flow** across the 8-tab interface was never explicitly tested | No step verified: (1) Can a keyboard user navigate between tabs? (2) Is focus trapped in modals? (3) Does tab order follow visual order? (4) Are skip navigation links functional? | MEDIUM | **Audit keyboard flow**: The `index.html` skip-nav link (lines 42-45) exists. Focus trap in modals was mentioned as PASS (§E5-CT3). But systematic tab-order verification across all 8 tabs was not performed. **Recommendation**: Add to implementation checklist — verify `tabindex` ordering, ensure no focus traps outside modals, verify escape-key dismissal works for all overlays. |
 | G3 | **Service Worker cache strategy and its visual impact** | Step 1 §0: "Service Worker: Custom SW for offline/caching" | Service worker is listed as a tech stack component but never analyzed for its impact on visual freshness | **No step audited**: (1) What happens visually when the service worker serves stale content? (2) Is there a visual indicator for "offline mode"? (3) Does the update prompt have brand-consistent styling? The §VIII cross-cutting concern "Stale cache on deploy" is relevant but was not assessed visually | LOW | **Add to implementation scope**: Verify that (1) the SW update prompt uses the kuro-card + kuro-btn design system, (2) an "Offline" badge appears in the header or tab bar when the SW is serving cached content, (3) font/CSS files are cache-busted correctly to prevent style drift between versions. |
 | G4 | **External CDN image failure states** | §E5-CD3 PASS: "hideOnError fallback" and §E5-CD6 ✅ LOW: "hideOnError leaves empty space" | Image loading failures are noted in Step 12 but the visual impact of CDN failures across the Collection grid was not deeply analyzed | **No step simulated a full CDN outage** to check: (1) Does the Collection grid degrade gracefully with 50%+ failed images? (2) Is there a visual indicator distinguishing "loading" from "failed"? (3) Does the character detail modal show anything meaningful when its image fails? | LOW | **Add to implementation scope**: (1) Add a branded fallback placeholder (e.g., silhouette with "?" icon on #080c14 background) instead of empty space when `hideOnError` triggers. (2) Add a "retry" affordance or visual state for failed images. (3) Test Collection grid appearance with simulated CDN failure — ensure the ghost-grid pattern activates rather than showing broken image outlines. |
 | G5 | **Print stylesheet / PDF export appearance** | Not mentioned anywhere | A gacha tracker with Stats and Planner data might reasonably be printed or exported | **No step checked for `@media print` styles.** Dark backgrounds print poorly without explicit `@media print` adjustments (white backgrounds, dark text, hidden decorative elements) | LOW | **Add to implementation backlog**: If print support is desired, add a `@media print` stylesheet that: (1) Sets `background: white`, `color: black` on all containers, (2) Hides canvas animations and decorative overlays, (3) Shows all collapsed/tabbed content, (4) Uses `break-inside: avoid` on cards. If print is NOT needed, add a print-suppression rule: `@media print { body { display: none; } body::after { content: "Visit whisperingwishes.vercel.app"; display: block; } }` |
@@ -10105,7 +10105,7 @@ All three token values carry blue hue (≈250°), matching the background's chro
 
 Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual surface), then `--radius-sm` to buttons/inputs, then spacing tokens to card padding.
 
-**Cross-references**: E1-RAD1, E1-ZDX1, E7-AD2 ✅, TK-F1, TK-F2, WB-F1
+**Cross-references**: E1-RAD1, E1-ZDX1, E7-AD2 ✅, TK-F1, TK-F2 ✅, WB-F1
 
 ---
 
@@ -11112,23 +11112,23 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 108 | TX-F1 ✅ | No static texture layer (flat bg when canvas fails) | ALL | Add CSS radial-gradient fallback: subtle warm glow from bottom-center on `body::before` |
 | 109 | LT-F1 ✅ | Light source direction ambiguous across systems | ALL | Resolved by #107 (ambient light model) |
 | 110 | SH-F1 ✅ | No non-rectangular elements exist (zero clip-path/asymmetric radius) | ALL | Add asymmetric radius on tab active indicator: `border-radius: 12px 12px 0 0` |
-| 111 | CP-F1 | Section-to-component gap ratio too low (~2×, should be 3–5×) | ALL | Increase between-section spacing: `.section + .section { margin-top: 36px; }` |
-| 112 | TK-F2 | No component-level token abstraction | ALL | Add `--card-radius`, `--card-padding`, `--btn-radius` to `:root` (part of HIGH-3) |
-| 113 | AT-F1 | Atmosphere has no CSS fallback layer | ALL | Same as #108 — CSS radial-gradient fallback |
-| 114 | DV-F1 | No game-world visual references beyond color and terminology | ALL | Add angular corner brackets to featured cards (WuWa-inspired frame treatment) |
-| 115 | SR-F1 | Two key game motifs (angular frames, wave patterns) not transferred | ALL | (1) Corner brackets on cards (#114), (2) Wave-pattern section divider using repeating-linear-gradient |
-| 116 | TY-F2 | Type scale lacks consistent ratio | ALL | Accept current scale as functional; document primary (14px base, ×1.125 Major Second) and micro (8–11px instrument) scales |
-| 117 | BT-F1 | Focus-visible styling excludes `<a>` and `[role="button"]` elements | ALL | Extend existing `:focus-visible` rule to include `a:focus-visible, [role="button"]:focus-visible` |
-| 118 | BT-F2 | No loading spinner-in-button pattern | ALL | Create `KuroButtonSpinner` component with accent-colored spinner + preserved min-width |
-| 119 | CD-F1 | Cards lack purpose-based visual differentiation | ALL | Introduce 3 variants: `.card-featured` (gold border-left), `.card-data` (tighter padding), `.card-action` (lighter bg) |
-| 120 | IN-F1 | No filled-state visual distinction for inputs | ALL | Add subtle bg/border change on `input:not(:placeholder-shown)` |
-| 121 | TB-F1 | Table rows lack hover feedback | STATS | Add `.table-row:hover { background: rgba(237,175,24,0.04); }` |
-| 122 | TR-F1 | Transition durations consistently too slow (250ms hover, 150ms micro) | ALL | Tighten: `--transition-fast: 0.1s` (was 0.15s), `--transition-normal: 0.18s` (was 0.25s) |
-| 123 | FB-F1 | No delete/removal animation | ALL | Add `slideOut` keyframe: `opacity 0, translateX(-20px), height 0` at 200ms |
-| 124 | VW-F1 | Stats tab lacks clear focal point (competing charts) | STATS | Elevate Total Pulls or Luck Rating to hero treatment: `text-4xl kuro-number text-yellow-400` at top |
-| 125 | RS-F1 | No responsive typography compression | ALL | Add `@media (max-width: 768px)` rules: `text-5xl → 36px`, `text-2xl → 20px` |
-| 126 | PS-F1 | "Respects intelligence" value contradicted by 9px text | ALL | Establish 10px floor for all functional text; reserve 9px for purely decorative labels only |
-| 127 | BI-F1 | No explicit brand guidelines document | DOCS | Create `BRAND.md` listing protected elements, emotional target, and visual signature elements |
+| 111 | CP-F1 ✅ | Section-to-component gap ratio too low (~2×, should be 3–5×) | ALL | Increase between-section spacing: `.section + .section { margin-top: 36px; }` |
+| 112 | TK-F2 ✅ | No component-level token abstraction | ALL | Add `--card-radius`, `--card-padding`, `--btn-radius` to `:root` (part of HIGH-3) |
+| 113 | AT-F1 ✅ | Atmosphere has no CSS fallback layer | ALL | Same as #108 — CSS radial-gradient fallback |
+| 114 | DV-F1 ✅ | No game-world visual references beyond color and terminology | ALL | Add angular corner brackets to featured cards (WuWa-inspired frame treatment) |
+| 115 | SR-F1 ✅ | Two key game motifs (angular frames, wave patterns) not transferred | ALL | (1) Corner brackets on cards (#114), (2) Wave-pattern section divider using repeating-linear-gradient |
+| 116 | TY-F2 ✅ | Type scale lacks consistent ratio | ALL | Accept current scale as functional; document primary (14px base, ×1.125 Major Second) and micro (8–11px instrument) scales |
+| 117 | BT-F1 ✅ | Focus-visible styling excludes `<a>` and `[role="button"]` elements | ALL | Extend existing `:focus-visible` rule to include `a:focus-visible, [role="button"]:focus-visible` |
+| 118 | BT-F2 ✅ | No loading spinner-in-button pattern | ALL | Create `KuroButtonSpinner` component with accent-colored spinner + preserved min-width |
+| 119 | CD-F1 ✅ | Cards lack purpose-based visual differentiation | ALL | Introduce 3 variants: `.card-featured` (gold border-left), `.card-data` (tighter padding), `.card-action` (lighter bg) |
+| 120 | IN-F1 ✅ | No filled-state visual distinction for inputs | ALL | Add subtle bg/border change on `input:not(:placeholder-shown)` |
+| 121 | TB-F1 ✅ | Table rows lack hover feedback | STATS | Add `.table-row:hover { background: rgba(237,175,24,0.04); }` |
+| 122 | TR-F1 ✅ | Transition durations consistently too slow (250ms hover, 150ms micro) | ALL | Tighten: `--transition-fast: 0.1s` (was 0.15s), `--transition-normal: 0.18s` (was 0.25s) |
+| 123 | FB-F1 ✅ | No delete/removal animation | ALL | Add `slideOut` keyframe: `opacity 0, translateX(-20px), height 0` at 200ms |
+| 124 | VW-F1 ✅ | Stats tab lacks clear focal point (competing charts) | STATS | Elevate Total Pulls or Luck Rating to hero treatment: `text-4xl kuro-number text-yellow-400` at top |
+| 125 | RS-F1 ✅ | No responsive typography compression | ALL | Add `@media (max-width: 768px)` rules: `text-5xl → 36px`, `text-2xl → 20px` |
+| 126 | PS-F1 ✅ | "Respects intelligence" value contradicted by 9px text | ALL | Establish 10px floor for all functional text; reserve 9px for purely decorative labels only |
+| 127 | BI-F1 ✅ | No explicit brand guidelines document | DOCS | Create `BRAND.md` listing protected elements, emotional target, and visual signature elements |
 
 ---
 

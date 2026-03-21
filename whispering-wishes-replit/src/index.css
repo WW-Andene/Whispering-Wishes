@@ -50,8 +50,10 @@ body::before {
   isolation: isolate;
 }
 
-/* Accessible focus outlines */
-:focus-visible {
+/* Accessible focus outlines — BT-F1: Extended to a, [role="button"] */
+:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 3px; /* E3-AC2: 3px gap prevents gold-on-blue blending */
 }
