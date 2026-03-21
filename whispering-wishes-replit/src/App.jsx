@@ -3169,7 +3169,7 @@ function WhisperingWishesInner() {
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform">
+                <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
               </div>
@@ -5944,7 +5944,7 @@ function WhisperingWishesInner() {
                               <div className="flex flex-wrap gap-1">
                                 {warnings.map((w, i) => (
                                   <span key={i} className="text-[9px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
-                                    <AlertTriangle size={9} /> {w}
+                                    <AlertTriangle size={12} /> {w}
                                   </span>
                                 ))}
                               </div>
@@ -6507,7 +6507,7 @@ function WhisperingWishesInner() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
-                      <p className="text-gray-400 text-[9px] mt-0.5">Tap the <Crown size={9} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      <p className="text-gray-400 text-[9px] mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
                       {state.profile.profilePic && (
                         <button
                           onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}

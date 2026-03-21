@@ -319,6 +319,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     <div
       ref={focusTrapRef}
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
+      style={{ backdropFilter: 'blur(3px) brightness(0.7)', WebkitBackdropFilter: 'blur(3px) brightness(0.7)' }}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
@@ -452,10 +453,10 @@ const KuroStyles = memo(({ oledMode }) => (
        Fusion=Flame, Electro=Bolt, Aero=Wind, Glacio=Snowflake, Havoc=Spiral, Spectro=Star */
     :root {
       --color-gold: 237, 175, 24;   /* oklch(78% 0.17 85°) */
-      --color-pink: 236, 72, 153;   /* oklch(62% 0.22 350°) */
+      --color-pink: 236, 72, 153;   /* oklch(62% 0.22 350°) — §E9-CM-F1: Weapon banner domain color */
       --color-cyan: 56, 189, 248;   /* oklch(76% 0.14 230°) */
       --color-purple: 168, 85, 247; /* oklch(56% 0.24 295°) */
-      --color-emerald: 34, 197, 94; /* oklch(72% 0.19 155°) */
+      --color-emerald: 34, 197, 94; /* oklch(72% 0.19 155°) — BN-F5: Aero element green, game-domain override */
       --color-red: 248, 113, 113;   /* oklch(68% 0.18 25°) */
       /* DC3-SH1 + DP-F1: Ambient light model (0-offset blur-only) with subtle gold glow */
       --shadow-sm: 0 0 4px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
@@ -1687,6 +1688,63 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
 
+    /* CP-F2: Golden-ratio layout split for desktop Stats/Planner overview */
+    @media (min-width: 1024px) {
+      .desktop-grid-golden {
+        display: grid;
+        grid-template-columns: 1fr 0.618fr;
+        gap: 12px;
+      }
+    }
+
+    /* TY-F3: Balanced text wrapping on headings */
+    h1, h2, h3, .text-2xl, .text-xl {
+      text-wrap: balance;
+    }
+
+    /* TY-F4: Max width for prose readability */
+    .kuro-body p, .kuro-tooltip, [role="dialog"] p {
+      max-width: 65ch;
+    }
+
+    /* TB-F2: Number alignment in stat columns */
+    .kuro-calc td, .kuro-calc .kuro-stat-value {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* HV-F2: Asymmetric hover timing (fast enter, slow exit) */
+    .kuro-btn, .kuro-card, .collection-card {
+      transition-duration: 0.2s; /* slow exit */
+    }
+    @media (hover: hover) {
+      .kuro-btn:hover, .kuro-card:hover, .collection-card:hover {
+        transition-duration: 0.12s; /* fast enter */
+      }
+    }
+
+    /* ST-F1: Cap card stagger animation delay at 150ms */
+    .tab-content > * {
+      animation-delay: min(calc(var(--card-index, 0) * 40ms), 150ms);
+    }
+
+    /* WB-F2: OKLCH fallback pattern — for new colors, use:
+       .el { background: #hex; background: oklch(...); }
+       This ensures graceful degradation in browsers without OKLCH support. */
+
+    /* §E10-DT-F3: Semantic table styling */
+    [role="table"] {
+      width: 100%;
+    }
+    [role="columnheader"] {
+      font-weight: 600;
+      text-align: left;
+      font-size: 10px;
+      color: var(--text-body);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
     /* CP-F1: Increase between-section spacing ratio (3-5× component gap) */
     .kuro-calc > .space-y-3 > * + * {
       margin-top: 12px;
@@ -1738,6 +1796,11 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .card-action {
       background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* §E9-MO-F4: Branded transition timing for range sliders */
+    input[type="range"] {
+      transition: var(--transition-fast);
     }
 
     /* IN-F1: Filled-state visual distinction for inputs */

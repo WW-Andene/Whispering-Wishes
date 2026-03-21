@@ -5410,8 +5410,8 @@ Gold (#edaf18) connects to WuWa's visual identity:
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-AC-F1 ✅ | **LOW** | Purple (#a855f7) carries dual semantics: "4★ rarity" AND "Electro element" — minor cognitive ambiguity | **Accept as intentional**: In context, users will always know which meaning applies (collection view = rarity, character card = element). If needed, differentiate by using a slightly shifted purple for Electro element badges (e.g., `#9333ea` for element vs `#a855f7` for rarity) |
-| §E9-AC-F2 | **POLISH** | Favicon uses `#fbbf24` (Tailwind amber-400) instead of `#edaf18` (brand gold) — 2-hue offset | **Align favicon gold**: Change favicon.svg `fill` from `#fbbf24` to `#edaf18` to match the exact brand gold. This ensures the browser tab icon uses the same hue as the in-app accent |
-| §E9-AC-F3 | **POLISH** | Install prompt banner uses `from-yellow-500 to-amber-500` (Tailwind defaults) instead of brand gold `rgba(237,175,24,*)` | **Replace with brand tokens**: Use `background: linear-gradient(135deg, rgba(237,175,24,0.9), rgba(237,175,24,0.7))` instead of Tailwind color classes — ensures the install prompt is unmistakably branded |
+| §E9-AC-F2 ✅ | **POLISH** | Favicon uses `#fbbf24` (Tailwind amber-400) instead of `#edaf18` (brand gold) — 2-hue offset | **Align favicon gold**: Change favicon.svg `fill` from `#fbbf24` to `#edaf18` to match the exact brand gold. This ensures the browser tab icon uses the same hue as the in-app accent |
+| §E9-AC-F3 ✅ | **POLISH** | Install prompt banner uses `from-yellow-500 to-amber-500` (Tailwind defaults) instead of brand gold `rgba(237,175,24,*)` | **Replace with brand tokens**: Use `background: linear-gradient(135deg, rgba(237,175,24,0.9), rgba(237,175,24,0.7))` instead of Tailwind color classes — ensures the install prompt is unmistakably branded |
 
 ---
 
@@ -5656,7 +5656,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-IC-F1 | **HIGH** | Missing 192×192 and 512×512 PNG icons in manifest — Android PWA install will use a generic placeholder or degrade | **Generate PNG icon variants**: Create 192×192 and 512×512 PNGs from the SVG favicon. Add to manifest.webmanifest with `"purpose": "any maskable"`. Use a build script or manual export from the SVG |
-| §E9-IC-F2 | **MEDIUM** | Favicon uses `#fbbf24` (Tailwind amber) instead of brand gold `#edaf18` — the browser tab icon is technically off-brand | **Align favicon gold**: Change `fill="#fbbf24"` to `fill="#edaf18"` in favicon.svg. This is the same finding as §E9-AC-F2 — a single-line fix |
+| §E9-IC-F2 | **MEDIUM** | Favicon uses `#fbbf24` (Tailwind amber) instead of brand gold `#edaf18` — the browser tab icon is technically off-brand | **Align favicon gold**: Change `fill="#fbbf24"` to `fill="#edaf18"` in favicon.svg. This is the same finding as §E9-AC-F2 ✅ — a single-line fix |
 | §E9-IC-F3 | **MEDIUM** | Favicon uses `system-ui, sans-serif` font family — if Rajdhani is the brand font, the "W" letterform in the icon doesn't match the app's typography | **Use Rajdhani in favicon**: Either embed Rajdhani as a `<style>` in the SVG or render the "W" as a `<path>` traced from the Rajdhani glyph. This ensures the letterform is identical to in-app headings |
 | §E9-IC-F4 | **MEDIUM** | OG image points to external URL (`https://whisperingwishes.vercel.app/og-image.png`) — not version-controlled, could be outdated or missing | **Create local OG image**: Design a 1200×630px social card with brand elements (gold accent bar, dark navy background, "Whispering Wishes" text, optional character art). Save as `public/og-image.png` and update meta tags to relative path |
 | §E9-IC-F5 ✅ | **LOW** | No dedicated PWA splash screen design — relies on manifest icon + background_color | **Verify splash screen quality**: Test the PWA install on Chrome Android and check that the splash screen uses the gold "W" icon on `#080c14` background. If the icon looks too small, consider creating a larger splash-specific image |
@@ -5738,7 +5738,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | §E9-MO-F1 | **MEDIUM** | Desktop layout uses Material Design easing `cubic-bezier(0.4, 0, 0.2, 1)` instead of branded `cubic-bezier(0.16, 1, 0.3, 1)` — motion personality changes on desktop | **Unify easing**: Replace the desktop layout easing at appcore-providers.jsx:1615 with `var(--transition-slow)` or the branded cubic-bezier value. The motion should feel the same regardless of viewport |
 | §E9-MO-F2 | **LOW** | ~280 instances of Tailwind `transition-colors` use browser-default timing instead of branded motion tokens (same as §E9-AG-F3 ✅) | **Same solution as §E9-AG-F3**: Migrate to `transition: color var(--transition-fast)` to inject branded easing into every color transition |
 | §E9-MO-F3 | **LOW** | No `prefers-reduced-motion` handling for canvas animations (BackgroundGlow, TriangleMirrorWave) or CSS ambient animations (shimmer, pulses) | **Add reduced-motion respect**: Wrap canvas `requestAnimationFrame` loops in a `matchMedia('(prefers-reduced-motion: reduce)')` check; add `@media (prefers-reduced-motion: reduce) { .kuro-card::after { animation: none; } }` for CSS ambient animations |
-| §E9-MO-F4 | **POLISH** | Slider animation uses bare `0.15s` with no easing instead of `var(--transition-fast)` | **Apply branded token**: Replace slider transition with `transition: all var(--transition-fast)` to include the overshoot easing |
+| §E9-MO-F4 ✅ | **POLISH** | Slider animation uses bare `0.15s` with no easing instead of `var(--transition-fast)` | **Apply branded token**: Replace slider transition with `transition: all var(--transition-fast)` to include the overshoot easing |
 
 ---
 
@@ -5801,8 +5801,8 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-IG-F1 | **LOW** | Lucide's rounded-corner, friendly aesthetic is slightly misaligned with the cyberpunk-luxe precision identity — the icons are "nice" rather than "sharp" | **Accept with awareness**: Lucide's consistency and size hierarchy are more valuable than a niche icon set that matches the cyberpunk aesthetic exactly. The glow-on-hover effect compensates by adding the HUD feel. If future refinement is desired, consider Phosphor Icons (available in thin/bold weights with sharper geometry) as an alternative |
-| §E9-IG-F2 | **POLISH** | Icons at 9–10px size (appcore-components.jsx, App.jsx) may be below legibility threshold for some users — ultra-micro icons are hard to parse | **Set minimum icon size to 12px**: Replace `size={9}` and `size={10}` instances with `size={12}`. At 12px, Lucide icons remain crisp with 2px strokes. Below 12px, anti-aliasing artifacts reduce clarity |
-| §E9-IG-F3 | **POLISH** | Custom Canvas-drawn trophy icons (App.jsx:2209–2228) use hand-drawn paths that may not perfectly match Lucide's geometric precision | **Consider using Lucide equivalents**: Replace custom Canvas Crown/Sparkles/etc. with the equivalent Lucide icons rendered to Canvas via `drawImage`. This ensures geometric consistency across all icon contexts |
+| §E9-IG-F2 ✅ | **POLISH** | Icons at 9–10px size (appcore-components.jsx, App.jsx) may be below legibility threshold for some users — ultra-micro icons are hard to parse | **Set minimum icon size to 12px**: Replace `size={9}` and `size={10}` instances with `size={12}`. At 12px, Lucide icons remain crisp with 2px strokes. Below 12px, anti-aliasing artifacts reduce clarity |
+| §E9-IG-F3 ✅ | **POLISH** | Custom Canvas-drawn trophy icons (App.jsx:2209–2228) use hand-drawn paths that may not perfectly match Lucide's geometric precision | **Consider using Lucide equivalents**: Replace custom Canvas Crown/Sparkles/etc. with the equivalent Lucide icons rendered to Canvas via `drawImage`. This ensures geometric consistency across all icon contexts |
 
 ---
 
@@ -5867,8 +5867,8 @@ This creates a distinctive **temperature personality**: the app feels meditative
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E9-CM-F1 | **POLISH** | The pink accent (#ec4899) is the third most memorable color but has weaker brand association than gold — users may not immediately connect pink to "Weapon banner" | **Strengthen pink association**: When pink appears in Weapon banner context, pair it with a subtle text label or icon that reinforces the connection (e.g., a small Sword icon next to pink elements). This turns pink from "a color that appears" into "the Weapon color" |
-| §E9-CM-F2 | **POLISH** | Emerald (#34d399) for "Won 50/50" and "goal affordable" creates warm temperature intrusion in the otherwise cool palette | **Accept as intentional**: The warm-green warmth is semantically correct — "positive/success" should feel warm. No change needed; this is a deliberate semantic temperature shift |
+| §E9-CM-F1 ✅ | **POLISH** | The pink accent (#ec4899) is the third most memorable color but has weaker brand association than gold — users may not immediately connect pink to "Weapon banner" | **Strengthen pink association**: When pink appears in Weapon banner context, pair it with a subtle text label or icon that reinforces the connection (e.g., a small Sword icon next to pink elements). This turns pink from "a color that appears" into "the Weapon color" |
+| §E9-CM-F2 ✅ | **POLISH** | Emerald (#34d399) for "Won 50/50" and "goal affordable" creates warm temperature intrusion in the otherwise cool palette | **Accept as intentional**: The warm-green warmth is semantically correct — "positive/success" should feel warm. No change needed; this is a deliberate semantic temperature shift |
 
 ---
 
@@ -5987,12 +5987,12 @@ This creates a distinctive **temperature personality**: the app feels meditative
 #### POLISH (6 findings)
 | ID | Finding | Solution |
 |----|---------|----------|
-| §E9-AC-F2 / §E9-IC-F2 | Favicon gold (#fbbf24) ≠ brand gold (#edaf18) | Align to #edaf18 |
-| §E9-AC-F3 | Install prompt uses Tailwind yellow not brand gold | Use brand gold gradient |
-| §E9-MO-F4 | Slider easing not branded | Apply `var(--transition-fast)` |
-| §E9-IG-F2 | Icons at 9–10px below legibility | Set minimum 12px |
-| §E9-IG-F3 | Custom Canvas trophy icons inconsistent with Lucide | Use Lucide equivalents |
-| §E9-CM-F1 | Pink accent lacks strong semantic label | Pair with Weapon icon |
+| §E9-AC-F2 ✅ / §E9-IC-F2 | Favicon gold (#fbbf24) ≠ brand gold (#edaf18) | Align to #edaf18 |
+| §E9-AC-F3 ✅ | Install prompt uses Tailwind yellow not brand gold | Use brand gold gradient |
+| §E9-MO-F4 ✅ | Slider easing not branded | Apply `var(--transition-fast)` |
+| §E9-IG-F2 ✅ | Icons at 9–10px below legibility | Set minimum 12px |
+| §E9-IG-F3 ✅ | Custom Canvas trophy icons inconsistent with Lucide | Use Lucide equivalents |
+| §E9-CM-F1 ✅ | Pink accent lacks strong semantic label | Pair with Weapon icon |
 
 ### Connection to Prior Findings
 
@@ -6446,7 +6446,7 @@ The application uses several data-dense tabular layouts. While none use a litera
 |----|----------|---------|----------|
 | §E10-DT-F1 | **MEDIUM** | Leaderboard avg pity numbers (App.jsx:4135) and Pull Log pity numbers (App.jsx:4688) lack `.kuro-number` class — they render in the default font without `tabular-nums`, causing digits to shift horizontally as values change (e.g., "45.2" vs "8.1" won't column-align) | **Add `.kuro-number` to all tabular numeric cells**: On leaderboard `entry.avgPity.toFixed(1)`, add `kuro-number` to the parent span. On Pull Log `{p.pity ?? '?'}`, add `kuro-number`. This ensures `tabular-nums` + JetBrains Mono across all data tables, matching the Stats grid and Planner which already use it |
 | §E10-DT-F2 ✅ | **LOW** | Pull Log scroll container (`max-h-60 overflow-y-auto`) has no scroll affordance — no `kuro-scroll` class, no bottom fade, no "scroll for more" indicator; the admin list uses `kuro-scroll` but Pull Log and Leaderboard don't | **Add `kuro-scroll` + bottom fade**: Add `kuro-scroll` class to both the Pull Log and Leaderboard scroll containers. Add a `pointer-events-none` gradient overlay at the bottom (`linear-gradient(transparent 80%, var(--bg-card) 100%)`) when content overflows, hinting at more rows below |
-| §E10-DT-F3 | **POLISH** | None of the data tables use semantic `<table>` / `<thead>` / `<tbody>` — they're all flex/grid constructs with no column headers. The Pull Log has no header row explaining what "W" / "L" / the number columns mean | **Add visually subtle header row**: For the Pull Log, add a single header row at `text-[9px] text-gray-500` with "Name | Banner | 50/50 | Pity | Date". Use `role="table"`, `role="rowgroup"`, `role="row"`, `role="cell"` ARIA roles on the flex structure to preserve screen reader semantics without switching to literal `<table>` elements |
+| §E10-DT-F3 ✅ | **POLISH** | None of the data tables use semantic `<table>` / `<thead>` / `<tbody>` — they're all flex/grid constructs with no column headers. The Pull Log has no header row explaining what "W" / "L" / the number columns mean | **Add visually subtle header row**: For the Pull Log, add a single header row at `text-[9px] text-gray-500` with "Name | Banner | 50/50 | Pity | Date". Use `role="table"`, `role="rowgroup"`, `role="row"`, `role="cell"` ARIA roles on the flex structure to preserve screen reader semantics without switching to literal `<table>` elements |
 
 ---
 
@@ -6611,7 +6611,7 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 | 19 | §E10-CB-F3 ✅ | **LOW** | §E10.8 | Six element colors have no icon/shape backup |
 | 20 | §E10-DT-F1 | **MEDIUM** | §E10.9 | Leaderboard + Pull Log numeric columns lack `.kuro-number` tabular-nums |
 | 21 | §E10-DT-F2 ✅ | **LOW** | §E10.9 | Pull Log + Leaderboard scroll containers missing `kuro-scroll` + fade hint |
-| 22 | §E10-DT-F3 | **POLISH** | §E10.9 | Data tables lack semantic roles and visible column headers |
+| 22 | §E10-DT-F3 ✅ | **POLISH** | §E10.9 | Data tables lack semantic roles and visible column headers |
 | 23 | §E10-RD-F1 | **MEDIUM** | §E10.10 | Recharts charts use fixed `h-32`/`h-24` height — extreme aspect ratios on wide viewports |
 | 24 | §E10-RD-F2 ✅ | **LOW** | §E10.10 | Planner projection grids squeeze `text-2xl` numbers on narrow viewports |
 | 25 | §E10-RD-F3 | **POLISH** | §E10.10 | Tab navigation `scrollbar-hide` on 8 tabs — no horizontal scroll indicator |
@@ -6960,7 +6960,7 @@ The §BAN section defines values that are banned from art-directed output becaus
 - **Impact mitigation**: The icons are NOT the primary identity signal — the gold-on-void palette and PityRing animation carry the identity. Icons serve a functional role, not a personality role.
 - **Solution**: Rather than switching libraries entirely, add subtle customization: set a consistent stroke-width (1.25px for a slightly lighter, more refined feel that matches Rajdhani's condensed character), and create a `KuroIcon` wrapper component that enforces consistent sizing and color inheritance.
 
-**BN-F4 — #8b5cf6 Tailwind purple-500 used for trophy badges** [POLISH]
+**BN-F4 ✅ — #8b5cf6 Tailwind purple-500 used for trophy badges** [POLISH]
 
 - **Evidence**: App.jsx:1685-1686 uses `#8b5cf6` for two trophy badge colors. This exact hex is on the §BAN blacklist as "AI product cliché."
 - **Impact**: Minimal — this is a decorative achievement badge color, not an accent. The app's secondary purple is `#a855f7` (purple-400), so `#8b5cf6` is a near-match but inconsistent with the app's own purple token.
@@ -6972,7 +6972,7 @@ The §BAN section defines values that are banned from art-directed output becaus
   color: '#a855f7', tier: 'purple'  // Matches --color-purple token
   ```
 
-**BN-F5 — #10b981 Tailwind green-500 used for Aero element** [POLISH]
+**BN-F5 ✅ — #10b981 Tailwind green-500 used for Aero element** [POLISH]
 
 - **Evidence**: appcore-data.js:1969 uses `#10b981` for the Aero (wind) game element. This is on the §BAN blacklist.
 - **Impact**: Minimal — this is a DOMAIN-SPECIFIC semantic color (game element color) that SHOULD match the game's own UI. If Wuthering Waves uses this green for Aero, the tracker should too.
@@ -7217,7 +7217,7 @@ The secondary accents map to game elements (Glacio=cyan, Electro=purple, Havoc=p
   ```
   This is more consistent with the "void lit by ambient glow" atmosphere.
 
-**DP-F2 — Modal background lacks focus blur** [POLISH]
+**DP-F2 ✅ — Modal background lacks focus blur** [POLISH]
 
 - **Evidence**: Modals overlay a `bg-black/60` scrim but don't blur the content behind. Per §DEPTH technique #5: `filter: blur(3px) brightness(0.7)` on content behind creates a focus effect that separates modal from background.
 - **Impact**: Minor depth cue missed. The dark overlay works functionally but doesn't create the perceptual depth that blur provides.
@@ -7379,7 +7379,7 @@ Per §LIGHT: "Choose one light source direction. Apply it to ALL depth elements.
   ```
   This creates clear "breathing room" between sections that makes the layout feel designed rather than stacked.
 
-**CP-F2 — No asymmetric or golden-ratio layout splits** [POLISH]
+**CP-F2 ✅ — No asymmetric or golden-ratio layout splits** [POLISH]
 
 - **Evidence**: All multi-column layouts use equal-width columns (`1fr 1fr` or auto-fill). No 60/40, golden-ratio (61.8/38.2), or other asymmetric splits exist.
 - **Impact**: Equal splits are appropriate for homogeneous data (collection grids, banner cards). But for hero moments (Stats overview, Planner summary), asymmetric splits would create visual hierarchy through layout.
@@ -7722,7 +7722,7 @@ Mapping current type system to the §HIERARCHY template:
   Micro scale:   8 · 9 · 10 · 11 (instrument readouts, badge counts)
   ```
 
-**TY-F3 — No `text-wrap: balance` on headings** [POLISH]
+**TY-F3 ✅ — No `text-wrap: balance` on headings** [POLISH]
 
 - **Evidence**: No `text-wrap: balance` used on any heading. Per §MICRO: "text-wrap: balance on h1-h3 (prevents widows in headings, Chrome 114+)."
 - **Impact**: Headings that wrap may have uneven line lengths (last line much shorter than first), creating visual imbalance.
@@ -7731,7 +7731,7 @@ Mapping current type system to the §HIERARCHY template:
   h1, h2, h3, .text-2xl, .text-xl, .text-lg { text-wrap: balance; }
   ```
 
-**TY-F4 — No `max-width: 65ch` for prose content** [POLISH]
+**TY-F4 ✅ — No `max-width: 65ch` for prose content** [POLISH]
 
 - **Evidence**: No character-width constraint exists on any text block. Descriptions, tooltips, and card body text can extend to the full container width.
 - **Impact**: On wide screens, text lines can exceed 80+ characters, reducing readability. Most visible in description text within cards and modal content.
@@ -8129,7 +8129,7 @@ Per §TABLES:
   }
   ```
 
-**TB-F2 — Number alignment inconsistent in tables** [POLISH]
+**TB-F2 ✅ — Number alignment inconsistent in tables** [POLISH]
 
 - **Evidence**: Some numeric columns are left-aligned, others centered. Per §TABLES: "numbers right, text left."
 - **Solution**: Apply consistent right-alignment to all numeric table columns:
@@ -8154,7 +8154,7 @@ Per §TABLES:
 
 ### Findings
 
-**HV-F1 — Button hover scale is too aggressive** [POLISH]
+**HV-F1 ✅ — Button hover scale is too aggressive** [POLISH]
 
 - **Evidence**: Buttons use `scale(1.05)` on hover — a 5% size increase. Per §HOVER: `scale(1.02)` is recommended. A 5% scale on dense UI can cause layout shifts and feels jumpy.
 - **Solution**: Reduce to `scale(1.02)` for a more refined hover:
@@ -8162,7 +8162,7 @@ Per §TABLES:
   .kuro-btn:hover { transform: scale(1.02); }
   ```
 
-**HV-F2 — Hover enter/exit timing is symmetric** [POLISH]
+**HV-F2 ✅ — Hover enter/exit timing is symmetric** [POLISH]
 
 - **Evidence**: All hover transitions use the same duration for enter and exit. Per §HOVER: exit should be slightly slower (200ms) than enter (120ms).
 - **Solution**: Use asymmetric transition timing:
@@ -8245,7 +8245,7 @@ Per §STAGGER: "Delay per item: 30-50ms. Total cap: 150ms regardless of count."
 
 ### Findings
 
-**ST-F1 — Card stagger animation has no total delay cap** [POLISH]
+**ST-F1 ✅ — Card stagger animation has no total delay cap** [POLISH]
 
 - **Evidence**: Card stagger uses `50ms × card-index` with no upper bound. For lists of 10+ items, the last items animate in after 500ms+.
 - **Solution**: Cap the stagger delay:
@@ -8736,7 +8736,7 @@ Per §DEMOGRAPHICS Gen Z response:
 | `prefers-reduced-motion` | PARTIAL | CSS animations covered (7 instances), canvas animations NOT covered (see CK-F3) |
 | Min 16px body (mobile) | FAIL | Body text at 14px (`text-sm`), micro text at 9-10px |
 | Line-height 1.4-1.6 | PASS | Default Tailwind body line-height |
-| Max 75ch width | FAIL | No character-width constraint (see TY-F4) |
+| Max 75ch width | FAIL | No character-width constraint (see TY-F4 ✅) |
 | Touch 44×44px | FAIL | Many small interactive elements (see CK-F2 ✅) |
 | Zoom not disabled | PASS | No `user-scalable=no` in meta viewport |
 
@@ -8746,7 +8746,7 @@ Per §DEMOGRAPHICS Gen Z response:
 
 **AC-F1 — Accessibility score 5/10** [MEDIUM]
 
-- **Evidence**: Five accessibility checks fail: focus-visible, reduced-motion coverage, body text size, line width, touch targets. These are documented individually in BT-F1 ✅, CK-F2 ✅, CK-F3, TY-F4.
+- **Evidence**: Five accessibility checks fail: focus-visible, reduced-motion coverage, body text size, line width, touch targets. These are documented individually in BT-F1 ✅, CK-F2 ✅, CK-F3, TY-F4 ✅.
 - **Impact**: Keyboard users, motion-sensitive users, and mobile users face barriers. While the expert audience may tolerate some of these, accessibility is a baseline requirement regardless of audience expertise.
 - **Solution**: Priority fix order: (1) :focus-visible global rule — 1 CSS declaration, fixes keyboard nav. (2) Touch targets — add min-h-[44px] to interactive elements. (3) Canvas reduced-motion check — one JS condition. (4) Body text floor at 14px — already at 14px but micro text needs 10px floor. (5) Max-width 65ch on prose — simple CSS.
 
@@ -8878,7 +8878,7 @@ Competitive positioning map:
   }
   ```
 
-**WB-F2 — No OKLCH fallback pattern** [POLISH]
+**WB-F2 ✅ — No OKLCH fallback pattern** [POLISH]
 
 - **Evidence**: No OKLCH values in the codebase. Per §WEB: provide OKLCH with hex fallback for modern browsers.
 - **Solution**: For new color additions, use the fallback pattern:
@@ -8900,20 +8900,20 @@ Competitive positioning map:
 | BN-F1 | §BAN | `rgba(0,0,0,...)` shadows — 59 instances | MEDIUM |
 | BN-F2 ✅ | §BAN | `transition: all` — 2 instances | LOW |
 | BN-F3 ✅ | §BAN | Lucide icons used unmodified | LOW |
-| BN-F4 | §BAN | #8b5cf6 Tailwind purple-500 in trophies | POLISH |
-| BN-F5 | §BAN | #10b981 Tailwind green-500 for Aero | POLISH |
+| BN-F4 ✅ | §BAN | #8b5cf6 Tailwind purple-500 in trophies | POLISH |
+| BN-F5 ✅ | §BAN | #10b981 Tailwind green-500 for Aero | POLISH |
 | CK-F1 | §CHECK | Layout lacks harmonic proportions | MEDIUM |
 | CK-F2 ✅ | §CHECK | Touch targets at 36px, below 44px | LOW |
 | CK-F3 | §CHECK | Canvas animations lack prefers-reduced-motion | MEDIUM |
 | CL-F1 | §COLOR | Surface elevation steps too small | MEDIUM |
 | CL-F2 ✅ | §COLOR | Semantic colors not fully palette-calibrated | LOW |
 | DP-F1 ✅ | §DEPTH | Shadows lack directional consistency | LOW |
-| DP-F2 | §DEPTH | Modal background lacks focus blur | POLISH |
+| DP-F2 ✅ | §DEPTH | Modal background lacks focus blur | POLISH |
 | TX-F1 ✅ | §TEXTURE | No static texture layer exists | LOW |
 | LT-F1 ✅ | §LIGHT | Light source direction is ambiguous | LOW |
 | SH-F1 ✅ | §SHAPE | No non-rectangular elements exist | LOW |
 | CP-F1 ✅ | §COMPOSITION | Section-to-component gap ratio too low | LOW |
-| CP-F2 | §COMPOSITION | No asymmetric/golden-ratio layout splits | POLISH |
+| CP-F2 ✅ | §COMPOSITION | No asymmetric/golden-ratio layout splits | POLISH |
 | TK-F1 | §TOKENS | No primitive token layer | MEDIUM |
 | TK-F2 ✅ | §TOKENS | No component-level token abstraction | LOW |
 | AT-F1 ✅ | §ATMOSPHERE | No CSS fallback layer | LOW |
@@ -8922,18 +8922,18 @@ Competitive positioning map:
 | AS-F1 | §ANTI-SLOP | Score 24/28 in "fix" range | MEDIUM |
 | TY-F1 | §TYPOGRAPHY | No negative tracking on display/heading | MEDIUM |
 | TY-F2 ✅ | §TYPOGRAPHY | Type scale lacks consistent ratio | LOW |
-| TY-F3 | §TYPOGRAPHY | No `text-wrap: balance` on headings | POLISH |
-| TY-F4 | §TYPOGRAPHY | No `max-width: 65ch` for prose | POLISH |
+| TY-F3 ✅ | §TYPOGRAPHY | No `text-wrap: balance` on headings | POLISH |
+| TY-F4 ✅ | §TYPOGRAPHY | No `max-width: 65ch` for prose | POLISH |
 | BT-F1 ✅ | §BUTTONS | Focus-visible excludes anchor/role="button" | LOW |
 | BT-F2 ✅ | §BUTTONS | No loading spinner-in-button pattern | LOW |
 | CD-F1 ✅ | §CARDS | Cards lack purpose-based differentiation | LOW |
 | IN-F1 ✅ | §INPUTS | No filled-state visual distinction | LOW |
 | TB-F1 ✅ | §TABLES | Table rows lack hover feedback | LOW |
-| TB-F2 | §TABLES | Number alignment inconsistent | POLISH |
-| HV-F1 | §HOVER | Button hover scale too aggressive | POLISH |
-| HV-F2 | §HOVER | Hover enter/exit timing is symmetric | POLISH |
+| TB-F2 ✅ | §TABLES | Number alignment inconsistent | POLISH |
+| HV-F1 ✅ | §HOVER | Button hover scale too aggressive | POLISH |
+| HV-F2 ✅ | §HOVER | Hover enter/exit timing is symmetric | POLISH |
 | TR-F1 ✅ | §TRANSITIONS | Durations consistently too slow | LOW |
-| ST-F1 | §STAGGER | Card stagger has no delay cap | POLISH |
+| ST-F1 ✅ | §STAGGER | Card stagger has no delay cap | POLISH |
 | FB-F1 ✅ | §FEEDBACK | No delete/removal animation | LOW |
 | VW-F1 ✅ | §WEIGHT | Stats tab lacks clear focal point | LOW |
 | PF-F1 | §PERFORMANCE | `backdrop-filter: blur()` on many elements | MEDIUM |
@@ -8943,7 +8943,7 @@ Competitive positioning map:
 | AC-F1 | §ACCESSIBILITY | Accessibility score 5/10 | MEDIUM |
 | BI-F1 ✅ | §BRAND | No explicit brand guidelines document | LOW |
 | WB-F1 | §WEB | Token system lacks 3-layer architecture | MEDIUM |
-| WB-F2 | §WEB | No OKLCH fallback pattern | POLISH |
+| WB-F2 ✅ | §WEB | No OKLCH fallback pattern | POLISH |
 
 ### Severity Distribution
 
@@ -9040,7 +9040,7 @@ Competitive positioning map:
 | # | Finding A | Finding B | Contradiction | Reconciliation | Corrected Assessment |
 |---|-----------|-----------|---------------|----------------|---------------------|
 | GC1 | §E9-VS-F2 ✅ LOW: "Canvas animations no reduced-motion fallback" | §E6-MC3 PASS: "Reduced motion compliance" | E6 says reduced motion is compliant; E9 says canvas lacks it | **E6 is partially incorrect.** E6 assessed CSS animations + JS `prefersReducedMotion` detection (both present and correct). But canvas animations (`BackgroundGlow`, `TriangleMirrorWave`) run independently and do NOT check `prefers-reduced-motion`. The E6 PASS should be qualified: "CSS and JS reduced motion compliant; canvas layer non-compliant." **Corrected severity: E6-MC3 → PARTIAL PASS. Canvas reduced-motion gap confirmed at LOW.** |
-| GC2 | §DC4-ICO1 ✅ LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 should be upgraded from POLISH → LOW. ✅ FIXED |
+| GC2 | §DC4-ICO1 ✅ LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 ✅ POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 ✅ should be upgraded from POLISH → LOW. ✅ FIXED |
 | GC3 | §E2-MO1 MEDIUM: "Touch targets 36px on touch devices (below 44px)" | §CK-F2 ✅ LOW (Step 18): "Touch targets at 36px, below 44px" | Same finding, different severity (MEDIUM vs LOW) | **E2 severity is correct.** Touch target compliance is a WCAG 2.5.8 requirement. A 36px target on `pointer: coarse` devices is a genuine accessibility gap that affects every touch interaction. **Reconciled: MEDIUM.** Step 18 §CK-F2 ✅ should be upgraded from LOW → MEDIUM. |
 | GC4 | §DS2-F8 MEDIUM: "~240 hardcoded color values" | §E1-COL1 HIGH: "66 unique hex colors, only 18 tokenized — 73% unmanaged" | Same root issue, different quantification (240 instances vs 66 unique values) | **Both are correct at different levels.** DS2 counts *instances* (how many times hardcoded values appear). E1 counts *unique values* (how many distinct colors exist). 66 unique colors × average 3.6 uses each ≈ 240 instances. **No quantification error.** But the severity differs: DS2 says MEDIUM, E1 says HIGH. **Reconciled: HIGH** — 73% unmanaged palette is a systemic token architecture issue, not a moderate concern. |
 | GC5 | §E9-EA-F4 ✅ LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
@@ -9050,7 +9050,7 @@ Competitive positioning map:
 - **6 apparent contradictions resolved** — findings addressed different scopes or criteria
 - **5 genuine contradictions found and reconciled**:
   - GC1: E6-MC3 reduced-motion PASS → PARTIAL PASS (canvas gap)
-  - GC2: E9-AC-F2 favicon POLISH → LOW (severity alignment)
+  - GC2: E9-AC-F2 ✅ favicon POLISH → LOW (severity alignment)
   - GC3: CK-F2 ✅ touch targets LOW → MEDIUM (WCAG compliance)
   - GC4: DS2-F8 hardcoded colors MEDIUM → HIGH (aligns with E1-COL1)
   - GC5: Both severities retained (different scopes)
@@ -9108,7 +9108,7 @@ Competitive positioning map:
 1. §E6-AP4 ✅: LOW → **MEDIUM** (inline button press feedback)
 2. §E7-AD2 ✅: LOW → **MEDIUM** (radius token absence)
 3. §E10-NV-F3: LOW → **MEDIUM** (Stats missing kuro-number)
-4. §E9-AC-F2: POLISH → **LOW** (favicon gold mismatch)
+4. §E9-AC-F2 ✅: POLISH → **LOW** (favicon gold mismatch)
 5. §CK-F2 ✅: LOW → **MEDIUM** (touch targets — from §19.1)
 
 **Score adjustment (1)**:
@@ -9390,7 +9390,7 @@ ROOT CAUSE: kuro-number class designed but inconsistently applied
 ```
 ROOT CAUSE: Brand assets incomplete for multi-platform presence
     │
-    ├──→ ICON: Favicon uses wrong gold (#fbbf24 vs #edaf18) (§E8-FV1 / §DC4-ICO1 ✅ / §E9-AC-F2)
+    ├──→ ICON: Favicon uses wrong gold (#fbbf24 vs #edaf18) (§E8-FV1 / §DC4-ICO1 ✅ / §E9-AC-F2 ✅)
     │       │
     │       └──→ BRAND: Most-frequently-seen brand representation is wrong color
     │
@@ -9413,7 +9413,7 @@ ROOT CAUSE: Brand assets incomplete for multi-platform presence
 
 **Chain impact**: 8+ findings across 4 steps
 **Single fix**: Asset generation sprint — create all missing brand assets from the existing SVG favicon design
-**Cascade resolution**: Fixes §E8-FV1, §E9-BS-F1, §E9-BS-F2, §E8-CI2, §E8-DC1, §E9-BS-F3, §DC4-ICO1 ✅, §E9-AC-F2
+**Cascade resolution**: Fixes §E8-FV1, §E9-BS-F1, §E9-BS-F2, §E8-CI2, §E8-DC1, §E9-BS-F3, §DC4-ICO1 ✅, §E9-AC-F2 ✅
 
 ---
 
@@ -9722,7 +9722,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 
 | Duplicate Group | Findings | Recommended Consolidated Finding | Consolidated Severity |
 |----------------|----------|--------------------------------|----------------------|
-| **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
+| **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 ✅ (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
 | **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 ✅ (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
@@ -9762,7 +9762,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Correction | Type | Impact |
 |-----------|------|--------|
 | E6-MC3 reduced motion: PASS → PARTIAL PASS | Contradiction fix | Canvas gap now documented |
-| E9-AC-F2 favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 ✅ |
+| E9-AC-F2 ✅ favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 ✅ |
 | CK-F2 ✅ touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
 | E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
@@ -10214,7 +10214,7 @@ These findings affect significant visual quality, usability, or brand consistenc
 
 **Solution**: Consolidate all gold usage to `#edaf18`. Replace `#eab308` (4 instances) and `#fbbf24` (favicon) with the brand gold. Update favicon SVG fill to `#edaf18`.
 
-**Cross-references**: DC4-CAL1, §E9-AC-F2
+**Cross-references**: DC4-CAL1, §E9-AC-F2 ✅
 
 ---
 
@@ -11138,24 +11138,24 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 1 | §E9-AC-F2 | Favicon gold (#fbbf24) ≠ brand gold (#edaf18) | FAVICON | Update favicon SVG fill to `#edaf18` |
-| 2 | §E9-AC-F3 | Install prompt uses Tailwind yellow instead of brand tokens | PWA | Apply brand gold gradient to PWA install prompt button |
-| 3 | §E9-MO-F4 | Slider easing not branded (uses Tailwind default transition) | CALC, PROFILE | Apply `transition: var(--transition-fast) var(--ease-branded)` to slider thumb |
-| 4 | §E9-IG-F2 | Icons at 9–10px below legibility threshold | ALL | Set minimum icon size to 12px; replace any 9–10px icons with text labels |
-| 5 | §E9-IG-F3 | Custom Canvas trophy icons inconsistent with Lucide set | STATS | Replace Canvas trophy icons with Lucide equivalents (Trophy, Award, Medal) |
-| 6 | §E9-CM-F1 | Pink accent lacks strong semantic label | ALL | Pair pink with "Weapon" domain concept (pink → weapon banners, consistent mapping) |
-| 7 | BN-F4 | #8b5cf6 (Tailwind purple-500) in trophy badges | STATS | Replace with app's own `--color-purple` (#a855f7) for internal palette consistency |
-| 8 | BN-F5 | #10b981 (Tailwind green-500) used for Aero element | DATA | Verify against game's actual Aero color; document as intentional domain-override if matching |
-| 9 | DP-F2 | Modal background lacks focus blur | ALL | Add `filter: blur(3px) brightness(0.7)` to main content when modal is active |
-| 10 | CP-F2 | No asymmetric or golden-ratio layout splits | ALL | Apply `grid-template-columns: 1fr 0.618fr` to Stats overview and Planner summary on desktop |
-| 11 | TY-F3 | No `text-wrap: balance` on headings | ALL | Add `h1, h2, h3, .text-2xl, .text-xl { text-wrap: balance; }` to global CSS |
-| 12 | TY-F4 | No `max-width: 65ch` for prose content | ALL | Add `max-width: 65ch` to card descriptions, modal body, and tooltip content |
-| 13 | TB-F2 | Number alignment inconsistent in tables | STATS | Apply `text-align: right; font-variant-numeric: tabular-nums` to all numeric table columns |
-| 14 | HV-F1 | Button hover scale too aggressive (1.05 vs recommended 1.02) | ALL | Reduce to `scale(1.02)` for more refined hover feel |
-| 15 | HV-F2 | Hover enter/exit timing is symmetric (should be asymmetric) | ALL | Fast enter (120ms), slow exit (200ms): apply different durations to `:hover` and base state |
-| 16 | ST-F1 | Card stagger animation has no total delay cap | ALL | Cap with `animation-delay: min(calc(var(--card-index) * 40ms), 150ms)` |
-| 17 | WB-F2 | No OKLCH fallback pattern in CSS | ALL | For new colors, use: `.el { background: #hex; background: oklch(...); }` |
-| 18 | §E10-DT-F3 | Data tables lack semantic roles and visible column headers | STATS | Add `role="table"`, `role="row"`, `role="columnheader"` for screen reader support |
+| 1 | §E9-AC-F2 ✅ | Favicon gold (#fbbf24) ≠ brand gold (#edaf18) | FAVICON | Update favicon SVG fill to `#edaf18` |
+| 2 | §E9-AC-F3 ✅ | Install prompt uses Tailwind yellow instead of brand tokens | PWA | Apply brand gold gradient to PWA install prompt button |
+| 3 | §E9-MO-F4 ✅ | Slider easing not branded (uses Tailwind default transition) | CALC, PROFILE | Apply `transition: var(--transition-fast) var(--ease-branded)` to slider thumb |
+| 4 | §E9-IG-F2 ✅ | Icons at 9–10px below legibility threshold | ALL | Set minimum icon size to 12px; replace any 9–10px icons with text labels |
+| 5 | §E9-IG-F3 ✅ | Custom Canvas trophy icons inconsistent with Lucide set | STATS | Replace Canvas trophy icons with Lucide equivalents (Trophy, Award, Medal) |
+| 6 | §E9-CM-F1 ✅ | Pink accent lacks strong semantic label | ALL | Pair pink with "Weapon" domain concept (pink → weapon banners, consistent mapping) |
+| 7 | BN-F4 ✅ | #8b5cf6 (Tailwind purple-500) in trophy badges | STATS | Replace with app's own `--color-purple` (#a855f7) for internal palette consistency |
+| 8 | BN-F5 ✅ | #10b981 (Tailwind green-500) used for Aero element | DATA | Verify against game's actual Aero color; document as intentional domain-override if matching |
+| 9 | DP-F2 ✅ | Modal background lacks focus blur | ALL | Add `filter: blur(3px) brightness(0.7)` to main content when modal is active |
+| 10 | CP-F2 ✅ | No asymmetric or golden-ratio layout splits | ALL | Apply `grid-template-columns: 1fr 0.618fr` to Stats overview and Planner summary on desktop |
+| 11 | TY-F3 ✅ | No `text-wrap: balance` on headings | ALL | Add `h1, h2, h3, .text-2xl, .text-xl { text-wrap: balance; }` to global CSS |
+| 12 | TY-F4 ✅ | No `max-width: 65ch` for prose content | ALL | Add `max-width: 65ch` to card descriptions, modal body, and tooltip content |
+| 13 | TB-F2 ✅ | Number alignment inconsistent in tables | STATS | Apply `text-align: right; font-variant-numeric: tabular-nums` to all numeric table columns |
+| 14 | HV-F1 ✅ | Button hover scale too aggressive (1.05 vs recommended 1.02) | ALL | Reduce to `scale(1.02)` for more refined hover feel |
+| 15 | HV-F2 ✅ | Hover enter/exit timing is symmetric (should be asymmetric) | ALL | Fast enter (120ms), slow exit (200ms): apply different durations to `:hover` and base state |
+| 16 | ST-F1 ✅ | Card stagger animation has no total delay cap | ALL | Cap with `animation-delay: min(calc(var(--card-index) * 40ms), 150ms)` |
+| 17 | WB-F2 ✅ | No OKLCH fallback pattern in CSS | ALL | For new colors, use: `.el { background: #hex; background: oklch(...); }` |
+| 18 | §E10-DT-F3 ✅ | Data tables lack semantic roles and visible column headers | STATS | Add `role="table"`, `role="row"`, `role="columnheader"` for screen reader support |
 
 ---
 
