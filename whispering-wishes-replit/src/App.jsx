@@ -3182,8 +3182,12 @@ function WhisperingWishesInner() {
                 if (pwa?.canInstall) {
                   const accepted = await pwa.promptInstall();
                   if (accepted) toast?.('App installed successfully!', 'success');
+                } else if (pwa?.isInstalled) {
+                  toast?.('App is already installed', 'success');
+                } else {
+                  toast?.('Use your browser menu to add to home screen', 'info');
                 }
-              }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : ''}>
+              }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
                 <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
