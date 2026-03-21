@@ -692,6 +692,7 @@ function WhisperingWishesInner() {
   const [collectionElementFilter, setCollectionElementFilter] = useState('all'); // 'all', 'Aero', 'Glacio', etc.
   const [collectionWeaponFilter, setCollectionWeaponFilter] = useState('all'); // 'all', 'Broadblade', 'Sword', etc.
   const [collectionOwnershipFilter, setCollectionOwnershipFilter] = useState('all'); // 'all', 'owned', 'missing'
+  const [collectionView, setCollectionView] = useState('items'); // 'items' (resonators+weapons), 'echoes'
   
   // Filter function for collection items
   const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
@@ -4975,7 +4976,27 @@ function WhisperingWishesInner() {
                         ]}
                         ariaLabel="Filter by ownership"
                       />
-                      
+
+                      {/* View Toggle */}
+                      <button
+                        onClick={() => setCollectionView('items')}
+                        className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionView === 'items' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Resonators & Weapons"
+                        aria-label="View resonators and weapons"
+                        aria-pressed={collectionView === 'items'}
+                      >
+                        <Crown size={12} />
+                      </button>
+                      <button
+                        onClick={() => setCollectionView('echoes')}
+                        className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionView === 'echoes' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Echoes"
+                        aria-label="View echoes"
+                        aria-pressed={collectionView === 'echoes'}
+                      >
+                        <Sparkles size={12} />
+                      </button>
+
                       {/* Clear Filters */}
                       {hasActiveFilters && (
                         <button
@@ -5018,6 +5039,17 @@ function WhisperingWishesInner() {
                   </div>
                 </div>
 
+                {collectionView === 'echoes' && (
+                  <Card>
+                    <CardBody className="text-center py-8">
+                      <Sparkles size={32} className="mx-auto mb-2 text-gray-500" />
+                      <p className="text-gray-400 text-sm">Echoes coming soon</p>
+                      <p className="text-gray-500 text-xs mt-1">Echo collection tracking is in development</p>
+                    </CardBody>
+                  </Card>
+                )}
+
+                {collectionView === 'items' && (<>
                 {/* 5★ Resonators */}
                 <Card>
                   <CardHeader>
@@ -5127,6 +5159,7 @@ function WhisperingWishesInner() {
                     />
                   </CardBody>
                 </Card>
+                </>)}
               </>
             )}
           </div>
