@@ -4546,13 +4546,13 @@ The import flow is the app's equivalent of a sign-up flow. The user pastes a URL
 | **Import modal** | Full-screen overlay with glassmorphic card | **Good** — feels secure, contained |
 | **URL input field** | kuro-input with clear label | **Good** — professional input styling |
 | **Import instructions** | Step-by-step with numbered steps | **Good** — guides user through process |
-| **Success state** | Toast notification | **Adequate** — no celebration moment (§E7-PL1) |
+| **Success state** | Toast notification | **Adequate** — no celebration moment (§E7-PL1 ✅) |
 | **Error state** | Red error message with retry | **Good** — clear error communication |
 
-> **Finding E8-CO1** · LOW
+> **Finding E8-CO1 ✅** · LOW
 > **Import success lacks celebration**: When a user successfully imports their convene log — the most significant commitment moment — they receive only a toast notification. This is the moment where the app should signal "welcome, you're set up" with visual delight (a brief gold pulse, a checkmark animation, a personalized summary).
 > **Evidence**: Import success dispatches `IMPORT_DATA` action and shows a toast. No success animation, no celebration state, no personalized welcome.
-> **Cross-reference**: §E7-PL1 (no success confirmation animation).
+> **Cross-reference**: §E7-PL1 ✅ (no success confirmation animation).
 > **Solution**: Add a brief success celebration after import: (1) Gold checkmark animation (scale in + fade), (2) Brief summary card showing "Imported X pulls across Y banners — your pity status is ready", (3) Auto-navigate to Tracker tab after 2s. Use the existing `--transition-slow` (0.4s) for the celebration animation.
 
 #### §E8.1.5 Distribution channel fit
@@ -4609,7 +4609,7 @@ For a community fan tool, the distribution channels are:
 > **Finding E8-CL2** · LOW
 > **Text-shadow accumulation on headings**: Multiple heading elements use `text-shadow` for depth (e.g., card headers, stat labels). While each individual shadow is subtle, they accumulate across a full tab view — 5–8 text-shadows visible simultaneously. In a focus-tool context, text-shadows on data labels are unnecessary cognitive overhead.
 > **Evidence**: Text-shadow applied to `.kuro-header` content, trophy labels, stat headings. Each is `0 1px 2px rgba(0,0,0,0.3)` or similar.
-> **Cross-reference**: §E7-VN2 (stacked text shadows).
+> **Cross-reference**: §E7-VN2 ✅ (stacked text shadows).
 > **Solution**: Remove text-shadow from data labels (stat names, pity counters, calculator inputs). Retain text-shadow only on display/brand elements (app title, tab headings) where it serves atmospheric depth.
 
 #### §E8.2.2 Information scannability
@@ -5129,12 +5129,12 @@ For a community fan tool, the distribution channels are:
 
 | ID | Severity | Section | Title |
 |----|---------|---------|-------|
-| E8-CI1 | LOW | §E8.1.1 | First-impression credibility gap (inline Tailwind layer) |
+| E8-CI1 ✅ | LOW | §E8.1.1 | First-impression credibility gap (inline Tailwind layer) |
 | E8-CI2 | MEDIUM | §E8.1.1 | Missing apple-touch-icon.png breaks mobile home screen |
 | E8-VT1 | PASS | §E8.1.2 | Palette and typography signal intentional design |
-| E8-VT2 | LOW | §E8.1.2 | Spacing rhythm inconsistent between layers |
+| E8-VT2 ✅ | LOW | §E8.1.2 | Spacing rhythm inconsistent between layers |
 | E8-CB1 | PASS | §E8.1.3 | Competitive visual position is strong |
-| E8-CO1 | LOW | §E8.1.4 | Import success lacks celebration |
+| E8-CO1 ✅ | LOW | §E8.1.4 | Import success lacks celebration |
 | E8-DC1 | LOW | §E8.1.5 | OG image may not exist |
 | E8-CL1 | PASS | §E8.2.1 | Decorative elements well-calibrated for focus-tool |
 | E8-CL2 | LOW | §E8.2.1 | Text-shadow accumulation on headings |
@@ -5187,7 +5187,7 @@ For a community fan tool, the distribution channels are:
 
 - **§E7-DC1 + §E7-PD1** (two-layer gap, button migration): The §E8 "made with intent" test (§E8-MI1) confirms that the Tailwind default fingerprint is the primary "unintentional" signal. The button migration remains the single most impactful improvement across both professionalism (§E7) and product aesthetics (§E8).
 - **§E1-COV1** (token coverage ~30%): The axis-driven assessment confirms that the token gap isn't just a technical issue — it's a product aesthetics issue visible through the A1 (credibility), A2 (intent), and Universal (made-with-intent) lenses.
-- **§E7-PL1** (no success animation): Confirmed as a commitment-flow gap (§E8-CO1) — the import success moment is the app's "conversion" equivalent.
+- **§E7-PL1 ✅** (no success animation): Confirmed as a commitment-flow gap (§E8-CO1 ✅) — the import success moment is the app's "conversion" equivalent.
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as a "defaulting" signal (§E8-MI1) — the monoculture is visible as "unintentional" rather than "coherent."
 
 ---
