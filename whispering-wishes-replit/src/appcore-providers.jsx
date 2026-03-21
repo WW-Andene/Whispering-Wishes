@@ -2275,9 +2275,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
 
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
-    .no-animations *:not(.luck-badge),
-    .no-animations *:not(.luck-badge)::before,
-    .no-animations *:not(.luck-badge)::after {
+    .no-animations *, .no-animations *::before, .no-animations *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -2286,7 +2284,7 @@ const KuroStyles = memo(({ oledMode }) => (
        when prefers-reduced-motion: reduce) which adds .no-animations class above.
        CSS-level fallback for cases where JS hasn't loaded yet. */
     @media (prefers-reduced-motion: reduce) {
-      *:not(.luck-badge), *:not(.luck-badge)::before, *:not(.luck-badge)::after {
+      *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
