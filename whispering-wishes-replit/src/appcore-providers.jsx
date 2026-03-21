@@ -795,7 +795,7 @@ const KuroStyles = memo(({ oledMode }) => (
       animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       margin-left: -0.75rem;
       margin-right: -0.75rem;
-      padding: 0 0.75rem 0.75rem;
+      padding: 0.75rem;
     }
     
     @keyframes tabFadeIn {
