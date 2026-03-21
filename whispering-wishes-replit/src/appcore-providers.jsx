@@ -889,6 +889,40 @@ const KuroStyles = memo(({ oledMode }) => (
       overflow: hidden;
       padding: 2px;
     }
+    .luck-badge::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--badge-color) 25%,
+        #fff 50%,
+        var(--badge-color) 75%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      animation: luckShimmer 3s ease-in-out infinite;
+      opacity: 0.6;
+      filter: blur(6px);
+    }
+    .luck-badge::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 12px var(--badge-color), 0 0 8px var(--badge-color);
+      animation: luckPulse 2.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes luckShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @keyframes luckPulse {
+      0%, 100% { opacity: 0.3; }
+      50%      { opacity: 0.8; }
+    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;
