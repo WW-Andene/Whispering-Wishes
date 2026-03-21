@@ -4062,9 +4062,8 @@ function WhisperingWishesInner() {
                 )}
 
                 {/* Luck Leaderboard Modal */}
-                {showLeaderboard && (
-                  <div ref={leaderboardTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-busy={leaderboardLoading} aria-label="Community leaderboard" onKeyDown={(e) => { if (e.key === 'Escape') setShowLeaderboard(false); }}>
-                    <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
+                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
+                    <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                       <div className="p-4 pb-2 border-b border-[var(--border-medium)]">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -4275,8 +4274,7 @@ function WhisperingWishesInner() {
                         )}
                       </div>
                     </div>
-                  </div>
-                )}
+                </FocusTrapModal>
 
                 {/* Trophies & Achievements */}
                 {trophies && trophies.list.length > 0 && (
@@ -4320,22 +4318,14 @@ function WhisperingWishesInner() {
                       </div>
                       
                       {/* Trophy Description Modal */}
-                      {selectedTrophy && (() => {
+                      {(() => {
+                        if (!selectedTrophy) return null;
                         const t = trophies.list.find(tr => tr.id === selectedTrophy);
                         if (!t) return null;
                         const Icon = TROPHY_ICON_MAP[t.icon] || Star;
                         return (
-                          <div
-                            ref={trophyTrapRef}
-                            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-                            onClick={() => setSelectedTrophy(null)}
-                            onKeyDown={(e) => { if (e.key === 'Escape') setSelectedTrophy(null); }}
-                            role="dialog"
-                            aria-modal="true"
-                            aria-label={`Trophy: ${t.name}`}
-                            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
-                          >
-                            <div 
+                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="bg-black/70" onClick={() => setSelectedTrophy(null)} ariaLabel={`Trophy: ${t.name}`}>
+                            <div
                               className="relative mx-6 p-5 rounded-xl text-center max-w-xs w-full"
                               onClick={(e) => e.stopPropagation()}
                               style={{
@@ -4360,7 +4350,7 @@ function WhisperingWishesInner() {
                               <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
                               <div className="mt-3 text-[9px] text-gray-400">tap outside or ✕ to close</div>
                             </div>
-                          </div>
+                          </FocusTrapModal>
                         );
                       })()}
                       
@@ -6840,9 +6830,8 @@ Example: {"pulls":[...]}'
       </main>
 
       {/* Bookmark Modal */}
-      {showBookmarkModal && (
-        <div ref={bookmarkTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowBookmarkModal(false); }} role="dialog" aria-modal="true" aria-label="Save bookmark" onKeyDown={(e) => { if (e.key === 'Escape') setShowBookmarkModal(false); }}>
-          <Card className="w-full max-w-sm">
+      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="bg-black/80" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark">
+          <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
@@ -6853,13 +6842,11 @@ Example: {"pulls":[...]}'
               <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
             </CardBody>
           </Card>
-        </div>
-      )}
+      </FocusTrapModal>
 
       {/* Export Modal */}
-      {showExportModal && (
-        <div ref={exportTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setRestoreText(''); setShowExportModal(false); } }} role="dialog" aria-modal="true" aria-label="Backup and restore" onKeyDown={(e) => { if (e.key === 'Escape') { setRestoreText(''); setShowExportModal(false); } }}>
-          <Card className="w-full max-w-sm">
+      <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="bg-black/80" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore">
+          <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
@@ -7041,14 +7028,11 @@ Example: {"pulls":[...]}'
               )}
             </CardBody>
           </Card>
-        </div>
-      )}
+      </FocusTrapModal>
 
       {/* Resonator ID Card Modal */}
-      {showIdCard && (
-        <div ref={idCardTrapRef} className="fixed inset-0 z-[100] overflow-y-auto p-4 bg-black/90 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }} role="dialog" aria-modal="true" aria-label="Resonator ID Card" onKeyDown={(e) => { if (e.key === 'Escape') setShowIdCard(false); }}>
-          <div className="min-h-full flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) setShowIdCard(false); }}>
-          <div className="w-full max-w-md">
+      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="bg-black/90 overflow-y-auto" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card">
+          <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
               <div className="kuro-card-inner">
@@ -7322,14 +7306,11 @@ Example: {"pulls":[...]}'
               </button>
             </div>
           </div>
-          </div>
-        </div>
-      )}
+      </FocusTrapModal>
 
       {/* Admin Panel Modal */}
-      {showAdminPanel && !adminMiniMode && (
-        <div ref={adminTrapRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }} role="dialog" aria-modal="true" aria-label="Admin panel" onKeyDown={(e) => { if (e.key === 'Escape') { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); } }}>
-          <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="bg-black/80" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel">
+          <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
@@ -8043,8 +8024,7 @@ Example: {"pulls":[...]}'
             </div>
             </div>
           </div>
-        </div>
-      )}
+      </FocusTrapModal>
 
       {/* Admin Mini Window */}
       {showAdminPanel && adminMiniMode && adminUnlocked && (

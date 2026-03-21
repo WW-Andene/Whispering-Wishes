@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { Sparkles, Calculator, Upload, Target, BarChart3, X, LayoutGrid, Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 
@@ -325,7 +326,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     };
   }, [isOpen]);
   if (!isOpen) return null;
-  return (
+  return createPortal(
     <div
       ref={focusTrapRef}
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${className}`}
@@ -336,7 +337,8 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
       onClick={onClick}
     >
       {children}
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -827,10 +829,10 @@ const KuroStyles = memo(({ oledMode }) => (
       left: -50%;
       width: 200%;
       height: 200%;
-      background: conic-gradient(from 0deg, var(--badge-color), transparent 50%, var(--badge-color));
-      animation: badgeRotate 8s linear infinite;
-      opacity: 0.9;
-      filter: blur(3px);
+      background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
+      animation: badgeRotate 12s linear infinite;
+      opacity: 0.7;
+      filter: blur(4px);
     }
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
@@ -2040,11 +2042,6 @@ const KuroStyles = memo(({ oledMode }) => (
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    /* Exempt luck badge — subtle rotating border, not a motion trigger */
-    .no-animations .luck-badge::before {
-      animation-duration: 8s !important;
-      animation-iteration-count: infinite !important;
-    }
     /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
        when prefers-reduced-motion: reduce) which adds .no-animations class above.
        CSS-level fallback for cases where JS hasn't loaded yet. */
@@ -2054,10 +2051,6 @@ const KuroStyles = memo(({ oledMode }) => (
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
-      }
-      .luck-badge::before {
-        animation-duration: 8s !important;
-        animation-iteration-count: infinite !important;
       }
     }
     /* E2-EE3: Shrink tab bar padding by 25% in landscape to reclaim vertical space */
