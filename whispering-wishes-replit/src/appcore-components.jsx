@@ -1237,8 +1237,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                   <div className="text-gray-400 text-[9px] mt-0.5">Convenes</div>
                 </div>
               </div>
+              {/* MED-27: Escalated from text-[9px] to text-xs font-bold for visual weight */}
               {isChar && (
-                {/* MED-27: Escalated from text-[9px] to text-xs font-bold for visual weight */}
                 <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
                 </div>
