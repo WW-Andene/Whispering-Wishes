@@ -5587,7 +5587,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-AG-F1 ✅ | **MEDIUM** | ~492 instances of `text-gray-400` create a "Tailwind template" texture across secondary text — the muted text has no brand personality | **Create `--text-muted` token**: Add `--text-muted: #9ca3af` (or the current gray-400 value) as a CSS custom property. Migrate `text-gray-400` → `text-[var(--text-muted)]` or add a utility class `.kuro-text-muted`. This doesn't change the color but moves it into the branded token layer, making it intentional rather than default |
-| §E9-AG-F2 | **MEDIUM** | ~360 instances of `rounded-lg` create a "same radius everywhere" pattern with no shape hierarchy | **Create radius scale tokens**: `--radius-sm: 8px`, `--radius-md: 12px`, `--radius-lg: 16px`. Cards already use 16px via `.kuro-card`; extend this to buttons (12px) and badges/chips (8px). The visual result is the same, but the shape system becomes documented and intentional |
+| §E9-AG-F2 ✅ | **MEDIUM** | ~360 instances of `rounded-lg` create a "same radius everywhere" pattern with no shape hierarchy | **Create radius scale tokens**: `--radius-sm: 8px`, `--radius-md: 12px`, `--radius-lg: 16px`. Cards already use 16px via `.kuro-card`; extend this to buttons (12px) and badges/chips (8px). The visual result is the same, but the shape system becomes documented and intentional |
 | §E9-AG-F3 ✅ | **LOW** | ~280 instances of `transition-colors` use browser-default timing instead of LAHAI-ROI motion tokens | **Replace with branded transitions**: `transition-colors` → `transition: color var(--transition-fast)`. The app already defines `--transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1)` — using it ensures every color transition has the app's signature "overshoot snap" feel |
 | §E9-AG-F4 ✅ | **LOW** | ~50 instances of raw `border-white/5` or `border-white/10` instead of using `var(--border-subtle)` / `var(--border-default)` tokens | **Migrate to border tokens**: Replace inline `border-white/5` with `border-[var(--border-subtle)]` and `border-white/10` with `border-[var(--border-default)]`. The token layer already exists — it's just not universally applied |
 
@@ -5735,7 +5735,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E9-MO-F1 | **MEDIUM** | Desktop layout uses Material Design easing `cubic-bezier(0.4, 0, 0.2, 1)` instead of branded `cubic-bezier(0.16, 1, 0.3, 1)` — motion personality changes on desktop | **Unify easing**: Replace the desktop layout easing at appcore-providers.jsx:1615 with `var(--transition-slow)` or the branded cubic-bezier value. The motion should feel the same regardless of viewport |
+| §E9-MO-F1 ✅ | **MEDIUM** | Desktop layout uses Material Design easing `cubic-bezier(0.4, 0, 0.2, 1)` instead of branded `cubic-bezier(0.16, 1, 0.3, 1)` — motion personality changes on desktop | **Unify easing**: Replace the desktop layout easing at appcore-providers.jsx:1615 with `var(--transition-slow)` or the branded cubic-bezier value. The motion should feel the same regardless of viewport |
 | §E9-MO-F2 | **LOW** | ~280 instances of Tailwind `transition-colors` use browser-default timing instead of branded motion tokens (same as §E9-AG-F3 ✅) | **Same solution as §E9-AG-F3**: Migrate to `transition: color var(--transition-fast)` to inject branded easing into every color transition |
 | §E9-MO-F3 | **LOW** | No `prefers-reduced-motion` handling for canvas animations (BackgroundGlow, TriangleMirrorWave) or CSS ambient animations (shimmer, pulses) | **Add reduced-motion respect**: Wrap canvas `requestAnimationFrame` loops in a `matchMedia('(prefers-reduced-motion: reduce)')` check; add `@media (prefers-reduced-motion: reduce) { .kuro-card::after { animation: none; } }` for CSS ambient animations |
 | §E9-MO-F4 ✅ | **POLISH** | Slider animation uses bare `0.15s` with no easing instead of `var(--transition-fast)` | **Apply branded token**: Replace slider transition with `transition: all var(--transition-fast)` to include the overshoot easing |
@@ -5970,8 +5970,8 @@ This creates a distinctive **temperature personality**: the app feels meditative
 | §E9-EA-F2 ✅ | No escalating pity urgency visual | Add progressive gold pulse as pity approaches |
 | §E9-EA-F3 ✅ | No collection milestone celebration | Add threshold celebration animations |
 | §E9-AG-F1 ✅ | ~492 `text-gray-400` instances have no brand personality | Create `--text-muted` token |
-| §E9-AG-F2 | ~360 `rounded-lg` with no shape hierarchy | Create radius scale tokens |
-| §E9-MO-F1 | Desktop easing differs from branded easing | Unify to branded cubic-bezier |
+| §E9-AG-F2 ✅ | ~360 `rounded-lg` with no shape hierarchy | Create radius scale tokens |
+| §E9-MO-F1 ✅ | Desktop easing differs from branded easing | Unify to branded cubic-bezier |
 
 #### LOW (7 findings)
 | ID | Finding | Solution |
@@ -5999,7 +5999,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 - **§E1-COV1** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1 ✅). Token migration is the single highest-impact improvement.
 - **§E7-PD1 ✅** (button migration): The native `<select>` (§E9-MC-F1 ✅) is the same class of issue — a non-branded native element breaking the design system.
 - **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
-- **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2) — the radius monoculture prevents shape from serving as an identity signal.
+- **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2 ✅) — the radius monoculture prevents shape from serving as an identity signal.
 - **§E7-PL1 ✅** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
 - **§E8-CI2** (PWA identity broken): Expanded here with full brand scalability audit (§E9.10) — missing PNG variants, external OG image, and no splash screen compound into a weak multi-platform presence.
 
@@ -6072,9 +6072,9 @@ The app defines two dedicated typography classes for numeric display (appcore-pr
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-NV-F1 | **MEDIUM** | Pity count is 18px in Tracker ring but 24px in Calculator input — same metric, inconsistent visual weight across the two most important surfaces | **Increase Tracker ring font**: Change PityRing SVG text `fontSize` from `size * 0.36` to `size * 0.42` (~22px in a 52px ring). This brings it closer to the Calculator's 24px without breaking the ring layout |
-| §E10-NV-F2 | **MEDIUM** | BannerCard stats (5★ Pity, 4★ Pity, Total Pulls) are all `text-sm` with the threshold "/80" at `text-[9px]` gray-400 — no visual hierarchy between current pity and supporting numbers | **Escalate pity number**: Change the pity count to `text-base font-bold` and keep the denominator at `text-[9px]`. Add a subtle color accent to the "/80" threshold (e.g., `text-gray-300` instead of `text-gray-400`) to make it more visible as a reference point |
-| §E10-NV-F3 | **MEDIUM** | Planner 7/30/90-day projections are all `text-2xl` with identical styling — no indication which timeframe is most relevant | **Emphasize 30-day projection**: Make the 30-day cell `text-3xl` with a `kuro-stat-gold` background border, while keeping 7-day and 90-day at `text-xl`. Add a subtle "Recommended" or "Monthly" label badge to the 30-day cell |
+| §E10-NV-F1 ✅ | **MEDIUM** | Pity count is 18px in Tracker ring but 24px in Calculator input — same metric, inconsistent visual weight across the two most important surfaces | **Increase Tracker ring font**: Change PityRing SVG text `fontSize` from `size * 0.36` to `size * 0.42` (~22px in a 52px ring). This brings it closer to the Calculator's 24px without breaking the ring layout |
+| §E10-NV-F2 ✅ | **MEDIUM** | BannerCard stats (5★ Pity, 4★ Pity, Total Pulls) are all `text-sm` with the threshold "/80" at `text-[9px]` gray-400 — no visual hierarchy between current pity and supporting numbers | **Escalate pity number**: Change the pity count to `text-base font-bold` and keep the denominator at `text-[9px]`. Add a subtle color accent to the "/80" threshold (e.g., `text-gray-300` instead of `text-gray-400`) to make it more visible as a reference point |
+| §E10-NV-F3 ✅ | **MEDIUM** | Planner 7/30/90-day projections are all `text-2xl` with identical styling — no indication which timeframe is most relevant | **Emphasize 30-day projection**: Make the 30-day cell `text-3xl` with a `kuro-stat-gold` background border, while keeping 7-day and 90-day at `text-xl`. Add a subtle "Recommended" or "Monthly" label badge to the 30-day cell |
 | §E10-NV-F4 ✅ | **LOW** | Daily income (`text-sm`, not `.kuro-number`) and Astrite amounts (`text-[9px]`) are under-weighted for planning decisions | **Apply `.kuro-number` to daily income**: Change the daily income display from plain `text-sm font-bold` to `text-base kuro-number` to visually connect it to the data typography system |
 | §E10-NV-F5 ✅ | **LOW** | Win Rate % in Stats is displayed at `text-xs` (12px) — a key strategic insight at the smallest readable size | **Escalate win rate**: Change from `text-xs` to `text-sm font-bold` with the `.kuro-number` class. The 50/50 win rate is one of the most important strategic metrics for gacha players |
 
@@ -6135,8 +6135,8 @@ The app defines two dedicated typography classes for numeric display (appcore-pr
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-HI-F1 | **HIGH** | Tracker tab's guarantee prediction ("50/50" vs "✓ Guaranteed") is at `text-[9px]` — the most actionable insight is the smallest element | **Escalate guarantee badge**: Increase to `text-xs font-bold` with a colored background pill (emerald for guaranteed, orange for 50/50). Position it prominently below the pity ring, not buried in the stats row. This is the single most important piece of information for deciding whether to pull |
-| §E10-HI-F2 ✅ | **LOW** | Planner Layer 3 (time projections) is a flat grid — no signal about which timeframe is most relevant | **Same solution as §E10-NV-F3**: Emphasize 30-day as the primary planning horizon |
+| §E10-HI-F1 ✅ | **HIGH** | Tracker tab's guarantee prediction ("50/50" vs "✓ Guaranteed") is at `text-[9px]` — the most actionable insight is the smallest element | **Escalate guarantee badge**: Increase to `text-xs font-bold` with a colored background pill (emerald for guaranteed, orange for 50/50). Position it prominently below the pity ring, not buried in the stats row. This is the single most important piece of information for deciding whether to pull |
+| §E10-HI-F2 ✅ | **LOW** | Planner Layer 3 (time projections) is a flat grid — no signal about which timeframe is most relevant | **Same solution as §E10-NV-F3 ✅**: Emphasize 30-day as the primary planning horizon |
 
 ---
 
@@ -6202,7 +6202,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-CH-F1 | **LOW** | Convene History AreaChart has no Y-axis gridlines — values must be estimated by eye rather than read against a reference | **Add subtle gridlines**: Add `<CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />` to the AreaChart. The ultra-subtle stroke ensures gridlines don't compete with the data |
+| §E10-CH-F1 ✅ | **LOW** | Convene History AreaChart has no Y-axis gridlines — values must be estimated by eye rather than read against a reference | **Add subtle gridlines**: Add `<CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />` to the AreaChart. The ultra-subtle stroke ensures gridlines don't compete with the data |
 | §E10-CH-F2 ✅ | **POLISH** | Pity histogram uses custom HTML bars instead of Recharts BarChart — this works well but creates an inconsistency in chart technology (Recharts vs custom) | **Accept as intentional**: The custom HTML implementation allows element-specific color coding per bar and fine-grained layout control that Recharts BarChart doesn't easily provide. No change needed |
 
 ---
@@ -6275,7 +6275,7 @@ The app uses Recharts (imported at App.jsx:23) for two data visualizations, plus
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E10-PC-F1 | **LOW** | Planner tab shows all 4 content layers simultaneously with no progressive disclosure — daily income, projections, and goal are all visible at once | **Consider collapsing time projections**: Make the 7/30/90-day projection grid collapsible by default (with the 30-day preview showing), expanding to show all three on tap. This reduces initial cognitive load while keeping data one tap away |
+| §E10-PC-F1 ✅ | **LOW** | Planner tab shows all 4 content layers simultaneously with no progressive disclosure — daily income, projections, and goal are all visible at once | **Consider collapsing time projections**: Make the 7/30/90-day projection grid collapsible by default (with the 30-day preview showing), expanding to show all three on tap. This reduces initial cognitive load while keeping data one tap away |
 
 ---
 
@@ -6590,16 +6590,16 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 
 | # | ID | Severity | Section | Finding (Short) |
 |---|-----|----------|---------|-----------------|
-| 1 | §E10-NV-F1 | **HIGH** | §E10.1 | Tracker guarantee prediction at `text-[9px]` — most actionable insight is the smallest element |
-| 2 | §E10-NV-F2 | **MEDIUM** | §E10.1 | Pity count size inconsistency: `text-sm` on BannerCard vs `text-2xl` on Calculator |
-| 3 | §E10-NV-F3 | **LOW** | §E10.1 | Stats "Overall" numbers use `font-bold` without `.kuro-number` — no tabular-nums |
+| 1 | §E10-NV-F1 ✅ | **HIGH** | §E10.1 | Tracker guarantee prediction at `text-[9px]` — most actionable insight is the smallest element |
+| 2 | §E10-NV-F2 ✅ | **MEDIUM** | §E10.1 | Pity count size inconsistency: `text-sm` on BannerCard vs `text-2xl` on Calculator |
+| 3 | §E10-NV-F3 ✅ | **LOW** | §E10.1 | Stats "Overall" numbers use `font-bold` without `.kuro-number` — no tabular-nums |
 | 4 | §E10-NV-F4 ✅ | **LOW** | §E10.1 | Planner daily income rate displayed inline at `text-[10px]` — key economic metric lacks emphasis |
 | 5 | §E10-NV-F5 ✅ | **POLISH** | §E10.1 | Luck Rating badge uses `text-shadow` glow but is semantically a `<span>` — no tooltip/explanation |
-| 6 | §E10-HI-F1 | **MEDIUM** | §E10.2 | Flat grid anti-pattern in Planner projections — 7/30/90 day values at equal visual weight |
+| 6 | §E10-HI-F1 ✅ | **MEDIUM** | §E10.2 | Flat grid anti-pattern in Planner projections — 7/30/90 day values at equal visual weight |
 | 7 | §E10-HI-F2 ✅ | **LOW** | §E10.2 | Stats tab lacks narrative header summarizing "Your story so far" |
-| 8 | §E10-CH-F1 | **MEDIUM** | §E10.3 | Convene History AreaChart has no axis labels/tooltips — meaning requires external context |
+| 8 | §E10-CH-F1 ✅ | **MEDIUM** | §E10.3 | Convene History AreaChart has no axis labels/tooltips — meaning requires external context |
 | 9 | §E10-CH-F2 ✅ | **LOW** | §E10.3 | Histogram summary line at `text-[10px]` placed below bars — easy to miss |
-| 10 | §E10-PC-F1 | **MEDIUM** | §E10.4 | Planner shows all complexity at once — no progressive disclosure |
+| 10 | §E10-PC-F1 ✅ | **MEDIUM** | §E10.4 | Planner shows all complexity at once — no progressive disclosure |
 | 11 | §E10-DD-F1 | **POLISH** | §E10.5 | Collection grid tight spacing may cause visual fatigue at 40+ items |
 | 12 | §E10-EP-F1 | **MEDIUM** | §E10.6 | Stats empty states lack personality — clinical "Insufficient data" messages |
 | 13 | §E10-EP-F2 ✅ | **LOW** | §E10.6 | No visual ceremony for first data population |
@@ -6657,14 +6657,14 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 
 | §E10 Finding | Connected Prior Finding | Relationship |
 |-------------|----------------------|--------------|
-| §E10-NV-F3 (Stats missing kuro-number) | §E8-TK-F2 ✅ (typography token gaps) | Same root cause — `kuro-number` was designed but not propagated to all numeric surfaces |
+| §E10-NV-F3 ✅ (Stats missing kuro-number) | §E8-TK-F2 ✅ (typography token gaps) | Same root cause — `kuro-number` was designed but not propagated to all numeric surfaces |
 | §E10-NF-F2 (Stats missing kuro-number) | §E8-TK-F2 ✅ | Duplicate of NV-F3 from a formatting angle — reinforce priority |
 | §E10-DT-F1 (tables missing kuro-number) | §E8-TK-F2 ✅ | Third instance — `kuro-number` needs a systematic audit-and-apply pass |
-| §E10-CH-F1 (chart missing tooltips) | §E7-IN-F2 (interaction feedback gaps) | Charts lack the hover feedback that buttons and cards already have |
+| §E10-CH-F1 ✅ (chart missing tooltips) | §E7-IN-F2 (interaction feedback gaps) | Charts lack the hover feedback that buttons and cards already have |
 | §E10-EP-F1 (clinical empty states) | §E9-VE-F7 (empty states lack brand personality) | Same finding from visual identity angle — empty states are generic |
 | §E10-RD-F3 (tab scroll affordance) | §E7-IN-F4 (horizontal scroll missing indicators) | Same affordance gap in tab navigation |
 | §E10-CB-F1 (W/L badge too small) | §E3-A11Y-F3 (touch targets under 44px) | Small interactive/informational elements pattern |
-| §E10-HI-F1 (flat grid anti-pattern) | §E4-PERF-F1 (unnecessary re-renders) | Planner tab has both visual and performance issues — candidate for redesign |
+| §E10-HI-F1 ✅ (flat grid anti-pattern) | §E4-PERF-F1 (unnecessary re-renders) | Planner tab has both visual and performance issues — candidate for redesign |
 
 ### Top 3 Impact Fixes for §E10
 
@@ -8981,7 +8981,7 @@ Competitive positioning map:
 | This Finding | Related Prior Finding | Relationship |
 |---|---|---|
 | BT-F1 ✅ (focus-visible) | §E6/§E7 interaction findings | Same root issue: missing keyboard navigation feedback |
-| CK-F2 ✅ (touch targets) | §E10-NV-F1 (9px text) | Same root: small interactive elements |
+| CK-F2 ✅ (touch targets) | §E10-NV-F1 ✅ (9px text) | Same root: small interactive elements |
 | CK-F3 (reduced-motion) | §E6 interaction findings | Accessibility gap extends to canvas layer |
 | TK-F1 (no primitive tokens) | §E1 (P1 Step 8) token system | Deepens the token architecture analysis |
 | CL-F1 (surface elevation) | §DC3 (P1 Step 6) dark mode craft | Same surface-level perceptibility concern |
@@ -9029,7 +9029,7 @@ Competitive positioning map:
 | # | Finding A | Finding B | Apparent Contradiction | Resolution |
 |---|-----------|-----------|----------------------|------------|
 | C1 | §DS2-F14 PASS: "Detail level appropriate for Cyberpunk/Terminal" | §E8-MI1 MEDIUM: "Three defaulting signals undermine 'made with intent'" | DS2 says detail level is appropriate; E8 says defaulting signals are visible | **No contradiction.** DS2 assesses the *kuro-\** system's detail level (which IS appropriate). E8 assesses the *inline Tailwind layer* outside that system (which IS defaulting). Both are correct for their respective scopes. The gap is between layers, not within either layer. |
-| C2 | §DP1-V1 PASS: "Visual terseness matches FOCUS-TOOL intent" | §E10-NV-F1 HIGH: "Guarantee prediction at text-[9px] — most actionable insight is smallest element" | DP1 says terseness is on-target; E10 says critical data is too small | **No contradiction.** Terseness as a *character trait* is correct — the app should be dense and efficient. But 9px text isn't "terse," it's *invisible*. Terseness doesn't mean hiding important data; it means eliminating unnecessary data. E10's finding is a violation of the character's own principle. |
+| C2 | §DP1-V1 PASS: "Visual terseness matches FOCUS-TOOL intent" | §E10-NV-F1 ✅ HIGH: "Guarantee prediction at text-[9px] — most actionable insight is smallest element" | DP1 says terseness is on-target; E10 says critical data is too small | **No contradiction.** Terseness as a *character trait* is correct — the app should be dense and efficient. But 9px text isn't "terse," it's *invisible*. Terseness doesn't mean hiding important data; it means eliminating unnecessary data. E10's finding is a violation of the character's own principle. |
 | C3 | §E4-LH1 PASS: "Line height system well-calibrated" | §E4-LH2 ✅ LOW: "Small text (8-9px) relies on default line-height" | Same step says line height is both "well-calibrated" and has a gap | **No contradiction.** The system-level line height tiers (1.1/1.3/1.4/1.5/1.6) are well-calibrated. The 8-9px text is an edge case outside the system where no explicit line-height is set. Both findings stand — the system is good, but it doesn't cover the smallest text. |
 | C4 | §E3-WC1 PASS: "WCAG AA 100% (22/22 combinations)" | §E3-NC1 ✅ MEDIUM: "Input border 2.1:1 fails WCAG 1.4.11" | E3 says 100% WCAG pass but also has a WCAG failure | **No contradiction.** WC1 tests text contrast (WCAG 1.4.3, SC 4.5:1). NC1 tests non-text contrast (WCAG 1.4.11, SC 3:1). Different WCAG criteria with different thresholds. Text passes; non-text UI components have a gap. |
 | C5 | §DBI3-S05 PASS: "Shadow system fully custom + color glows" | §E1-SHD1 ✅ LOW: "4 shadow tokens defined, only 1 used — 34 hardcoded values" | DBI3 says shadow system is fully custom; E1 says tokens are underused | **No contradiction.** The shadow *values* are indeed custom (color-matched to #060a18, not generic black). But the shadow *tokens* that wrap those values are underused. The design intent is custom; the implementation is ad-hoc. ✅ Shadow tokens now applied to kuro-card (--shadow-lg) and kuro-stat (--shadow-sm). |
@@ -9069,10 +9069,10 @@ Competitive positioning map:
 | # | Pattern | Steps Affected | Inconsistency | Normalized Severity |
 |---|---------|---------------|---------------|-------------------|
 | SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 ✅ (MEDIUM), §E9-AG-F1 ✅ (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
-| SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
+| SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 ✅ (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 ✅ (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
-| SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
+| SI5 | **Missing kuro-number propagation** | §E10-NV-F3 ✅ (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
 | SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
 
 ### 19.2.2 — Score-to-Finding Alignment Audit
@@ -9098,7 +9098,7 @@ Competitive positioning map:
 | Hardcoded colors | §DS2-F8: "~240 hardcoded" | §E1-COL1: "66 unique hex" | **CONSISTENT** — 240 instances ÷ 66 unique = 3.6 avg uses per color. Plausible. |
 | Inline buttons | §E5-BT5 ✅: "~100+" | §E6-HV9 ✅: "~100+" | §E6-AP4 ✅: "~93+" | **CONSISTENT** — all approximate the same population. |
 | Token coverage | §E1-COV1: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1 ✅: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
-| Rounded-lg count | §DBI3-S03: "109× rounded-lg" | §E9-AG-F2: "~360 rounded-lg" | **DISCREPANCY** — 109 vs 360 is a 3.3× difference. **Resolution**: DBI3 likely counts `rounded-lg` class instances. E9 may count all `rounded-*` instances including `rounded`, `rounded-md`, `rounded-xl`, etc. **Clarification needed** — the finding should specify: §DBI3-S03 counts `rounded-lg` specifically (109); §E9-AG-F2 should count `rounded-lg` specifically to maintain consistency. If E9 includes all rounded-* variants, note this explicitly. |
+| Rounded-lg count | §DBI3-S03: "109× rounded-lg" | §E9-AG-F2 ✅: "~360 rounded-lg" | **DISCREPANCY** — 109 vs 360 is a 3.3× difference. **Resolution**: DBI3 likely counts `rounded-lg` class instances. E9 may count all `rounded-*` instances including `rounded`, `rounded-md`, `rounded-xl`, etc. **Clarification needed** — the finding should specify: §DBI3-S03 counts `rounded-lg` specifically (109); §E9-AG-F2 ✅ should count `rounded-lg` specifically to maintain consistency. If E9 includes all rounded-* variants, note this explicitly. |
 | Touch targets | §E2-MO1 ✅: "36px" | §CK-F2 ✅: "36px" | **CONSISTENT** — same measurement. |
 | Surface elevation band | §DC3-EL1 ✅: "3.7% lightness band" | §CL-F1: "Surface elevation steps too small" | **CONSISTENT** — qualitative and quantitative descriptions align. |
 
@@ -9107,7 +9107,7 @@ Competitive positioning map:
 **Severity adjustments needed (5)**:
 1. §E6-AP4 ✅: LOW → **MEDIUM** (inline button press feedback)
 2. §E7-AD2 ✅: LOW → **MEDIUM** (radius token absence)
-3. §E10-NV-F3: LOW → **MEDIUM** (Stats missing kuro-number)
+3. §E10-NV-F3 ✅: LOW → **MEDIUM** (Stats missing kuro-number)
 4. §E9-AC-F2 ✅: POLISH → **LOW** (favicon gold mismatch)
 5. §CK-F2 ✅: LOW → **MEDIUM** (touch targets — from §19.1)
 
@@ -9115,7 +9115,7 @@ Competitive positioning map:
 - §E9 overall: 8.1/10 → **7.8/10** (3 HIGH findings pull score below 8.0)
 
 **Quantification note (1)**:
-- Rounded-lg count: §DBI3-S03 (109) vs §E9-AG-F2 (~360) — different scope. §DBI3 counts `rounded-lg` class specifically; §E9 likely counts all `rounded-*` variants. Both valid at their stated scope.
+- Rounded-lg count: §DBI3-S03 (109) vs §E9-AG-F2 ✅ (~360) — different scope. §DBI3 counts `rounded-lg` class specifically; §E9 likely counts all `rounded-*` variants. Both valid at their stated scope.
 
 **Solution**: Apply the severity adjustments above to the master findings list in Step 20. Use the higher severity when findings overlap across steps.
 
@@ -9147,7 +9147,7 @@ Competitive positioning map:
 | R1 | §E8-DC1 LOW: "OG image may not exist" | Social sharing meta tags | **Not verified.** The finding says "may not exist" — no step actually checked whether `og-image.png` is accessible at the stated URL. **Solution**: Verify URL accessibility during implementation. |
 | R2 | §E8-CI2 MEDIUM: "Missing apple-touch-icon.png" | PWA manifest and iOS support | **Not fully verified.** The manifest references `apple-touch-icon.png` but no step confirmed whether the file exists in `public/`. **Solution**: Check file system during implementation — `ls public/apple-touch-icon.png`. |
 | R3 | §E7-CD2 ✅ MEDIUM: "Banner/event grid minmax overflow" | Desktop responsive behavior | **Theoretical risk.** The finding identifies overflow potential at `minmax(420px)` but doesn't confirm actual breakpoint where overflow occurs. **Solution**: Test at exactly 1024px viewport with sidebar visible to identify the actual break point. |
-| R4 | §E10-HI-F1 MEDIUM: "Flat grid anti-pattern connects to E4-PERF-F1" | Performance finding E4-PERF-F1 | **Cross-reference to non-existent finding.** There is no finding numbered "E4-PERF-F1" in Step 11 (§E4 Typography). This appears to be an erroneous cross-reference. **Solution**: Remove this cross-reference from Step 17. The Planner flat grid is purely a visual hierarchy issue, not a performance issue (unless re-renders are independently verified). |
+| R4 | §E10-HI-F1 ✅ MEDIUM: "Flat grid anti-pattern connects to E4-PERF-F1" | Performance finding E4-PERF-F1 | **Cross-reference to non-existent finding.** There is no finding numbered "E4-PERF-F1" in Step 11 (§E4 Typography). This appears to be an erroneous cross-reference. **Solution**: Remove this cross-reference from Step 17. The Planner flat grid is purely a visual hierarchy issue, not a performance issue (unless re-renders are independently verified). |
 
 ### 19.3.3 — Gap Summary
 
@@ -9189,7 +9189,7 @@ Competitive positioning map:
 | §E1-COL1: 73% unmanaged palette | Tokenize to 70%+ coverage | NONE — tokenization wraps existing values, doesn't change them | **ALIGNED** |
 | §E1-COV1: Token coverage ~30% | Add 25+ spacing/radius/z-index tokens | NONE — tokens formalize existing patterns | **ALIGNED** |
 | §DBI3-S07: 459 achromatic gray text | Replace with chromatic text tokens | **LOW RISK to P4** — new chromatic tokens must be cool-tinted (blue-gray), not warm or neutral. Solution should specify: use existing cool gray scale (e.g., `coolGray-400` at `#8e99af`) rather than Tailwind `gray-400` (`#9ca3af` which is warmer) | **ALIGNED with constraint**: New `--text-muted` token MUST use cool-tinted gray from the established scale |
-| §E10-NV-F1: Guarantee prediction at 9px | Promote to text-xs with gold background | NONE — increases visibility of existing data | **ALIGNED** |
+| §E10-NV-F1 ✅: Guarantee prediction at 9px | Promote to text-xs with gold background | NONE — increases visibility of existing data | **ALIGNED** |
 | §E9-IC-F1 / §E9-BS-F1: Missing PNG icons | Generate PNG variants | NONE — extends existing SVG to new sizes | **ALIGNED** |
 | §E9-BS-F2: OG image externally hosted | Create local OG image with brand design | NONE — strengthens brand presence | **ALIGNED** |
 | §E9-EA-F1: No 5★ celebration animation | Gold particle burst + screen glow | **LOW RISK to P5** — celebration must stay within cyberpunk-luxe vocabulary (gold glow, geometric particles, not confetti or cartoony effects) | **ALIGNED with constraint**: Use gold color (#edaf18) particles with geometric shapes (triangles, lines), not circular confetti |
@@ -9216,8 +9216,8 @@ Competitive positioning map:
 | §E9-EA-F2 ✅: No escalating pity urgency | Progressive gold pulse as pity approaches | **STRENGTHENS P2** — gold as urgency signal is on-brand | **ALIGNED** |
 | §E9-EA-F3 ✅: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 — must be cyberpunk-geometric | **ALIGNED with constraint** |
 | §E9-AG-F1 ✅: ~492 text-gray-400 | Create --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
-| §E9-AG-F2: ~360 rounded-lg monoculture | Create radius scale tokens | **NONE** — formalizing existing values | **ALIGNED** |
-| §E9-MO-F1: Desktop easing differs | Unify to branded cubic-bezier | **STRENGTHENS P5** — consistent motion identity | **ALIGNED** |
+| §E9-AG-F2 ✅: ~360 rounded-lg monoculture | Create radius scale tokens | **NONE** — formalizing existing values | **ALIGNED** |
+| §E9-MO-F1 ✅: Desktop easing differs | Unify to branded cubic-bezier | **STRENGTHENS P5** — consistent motion identity | **ALIGNED** |
 | §E10 MEDIUM findings (12 total) | Various data storytelling fixes | **NONE** — all improve data display without altering visual identity | **ALIGNED** |
 | §Step 18 MEDIUM findings (11 total) | Various art-direction refinements | Individually assessed below | — |
 | BR-F1: Single font for display AND body | Consider body font addition | **RISK to P3** — adding a third font would violate the protected Rajdhani + JetBrains Mono pairing. **REJECT this recommendation.** Rajdhani serves both display and body roles by design — this is a deliberate choice, not a gap | **REJECTED — violates P3** |
@@ -9285,7 +9285,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
     │
     └──→ MOTION: Inline buttons use Tailwind default durations, not branded easing (§E9-AG-F3 ✅)
             │
-            └──→ IDENTITY: Motion identity inconsistent between system and inline layers (§E9-MO-F1)
+            └──→ IDENTITY: Motion identity inconsistent between system and inline layers (§E9-MO-F1 ✅)
 ```
 
 **Chain impact**: 12+ findings across 8 steps share a single root cause
@@ -9340,7 +9340,7 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
     │
     ├──→ RADIUS: No radius tokens — 12 values without formal scale (§E1-RAD1 ✅ / §DBI3-S03)
     │       │
-    │       └──→ IDENTITY: Rounded-lg monoculture — shape doesn't signal component hierarchy (§E9-AG-F2)
+    │       └──→ IDENTITY: Rounded-lg monoculture — shape doesn't signal component hierarchy (§E9-AG-F2 ✅)
     │
     ├──→ Z-INDEX: No z-index tokens — collision at 9998 (§E1-ZDX1 ✅)
     │
@@ -9360,7 +9360,7 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
 ```
 ROOT CAUSE: kuro-number class designed but inconsistently applied
     │
-    ├──→ TYPOGRAPHY: Stats tab numbers lack tabular-nums (§E10-NV-F3 / §E10-NF-F2)
+    ├──→ TYPOGRAPHY: Stats tab numbers lack tabular-nums (§E10-NV-F3 ✅ / §E10-NF-F2)
     │       │
     │       └──→ DATA QUALITY: Numbers shift horizontally on value change — visual instability
     │
@@ -9368,7 +9368,7 @@ ROOT CAUSE: kuro-number class designed but inconsistently applied
     │       │
     │       └──→ ALIGNMENT: Numeric columns can't align properly without monospace treatment
     │
-    ├──→ HIERARCHY: Guarantee prediction at 9px (§E10-NV-F1 HIGH)
+    ├──→ HIERARCHY: Guarantee prediction at 9px (§E10-NV-F1 ✅ HIGH)
     │       │
     │       └──→ UX: Most actionable insight is the least visible element in the app
     │               │
@@ -9381,7 +9381,7 @@ ROOT CAUSE: kuro-number class designed but inconsistently applied
 
 **Chain impact**: 7+ findings across 2 steps (concentrated in Step 17)
 **Single fix**: Systematic `kuro-number` propagation pass — grep for numeric displays and add the class
-**Cascade resolution**: Fixes §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 and improves §E10-NV-F1, §E10-NF-F1
+**Cascade resolution**: Fixes §E10-NV-F3 ✅, §E10-NF-F2, §E10-DT-F1 and improves §E10-NV-F1 ✅, §E10-NF-F1
 
 ---
 
@@ -9724,7 +9724,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 |----------------|----------|--------------------------------|----------------------|
 | **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 ✅ (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 ✅ (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
 | **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 ✅ (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
-| **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
+| **kuro-number propagation** | §E10-NV-F3 ✅, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 ✅ (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
 | **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
 
@@ -9733,7 +9733,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Severity | Steps 1-10 | Steps 11-18 | Step 19 Adjustments | Reconciled Total |
 |----------|-----------|-------------|--------------------|--------------------|
 | **CRITICAL** | 0 | 0 | 0 | **0** |
-| **HIGH** | 3 (E1-COL1, DBI3-S07, E1-COV1) | 4 (E10-NV-F1, E9-IC-F1, E9-BS-F2, E9-EA-F1) | +1 (DS2-F8 upgraded) | **8** |
+| **HIGH** | 3 (E1-COL1, DBI3-S07, E1-COV1) | 4 (E10-NV-F1 ✅, E9-IC-F1, E9-BS-F2, E9-EA-F1) | +1 (DS2-F8 upgraded) | **8** |
 | **MEDIUM** | ~25 | ~40 | +5 (upgrades from §19.2), -1 (BR-F1 rejected) | **~69** |
 | **LOW** | ~50 | ~65 | -5 (duplicate consolidation) | **~110** |
 | **POLISH** | ~5 | ~16 | 0 | **~21** |
@@ -9767,7 +9767,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
 | E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
 | E7-AD2 ✅ radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 ✅ |
-| E10-NV-F3 kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 |
+| E10-NV-F3 ✅ kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 |
 | E9 overall score: 8.1 → 7.8/10 | Score adjustment | 3 HIGH findings pull below 8.0 |
 | BR-F1 body font: MEDIUM → REJECTED | Identity protection | Violates P3 (protected font pairing) |
 | R4 E4-PERF-F1 cross-reference: REMOVED | Erroneous reference | Finding does not exist |
@@ -10241,7 +10241,7 @@ These findings affect significant visual quality, usability, or brand consistenc
 
 Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy level.
 
-**Cross-references**: DBI3-S03, §E9-AG-F2, E7-AD1 ✅, E7-AD2 ✅
+**Cross-references**: DBI3-S03, §E9-AG-F2 ✅, E7-AD1 ✅, E7-AD2 ✅
 
 ---
 
@@ -10573,7 +10573,7 @@ Store milestone state in localStorage to trigger only once per threshold.
 
 ---
 
-#### MED-25: §E9-AG-F2 — ~360 `rounded-lg` Instances (No Shape Hierarchy)
+#### MED-25 ✅: §E9-AG-F2 ✅ — ~360 `rounded-lg` Instances (No Shape Hierarchy)
 **Step**: 16 (§E9) | **Tabs**: ALL
 
 **Problem**: Same root as MED-3 ✅. The `rounded-lg` monoculture makes all components feel the same shape regardless of their role.
@@ -10582,7 +10582,7 @@ Store milestone state in localStorage to trigger only once per threshold.
 
 ---
 
-#### MED-26: §E9-MO-F1 — Desktop Easing Differs from Branded Easing
+#### MED-26 ✅: §E9-MO-F1 ✅ — Desktop Easing Differs from Branded Easing
 **Step**: 16 (§E9) | **Tabs**: DESKTOP
 
 **Problem**: Desktop-specific transitions use `ease-in-out` or `ease-out` instead of the branded `cubic-bezier(0.16, 1, 0.3, 1)`. This creates a perceptibly different motion feel on desktop vs mobile.
@@ -10601,7 +10601,7 @@ Replace all `ease-in-out` and `ease-out` on interactive element transitions with
 
 ---
 
-#### MED-27: §E10-NV-F1 / §E10-HI-F1 — Guarantee Prediction at `text-[9px]` (Most Actionable Insight is Smallest)
+#### MED-27 ✅: §E10-NV-F1 ✅ / §E10-HI-F1 ✅ — Guarantee Prediction at `text-[9px]` (Most Actionable Insight is Smallest)
 **Step**: 17 (§E10) | **Tabs**: TRACKER
 
 **Problem**: The Tracker tab's guarantee prediction ("50/50" vs "✓ Guaranteed") — the single most actionable piece of information for deciding whether to pull — is displayed at `text-[9px]`, making it the smallest text element on the screen. The most important insight has the least visual weight.
@@ -10622,7 +10622,7 @@ Position prominently below the pity ring, not buried in the stats row.
 
 ---
 
-#### MED-28: §E10-NV-F2 — Pity Count Size Inconsistency Across Views
+#### MED-28 ✅: §E10-NV-F2 ✅ — Pity Count Size Inconsistency Across Views
 **Step**: 17 (§E10) | **Tabs**: TRACKER, CALC
 
 **Problem**: Pity count is `text-sm` on BannerCard (Tracker) but `text-2xl` on Calculator input — the same metric at dramatically different visual weights.
@@ -10631,7 +10631,7 @@ Position prominently below the pity ring, not buried in the stats row.
 
 ---
 
-#### MED-29: §E10-NV-F3 / §E10-HI-F1 — Planner Flat Grid Anti-Pattern
+#### MED-29 ✅: §E10-NV-F3 ✅ / §E10-HI-F1 ✅ — Planner Flat Grid Anti-Pattern
 **Step**: 17 (§E10) | **Tabs**: PLANNER
 
 **Problem**: The 7/30/90-day projection grid shows all three timeframes at `text-2xl` with identical styling. No visual signal indicates which timeframe is most relevant for planning decisions.
@@ -10643,7 +10643,7 @@ Position prominently below the pity ring, not buried in the stats row.
 
 ---
 
-#### MED-30: §E10-CH-F1 — Charts Lack Tooltips and Axis Labels
+#### MED-30 ✅: §E10-CH-F1 ✅ — Charts Lack Tooltips and Axis Labels
 **Step**: 17 (§E10) | **Tabs**: STATS
 
 **Problem**: The Convene History AreaChart has no Y-axis gridlines and no interactive tooltips. Users must estimate values by eye rather than reading precise numbers.
@@ -10663,7 +10663,7 @@ Position prominently below the pity ring, not buried in the stats row.
 
 ---
 
-#### MED-31: §E10-PC-F1 — Planner Shows All Complexity at Once
+#### MED-31 ✅: §E10-PC-F1 ✅ — Planner Shows All Complexity at Once
 **Step**: 17 (§E10) | **Tabs**: PLANNER
 
 **Problem**: The Planner tab shows daily income, all projections, and goal status simultaneously with no progressive disclosure. First-time visitors face high cognitive load.
@@ -11175,7 +11175,7 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 
 | Finding | Original | Adjusted | Reason |
 |---------|----------|----------|--------|
-| §E10-NV-F1 (guarantee at 9px) | MEDIUM | **HIGH** | Most actionable user insight at smallest size — outsized impact |
+| §E10-NV-F1 ✅ (guarantee at 9px) | MEDIUM | **HIGH** | Most actionable user insight at smallest size — outsized impact |
 | §E9-IC-F1 (missing PNG icons) | MEDIUM | **HIGH** | PWA installation broken without icons — binary fail state |
 | §E9-BS-F2 (OG image external) | MEDIUM | **HIGH** | Social sharing broken — first-impression for new users |
 | E8-CI2 (missing apple-touch-icon) | MEDIUM | → merged with §E9-IC-F1 | Same root: missing icon variants |
@@ -11244,9 +11244,9 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
 | **4A** | Systematic `.kuro-number` propagation | Chain #4, MED-35, MED-38, #51, #89, #90 |
-| **4B** | Escalate guarantee prediction to prominent badge | MED-27 |
-| **4C** | Emphasize 30-day projection in Planner | MED-29 |
-| **4D** | Add chart tooltips + gridlines | MED-30 |
+| **4B** | Escalate guarantee prediction to prominent badge | MED-27 ✅ |
+| **4C** | Emphasize 30-day projection in Planner | MED-29 ✅ |
+| **4D** | Add chart tooltips + gridlines | MED-30 ✅ |
 
 ### Phase 5: Interaction Polish (LOW-MEDIUM impact)
 *Estimated: ~100 lines CSS + ~50 lines JS*

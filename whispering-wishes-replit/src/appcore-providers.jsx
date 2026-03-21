@@ -463,8 +463,10 @@ const KuroStyles = memo(({ oledMode }) => (
       --shadow-md: 0 0 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
       --shadow-lg: 0 0 24px rgba(6, 10, 24, 0.7), 0 0 12px rgba(var(--color-gold), 0.05);
       --shadow-xl: 0 0 40px rgba(6, 10, 24, 0.8), 0 0 16px rgba(var(--color-gold), 0.06);
-      --transition-fast: 0.1s cubic-bezier(0.16, 1, 0.3, 1);   /* TR-F1: Tightened from 0.15s */
-      --transition-normal: 0.18s cubic-bezier(0.16, 1, 0.3, 1); /* TR-F1: Tightened from 0.25s */
+      /* MED-26: Branded easing token — used across all interactive transitions */
+      --ease-branded: cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-fast: 0.1s var(--ease-branded);   /* TR-F1: Tightened from 0.15s */
+      --transition-normal: 0.18s var(--ease-branded); /* TR-F1: Tightened from 0.25s */
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       /* MED-4: Z-index scale — distinct values to prevent collision */
       --z-toast: 9500;

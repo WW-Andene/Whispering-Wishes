@@ -1225,7 +1225,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-sm ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
+                  <div className={`font-bold text-base kuro-number ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[9px]">/{HARD_PITY}</span></div>
                   <div className="text-gray-400 text-[9px] mt-0.5">5★ Pity</div>
                 </div>
                 <div className="text-center">
@@ -1238,7 +1238,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                 </div>
               </div>
               {isChar && (
-                <div className={`text-[9px] px-2 py-1 rounded backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/30 text-emerald-400' : 'bg-neutral-800/50 text-gray-400'}`}>
+                {/* MED-27: Escalated from text-[9px] to text-xs font-bold for visual weight */}
+                <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
                 </div>
               )}

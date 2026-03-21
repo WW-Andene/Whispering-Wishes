@@ -20,7 +20,7 @@
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
 import { AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
-import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 import {
   APP_VERSION,
   MAX_IMPORT_SIZE_MB,
@@ -3877,11 +3877,12 @@ function WhisperingWishesInner() {
             <Card>
               <CardHeader>Income Projections</CardHeader>
               <CardBody>
+                {/* MED-29: 30-day emphasized as primary planning horizon */}
                 <div className="grid grid-cols-3 gap-2">
                   {[7, 30, 90].map(days => (
-                    <div key={days} className="kuro-stat p-3 text-center">
-                      <div className="text-gray-400 text-[10px] mb-1">{days} Days</div>
-                      <div className="text-2xl kuro-number text-yellow-400 font-extrabold">{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
+                    <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
+                      <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
+                      <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
                       <div className="text-gray-400 text-[9px]">Convenes</div>
                       <div className="text-gray-400 text-[9px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
                     </div>
@@ -4627,6 +4628,8 @@ function WhisperingWishesInner() {
                                     <stop offset="100%" stopColor="rgba(237,175,24,0)" />
                                   </linearGradient>
                                 </defs>
+                                {/* MED-30: Subtle gridlines for value estimation */}
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                                 <XAxis dataKey="label" tick={{ fill: '#8892a4', fontSize: 10, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} />
                                 <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} />
                                 <RechartsTooltip
