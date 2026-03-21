@@ -4001,11 +4001,6 @@ function WhisperingWishesInner() {
               </Card>
             ) : (
               <div className="space-y-3">
-                {/* §E10-HI-F2: Narrative header for Stats tab */}
-                <div className="text-center py-1">
-                  <h2 className="text-white font-semibold text-sm">Your Convene Story</h2>
-                  <p className="text-gray-400 text-[10px] mt-0.5">{overallStats.totalPulls.toLocaleString()} Convenes across {Object.keys(state.profile).filter(k => state.profile[k]?.history?.length > 0).length} banner types</p>
-                </div>
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
@@ -6160,11 +6155,9 @@ function WhisperingWishesInner() {
                   </Card>
 
                   {/* Character Selector Modal — FIX: pass isOpen prop */}
-                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)}>
-                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setTeamSelectorOpen(false)}>
-                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="bg-black/70" onClick={() => setTeamSelectorOpen(false)}>
                       <div
-                        className="relative w-full max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
+                        className="w-full max-w-lg max-h-[85vh] rounded-2xl border border-white/15 overflow-hidden flex flex-col"
                         style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -6363,14 +6356,11 @@ function WhisperingWishesInner() {
                           )}
                         </div>
                       </div>
-                    </div>
                   </FocusTrapModal>
 
                   {/* Weapon Selector Modal */}
-                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)}>
-                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWeaponSelectorOpen(false)} />
-                      <div className="relative w-full max-w-md max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }}>
+                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="bg-black/70" onClick={() => setWeaponSelectorOpen(false)}>
+                      <div className="w-full max-w-md max-h-[80vh] rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
                         <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0">
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
@@ -6464,7 +6454,6 @@ function WhisperingWishesInner() {
                           </div>
                         </div>
                       </div>
-                    </div>
                   </FocusTrapModal>
                 </div>
               );

@@ -563,7 +563,7 @@ const KuroStyles = memo(({ oledMode }) => (
       /* HIGH-1: Chromatic text tokens — blue-hinted grays (hue ≈250°) */
       --text-secondary: #c5ccda; /* oklch(82% 0.010 250) — replaces text-gray-300 */
       --text-muted: #8f99ab;     /* oklch(65% 0.012 250) — replaces text-gray-400 */
-      --text-disabled: #646e7f;  /* oklch(50% 0.010 250) — replaces text-gray-500 */
+      --text-disabled: #8b95a5;  /* oklch(65% 0.010 250) — replaces text-gray-500 */
       /* DBI3-S01: Calibrated 3-star rarity blue token */
       --rarity-3star: #60a5fa;
     }
@@ -2040,6 +2040,11 @@ const KuroStyles = memo(({ oledMode }) => (
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+    /* Exempt luck badge — subtle rotating border, not a motion trigger */
+    .no-animations .luck-badge::before {
+      animation-duration: 8s !important;
+      animation-iteration-count: infinite !important;
+    }
     /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
        when prefers-reduced-motion: reduce) which adds .no-animations class above.
        CSS-level fallback for cases where JS hasn't loaded yet. */
@@ -2049,6 +2054,10 @@ const KuroStyles = memo(({ oledMode }) => (
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+      }
+      .luck-badge::before {
+        animation-duration: 8s !important;
+        animation-iteration-count: infinite !important;
       }
     }
     /* E2-EE3: Shrink tab bar padding by 25% in landscape to reclaim vertical space */
