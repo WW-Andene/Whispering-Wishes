@@ -174,7 +174,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   collectionZoom: 120,
   oledMode: false,
   swipeNavigation: false,
-  animationsEnabled: true // default; overridden at mount via matchMedia listener
+  animationsEnabled: 'on' // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
 });
 const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'character', label: 'Resonators', color: 'yellow' }),
@@ -413,6 +413,9 @@ function WhisperingWishesInner() {
             'collectionFadePosition', 'collectionFadeIntensity', 'collectionOpacity']) {
             if (typeof merged[key] === 'number') merged[key] = Math.min(100, Math.max(0, merged[key]));
           }
+          // Backward compat: boolean → 3-state string
+          if (merged.animationsEnabled === true) merged.animationsEnabled = 'on';
+          else if (merged.animationsEnabled === false) merged.animationsEnabled = 'off';
           return merged;
         });
       }
@@ -424,10 +427,10 @@ function WhisperingWishesInner() {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handler = (e) => {
-      setVisualSettings(prev => ({ ...prev, animationsEnabled: !e.matches }));
+      setVisualSettings(prev => ({ ...prev, animationsEnabled: e.matches ? 'off' : (prev.animationsEnabled === 'off' ? 'on' : prev.animationsEnabled) }));
     };
     // Set initial value from OS preference
-    setVisualSettings(prev => ({ ...prev, animationsEnabled: !mql.matches }));
+    setVisualSettings(prev => ({ ...prev, animationsEnabled: mql.matches ? 'off' : (prev.animationsEnabled === 'off' ? 'on' : prev.animationsEnabled) }));
     mql.addEventListener('change', handler);
     return () => mql.removeEventListener('change', handler);
   }, []);
@@ -508,7 +511,7 @@ function WhisperingWishesInner() {
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handler = (e) => { saveVisualSettings({ ...visualSettings, animationsEnabled: !e.matches }); };
+    const handler = (e) => { saveVisualSettings({ ...visualSettings, animationsEnabled: e.matches ? 'off' : (visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled) }); };
     mql.addEventListener('change', handler);
     return () => mql.removeEventListener('change', handler);
   }, [visualSettings, saveVisualSettings]);
@@ -3157,9 +3160,9 @@ function WhisperingWishesInner() {
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
-    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${!visualSettings.animationsEnabled ? 'no-animations' : ''}`}>
-      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''}`}>
+      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled !== 'off'} />
+      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled !== 'off'} />
       <KuroStyles oledMode={visualSettings.oledMode} />
       
       {/* Onboarding Modal */}
@@ -3394,8 +3397,8 @@ function WhisperingWishesInner() {
             {/* Banner History Modal */}
             <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)}>
               <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
-                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
+                <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
                     <span className="text-white text-sm font-semibold">Banner History</span>
@@ -4085,7 +4088,7 @@ function WhisperingWishesInner() {
                     <CardHeader action={<button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button>}>Luck Rating</CardHeader>
                     <CardBody>
                       <div className="flex items-center gap-4">
-                        <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color}}>
+                        <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': visualSettings.animationsEnabled === 'full' ? '6s' : '12s'}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
                             <div className="text-[16px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-display)'}}>{luckRating.tier}</div>
                             <div className="text-[24px] font-extrabold kuro-number" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
@@ -4142,8 +4145,8 @@ function WhisperingWishesInner() {
                 {/* Luck Leaderboard Modal */}
                 <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
                     <div className="kuro-card w-full sm:max-w-sm max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-                      <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
-                      <div className="p-4 pb-2 border-b border-[var(--border-medium)]">
+                      <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                      <div className="p-4 pb-2 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <h3 className="text-white font-semibold text-sm">Community</h3>
@@ -6230,9 +6233,9 @@ function WhisperingWishesInner() {
                         style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
+                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]">
+                        <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
                             <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
                             <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
@@ -6431,8 +6434,8 @@ function WhisperingWishesInner() {
                   {/* Weapon Selector Modal */}
                   <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="bg-black/70" onClick={() => setWeaponSelectorOpen(false)}>
                       <div className="w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
-                        <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0">
+                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                        <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
                             <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
@@ -6605,7 +6608,7 @@ function WhisperingWishesInner() {
                     <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
-                <p className="text-gray-400 text-[10px] mt-2 text-center">Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+                <p className="text-gray-400 text-[10px] mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
               </CardBody>
             </Card>
 
@@ -6669,10 +6672,10 @@ function WhisperingWishesInner() {
                   <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
                 
-                {/* Animations Toggle */}
+                {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -6680,23 +6683,26 @@ function WhisperingWishesInner() {
                       <div className="text-gray-400 text-[10px]">Background effects, transitions & glow</div>
                     </div>
                   </div>
-                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
-                    onClick={() => saveVisualSettings({ ...visualSettings, animationsEnabled: !visualSettings.animationsEnabled })}
-                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.animationsEnabled ? 'bg-purple-500' : ''}`}
-                    style={!visualSettings.animationsEnabled ? { background: 'var(--bg-btn)' } : undefined}
-                    role="switch"
-                    aria-checked={visualSettings.animationsEnabled}
-                    aria-label="Toggle animations"
+                    onClick={() => {
+                      const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
+                      saveVisualSettings({ ...visualSettings, animationsEnabled: next });
+                    }}
+                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500' : ''}`}
+                    style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}
+                    aria-label="Toggle animations: off, on, full"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.animationsEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px] bg-white' : 'left-[32px] bg-white'}`} />
                   </button>
                 </div>
-                {!visualSettings.animationsEnabled && (
-                  <p className="text-gray-400 text-[10px] text-center">✗ All animations disabled — saves battery & reduces motion</p>
+                {visualSettings.animationsEnabled === 'off' && (
+                  <p className="text-gray-400 text-[10px] text-center">OFF — All animations disabled, saves battery</p>
                 )}
-                {visualSettings.animationsEnabled && (
-                  <p className="text-purple-400 text-[10px] text-center">✓ Animations enabled — background effects, transitions & glow</p>
+                {visualSettings.animationsEnabled === 'on' && (
+                  <p className="text-purple-400 text-[10px] text-center">ON — Background effects, transitions & glow</p>
+                )}
+                {visualSettings.animationsEnabled === 'full' && (
+                  <p className="text-fuchsia-400 text-[10px] text-center">FULL — 2× animation intensity</p>
                 )}
 
                 {/* Install App on Device */}
@@ -6913,7 +6919,7 @@ Example: {"pulls":[...]}'
       {/* Bookmark Modal */}
       <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="bg-black/80" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark">
           <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
@@ -6929,7 +6935,7 @@ Example: {"pulls":[...]}'
       {/* Export Modal */}
       <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="bg-black/80" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore">
           <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
             <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
             <CardBody className="space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>

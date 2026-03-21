@@ -978,38 +978,35 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
     window.addEventListener('resize', init);
     
     let lastFrame = 0;
-    let paused = false;
-    const handleVisibility = () => { paused = document.hidden; };
-    document.addEventListener('visibilitychange', handleVisibility);
-    
+
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (paused || t - lastFrame < 66) return;
+      if (t - lastFrame < 66) return;
       lastFrame = t;
       const time = t * 0.001;
       bctx.fillStyle = bgColor;
       bctx.fillRect(0, 0, bw, bh);
-      
+
       const gs = 2;
       for (let by = 0; by < bh; by += gs) {
         for (let bx = 0; bx < bw; bx += gs) {
           const sx = bx / BLUR_SCALE;
           const sy = by / BLUR_SCALE;
-          
+
           const h1 = Math.sin(_wf1(sx, sy, time));
           const h2 = Math.sin(_wf2(sx, sy, time));
           const h3 = Math.sin(_wf3(sx, sy, time));
           const totalH = h1 * 0.7 + h2 * 0.5 + h3 * 0.4;
-          
+
           const d = 10;
           const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5 + (Math.sin(_wf3(sx+d,sy,time))-h3)*0.4;
           const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5 + (Math.sin(_wf3(sx,sy+d,time))-h3)*0.4;
           const tilt = Math.sqrt(slX*slX + slY*slY);
-          
+
           const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
           const peak = Math.max(0, totalH / 1.5) * 0.22;
           const gI = spec * 0.3 + peak;
-          
+
           if (gI > 0.008) {
             const a = Math.min(gI * 0.7, 0.3);
             const blend = Math.max(0, Math.min(1, (totalH + 1.6) / 3.2));
@@ -1021,18 +1018,17 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
           }
         }
       }
-      
+
       ctx.clearRect(0, 0, w, h);
       ctx.filter = 'blur(20px)';
       ctx.drawImage(buf, 0, 0, bw, bh, 0, 0, w, h);
       ctx.filter = 'none';
     };
     animId = requestAnimationFrame(draw);
-    
+
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
-      document.removeEventListener('visibilitychange', handleVisibility);
       // P11-FIX: Explicitly release buffer canvas backing store memory (Step 7 audit — LOW-3h)
       buf.width = 0;
       buf.height = 0;
@@ -1083,13 +1079,10 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
     window.addEventListener('resize', init);
     
     let lastFrame = 0;
-    let paused = false;
-    const handleVisibility = () => { paused = document.hidden; };
-    document.addEventListener('visibilitychange', handleVisibility);
-    
+
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (paused || t - lastFrame < 66) return;
+      if (t - lastFrame < 66) return;
       lastFrame = t;
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.001;
@@ -1159,10 +1152,9 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
-      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [oledMode, animationsEnabled]);
-  
+
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';

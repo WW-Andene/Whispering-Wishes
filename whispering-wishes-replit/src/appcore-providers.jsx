@@ -328,13 +328,12 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     };
   }, [isOpen]);
 
-  // Drag-to-dismiss handlers (mobile bottom sheet)
+  // Drag-to-dismiss handlers (mobile bottom sheet) — only from header zone
   const onTouchStart = useCallback((e) => {
-    // Only handle drag on the sheet handle area or when scrolled to top
-    const sheet = sheetRef.current;
-    if (!sheet) return;
-    const scrollable = sheet.querySelector('[data-sheet-scroll]');
-    if (scrollable && scrollable.scrollTop > 0) return;
+    // Only allow drag from the header area (handle bar + header row)
+    const target = e.target;
+    const header = target.closest('[data-sheet-header]');
+    if (!header) return;
     dragRef.current = { startY: e.touches[0].clientY, currentY: 0, dragging: true };
   }, []);
   const onTouchMove = useCallback((e) => {
@@ -898,7 +897,7 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 200%;
       height: 200%;
       background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
-      animation: badgeRotate 12s linear infinite;
+      animation: badgeRotate var(--badge-speed, 12s) linear infinite;
       opacity: 0.7;
       filter: blur(4px);
     }
@@ -2455,7 +2454,7 @@ const ConfirmProvider = ({ children }) => {
       <FocusTrapModal isOpen={!!state} onClose={() => handleClose(false)} className="bg-black/80" onClick={() => handleClose(false)} ariaLabel={state?.title || 'Confirm'}>
         {state && (
           <div className="w-full sm:max-w-xs rounded-t-2xl sm:rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" />
+            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
             <div className="p-5 text-center">
               <h3 className="text-white font-semibold text-sm mb-2">{state.title}</h3>
               <p className="text-gray-400 text-xs leading-relaxed whitespace-pre-line">{state.message}</p>
