@@ -5641,7 +5641,8 @@ function WhisperingWishesInner() {
                         {teamSlots.map((charName, slotIdx) => {
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
-                          const framing = charName ? getImageFraming(`collection-${charName}`) : null;
+                          const teamKey = `team-${charName}`;
+                          const framing = charName ? getImageFraming(teamKey) : null;
 
                           if (!charName) {
                             return (
@@ -5662,17 +5663,17 @@ function WhisperingWishesInner() {
                           return (
                             <div
                               key={slotIdx}
-                              className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === `collection-${charName}` ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === teamKey ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
                               style={{ height: '160px', contain: 'paint' }}
                               onClick={() => {
                                 if (framingMode) {
-                                  setEditingImage(`collection-${charName}`);
+                                  setEditingImage(teamKey);
                                 } else {
                                   openSelector(slotIdx);
                                 }
                               }}
                             >
-                              {framingMode && editingImage === `collection-${charName}` && (
+                              {framingMode && editingImage === teamKey && (
                                 <div className="absolute top-1 left-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
                                   <span className="text-black text-[10px]">✓</span>
                                 </div>
@@ -8594,7 +8595,7 @@ Example: {"pulls":[...]}'
             {framingMode && editingImage && (
               <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                 <div className="text-emerald-400 text-[10px] font-medium mb-2 truncate">
-                  Editing: {editingImage.replace('collection-', '')}
+                  Editing: {editingImage.replace('collection-', '').replace('team-', 'Team: ')}
                 </div>
                 {/* Position controls — P6-FIX: Added aria-labels for D-pad clarity (HIGH-22) */}
                 <div className="grid grid-cols-3 gap-1 mb-2">
