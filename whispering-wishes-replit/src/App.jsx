@@ -3461,34 +3461,38 @@ function WhisperingWishesInner() {
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {b.characters.map(c => {
-                          const img = collectionImages[c];
+                      <div className="space-y-1.5">
+                        {Array.from({ length: Math.max(b.characters.length, b.weapons.length) }).map((_, idx) => {
+                          const c = b.characters[idx];
+                          const w = b.weapons[idx];
+                          const cImg = c ? collectionImages[c] : null;
+                          const wImg = w ? collectionImages[w] : null;
                           return (
-                            <div key={c} className="flex items-center gap-1.5">
-                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
-                            </div>
-                          );
-                        })}
-                        {b.weapons.map(w => {
-                          const img = collectionImages[w];
-                          return (
-                            <div key={w} className="flex items-center gap-1.5">
-                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-pink-400 font-medium">{w}</span>
+                            <div key={idx} className="flex items-center gap-4">
+                              {c ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                    {cImg ? (
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-yellow-400 font-medium truncate">{c}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
+                              {w ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                    {wImg ? (
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-pink-400 font-medium truncate">{w}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
                             </div>
                           );
                         })}
@@ -3524,34 +3528,38 @@ function WhisperingWishesInner() {
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {b.characters.map(c => {
-                          const img = collectionImages[c];
+                      <div className="space-y-1.5">
+                        {Array.from({ length: Math.max(b.characters.length, b.weapons.length) }).map((_, idx) => {
+                          const c = b.characters[idx];
+                          const w = b.weapons[idx];
+                          const cImg = c ? collectionImages[c] : null;
+                          const wImg = w ? collectionImages[w] : null;
                           return (
-                            <div key={c} className="flex items-center gap-1.5">
-                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
-                            </div>
-                          );
-                        })}
-                        {b.weapons.map(w => {
-                          const img = collectionImages[w];
-                          return (
-                            <div key={w} className="flex items-center gap-1.5">
-                              <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-pink-400 font-medium">{w}</span>
+                            <div key={idx} className="flex items-center gap-4">
+                              {c ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                    {cImg ? (
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-yellow-400 font-medium truncate">{c}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
+                              {w ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                    {wImg ? (
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-pink-400 font-medium truncate">{w}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
                             </div>
                           );
                         })}
