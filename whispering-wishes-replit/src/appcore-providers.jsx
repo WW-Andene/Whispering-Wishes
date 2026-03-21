@@ -126,7 +126,7 @@ const PWAProvider = ({ children }) => {
       )}
       {/* Install prompt banner — native */}
       {installPrompt && !isInstalled && !isInIframe && (
-        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+        <div className="fixed bottom-20 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
               <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
@@ -152,7 +152,7 @@ const PWAProvider = ({ children }) => {
       )}
       {/* Install prompt banner — iframe fallback */}
       {isInIframe && !isInstalled && !iframeBannerDismissed && (
-        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+        <div className="fixed bottom-20 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
               <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
@@ -220,8 +220,8 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      {/* AUDIT-FIX M27: z-[9998] to avoid collision with mini visual settings panel at z-[9999] */}
-      <div className="fixed bottom-24 left-3 right-3 z-[9998] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
+      {/* MED-4: Toast z-index separated from install prompt */}
+      <div className="fixed bottom-24 left-3 right-3 z-[9500] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
         {toasts.map(toast => (
           <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
             animation: 'slideUp 0.2s ease-out',
@@ -454,7 +454,7 @@ const KuroStyles = memo(({ oledMode }) => (
     :root {
       --color-gold: 237, 175, 24;   /* oklch(78% 0.17 85°) */
       --color-pink: 236, 72, 153;   /* oklch(62% 0.22 350°) — §E9-CM-F1: Weapon banner domain color */
-      --color-cyan: 56, 189, 248;   /* oklch(76% 0.14 230°) */
+      --color-cyan: 56, 189, 248;   /* oklch(76% 0.14 230°) — MED-10: Restrict to: info state, Glacio element, Standard banner */
       --color-purple: 168, 85, 247; /* oklch(56% 0.24 295°) */
       --color-emerald: 34, 197, 94; /* oklch(72% 0.19 155°) — BN-F5: Aero element green, game-domain override */
       --color-red: 248, 113, 113;   /* oklch(68% 0.18 25°) */
@@ -466,14 +466,19 @@ const KuroStyles = memo(({ oledMode }) => (
       --transition-fast: 0.1s cubic-bezier(0.16, 1, 0.3, 1);   /* TR-F1: Tightened from 0.15s */
       --transition-normal: 0.18s cubic-bezier(0.16, 1, 0.3, 1); /* TR-F1: Tightened from 0.25s */
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      /* Z-index scale: bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) → system(10000) */
+      /* MED-4: Z-index scale — distinct values to prevent collision */
+      --z-toast: 9500;
+      --z-install: 9800;
+      --z-max: 9999;
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
       --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
-      --bg-card: ${oledMode ? 'rgba(8, 8, 8, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
+      /* MED-8: Widened surface elevation spread (+2% lightness per step) */
+      --bg-card: ${oledMode ? 'rgba(8, 8, 8, 0.95)' : 'rgba(14, 19, 30, 0.55)'};
       --bg-card-inner: ${oledMode ? 'rgba(10, 10, 10, 1)' : 'rgba(6, 10, 18, 1)'};
+      --bg-elevated: ${oledMode ? 'rgba(16, 16, 16, 0.95)' : 'rgba(20, 26, 38, 0.7)'};
       --bg-btn: ${oledMode ? 'rgba(12, 12, 12, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
       --bg-input: ${oledMode ? 'rgba(14, 14, 14, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
       --bg-stat: ${oledMode ? 'rgba(6, 6, 6, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
@@ -504,17 +509,22 @@ const KuroStyles = memo(({ oledMode }) => (
       --space-md: 12px;
       --space-lg: 16px;
       --space-xl: 24px;
-      /* TK-F2: Component-level token abstraction */
-      --card-radius: 16px;
+      /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --card-radius: var(--radius-xl);
       --card-padding: 14px;
-      --btn-radius: 8px;
-      --stat-radius: 12px;
-      /* CL-F2: Palette-calibrated semantic state colors */
+      --btn-radius: var(--radius-md);
+      --stat-radius: var(--radius-lg);
+      /* CL-F2 + MED-11: Palette-calibrated semantic state colors */
       --state-error: #f87171;   /* oklch(68% 0.18 15°) — cooler red */
       --state-success: #2dd4bf; /* oklch(72% 0.16 170°) — teal-shifted green */
-      /* E3-CT2: Lightened cool accents (+5% luminance) for standalone text on dark bg */
-      --accent-cyan: #67e8f9;   /* cyan-300, L~82% vs cyan-400 L~65% */
-      --accent-purple: #d8b4fe; /* purple-300, L~80% vs purple-400 L~68% */
+      --color-warning: #f59e0b; /* oklch(75% 0.16 80°) — MED-11/13: amber, distinct from brand gold */
+      /* E3-CT2 + MED-7: Lightened cool accents for AAA contrast on dark bg */
+      --accent-cyan: #67e8f9;   /* cyan-300, ~8:1 contrast */
+      --accent-purple: #c084fc; /* purple-300, ~8:1 contrast (was #d8b4fe, adjusted for AAA) */
       /* E3-WC2: Disabled text token at 5.5:1+ contrast ratio */
       --text-disabled: #8b95a5;
       /* DBI3-S01: Calibrated 3-star rarity blue token */
@@ -1077,6 +1087,18 @@ const KuroStyles = memo(({ oledMode }) => (
         box-shadow: 0 0 30px rgba(237, 175, 24, 0.35), 0 6px 20px rgba(0,0,0,0.4);
         border-color: rgba(237, 175, 24, 0.9);
       }
+    }
+
+    /* MED-6: Compact button variants for inline actions */
+    .kuro-btn-sm {
+      font-size: 12px;
+      padding: 4px 10px;
+      min-height: 28px;
+    }
+    .kuro-btn-icon {
+      padding: 6px;
+      aspect-ratio: 1;
+      min-height: 28px;
     }
 
     /* E5-BT6: Button loading state — spinner + preserved width */

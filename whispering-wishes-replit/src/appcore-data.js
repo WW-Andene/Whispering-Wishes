@@ -1969,7 +1969,7 @@ const ELEMENT_COLORS = {
   Aero:    { hex: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.4)' },
   Glacio:  { hex: '#06b6d4', bg: 'rgba(6,182,212,0.15)',  border: 'rgba(6,182,212,0.4)' },
   Havoc:   { hex: '#ec4899', bg: 'rgba(236,72,153,0.15)', border: 'rgba(236,72,153,0.4)' },
-  Spectro: { hex: '#eab308', bg: 'rgba(234,179,8,0.15)',  border: 'rgba(234,179,8,0.4)' },
+  Spectro: { hex: '#edaf18', bg: 'rgba(237,175,24,0.15)',  border: 'rgba(237,175,24,0.4)' }, /* MED-1: brand gold */
 };
 const getElementColor = (el) => ELEMENT_COLORS[el]?.hex || '#6b7280';
 const getElementBg = (el) => ELEMENT_COLORS[el]?.bg || 'rgba(107,114,128,0.15)';

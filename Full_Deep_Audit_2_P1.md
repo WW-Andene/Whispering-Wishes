@@ -2278,7 +2278,7 @@ Primary coherence fix: Tokenize the application-layer hardcoded values
 
 **Why PARTIALLY COHERENT and not COHERENT**: The design system (KuroStyles) IS coherent — every component expresses the same character. But the application layer (App.jsx inline styles + Tailwind classes) introduces ~240+ hardcoded values that bypass the token system, creating subtle color mismatches and inconsistencies. The character is correct at the system level but fuzzy at the application level. The 4 conflicting signals above are all application-layer leaks, not system-level contradictions.
 
-**Finding**: DP1-CC1 — Character is PARTIALLY COHERENT: system-level coherent, application-layer inconsistent | **MEDIUM**
+**Finding**: DP1-CC1 ✅ — Character is PARTIALLY COHERENT: system-level coherent, application-layer inconsistent | **MEDIUM**
 - **Solution**: The single highest-impact change is tokenizing the pity tier colors and trophy colors (which account for 88% of hardcoded values per §DS2 findings). This brings the application layer into alignment with the design system's established character.
 
 ---
@@ -2306,9 +2306,9 @@ Primary coherence fix: Tokenize the application-layer hardcoded values
 | DP1-SC3 | Empty state character | Gold glow + ghost grid | On-character | 0 | **PASS** | Protect ghost-grid pattern |
 | DP1-SC4 | Loading state character | Gold shimmer | On-character | 0 | **PASS** | Protect gold shimmer |
 | DP1-SC5 | Onboarding state | Glass + color progression | On-character | 0 | **PASS** | Protect multi-step theming |
-| DP1-CC1 | Overall coherence | PARTIALLY COHERENT | COHERENT | App-layer leaks | **MEDIUM** | Tokenize hardcoded colors |
+| DP1-CC1 ✅ | Overall coherence | PARTIALLY COHERENT | COHERENT | App-layer leaks | **MEDIUM** | Tokenize hardcoded colors |
 
-**§DP1 Summary**: 16 spectra/states assessed. **0 major gaps** (no spectrum differs by >2 units from target). **2 findings** (DP1-M1 toast material, DP1-CC1 app-layer coherence). The character dimensions are remarkably well-aligned to the axis profile — the design system expresses the intended character precisely. The only issues are at the implementation layer (toast material, hardcoded values), not at the character definition layer.
+**§DP1 Summary**: 16 spectra/states assessed. **0 major gaps** (no spectrum differs by >2 units from target). **2 findings** (DP1-M1 toast material, DP1-CC1 ✅ app-layer coherence). The character dimensions are remarkably well-aligned to the axis profile — the design system expresses the intended character precisely. The only issues are at the implementation layer (toast material, hardcoded values), not at the character definition layer.
 
 ---
 
@@ -2522,7 +2522,7 @@ The plan (lines 110-116) specified these §DP2 deliverables:
 | DP1-SC3 | Empty states are strong character expression | **PASS** | Protect ghost-grid pattern |
 | DP1-SC4 | Loading skeletons correctly express character | **PASS** | Protect gold shimmer |
 | DP1-SC5 | Onboarding correctly showcases character | **PASS** | Protect color progression |
-| DP1-CC1 | App-layer hardcoded values fuzz precision | **MEDIUM** | Tokenize pity/trophy colors |
+| DP1-CC1 ✅ | App-layer hardcoded values fuzz precision | **MEDIUM** | Tokenize pity/trophy colors |
 
 ---
 
@@ -2531,7 +2531,7 @@ The plan (lines 110-116) specified these §DP2 deliverables:
 **Character Coherence**: PARTIALLY COHERENT — system-level coherent, application-layer leaks
 **Dominant Character**: "Luminous Tactical Glass" — dense data on floating glass panels in dark space, illuminated by gold-accented neon light, responding with spring-loaded physicality
 **Dimension Alignment**: All 12 spectra within 0.5 units of target — no major misalignments
-**Actionable Findings**: 2 (DP1-M1 toast material LOW, DP1-CC1 tokenization MEDIUM)
+**Actionable Findings**: 2 (DP1-M1 toast material LOW, DP1-CC1 ✅ tokenization MEDIUM)
 **Character Brief**: Established as decision filter for all subsequent audit findings
 
 ---
@@ -2702,7 +2702,7 @@ Accent lightness ranking:
   Range: 16.4 L-points (79.1 - 62.7)
 ```
 
-**Finding**: DC1-AC1 — Accent lightness range is wide (16.4 L-points) | **MEDIUM**
+**Finding**: DC1-AC1 ✅ — Accent lightness range is wide (16.4 L-points) | **MEDIUM**
 
 The perceptual lightness spread of 16.4 points means gold appears significantly brighter than purple when used at equal size. In practice:
 - Gold (79.1%) and cyan (75.4%) read as "bright accents"
@@ -3215,7 +3215,7 @@ The design system has strong structural tokens (5 border levels, 4 shadow levels
 | DC1-BG3 | Shadow base has elevated chroma (intentional) | **PASS** | Protect chromatic shadows |
 | DC1-TX1 | Text chromaticity well-calibrated (monochromatic blue) | **PASS** | Protect cool-tinted text system |
 | DC1-TX2 | Pure white used for emphasis (intentional) | **PASS** | Continue sparingly |
-| DC1-AC1 | Accent lightness range wide (16.4 L-points) | **MEDIUM** | Brighten purple/pink by ~5 L-points to narrow secondary spread |
+| DC1-AC1 ✅ | Accent lightness range wide (16.4 L-points) | **MEDIUM** | Brighten purple/pink by ~5 L-points to narrow secondary spread |
 | DC1-AC2 | Red accent low-chroma for error signal | **LOW** | Standardize error red to `#ef4444`, keep `#f87171` as decorative |
 | DC1-AC3 | Accent chroma distribution well-calibrated | **PASS** | Protect 75-80% max chroma sweet spot |
 | DC1-SM1 | Success/Warning/Info reuse accent tokens | **PASS** | Protect palette economy |
@@ -3291,7 +3291,7 @@ Actual (Standard Dark):
   ■■■■■■■■■■■■■■·  S3  14.0%  ← Sidebar DARKER than cards
 ```
 
-**Finding DC3-EL1**: Surface elevation is **flat** — all surfaces cluster within a 3.7% lightness band (12.3%-16.0%). The expected staircase of S0→S1→S2→S3 rising by 3% per step is not present. Components like `--bg-card-inner` and `--bg-stat` are actually *darker* than the page background.
+**Finding DC3-EL1 ✅**: Surface elevation is **flat** — all surfaces cluster within a 3.7% lightness band (12.3%-16.0%). The expected staircase of S0→S1→S2→S3 rising by 3% per step is not present. Components like `--bg-card-inner` and `--bg-stat` are actually *darker* than the page background.
 
 - **Severity**: **MEDIUM**
 - **Why it matters**: Without lightness-based elevation, the app relies entirely on borders and backdrop-blur for depth. This works for glass-morphism but violates the fundamental dark mode depth cue.
@@ -3485,7 +3485,7 @@ The app uses `backdrop-filter: blur()` as a primary depth cue. Audit of all blur
 
 | ID | Finding | Severity | Solution |
 |---|---|---|---|
-| DC3-EL1 | Surface elevation flat — all surfaces within 3.7% lightness band | **MEDIUM** | Implement lightness staircase: S0=14% → S1=17.5% → S2=20.5% → S3=23%; OR formally document flat-glass as intentional |
+| DC3-EL1 ✅ | Surface elevation flat — all surfaces within 3.7% lightness band | **MEDIUM** | Implement lightness staircase: S0=14% → S1=17.5% → S2=20.5% → S3=23%; OR formally document flat-glass as intentional |
 | DC3-OLED1 ✅ | OLED mode collapses all surfaces to 0% lightness | **MEDIUM** | Add OLED elevation ramp: S0=0% → S1=5% → S2=8% → S3=11% |
 | DC3-OLED2 ✅ | Toasts not OLED-aware — jarring contrast jump on pure black | **LOW** | Reduce toast opacity to 0.8 in OLED; add anchoring border |
 | DC3-BK1 | Pure black usage appropriate for opt-in OLED | **PASS** | Document as intentional theater mode |
@@ -3539,7 +3539,7 @@ Tailwind yellow-400:  #facc15 → oklch(85.5% 0.18 93°)   — lighter, more lem
 CSS named gold:       #ffd700 → oklch(86.0% 0.17 95°)   — lighter, cooler, more generic
 ```
 
-**Finding DC4-CAL1**: The primary gold `#edaf18` is **dangerously close to Tailwind yellow-500** (`#eab308`) — only 5° hue and 1% lightness apart. This means the accent could be perceived as "default Tailwind yellow" rather than a bespoke brand color.
+**Finding DC4-CAL1 ✅**: The primary gold `#edaf18` is **dangerously close to Tailwind yellow-500** (`#eab308`) — only 5° hue and 1% lightness apart. This means the accent could be perceived as "default Tailwind yellow" rather than a bespoke brand color.
 
 - **Severity**: **MEDIUM**
 - **Why it matters**: A brand color that's indistinguishable from a framework default has zero distinctiveness. Anyone inspecting the CSS might assume it's uncalibrated.
@@ -3625,7 +3625,7 @@ Hue wheel (OKLCH):
 | ID | Finding | Severity | Solution |
 |---|---|---|---|
 | DC4-HUE1 | Gold hue at 85° has no competitive conflict (nearest at 55°, 30° away) | **PASS** | No hue change needed |
-| DC4-CAL1 | Primary gold `#edaf18` is near-identical to Tailwind yellow-500 `#eab308` | **MEDIUM** | Recalibrate to `oklch(76% 0.18 80°)` ≈ `#e6a510`; OR document as intentional |
+| DC4-CAL1 ✅ | Primary gold `#edaf18` is near-identical to Tailwind yellow-500 `#eab308` | **MEDIUM** | Recalibrate to `oklch(76% 0.18 80°)` ≈ `#e6a510`; OR document as intentional |
 | DC4-ICO1 ✅ | Favicon gold `#fbbf24` ≠ in-app gold `#edaf18` (4.5% L, 5° H delta) | **LOW** | Align favicon to `#edaf18` or create documented favicon variant |
 | DC4-MAP1 | Competitive hue mapping shows clear gold ownership | **PASS** | No change needed — system-level brand is distinctive |
 
@@ -3819,7 +3819,7 @@ A tension color is a secondary accent used specifically to create *dynamic contr
 | **Purple** `#a855f7` | ~300° | 215° (outside) | ~35+ uses | 4★ rarity, tertiary accent |
 | **Pink** `#ec4899` | ~350° | 265° (opposite side) | ~25+ uses | Weapon banner, secondary |
 
-**Finding DC5-TN1**: **Cyan functions as the tension color** — it sits at 145° from gold, perfectly within the 120°-150° ideal range. However, it is **severely overused**. With 45+ appearances (standard banner coding, info toasts, links, stat boxes, soft-pity pulse, tab indicator), cyan has been devalued from a tension color to a *secondary accent*.
+**Finding DC5-TN1 ✅**: **Cyan functions as the tension color** — it sits at 145° from gold, perfectly within the 120°-150° ideal range. However, it is **severely overused**. With 45+ appearances (standard banner coding, info toasts, links, stat boxes, soft-pity pulse, tab indicator), cyan has been devalued from a tension color to a *secondary accent*.
 
 - **Severity**: **MEDIUM**
 - **Why it matters**: A tension color's power comes from scarcity. At 3-5 uses, cyan would mark moments of electric significance. At 45+ uses, it's just "the other color." The app has a rich gold-cyan duality, but the tension has been diluted through overexposure.
@@ -4062,7 +4062,7 @@ Dominance hierarchy:
 |---|---|---|---|
 | DC5-GR1 | Gradient system well-designed — 30+ gradients all serve clear purposes | **PASS** | Fix install banner flat gradient (B2) |
 | DC5-GR2 ✅ | Two inconsistent bottom-fade implementations (pure black vs tinted) | **LOW** | Unify to `rgba(8,12,20,0.85)` |
-| DC5-TN1 | Cyan serves as tension color but is overused (45+ instances) | **MEDIUM** | Accept cyan as secondary accent; consider introducing a rare true tension color at ~210° |
+| DC5-TN1 ✅ | Cyan serves as tension color but is overused (45+ instances) | **MEDIUM** | Accept cyan as secondary accent; consider introducing a rare true tension color at ~210° |
 | DC5-TN2 | Purple correctly used as rarity marker, not tension | **PASS** | No change |
 | DC5-ST1 | Onboarding color tour is excellent design | **PASS** | No change — document as design principle |
 | DC5-ST2 | Engagement state has correct emotional temperature | **PASS** | No change |
@@ -4082,7 +4082,7 @@ Dominance hierarchy:
 
 | ID | Finding | Severity | Section |
 |---|---|---|---|
-| DC3-EL1 | Surface elevation flat — 3.7% lightness band | **MEDIUM** | §DC3.1 |
+| DC3-EL1 ✅ | Surface elevation flat — 3.7% lightness band | **MEDIUM** | §DC3.1 |
 | DC3-OLED1 ✅ | OLED collapses all surfaces to 0% | **MEDIUM** | §DC3.2 |
 | DC3-OLED2 ✅ | Toasts not OLED-aware | **LOW** | §DC3.2 |
 | DC3-BK1 | Pure black OLED appropriate | **PASS** | §DC3.3 |
@@ -4091,12 +4091,12 @@ Dominance hierarchy:
 | DC3-AS1 | No asset issues (dark-native) | **PASS** | §DC3.3 |
 | DC3-BL1 ✅ | Backdrop-blur inconsistent | **LOW** | §DC3.4 |
 | DC4-HUE1 | Gold hue no competitive conflict | **PASS** | §DC4.1 |
-| DC4-CAL1 | Gold near-identical to Tailwind yellow-500 | **MEDIUM** | §DC4.2 |
+| DC4-CAL1 ✅ | Gold near-identical to Tailwind yellow-500 | **MEDIUM** | §DC4.2 |
 | DC4-ICO1 ✅ | Favicon/in-app gold mismatch | **LOW** | §DC4.3 |
 | DC4-MAP1 | Competitive hue map — clear ownership | **PASS** | §DC4.4 |
 | DC5-GR1 | Gradient system well-designed | **PASS** | §DC5.1 |
 | DC5-GR2 ✅ | Inconsistent bottom-fade gradients | **LOW** | §DC5.1 |
-| DC5-TN1 | Cyan overused as tension color | **MEDIUM** | §DC5.2 |
+| DC5-TN1 ✅ | Cyan overused as tension color | **MEDIUM** | §DC5.2 |
 | DC5-TN2 | Purple correct as rarity marker | **PASS** | §DC5.2 |
 | DC5-ST1 | Onboarding color tour excellent | **PASS** | §DC5.3 |
 | DC5-ST2 | Engagement emotional temperature correct | **PASS** | §DC5.3 |
@@ -4969,11 +4969,11 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 > - Consolidate gold: `#eab308` and `#e6b030` → `#edaf18` (the canonical token)
 > - Stop mixing `gray-*`/`slate-*` and `purple-*`/`violet-*` Tailwind families
 
-> **Finding E1-COL2** · Severity: **MEDIUM**
+> **Finding E1-COL2 ✅** · Severity: **MEDIUM**
 > **3 near-duplicate gold values (`#edaf18`, `#eab308`, `#e6b030`) where 1 token exists.** Previously identified in §DC2 — this is the token-level debt. Each occurrence should reference `--color-gold` or `rgba(var(--color-gold), ...)`.
 > **Solution**: Replace `#eab308` (1 instance in `App.jsx`) and `#e6b030` (2 instances in `appcore-data.js`) with `var(--color-gold)` or the hex `#edaf18`. Total: 3 replacements.
 
-> **Finding E1-COL3** · Severity: **MEDIUM**
+> **Finding E1-COL3 ✅** · Severity: **MEDIUM**
 > **Tailwind gray and slate families mixed in the same text hierarchy.** `gray-*` (achromatic) and `slate-*` (blue-tinted) have different color temperatures. 29 instances of `#6b7280` (gray-500) alongside 6 instances of `#e2e8f0` (slate-200) and 7 of `#f1f5f9` (slate-50) create thermal inconsistency.
 > **Solution**: Choose one family. Given the app's navy base (`#080c14` at ~240° hue), slate (blue-tinted) is the correct choice. Migrate all `gray-*` to `slate-*` equivalents, or better: to the chromatic custom tokens proposed in §DBI3-S07.
 
@@ -5196,7 +5196,7 @@ This is a 4-level hierarchy with 2-4px steps — intentional and well-structured
 
 **Problem 3**: 15px appears once — between the 12px (button) and 16px (card) steps, serving no clear semantic purpose.
 
-> **Finding E1-RAD1** · Severity: **MEDIUM**
+> **Finding E1-RAD1 ✅** · Severity: **MEDIUM**
 > **12 unique radius values — the sub-8px range has 5 unsystematic values, and `rounded-lg` (109×) overrides the KuroStyles hierarchy.** The CSS-in-JS defines a clean 4-level scale (8/10/12/16px), but markup usage doesn't follow it.
 > **Solution**:
 > - Formalize the radius token scale and eliminate off-scale values:
@@ -5290,7 +5290,7 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 | 5 | kuro-card, content-layer | ✅ Safe — content-layer is inside cards |
 | **9998** | **Toast container + Install prompt** | ⚠️ **COLLISION** — both are viewport-fixed elements that could display simultaneously |
 
-> **Finding E1-ZDX1** · Severity: **MEDIUM**
+> **Finding E1-ZDX1 ✅** · Severity: **MEDIUM**
 > **Z-index collision at 9998: Toast container and Install prompt banner share the same z-index.** Both are viewport-fixed elements. If a toast fires while the install banner is showing, stacking order is undefined (depends on DOM order). The documented layer system mentions z-9999 for "floating-ui" but no CSS rule exists at that level.
 > **Solution**:
 > - Separate the system-level z-indices:
@@ -5305,7 +5305,7 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 
 > **Finding E1-ZDX2** · Severity: **PASS**
 > **Z-index layer system is documented and mostly collision-free.** The 9-value system covers all necessary layers with appropriate gaps. The documented comment (line 448) serves as living documentation.
-> **Solution (preservation)**: Keep the documented layer system comment. Add the collision fix from E1-ZDX1.
+> **Solution (preservation)**: Keep the documented layer system comment. Add the collision fix from E1-ZDX1 ✅.
 
 ---
 
@@ -5433,8 +5433,8 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 > **Solution**:
 > - **Priority 1** (highest impact): Add text color tokens (replaces 459 gray instances — see §DBI3-S07)
 > - **Priority 2**: Add spacing tokens (at least `--space-base: 14px` and the 2px grid scale)
-> - **Priority 3**: Add radius tokens (7-level scale from §E1-RAD1)
-> - **Priority 4**: Add z-index tokens (from §E1-ZDX1)
+> - **Priority 3**: Add radius tokens (7-level scale from §E1-RAD1 ✅)
+> - **Priority 4**: Add z-index tokens (from §E1-ZDX1 ✅)
 > - **Priority 5**: Expand shadow token adoption (use the existing 4 tokens instead of hardcoding)
 > - Total new tokens needed: ~20-25 new CSS custom properties to reach 70%+ coverage
 
@@ -5447,8 +5447,8 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 | E1-SP1 ✅ | Spacing uses 2px base grid (not 4px) — undocumented but consistent | **LOW** | §E1.1 |
 | E1-SP2 ✅ | 3 subpixel/odd spacing values (1.5px, 3px, -1px) | **LOW** | §E1.1 |
 | E1-COL1 | 66 unique hex colors, only 18 tokenized — 73% unmanaged palette | **HIGH** | §E1.2 |
-| E1-COL2 | 3 near-duplicate gold values where 1 token exists | **MEDIUM** | §E1.2 |
-| E1-COL3 | Tailwind gray and slate families mixed in same hierarchy | **MEDIUM** | §E1.2 |
+| E1-COL2 ✅ | 3 near-duplicate gold values where 1 token exists | **MEDIUM** | §E1.2 |
+| E1-COL3 ✅ | Tailwind gray and slate families mixed in same hierarchy | **MEDIUM** | §E1.2 |
 | E1-COL4 ✅ | 5 instances of uncalibrated pure `#ff0000` red | **LOW** | §E1.2 |
 | E1-COL5 ✅ | Purple and violet Tailwind families mixed | **LOW** | §E1.2 |
 | E1-TYP1 ✅ | 11 font sizes — 2 off-scale (11px, 13px) | **LOW** | §E1.3 |
@@ -5456,9 +5456,9 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 | E1-TYP3 | Letter-spacing uses 8 intentional values in clear progression | **PASS** | §E1.3 |
 | E1-TYP4 | Line-height values serve clear density purposes | **PASS** | §E1.3 |
 | E1-TYP5 ✅ | `text-rendering: optimizeLegibility` missing from root | **LOW** | §E1.3 |
-| E1-RAD1 | 12 unique radius values — sub-8px range unsystematic, `rounded-lg` dominates | **MEDIUM** | §E1.4 |
+| E1-RAD1 ✅ | 12 unique radius values — sub-8px range unsystematic, `rounded-lg` dominates | **MEDIUM** | §E1.4 |
 | E1-SHD1 ✅ | 4 shadow tokens defined, only 1 used — 34 hardcoded shadow values | **LOW** | §E1.5 |
-| E1-ZDX1 | Z-index collision at 9998 (Toast + Install prompt) | **MEDIUM** | §E1.6 |
+| E1-ZDX1 ✅ | Z-index collision at 9998 (Toast + Install prompt) | **MEDIUM** | §E1.6 |
 | E1-ZDX2 | Z-index layer system documented and mostly collision-free | **PASS** | §E1.6 |
 | E1-ANI1 ✅ | `--transition-slow` unused via token; 6 `ease` curves inconsistent | **LOW** | §E1.7 |
 | E1-ANI2 | Animation system well-structured (15 keyframes, dual easing) | **PASS** | §E1.7 |
@@ -6313,7 +6313,7 @@ The app defines a 4-tier surface system:
 
 **Lightness staircase**: S0 (14%) → S1 (15.3%) → S2 (16.0%) → S3 (16.0%)
 
-**Problem**: The lightness steps are too narrow — only 2% total range from S0 to S3. Cross-reference: **DC3-EL1** (Step 6) already flagged this as MEDIUM, recommending a 3% step per level. The app relies on borders and backdrop-blur rather than lightness to differentiate surfaces.
+**Problem**: The lightness steps are too narrow — only 2% total range from S0 to S3. Cross-reference: **DC3-EL1 ✅** (Step 6) already flagged this as MEDIUM, recommending a 3% step per level. The app relies on borders and backdrop-blur rather than lightness to differentiate surfaces.
 
 **Accent layer**: Gold (#edaf18, OKLCH L ~78.5%) sits 64.5 L-points above the page background — a massive contrast jump that makes accents "pop" without intermediate surface competition.
 
@@ -6369,9 +6369,9 @@ The palette uses a **hexadic harmony** (6 near-equidistant hues) as documented i
 
 **The app uses a "glass-panel" depth model** rather than Material Design's tonal elevation model. This is architecturally consistent with the Glassmorphism (secondary) classification from §DS1. The depth cues are: border → blur → glow, not lightness → shadow.
 
-> **E3-DM1** · PASS (cross-ref DC3-EL1 MEDIUM)
+> **E3-DM1** · PASS (cross-ref DC3-EL1 ✅ MEDIUM)
 > **Finding**: Dark surfaces consistently use chromatic blue-navy near-blacks rather than pure neutrals. The glass-panel depth model (border + blur + glow) is a deliberate alternative to Material Design's tonal elevation. The flat lightness range (2%) is compensated by other depth cues.
-> **Solution**: The lightness compression was already flagged in DC3-EL1 (MEDIUM). If that fix is implemented (3% steps per level), dark mode craft improves automatically. No additional action needed here.
+> **Solution**: The lightness compression was already flagged in DC3-EL1 ✅ (MEDIUM). If that fix is implemented (3% steps per level), dark mode craft improves automatically. No additional action needed here.
 
 > **E3-DM2** · PASS
 > **Finding**: OLED mode uses pure `#000000` for power savings — appropriate and opt-in. Non-OLED surfaces maintain blue-navy chromaticity throughout (B channel 1.5–2.5× R channel).
@@ -6417,7 +6417,7 @@ The palette uses a **hexadic harmony** (6 near-equidistant hues) as documented i
 **Signal collision**: When a gold focus outline appears on a gold active-state button displaying a gold Astrite number inside a gold warning toast, gold is carrying 4 meanings in one viewport area. The user cannot distinguish which "gold" means what.
 
 **Comparison with other accents**:
-- **Cyan**: Banner coding (standard) + info toast + link color → 2–3 signals. Cross-reference: §DC5-TN1 flagged cyan as overused at 45+ instances.
+- **Cyan**: Banner coding (standard) + info toast + link color → 2–3 signals. Cross-reference: §DC5-TN1 ✅ flagged cyan as overused at 45+ instances.
 - **Emerald**: Success toast + "Both" banner state → 2 signals. Clean separation.
 - **Purple**: 4★ rarity coding only → 1 signal. Cleanest usage.
 - **Pink**: Character banner coding only → 1 signal. Clean.
@@ -6433,9 +6433,9 @@ The palette uses a **hexadic harmony** (6 near-equidistant hues) as documented i
 | Semantic collision risk | HIGH | Warning + accent share identical color |
 | Dilution verdict | ⚠️ MODERATE | Gold is recognizable as "the accent color" but has lost semantic precision |
 
-> **E3-AC1** · MEDIUM
+> **E3-AC1 ✅** · MEDIUM
 > **Finding**: Gold serves 4 simultaneous signal functions (focus, selection, data accent, warning) across 88+ total instances. The warning-accent collision is the most problematic: users cannot visually distinguish "this is important data" from "something needs attention" since both use the same gold.
-> **Solution**: Separate warning from accent. Use **amber-500** (`#f59e0b`, hue ~38°, 47° from gold's ~85°) for warning toasts and offline indicators. This preserves gold as the brand accent while giving warnings their own identity. The 47° hue shift is enough to distinguish at a glance while staying in the warm family. Cross-reference: §DC5-TN1 recommended introducing a rare tension color — amber warnings could partially serve this role.
+> **Solution**: Separate warning from accent. Use **amber-500** (`#f59e0b`, hue ~38°, 47° from gold's ~85°) for warning toasts and offline indicators. This preserves gold as the brand accent while giving warnings their own identity. The 47° hue shift is enough to distinguish at a glance while staying in the warm family. Cross-reference: §DC5-TN1 ✅ recommended introducing a rare tension color — amber warnings could partially serve this role.
 
 > **E3-AC2 ✅** · LOW
 > **Finding**: Gold focus outlines are visually indistinguishable from gold active-state button borders. When a gold-bordered button receives keyboard focus, the focus ring blends into the button's existing gold border, reducing focus visibility.
@@ -6493,7 +6493,7 @@ This is a well-established dark UI pattern: cool backgrounds recede, warm accent
 > **Solution**: No action needed. The bimodal temperature model is a design strength.
 
 > **E3-CT2 ✅** · LOW
-> **Finding**: Cool accents (cyan, purple) on the cool navy background have lower temperature contrast than warm accents, making them perceptually quieter. Cyan's role as a secondary accent (45+ instances, §DC5-TN1) is partially undermined by this temperature similarity.
+> **Finding**: Cool accents (cyan, purple) on the cool navy background have lower temperature contrast than warm accents, making them perceptually quieter. Cyan's role as a secondary accent (45+ instances, §DC5-TN1 ✅) is partially undermined by this temperature similarity.
 > **Solution**: For high-importance cyan elements (e.g., "Standard banner" stat values, info-toast text), consider using `cyan-300` (`#67e8f9`, L~82%) instead of `cyan-400` (`#22d3ee`, L~65%) to increase luminance contrast. This compensates for the low temperature contrast without changing the hue.
 
 ---
@@ -6534,7 +6534,7 @@ This is a well-established dark UI pattern: cool backgrounds recede, warm accent
 | Red-400 | `#f87171` | **8.4:1** | ✅ PASS | ✅ PASS |
 | Orange-400 | `#fb923c` | **10.3:1** | ✅ PASS | ✅ PASS |
 
-**All accent colors pass WCAG AA.** Purple-400 (`#a855f7`) at 6.2:1 is the weakest, failing AAA. This was noted in §DC1-AC1 (MEDIUM) — the accent lightness range is wide (16.4 L-points between lightest and darkest accents).
+**All accent colors pass WCAG AA.** Purple-400 (`#a855f7`) at 6.2:1 is the weakest, failing AAA. This was noted in §DC1-AC1 ✅ (MEDIUM) — the accent lightness range is wide (16.4 L-points between lightest and darkest accents).
 
 #### E3.5.3 — Placeholder Text on Input Background
 
@@ -6619,7 +6619,7 @@ Focus indicators are well above 3:1. The gold focus ring + glow provides excelle
 
 Lucide icons use `currentColor` (inheriting text color). Since all text colors pass 4.5:1 (§E3.5), icons also pass 3:1. The hover `drop-shadow(0 0 3px currentColor)` glow further enhances icon visibility on interaction.
 
-> **E3-NC1** · MEDIUM
+> **E3-NC1 ✅** · MEDIUM
 > **Finding**: The 3 lowest border tokens (`--border-subtle` at 1.7:1, `--border-default` at 2.1:1, `--border-medium` at 2.7:1) fail WCAG 1.4.11's 3:1 requirement. For cards with multiple visual cues (blur, shadow, padding), this is acceptable as supplementary decoration. However, input fields using `--border-default` (2.1:1) rely on the border as their primary boundary identifier, creating an accessibility concern.
 > **Solution**: Increase input field border to `--border-hover` (`rgba(255,255,255,0.15)`, 4.5:1) in the default unfocused state. This provides clear boundary visibility without requiring focus. Card borders can remain at lower contrast since they have supplementary depth cues. Alternatively, add a visible `background-color` distinction to inputs (e.g., `rgba(255,255,255,0.07)` instead of 0.05) to create a fill-based boundary.
 
@@ -6657,7 +6657,7 @@ Lucide icons use `currentColor` (inheriting text color). Since all text colors p
 | **Warning** | `#edaf18` (gold) | yellow-500, amber-500 | `--color-gold: 237,175,24` ⚠️ | ❌ Overlaps with accent |
 | **Info** | Cyan (`#22d3ee`) | — | `--color-cyan: 56,189,248` ✅ | ⚠️ Also used for banner coding |
 
-**Warning-Accent collision** (cross-reference E3-AC1): Warning toasts use gold (`rgba(237,175,24,0.9)`), which is identical to the primary brand accent. Users cannot distinguish "this is a warning" from "this is emphasized data."
+**Warning-Accent collision** (cross-reference E3-AC1 ✅): Warning toasts use gold (`rgba(237,175,24,0.9)`), which is identical to the primary brand accent. Users cannot distinguish "this is a warning" from "this is emphasized data."
 
 #### E3.7.3 — Hover Color Consistency Across Component Types
 
@@ -6672,9 +6672,9 @@ Lucide icons use `currentColor` (inheriting text color). Since all text colors p
 
 **Observation**: Card hover uses gold glow regardless of card content. Stat box hovers match their semantic color. Buttons and inputs use generic white borders. This creates an inconsistency: gold cards glow gold, but gold stat boxes *also* glow gold — one is decorative, the other semantic.
 
-> **E3-SC1** · MEDIUM
+> **E3-SC1 ✅** · MEDIUM
 > **Finding**: Warning state color (`#edaf18` gold) is identical to the primary brand accent. Users see the same gold for "important data" (accent), "you're interacting with this" (focus), and "something needs attention" (warning). This triple collision undermines warning's semantic distinctiveness.
-> **Solution**: Assign warning a distinct color: `amber-500` (`#f59e0b`) for warning toasts and offline indicators. Create a `--color-warning: 245, 158, 11` token. Keep gold exclusively for accent/focus/selection. This resolves the collision while staying in the warm family. Cross-reference: E3-AC1 solution.
+> **Solution**: Assign warning a distinct color: `amber-500` (`#f59e0b`) for warning toasts and offline indicators. Create a `--color-warning: 245, 158, 11` token. Keep gold exclusively for accent/focus/selection. This resolves the collision while staying in the warm family. Cross-reference: E3-AC1 ✅ solution.
 
 > **E3-SC2** · PASS
 > **Finding**: Error (red), success (emerald), and info (cyan) state colors are distinct, consistent, and on-brand. Each has a CSS custom property token and uses 2–3 shade variants for hierarchy. The hover→active transition cycle (lift→compress) provides satisfying physical feedback.
@@ -6797,22 +6797,22 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | §E3 Finding | Related §DC Finding | Relationship |
 |-------------|-------------------|-------------|
 | E3-CH1 (PASS) — Hexadic harmony | DC5-HS1 (PASS) — Hexadic with gold dominance | ✅ **Confirmed** — same finding from different angle |
-| E3-DM1 (PASS) — Chromatic near-blacks | DC3-EL1 (MEDIUM) — Flat surface elevation | ✅ **Confirmed** — E3 notes glass-panel compensation |
+| E3-DM1 (PASS) — Chromatic near-blacks | DC3-EL1 ✅ (MEDIUM) — Flat surface elevation | ✅ **Confirmed** — E3 notes glass-panel compensation |
 | E3-DM2 (PASS) — OLED appropriate | DC3-BK1 (PASS) — Pure black intentional | ✅ **Confirmed** |
-| E3-AC1 (MEDIUM) — Gold warning collision | DC5-TN1 (MEDIUM) — Cyan overused | 🔗 **Related** — both are accent overextension issues; gold and cyan each serve too many roles |
+| E3-AC1 ✅ (MEDIUM) — Gold warning collision | DC5-TN1 ✅ (MEDIUM) — Cyan overused | 🔗 **Related** — both are accent overextension issues; gold and cyan each serve too many roles |
 | E3-AC2 ✅ (LOW) — Focus/active gold blend | DC2-BD1 ✅ (LOW) — No `--border-focus` token | 🔗 **Related** — both highlight lack of focus-specific design |
 | E3-CT1 (PASS) — Temperature coherence | DC1-TMP1 (PASS) — Bimodal temperature | ✅ **Confirmed** |
-| E3-CT2 ✅ (LOW) — Cool accents quiet | DC1-AC1 (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
+| E3-CT2 ✅ (LOW) — Cool accents quiet | DC1-AC1 ✅ (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
 | E3-WC1 (PASS) — WCAG AA 100% | DC1-TX1 (PASS) — Text perceptually calibrated | ✅ **Confirmed** |
 | E3-WC2 ✅ (LOW) — Gray-500 marginal | DBI3-S07 (HIGH) — 459 gray instances | 🔗 **Converges** — the same gray text issue seen from accessibility vs genericness angles |
-| E3-NC1 (MEDIUM) — Low border contrast | DC2-AC1 ✅ (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
-| E3-SC1 (MEDIUM) — Warning=accent collision | DC1-SM1 (PASS) — Semantic colors reuse accent tokens | ⚠️ **Partial contradiction** — DC1 rated semantic reuse as PASS; E3 finds the warning-accent overlap is problematic. The earlier assessment didn't weigh the collision risk. |
+| E3-NC1 ✅ (MEDIUM) — Low border contrast | DC2-AC1 ✅ (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
+| E3-SC1 ✅ (MEDIUM) — Warning=accent collision | DC1-SM1 (PASS) — Semantic colors reuse accent tokens | ⚠️ **Partial contradiction** — DC1 rated semantic reuse as PASS; E3 finds the warning-accent overlap is problematic. The earlier assessment didn't weigh the collision risk. |
 | E3-CP1 (PASS) — Psychology alignment | DC5-ST2 (PASS) — Engagement temperature correct | ✅ **Confirmed** |
 | E3-SA1 ✅ (LOW) — #ff0000 oversaturated | E1-COL4 ✅ (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives. ✅ FIXED |
 
-**Key convergence**: The gray text issue (E3-WC2 ✅ + DBI3-S07 + E1-COL3) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
+**Key convergence**: The gray text issue (E3-WC2 ✅ + DBI3-S07 + E1-COL3 ✅) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
 
-**One partial contradiction**: DC1-SM1 rated semantic color reuse as PASS, but E3-SC1 finds the warning-accent overlap problematic. The difference is analytical scope: DC1 assessed the *architecture* (tokens exist and are reused — structurally clean), while E3 assessed the *perceptual outcome* (user can't distinguish warning from accent — functionally problematic). Both assessments are correct within their scope.
+**One partial contradiction**: DC1-SM1 rated semantic color reuse as PASS, but E3-SC1 ✅ finds the warning-accent overlap problematic. The difference is analytical scope: DC1 assessed the *architecture* (tokens exist and are reused — structurally clean), while E3 assessed the *perceptual outcome* (user can't distinguish warning from accent — functionally problematic). Both assessments are correct within their scope.
 
 ---
 
@@ -6821,17 +6821,17 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | ID | Section | Severity | Title | Solution Summary |
 |----|---------|----------|-------|-----------------|
 | E3-CH1 | §E3.1 | PASS | Hexadic harmony well-structured with gold dominance | Cross-ref DC5-HS1 |
-| E3-DM1 | §E3.2 | PASS | Chromatic near-blacks with glass-panel depth model | Cross-ref DC3-EL1 (MEDIUM) for lightness fix |
+| E3-DM1 | §E3.2 | PASS | Chromatic near-blacks with glass-panel depth model | Cross-ref DC3-EL1 ✅ (MEDIUM) for lightness fix |
 | E3-DM2 | §E3.2 | PASS | OLED pure black appropriate and opt-in | Cross-ref DC3-BK1 |
-| E3-AC1 | §E3.3 | MEDIUM | Gold serves 4 signals (focus/selection/data/warning) — warning collision | Separate warning to amber-500; create `--color-warning` token |
+| E3-AC1 ✅ | §E3.3 | MEDIUM | Gold serves 4 signals (focus/selection/data/warning) — warning collision | Separate warning to amber-500; create `--color-warning` token |
 | E3-AC2 ✅ | §E3.3 | LOW | Gold focus ring blends into gold active-state borders | Use 4px outline-offset or white universal focus ring |
 | E3-CT1 | §E3.4 | PASS | Warm-dominant (1.3:1) on cool navy — intentional | Cross-ref DC1-TMP1 |
 | E3-CT2 ✅ | §E3.4 | LOW | Cool accents (cyan/purple) perceptually quiet on navy | Use cyan-300 for high-importance cyan elements |
 | E3-WC1 | §E3.5 | PASS | WCAG AA 100% (22/22 combinations tested) | — |
 | E3-WC2 ✅ | §E3.5 | LOW | text-gray-500 at 5.2:1 — marginal AA margin | Replace with `--text-muted: #8a91a0` (~7.5:1); cross-ref DBI3-S07 |
-| E3-NC1 | §E3.6 | MEDIUM | Input border 2.1:1 fails WCAG 1.4.11 (3:1 required) | Increase input default border to `--border-hover` (0.15 opacity) |
+| E3-NC1 ✅ | §E3.6 | MEDIUM | Input border 2.1:1 fails WCAG 1.4.11 (3:1 required) | Increase input default border to `--border-hover` (0.15 opacity) |
 | E3-NC2 | §E3.6 | PASS | Focus indicators + icons pass 3:1 comfortably | — |
-| E3-SC1 | §E3.7 | MEDIUM | Warning color = accent color (both gold) | Assign amber-500 to warnings; create `--color-warning` token |
+| E3-SC1 ✅ | §E3.7 | MEDIUM | Warning color = accent color (both gold) | Assign amber-500 to warnings; create `--color-warning` token |
 | E3-SC2 | §E3.7 | PASS | Error/success/info state colors distinct and consistent | — |
 | E3-SC3 ✅ | §E3.7 | LOW | Card hover glow always gold regardless of content | Change card hover to neutral navy glow |
 | E3-CP1 | §E3.8 | PASS | Color psychology aligns with gacha domain conventions | — |
