@@ -1434,6 +1434,10 @@ const WEAPON_DATA = {
     desc: 'Craftable rectifier forged in Jinzhou. Enhances Basic ATK and Heavy ATK.',
     passive: 'Companionship: Basic ATK and Heavy ATK DMG +12%', bestFor: ['Encore', 'Zhezhi'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
+  'Guardian Broadblade': { rarity: 3, type: 'Broadblade', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
+    desc: 'Craftable broadblade forged in Jinzhou. Enhances Basic ATK and Heavy ATK effectiveness.',
+    passive: 'Consensus: Basic ATK and Heavy ATK DMG +12%', bestFor: ['Augusta', 'Calcharo', 'Jinhsi', 'Jiyan'],
+    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
 
   // ── 3★ Voyager Series ──
   'Sword of Voyager': { rarity: 3, type: 'Sword', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.3%',
@@ -1500,6 +1504,12 @@ const WEAPON_DATA = {
     desc: 'Huaxu Academy rectifier for technical verification. Heals on Intro Skill.',
     passive: 'Augment: Intro Skill → heal 5% Max HP (20s CD)', bestFor: [],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
+
+  // ── 3★ Beguiling Melody (Quest Reward — v1.1) ──
+  'Beguiling Melody': { rarity: 3, type: 'Broadblade', stat: 'ATK%', baseAtk: 300, subStatValue: '+30.4%',
+    desc: 'Forged from the scale of Jué. Resembles a musical instrument more than a weapon.',
+    passive: 'Graceful Touch: Intro Skill → restore 4 Concerto Energy; Outro Skill → restore 4 Resonance Energy', bestFor: [],
+    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
 
   // ── 2★ Tyro Series ──
   'Tyro Sword': { rarity: 2, type: 'Sword', stat: 'ATK%', baseAtk: 200, subStatValue: '+18.2%',
@@ -1801,6 +1811,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Guardian Rectifier': 'https://i.ibb.co/Wp618BH3/Guardian-Rectifier.webp',
   'Augment': 'https://i.ibb.co/Mk44Y5W4/Augment.webp',
   // Broadblades
+  'Guardian Broadblade': '', // TODO: upload image to imgbb
   'Broadblade of Night': 'https://i.ibb.co/m5kvbBJH/Broadblade-of-Night.webp',
   'Discord': 'https://i.ibb.co/p6L36v9V/Discord.webp',
   // Gauntlets
@@ -2125,7 +2136,7 @@ const ALL_4STAR_WEAPONS = [
   'Overture', "Ocean's Gift", "Bloodpact's Pledge", 'Waltz in Masquerade', 'Legend of Drunken Hero',
   'Romance in Farewell', 'Fables of Wisdom', 'Meditations on Mercy', 'Call of the Abyss',
   'Somnoire Anchor', 'Fusion Accretion', 'Celestial Spiral', 'Relativistic Jet', 'Endless Collapse',
-  'Waning Redshift', 'Beguiling Melody', 'Lumingloss', 'Lunar Cutter', 'Commando of Conviction',
+  'Waning Redshift', 'Lumingloss', 'Lunar Cutter', 'Commando of Conviction',
   'Scale Slasher', 'Jinzhou Keeper', 'Comet Flare', 'Augment', 'Variation', 'Hollow Mirage',
   'Stonard', 'Amity Accord', 'Marcato', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Cadenza',
   'Discord', 'Helios Cleaver', 'Dauntless Evernight',
@@ -2139,7 +2150,7 @@ const ALL_3STAR_WEAPONS = [
   'Training Gauntlets', 'Tyro Gauntlets', 'Guardian Gauntlets', 'Gauntlets of Voyager',
   'Gauntlets of Night', 'Originite: Type III', 'Gauntlets#21', 'Training Pistols', 'Tyro Pistols',
   'Guardian Pistols', 'Pistols of Voyager', 'Pistols of Night', 'Originite: Type IV', 'Pistols#26',
-  'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I',
+  'Broadblade of Night', 'Broadblade of Voyager', 'Originite: Type I', 'Guardian Broadblade', 'Beguiling Melody',
   'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
 ];
 
