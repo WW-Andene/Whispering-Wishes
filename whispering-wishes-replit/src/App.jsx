@@ -3215,7 +3215,7 @@ function WhisperingWishesInner() {
               </button>
             </div>
           </div>
-          <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+          <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide" role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
               const tabs = ['tracker','events','calculator','planner','analytics','gathering','teams','profile'];
               const idx = tabs.indexOf(activeTab);
               let newTab;
