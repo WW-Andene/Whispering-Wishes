@@ -5052,11 +5052,20 @@ function WhisperingWishesInner() {
                       <button
                         onClick={() => setCollectionView('items')}
                         className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'items' ? 'active-gold' : 'text-gray-400'}`}
-                        title="Resonators & Weapons"
-                        aria-label="View resonators and weapons"
+                        title="Characters"
+                        aria-label="View characters"
                         aria-pressed={collectionView === 'items'}
                       >
-                        <Crown size={14} /> Items
+                        <Crown size={14} /> Characters
+                      </button>
+                      <button
+                        onClick={() => setCollectionView('weapons')}
+                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'weapons' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Weapons"
+                        aria-label="View weapons"
+                        aria-pressed={collectionView === 'weapons'}
+                      >
+                        <Sword size={14} /> Weapons
                       </button>
                       <button
                         onClick={() => setCollectionView('echoes')}
@@ -5255,7 +5264,9 @@ function WhisperingWishesInner() {
                     />
                   </CardBody>
                 </Card>
+                </>)}
 
+                {collectionView === 'weapons' && (<>
                 {/* 5★ Weapons */}
                 <Card>
                   <CardHeader>
