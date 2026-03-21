@@ -180,8 +180,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/80" onClick={onClose} ariaLabel={`${name} character details`}>
       <div
-        className={`kuro-card relative w-full sm:max-w-md h-screen sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
-        style={{ animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)', overflow: 'hidden auto' }}
+        className={`relative w-full sm:max-w-md h-screen sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
+        style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
