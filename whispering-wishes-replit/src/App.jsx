@@ -4990,7 +4990,7 @@ function WhisperingWishesInner() {
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="kuro-btn flex items-center justify-center w-7 h-7 text-gray-400 hover:text-emerald-400 transition-all"
+                        className="kuro-btn flex items-center justify-center w-7 h-7 !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
                         title="Refresh images if they don't load"
                         aria-label="Refresh images"
                       >
@@ -4998,7 +4998,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`kuro-btn flex items-center justify-center w-7 h-7 text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                        className={`kuro-btn flex items-center justify-center w-7 h-7 !p-0 !rounded-lg text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                         title="Sort by copies"
                         aria-label="Sort by copies"
                         aria-pressed={collectionSort === 'copies'}
@@ -5007,7 +5007,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`kuro-btn flex items-center justify-center w-7 h-7 transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
+                        className={`kuro-btn flex items-center justify-center w-7 h-7 !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
                         title="Sort by release date"
                         aria-label="Sort by release date"
                         aria-pressed={collectionSort === 'release'}
