@@ -3164,7 +3164,7 @@ function WhisperingWishesInner() {
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
-    <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
+    <div className={`desktop-layout min-h-screen flex flex-col ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
@@ -3239,7 +3239,7 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
+      <main id="main-content" className="flex-1 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -8321,7 +8321,7 @@ Example: {"pulls":[...]}'
       )}
 
       {/* Footer */}
-      <footer className="app-footer-mobile sticky bottom-0 z-10 py-4 px-4 text-center border-t border-[var(--border-medium)]" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
+      <footer className="app-footer-mobile py-4 px-4 text-center border-t border-[var(--border-medium)]" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
         <p className="text-gray-500 text-[10px]">
           <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
         </p>
