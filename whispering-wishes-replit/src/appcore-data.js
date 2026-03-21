@@ -1274,15 +1274,15 @@ const ALL_3COST_ECHOES = [
 
 const ALL_1COST_ECHOES = [
   // v2.0+ — Newer 1-cost echoes
-  'Lottie', 'Chest Mimic', 'Tidal Clam', 'Bell-Borne Cub',
-  'Aero Prism', 'Electro Prism',
+  'Lottie Lost', 'Chest Mimic',
+  'Aero Prism',
   // v1.1 — Mt. Firmament
   'Clang Bang', 'Dwarf Cassowary', 'Excarat',
   'Baby Viridblaze Saurian', 'Young Roseshroom',
   // v1.0 — Launch
   'Fusion Prism', 'Glacio Prism', 'Havoc Prism', 'Spectro Prism',
   'Snip Snap', 'Zig Zag', 'Hooscamp',
-  'Fusion Warrior', 'Glacio Warrior', 'Aero Warrior',
+  'Fusion Warrior', 'Aero Warrior',
   'Electro Warrior', 'Havoc Warrior', 'Spectro Warrior',
   'Whiff Whaff', 'Cruisewing', 'Chirpuff',
 ];
@@ -1350,28 +1350,25 @@ const ECHO_DATA = {
   'Cruisewing':                      { sets: ['Celestial Light', 'Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Aero DMG', desc: 'A gentle avian Tacet Discord. Skill summons Cruisewing to heal all team members for 1.8% Max HP + 80 HP, up to 4 times.' },
   'Chirpuff':                        { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Aero DMG', desc: 'A small puffball creature that inflates with air. Skill summons Chirpuff to blast a powerful gust forward 3 times, each dealing 38% Aero DMG and pushing enemies back.' },
   'Fusion Warrior':                  { sets: ['Molten Rift', 'Void Thunder', 'Sierra Gale'], buff: 'Fusion DMG', desc: 'A humanoid Tacet Discord wreathed in flames. Skill transforms into Fusion Warrior to perform a Counterattack. Successful counter reduces cooldown by 70% and deals 288% Fusion DMG.' },
-  'Glacio Warrior':                  { sets: ['Freezing Frost', 'Celestial Light'], buff: 'Glacio DMG', desc: 'A humanoid Tacet Discord coated in frost. Skill transforms into Glacio Warrior to perform ice-infused strikes dealing Glacio DMG.' },
+  'Havoc Warrior':                   { sets: ['Celestial Light', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A humanoid Tacet Discord wreathed in Havoc energy. Skill transforms into Havoc Warrior to perform Havoc-infused strikes dealing Havoc DMG.' },
   'Aero Warrior':                    { sets: ['Sierra Gale', 'Moonlit Clouds'], buff: 'Aero DMG', desc: 'A humanoid Tacet Discord commanding wind currents. Skill transforms into Aero Warrior to perform wind-infused strikes dealing Aero DMG.' },
   'Electro Warrior':                 { sets: ['Void Thunder', 'Lingering Tunes'], buff: 'Electro DMG', desc: 'A humanoid Tacet Discord crackling with electricity. Skill transforms into Electro Warrior to perform lightning-infused strikes dealing Electro DMG.' },
   'Spectro Warrior':                 { sets: ['Celestial Light', 'Rejuvenating Glow'], buff: 'Spectro DMG', desc: 'A humanoid Tacet Discord radiating Spectro light. Skill transforms into Spectro Warrior to perform light-infused strikes dealing Spectro DMG.' },
-  'Snip Snap':                       { sets: ['Molten Rift', 'Rejuvenating Glow', 'Lingering Tunes'], buff: 'Electro DMG', desc: 'An immature humanoid TD that exudes small amounts of magma. Skill summons Snip Snap to throw fireballs dealing 32% + 64 Fusion DMG on hit.' },
-  'Zig Zag':                         { sets: ['Celestial Light', 'Moonlit Clouds', 'Lingering Tunes'], buff: 'Electro DMG', desc: 'An immature humanoid TD that emits focused light rays with a "zig zag" sound. Skill summons Zig Zag to detonate Spectro energy dealing 48% + 96 Spectro DMG, creating a Stagnation Zone for 1.8s.' },
+  'Snip Snap':                       { sets: ['Molten Rift', 'Rejuvenating Glow', 'Lingering Tunes'], buff: 'Fusion DMG', desc: 'An immature humanoid TD that exudes small amounts of magma. Skill summons Snip Snap to throw fireballs dealing 32% + 64 Fusion DMG on hit.' },
+  'Zig Zag':                         { sets: ['Celestial Light', 'Moonlit Clouds', 'Lingering Tunes'], buff: 'Spectro DMG', desc: 'An immature humanoid TD that emits focused light rays with a "zig zag" sound. Skill summons Zig Zag to detonate Spectro energy dealing 48% + 96 Spectro DMG, creating a Stagnation Zone for 1.8s.' },
   'Hooscamp':                        { sets: ['Sierra Gale', 'Lingering Tunes'], buff: 'Aero DMG', desc: 'A small primate-like Tacet Discord. Skill transforms into Hooscamp Flinger and pounces at enemies dealing 48% + 96 Aero DMG.' },
   'Fusion Prism':                    { sets: ['Freezing Frost', 'Molten Rift', 'Lingering Tunes'], buff: 'Fusion DMG', desc: 'A mineral TD filled with thermal energy. Skill summons Fusion Prism to fire a crystal shard dealing 32% + 64 Fusion DMG.' },
   'Glacio Prism':                    { sets: ['Freezing Frost', 'Havoc Eclipse', 'Moonlit Clouds'], buff: 'Glacio DMG', desc: 'A mineral TD filled with freezing energy. Skill summons Glacio Prism to fire 3 crystal shards, each dealing 38% Glacio DMG.' },
   'Aero Prism':                      { sets: ['Tidebreaking Courage', 'Eternal Radiance'], buff: 'Aero DMG', desc: 'A mineral TD filled with powerful air currents. Skill summons Aero Prism to attack enemies dealing 19% Aero DMG.' },
-  'Electro Prism':                   { sets: ['Void Thunder', 'Empyrean Anthem'], buff: 'Electro DMG', desc: 'A mineral TD filled with electrical energy. Skill summons Electro Prism to fire charged crystal shards dealing Electro DMG.' },
-  'Havoc Prism':                     { sets: ['Havoc Eclipse', 'Void Thunder'], buff: 'Havoc DMG', desc: 'A mineral TD filled with Havoc energy. Skill summons Havoc Prism to fire 5 crystal shards, each dealing 23% Havoc DMG.' },
+  'Havoc Prism':                     { sets: ['Celestial Light', 'Havoc Eclipse', 'Void Thunder'], buff: 'Havoc DMG', desc: 'A mineral TD filled with Havoc energy. Skill summons Havoc Prism to fire 5 crystal shards, each dealing 23% Havoc DMG.' },
   'Spectro Prism':                   { sets: ['Molten Rift', 'Void Thunder', 'Celestial Light'], buff: 'Spectro DMG', desc: 'A mineral TD that emits Spectro light to buff nearby allies. Skill summons Spectro Prism to emit a laser hitting up to 8 times for 14% Spectro DMG each.' },
-  'Baby Viridblaze Saurian':         { sets: ['Molten Rift', 'Void Thunder'], buff: 'Fusion DMG', desc: 'A small amphibian-like creature found in forests. Skill transforms into Baby Viridblaze Saurian to rest in place and slowly restore HP.' },
+  'Baby Viridblaze Saurian':         { sets: ['Molten Rift', 'Void Thunder', 'Lingering Tunes'], buff: 'Fusion DMG', desc: 'A small amphibian-like creature found in forests. Skill transforms into Baby Viridblaze Saurian to rest in place and slowly restore HP.' },
   'Young Roseshroom':                { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A young fungal Tacet Discord. Skill summons Baby Roseshroom to fire a laser dealing 32% + 64 Havoc DMG.' },
   'Clang Bang':                      { sets: ['Freezing Frost', 'Celestial Light'], buff: 'Glacio DMG', desc: 'An immature humanoid TD with ice crystals that make a "clang bang" sound. Skill summons Clang Bang that follows the enemy and self-combusts, dealing 32% + 64 Glacio DMG.' },
   'Dwarf Cassowary':                 { sets: ['Sierra Gale', 'Rejuvenating Glow'], buff: 'Aero DMG', desc: 'A small flightless bird-like Tacet Discord. Skill summons Dwarf Cassowary to track and attack the enemy dealing 38% Physical DMG x3.' },
   'Excarat':                         { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Glacio DMG', desc: 'A burrowing rodent-like Tacet Discord. Skill transforms into Excarat and tunnels underground to advance, immune to damage while burrowed. Can change direction freely.' },
-  'Lottie':                          { sets: ['Tidebreaking Courage', 'Frosty Resolve'], buff: 'Spectro DMG', desc: 'A small whimsical Tacet Discord that wanders aimlessly. Skill summons Lottie Lost to attack enemies dealing 129% Spectro DMG.' },
+  'Lottie Lost':                     { sets: ['Tidebreaking Courage', 'Frosty Resolve'], buff: 'Spectro DMG', desc: 'A small whimsical Tacet Discord that wanders aimlessly. Skill summons Lottie Lost to attack enemies dealing 129% Spectro DMG.' },
   'Chest Mimic':                     { sets: ['Empyrean Anthem', 'Frosty Resolve', 'Midnight Veil'], buff: 'Spectro DMG', desc: 'A deceptive Tacet Discord disguised as a treasure chest. Skill summons Chest Mimic to attack with 3 consecutive strikes, each dealing 64% Spectro DMG.' },
-  'Tidal Clam':                      { sets: ['Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Glacio DMG', desc: 'A shellfish-like Tacet Discord from coastal regions. Skill summons Tidal Clam to attack enemies, dealing Glacio DMG with tidal bursts.' },
-  'Bell-Borne Cub':                  { sets: ['Rejuvenating Glow', 'Moonlit Clouds'], buff: 'Glacio DMG', desc: 'A young tortoise-like creature carrying a small bell. Skill summons Bell-Borne Cub to attack enemies, dealing Glacio DMG with defensive bell chimes.' },
 };
 
 // All unique echo sonata sets (for filter dropdown, includes sets beyond ECHO_SETS)
