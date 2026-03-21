@@ -3238,7 +3238,7 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-2 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
