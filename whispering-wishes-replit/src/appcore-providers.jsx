@@ -2251,11 +2251,6 @@ const KuroStyles = memo(({ oledMode }) => (
       100% { opacity: 1; box-shadow: var(--shadow-sm); }
     }
 
-    /* Luck badge: stronger glow */
-    .animations-full .luck-badge::before {
-      opacity: 0.9;
-      filter: blur(3px);
-    }
 
     /* Pulse subtle: more pronounced */
     .animations-full .pulse-subtle {
