@@ -5298,7 +5298,7 @@ function WhisperingWishesInner() {
                       withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
-                      dataLookup={{}} dataType="weapon" isCharacter={false}
+                      dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                       collapsible
                     />
