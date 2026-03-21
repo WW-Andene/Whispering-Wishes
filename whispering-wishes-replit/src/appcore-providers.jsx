@@ -2275,9 +2275,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
 
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
-    .no-animations *:not(.luck-badge),
-    .no-animations *:not(.luck-badge)::before,
-    .no-animations *:not(.luck-badge)::after {
+    .no-animations *, .no-animations *::before, .no-animations *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
