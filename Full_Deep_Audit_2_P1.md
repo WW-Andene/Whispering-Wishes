@@ -5586,7 +5586,7 @@ Extracting the **effective vertical spacing scale** from frequency data:
 
 **14px is the standout**: It's the signature KuroStyles value (used 3× for card header, body, stat) but sits between Tailwind's 12px (`p-3`) and 16px (`p-4`). This is intentional — it creates a distinctive density that Tailwind can't replicate. However, when Tailwind utilities override it (e.g., `kuro-stat p-2`), the rhythm breaks.
 
-> **E2-VR1** · LOW
+> **E2-VR1 ✅** · LOW
 > **Finding**: CSS-in-JS 14px padding and Tailwind 4px-grid spacing create a **dual-rhythm system**. The 14px value is deliberate and creates unique density, but 4 instances of Tailwind overrides on `.kuro-stat` (using `p-2` = 8px) and `.kuro-card` (using `p-5` = 20px) break the card system's internal consistency.
 > **Solution**: Define `--spacing-card: 14px` token. When tighter density is needed inside cards, use a documented `kuro-stat-compact` variant with `padding: 8px` rather than ad-hoc Tailwind overrides. For the `p-5` case on modal cards, use `kuro-card-modal` with `padding: 20px` as a named variant.
 
@@ -5663,7 +5663,7 @@ Repeated list items across tabs:
 
 **Pattern**: Density scales with content type — banner cards are spacious, collection items are compact. This is **intentional** and matches A2 (FOCUS-TOOL): data-dense views use tighter spacing, showcase views use generous spacing.
 
-> **E2-DC1** · LOW
+> **E2-DC1 ✅** · LOW
 > **Finding**: Calculator tab stat boxes use `p-2` (8px) while all other tabs use default 14px stat-box padding — a 43% density reduction on the same component type. Users moving between CALC and STATS tabs experience a jarring density shift.
 > **Solution**: Create `.kuro-stat-compact` variant in KuroStyles with `padding: 8px` and slightly smaller font-size (12px). Apply it consistently where dense stat displays are needed. This documents the intent rather than relying on Tailwind overrides.
 
@@ -5803,7 +5803,7 @@ Elements that appear to lack visual anchoring:
 
 3. **Header-to-content inconsistency**: Some section headers use `mb-2` (8px), others use `mb-1.5` (6px), and a few use `mb-1` (4px). The variation is small (4–8px range) but prevents establishing a single reliable "header gap" rhythm.
 
-> **E2-WS1** · LOW
+> **E2-WS1 ✅** · LOW
 > **Finding**: Section sub-header margins are inconsistent — `mb-2` (8px), `mb-1.5` (6px), and `mb-1` (4px) all used for the same structural role (header → content gap). While the differences are small, a single canonical value would strengthen vertical rhythm.
 > **Solution**: Standardize on `mb-2` (8px) for all section sub-headers. This is the most frequent value and provides adequate separation for 9–10px header text. Define as `--spacing-header-gap: 8px` token.
 
@@ -5872,7 +5872,7 @@ Elements that appear to lack visual anchoring:
 
 **Observation**: The 10px uppercase sub-headers rely on `letter-spacing: tracking-wider` and `uppercase` transform rather than size to distinguish themselves. This is a valid typographic technique but creates a subtler hierarchy than the `text-sm font-bold` variant.
 
-> **E2-PR1** · LOW
+> **E2-PR1 ✅** · LOW
 > **Finding**: 5 of 12 label+value pairs have a proportion ratio ≤1.11:1, making label and value nearly indistinguishable by size. These rely solely on color (gray-400 vs white/cyan) for differentiation. In low-contrast or colorblind scenarios, the hierarchy weakens.
 > **Solution**: For weak-ratio pairs (currently 9px label + 10px value), either: (a) increase the value to 11px for a minimum 1.22:1 ratio, or (b) add `font-weight: 600` to the value to create weight-based distinction. The Featured 4★ case (9px:9px = 1:1) should change the value to `text-[10px] font-semibold` at minimum.
 
@@ -5977,11 +5977,11 @@ Elements that appear to lack visual anchoring:
 > **Finding**: CALC and PLANNER tabs place input controls above the fold and push computed results (the primary value — percentages and pull projections) below. The input sections are visually heavier than necessary, competing with or obscuring the focal output.
 > **Solution**: For both tabs, consider a **results-first layout** — show the most recent/default calculation result at the top (as a hero stat card with `text-2xl` numbers), with the input controls below or in a collapsible section. Alternatively, make the result section sticky so it remains visible while adjusting inputs.
 
-> **E2-FP2** · LOW
+> **E2-FP2 ✅** · LOW
 > **Finding**: TEAMS tab has diffuse focal weight — all team slots have identical visual treatment regardless of active/inactive state, preventing users from knowing which team is "current" at a glance.
 > **Solution**: Add a `kuro-card-active` variant with a subtle gold or cyan border-glow to the currently-selected team slot. Use `.glow-gold` or a 2px border-color change to differentiate the active team from inactive ones.
 
-> **E2-FP3** · LOW
+> **E2-FP3 ✅** · LOW
 > **Finding**: PROFILE tab places Server Region card (a one-time configuration) above the Resonator Profile (the identity display). Server selection captures attention first despite being the less frequently accessed feature.
 > **Solution**: Reorder PROFILE sections: Resonator Profile first (identity focal point), then Server Region below (secondary configuration). This puts the user's avatar and identity at the top where they expect to see "their profile."
 
@@ -6037,7 +6037,7 @@ The app's primary visual weight tools:
 
 **Analysis**: ~35 of 105 `font-bold` instances (33%) are used for non-hierarchical purposes (button labels and body emphasis). This dilutes bold's signal value. Cross-reference: §E1-TYP3 already flagged this in Step 8.
 
-> **E2-VW1** · LOW
+> **E2-VW1 ✅** · LOW
 > **Finding**: PLANNER tab has scattered visual weight — multiple yellow-400 numbers at different vertical positions without a clear hierarchy. Unlike STATS (single dominant luck badge) or TRACKER (clear banner card focal), PLANNER's yellow numbers all compete at similar visual weight.
 > **Solution**: Establish a weight hierarchy: make the primary result (total Astrite or total pulls) the largest (`text-2xl`) and most saturated (gold with `.glow-gold` treatment). Reduce secondary numbers to `text-lg` without glow. This creates a clear visual gravity center.
 
@@ -6245,20 +6245,20 @@ Screen edge
 
 | ID | Section | Severity | Title | Solution Summary |
 |----|---------|----------|-------|-----------------|
-| E2-VR1 | §E2.1 | LOW | Dual-rhythm system (14px CSS-in-JS vs 4px Tailwind grid) | Define `--spacing-card: 14px` token; create named card variants instead of Tailwind overrides |
+| E2-VR1 ✅ | §E2.1 | LOW | Dual-rhythm system (14px CSS-in-JS vs 4px Tailwind grid) | Define `--spacing-card: 14px` token; create named card variants instead of Tailwind overrides |
 | E2-VR2 | §E2.1 | PASS | Page-level vertical rhythm flawless (12px everywhere) | Document 12px as canonical section-gap |
-| E2-DC1 | §E2.2 | LOW | Calculator stat boxes 43% denser than other tabs | Create `.kuro-stat-compact` CSS variant with 8px padding |
+| E2-DC1 ✅ | §E2.2 | LOW | Calculator stat boxes 43% denser than other tabs | Create `.kuro-stat-compact` CSS variant with 8px padding |
 | E2-DC2 | §E2.2 | PASS | Internal section density excellent across character details | — |
 | E2-DC3 | §E2.2 | PASS | List item density scales appropriately by content type | — |
 | E2-AG1 | §E2.3 | PASS | Alignment grid robust — single-column + internal grids | — |
 | E2-AG2 | §E2.3 | PASS | No unintentionally floating elements | — |
-| E2-WS1 | §E2.4 | LOW | Sub-header margins inconsistent (4–8px for same role) | Standardize `mb-2` (8px); define `--spacing-header-gap` token |
+| E2-WS1 ✅ | §E2.4 | LOW | Sub-header margins inconsistent (4–8px for same role) | Standardize `mb-2` (8px); define `--spacing-header-gap` token |
 | E2-WS2 | §E2.4 | PASS | Gestalt proximity grouping effective | — |
-| E2-PR1 | §E2.5 | LOW | 5/12 label+value pairs at ≤1.11:1 ratio (weak distinction) | Increase value sizes or add font-weight differentiation |
+| E2-PR1 ✅ | §E2.5 | LOW | 5/12 label+value pairs at ≤1.11:1 ratio (weak distinction) | Increase value sizes or add font-weight differentiation |
 | E2-PR2 | §E2.5 | PASS | Icon+text proportions consistent (1:1 default) | — |
 | E2-FP1 | §E2.6 | MEDIUM | CALC + PLANNER push results below fold — split focal point | Results-first layout or sticky result section |
-| E2-FP2 | §E2.6 | LOW | TEAMS tab has diffuse focus — all slots equal weight | Add `kuro-card-active` variant with glow for selected team |
-| E2-FP3 | §E2.6 | LOW | PROFILE: Server config above identity display | Reorder: Profile first, Server second |
+| E2-FP2 ✅ | §E2.6 | LOW | TEAMS tab has diffuse focus — all slots equal weight | Add `kuro-card-active` variant with glow for selected team |
+| E2-FP3 ✅ | §E2.6 | LOW | PROFILE: Server config above identity display | Reorder: Profile first, Server second |
 | E2-FP4 | §E2.6 | PASS | STATS luck badge is strongest focal element in app | Reference example for other tabs |
 | E2-VW1 | §E2.7 | LOW | PLANNER: scattered yellow numbers without hierarchy | Differentiate primary (`text-2xl` + glow) from secondary (`text-lg`) |
 | E2-VW2 | §E2.7 | PASS | 4/8 tabs have excellent visual weight distribution | — |

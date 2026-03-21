@@ -1054,7 +1054,7 @@ Geometric ←————●———————————→ Humanist
 | All-caps: +0.06 to +0.12em? | E4-LS2 PASS: kuro-label 0.08em | ✅ Perfect |
 
 **Cross-reference with §E2 (Visual Rhythm)**:
-- §E2-VR1 LOW noted the CSS-in-JS 14px vs Tailwind 4px grid dual-rhythm
+- §E2-VR1 ✅ LOW noted the CSS-in-JS 14px vs Tailwind 4px grid dual-rhythm
 - The typographic scale reinforces this: CSS-in-JS text sizes (11px, 13px, 14px, 18px) don't align with Tailwind's standard sizes (12px, 14px, 16px, 18px, 20px, 24px)
 - At 14px and 18px, the two systems converge; elsewhere they diverge
 - This is the same "dual-system coherence" pattern identified in spacing — the typography has its own parallel issue
@@ -1140,7 +1140,7 @@ Geometric ←————●———————————→ Humanist
 
 **Prior-step cross-references surfaced:**
 - §E1-COV1 HIGH (token coverage) — typography tokens contribute to gap
-- §E2-VR1 LOW (dual-rhythm) — CSS-in-JS vs Tailwind type sizes mirror the spacing duality
+- §E2-VR1 ✅ LOW (dual-rhythm) — CSS-in-JS vs Tailwind type sizes mirror the spacing duality
 - §DS1 (Cyberpunk/Terminal) — typography strongly reinforces primary classification
 - §DP2 (LUMINOUS TACTICAL COMPANION) — Rajdhani + JetBrains Mono fully embody this character
 - §DBI1 (MAGICIAN archetype) — scoreboard/luck moments express it; empty states don't
@@ -9336,7 +9336,7 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
     │
     ├──→ SPACING: No spacing tokens — undocumented 2px base grid (§E1-SP1 ✅ / §DS2-F16)
     │       │
-    │       └──→ RHYTHM: Sub-header margins inconsistent 4-8px (§E2-WS1)
+    │       └──→ RHYTHM: Sub-header margins inconsistent 4-8px (§E2-WS1 ✅)
     │
     ├──→ RADIUS: No radius tokens — 12 values without formal scale (§E1-RAD1 / §DBI3-S03)
     │       │
@@ -10959,15 +10959,15 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 21 | E2-VR1 | Dual-rhythm system (14px CSS vs 4px Tailwind grid) undocumented | ALL | Document in a design guide: "KuroStyles uses 14px base; Tailwind utilities use 4px base" |
-| 22 | E2-DC1 | Calculator stat boxes 43% denser than other tabs | CALC | Add 2px extra padding to Calculator stat boxes to match density baseline |
-| 23 | E2-WS1 | Sub-header margins inconsistent (4–8px range) | ALL | Standardize sub-header margin to `mb-2` (8px) across all tabs |
-| 24 | E2-PR1 | 5/12 label+value pairs at weak ratio (≤1.11:1) | ALL | Increase value font size by 1 step or reduce label size by 1 step for clearer hierarchy |
-| 25 | E2-FP2 | TEAMS tab has diffuse focus (no clear hero element) | TEAMS | Elevate the active team card to hero treatment: larger size, gold border, top position |
-| 26 | E2-FP3 | PROFILE: Server config above identity display | PROFILE | Move user identity (username, UID) above server config in layout order |
-| 27 | E2-VW1 | PLANNER has scattered yellow numbers without hierarchy | PLANNER | Apply kuro-number + visual grouping to the primary economic metric (daily income) |
-| 28 | E2-MO2 | CALC + PLANNER only 2 items above fold on mobile | CALC, PLANNER | Compact input sections or use collapsible groups for secondary inputs |
-| 29 | E2-EE3 | Phone landscape tab bar consumes 13% viewport height | ALL | Add `@media (orientation: landscape)` rule to shrink tab bar padding by 25% |
+| 21 | E2-VR1 ✅ | Dual-rhythm system (14px CSS vs 4px Tailwind grid) undocumented | ALL | Document in a design guide: "KuroStyles uses 14px base; Tailwind utilities use 4px base" |
+| 22 | E2-DC1 ✅ | Calculator stat boxes 43% denser than other tabs | CALC | Add 2px extra padding to Calculator stat boxes to match density baseline |
+| 23 | E2-WS1 ✅ | Sub-header margins inconsistent (4–8px range) | ALL | Standardize sub-header margin to `mb-2` (8px) across all tabs |
+| 24 | E2-PR1 ✅ | 5/12 label+value pairs at weak ratio (≤1.11:1) | ALL | Increase value font size by 1 step or reduce label size by 1 step for clearer hierarchy |
+| 25 | E2-FP2 ✅ | TEAMS tab has diffuse focus (no clear hero element) | TEAMS | Elevate the active team card to hero treatment: larger size, gold border, top position |
+| 26 | E2-FP3 ✅ | PROFILE: Server config above identity display | PROFILE | Move user identity (username, UID) above server config in layout order |
+| 27 | E2-VW1 ✅ | PLANNER has scattered yellow numbers without hierarchy | PLANNER | Apply kuro-number + visual grouping to the primary economic metric (daily income) |
+| 28 | E2-MO2 ✅ | CALC + PLANNER only 2 items above fold on mobile | CALC, PLANNER | Compact input sections or use collapsible groups for secondary inputs |
+| 29 | E2-EE3 ✅ | Phone landscape tab bar consumes 13% viewport height | ALL | Add `@media (orientation: landscape)` rule to shrink tab bar padding by 25% |
 
 ---
 
@@ -10975,7 +10975,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 30 | E3-AC2 | Gold focus ring blends into gold active borders | ALL | Add a 2px dark gap between focus ring and element border using `outline-offset: 3px` |
+| 30 | E3-AC2 ✅ | Gold focus ring blends into gold active borders | ALL | Add a 2px dark gap between focus ring and element border using `outline-offset: 3px` |
 | 31 | E3-CT2 | Cool accents perceptually quiet on navy background | ALL | Increase cyan/purple lightness by +5% when used as standalone text on dark backgrounds |
 | 32 | E3-WC2 | `text-gray-500` at 5.2:1 — marginal AA margin | ALL | Replace with `--text-disabled` token at 5.5:1+ or use `--text-muted` at 6.5:1 |
 | 33 | E3-SC3 | Card hover always gold regardless of content | ALL | Keep gold for default cards; use element-specific color on element-tagged cards (e.g., Fusion cards glow red on hover) |

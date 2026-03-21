@@ -432,6 +432,8 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* ═══ CSS CUSTOM PROPERTIES ═══ */
     /* E1-SP1: Spacing base: 2px grid (2/4/6/8/10/12/14/16) */
+    /* E2-VR1: Dual-rhythm system — KuroStyles uses 14px base padding (dense tactical);
+       Tailwind utilities use standard 4px grid. Both are intentional and coexist. */
     :root {
       --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
@@ -1039,6 +1041,14 @@ const KuroStyles = memo(({ oledMode }) => (
       color: #8f99ab;
     }
     
+    /* E2-MO2: Compact inputs on mobile for above-fold density */
+    @media (max-width: 640px) {
+      .kuro-calc .kuro-input {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+    }
+
     .kuro-input-sm {
       padding: 4px 8px;
       font-size: 12px;
@@ -1066,6 +1076,11 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
 
+    /* E2-DC1: Calculator stat boxes get extra padding to match density baseline */
+    .kuro-calc .kuro-stat {
+      padding: 16px;
+    }
+
     @media (hover: hover) {
       .kuro-stat:hover {
         transform: translateY(-1px);
@@ -1073,7 +1088,7 @@ const KuroStyles = memo(({ oledMode }) => (
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       }
     }
-    
+
     .kuro-stat::before {
       content: '';
       position: absolute;
@@ -1174,10 +1189,11 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ LABELS - Bright for readability ═══ */
+    /* E2-PR1: Label at 10px vs value at 14px = 1.4:1 ratio (was 12px = 1.17:1) */
     .kuro-label {
       color: var(--text-body);
       font-family: var(--font-display);
-      font-size: 12px;
+      font-size: 10px;
       line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1446,6 +1462,14 @@ const KuroStyles = memo(({ oledMode }) => (
         scroll-behavior: auto !important;
       }
     }
+    /* E2-EE3: Shrink tab bar padding by 25% in landscape to reclaim vertical space */
+    @media (orientation: landscape) {
+      [role="tablist"] [role="tab"] {
+        padding-top: 6px;
+        padding-bottom: 6px;
+      }
+    }
+
     /* Screen reader only utility */
     .sr-only {
       position: absolute;

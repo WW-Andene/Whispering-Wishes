@@ -3565,7 +3565,7 @@ function WhisperingWishesInner() {
                     <div className="grid grid-cols-2 gap-2">
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label className="text-xs mb-1.5 block font-medium text-yellow-400">Radiant Tides</label>
+                          <label className="text-xs mb-2 block font-medium text-yellow-400">Radiant Tides</label>
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
@@ -3576,7 +3576,7 @@ function WhisperingWishesInner() {
                       )}
                       {(state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label className="text-xs mb-1.5 block font-medium text-pink-400">Forging Tides</label>
+                          <label className="text-xs mb-2 block font-medium text-pink-400">Forging Tides</label>
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
@@ -3591,7 +3591,7 @@ function WhisperingWishesInner() {
                   {/* Standard banner resources */}
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
-                      <label className="text-xs mb-1.5 block font-medium text-cyan-400">Lustrous Tides</label>
+                      <label className="text-xs mb-2 block font-medium text-cyan-400">Lustrous Tides</label>
                       <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
@@ -3758,9 +3758,9 @@ function WhisperingWishesInner() {
                 <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                   <div className="flex justify-between items-center">
                     <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
-                    <span className="text-yellow-400 font-bold">{dailyIncome} Astrite</span>
+                    <span className="text-yellow-400 font-bold kuro-number">{dailyIncome} Astrite</span>
                   </div>
-                  <div className="text-gray-400 text-[10px] mt-1">≈ {(dailyIncome / ASTRITE_PER_PULL).toFixed(2)} Convenes/day • {Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)} Convenes/month</div>
+                  <div className="text-gray-400 text-[10px] mt-1">≈ <span className="kuro-number">{(dailyIncome / ASTRITE_PER_PULL).toFixed(2)}</span> Convenes/day • <span className="kuro-number">{Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)}</span> Convenes/month</div>
                 </div>
               </CardBody>
             </Card>
@@ -5163,8 +5163,8 @@ function WhisperingWishesInner() {
                         })}
                       </div>
 
-                      {/* Character Cards Grid */}
-                      <div className="grid grid-cols-3 gap-2">
+                      {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
+                      <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
                         {teamSlots.map((charName, slotIdx) => {
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
@@ -6468,26 +6468,13 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 
-            {/* Server Region */}
-            <Card>
-              <CardHeader>Server Region</CardHeader>
-              <CardBody>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                  {Object.keys(SERVERS).map(s => (
-                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
-                  ))}
-                </div>
-                <p className="text-gray-400 text-[10px] mt-2 text-center">Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
-              </CardBody>
-            </Card>
-
-            {/* Resonator Profile */}
+            {/* E2-FP3: Resonator Profile moved above Server Region (identity first) */}
             <Card>
               <CardHeader><User size={14} className="text-cyan-400" /> Resonator Profile</CardHeader>
               <CardBody className="space-y-3">
                 {/* Username */}
                 <div>
-                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-1">Display Name</label>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-2">Display Name</label>
                   <input
                     id="profile-display-name"
                     type="text"
@@ -6503,7 +6490,7 @@ function WhisperingWishesInner() {
 
                 {/* Profile Picture — current selection */}
                 <div>
-                  <label className="text-gray-400 text-[10px] block mb-1.5">Profile Picture</label>
+                  <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
@@ -6533,6 +6520,19 @@ function WhisperingWishesInner() {
                 >
                   <Award size={14} /> View Resonator ID Card
                 </button>
+              </CardBody>
+            </Card>
+
+            {/* Server Region */}
+            <Card>
+              <CardHeader>Server Region</CardHeader>
+              <CardBody>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                  {Object.keys(SERVERS).map(s => (
+                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
+                  ))}
+                </div>
+                <p className="text-gray-400 text-[10px] mt-2 text-center">Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
               </CardBody>
             </Card>
 
