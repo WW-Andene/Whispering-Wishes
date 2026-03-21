@@ -247,6 +247,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
               </div>
             )}
+            {data.statScaling && (
+              <div>
+                <div className="text-[10px] text-gray-400 mb-1">Stat Scaling</div>
+                <div className="flex flex-wrap gap-1">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{data.statScaling} Scaling</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Base Stats (Lv.90) */}
