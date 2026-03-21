@@ -3412,7 +3412,7 @@ function WhisperingWishesInner() {
                   </div>
                   <button onClick={() => setShowBannerHistory(false)} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 space-y-2" data-sheet-scroll>
+                <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
                   {BANNER_HISTORY.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       <div className="flex justify-between items-center mb-2">
@@ -6356,7 +6356,7 @@ function WhisperingWishesInner() {
                         </div>
 
                         {/* Character Grid */}
-                        <div className="flex-1 overflow-y-auto p-3">
+                        <div className="flex-1 overflow-y-auto p-4">
                           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                             {filteredChars.map(name => {
                               const cd = CHARACTER_DATA[name];
