@@ -4929,8 +4929,38 @@ function WhisperingWishesInner() {
                     )}
                   </div>
                   
-                  {/* Filter Row */}
+                  {/* Filter & Sort Controls */}
                   <div className="space-y-1.5">
+                    {/* Sort Controls */}
+                    <div className="flex gap-1.5 items-center">
+                      <button
+                        onClick={refreshImages}
+                        className="kuro-btn flex-1 flex items-center justify-center min-h-[44px] text-gray-400 hover:text-emerald-400 transition-all"
+                        title="Refresh images if they don't load"
+                        aria-label="Refresh images"
+                      >
+                        <RefreshCcw size={16} />
+                      </button>
+                      <button
+                        onClick={() => setCollectionSort('copies')}
+                        className={`kuro-btn flex-1 flex items-center justify-center min-h-[44px] text-sm font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Sort by copies"
+                        aria-label="Sort by copies"
+                        aria-pressed={collectionSort === 'copies'}
+                      >
+                        #
+                      </button>
+                      <button
+                        onClick={() => setCollectionSort('release')}
+                        className={`kuro-btn flex-1 flex items-center justify-center min-h-[44px] transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Sort by release date"
+                        aria-label="Sort by release date"
+                        aria-pressed={collectionSort === 'release'}
+                      >
+                        <Calendar size={16} />
+                      </button>
+                    </div>
+                    {/* Filter Dropdowns */}
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {/* Element Filter */}
                       <KuroSelect
@@ -4984,39 +5014,6 @@ function WhisperingWishesInner() {
                           Clear
                         </button>
                       )}
-                    </div>
-                    
-                    {/* Sort Controls */}
-                    <div className="flex gap-1.5 items-center justify-end">
-                      <button
-                        onClick={refreshImages}
-                        className="px-2 py-1 rounded-lg text-[10px] text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-[var(--border-medium)] transition-all"
-                        style={{ background: 'var(--bg-btn)' }}
-                        title="Refresh images if they don't load"
-                        aria-label="Refresh images"
-                      >
-                        <RefreshCcw size={10} />
-                      </button>
-                      <button
-                        onClick={() => setCollectionSort('copies')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 border border-[var(--border-medium)]'}`}
-                        style={collectionSort !== 'copies' ? { background: 'var(--bg-btn)' } : undefined}
-                        title="Sort by copies"
-                        aria-label="Sort by copies"
-                        aria-pressed={collectionSort === 'copies'}
-                      >
-                        #
-                      </button>
-                      <button
-                        onClick={() => setCollectionSort('release')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 border border-[var(--border-medium)]'}`}
-                        style={collectionSort !== 'release' ? { background: 'var(--bg-btn)' } : undefined}
-                        title="Sort by release date"
-                        aria-label="Sort by release date"
-                        aria-pressed={collectionSort === 'release'}
-                      >
-                        <Calendar size={10} />
-                      </button>
                     </div>
                   </div>
                 </div>
