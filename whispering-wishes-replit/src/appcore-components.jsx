@@ -482,7 +482,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/80" onClick={onClose} ariaLabel={`${name} weapon details`}>
       <div
-        className={`relative w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
+        className={`relative w-full sm:max-w-md h-screen sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
         style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
         onClick={e => e.stopPropagation()}
       >
