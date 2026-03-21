@@ -689,52 +689,158 @@ function WhisperingWishesInner() {
   
   // Collection filter states
   const [collectionSearch, setCollectionSearch] = useState('');
-  const [collectionElementFilter, setCollectionElementFilter] = useState('all'); // 'all', 'Aero', 'Glacio', etc.
+  const [collectionCategoryFilter, setCollectionCategoryFilter] = useState('all'); // 'all', 'character', 'weapon'
   const [collectionWeaponFilter, setCollectionWeaponFilter] = useState('all'); // 'all', 'Broadblade', 'Sword', etc.
-  const [collectionOwnershipFilter, setCollectionOwnershipFilter] = useState('all'); // 'all', 'owned', 'missing'
+  const [collectionElementFilter, setCollectionElementFilter] = useState('all'); // 'all', 'Aero', 'Glacio', etc.
+  const [collectionStatFilter, setCollectionStatFilter] = useState('all'); // 'all', 'ATK', 'HP', 'DEF', 'Crit Rate', 'Crit DMG', 'Energy Regen'
+  const [collectionDamageFilter, setCollectionDamageFilter] = useState('all'); // 'all', 'Basic ATK', 'Heavy ATK', 'Skill', 'Liberation', 'Echo', 'Coordinated'
+  const [collectionRoleFilter, setCollectionRoleFilter] = useState('all'); // 'all', 'Main DPS', 'Sub DPS', 'Support', 'Healer'
   const [collectionView, setCollectionView] = useState('items'); // 'items' (resonators+weapons), 'echoes'
   
+  // Keyword tags for search matching (maps keywords to character/weapon properties)
+  const getSearchTags = useCallback((name, isCharacter) => {
+    const tags = [name.toLowerCase()];
+    if (isCharacter) {
+      const data = CHARACTER_DATA[name];
+      if (data) {
+        tags.push(data.element?.toLowerCase());
+        if (data.elements) data.elements.forEach(e => tags.push(e.toLowerCase()));
+        tags.push(data.weapon?.toLowerCase());
+        tags.push(data.role?.toLowerCase());
+        // Role aliases
+        if (data.role === 'Main DPS' || data.role === 'Sub DPS') tags.push('dps');
+        if (data.role === 'Healer') tags.push('heal', 'healing');
+        if (data.role === 'Support') tags.push('buff', 'buffer', 'utility');
+        if (data.role === 'Sub DPS') tags.push('sub', 'off-field', 'coordinated');
+        // Desc keywords
+        if (data.desc) tags.push(data.desc.toLowerCase());
+        // Buff-related tags from CHAR_BUFF_TABLE
+        const buffs = CHAR_BUFF_TABLE[name];
+        if (buffs) {
+          const allBuffs = [...(buffs.outroBuffs || []), ...(buffs.libBuffs || []), ...(buffs.selfBuffs || [])];
+          allBuffs.forEach(b => {
+            if (b.stat) tags.push(b.stat.toLowerCase());
+            if (b.stat === 'basicDmg') tags.push('basic atk', 'normal atk', 'basic attack');
+            if (b.stat === 'heavyDmg') tags.push('heavy atk', 'heavy attack', 'charged');
+            if (b.stat === 'libDmg') tags.push('liberation');
+            if (b.stat === 'echoDmg') tags.push('echo');
+            if (b.stat === 'skillDmg') tags.push('skill');
+            if (b.stat === 'coordDmg') tags.push('coordinated');
+            if (b.stat === 'deepen') tags.push('deepen', 'buff');
+            if (b.stat === 'atkPct') tags.push('atk', 'buff');
+            if (b.stat === 'critRate' || b.stat === 'critDmg') tags.push('crit', 'buff');
+            if (b.stat === 'resShred' || b.stat === 'defShred') tags.push('shred', 'debuff');
+          });
+          if (buffs.debuffs?.length) tags.push('debuff', 'shred');
+        }
+      }
+    } else {
+      const data = WEAPON_DATA[name];
+      if (data) {
+        tags.push(data.type?.toLowerCase());
+        tags.push(data.stat?.toLowerCase());
+        if (data.desc) tags.push(data.desc.toLowerCase());
+        if (data.stat === 'Crit Rate') tags.push('crit');
+        if (data.stat === 'Crit DMG') tags.push('crit');
+        if (data.stat === 'ATK%') tags.push('atk', 'attack');
+        if (data.stat === 'HP%') tags.push('hp', 'health');
+        if (data.stat === 'DEF%') tags.push('def', 'defense');
+        if (data.stat === 'Energy Regen') tags.push('energy', 'er');
+        if (data.bestFor) data.bestFor.forEach(c => tags.push(c.toLowerCase()));
+      }
+    }
+    return tags.join(' ');
+  }, []);
+
+  // Damage type mapping for characters
+  const charMatchesDamage = useCallback((name, damageType) => {
+    const data = CHARACTER_DATA[name];
+    if (!data) return true;
+    const desc = (data.desc || '').toLowerCase();
+    const buffs = CHAR_BUFF_TABLE[name];
+    const allBuffStats = buffs ? [...(buffs.outroBuffs || []), ...(buffs.libBuffs || []), ...(buffs.selfBuffs || [])].map(b => b.stat) : [];
+    switch (damageType) {
+      case 'Basic ATK': return desc.includes('basic') || allBuffStats.includes('basicDmg');
+      case 'Heavy ATK': return desc.includes('heavy') || desc.includes('charged') || allBuffStats.includes('heavyDmg');
+      case 'Skill': return allBuffStats.includes('skillDmg') || desc.includes('resonance skill');
+      case 'Liberation': return desc.includes('burst') || desc.includes('liberation') || desc.includes('incarnation') || allBuffStats.includes('libDmg');
+      case 'Echo': return allBuffStats.includes('echoDmg') || desc.includes('echo');
+      case 'Coordinated': return desc.includes('coordinated') || allBuffStats.includes('coordDmg') || desc.includes('off-field');
+      default: return true;
+    }
+  }, []);
+
+  // Stat matching for characters (HP/DEF/ATK scaling) and weapons (sub stat)
+  const charMatchesStat = useCallback((name, statType) => {
+    const data = CHARACTER_DATA[name];
+    if (!data) return true;
+    const desc = (data.desc || '').toLowerCase();
+    switch (statType) {
+      case 'ATK': return !desc.includes('hp-scaling') && !desc.includes('def-scaling');
+      case 'HP': return desc.includes('hp') || desc.includes('health');
+      case 'DEF': return desc.includes('def') || desc.includes('defense');
+      case 'Crit Rate': return false; // characters don't have main stat crit
+      case 'Crit DMG': return false;
+      case 'Energy Regen': return desc.includes('energy') || desc.includes('battery');
+      default: return true;
+    }
+  }, []);
+
   // Filter function for collection items
   const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
     return items.filter(name => {
-      // Search filter
-      if (collectionSearch && !name.toLowerCase().includes(collectionSearch.toLowerCase())) {
-        return false;
+      // Category filter
+      if (collectionCategoryFilter === 'character' && !isCharacter) return false;
+      if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
+
+      // Search filter (keyword-based)
+      if (collectionSearch) {
+        const searchLower = collectionSearch.toLowerCase();
+        const searchTags = getSearchTags(name, isCharacter);
+        if (!searchTags.includes(searchLower)) return false;
       }
-      
-      // Ownership filter
-      const count = countsObj[name] || 0;
-      if (collectionOwnershipFilter === 'owned' && count === 0) return false;
-      if (collectionOwnershipFilter === 'missing' && count > 0) return false;
-      
-      // Element/Weapon type filter (only for characters with data)
+
+      // Element filter (characters only)
       if (isCharacter) {
         const data = CHARACTER_DATA[name];
         if (data) {
           if (collectionElementFilter !== 'all' && data.element !== collectionElementFilter) return false;
           if (collectionWeaponFilter !== 'all' && data.weapon !== collectionWeaponFilter) return false;
+          if (collectionRoleFilter !== 'all' && data.role !== collectionRoleFilter) return false;
+          if (collectionStatFilter !== 'all' && !charMatchesStat(name, collectionStatFilter)) return false;
+          if (collectionDamageFilter !== 'all' && !charMatchesDamage(name, collectionDamageFilter)) return false;
         }
       } else {
         const data = WEAPON_DATA[name];
-        if (data && collectionWeaponFilter !== 'all' && data.type !== collectionWeaponFilter) return false;
+        if (data) {
+          if (collectionWeaponFilter !== 'all' && data.type !== collectionWeaponFilter) return false;
+          if (collectionStatFilter !== 'all') {
+            const weaponStatMap = { 'ATK': 'ATK%', 'HP': 'HP%', 'DEF': 'DEF%', 'Crit Rate': 'Crit Rate', 'Crit DMG': 'Crit DMG', 'Energy Regen': 'Energy Regen' };
+            if (weaponStatMap[collectionStatFilter] && data.stat !== weaponStatMap[collectionStatFilter]) return false;
+          }
+          // Element, Role, Damage filters don't apply to weapons
+        }
       }
-      
+
       return true;
     });
-  }, [collectionSearch, collectionElementFilter, collectionWeaponFilter, collectionOwnershipFilter]);
+  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, getSearchTags, charMatchesStat, charMatchesDamage]);
   
   // Clear all filters
   const clearCollectionFilters = useCallback(() => {
     setCollectionSearch('');
-    setCollectionElementFilter('all');
+    setCollectionCategoryFilter('all');
     setCollectionWeaponFilter('all');
-    setCollectionOwnershipFilter('all');
+    setCollectionElementFilter('all');
+    setCollectionStatFilter('all');
+    setCollectionDamageFilter('all');
+    setCollectionRoleFilter('all');
   }, []);
-  
+
   // Check if any filter is active
-  const hasActiveFilters = useMemo(() => 
-    !!(collectionSearch || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionOwnershipFilter !== 'all'),
-    [collectionSearch, collectionElementFilter, collectionWeaponFilter, collectionOwnershipFilter]
+  const hasActiveFilters = useMemo(() =>
+    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all'),
+    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter]
   );
   
   // Cache-busting for images (version-based, only refreshes on manual refresh)
@@ -4917,10 +5023,10 @@ function WhisperingWishesInner() {
                       type="text"
                       value={collectionSearch}
                       onChange={(e) => setCollectionSearch(e.target.value)}
-                      placeholder="Search by name..."
+                      placeholder="Search by name, DPS, Electro, Broadblade..."
                       className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-[var(--border-medium)] text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
                       style={{ background: 'var(--bg-btn)' }}
-                      aria-label="Search collection by name"
+                      aria-label="Search collection by keyword"
                     />
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                     {collectionSearch && (
@@ -4955,6 +5061,33 @@ function WhisperingWishesInner() {
                     </div>
                     {/* Filter Dropdowns */}
                     <div className="flex flex-wrap gap-1.5 items-center">
+                      {/* Category Filter */}
+                      <KuroSelect
+                        value={collectionCategoryFilter}
+                        onChange={setCollectionCategoryFilter}
+                        options={[
+                          { value: 'all', label: 'All' },
+                          { value: 'character', label: 'Character' },
+                          { value: 'weapon', label: 'Weapon' },
+                        ]}
+                        ariaLabel="Filter by category"
+                      />
+
+                      {/* Type Filter */}
+                      <KuroSelect
+                        value={collectionWeaponFilter}
+                        onChange={setCollectionWeaponFilter}
+                        options={[
+                          { value: 'all', label: 'All Types' },
+                          { value: 'Broadblade', label: 'Broadblade' },
+                          { value: 'Sword', label: 'Sword' },
+                          { value: 'Pistols', label: 'Pistols' },
+                          { value: 'Gauntlets', label: 'Gauntlets' },
+                          { value: 'Rectifier', label: 'Rectifier' },
+                        ]}
+                        ariaLabel="Filter by weapon type"
+                      />
+
                       {/* Element Filter */}
                       <KuroSelect
                         value={collectionElementFilter}
@@ -4971,31 +5104,50 @@ function WhisperingWishesInner() {
                         ariaLabel="Filter by element"
                       />
 
-                      {/* Weapon Filter */}
+                      {/* Stat Filter */}
                       <KuroSelect
-                        value={collectionWeaponFilter}
-                        onChange={setCollectionWeaponFilter}
+                        value={collectionStatFilter}
+                        onChange={setCollectionStatFilter}
                         options={[
-                          { value: 'all', label: 'All Weapons' },
-                          { value: 'Broadblade', label: 'Broadblade' },
-                          { value: 'Sword', label: 'Sword' },
-                          { value: 'Pistols', label: 'Pistols' },
-                          { value: 'Gauntlets', label: 'Gauntlets' },
-                          { value: 'Rectifier', label: 'Rectifier' },
+                          { value: 'all', label: 'All Stats' },
+                          { value: 'ATK', label: 'ATK' },
+                          { value: 'HP', label: 'HP' },
+                          { value: 'DEF', label: 'DEF' },
+                          { value: 'Crit Rate', label: 'Crit Rate' },
+                          { value: 'Crit DMG', label: 'Crit DMG' },
+                          { value: 'Energy Regen', label: 'Energy Regen' },
                         ]}
-                        ariaLabel="Filter by weapon type"
+                        ariaLabel="Filter by main stat"
                       />
 
-                      {/* Ownership Filter */}
+                      {/* Damage Filter */}
                       <KuroSelect
-                        value={collectionOwnershipFilter}
-                        onChange={setCollectionOwnershipFilter}
+                        value={collectionDamageFilter}
+                        onChange={setCollectionDamageFilter}
                         options={[
-                          { value: 'all', label: 'All Items' },
-                          { value: 'owned', label: 'Owned' },
-                          { value: 'missing', label: 'Missing' },
+                          { value: 'all', label: 'All Damage' },
+                          { value: 'Basic ATK', label: 'Basic ATK' },
+                          { value: 'Heavy ATK', label: 'Heavy ATK' },
+                          { value: 'Skill', label: 'Skill' },
+                          { value: 'Liberation', label: 'Liberation' },
+                          { value: 'Echo', label: 'Echo' },
+                          { value: 'Coordinated', label: 'Coordinated' },
                         ]}
-                        ariaLabel="Filter by ownership"
+                        ariaLabel="Filter by damage type"
+                      />
+
+                      {/* Role Filter */}
+                      <KuroSelect
+                        value={collectionRoleFilter}
+                        onChange={setCollectionRoleFilter}
+                        options={[
+                          { value: 'all', label: 'All Roles' },
+                          { value: 'Main DPS', label: 'Main DPS' },
+                          { value: 'Sub DPS', label: 'Sub DPS' },
+                          { value: 'Support', label: 'Support' },
+                          { value: 'Healer', label: 'Healer' },
+                        ]}
+                        ariaLabel="Filter by role"
                       />
 
                       {/* Clear Filters */}
