@@ -945,9 +945,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const colorBoost = isFull ? 1.4 : 1.0;
 
     const init = () => {
-      const rect = canvas.getBoundingClientRect();
-      w = rect.width;
-      h = rect.height;
+      w = window.innerWidth;
+      h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
       bw = Math.ceil(w * BLUR_SCALE);
@@ -1016,7 +1015,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
   }, [oledMode, animationsEnabled]);
   
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform', width: '100%', height: '100%'}} aria-hidden="true" role="presentation" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
 BackgroundGlow.displayName = 'BackgroundGlow';
 
@@ -1047,9 +1046,8 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let w, h, cols, rows, seeds;
     
     const init = () => {
-      const rect = canvas.getBoundingClientRect();
-      w = rect.width;
-      h = rect.height;
+      w = window.innerWidth;
+      h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
       cols = Math.ceil(w / HALF) + 4;
@@ -1145,7 +1143,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
   }, [oledMode, animationsEnabled]);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2, willChange: 'transform', width: '100%', height: '100%'}} aria-hidden="true" role="presentation" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
