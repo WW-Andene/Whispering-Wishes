@@ -2956,7 +2956,7 @@ function WhisperingWishesInner() {
         return filtered.map((p, i) => {
           pityCounter++;
           const rawRarity = parseInt(p.rarity ?? p.qualityLevel, 10);
-          const rarity = (rawRarity >= 3 && rawRarity <= 5) ? rawRarity : 4; // validate range
+          const rarity = (rawRarity >= 1 && rawRarity <= 5) ? rawRarity : 4; // validate range (1-5★)
           const rawName = (p.name || p.resourceName || '').trim();
           const name = IMPORT_NAME_ALIASES[rawName] || rawName;
 
