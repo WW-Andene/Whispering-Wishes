@@ -897,7 +897,7 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 200%;
       height: 200%;
       background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
-      animation: badgeRotate var(--badge-speed, 12s) linear infinite;
+      animation: badgeRotate 12s linear infinite !important;
       opacity: 0.7;
       filter: blur(4px);
     }
