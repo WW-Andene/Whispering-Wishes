@@ -4857,7 +4857,8 @@ function WhisperingWishesInner() {
                 <CardBody className="text-center py-8">
                   <Archive size={32} className="mx-auto mb-2 text-gray-500" />
                   <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
-                  <p className="text-gray-500 text-xs mt-1">Import via Profile to initialize your archive</p>
+                  <p className="text-gray-500 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
             ) : (
