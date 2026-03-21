@@ -468,12 +468,12 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: ${oledMode ? '#000000' : '#080c14'};
+      background: ${oledMode ? '#000000' : '#020306'};
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
       min-height: 100%;
-      height: 100%;
+      min-height: 100dvh;
       scrollbar-width: none;
       -ms-overflow-style: none;
       -webkit-font-smoothing: antialiased;
