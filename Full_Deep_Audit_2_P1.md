@@ -6119,7 +6119,7 @@ viewport meta: width=device-width, initial-scale=1, viewport-fit=cover
 > **Finding**: Touch targets for `kuro-btn` and `kuro-input` are 36px on touch devices (`@media (pointer: coarse)`), **8px below** the recommended 44px minimum (Apple HIG) and **12px below** 48dp (Material Design). Only `<select>` elements correctly enforce 44px. This affects every interactive element in the app except the tab bar.
 > **Solution**: In the `@media (pointer: coarse)` block, change `min-height: 36px` to `min-height: 44px` for `.kuro-btn`, `.kuro-input`, and generic buttons. This is a single CSS change that improves touch accuracy across the entire app. Consider `min-height: 48px` if Material Design compliance is desired.
 
-> **E2-MO2** · LOW
+> **E2-MO2 ✅** · LOW
 > **Finding**: CALC and PLANNER tabs push primary results below the ~496px mobile fold. Users must scroll past inputs to see computed outputs (the value proposition). Only 2 primary items are visible above the fold on these tabs.
 > **Solution**: Cross-reference with E2-FP1 solution. Show a compact "last result" summary above the input section, or make the result section sticky at the bottom of the viewport. Either approach ensures the computed value is always visible.
 
@@ -6231,7 +6231,7 @@ Screen edge
 > **Finding**: The three-tier responsive breakpoint system (mobile < 768 < tablet < 1024 < desktop) provides appropriate layout adaptation. Desktop activates sidebar navigation, multi-column grids (banner-grid, event-grid), and removes the mobile max-width constraint. The `auto-fit` / `auto-fill` CSS Grid patterns handle intermediate widths gracefully.
 > **Solution**: No action needed. The responsive architecture is well-implemented.
 
-> **E2-EE3** · LOW
+> **E2-EE3 ✅** · LOW
 > **Finding**: Phone landscape (~640×360) leaves only ~288px vertical content area after status bar, header, and tab navigation. The tab bar (48px) consumes 13% of the limited vertical viewport. Content is readable but cramped — fewer than 2 primary items are visible.
 > **Solution**: Consider hiding the tab navigation bar in landscape orientation via `@media (orientation: landscape) and (max-height: 500px)`, replacing it with a slide-out menu or swipe gestures. This would reclaim 48px (17% of available content area). Lower priority — landscape phone usage is a minority use case for a PWA.
 
@@ -6260,14 +6260,14 @@ Screen edge
 | E2-FP2 ✅ | §E2.6 | LOW | TEAMS tab has diffuse focus — all slots equal weight | Add `kuro-card-active` variant with glow for selected team |
 | E2-FP3 ✅ | §E2.6 | LOW | PROFILE: Server config above identity display | Reorder: Profile first, Server second |
 | E2-FP4 | §E2.6 | PASS | STATS luck badge is strongest focal element in app | Reference example for other tabs |
-| E2-VW1 | §E2.7 | LOW | PLANNER: scattered yellow numbers without hierarchy | Differentiate primary (`text-2xl` + glow) from secondary (`text-lg`) |
+| E2-VW1 ✅ | §E2.7 | LOW | PLANNER: scattered yellow numbers without hierarchy | Differentiate primary (`text-2xl` + glow) from secondary (`text-lg`) |
 | E2-VW2 | §E2.7 | PASS | 4/8 tabs have excellent visual weight distribution | — |
 | E2-MO1 | §E2.8 | MEDIUM | Touch targets 36px on touch devices (below 44px guideline) | Change `min-height: 36px` → `44px` in `@media (pointer: coarse)` |
-| E2-MO2 | §E2.8 | LOW | CALC + PLANNER: only 2 items above fold | Show compact result summary above inputs (cross-ref E2-FP1) |
+| E2-MO2 ✅ | §E2.8 | LOW | CALC + PLANNER: only 2 items above fold | Show compact result summary above inputs (cross-ref E2-FP1) |
 | E2-MO3 | §E2.8 | PASS | Safe area inset handling exemplary (all 4 edges) | — |
 | E2-EE1 | §E2.9 | PASS | Edge-to-edge technique well-crafted (85.6% efficiency) | — |
 | E2-EE2 | §E2.9 | PASS | 3-tier responsive breakpoint system well-implemented | — |
-| E2-EE3 | §E2.9 | LOW | Phone landscape: tab bar consumes 13% of limited height | Consider hiding tab bar in landscape via `@media` |
+| E2-EE3 ✅ | §E2.9 | LOW | Phone landscape: tab bar consumes 13% of limited height | Consider hiding tab bar in landscape via `@media` |
 | E2-EE4 | §E2.9 | PASS | Tablet + foldable adaptation adequate | — |
 
 **Severity summary**: 0 HIGH · 2 MEDIUM · 9 LOW · 13 PASS (24 findings total)
@@ -6437,7 +6437,7 @@ The palette uses a **hexadic harmony** (6 near-equidistant hues) as documented i
 > **Finding**: Gold serves 4 simultaneous signal functions (focus, selection, data accent, warning) across 88+ total instances. The warning-accent collision is the most problematic: users cannot visually distinguish "this is important data" from "something needs attention" since both use the same gold.
 > **Solution**: Separate warning from accent. Use **amber-500** (`#f59e0b`, hue ~38°, 47° from gold's ~85°) for warning toasts and offline indicators. This preserves gold as the brand accent while giving warnings their own identity. The 47° hue shift is enough to distinguish at a glance while staying in the warm family. Cross-reference: §DC5-TN1 recommended introducing a rare tension color — amber warnings could partially serve this role.
 
-> **E3-AC2** · LOW
+> **E3-AC2 ✅** · LOW
 > **Finding**: Gold focus outlines are visually indistinguishable from gold active-state button borders. When a gold-bordered button receives keyboard focus, the focus ring blends into the button's existing gold border, reducing focus visibility.
 > **Solution**: For focus outlines specifically, use a slightly shifted gold with higher lightness: `rgba(var(--color-gold), 0.8)` with a `4px outline-offset` (currently 2px). Alternatively, use a white focus ring (`#ffffff` 2px solid) as a universal focus indicator that stands out against any colored surface.
 
@@ -6800,7 +6800,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-DM1 (PASS) — Chromatic near-blacks | DC3-EL1 (MEDIUM) — Flat surface elevation | ✅ **Confirmed** — E3 notes glass-panel compensation |
 | E3-DM2 (PASS) — OLED appropriate | DC3-BK1 (PASS) — Pure black intentional | ✅ **Confirmed** |
 | E3-AC1 (MEDIUM) — Gold warning collision | DC5-TN1 (MEDIUM) — Cyan overused | 🔗 **Related** — both are accent overextension issues; gold and cyan each serve too many roles |
-| E3-AC2 (LOW) — Focus/active gold blend | DC2-BD1 ✅ (LOW) — No `--border-focus` token | 🔗 **Related** — both highlight lack of focus-specific design |
+| E3-AC2 ✅ (LOW) — Focus/active gold blend | DC2-BD1 ✅ (LOW) — No `--border-focus` token | 🔗 **Related** — both highlight lack of focus-specific design |
 | E3-CT1 (PASS) — Temperature coherence | DC1-TMP1 (PASS) — Bimodal temperature | ✅ **Confirmed** |
 | E3-CT2 (LOW) — Cool accents quiet | DC1-AC1 (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
 | E3-WC1 (PASS) — WCAG AA 100% | DC1-TX1 (PASS) — Text perceptually calibrated | ✅ **Confirmed** |
@@ -6824,7 +6824,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-DM1 | §E3.2 | PASS | Chromatic near-blacks with glass-panel depth model | Cross-ref DC3-EL1 (MEDIUM) for lightness fix |
 | E3-DM2 | §E3.2 | PASS | OLED pure black appropriate and opt-in | Cross-ref DC3-BK1 |
 | E3-AC1 | §E3.3 | MEDIUM | Gold serves 4 signals (focus/selection/data/warning) — warning collision | Separate warning to amber-500; create `--color-warning` token |
-| E3-AC2 | §E3.3 | LOW | Gold focus ring blends into gold active-state borders | Use 4px outline-offset or white universal focus ring |
+| E3-AC2 ✅ | §E3.3 | LOW | Gold focus ring blends into gold active-state borders | Use 4px outline-offset or white universal focus ring |
 | E3-CT1 | §E3.4 | PASS | Warm-dominant (1.3:1) on cool navy — intentional | Cross-ref DC1-TMP1 |
 | E3-CT2 | §E3.4 | LOW | Cool accents (cyan/purple) perceptually quiet on navy | Use cyan-300 for high-importance cyan elements |
 | E3-WC1 | §E3.5 | PASS | WCAG AA 100% (22/22 combinations tested) | — |
