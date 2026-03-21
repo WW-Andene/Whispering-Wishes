@@ -5060,7 +5060,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionView('weapons')}
-                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'weapons' ? 'active-gold' : 'text-gray-400'}`}
+                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'weapons' ? 'active-pink' : 'text-gray-400'}`}
                         title="Weapons"
                         aria-label="View weapons"
                         aria-pressed={collectionView === 'weapons'}
@@ -5069,7 +5069,7 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionView('echoes')}
-                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'echoes' ? 'active-gold' : 'text-gray-400'}`}
+                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'echoes' ? 'active-cyan' : 'text-gray-400'}`}
                         title="Echoes"
                         aria-label="View echoes"
                         aria-pressed={collectionView === 'echoes'}
