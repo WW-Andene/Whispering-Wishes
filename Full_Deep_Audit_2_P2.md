@@ -4141,8 +4141,8 @@ The WuWa tracker ecosystem includes:
 > **Solution**: None needed.
 
 > **Finding E7-CC2 ✅** · LOW
-> **Parity gap on spacing consistency**: While Whispering Wishes leads in visual craft, the dual-layer system (kuro-* vs inline Tailwind) creates spacing inconsistencies that more minimalist trackers avoid by having simpler designs. The fix isn't to simplify — it's to extend the design system to cover the remaining inline elements (§E7-DC1).
-> **Solution**: Same as §E7-DC1 — migrate inline elements to kuro-* variants.
+> **Parity gap on spacing consistency**: While Whispering Wishes leads in visual craft, the dual-layer system (kuro-* vs inline Tailwind) creates spacing inconsistencies that more minimalist trackers avoid by having simpler designs. The fix isn't to simplify — it's to extend the design system to cover the remaining inline elements (§E7-DC1 ✅).
+> **Solution**: Same as §E7-DC1 ✅ — migrate inline elements to kuro-* variants.
 
 > **Finding E7-CC3** · PASS
 > **Unique motion signature creates differentiation**: No competing WuWa tracker has anything resembling the PityRing animation (800ms arc fill), luck badge rotating gradient, card stagger entrance, or haptic feedback system. These are genuine competitive moats — they can be copied but require significant effort.
@@ -9070,7 +9070,7 @@ Competitive positioning map:
 |---|---------|---------------|---------------|-------------------|
 | SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 (MEDIUM), §E9-AG-F1 (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
 | SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
-| SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
+| SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
 | SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
 | SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
@@ -9205,7 +9205,7 @@ Competitive positioning map:
 | §E3-NC1 ✅: Input border 2.1:1 contrast | Increase border opacity | **NONE** — makes existing borders slightly more visible | **ALIGNED** |
 | §E3-SC1 ✅: Warning = accent (both gold) | Assign amber-500 to warnings | Same as E3-AC1 ✅ above | **ALIGNED with constraint** |
 | §E5-BT5 ✅: Inline button sprawl ~100+ | Migrate to kuro-btn variants | **STRENGTHENS P5** — brings inline elements into the design system's cyberpunk vocabulary | **ALIGNED** |
-| §E7-DC1: Two-layer coherence gap | Extend kuro-* system to inline layer | Same mechanism as E5-BT5 ✅ | **ALIGNED** |
+| §E7-DC1 ✅: Two-layer coherence gap | Extend kuro-* system to inline layer | Same mechanism as E5-BT5 ✅ | **ALIGNED** |
 | §E7-BC4: Gray text vs brand identity | Create chromatic --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
 | §E7-CD2: Desktop grid overflow risk | Add `min(420px, 100%)` safeguard | **NONE** — purely defensive layout fix | **ALIGNED** |
 | §E8-CI2: Missing apple-touch-icon.png | Generate from brand design | **STRENGTHENS P2** — extends gold brand to iOS | **ALIGNED** |
@@ -9265,13 +9265,13 @@ Competitive positioning map:
 ```
 ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
     │
-    ├──→ AESTHETIC: Visual two-layer coherence gap (§E7-DC1)
+    ├──→ AESTHETIC: Visual two-layer coherence gap (§E7-DC1 ✅)
     │       │
     │       ├──→ BRAND: "Made with intent" gap — Tailwind defaults visible (§E8-MI1)
     │       │       │
     │       │       └──→ IDENTITY: ~30% generic surface dilutes visual signature (§E9-VS-F1)
     │       │
-    │       └──→ PROFESSIONALISM: Perceptible polish gradient within each screen (§E7-PD1)
+    │       └──→ PROFESSIONALISM: Perceptible polish gradient within each screen (§E7-PD1 ✅)
     │
     ├──→ UX: Weak hover feedback on inline buttons — single-signal vs five-signal (§E6-HV9 ✅)
     │       │
@@ -9291,7 +9291,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
 **Chain impact**: 12+ findings across 8 steps share a single root cause
 **Single fix**: Migrate inline buttons to `kuro-btn` variants (primary/secondary/ghost/danger)
 **Estimated effort**: ~100 button elements, each requiring class migration from inline Tailwind to kuro-btn
-**Cascade resolution**: Fixes §E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1, §E7-PD1, §E8-MI1, §E9-VS-F1 (partially), §E9-AG-F3 ✅, and contributes to §E1-COV1
+**Cascade resolution**: Fixes §E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1 ✅, §E7-PD1 ✅, §E8-MI1, §E9-VS-F1 ✅ (partially), §E9-AG-F3 ✅, and contributes to §E1-COV1
 
 ---
 
@@ -10266,7 +10266,7 @@ Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy lev
 
 **Solution**: This is the root cause addressed by Chain #1 (inline button migration) and Chain #2 (gray text tokenization). Fixing HIGH-1 and HIGH-2 resolves this finding. No additional action needed beyond those two initiatives.
 
-**Cross-references**: E7-DC1, E7-PD1
+**Cross-references**: E7-DC1 ✅, E7-PD1 ✅
 
 ---
 
@@ -10301,7 +10301,7 @@ Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy lev
 
 Migration priority: Calculator (most inline buttons) → Planner → Collection → Events → Teams.
 
-**Cross-references**: E6-HV9 ✅, E6-AP4 ✅, E7-DC1, E7-PD1, §E9-MC-F2
+**Cross-references**: E6-HV9 ✅, E6-AP4 ✅, E7-DC1 ✅, E7-PD1 ✅, §E9-MC-F2
 
 ---
 
@@ -10447,7 +10447,7 @@ The 8px increase has negligible visual impact but significantly improves mobile 
 
 **Solution**: This is the meta-finding for Chain #1. Resolution path: (1) MED-6 ✅ creates kuro-btn variants, (2) migrate ~100+ inline buttons, (3) wrap ~5 inline containers in `<Card>` components. Estimated effort: 200–300 lines changed across App.jsx.
 
-**Cross-references**: MED-5 ✅, MED-6 ✅, E7-PD1
+**Cross-references**: MED-5 ✅, MED-6 ✅, E7-PD1 ✅
 
 ---
 
