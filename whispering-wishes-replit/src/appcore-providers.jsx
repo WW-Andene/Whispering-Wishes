@@ -444,17 +444,17 @@ const KuroStyles = memo(({ oledMode }) => (
        §E10-CB-F3: Element icon/shape backup for colorblind accessibility:
        Fusion=Flame, Electro=Bolt, Aero=Wind, Glacio=Snowflake, Havoc=Spiral, Spectro=Star */
     :root {
-      --color-gold: 237, 175, 24;
-      --color-pink: 236, 72, 153;
-      --color-cyan: 56, 189, 248;
-      --color-purple: 168, 85, 247;
-      --color-emerald: 34, 197, 94;
-      --color-red: 248, 113, 113;
-      /* DC3-SH1: Increased shadow opacity +0.1 with subtle colored glow for dark surface visibility */
-      --shadow-sm: 0 1px 2px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
-      --shadow-md: 0 4px 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
-      --shadow-lg: 0 8px 24px rgba(6, 10, 24, 0.7), 0 0 12px rgba(var(--color-gold), 0.05);
-      --shadow-xl: 0 12px 40px rgba(6, 10, 24, 0.8), 0 0 16px rgba(var(--color-gold), 0.06);
+      --color-gold: 237, 175, 24;   /* oklch(78% 0.17 85°) */
+      --color-pink: 236, 72, 153;   /* oklch(62% 0.22 350°) */
+      --color-cyan: 56, 189, 248;   /* oklch(76% 0.14 230°) */
+      --color-purple: 168, 85, 247; /* oklch(56% 0.24 295°) */
+      --color-emerald: 34, 197, 94; /* oklch(72% 0.19 155°) */
+      --color-red: 248, 113, 113;   /* oklch(68% 0.18 25°) */
+      /* DC3-SH1 + DP-F1: Ambient light model (0-offset blur-only) with subtle gold glow */
+      --shadow-sm: 0 0 4px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
+      --shadow-md: 0 0 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
+      --shadow-lg: 0 0 24px rgba(6, 10, 24, 0.7), 0 0 12px rgba(var(--color-gold), 0.05);
+      --shadow-xl: 0 0 40px rgba(6, 10, 24, 0.8), 0 0 16px rgba(var(--color-gold), 0.06);
       --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -489,11 +489,16 @@ const KuroStyles = memo(({ oledMode }) => (
       --trophy-gold: #edaf18;
       --trophy-diamond: #b9f2ff;
       /* E7-CC2: Spacing tokens for remaining inline elements */
+      /* BR-F2: Distinctive 6px base for prominent component spacing */
+      --space-base: 6px;
       --space-xs: 4px;
       --space-sm: 8px;
       --space-md: 12px;
       --space-lg: 16px;
       --space-xl: 24px;
+      /* CL-F2: Palette-calibrated semantic state colors */
+      --state-error: #f87171;   /* oklch(68% 0.18 15°) — cooler red */
+      --state-success: #2dd4bf; /* oklch(72% 0.16 170°) — teal-shifted green */
       /* E3-CT2: Lightened cool accents (+5% luminance) for standalone text on dark bg */
       --accent-cyan: #67e8f9;   /* cyan-300, L~82% vs cyan-400 L~65% */
       --accent-purple: #d8b4fe; /* purple-300, L~80% vs purple-400 L~68% */
@@ -792,11 +797,12 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ TAB SLIDING INDICATOR ═══ */
+    /* SH-F1: Asymmetric radius on tab indicator for non-rectangular visual interest */
     .tab-indicator {
       position: absolute;
       bottom: 0;
       height: 2px;
-      border-radius: 1px;
+      border-radius: 4px 4px 0 0;
       transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
@@ -1858,7 +1864,7 @@ const KuroStyles = memo(({ oledMode }) => (
         border-radius: 0.375rem !important; font-size: 0.5rem !important; gap: 1px !important;
         border-bottom: none !important; border: 1px solid transparent !important;
         background: rgba(255,255,255,0.02) !important;
-        transition: all 0.15s;
+        transition: background-color 0.15s, border-color 0.15s, color 0.15s; /* BN-F2 */
         min-height: 36px !important;
       }
       .desktop-layout > header nav .kuro-tab:hover {
@@ -1965,7 +1971,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Smooth tab transitions on sidebar */
       .desktop-layout > header nav .kuro-tab {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s !important; /* BN-F2 */
       }
       .desktop-layout > header nav .kuro-tab[aria-selected="true"] svg {
         filter: drop-shadow(0 0 4px rgba(237, 175, 24, 0.4));

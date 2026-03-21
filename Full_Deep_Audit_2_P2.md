@@ -6848,13 +6848,13 @@ VISUAL CONCEPT: "Carved from obsidian, lit by amber" — deep blue-black void
 - **Impact**: Reduces typographic variety and makes the hierarchy rely solely on size/weight rather than structural contrast. Rajdhani's condensed proportions are excellent for headings but can reduce readability at small sizes for body text.
 - **Solution**: The current single-font approach is NOT necessarily wrong for this product — Rajdhani's technical character matches the instrument-panel identity. However, if body readability is a concern, consider introducing a proportional humanist sans (e.g., Plus Jakarta Sans, DM Sans) for body-length text (descriptions, tooltips, error messages) while keeping Rajdhani for all UI chrome, headings, and labels. This would create a Mono + Display + Body three-font system.
 
-**BR-F2 — Spacing base is Tailwind default (4px)** [LOW]
+**BR-F2 ✅ — Spacing base is Tailwind default (4px)** [LOW]
 
 - **Evidence**: All spacing uses Tailwind's standard 4px base (p-1=4px, p-2=8px, p-3=12px, p-4=16px, etc.). Per §TOKENS, "Non-standard spacing base (5px, 6px, 7px instead of 4px/8px) makes every spacing value automatically non-default across the entire product."
 - **Impact**: The spacing system is indistinguishable from any other Tailwind app. However, this is a LOW finding because the app achieves distinctiveness through other means (palette, atmosphere, domain-specific components).
 - **Solution**: Consider defining `--space-base: 6px` and deriving key spacing from it for component-level tokens (card padding, section gaps). This would NOT require replacing all Tailwind utilities — only the ~20 most prominent spacing values (card padding, section margins, grid gaps) would shift to the custom base, creating a subtle but perceptible rhythm difference.
 
-**BR-F3 — OKLCH values not used in code** [LOW]
+**BR-F3 ✅ — OKLCH values not used in code** [LOW]
 
 - **Evidence**: The entire color system uses hex and rgba() values. OKLCH is the recommended perceptual color space per §COLOR, but no OKLCH values exist in the codebase. All color operations are done in sRGB.
 - **Impact**: Without OKLCH, perceptual uniformity of lightness steps cannot be verified programmatically. The surface elevation steps may have uneven perceptual spacing. However, the current hex palette WAS hand-tuned to look correct, so the practical impact is minimal.
@@ -6938,7 +6938,7 @@ The §BAN section defines values that are banned from art-directed output becaus
 - **Impact**: Pure black shadows look flat and disconnected from the blue-tinted palette. On the deep blue-black background, black shadows have zero hue relationship with the surface.
 - **Solution**: Systematic find-and-replace of `rgba(0,0,0,...)` with the palette-derived equivalent `rgba(6,10,24,...)`. For OLED mode backgrounds, `rgba(0,0,0,...)` on card surfaces is acceptable (these are not shadows but backgrounds). Target the ~40 non-OLED instances for replacement.
 
-**BN-F2 — `transition: all` used in 2 locations** [LOW]
+**BN-F2 ✅ — `transition: all` used in 2 locations** [LOW]
 
 - **Evidence**: `transition: all 0.15s` (appcore-providers.jsx:1508) and `transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)` (appcore-providers.jsx:1615). The §BAN blacklist explicitly bans `transition: all 0.2s ease-in-out`.
 - **Impact**: `transition: all` animates properties that shouldn't animate (layout properties like width, height, padding), causing potential jank and unintended visual effects. Also slightly worse performance than specifying exact properties.
@@ -6953,7 +6953,7 @@ The §BAN section defines values that are banned from art-directed output becaus
               transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   ```
 
-**BN-F3 — Lucide icons used unmodified** [LOW]
+**BN-F3 ✅ — Lucide icons used unmodified** [LOW]
 
 - **Evidence**: ~40 Lucide icons imported (lucide-react). Used at default 24px size with default 1.5px stroke. No custom stroke weight, no custom icon styling beyond color.
 - **Impact**: Lucide is the default React icon library — using it unmodified makes the icon vocabulary generic. The §BAN list flags "default Lucide/Heroicons" as banned.
@@ -7069,7 +7069,7 @@ STRATEGY:
   ```
   Apply harmonic ratios to: Planner priority/projection split, Stats overview/detail split, Calculator input/output split. Leave auto-fill grids functional (they need to be).
 
-**CK-F2 — Touch targets at 36px, below 44px minimum** [LOW]
+**CK-F2 ✅ — Touch targets at 36px, below 44px minimum** [LOW]
 
 - **Evidence**: A `@media (pointer: coarse)` rule (appcore-providers.jsx:518-526) applies `min-height: 36px` to standalone buttons and `min-height: 44px` to selects on touch devices. The 36px floor is below the iOS HIG recommended 44px minimum, though it meets Android's 36dp minimum.
 - **Impact**: Mild — 36px targets are usable but slightly undersized for comfortable one-handed mobile use. The most affected elements are small action buttons in dense data areas.
@@ -7178,7 +7178,7 @@ The secondary accents map to game elements (Glacio=cyan, Electro=purple, Havoc=p
   --bg-elevated: rgba(20, 26, 38, 0.7);  /* new: clearly elevated */
   ```
 
-**CL-F2 — Semantic error/success colors not fully palette-calibrated** [LOW]
+**CL-F2 ✅ — Semantic error/success colors not fully palette-calibrated** [LOW]
 
 - **Evidence**: Error `#f87171` and Success `#22c55e` are Tailwind-derived colors, not calibrated to the cool 245° palette temperature. Per §COLOR Layer 5: semantic colors should "match chroma and temperature to the rest of the palette."
 - **Impact**: Error red and success green feel slightly detached from the blue-tinted palette. The temperature mismatch is subtle but contributes to a less unified feel.
@@ -7207,7 +7207,7 @@ The secondary accents map to game elements (Glacio=cyan, Electro=purple, Havoc=p
 
 ### Findings
 
-**DP-F1 — Shadows lack directional consistency** [LOW]
+**DP-F1 ✅ — Shadows lack directional consistency** [LOW]
 
 - **Evidence**: All shadow tokens use `0 Ypx Rpx rgba(6,10,24,x)` — the shadow falls straight down (0 X-offset, positive Y-offset). This implies a top-center light source. However, the canvas background glow comes from the bottom, and card top-edge highlights suggest top-left light. The light direction is ambiguous.
 - **Impact**: Subtle visual inconsistency. The brain registers conflicting depth cues: shadows say "light from above" while background glow says "light from below." Neither is wrong individually, but together they slightly reduce the perceived physicality of the interface.
@@ -7249,7 +7249,7 @@ The secondary accents map to game elements (Glacio=cyan, Electro=purple, Havoc=p
 
 ### Findings
 
-**TX-F1 — No static texture layer exists** [LOW]
+**TX-F1 ✅ — No static texture layer exists** [LOW]
 
 - **Evidence**: All texture comes from dynamic canvas animations (BackgroundGlow, TriangleMirrorWave). If canvas fails to load, if user has reduced-motion enabled, or if the component is unmounted, the background is pure flat #080c14 with no texture.
 - **Impact**: The atmospheric depth disappears entirely when canvas is unavailable. The fallback state is a flat void — still functional but loses the "world" quality.
@@ -7295,7 +7295,7 @@ Per §LIGHT: "Choose one light source direction. Apply it to ALL depth elements.
 
 ### Findings
 
-**LT-F1 — Light source direction is ambiguous across systems** [LOW]
+**LT-F1 ✅ — Light source direction is ambiguous across systems** [LOW]
 
 - **Evidence**: Three different light models coexist (top-center shadows, bottom-up canvas glow, ambient borders). Per §LIGHT: one direction should govern all.
 - **Impact**: Subtle but real — the interface doesn't feel like it exists in a physically consistent space. For a cyberpunk-luxe product, bottom-up dramatic lighting would be most appropriate per §LIGHT's personality table.
@@ -7332,7 +7332,7 @@ Per §LIGHT: "Choose one light source direction. Apply it to ALL depth elements.
 
 ### Findings
 
-**SH-F1 — No non-rectangular elements exist** [LOW]
+**SH-F1 ✅ — No non-rectangular elements exist** [LOW]
 
 - **Evidence**: Zero `clip-path`, zero asymmetric `border-radius` (e.g., `border-radius: 16px 16px 0 0`), zero organic SVG shapes as containers. Every container is a standard rectangle with uniform corner radius.
 - **Impact**: The shape vocabulary is functional but rectangular-only. Per §SHAPE, at least one non-rectangular element should exist to add visual interest and break the uniform grid.
@@ -7476,8 +7476,8 @@ The atmosphere is built BEFORE components (canvas renders behind everything, gla
 
 **AT-F1 — Atmosphere has no CSS fallback layer** [LOW]
 
-- **Evidence**: The atmospheric depth (BackgroundGlow, TriangleMirrorWave) is entirely canvas-based. If JavaScript fails, if canvas is unsupported, or if reduced-motion disables the animation, the atmosphere becomes flat #080c14. Cross-references TX-F1 (same root issue).
-- **Solution**: (Same as TX-F1) Add a CSS radial-gradient fallback that renders the warm bottom glow without JavaScript:
+- **Evidence**: The atmospheric depth (BackgroundGlow, TriangleMirrorWave) is entirely canvas-based. If JavaScript fails, if canvas is unsupported, or if reduced-motion disables the animation, the atmosphere becomes flat #080c14. Cross-references TX-F1 ✅ (same root issue).
+- **Solution**: (Same as TX-F1 ✅) Add a CSS radial-gradient fallback that renders the warm bottom glow without JavaScript:
   ```css
   body { background: #080c14; }
   body::before {
@@ -7917,8 +7917,8 @@ Per §DETECT scoring: 20-25 = "fix specific areas." The app is in the upper rang
 | Detected Issue | §FIX Replacement | Finding Ref |
 |---|---|---|
 | `rgba(0,0,0,...)` shadows (59 instances) | Replace with `rgba(6,10,24,...)` — palette hue | BN-F1 |
-| `transition: all` (2 instances) | Replace with specific property list | BN-F2 |
-| No distinctive shape treatment | Add corner brackets or partial borders | SH-F1 |
+| `transition: all` (2 instances) | Replace with specific property list | BN-F2 ✅ |
+| No distinctive shape treatment | Add corner brackets or partial borders | SH-F1 ✅ |
 | Focus states incomplete | Add `:focus-visible` with accent glow | (see §FOCUS below) |
 
 ### §META — Slop Root Cause Analysis
@@ -8100,7 +8100,7 @@ Per §ICONS:
 3. "Size by context" — Varied sizes are present
 4. "Color" — Icons use secondary text color; active = accent ✓
 
-**Finding**: Already covered in BN-F3 (Lucide icons unmodified).
+**Finding**: Already covered in BN-F3 ✅ (Lucide icons unmodified).
 
 ### §TABLES — Table Design Assessment
 
@@ -8737,7 +8737,7 @@ Per §DEMOGRAPHICS Gen Z response:
 | Min 16px body (mobile) | FAIL | Body text at 14px (`text-sm`), micro text at 9-10px |
 | Line-height 1.4-1.6 | PASS | Default Tailwind body line-height |
 | Max 75ch width | FAIL | No character-width constraint (see TY-F4) |
-| Touch 44×44px | FAIL | Many small interactive elements (see CK-F2) |
+| Touch 44×44px | FAIL | Many small interactive elements (see CK-F2 ✅) |
 | Zoom not disabled | PASS | No `user-scalable=no` in meta viewport |
 
 **Score**: 5/10 PASS — accessibility needs attention.
@@ -8746,7 +8746,7 @@ Per §DEMOGRAPHICS Gen Z response:
 
 **AC-F1 — Accessibility score 5/10** [MEDIUM]
 
-- **Evidence**: Five accessibility checks fail: focus-visible, reduced-motion coverage, body text size, line width, touch targets. These are documented individually in BT-F1, CK-F2, CK-F3, TY-F4.
+- **Evidence**: Five accessibility checks fail: focus-visible, reduced-motion coverage, body text size, line width, touch targets. These are documented individually in BT-F1, CK-F2 ✅, CK-F3, TY-F4.
 - **Impact**: Keyboard users, motion-sensitive users, and mobile users face barriers. While the expert audience may tolerate some of these, accessibility is a baseline requirement regardless of audience expertise.
 - **Solution**: Priority fix order: (1) :focus-visible global rule — 1 CSS declaration, fixes keyboard nav. (2) Touch targets — add min-h-[44px] to interactive elements. (3) Canvas reduced-motion check — one JS condition. (4) Body text floor at 14px — already at 14px but micro text needs 10px floor. (5) Max-width 65ch on prose — simple CSS.
 
@@ -8895,23 +8895,23 @@ Competitive positioning map:
 | ID | Section | Finding | Severity |
 |---|---|---|---|
 | BR-F1 | §BRIEF | Single font for display AND body | MEDIUM |
-| BR-F2 | §BRIEF | Spacing base is Tailwind default (4px) | LOW |
-| BR-F3 | §BRIEF | OKLCH values not used in code | LOW |
+| BR-F2 ✅ | §BRIEF | Spacing base is Tailwind default (4px) | LOW |
+| BR-F3 ✅ | §BRIEF | OKLCH values not used in code | LOW |
 | BN-F1 | §BAN | `rgba(0,0,0,...)` shadows — 59 instances | MEDIUM |
-| BN-F2 | §BAN | `transition: all` — 2 instances | LOW |
-| BN-F3 | §BAN | Lucide icons used unmodified | LOW |
+| BN-F2 ✅ | §BAN | `transition: all` — 2 instances | LOW |
+| BN-F3 ✅ | §BAN | Lucide icons used unmodified | LOW |
 | BN-F4 | §BAN | #8b5cf6 Tailwind purple-500 in trophies | POLISH |
 | BN-F5 | §BAN | #10b981 Tailwind green-500 for Aero | POLISH |
 | CK-F1 | §CHECK | Layout lacks harmonic proportions | MEDIUM |
-| CK-F2 | §CHECK | Touch targets at 36px, below 44px | LOW |
+| CK-F2 ✅ | §CHECK | Touch targets at 36px, below 44px | LOW |
 | CK-F3 | §CHECK | Canvas animations lack prefers-reduced-motion | MEDIUM |
 | CL-F1 | §COLOR | Surface elevation steps too small | MEDIUM |
-| CL-F2 | §COLOR | Semantic colors not fully palette-calibrated | LOW |
-| DP-F1 | §DEPTH | Shadows lack directional consistency | LOW |
+| CL-F2 ✅ | §COLOR | Semantic colors not fully palette-calibrated | LOW |
+| DP-F1 ✅ | §DEPTH | Shadows lack directional consistency | LOW |
 | DP-F2 | §DEPTH | Modal background lacks focus blur | POLISH |
-| TX-F1 | §TEXTURE | No static texture layer exists | LOW |
-| LT-F1 | §LIGHT | Light source direction is ambiguous | LOW |
-| SH-F1 | §SHAPE | No non-rectangular elements exist | LOW |
+| TX-F1 ✅ | §TEXTURE | No static texture layer exists | LOW |
+| LT-F1 ✅ | §LIGHT | Light source direction is ambiguous | LOW |
+| SH-F1 ✅ | §SHAPE | No non-rectangular elements exist | LOW |
 | CP-F1 | §COMPOSITION | Section-to-component gap ratio too low | LOW |
 | CP-F2 | §COMPOSITION | No asymmetric/golden-ratio layout splits | POLISH |
 | TK-F1 | §TOKENS | No primitive token layer | MEDIUM |
@@ -8981,7 +8981,7 @@ Competitive positioning map:
 | This Finding | Related Prior Finding | Relationship |
 |---|---|---|
 | BT-F1 (focus-visible) | §E6/§E7 interaction findings | Same root issue: missing keyboard navigation feedback |
-| CK-F2 (touch targets) | §E10-NV-F1 (9px text) | Same root: small interactive elements |
+| CK-F2 ✅ (touch targets) | §E10-NV-F1 (9px text) | Same root: small interactive elements |
 | CK-F3 (reduced-motion) | §E6 interaction findings | Accessibility gap extends to canvas layer |
 | TK-F1 (no primitive tokens) | §E1 (P1 Step 8) token system | Deepens the token architecture analysis |
 | CL-F1 (surface elevation) | §DC3 (P1 Step 6) dark mode craft | Same surface-level perceptibility concern |
@@ -9041,7 +9041,7 @@ Competitive positioning map:
 |---|-----------|-----------|---------------|----------------|---------------------|
 | GC1 | §E9-VS-F2 ✅ LOW: "Canvas animations no reduced-motion fallback" | §E6-MC3 PASS: "Reduced motion compliance" | E6 says reduced motion is compliant; E9 says canvas lacks it | **E6 is partially incorrect.** E6 assessed CSS animations + JS `prefersReducedMotion` detection (both present and correct). But canvas animations (`BackgroundGlow`, `TriangleMirrorWave`) run independently and do NOT check `prefers-reduced-motion`. The E6 PASS should be qualified: "CSS and JS reduced motion compliant; canvas layer non-compliant." **Corrected severity: E6-MC3 → PARTIAL PASS. Canvas reduced-motion gap confirmed at LOW.** |
 | GC2 | §DC4-ICO1 ✅ LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 should be upgraded from POLISH → LOW. ✅ FIXED |
-| GC3 | §E2-MO1 MEDIUM: "Touch targets 36px on touch devices (below 44px)" | §CK-F2 LOW (Step 18): "Touch targets at 36px, below 44px" | Same finding, different severity (MEDIUM vs LOW) | **E2 severity is correct.** Touch target compliance is a WCAG 2.5.8 requirement. A 36px target on `pointer: coarse` devices is a genuine accessibility gap that affects every touch interaction. **Reconciled: MEDIUM.** Step 18 §CK-F2 should be upgraded from LOW → MEDIUM. |
+| GC3 | §E2-MO1 MEDIUM: "Touch targets 36px on touch devices (below 44px)" | §CK-F2 ✅ LOW (Step 18): "Touch targets at 36px, below 44px" | Same finding, different severity (MEDIUM vs LOW) | **E2 severity is correct.** Touch target compliance is a WCAG 2.5.8 requirement. A 36px target on `pointer: coarse` devices is a genuine accessibility gap that affects every touch interaction. **Reconciled: MEDIUM.** Step 18 §CK-F2 ✅ should be upgraded from LOW → MEDIUM. |
 | GC4 | §DS2-F8 MEDIUM: "~240 hardcoded color values" | §E1-COL1 HIGH: "66 unique hex colors, only 18 tokenized — 73% unmanaged" | Same root issue, different quantification (240 instances vs 66 unique values) | **Both are correct at different levels.** DS2 counts *instances* (how many times hardcoded values appear). E1 counts *unique values* (how many distinct colors exist). 66 unique colors × average 3.6 uses each ≈ 240 instances. **No quantification error.** But the severity differs: DS2 says MEDIUM, E1 says HIGH. **Reconciled: HIGH** — 73% unmanaged palette is a systemic token architecture issue, not a moderate concern. |
 | GC5 | §E9-EA-F4 ✅ LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
 
@@ -9051,7 +9051,7 @@ Competitive positioning map:
 - **5 genuine contradictions found and reconciled**:
   - GC1: E6-MC3 reduced-motion PASS → PARTIAL PASS (canvas gap)
   - GC2: E9-AC-F2 favicon POLISH → LOW (severity alignment)
-  - GC3: CK-F2 touch targets LOW → MEDIUM (WCAG compliance)
+  - GC3: CK-F2 ✅ touch targets LOW → MEDIUM (WCAG compliance)
   - GC4: DS2-F8 hardcoded colors MEDIUM → HIGH (aligns with E1-COL1)
   - GC5: Both severities retained (different scopes)
 
@@ -9099,7 +9099,7 @@ Competitive positioning map:
 | Inline buttons | §E5-BT5: "~100+" | §E6-HV9 ✅: "~100+" | §E6-AP4 ✅: "~93+" | **CONSISTENT** — all approximate the same population. |
 | Token coverage | §E1-COV1: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
 | Rounded-lg count | §DBI3-S03: "109× rounded-lg" | §E9-AG-F2: "~360 rounded-lg" | **DISCREPANCY** — 109 vs 360 is a 3.3× difference. **Resolution**: DBI3 likely counts `rounded-lg` class instances. E9 may count all `rounded-*` instances including `rounded`, `rounded-md`, `rounded-xl`, etc. **Clarification needed** — the finding should specify: §DBI3-S03 counts `rounded-lg` specifically (109); §E9-AG-F2 should count `rounded-lg` specifically to maintain consistency. If E9 includes all rounded-* variants, note this explicitly. |
-| Touch targets | §E2-MO1: "36px" | §CK-F2: "36px" | **CONSISTENT** — same measurement. |
+| Touch targets | §E2-MO1: "36px" | §CK-F2 ✅: "36px" | **CONSISTENT** — same measurement. |
 | Surface elevation band | §DC3-EL1: "3.7% lightness band" | §CL-F1: "Surface elevation steps too small" | **CONSISTENT** — qualitative and quantitative descriptions align. |
 
 ### 19.2.4 — Inconsistency Summary
@@ -9109,7 +9109,7 @@ Competitive positioning map:
 2. §E7-AD2 ✅: LOW → **MEDIUM** (radius token absence)
 3. §E10-NV-F3: LOW → **MEDIUM** (Stats missing kuro-number)
 4. §E9-AC-F2: POLISH → **LOW** (favicon gold mismatch)
-5. §CK-F2: LOW → **MEDIUM** (touch targets — from §19.1)
+5. §CK-F2 ✅: LOW → **MEDIUM** (touch targets — from §19.1)
 
 **Score adjustment (1)**:
 - §E9 overall: 8.1/10 → **7.8/10** (3 HIGH findings pull score below 8.0)
@@ -9763,7 +9763,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 |-----------|------|--------|
 | E6-MC3 reduced motion: PASS → PARTIAL PASS | Contradiction fix | Canvas gap now documented |
 | E9-AC-F2 favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 ✅ |
-| CK-F2 touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
+| CK-F2 ✅ touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
 | E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
 | E7-AD2 ✅ radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 |
@@ -10432,7 +10432,7 @@ This brings inputs above the 3:1 threshold while maintaining the subtle glass ae
 ```
 The 8px increase has negligible visual impact but significantly improves mobile tap accuracy.
 
-**Cross-references**: CK-F2
+**Cross-references**: CK-F2 ✅
 
 ---
 
@@ -11102,16 +11102,16 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 101 | BR-F2 | Spacing base is Tailwind default (4px) — not distinctive | ALL | Define `--space-base: 6px` for prominent component spacing (card padding, section gaps) while keeping Tailwind 4px for utilities |
-| 102 | BR-F3 | OKLCH values not used in code | ALL | Add OKLCH as comments next to CSS custom property definitions for documentation |
-| 103 | BN-F2 | `transition: all` used in 2 locations | ALL | Replace with specific property transitions: `transition: background-color, border-color, color, transform` |
-| 104 | BN-F3 | Lucide icons used unmodified (default stroke 1.5px) | ALL | Set consistent stroke-width to 1.25px; consider creating a `KuroIcon` wrapper component |
-| 105 | CK-F2 | Touch targets at 36px, below 44px minimum | ALL | Resolved by MED-15 (increase to 44px) |
-| 106 | CL-F2 | Semantic error/success colors not fully palette-calibrated | ALL | Shift error cooler (oklch 68% 0.18 15°) and success toward teal (oklch 72% 0.16 170°) |
-| 107 | DP-F1 | Shadows lack directional consistency (top-center vs bottom-up glow) | ALL | Commit to ambient light: convert shadows to blur-only (0 offset both axes): `0 0 12px rgba(6,10,24,0.5)` |
-| 108 | TX-F1 | No static texture layer (flat bg when canvas fails) | ALL | Add CSS radial-gradient fallback: subtle warm glow from bottom-center on `body::before` |
-| 109 | LT-F1 | Light source direction ambiguous across systems | ALL | Resolved by #107 (ambient light model) |
-| 110 | SH-F1 | No non-rectangular elements exist (zero clip-path/asymmetric radius) | ALL | Add asymmetric radius on tab active indicator: `border-radius: 12px 12px 0 0` |
+| 101 | BR-F2 ✅ | Spacing base is Tailwind default (4px) — not distinctive | ALL | Define `--space-base: 6px` for prominent component spacing (card padding, section gaps) while keeping Tailwind 4px for utilities |
+| 102 | BR-F3 ✅ | OKLCH values not used in code | ALL | Add OKLCH as comments next to CSS custom property definitions for documentation |
+| 103 | BN-F2 ✅ | `transition: all` used in 2 locations | ALL | Replace with specific property transitions: `transition: background-color, border-color, color, transform` |
+| 104 | BN-F3 ✅ | Lucide icons used unmodified (default stroke 1.5px) | ALL | Set consistent stroke-width to 1.25px; consider creating a `KuroIcon` wrapper component |
+| 105 | CK-F2 ✅ | Touch targets at 36px, below 44px minimum | ALL | Resolved by MED-15 (increase to 44px) |
+| 106 | CL-F2 ✅ | Semantic error/success colors not fully palette-calibrated | ALL | Shift error cooler (oklch 68% 0.18 15°) and success toward teal (oklch 72% 0.16 170°) |
+| 107 | DP-F1 ✅ | Shadows lack directional consistency (top-center vs bottom-up glow) | ALL | Commit to ambient light: convert shadows to blur-only (0 offset both axes): `0 0 12px rgba(6,10,24,0.5)` |
+| 108 | TX-F1 ✅ | No static texture layer (flat bg when canvas fails) | ALL | Add CSS radial-gradient fallback: subtle warm glow from bottom-center on `body::before` |
+| 109 | LT-F1 ✅ | Light source direction ambiguous across systems | ALL | Resolved by #107 (ambient light model) |
+| 110 | SH-F1 ✅ | No non-rectangular elements exist (zero clip-path/asymmetric radius) | ALL | Add asymmetric radius on tab active indicator: `border-radius: 12px 12px 0 0` |
 | 111 | CP-F1 | Section-to-component gap ratio too low (~2×, should be 3–5×) | ALL | Increase between-section spacing: `.section + .section { margin-top: 36px; }` |
 | 112 | TK-F2 | No component-level token abstraction | ALL | Add `--card-radius`, `--card-padding`, `--btn-radius` to `:root` (part of HIGH-3) |
 | 113 | AT-F1 | Atmosphere has no CSS fallback layer | ALL | Same as #108 — CSS radial-gradient fallback |

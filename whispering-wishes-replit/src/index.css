@@ -34,6 +34,16 @@ body {
   overflow-x: hidden;
 }
 
+/* TX-F1 / AT-F1: CSS radial-gradient fallback when canvas atmosphere fails */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 100%, rgba(237,175,24,0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
 #root {
   min-height: 100vh;
   min-height: 100dvh;
