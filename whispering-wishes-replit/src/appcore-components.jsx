@@ -636,6 +636,9 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
 
         {/* Content */}
         <div className="p-4 space-y-3">
+          {/* Description */}
+          {data.desc && <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>}
+
           {/* Sonata Sets */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Available Sonata Sets</div>
