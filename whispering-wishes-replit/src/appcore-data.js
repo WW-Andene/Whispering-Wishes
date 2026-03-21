@@ -289,7 +289,7 @@ const CHARACTER_DATA = {
     skills: ['Trailing Slash', 'Illuminous Epiphany', 'Purge of Light', 'Incarnation'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: "Loong's Pearl" },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
-    bestEchoes: ['Sentinel Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
+    bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
   'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Sub DPS',
     desc: 'True Sentinel of Jinzhou. Fast Fusion combos and Fusion DMG Amp.',
@@ -450,7 +450,7 @@ const CHARACTER_DATA = {
     skills: ['Golden Reflux', 'Aureole of Execution', 'Scalpel Judgment', 'Ichor Flow'],
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Pendant', specialty: 'Edelschnee' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
-    bestEchoes: ['Twin Nova: Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
+    bestEchoes: ['Twin Nova - Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
     teams: ['Luuk Herssen + Lynae + Mornye', 'Luuk Herssen + Sanhua + Verina'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Digital ghost from Startorch Academy. Dual-system Fusion DPS with Tune Rupture and Fusion Burst modes.',
@@ -1247,7 +1247,7 @@ const ALL_4COST_ECHOES = [
   // v2.0 — Rinascita
   'Dreamless', 'Nightmare: Lampylumen Myriad', 'Nightmare: Impermanence Heron', 'Sentry Construct',
   // v1.2–1.3
-  'Fallacy of No Return', 'Sentinel Jué',
+  'Fallacy of No Return', 'Jué',
   // v1.0 — Launch
   'Crownless', 'Mech Abomination', 'Lampylumen Myriad', 'Impermanence Heron',
   'Bell-Borne Geochelone', 'Inferno Rider', 'Thundering Mephis', 'Tempest Mephis',
@@ -1256,11 +1256,11 @@ const ALL_4COST_ECHOES = [
 
 const ALL_3COST_ECHOES = [
   // v3.0+ — Lahai-Roi
-  'Twin Nova: Nebulous Cannon', 'Twin Nova: Collapsar Blade',
+  'Twin Nova - Nebulous Cannon', 'Twin Nova - Collapsar Blade',
   'Sabercat Prowler', 'Sabercat Reaver', 'Spacetrek Explorer',
   'Flora Reindeer', 'Windlash Coleoid', 'Frostbite Coleoid', 'Glommoth',
   'Ironhoof', 'Mining Reindeer',
-  'Reminiscence: Kronaclaw', 'Kronablight',
+  'Reminiscence - Kronaclaw', 'Kronablight',
   // v2.6 — Sanguis Plateaus
   'Corrosaurus', 'Pilgrim\'s Shell', 'Kerasaur', 'Hurriclaw',
   'Nightmare: Viridblaze Saurian', 'Nightmare: Violet-Feathered Heron',
@@ -1311,8 +1311,7 @@ const ALL_1COST_ECHOES = [
   // v1.0 — Launch
   'Fusion Prism', 'Glacio Prism', 'Havoc Prism', 'Spectro Prism',
   'Snip Snap', 'Zig Zag', 'Hooscamp',
-  'Fusion Warrior', 'Aero Warrior',
-  'Electro Warrior', 'Havoc Warrior', 'Spectro Warrior',
+  'Fusion Warrior', 'Havoc Warrior',
   'Whiff Whaff', 'Cruisewing', 'Chirpuff',
 ];
 
@@ -1329,7 +1328,7 @@ const ECHO_DATA = {
   'Lampylumen Myriad':               { sets: ['Freezing Frost'], buff: 'Glacio DMG', desc: 'A luminous deep-sea jellyfish Overlord. Skill transforms into Lampylumen Myriad for 3 freezing strikes dealing 220%/200%/266% Glacio DMG. Each hit grants +4% Glacio DMG and +4% Resonance Skill DMG for 15s, stacking 3 times.' },
   'Mech Abomination':                { sets: ['Lingering Tunes'], buff: 'Electro DMG', desc: 'A grotesque mechanical construct Overlord. Skill strikes for 48% Electro DMG and summons Mech Waste dealing 320% Electro DMG on hit (explodes for 160% more). Grants +12% ATK for 15s. Mech Waste DMG counts as Outro Skill DMG.' },
   'Crownless':                       { sets: ['Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A faceless humanoid Overlord of pure Havoc energy. Skill transforms into Crownless for 4 attacks: two hits of 134% Havoc DMG, a double-hit of 100%, and a triple-hit of 67%. Grants +12% Havoc DMG and +12% Resonance Skill DMG for 15s.' },
-  'Sentinel Jué':                    { sets: ['Celestial Light'], buff: 'Spectro DMG', desc: 'The ancient dragon guardian of Jinzhou. Skill summons Jué to soar and strike (48% Spectro DMG), call 5 thunderbolts (19% each), and spiral down twice (48% each). Grants Blessing of Time: +16% Resonance Skill DMG Bonus and Spectro DoT for 15s.' },
+  'Jué':                    { sets: ['Celestial Light'], buff: 'Spectro DMG', desc: 'The ancient dragon guardian of Jinzhou. Skill summons Jué to soar and strike (48% Spectro DMG), call 5 thunderbolts (19% each), and spiral down twice (48% each). Grants Blessing of Time: +16% Resonance Skill DMG Bonus and Spectro DoT for 15s.' },
   'Fallacy of No Return':            { sets: ['Rejuvenating Glow'], buff: 'Spectro DMG', desc: 'An otherworldly Overlord that bends reality. Skill blasts surrounding area for 15.86% Max HP Spectro DMG; hold to flurry at 1.58% Max HP per hit, ending with 19.82% Max HP. Grants +10% Energy Regen and +10% ATK to all team members for 20s.' },
   'Sentry Construct':                { sets: ['Frosty Resolve'], buff: 'Glacio DMG', desc: 'A massive armored guardian construct. Skill transforms into Sentry Construct dealing 405% Glacio DMG. After enough Resonance Liberations charge the Strike Capacitor to max, resets Echo cooldown and dives for 405% Glacio DMG with freeze. Grants +12% Glacio DMG and +12% Resonance Skill DMG.' },
   'Nightmare: Impermanence Heron':   { sets: ['Midnight Veil'], buff: 'Havoc DMG', desc: 'A nightmare variant of the spectral crane wreathed in prismatic energy. Skill transforms and delivers up to 10 strikes of 40% Havoc DMG each. Main slot grants +12% Havoc DMG and +12% Heavy ATK DMG passively.' },
@@ -1350,7 +1349,7 @@ const ECHO_DATA = {
   'Corrosaurus':                     { sets: ['Flaming Clawprint', "Flamewing's Shadow"], buff: 'Fusion DMG', desc: 'A rare armored saurian of the Sanguis Plateaus that spews molten rock. Skill summons Corrosaurus to attack for 273% Fusion DMG. Main slot grants +12% Fusion DMG and +20% Echo Skill DMG.' },
   'Reminiscence: Threnodian - Leviathan': { sets: ["Flamewing's Shadow", 'Thread of Severed Fate'], buff: 'Havoc DMG', desc: 'A colossal sea-beast Calamity wreathed in Havoc. Skill summons a Collapsing Horizon for 2 hits of 131% Havoc DMG and creates Core of Collapse for 15s (24% Havoc DMG per hit, up to 8 times). Main slot grants +12% Havoc DMG and +12% Resonance Liberation DMG.' },
   'Hyvatia':                         { sets: ['Pact of Neonlight Leap', 'Rite of Gilded Revelation'], buff: 'Spectro DMG', desc: 'An ancient construct boss from Lahai-Roi that fires converging lasers. Skill summons Hyvatia mid-air to fire lasers dealing 27% Spectro DMG x10. Outro within 15s grants the incoming Resonator +10% All-Attribute DMG Bonus for 15s.' },
-  'Twin Nova: Nebulous Cannon':      { sets: ['Rite of Gilded Revelation', 'Chromatic Foam'], buff: 'Spectro DMG', desc: 'The ranged model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies twice for 80% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Basic ATK DMG. Pairing with Collapsar Blade enables combo attacks and Dyad Origins stacks (+10% Echo Skill DMG each, up to 6).' },
+  'Twin Nova - Nebulous Cannon':      { sets: ['Rite of Gilded Revelation', 'Chromatic Foam'], buff: 'Spectro DMG', desc: 'The ranged model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies twice for 80% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Basic ATK DMG. Pairing with Collapsar Blade enables combo attacks and Dyad Origins stacks (+10% Echo Skill DMG each, up to 6).' },
   'Sigillum':                        { sets: ['Trailblazing Star'], buff: 'Fusion DMG', desc: 'A Calamity-class star guardian sealed beyond the Gate of the Lost Star. Skill summons Sigillum for two attacks dealing 68%/205% Fusion DMG. When equipped by Aemeath, grants +25% Resonance Liberation DMG.' },
   'Reactor Husk':                    { sets: ['Halo of Starry Radiance', 'Chromatic Foam'], buff: 'Fusion DMG', desc: 'A massive reactor construct from Lahai-Roi. Skill summons Reactor Husk to attack enemies dealing Fusion DMG.' },
   'Nameless Explorer':               { sets: ['Sound of True Name'], buff: 'Aero DMG', desc: 'A mysterious explorer Overlord. Skill summons the Nameless Explorer to attack enemies dealing Aero DMG.' },
@@ -1376,7 +1375,7 @@ const ECHO_DATA = {
   'Glacio Dreadmane':                { sets: ['Freezing Frost', 'Moonlit Clouds'], buff: 'Physical DMG', desc: 'An icy lion-like beast from Mt. Firmament. Skill lacerates enemies for 214% Glacio DMG with 2 charges. Deals +20% DMG mid-air and generates 6 Icicles on landing (32% Glacio DMG each).' },
   'Chasm Guardian':                  { sets: ['Rejuvenating Glow', 'Lingering Tunes'], buff: 'Havoc DMG', desc: 'A boulder-like construct from the abyss, built to crush rather than protect. Skill transforms for a Leap Strike dealing 273% Havoc DMG at cost of 10% HP, then restores up to 10% Max HP over 5s.' },
   'Abyssal Mercator':                { sets: ['Frosty Resolve', 'Eternal Radiance'], buff: 'Glacio DMG', desc: 'A battle-hardened combatant from the depths. Skill summons an Abyssal Mercator to attack enemies, dealing Glacio DMG with swift strikes.' },
-  'Twin Nova: Collapsar Blade':      { sets: ['Rite of Gilded Revelation', 'Trailblazing Star', 'Sound of True Name'], buff: 'Electro DMG', desc: 'The melee model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies dealing Electro DMG. Pairing with Nebulous Cannon enables combo attacks.' },
+  'Twin Nova - Collapsar Blade':      { sets: ['Rite of Gilded Revelation', 'Trailblazing Star', 'Sound of True Name'], buff: 'Electro DMG', desc: 'The melee model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies dealing Electro DMG. Pairing with Nebulous Cannon enables combo attacks.' },
   'Sabercat Prowler':                { sets: ['Pact of Neonlight Leap', 'Rite of Gilded Revelation', 'Sound of True Name'], buff: 'Fusion DMG', desc: 'A stealthy feline predator from Lahai-Roi. Skill summons Sabercat Prowler to attack enemies dealing Fusion DMG.' },
   'Sabercat Reaver':                 { sets: ['Pact of Neonlight Leap', 'Rite of Gilded Revelation', 'Sound of True Name'], buff: 'Fusion DMG', desc: 'A fierce feline combatant from Lahai-Roi. Skill summons Sabercat Reaver to attack enemies dealing Fusion DMG.' },
   'Spacetrek Explorer':              { sets: ['Halo of Starry Radiance', 'Chromatic Foam', 'Sound of True Name'], buff: 'Healing', desc: 'A spacefaring support unit from the Spacetrek Collective. Skill summons Spacetrek Explorer to support allies.' },
@@ -1386,7 +1385,7 @@ const ECHO_DATA = {
   'Glommoth':                        { sets: ['Trailblazing Star'], buff: 'Glacio DMG', desc: 'A glowing moth-like creature from Lahai-Roi. Skill summons Glommoth to attack enemies dealing Glacio DMG.' },
   'Ironhoof':                        { sets: ['Pact of Neonlight Leap'], buff: 'Fusion DMG', desc: 'A heavy hoofed beast from Lahai-Roi. Skill summons Ironhoof to attack enemies dealing Fusion DMG.' },
   'Mining Reindeer':                 { sets: ['Pact of Neonlight Leap'], buff: 'Electro DMG', desc: 'A reindeer-like creature used in mining operations. Skill summons Mining Reindeer to attack enemies dealing Electro DMG.' },
-  'Reminiscence: Kronaclaw':         { sets: ['Trailblazing Star', 'Chromatic Foam'], buff: 'Aero DMG', desc: 'A reminiscence of the fearsome Kronaclaw. Skill summons Reminiscence: Kronaclaw to attack enemies dealing Aero DMG.' },
+  'Reminiscence - Kronaclaw':         { sets: ['Trailblazing Star', 'Chromatic Foam'], buff: 'Aero DMG', desc: 'A reminiscence of the fearsome Kronaclaw. Skill summons Reminiscence: Kronaclaw to attack enemies dealing Aero DMG.' },
   'Kronablight':                     { sets: ['Trailblazing Star', 'Chromatic Foam'], buff: 'Electro DMG', desc: 'A blighted variant of the Kronaclaw. Skill summons Kronablight to attack enemies dealing Electro DMG.' },
   'Pilgrim\'s Shell':                { sets: ['Windward Pilgrimage', 'Flaming Clawprint'], buff: 'Aero DMG', desc: 'A shell-bearing pilgrim creature. Skill summons Pilgrim\'s Shell to attack enemies dealing Aero DMG.' },
   'Kerasaur':                        { sets: ['Windward Pilgrimage', 'Flaming Clawprint', "Flamewing's Shadow"], buff: 'Aero DMG', desc: 'A horned saurian from the Sanguis Plateaus. Skill summons Kerasaur to attack enemies dealing Aero DMG.' },
@@ -1416,9 +1415,7 @@ const ECHO_DATA = {
   'Chirpuff':                        { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Aero DMG', desc: 'A small puffball creature that inflates with air. Skill summons Chirpuff to blast a powerful gust forward 3 times, each dealing 38% Aero DMG and pushing enemies back.' },
   'Fusion Warrior':                  { sets: ['Molten Rift', 'Void Thunder', 'Sierra Gale'], buff: 'Fusion DMG', desc: 'A humanoid Tacet Discord wreathed in flames. Skill transforms into Fusion Warrior to perform a Counterattack. Successful counter reduces cooldown by 70% and deals 288% Fusion DMG.' },
   'Havoc Warrior':                   { sets: ['Celestial Light', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A humanoid Tacet Discord wreathed in Havoc energy. Skill transforms into Havoc Warrior to perform Havoc-infused strikes dealing Havoc DMG.' },
-  'Aero Warrior':                    { sets: ['Sierra Gale', 'Moonlit Clouds'], buff: 'Aero DMG', desc: 'A humanoid Tacet Discord commanding wind currents. Skill transforms into Aero Warrior to perform wind-infused strikes dealing Aero DMG.' },
-  'Electro Warrior':                 { sets: ['Void Thunder', 'Lingering Tunes'], buff: 'Electro DMG', desc: 'A humanoid Tacet Discord crackling with electricity. Skill transforms into Electro Warrior to perform lightning-infused strikes dealing Electro DMG.' },
-  'Spectro Warrior':                 { sets: ['Celestial Light', 'Rejuvenating Glow'], buff: 'Spectro DMG', desc: 'A humanoid Tacet Discord radiating Spectro light. Skill transforms into Spectro Warrior to perform light-infused strikes dealing Spectro DMG.' },
+
   'Snip Snap':                       { sets: ['Molten Rift', 'Rejuvenating Glow', 'Lingering Tunes'], buff: 'Fusion DMG', desc: 'An immature humanoid TD that exudes small amounts of magma. Skill summons Snip Snap to throw fireballs dealing 32% + 64 Fusion DMG on hit.' },
   'Zig Zag':                         { sets: ['Celestial Light', 'Moonlit Clouds', 'Lingering Tunes'], buff: 'Spectro DMG', desc: 'An immature humanoid TD that emits focused light rays with a "zig zag" sound. Skill summons Zig Zag to detonate Spectro energy dealing 48% + 96 Spectro DMG, creating a Stagnation Zone for 1.8s.' },
   'Hooscamp':                        { sets: ['Sierra Gale', 'Lingering Tunes'], buff: 'Aero DMG', desc: 'A small primate-like Tacet Discord. Skill transforms into Hooscamp Flinger and pounces at enemies dealing 48% + 96 Aero DMG.' },
