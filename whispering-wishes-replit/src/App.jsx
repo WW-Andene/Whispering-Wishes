@@ -3163,9 +3163,9 @@ function WhisperingWishesInner() {
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
-    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''}`}>
-      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled !== 'off'} />
-      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled !== 'off'} />
+    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
+      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
       
       {/* Onboarding Modal */}

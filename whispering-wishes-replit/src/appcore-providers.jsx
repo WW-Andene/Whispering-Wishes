@@ -2101,8 +2101,178 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast);
     }
     
+    /* ═══ FULL ANIMATIONS — 2× intensity mode ═══ */
+
+    /* Glow effects: stronger box-shadows & drop-shadows */
+    .animations-full .glow-gold {
+      box-shadow: 0 0 36px rgba(237, 175, 24, 0.35), inset 0 0 28px rgba(237, 175, 24, 0.10), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .animations-full .glow-purple {
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.22), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    @media (hover: hover) {
+      .animations-full .glow-gold:hover {
+        box-shadow: 0 0 48px rgba(237, 175, 24, 0.45), inset 0 0 32px rgba(237, 175, 24, 0.12), 0 8px 20px rgba(0,0,0,0.4);
+      }
+      .animations-full .glow-purple:hover {
+        box-shadow: 0 0 36px rgba(168, 85, 247, 0.30), 0 8px 20px rgba(0,0,0,0.4);
+      }
+    }
+
+    /* Soft pity pulses: stronger glow range */
+    .animations-full .kuro-soft-pity {
+      animation: kuroPulseOrangeFull 1.5s ease-in-out infinite;
+    }
+    .animations-full .kuro-soft-pity-cyan {
+      animation: kuroPulseCyanFull 1.5s ease-in-out infinite;
+    }
+    .animations-full .kuro-soft-pity-pink {
+      animation: kuroPulsePinkFull 1.5s ease-in-out infinite;
+    }
+    @keyframes kuroPulseOrangeFull {
+      0%, 100% { text-shadow: 0 0 12px rgba(251, 146, 60, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(251, 146, 60, 1); }
+    }
+    @keyframes kuroPulseCyanFull {
+      0%, 100% { text-shadow: 0 0 12px rgba(103, 232, 249, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(103, 232, 249, 1); }
+    }
+    @keyframes kuroPulsePinkFull {
+      0%, 100% { text-shadow: 0 0 12px rgba(236, 72, 153, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(236, 72, 153, 1); }
+    }
+
+    /* Pity danger/critical: stronger pulsing drop-shadow */
+    .animations-full .pity-danger {
+      filter: drop-shadow(0 0 12px rgba(237,175,24,0.6));
+      animation: pityPulseFull 0.4s ease-in-out infinite alternate;
+    }
+    .animations-full .pity-critical {
+      filter: drop-shadow(0 0 16px rgba(237,175,24,0.8));
+      animation: pityPulseFull 0.25s ease-in-out infinite alternate;
+    }
+    @keyframes pityPulseFull {
+      to { filter: drop-shadow(0 0 24px rgba(237,175,24,1)); }
+    }
+
+    /* Card shimmer: brighter shimmer line */
+    .animations-full .kuro-card::after {
+      animation: shimmer 2s ease-in-out infinite;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 20%,
+        rgba(255, 255, 255, 0.7) 50%,
+        rgba(255, 255, 255, 0.4) 80%,
+        transparent 100%
+      );
+    }
+
+    /* Card hover: more dramatic lift */
+    @media (hover: hover) {
+      .animations-full .kuro-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+          var(--shadow-xl),
+          0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 0 50px rgba(100, 140, 200, 0.06),
+          inset 0 1px 0 rgba(255, 255, 255, 0.10);
+      }
+      .animations-full .collection-card:hover {
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      }
+    }
+
+    /* Celebrations: bigger gold glow expansion */
+    .animations-full .celebrate-5star {
+      animation: celebrateGoldFull 1.5s var(--ease-branded);
+    }
+    .animations-full .celebrate-lucky {
+      animation: celebrateGoldFull 0.8s var(--ease-branded);
+    }
+    @keyframes celebrateGoldFull {
+      0%   { box-shadow: 0 0 0 0 rgba(237,175,24,0.8); }
+      50%  { box-shadow: 0 0 60px 30px rgba(237,175,24,0.3); }
+      100% { box-shadow: 0 0 0 0 rgba(237,175,24,0); }
+    }
+
+    /* Import success: stronger gold shimmer */
+    .animations-full .kuro-import-success {
+      animation: importCelebrateFull 0.8s ease-out;
+    }
+    @keyframes importCelebrateFull {
+      0% { box-shadow: 0 0 0 rgba(237, 175, 24, 0); }
+      50% { box-shadow: 0 0 36px rgba(237, 175, 24, 0.3), inset 0 0 24px rgba(237, 175, 24, 0.08); }
+      100% { box-shadow: 0 0 0 rgba(237, 175, 24, 0); }
+    }
+
+    /* Milestone celebration: stronger shimmer */
+    .animations-full .kuro-milestone {
+      animation: milestoneShimmerFull 1s ease-out;
+    }
+    @keyframes milestoneShimmerFull {
+      0% { box-shadow: 0 0 0 rgba(237,175,24,0); }
+      50% { box-shadow: 0 0 48px rgba(237,175,24,0.25), inset 0 0 24px rgba(237,175,24,0.08); }
+      100% { box-shadow: 0 0 0 rgba(237,175,24,0); }
+    }
+
+    /* Entrance animation: more dramatic bounce */
+    .animations-full .kuro-entrance > * {
+      animation: kuroEntranceFull 0.5s ease-out both;
+    }
+    .animations-full .kuro-entrance > *:nth-child(2) { animation-delay: 0.1s; }
+    .animations-full .kuro-entrance > *:nth-child(3) { animation-delay: 0.2s; }
+    .animations-full .kuro-entrance > *:nth-child(4) { animation-delay: 0.3s; }
+    .animations-full .kuro-entrance > *:nth-child(5) { animation-delay: 0.4s; }
+    @keyframes kuroEntranceFull {
+      0% { opacity: 0; transform: translateY(16px) scale(0.95); }
+      55% { opacity: 1; transform: translateY(-3px) scale(1.02); box-shadow: 0 0 24px rgba(237,175,24,0.18); }
+      100% { opacity: 1; transform: translateY(0) scale(1); box-shadow: none; }
+    }
+
+    /* Success checkmark: bigger pop */
+    .animations-full [role="status"] svg.text-emerald-400,
+    .animations-full [role="status"] svg.text-green-400 {
+      animation: checkPopFull 0.35s ease-out both;
+    }
+    @keyframes checkPopFull {
+      0% { transform: scale(0); opacity: 0; }
+      55% { transform: scale(1.4); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Stat reveal: stronger gold glow on reveal */
+    .animations-full .kuro-stat {
+      animation: statRevealFull 0.4s ease-out both;
+    }
+    @keyframes statRevealFull {
+      0% { opacity: 0; box-shadow: 0 0 0 rgba(var(--color-gold), 0); }
+      40% { opacity: 1; box-shadow: 0 0 24px rgba(var(--color-gold), 0.25); }
+      100% { opacity: 1; box-shadow: var(--shadow-sm); }
+    }
+
+    /* Luck badge: stronger glow */
+    .animations-full .luck-badge::before {
+      opacity: 0.9;
+      filter: blur(3px);
+    }
+
+    /* Pulse subtle: more pronounced */
+    .animations-full .pulse-subtle {
+      animation: pulseScaleFull 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseScaleFull {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+
+    /* Pity ring: stronger glow */
+    .animations-full .pity-ring-fill {
+      filter: drop-shadow(0 0 8px var(--ring-glow));
+    }
+
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
-    
+
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
     .no-animations *, .no-animations *::before, .no-animations *::after {
       animation-duration: 0.01ms !important;
