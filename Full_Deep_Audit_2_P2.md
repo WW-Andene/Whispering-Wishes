@@ -11046,11 +11046,11 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 70 | E7-BC1 ✅ | Collection summary bypasses kuro-card system | COLLECTION | Wrap Collection Progress in `<Card>` component to gain shimmer line + corner decorations |
 | 71 | E7-FI2 ✅ | Subtitle gray dilutes first impression | HEADER | Change subtitle from `text-gray-400` to muted gold: `text-yellow-400/50` |
 | 72 | E7-SQ2 ✅ | Calculator lacks visual hero moment | CALC | Add gold-accented result card with larger probability display + subtle glow |
-| 73 | E7-VN2 | Stacked text shadows reduce clarity | TRACKER, COLLECTION | Reduce to single `text-shadow` per element (remove outer shadow) |
-| 74 | E7-VN3 | Collection card glow competes with card system | COLLECTION | Reduce glow opacity by 30% or use `.glow-gold` class at lower intensity |
-| 75 | E7-CC2 | Parity gap on spacing consistency vs competitors | ALL | Extend design system spacing tokens to remaining inline elements |
-| 76 | E7-PD2 | `<Card>` wrapping for inline containers (`bg-white/5`) | EVENTS, COLLECTION, STATS | Replace `bg-white/5 border border-white/10 rounded-lg` patterns with `<Card>` component |
-| 77 | E7-PL1 | No success confirmation animation | ALL | Add checkmark animation to success toast: `scale(0) → scale(1)` on the CheckCircle icon |
+| 73 | E7-VN2 ✅ | Stacked text shadows reduce clarity | TRACKER, COLLECTION | Reduce to single `text-shadow` per element (remove outer shadow) |
+| 74 | E7-VN3 ✅ | Collection card glow competes with card system | COLLECTION | Reduce glow opacity by 30% or use `.glow-gold` class at lower intensity |
+| 75 | E7-CC2 ✅ | Parity gap on spacing consistency vs competitors | ALL | Extend design system spacing tokens to remaining inline elements |
+| 76 | E7-PD2 ✅ | `<Card>` wrapping for inline containers (`bg-white/5`) | EVENTS, COLLECTION, STATS | Replace `bg-white/5 border border-white/10 rounded-lg` patterns with `<Card>` component |
+| 77 | E7-PL1 ✅ | No success confirmation animation | ALL | Add checkmark animation to success toast: `scale(0) → scale(1)` on the CheckCircle icon |
 
 ---
 
@@ -11058,9 +11058,9 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 78 | E8-CI1 | First-impression credibility strong but polish gradient visible | ALL | Resolved by Chain #1 (inline button migration) |
-| 79 | E8-VT2 | Spacing rhythm inconsistent between kuro-* and Tailwind layers | ALL | Resolved by HIGH-3 (spacing tokens) |
-| 80 | E8-CO1 | Import success lacks celebration animation | TRACKER | Add brief gold shimmer on the data import success card |
+| 78 | E8-CI1 ✅ | First-impression credibility strong but polish gradient visible | ALL | Resolved by Chain #1 (inline button migration) |
+| 79 | E8-VT2 ✅ | Spacing rhythm inconsistent between kuro-* and Tailwind layers | ALL | Resolved by HIGH-3 (spacing tokens) |
+| 80 | E8-CO1 ✅ | Import success lacks celebration animation | TRACKER | Add brief gold shimmer on the data import success card |
 
 ---
 
