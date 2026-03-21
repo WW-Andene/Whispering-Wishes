@@ -2498,8 +2498,7 @@ const KuroStyles = memo(({ oledMode }) => (
         width: 100%;
       }
 
-      /* Hide inline footer on desktop */
-      .desktop-layout .app-footer-mobile { display: none !important; }
+      /* Footer removed — now lives inside Profile tab as a kuro-card */
       .desktop-layout > footer, .desktop-layout footer {
         margin-bottom: 0 !important; padding-bottom: 0 !important;
         background: transparent !important;
