@@ -944,9 +944,19 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const peakMul = isFull ? 0.30 : 0.22;
     const colorBoost = isFull ? 1.4 : 1.0;
 
+    const measureViewport = () => {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:fixed;inset:0;visibility:hidden;pointer-events:none';
+      document.body.appendChild(d);
+      const vw = d.offsetWidth;
+      const vh = d.offsetHeight;
+      document.body.removeChild(d);
+      return { vw, vh };
+    };
     const init = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
+      const { vw, vh } = measureViewport();
+      w = vw;
+      h = vh;
       canvas.width = w;
       canvas.height = h;
       bw = Math.ceil(w * BLUR_SCALE);
@@ -1045,9 +1055,19 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const HALF = TW / 2;
     let w, h, cols, rows, seeds;
     
+    const measureViewport = () => {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:fixed;inset:0;visibility:hidden;pointer-events:none';
+      document.body.appendChild(d);
+      const vw = d.offsetWidth;
+      const vh = d.offsetHeight;
+      document.body.removeChild(d);
+      return { vw, vh };
+    };
     const init = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
+      const { vw, vh } = measureViewport();
+      w = vw;
+      h = vh;
       canvas.width = w;
       canvas.height = h;
       cols = Math.ceil(w / HALF) + 4;
