@@ -889,21 +889,6 @@ const KuroStyles = memo(({ oledMode }) => (
       overflow: hidden;
       padding: 2px;
     }
-    .luck-badge::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
-      animation: badgeRotate var(--badge-speed, 12s) linear infinite;
-      opacity: 0.7;
-      filter: blur(4px);
-    }
-    @keyframes badgeRotate {
-      to { transform: rotate(360deg); }
-    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;
