@@ -1647,7 +1647,7 @@ function WhisperingWishesInner() {
     else if (hasBackToBack) list.push({ id: 'b2b', name: 'Back to Back', desc: '5★ within 15 Convenes of the last — flexing is permitted', icon: 'Zap', color: '#22c55e', tier: 'green' });
     
     // ═══ 50/50 STREAK TROPHIES ═══
-    if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Rover\'s Blessing', desc: `${bestWinStreak}× 50/50 wins — the Sentinel chose you`, icon: 'Crown', color: '#ff0000', tier: 'legendary' });
+    if (bestWinStreak >= 10) list.push({ id: 'win10', name: 'Rover\'s Blessing', desc: `${bestWinStreak}× 50/50 wins — the Sentinel chose you`, icon: 'Crown', color: '#ef4444', tier: 'legendary' });
     else if (bestWinStreak >= 7) list.push({ id: 'win7', name: 'Rigged (Positive)', desc: `${bestWinStreak}× 50/50 wins — actual witchcraft`, icon: 'Flame', color: '#edaf18', tier: 'legendary' });
     else if (bestWinStreak >= 5) list.push({ id: 'win5', name: 'Main Character Energy', desc: `${bestWinStreak}× 50/50 wins in a row`, icon: 'Flame', color: '#f97316', tier: 'orange' });
     else if (bestWinStreak >= 4) list.push({ id: 'win4', name: 'Resonance Chain', desc: `${bestWinStreak}× 50/50 wins in a row — keep the chain going`, icon: 'Flame', color: '#22c55e', tier: 'green' });
@@ -1682,15 +1682,15 @@ function WhisperingWishesInner() {
     if (isMegaWhale) list.push({ id: 'mega', name: 'Mortgage Status', desc: '2000+ Convenes — seek financial advice', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
     else if (totalPulls >= 1500) list.push({ id: '1500', name: 'Astrite Overdose', desc: '1500+ Convenes — Kuro sends you a Christmas card', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
     else if (isWhale) list.push({ id: 'whale', name: 'Kuro Employee of the Month', desc: '1000+ Convenes — they know you by name', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
-    else if (totalPulls >= 750) list.push({ id: '750', name: 'Terminal Stage', desc: '750+ Convenes — the Lament hit your wallet', icon: 'Fish', color: '#8b5cf6', tier: 'purple' });
-    else if (totalPulls >= 500) list.push({ id: '500', name: 'Down the Rabbit Hole', desc: '500+ Convenes — no turning back', icon: 'Diamond', color: '#8b5cf6', tier: 'purple' });
+    else if (totalPulls >= 750) list.push({ id: '750', name: 'Terminal Stage', desc: '750+ Convenes — the Lament hit your wallet', icon: 'Fish', color: '#a855f7', tier: 'purple' });
+    else if (totalPulls >= 500) list.push({ id: '500', name: 'Down the Rabbit Hole', desc: '500+ Convenes — no turning back', icon: 'Diamond', color: '#a855f7', tier: 'purple' });
     else if (totalPulls >= 300) list.push({ id: '300', name: 'Sunk Cost Fallacy', desc: '300+ Convenes — too deep to quit, too broke to continue', icon: 'Diamond', color: '#3b82f6', tier: 'blue' });
     else if (totalPulls >= 200) list.push({ id: '200', name: 'Rover\'s Allowance: Gone', desc: '200+ Convenes — emotionally and financially invested', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
     else if (totalPulls >= 100) list.push({ id: '100', name: 'First Steps', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
     
     // 5★ count milestones
     const total5Stars = all5Stars.length;
-    if (total5Stars >= 100) list.push({ id: '100stars', name: 'Convene Printer Goes Brr', desc: `${total5Stars} five-stars obtained — you ARE the banner`, icon: 'Star', color: '#ff0000', tier: 'legendary' });
+    if (total5Stars >= 100) list.push({ id: '100stars', name: 'Convene Printer Goes Brr', desc: `${total5Stars} five-stars obtained — you ARE the banner`, icon: 'Star', color: '#ef4444', tier: 'legendary' });
     else if (total5Stars >= 75) list.push({ id: '75stars', name: 'Resonance Overload', desc: `${total5Stars} five-stars obtained — Sonata Effect: maxed`, icon: 'Star', color: '#edaf18', tier: 'gold' });
     else if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained — this is a problem`, icon: 'Star', color: '#edaf18', tier: 'gold' });
     else if (total5Stars >= 35) list.push({ id: '35stars', name: 'Tacet Discord Hoarder', desc: `${total5Stars} five-stars obtained — your roster IS the Tacet Discord`, icon: 'Star', color: '#a855f7', tier: 'purple' });
@@ -1781,7 +1781,7 @@ function WhisperingWishesInner() {
     const s6Count = ALL_5STAR_RESONATORS.filter(n => (charCounts[n] || 0) >= 7).length;
     const total5StarCount = ALL_5STAR_RESONATORS.length;
     if (s6Count >= total5StarCount) {
-      list.push({ id: 's6_all', name: 'Gathering Wives: Complete', desc: 'Every 5★ at S6 — Rover\'s harem is full. seek help.', icon: 'Crown', color: '#ff0000', tier: 'legendary' });
+      list.push({ id: 's6_all', name: 'Gathering Wives: Complete', desc: 'Every 5★ at S6 — Rover\'s harem is full. seek help.', icon: 'Crown', color: '#ef4444', tier: 'legendary' });
     } else if (s6Count >= 20) {
       list.push({ id: 's6_harem20', name: 'Harem Protagonist EX', desc: `${s6Count}/${total5StarCount} at S6 — your wallet is in critical condition`, icon: 'Crown', color: '#ff4500', tier: 'legendary' });
     } else if (s6Count >= 10) {
@@ -1796,7 +1796,7 @@ function WhisperingWishesInner() {
     const r5Weapons = Object.entries(weapCounts).filter(([, c]) => c >= 5);
     const r3Weapons = Object.entries(weapCounts).filter(([, c]) => c >= 3);
     const maxedWeap = r5Weapons[0];
-    if (r5Weapons.length >= 3) list.push({ id: 'r5three', name: 'Forge of Impermanence', desc: `${r5Weapons.length} R5 weapons — your armory costs more than a car`, icon: 'Swords', color: '#ff0000', tier: 'legendary' });
+    if (r5Weapons.length >= 3) list.push({ id: 'r5three', name: 'Forge of Impermanence', desc: `${r5Weapons.length} R5 weapons — your armory costs more than a car`, icon: 'Swords', color: '#ef4444', tier: 'legendary' });
     else if (r5Weapons.length >= 2) list.push({ id: 'r5two', name: 'Tuner Diff', desc: `${r5Weapons.length} R5 weapons — one wasn't enough apparently`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
     else if (maxedWeap) list.push({ id: 'r5', name: 'Weapon Banner Victim', desc: `R5 ${maxedWeap[0]} — financially irresponsible`, icon: 'Swords', color: '#ec4899', tier: 'legendary' });
     else if (r3Weapons.length >= 1) list.push({ id: 'r3', name: 'Halfway to Copium', desc: `R3+ ${r3Weapons[0][0]} — too invested to stop, too broke to finish`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
@@ -1817,7 +1817,7 @@ function WhisperingWishesInner() {
     // Average pity under 50 with 10+ 5★ (consistently lucky)
     if (total5Stars >= 10 && overallStats?.avgPity) {
       const avg = parseFloat(overallStats.avgPity);
-      if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Edited Convene Log', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — has to be fake right??`, icon: 'Clover', color: '#ff0000', tier: 'legendary' });
+      if (!isNaN(avg) && avg <= 35) list.push({ id: 'luckyavg2', name: 'Edited Convene Log', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — has to be fake right??`, icon: 'Clover', color: '#ef4444', tier: 'legendary' });
       else if (!isNaN(avg) && avg <= 45) list.push({ id: 'luckyavg', name: 'Illegal Luck', desc: `Avg pity ${overallStats.avgPity} across ${total5Stars} five-stars — report this account`, icon: 'Clover', color: '#edaf18', tier: 'gold' });
       else if (!isNaN(avg) && avg >= 70) list.push({ id: 'unluckyavg', name: 'Certified Unlucky', desc: `Avg pity ${overallStats.avgPity} — genuinely painful to look at`, icon: 'AlertCircle', color: '#6b7280', tier: 'gray' });
       else if (!isNaN(avg) && avg >= 65) list.push({ id: 'unluckyavg2', name: 'Soft Pity Squatter', desc: `Avg pity ${overallStats.avgPity} — you live in the soft zone rent-free`, icon: 'AlertCircle', color: '#f97316', tier: 'orange' });
@@ -3174,7 +3174,7 @@ function WhisperingWishesInner() {
                 </div>
               </div>
               <div>
-                <h1 className="text-white font-bold text-sm tracking-wide">Whispering Wishes</h1>
+                <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
                 <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
@@ -3377,7 +3377,7 @@ function WhisperingWishesInner() {
             <TabBackground id="events" />
 
             <div className="flex items-center justify-between content-layer">
-              <h2 className="text-white font-bold text-sm">Time-Gated Content</h2>
+              <h2 className="text-white font-semibold text-sm">Time-Gated Content</h2>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => {
@@ -4038,7 +4038,7 @@ function WhisperingWishesInner() {
                 {showConsentModal && (
                   <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Leaderboard consent">
                     <div className="kuro-card w-full max-w-sm p-5 space-y-4">
-                      <h3 className="text-white font-bold text-sm">Leaderboard — Data Sharing Notice</h3>
+                      <h3 className="text-white font-semibold text-sm">Leaderboard — Data Sharing Notice</h3>
                       <div className="text-gray-300 text-xs space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-400">
@@ -4063,7 +4063,7 @@ function WhisperingWishesInner() {
                       <div className="p-4 pb-2 border-b border-white/10">
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h3 className="text-white font-bold text-sm">Community</h3>
+                            <h3 className="text-white font-semibold text-sm">Community</h3>
                             <p className="text-gray-400 text-[10px]">Leaderboard & stats</p>
                           </div>
                           <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
@@ -4335,7 +4335,7 @@ function WhisperingWishesInner() {
                               onClick={(e) => e.stopPropagation()}
                               style={{
                                 background: `linear-gradient(145deg, #1a1a2e, #0d0d1a)`,
-                                border: `1.5px solid ${t.color}60`,
+                                border: `2px solid ${t.color}60`,
                                 boxShadow: `0 0 40px ${t.color}25, 0 0 80px ${t.color}10, inset 0 0 30px ${t.color}08`
                               }}
                             >
@@ -4733,7 +4733,7 @@ function WhisperingWishesInner() {
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
                       const pity = state.profile[banner.key]?.pity5 ?? 0;
-                      const colorHex = { yellow: '#edaf18', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a78bfa';
+                      const colorHex = { yellow: '#edaf18', pink: '#f472b6', cyan: '#22d3ee' }[banner.color] || '#a855f7';
                       return (
                         <div key={banner.name} className="p-2 bg-white/5 rounded-lg">
                           <div className="flex justify-between items-center mb-1">
@@ -6360,7 +6360,7 @@ function WhisperingWishesInner() {
                       <div className="relative w-full max-w-md max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-white/10 flex flex-col" style={{ background: 'var(--bg-card, #101218)' }}>
                         <div className="p-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
                           <div>
-                            <h3 className="text-white font-bold text-sm">Select Weapon</h3>
+                            <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
                             <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
                           </div>
                           <button onClick={() => setWeaponSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close weapon selector"><X size={16} className="text-gray-400" /></button>
@@ -7039,7 +7039,7 @@ Example: {"pulls":[...]}'
                     <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
                     <div className="flex gap-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-bold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <h3 className="text-white font-semibold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
@@ -7093,7 +7093,7 @@ Example: {"pulls":[...]}'
                     {[
                       { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
                       { label: 'Total Convenes', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
-                      { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a78bfa', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
+                      { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
                       { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
                       { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
                       { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },

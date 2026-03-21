@@ -217,7 +217,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.weapon}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.role}</span>
             </div>
-            <h2 className="text-xl font-bold text-white">{name}</h2>
+            <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
             </div>
@@ -321,7 +321,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* BUILD GUIDE SECTION */}
           <div className="space-y-1">
-            <h3 className="text-white font-bold text-sm flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
               <Target size={14} className={colors.text} /> Build Guide
             </h3>
           </div>
@@ -374,7 +374,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           
           {/* Team Suggestions - with avatars */}
           <div>
-            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <Swords size={14} className="text-pink-400" /> Team Comps
             </h3>
             <div className="space-y-2">
@@ -416,7 +416,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Skills */}
           <div>
-            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
             </h3>
             <div className="flex flex-wrap gap-1">
@@ -428,7 +428,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           
           {/* Ascension Materials (Lv 1→90) */}
           <div>
-            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
@@ -444,7 +444,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           {/* Skill Upgrade Materials (all skills to Lv 10) */}
           {data.skillMaterials && (
             <div>
-              <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+              <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
                 <Zap size={14} className="text-purple-400" /> Skill Materials
               </h3>
               <div className="grid grid-cols-2 gap-1.5">
@@ -463,7 +463,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* EXP Materials */}
           <div>
-            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
@@ -530,7 +530,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.baseAtk} Base ATK</span>}
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/10">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
             </div>
-            <h2 className="text-xl font-bold text-white">{name}</h2>
+            <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
             </div>
@@ -564,7 +564,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             const commonTiers = COMMON_MAT_TIERS[data.ascensionMaterials.common];
             return (
               <div>
-                <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+                <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
                   <Swords size={14} className="text-orange-400" /> Ascension Materials
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -583,7 +583,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
 
           {/* EXP Materials */}
           <div>
-            <h3 className="text-white font-bold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">

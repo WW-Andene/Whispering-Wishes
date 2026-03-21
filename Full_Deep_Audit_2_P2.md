@@ -9032,7 +9032,7 @@ Competitive positioning map:
 | C2 | §DP1-V1 PASS: "Visual terseness matches FOCUS-TOOL intent" | §E10-NV-F1 HIGH: "Guarantee prediction at text-[9px] — most actionable insight is smallest element" | DP1 says terseness is on-target; E10 says critical data is too small | **No contradiction.** Terseness as a *character trait* is correct — the app should be dense and efficient. But 9px text isn't "terse," it's *invisible*. Terseness doesn't mean hiding important data; it means eliminating unnecessary data. E10's finding is a violation of the character's own principle. |
 | C3 | §E4-LH1 PASS: "Line height system well-calibrated" | §E4-LH2 LOW: "Small text (8-9px) relies on default line-height" | Same step says line height is both "well-calibrated" and has a gap | **No contradiction.** The system-level line height tiers (1.1/1.3/1.4/1.5/1.6) are well-calibrated. The 8-9px text is an edge case outside the system where no explicit line-height is set. Both findings stand — the system is good, but it doesn't cover the smallest text. |
 | C4 | §E3-WC1 PASS: "WCAG AA 100% (22/22 combinations)" | §E3-NC1 MEDIUM: "Input border 2.1:1 fails WCAG 1.4.11" | E3 says 100% WCAG pass but also has a WCAG failure | **No contradiction.** WC1 tests text contrast (WCAG 1.4.3, SC 4.5:1). NC1 tests non-text contrast (WCAG 1.4.11, SC 3:1). Different WCAG criteria with different thresholds. Text passes; non-text UI components have a gap. |
-| C5 | §DBI3-S05 PASS: "Shadow system fully custom + color glows" | §E1-SHD1 LOW: "4 shadow tokens defined, only 1 used — 34 hardcoded values" | DBI3 says shadow system is fully custom; E1 says tokens are underused | **No contradiction.** The shadow *values* are indeed custom (color-matched to #060a18, not generic black). But the shadow *tokens* that wrap those values are underused. The design intent is custom; the implementation is ad-hoc. |
+| C5 | §DBI3-S05 PASS: "Shadow system fully custom + color glows" | §E1-SHD1 ✅ LOW: "4 shadow tokens defined, only 1 used — 34 hardcoded values" | DBI3 says shadow system is fully custom; E1 says tokens are underused | **No contradiction.** The shadow *values* are indeed custom (color-matched to #060a18, not generic black). But the shadow *tokens* that wrap those values are underused. The design intent is custom; the implementation is ad-hoc. ✅ Shadow tokens now applied to kuro-card (--shadow-lg) and kuro-stat (--shadow-sm). |
 | C6 | §E5-CT1 PASS: "Card system — crown jewel" | §CD-F1 LOW (Step 18): "Cards lack purpose-based differentiation" | Step 12 says cards are the strongest element; Step 18 says they lack differentiation | **No contradiction.** Cards are the crown jewel in terms of *craft* (multi-layer glass, shimmer, corner decorations). They lack differentiation in terms of *semantic purpose* (data card vs settings card vs collection card all look identical). Excellent execution, but no semantic hierarchy. Both are true. |
 
 ### 19.1.2 — Genuine Contradictions Requiring Reconciliation
@@ -9332,9 +9332,9 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
     │       │
     │       ├──→ Mixed gray families (gray + slate) (§E1-COL3)
     │       │
-    │       └──→ 5 uncalibrated pure #ff0000 (§E1-COL4)
+    │       └──→ 5 uncalibrated pure #ff0000 (§E1-COL4 ✅)
     │
-    ├──→ SPACING: No spacing tokens — undocumented 2px base grid (§E1-SP1 / §DS2-F16)
+    ├──→ SPACING: No spacing tokens — undocumented 2px base grid (§E1-SP1 ✅ / §DS2-F16)
     │       │
     │       └──→ RHYTHM: Sub-header margins inconsistent 4-8px (§E2-WS1)
     │
@@ -9344,7 +9344,7 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
     │
     ├──→ Z-INDEX: No z-index tokens — collision at 9998 (§E1-ZDX1)
     │
-    └──→ SHADOW: 4 tokens defined, 1 used, 34 hardcoded (§E1-SHD1)
+    └──→ SHADOW: 4 tokens defined, 1 used, 34 hardcoded (§E1-SHD1 ✅)
             │
             └──→ CRAFT: rgba(0,0,0,...) shadows instead of palette-matched (§BN-F1)
 ```
@@ -9726,7 +9726,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | **Empty state CTA** | §E6-ES3 (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
 | **Select/dropdown bypass** | §E5-IN4 (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
-| **Text-rendering enhancement** | §E1-TYP5 (missing optimizeLegibility), §E4-TR2 (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. | LOW |
+| **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
 
 ### 19.8.5 — Final Reconciled Finding Count
 
@@ -10062,7 +10062,7 @@ All three token values carry blue hue (≈250°), matching the background's chro
 }
 ```
 
-**Cross-references**: E1-COL2, E1-COL3, E1-COL4, E1-COL5, DC5-ST3 ✅
+**Cross-references**: E1-COL2, E1-COL3, E1-COL4 ✅, E1-COL5 ✅, DC5-ST3 ✅
 
 ---
 
@@ -10942,16 +10942,16 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 8 | DC4-ICO1 ✅ | Favicon gold #fbbf24 ≠ in-app gold #edaf18 | FAVICON | Update favicon SVG fill from `#fbbf24` to `#edaf18` |
 | 9 | DC5-GR2 ✅ | Two inconsistent bottom-fade gradient implementations | TRACKER, COLLECTION | Unify to single `linear-gradient(to top, var(--bg-card), transparent)` pattern |
 | 10 | DC5-ST3 ✅ | Trophy colors hardcoded (not tokenized) | STATS | Move trophy tier colors into `--trophy-bronze`, `--trophy-silver`, `--trophy-gold`, `--trophy-diamond` tokens |
-| 11 | DC5-ST7 | Missing "anticipation" transition before pull results | TRACKER | Add 500ms shimmer animation on the result card before revealing pull data |
-| 12 | E1-SP1 | 2px base grid undocumented | ALL | Add comment in CSS: `/* Spacing base: 2px grid (2/4/6/8/10/12/14/16) */` |
-| 13 | E1-SP2 | 3 subpixel values (1.5px, 3px, -1px) | ALL | Round 1.5px → 2px, verify 3px and -1px are intentional |
-| 14 | E1-COL4 | 5× pure `#ff0000` (100% saturation) uncalibrated | ALL | Replace with calibrated error red: `var(--state-error)` (#f87171) |
-| 15 | E1-COL5 | Purple/violet families mixed | ALL | Consolidate to single purple: `--color-purple` (#a855f7) |
-| 16 | E1-TYP1 | 11 unique font sizes, 2 off-scale (11px, 13px) | ALL | Replace 11px → 12px, 13px → 14px (snap to scale) |
-| 17 | E1-TYP2 | `font-bold` (700) used 105× for mixed purposes | ALL | Differentiate: use 600 (semibold) for section headings, reserve 700 for hero numbers |
-| 18 | E1-TYP5 | `text-rendering: optimizeLegibility` missing | ALL | Add to global body style: `text-rendering: optimizeLegibility` |
-| 19 | E1-SHD1 | 4 shadow tokens defined, only 1 used actively | ALL | Apply `var(--shadow-md)` to kuro-card, `var(--shadow-lg)` to modals, `var(--shadow-sm)` to buttons |
-| 20 | E1-ANI1 | `--transition-slow` defined but not used | ALL | Apply to page transitions and entrance animations, or remove if unnecessary |
+| 11 | DC5-ST7 ✅ | Missing "anticipation" transition before pull results | TRACKER | Add 500ms shimmer animation on the result card before revealing pull data |
+| 12 | E1-SP1 ✅ | 2px base grid undocumented | ALL | Add comment in CSS: `/* Spacing base: 2px grid (2/4/6/8/10/12/14/16) */` |
+| 13 | E1-SP2 ✅ | 3 subpixel values (1.5px, 3px, -1px) | ALL | Round 1.5px → 2px, verify 3px and -1px are intentional |
+| 14 | E1-COL4 ✅ | 5× pure `#ff0000` (100% saturation) uncalibrated | ALL | Replace with calibrated error red: `var(--state-error)` (#f87171) |
+| 15 | E1-COL5 ✅ | Purple/violet families mixed | ALL | Consolidate to single purple: `--color-purple` (#a855f7) |
+| 16 | E1-TYP1 ✅ | 11 unique font sizes, 2 off-scale (11px, 13px) | ALL | Replace 11px → 12px, 13px → 14px (snap to scale) |
+| 17 | E1-TYP2 ✅ | `font-bold` (700) used 105× for mixed purposes | ALL | Differentiate: use 600 (semibold) for section headings, reserve 700 for hero numbers |
+| 18 | E1-TYP5 ✅ | `text-rendering: optimizeLegibility` missing | ALL | Add to global body style: `text-rendering: optimizeLegibility` |
+| 19 | E1-SHD1 ✅ | 4 shadow tokens defined, only 1 used actively | ALL | Apply `var(--shadow-md)` to kuro-card, `var(--shadow-lg)` to modals, `var(--shadow-sm)` to buttons |
+| 20 | E1-ANI1 ✅ | `--transition-slow` defined but not used | ALL | Apply to page transitions and entrance animations, or remove if unnecessary |
 
 ---
 

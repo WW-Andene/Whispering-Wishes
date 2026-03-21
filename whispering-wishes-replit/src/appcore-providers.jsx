@@ -431,6 +431,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     /* ═══ CSS CUSTOM PROPERTIES ═══ */
+    /* E1-SP1: Spacing base: 2px grid (2/4/6/8/10/12/14/16) */
     :root {
       --color-gold: 237, 175, 24;
       --color-pink: 236, 72, 153;
@@ -666,7 +667,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .luck-badge {
       position: relative;
       overflow: hidden;
-      padding: 1.5px;
+      padding: 2px;
     }
     .luck-badge::before {
       content: '';
@@ -703,7 +704,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ═══ PULL LOG BORDER ═══ */
     .pull-log-row {
       border-left: 3px solid var(--pity-color);
-      transition: background 0.2s ease;
+      transition: background var(--transition-fast);
     }
     @media (hover: hover) {
       .pull-log-row:hover {
@@ -730,11 +731,12 @@ const KuroStyles = memo(({ oledMode }) => (
       overflow: visible;
       backdrop-filter: blur(var(--blur-sm));
       -webkit-backdrop-filter: blur(var(--blur-sm));
+      /* E1-SHD1: Use shadow token + hairline accents */
       box-shadow:
-        0 4px 24px rgba(6, 10, 24, 0.6),
+        var(--shadow-lg),
         0 0 0 1px rgba(255, 255, 255, 0.03),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     }
 
     @media (hover: hover) {
@@ -755,7 +757,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .kuro-card.interactive:active {
       transform: translateY(0) scale(0.98);
-      transition: transform 0.1s ease;
+      transition: transform var(--transition-fast);
     }
     
     /* Top shimmer line */
@@ -875,7 +877,7 @@ const KuroStyles = memo(({ oledMode }) => (
       padding: 10px 12px;
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       letter-spacing: 0.02em;
       cursor: pointer;
@@ -913,7 +915,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     .kuro-btn:active {
       transform: translateY(0) scale(0.97);
-      transition: transform 0.1s ease;
+      transition: transform var(--transition-fast);
     }
 
     /* AUDIT-FIX M30: Disabled button state — §DP3: cool-shifted opacity */
@@ -1060,9 +1062,10 @@ const KuroStyles = memo(({ oledMode }) => (
       backdrop-filter: blur(var(--blur-sm));
       -webkit-backdrop-filter: blur(var(--blur-sm));
       font-variant-numeric: tabular-nums;
+      box-shadow: var(--shadow-sm);
       transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
-    
+
     @media (hover: hover) {
       .kuro-stat:hover {
         transform: translateY(-1px);
@@ -1174,7 +1177,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-label {
       color: var(--text-body);
       font-family: var(--font-display);
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1350,9 +1353,9 @@ const KuroStyles = memo(({ oledMode }) => (
       position: relative;
       background: radial-gradient(ellipse at center, rgba(237, 175, 24, 0.04) 0%, transparent 70%);
       border-radius: 8px;
-      animation: emptyFadeIn 0.4s ease-out both;
+      animation: emptyFadeIn var(--transition-slow) ease-out both;
       border: 1px dashed rgba(237, 175, 24, 0.10);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
       letter-spacing: 0.01em;
     }
@@ -1421,7 +1424,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .collection-card:active {
       transform: translateY(-2px) scale(1.01);
-      transition: transform 0.1s ease;
+      transition: transform var(--transition-fast);
     }
     
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
@@ -1454,6 +1457,17 @@ const KuroStyles = memo(({ oledMode }) => (
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border-width: 0;
+    }
+
+    /* DC5-ST7: Anticipation shimmer before pull results reveal */
+    @keyframes anticipationShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .pull-anticipation {
+      background: linear-gradient(90deg, transparent 0%, rgba(var(--color-gold), 0.08) 25%, rgba(var(--color-gold), 0.15) 50%, rgba(var(--color-gold), 0.08) 75%, transparent 100%);
+      background-size: 200% 100%;
+      animation: anticipationShimmer 0.5s ease-out;
     }
 
     /* DC3-OLED2: OLED-aware toast backgrounds — darker base with higher contrast */
@@ -1642,7 +1656,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Cards — subtle hover lift on desktop */
       .desktop-layout .kuro-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast) !important;
       }
       .desktop-layout .kuro-card:hover {
         transform: translateY(-1px);
@@ -1679,7 +1693,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
       /* Collection grid items — hover effect on desktop */
       .desktop-layout .grid > div {
-        transition: transform 0.15s ease !important;
+        transition: transform var(--transition-fast) !important;
       }
       .desktop-layout .grid > div:hover {
         transform: scale(1.02);

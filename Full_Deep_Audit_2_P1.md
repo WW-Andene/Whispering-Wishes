@@ -3981,7 +3981,7 @@ Energy level:
   (welcome)   (focus)      (celebrate)  (alert)  (wait)  (load)
 ```
 
-**Finding DC5-ST7**: The color state narrative has **clear emotional arcs** with intentional energy modulation. Each state has a distinct color energy level, and the transitions are natural. The only missing transition is engagement→achievement — there's no "ramping up" color between normal use and a pull result.
+**Finding DC5-ST7 ✅**: The color state narrative has **clear emotional arcs** with intentional energy modulation. Each state has a distinct color energy level, and the transitions are natural. The only missing transition is engagement→achievement — there's no "ramping up" color between normal use and a pull result.
 
 - **Severity**: **LOW**
 - **Solution**: Consider a brief "anticipation" color state for the moment between initiating a pull check and receiving results — a gold pulse or shimmer intensification that signals "something is about to happen."
@@ -4070,7 +4070,7 @@ Dominance hierarchy:
 | DC5-ST4 | Error uses graduated red + cyan recovery — coherent | **PASS** | Document red→cyan as design principle |
 | DC5-ST5 | Empty state "gold promise + ghost potential" is exceptional | **PASS** | Document as design principle |
 | DC5-ST6 | Loading gold shimmer maintains brand presence | **PASS** | No change |
-| DC5-ST7 | Missing "anticipation" transition between engagement→achievement | **LOW** | Add brief gold pulse before pull results |
+| DC5-ST7 ✅ | Missing "anticipation" transition between engagement→achievement | **LOW** | Add brief gold pulse before pull results |
 | DC5-HS1 | Hexadic harmony with gold dominance hierarchy — correct for domain | **PASS** | Maintain gold dominance; never exceed 6 hues |
 | DC5-HS2 | Gold-cyan axis is the core compositional pairing | **PASS** | Document and protect the gold-cyan axis |
 
@@ -4104,7 +4104,7 @@ Dominance hierarchy:
 | DC5-ST4 | Error graduated red + cyan recovery | **PASS** | §DC5.3 |
 | DC5-ST5 | Empty state gold promise exceptional | **PASS** | §DC5.3 |
 | DC5-ST6 | Loading gold shimmer on-brand | **PASS** | §DC5.3 |
-| DC5-ST7 | Missing anticipation transition | **LOW** | §DC5.3 |
+| DC5-ST7 ✅ | Missing anticipation transition | **LOW** | §DC5.3 |
 | DC5-HS1 | Hexadic harmony correct for domain | **PASS** | §DC5.4 |
 | DC5-HS2 | Gold-cyan axis — core pairing | **PASS** | §DC5.4 |
 
@@ -4816,7 +4816,7 @@ Both are fixable with systematic find-and-replace operations. The app's custom e
 
 However, 6px appears 130+ times, making it the most common off-4px-grid value. This is either a 2px-grid system (consistent) or token debt from indecisive 4/8 splits.
 
-> **Finding E1-SP1** · Severity: **LOW**
+> **Finding E1-SP1 ✅** · Severity: **LOW**
 > **Spacing system operates on a 2px base grid (2/4/6/8/10/12/14/16) rather than the standard 4px grid.** The 2px steps are internally consistent but not documented. 6px (130+ uses) is the most frequent non-4px value.
 > **Solution**:
 > - Option A (minimal): Document the 2px base grid as intentional. Define named spacing tokens:
@@ -4827,7 +4827,7 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 > - Option B (full ownership): Formalize as an intentional "dense tactical" spacing scale. The 2px base reinforces the information-dense Enthusiast/Expert audience (A3). Add the token definitions and document: "2px base = higher density than standard 4px grid, appropriate for data-rich gacha tracking."
 > - No migration needed — current usage is already internally consistent
 
-> **Finding E1-SP2** · Severity: **LOW**
+> **Finding E1-SP2 ✅** · Severity: **LOW**
 > **3 subpixel/odd values exist as token debt**: `1.5px` (tab indicator), `3px` (gap), `-1px` (margin). These fall outside any grid.
 > **Solution**: Replace `1.5px` with `2px`, `3px` gap with `4px`, and evaluate `-1px` margin for necessity. These are 6 instances total — trivial to fix.
 
@@ -4977,11 +4977,11 @@ However, 6px appears 130+ times, making it the most common off-4px-grid value. T
 > **Tailwind gray and slate families mixed in the same text hierarchy.** `gray-*` (achromatic) and `slate-*` (blue-tinted) have different color temperatures. 29 instances of `#6b7280` (gray-500) alongside 6 instances of `#e2e8f0` (slate-200) and 7 of `#f1f5f9` (slate-50) create thermal inconsistency.
 > **Solution**: Choose one family. Given the app's navy base (`#080c14` at ~240° hue), slate (blue-tinted) is the correct choice. Migrate all `gray-*` to `slate-*` equivalents, or better: to the chromatic custom tokens proposed in §DBI3-S07.
 
-> **Finding E1-COL4** · Severity: **LOW**
+> **Finding E1-COL4 ✅** · Severity: **LOW**
 > **5 instances of `#ff0000` (pure red) — uncalibrated color.** Pure saturated red signals low craft. It appears in trophy/achievement badge colors.
 > **Solution**: Replace `#ff0000` with `#ef4444` (Tailwind red-500, already used 15× in the app) or the token `#f87171`. Both are calibrated reds with intentional lightness/saturation balance.
 
-> **Finding E1-COL5** · Severity: **LOW**
+> **Finding E1-COL5 ✅** · Severity: **LOW**
 > **Purple and violet Tailwind families mixed.** `#a855f7` (purple-500) is the token, but `#8b5cf6` (violet-500, 2×) and `#a78bfa` (violet-400, 2×) appear. Purple and violet have a ~30° hue difference.
 > **Solution**: Consolidate all purple usage to the `purple-*` family. Replace `#8b5cf6` → `#a855f7` and `#a78bfa` → `#c084fc` (4 replacements total).
 
@@ -5034,7 +5034,7 @@ Actual scale:        8 / 11 / 12 / 13 / 14 / 16 / 18 / 20 / 24 / 30 / 48
 - **16px** (`text-base`): Only 2 uses — this standard Tailwind size is almost unused, indicating the app deliberately avoids it. The 14px body base is the intentional replacement.
 - **18px**: Both CSS (`kuro-data-badge-value`) and Tailwind (`text-lg`). Combined 5 uses — a legitimate scale step.
 
-> **Finding E1-TYP1** · Severity: **LOW**
+> **Finding E1-TYP1 ✅** · Severity: **LOW**
 > **11 unique font sizes — 2 are off-scale token debt.** `11px` (2 uses) and `13px` (1 use) fall between scale steps. The app broadly follows a custom scale anchored at 14px body rather than 16px default, which is intentional.
 > **Solution**:
 > - Replace `11px` (`.kuro-btn`, `.kuro-label`) with `12px` (text-xs) — aligns with the scale and matches surrounding UI text
@@ -5072,7 +5072,7 @@ Actual scale:        8 / 11 / 12 / 13 / 14 / 16 / 18 / 20 / 24 / 30 / 48
 
 **Problem**: `font-bold` (700) is used for BOTH headings AND data emphasis, blurring the distinction. `font-semibold` (600) should own headings, with `font-bold` (700) reserved for data/numerical emphasis. Currently 105 uses of `font-bold` vs only 14 `font-semibold` — the weight hierarchy is top-heavy.
 
-> **Finding E1-TYP2** · Severity: **LOW**
+> **Finding E1-TYP2 ✅** · Severity: **LOW**
 > **`font-bold` (700) used 105× for both headings and data emphasis — weight semantic overlap.** The CSS-in-JS correctly differentiates (600 for headers, 700 for data), but Tailwind classes in markup use `font-bold` for everything that needs emphasis.
 > **Solution**:
 > - Audit the 105 `font-bold` instances: headings and section titles should be `font-semibold` (600), data values and numbers should remain `font-bold` (700)
@@ -5136,7 +5136,7 @@ Actual scale:        8 / 11 / 12 / 13 / 14 / 16 / 18 / 20 / 24 / 30 / 48
 | `text-wrap: balance` | ❌ | Not found |
 | OpenType features (ligatures, alternates) | ❌ | Not used |
 
-> **Finding E1-TYP5** · Severity: **LOW**
+> **Finding E1-TYP5 ✅** · Severity: **LOW**
 > **`text-rendering: optimizeLegibility` is missing from root-level styles.** Font smoothing is correctly applied at both root and KuroStyles level. Tabular numerals are correctly used on data displays. But `optimizeLegibility` (enables kerning and ligatures) is absent.
 > **Solution**: Add `text-rendering: optimizeLegibility;` to the root-level `*` selector in `appcore-providers.jsx` (line 416, alongside the existing font-smoothing declarations). One line of CSS for improved text rendering quality.
 
@@ -5243,7 +5243,7 @@ This is a 4-level hierarchy with 2-4px steps — intentional and well-structured
 
 The color-specific glow shadows (17 values) follow a consistent pattern (`0 0 Xpx rgba(color, 0.Y), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(color, 0.08)`) — this is a template that could be tokenized.
 
-> **Finding E1-SHD1** · Severity: **LOW**
+> **Finding E1-SHD1 ✅** · Severity: **LOW**
 > **4 shadow tokens defined but only 1 actively referenced (`--shadow-md`). `--shadow-xl` is unused. 34 unique shadow values are mostly hardcoded.**
 > **Solution**:
 > - Actually USE the shadow tokens: audit all 34 `box-shadow` declarations and map each to the nearest token
@@ -5367,7 +5367,7 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 
 **Easing consistency**: Two systems exist — the custom `cubic-bezier(0.16, 1, 0.3, 1)` for interactive transitions and `ease-in-out` for ambient loops. This is correct: interactive elements need responsive snap, ambient elements need smooth oscillation. However, 6 uses of `ease` (without the custom curve) are inconsistent.
 
-> **Finding E1-ANI1** · Severity: **LOW**
+> **Finding E1-ANI1 ✅** · Severity: **LOW**
 > **`--transition-slow` (0.4s) is defined but never referenced via the token.** The 0.4s duration is used directly in `cardSlideIn` animation but not through `var(--transition-slow)`. Also, 6 transitions use `ease` instead of the custom `cubic-bezier(0.16, 1, 0.3, 1)`.
 > **Solution**:
 > - Use `var(--transition-slow)` where 0.4s is needed, so the token system is actually adopted
@@ -5444,23 +5444,23 @@ bg(1-2) → cards(5) → card-chrome(10) → modals(100) → floating-ui(9999) �
 
 | ID | Finding | Severity | Section |
 |---|---|---|---|
-| E1-SP1 | Spacing uses 2px base grid (not 4px) — undocumented but consistent | **LOW** | §E1.1 |
-| E1-SP2 | 3 subpixel/odd spacing values (1.5px, 3px, -1px) | **LOW** | §E1.1 |
+| E1-SP1 ✅ | Spacing uses 2px base grid (not 4px) — undocumented but consistent | **LOW** | §E1.1 |
+| E1-SP2 ✅ | 3 subpixel/odd spacing values (1.5px, 3px, -1px) | **LOW** | §E1.1 |
 | E1-COL1 | 66 unique hex colors, only 18 tokenized — 73% unmanaged palette | **HIGH** | §E1.2 |
 | E1-COL2 | 3 near-duplicate gold values where 1 token exists | **MEDIUM** | §E1.2 |
 | E1-COL3 | Tailwind gray and slate families mixed in same hierarchy | **MEDIUM** | §E1.2 |
-| E1-COL4 | 5 instances of uncalibrated pure `#ff0000` red | **LOW** | §E1.2 |
-| E1-COL5 | Purple and violet Tailwind families mixed | **LOW** | §E1.2 |
-| E1-TYP1 | 11 font sizes — 2 off-scale (11px, 13px) | **LOW** | §E1.3 |
-| E1-TYP2 | `font-bold` (700) used 105× for both headings and data — weight overlap | **LOW** | §E1.3 |
+| E1-COL4 ✅ | 5 instances of uncalibrated pure `#ff0000` red | **LOW** | §E1.2 |
+| E1-COL5 ✅ | Purple and violet Tailwind families mixed | **LOW** | §E1.2 |
+| E1-TYP1 ✅ | 11 font sizes — 2 off-scale (11px, 13px) | **LOW** | §E1.3 |
+| E1-TYP2 ✅ | `font-bold` (700) used 105× for both headings and data — weight overlap | **LOW** | §E1.3 |
 | E1-TYP3 | Letter-spacing uses 8 intentional values in clear progression | **PASS** | §E1.3 |
 | E1-TYP4 | Line-height values serve clear density purposes | **PASS** | §E1.3 |
-| E1-TYP5 | `text-rendering: optimizeLegibility` missing from root | **LOW** | §E1.3 |
+| E1-TYP5 ✅ | `text-rendering: optimizeLegibility` missing from root | **LOW** | §E1.3 |
 | E1-RAD1 | 12 unique radius values — sub-8px range unsystematic, `rounded-lg` dominates | **MEDIUM** | §E1.4 |
-| E1-SHD1 | 4 shadow tokens defined, only 1 used — 34 hardcoded shadow values | **LOW** | §E1.5 |
+| E1-SHD1 ✅ | 4 shadow tokens defined, only 1 used — 34 hardcoded shadow values | **LOW** | §E1.5 |
 | E1-ZDX1 | Z-index collision at 9998 (Toast + Install prompt) | **MEDIUM** | §E1.6 |
 | E1-ZDX2 | Z-index layer system documented and mostly collision-free | **PASS** | §E1.6 |
-| E1-ANI1 | `--transition-slow` unused via token; 6 `ease` curves inconsistent | **LOW** | §E1.7 |
+| E1-ANI1 ✅ | `--transition-slow` unused via token; 6 `ease` curves inconsistent | **LOW** | §E1.7 |
 | E1-ANI2 | Animation system well-structured (15 keyframes, dual easing) | **PASS** | §E1.7 |
 | E1-NAM1 | Token naming hybrid (presentational colors + semantic rest) — appropriate | **PASS** | §E1.8 |
 | E1-COV1 | CSS custom property coverage ~30% — spacing/radius/z-index at 0% | **HIGH** | §E1.9 |
@@ -6745,7 +6745,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | Purple-400 | `#a855f7` | 91% | ⚠️ High | Very saturated — close to "first pick" territory |
 | Pink-400 | `#ec4899` | 81% | ✅ Yes | Calibrated — not bubblegum-bright |
 | Red-400 | `#f87171` | 91% | ⚠️ High | At Tailwind default — acceptable for error emphasis |
-| Red (hardcoded) | `#ff0000` | **100%** | ❌ No | **Pure red — 5 instances.** Maximum saturation. Explicitly flagged as "low craft" in the skill reference. Cross-reference: §E1-COL4 (LOW). |
+| Red (hardcoded) | `#ff0000` | **100%** | ❌ No | **Pure red — 5 instances.** Maximum saturation. Explicitly flagged as "low craft" in the skill reference. Cross-reference: §E1-COL4 ✅ (LOW). |
 | Orange-400 | `#fb923c` | 96% | ⚠️ High | Very saturated — used for soft-pity animation |
 | Blue-400 | `#60a5fa` | 94% | ⚠️ High | Tailwind default; used for 3★ tier coding |
 | Achromatic grays | `#6b7280`–`#d1d5db` | 5–10% | ✅ Yes | Appropriately desaturated |
@@ -6777,7 +6777,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 **Overall**: The bespoke colors (gold, emerald, pink) are well-calibrated. The Tailwind-sourced colors are standard but not distinctive. The one true outlier (`#ff0000`) has been flagged repeatedly.
 
 > **E3-SA1** · LOW
-> **Finding**: 5 instances of pure `#ff0000` (100% saturation) in trophy displays. This is the definition of "uncalibrated" per the skill reference — maximum saturation signals placeholder color, not intentional design. Cross-reference: §E1-COL4 (LOW).
+> **Finding**: 5 instances of pure `#ff0000` (100% saturation) in trophy displays. This is the definition of "uncalibrated" per the skill reference — maximum saturation signals placeholder color, not intentional design. Cross-reference: §E1-COL4 ✅ (LOW).
 > **Solution**: Replace `#ff0000` with `#ef4444` (Tailwind red-500, 84% saturation) or the existing `--color-red` token (`#f87171`). Both are significantly more refined while remaining visually "red."
 
 > **E3-SA2** · PASS
@@ -6808,7 +6808,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-NC1 (MEDIUM) — Low border contrast | DC2-AC1 ✅ (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
 | E3-SC1 (MEDIUM) — Warning=accent collision | DC1-SM1 (PASS) — Semantic colors reuse accent tokens | ⚠️ **Partial contradiction** — DC1 rated semantic reuse as PASS; E3 finds the warning-accent overlap is problematic. The earlier assessment didn't weigh the collision risk. |
 | E3-CP1 (PASS) — Psychology alignment | DC5-ST2 (PASS) — Engagement temperature correct | ✅ **Confirmed** |
-| E3-SA1 (LOW) — #ff0000 oversaturated | E1-COL4 (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives |
+| E3-SA1 (LOW) — #ff0000 oversaturated | E1-COL4 ✅ (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives. ✅ FIXED |
 
 **Key convergence**: The gray text issue (E3-WC2 + DBI3-S07 + E1-COL3) is now the **most cross-referenced finding in the entire audit** — appearing in 3 separate steps from 3 different analytical angles (accessibility, genericness, token governance). This confirms it as the single highest-impact fix available.
 
@@ -6835,7 +6835,7 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-SC2 | §E3.7 | PASS | Error/success/info state colors distinct and consistent | — |
 | E3-SC3 | §E3.7 | LOW | Card hover glow always gold regardless of content | Change card hover to neutral navy glow |
 | E3-CP1 | §E3.8 | PASS | Color psychology aligns with gacha domain conventions | — |
-| E3-SA1 | §E3.9 | LOW | 5× pure #ff0000 (100% saturation) — uncalibrated | Replace with #ef4444 or `--color-red`; cross-ref E1-COL4 |
+| E3-SA1 ✅ | §E3.9 | LOW | 5× pure #ff0000 (100% saturation) — uncalibrated | Replace with #ef4444 or `--color-red`; cross-ref E1-COL4 ✅ |
 | E3-SA2 | §E3.9 | PASS | Bespoke colors (gold, emerald, pink) well-calibrated | — |
 | E3-SA3 | §E3.9 | PASS | Tailwind-standard saturation acceptable for fan tool | — |
 
