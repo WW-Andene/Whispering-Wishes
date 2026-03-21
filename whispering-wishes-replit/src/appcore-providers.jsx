@@ -2275,8 +2275,20 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
     .no-animations *, .no-animations *::before, .no-animations *::after {
-      animation: none;
-      transition: none;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    /* OS reduced-motion is handled by the JS toggle (animationsEnabled defaults to false
+       when prefers-reduced-motion: reduce) which adds .no-animations class above.
+       CSS-level fallback for cases where JS hasn't loaded yet. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
     /* E2-EE3: Shrink tab bar padding by 25% in landscape to reclaim vertical space */
     @media (orientation: landscape) {
