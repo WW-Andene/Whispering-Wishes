@@ -6000,7 +6000,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 - **§E7-PD1** (button migration): The native `<select>` (§E9-MC-F1) is the same class of issue — a non-branded native element breaking the design system.
 - **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2) — the radius monoculture prevents shape from serving as an identity signal.
-- **§E7-PL1** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
+- **§E7-PL1 ✅** (no success animation): Expanded here to the specific gacha context (§E9-EA-F1) — the 5★ pull moment is the app's emotional peak and needs dedicated visual treatment.
 - **§E8-CI2** (PWA identity broken): Expanded here with full brand scalability audit (§E9.10) — missing PNG variants, external OG image, and no splash screen compound into a weak multi-platform presence.
 
 ---
@@ -9422,7 +9422,7 @@ ROOT CAUSE: Brand assets incomplete for multi-platform presence
 ```
 ROOT CAUSE: No dedicated visual treatment for emotional peak moments
     │
-    ├──→ IMPORT: Success import lacks celebration animation (§E7-PL1 / §E8-CO1)
+    ├──→ IMPORT: Success import lacks celebration animation (§E7-PL1 ✅ / §E8-CO1 ✅)
     │       │
     │       └──→ CONVERSION: The "sign-up equivalent" moment has no reward signal
     │
@@ -11044,8 +11044,8 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 68 | E7-AD6 ✅ | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
 | 69 | E7-AD7 ✅ | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
 | 70 | E7-BC1 ✅ | Collection summary bypasses kuro-card system | COLLECTION | Wrap Collection Progress in `<Card>` component to gain shimmer line + corner decorations |
-| 71 | E7-FI2 | Subtitle gray dilutes first impression | HEADER | Change subtitle from `text-gray-400` to muted gold: `text-yellow-400/50` |
-| 72 | E7-SQ2 | Calculator lacks visual hero moment | CALC | Add gold-accented result card with larger probability display + subtle glow |
+| 71 | E7-FI2 ✅ | Subtitle gray dilutes first impression | HEADER | Change subtitle from `text-gray-400` to muted gold: `text-yellow-400/50` |
+| 72 | E7-SQ2 ✅ | Calculator lacks visual hero moment | CALC | Add gold-accented result card with larger probability display + subtle glow |
 | 73 | E7-VN2 | Stacked text shadows reduce clarity | TRACKER, COLLECTION | Reduce to single `text-shadow` per element (remove outer shadow) |
 | 74 | E7-VN3 | Collection card glow competes with card system | COLLECTION | Reduce glow opacity by 30% or use `.glow-gold` class at lower intensity |
 | 75 | E7-CC2 | Parity gap on spacing consistency vs competitors | ALL | Extend design system spacing tokens to remaining inline elements |
