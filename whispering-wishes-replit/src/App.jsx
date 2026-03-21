@@ -6693,11 +6693,11 @@ function WhisperingWishesInner() {
                       const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
                       saveVisualSettings({ ...visualSettings, animationsEnabled: next });
                     }}
-                    className={`relative w-[68px] h-[24px] rounded-full transition-colors ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500' : ''}`}
+                    className={`relative w-[52px] h-[24px] rounded-full transition-colors ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500' : ''}`}
                     style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}
                     aria-label="Toggle animations: off, on, full"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[26px] bg-white' : 'left-[48px] bg-white'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px] bg-white' : 'left-[32px] bg-white'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
