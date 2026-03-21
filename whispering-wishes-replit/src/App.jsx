@@ -3175,7 +3175,7 @@ function WhisperingWishesInner() {
               </div>
               <div>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
+                <p className="text-yellow-400/50 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
@@ -3702,7 +3702,7 @@ function WhisperingWishesInner() {
                         <div className="text-2xl kuro-number text-emerald-400 font-extrabold">{combined.both}%</div>
                         <div className="text-gray-400 text-[10px] mt-1">Get Both</div>
                       </div>
-                      <div className="kuro-stat kuro-stat-gold">
+                      <div className="kuro-stat kuro-stat-gold kuro-stat-hero">
                         <div className="text-yellow-400 text-2xl kuro-number font-extrabold">{combined.atLeastOne}%</div>
                         <div className="text-gray-400 text-[10px] mt-1">At Least One</div>
                       </div>

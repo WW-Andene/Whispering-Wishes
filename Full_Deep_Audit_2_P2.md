@@ -3973,7 +3973,7 @@ A first-time user opening the app sees:
 > **First impression reads as purpose-built**: The header's gold icon glow, the tab indicator gradient bar, the banner card system with countdowns and PityRings, and the corner HUD decorations all signal "custom-built gaming tool" rather than "template with data plugged in." A 7-second viewer would identify it as a polished Wuthering Waves companion app.
 > **Solution**: None needed.
 
-> **Finding E7-FI2** · LOW
+> **Finding E7-FI2 ✅** · LOW
 > **Subtitle gray dilutes first impression**: The "WUTHERING WAVES - COMPANION" subtitle (`App.jsx:3178`) uses `text-gray-400`, which is low-contrast against the dark header. At 7 seconds, this might read as a generic subtitle. A subtle gold tint would reinforce the brand.
 > **Evidence**: `<p className="text-gray-400 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>`
 > **Solution**: Change to `text-yellow-400/50` or `style={{color: 'rgba(237,175,24,0.45)'}}` — a muted gold that reads as intentional branding rather than default gray.
@@ -4009,7 +4009,7 @@ A first-time user opening the app sees:
 > **4 of 8 screens are screenshot-strong**: Tracker (character art + PityRing), Events (banner images + countdown), Stats (luck badge), and Collection (character grid) all have strong visual anchors that would work in an App Store listing or social media post.
 > **Solution**: None needed for these screens.
 
-> **Finding E7-SQ2** · LOW
+> **Finding E7-SQ2 ✅** · LOW
 > **Calculator lacks a visual hero moment**: The Calculator tab is the most data-heavy screen with no single element that creates visual impact. It relies entirely on stat boxes and text-heavy inputs. A screenshot would read as "spreadsheet tool" rather than "gaming companion."
 > **Solution**: Add a small visual flourish to the probability result — e.g., a compact PityRing-style gauge for the "chance of getting" percentage, or a gold-accented result card that stands out from the input cards. Keep it lightweight (A2 FOCUS-TOOL) but give the screenshot one focal point.
 
@@ -4050,11 +4050,11 @@ A first-time user opening the app sees:
 > **Decorative elements are brand-functional**: The shimmer lines, corner HUD decorations, and backdrop blur are not "visual noise" — they are the cyberpunk/tactical identity that differentiates the app from generic trackers. Each decorative layer serves the §DS1 classification (Cyberpunk/Terminal primary + Glassmorphism secondary). Removing them would make the app generic.
 > **Solution**: None needed — the decorative budget is well-allocated.
 
-> **Finding E7-VN2** · LOW
+> **Finding E7-VN2 ✅** · LOW
 > **Stacked text shadows reduce clarity**: The timer display uses double text-shadow (`0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)`) at `appcore-components.jsx:883`. A second occurrence at `line 1440` (collection card gradient overlay) adds another heavy shadow. On dark backgrounds, this creates a "muddy halo" effect rather than crisp legibility.
 > **Solution**: Consolidate to a single text-shadow: `text-shadow: 0 2px 6px rgba(0,0,0,0.8)`. The dark background already provides sufficient contrast; the double shadow is redundant.
 
-> **Finding E7-VN3** · LOW
+> **Finding E7-VN3 ✅** · LOW
 > **Collection card glow competes with card system**: Individual collection cards apply inline `boxShadow: '0 0 16px rgba(251,146,60,0.7)'` — a high-opacity orange glow that's visually louder than the `glow-gold` class's more refined shadow. When multiple 5★ cards appear in a grid, the cumulative glow creates visual noise.
 > **Solution**: Reduce to `boxShadow: '0 0 12px rgba(251,146,60,0.3)'` or apply the existing `glow-gold` class which has better-calibrated opacity and includes a radial background gradient.
 
@@ -4140,7 +4140,7 @@ The WuWa tracker ecosystem includes:
 > **Competitive credibility is strong**: Whispering Wishes is the most design-invested WuWa tracker in its category. The custom design system, motion design, atmospheric effects, and feature breadth are unmatched by typical web trackers in this niche. A user comparing this to wuwatracker.com would perceive Whispering Wishes as the more polished option.
 > **Solution**: None needed.
 
-> **Finding E7-CC2** · LOW
+> **Finding E7-CC2 ✅** · LOW
 > **Parity gap on spacing consistency**: While Whispering Wishes leads in visual craft, the dual-layer system (kuro-* vs inline Tailwind) creates spacing inconsistencies that more minimalist trackers avoid by having simpler designs. The fix isn't to simplify — it's to extend the design system to cover the remaining inline elements (§E7-DC1).
 > **Solution**: Same as §E7-DC1 — migrate inline elements to kuro-* variants.
 
@@ -4195,7 +4195,7 @@ The WuWa tracker ecosystem includes:
 | Collection Progress box → wrap in `<Card>` | Brand consistency (§E7-BC1 ✅) | Low |
 | Search input → use `kuro-input` class | Token alignment | Trivial |
 | Filter selects → add focus gold glow | Focus consistency | Low |
-| Collection card inline glow → use `glow-gold` class | Noise reduction (§E7-VN3) | Trivial |
+| Collection card inline glow → use `glow-gold` class | Noise reduction (§E7-VN3 ✅) | Trivial |
 
 **Teams tab** — Current: 7.5/10 polish
 | Change | Impact | Effort |
@@ -4208,14 +4208,14 @@ The WuWa tracker ecosystem includes:
 | Change | Impact | Effort |
 |--------|--------|--------|
 | Import method buttons (File/Paste) → `kuro-btn` | Consistency | Trivial |
-| Header subtitle `text-gray-400` → muted gold | Brand reinforcement (§E7-FI2) | Trivial |
+| Header subtitle `text-gray-400` → muted gold | Brand reinforcement (§E7-FI2 ✅) | Trivial |
 | Toggle switch description alignment → consistent left padding | Detail alignment | Trivial |
 
 > **Finding E7-PD1** · MEDIUM
 > **Primary polish lever — inline button migration**: The single change with the highest impact across ALL tabs is creating `kuro-btn-ghost` and `kuro-btn-sm` variants and migrating the ~100+ inline buttons. This simultaneously improves: hover quality (§E6-HV9 ✅), active feedback (§E6-AP4 ✅), visual consistency (§E5-BT5), token coverage (§E1-COV1), and the two-layer coherence gap (§E7-DC1). Every tab has at least 2–5 inline buttons that would benefit.
 > **Solution**: Priority migration order: Calculator tab (most inline buttons in a data-focused context) → Events tab → Collection tab → remaining tabs.
 
-> **Finding E7-PD2** · LOW
+> **Finding E7-PD2 ✅** · LOW
 > **Secondary polish lever — `<Card>` wrapping for inline containers**: 3–4 inline containers (`bg-white/5 border border-white/10 rounded-lg`) across Events, Collection, and Stats could be replaced with `<Card>` components to gain shimmer lines, corner decorations, and token-driven backgrounds. Low effort, high brand consistency gain.
 > **Solution**: Identify all `bg-white/5 border border-white/10 rounded-lg` patterns in `App.jsx` and wrap in `<Card>`.
 
@@ -4239,7 +4239,7 @@ The WuWa tracker ecosystem includes:
 
 **A1 assessment**: 7/9 signals present. The app communicates credibility effectively despite being NON-REVENUE. The two partial gaps (spacing system and success confirmation) are minor — the spacing issue is cosmetic (users don't consciously notice 14px vs 16px), and the toast success is functional if not celebratory.
 
-> **Finding E7-PL1** · LOW
+> **Finding E7-PL1 ✅** · LOW
 > **No success confirmation animation**: When a user successfully imports data, changes settings, or completes an action, the only feedback is a toast notification with `slideUp 0.2s`. There's no success-specific animation (checkmark morphing, confetti burst, or color flash). For a gacha tracker with emotional investment (A2 EMOTIONAL-SECONDARY), success moments deserve richer feedback.
 > **Solution**: Add a brief 0.3s checkmark animation to the success toast variant — a line-draw SVG checkmark that animates on mount. This adds delight without complexity.
 
@@ -4371,26 +4371,26 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 | E7-BC3 | Font family consistency | — | PASS |
 | E7-BC4 | Gray text vs brand identity | MEDIUM | ISSUE |
 | E7-FI1 | First impression reads purpose-built | — | PASS |
-| E7-FI2 | Subtitle gray dilutes first impression | LOW | ISSUE |
+| E7-FI2 ✅ | Subtitle gray dilutes first impression | LOW | ISSUE |
 | E7-FI3 | Navigation legibility at 7 seconds | — | PASS |
 | E7-FI4 | Data density appropriate for A3 | — | PASS |
 | E7-SQ1 | 4 of 8 screens screenshot-strong | — | PASS |
-| E7-SQ2 | Calculator lacks visual hero moment | LOW | ISSUE |
+| E7-SQ2 ✅ | Calculator lacks visual hero moment | LOW | ISSUE |
 | E7-SQ3 | Luck badge screenshot moments | — | PASS |
 | E7-VN1 | Decorative elements are brand-functional | — | PASS |
-| E7-VN2 | Stacked text shadows reduce clarity | LOW | ISSUE |
-| E7-VN3 | Collection card glow competes | LOW | ISSUE |
+| E7-VN2 ✅ | Stacked text shadows reduce clarity | LOW | ISSUE |
+| E7-VN3 ✅ | Collection card glow competes | LOW | ISSUE |
 | E7-VN4 | Signal-to-noise for A3 audience | — | PASS |
 | E7-CD1 | Desktop layout genuine adaptation | — | PASS |
 | E7-CD2 | Banner/event grid minmax overflow risk | MEDIUM | ISSUE |
 | E7-CD3 | OLED mode as device adaptation | — | PASS |
 | E7-CD4 | No light theme (intentional) | LOW | NOTE |
 | E7-CC1 | Competitive credibility strong | — | PASS |
-| E7-CC2 | Parity gap on spacing consistency | LOW | ISSUE |
+| E7-CC2 ✅ | Parity gap on spacing consistency | LOW | ISSUE |
 | E7-CC3 | Unique motion signature differentiation | — | PASS |
 | E7-PD1 | Primary polish lever — button migration | MEDIUM | ISSUE |
-| E7-PD2 | Secondary polish lever — Card wrapping | LOW | ISSUE |
-| E7-PL1 | No success confirmation animation | LOW | ISSUE |
+| E7-PD2 ✅ | Secondary polish lever — Card wrapping | LOW | ISSUE |
+| E7-PL1 ✅ | No success confirmation animation | LOW | ISSUE |
 | E7-PL2 | Focus-tool polish via restraint | — | PASS |
 | E7-PL3 | Emotional-secondary correctly weighted | — | PASS |
 | E7-PL4 | Functional-primary + atmospheric well-calibrated | — | PASS |
@@ -4486,7 +4486,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 
 3. **Subtitle gray text** (`App.jsx:3178`): "Wuthering Waves - Companion" uses `text-gray-400` (#8f99ab) at 10px — the first piece of body text a user reads is in the lowest-contrast, smallest-size text. The subtitle should be a brand-reinforcing moment, not a footnote.
 
-> **Finding E8-CI1** · LOW
+> **Finding E8-CI1 ✅** · LOW
 > **First-impression credibility is strong but not flawless**: The composition signals "trusted tool" through 6/6 first-impression vectors (header, background, cards, typography, navigation, data visualization). The credibility gap is in the inline Tailwind layer (§E7-DC1) which creates a visible quality gradient on tabs with mixed kuro-btn and inline buttons.
 > **Evidence**: Header (`App.jsx:3166–3211`) uses custom glassmorphic styling, branded gold glow, dual-font system. First card (BannerCard) uses full kuro-card system. Tab bar uses custom animated indicator.
 > **Solution**: No new action — the kuro-btn migration recommended in §E7-PD1 is the primary credibility lever. Completing that migration eliminates the visible polish gradient.
@@ -4511,7 +4511,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 > **Evidence**: `:root` tokens (`appcore-providers.jsx:434–464`) define a complete, internally consistent color system. Font loading uses preload + media-swap optimization (`index.html:30–31`).
 > **Solution**: Maintain current palette and typography system — these are strong trust signals.
 
-> **Finding E8-VT2** · LOW
+> **Finding E8-VT2 ✅** · LOW
 > **Spacing rhythm is inconsistent between layers**: The kuro-* system uses deliberate spacing tiers (14px, 12px, 10×12px) but inline elements use Tailwind spacing utilities (p-2=8px, p-3=12px, px-4=16px, py-2=8px) which don't align to the same scale. This creates perceptible spacing inconsistency — two buttons in the same view can have different internal padding.
 > **Evidence**: `kuro-btn` uses `padding: 10px 12px` (`appcore-providers.jsx:870`). Inline buttons use `px-4 py-2` (16px 8px) or `p-2` (8px) (`App.jsx` passim). The ratio difference (10:12 vs 8:16) is visible.
 > **Solution**: When migrating inline buttons to kuro-btn variants (§E7-PD1), the spacing inconsistency resolves automatically. For buttons that remain inline, standardize on `px-3 py-2.5` (12px 10px) to approximate the kuro-btn rhythm.

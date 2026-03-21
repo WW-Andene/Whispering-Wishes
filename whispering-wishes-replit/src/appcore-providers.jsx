@@ -481,6 +481,12 @@ const KuroStyles = memo(({ oledMode }) => (
       --trophy-silver: #c0c0c0;
       --trophy-gold: #edaf18;
       --trophy-diamond: #b9f2ff;
+      /* E7-CC2: Spacing tokens for remaining inline elements */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
       /* E3-CT2: Lightened cool accents (+5% luminance) for standalone text on dark bg */
       --accent-cyan: #67e8f9;   /* cyan-300, L~82% vs cyan-400 L~65% */
       --accent-purple: #d8b4fe; /* purple-300, L~80% vs purple-400 L~68% */
@@ -1433,7 +1439,7 @@ const KuroStyles = memo(({ oledMode }) => (
         text-shadow: 0 0 8px rgba(251, 146, 60, 0.7);
       }
       50% { 
-        text-shadow: 0 0 15px rgba(251, 146, 60, 1), 0 0 25px rgba(251, 146, 60, 0.6);
+        text-shadow: 0 0 15px rgba(251, 146, 60, 0.9); /* E7-VN2: Single shadow for clarity */
       }
     }
     
@@ -1446,7 +1452,7 @@ const KuroStyles = memo(({ oledMode }) => (
         text-shadow: 0 0 8px rgba(103, 232, 249, 0.7);
       }
       50% { 
-        text-shadow: 0 0 15px rgba(103, 232, 249, 1), 0 0 25px rgba(103, 232, 249, 0.6);
+        text-shadow: 0 0 15px rgba(103, 232, 249, 0.9);
       }
     }
     
@@ -1459,7 +1465,7 @@ const KuroStyles = memo(({ oledMode }) => (
         text-shadow: 0 0 8px rgba(236, 72, 153, 0.7);
       }
       50% { 
-        text-shadow: 0 0 15px rgba(236, 72, 153, 1), 0 0 25px rgba(236, 72, 153, 0.6);
+        text-shadow: 0 0 15px rgba(236, 72, 153, 0.9);
       }
     }
     
@@ -1469,6 +1475,23 @@ const KuroStyles = memo(({ oledMode }) => (
       font-variant-numeric: tabular-nums;
       font-weight: 700;
       line-height: 1.2;
+    }
+
+    /* E7-PD2: Card-like utility for inline containers that should match Card styling */
+    .kuro-card-inline {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      padding: 12px;
+      backdrop-filter: blur(var(--blur-sm));
+      -webkit-backdrop-filter: blur(var(--blur-sm));
+    }
+
+    /* E7-SQ2: Gold-accented result hero for Calculator probability display */
+    .kuro-stat-hero {
+      padding: 20px;
+      border-color: rgba(237, 175, 24, 0.4);
+      box-shadow: var(--shadow-md), 0 0 20px rgba(237, 175, 24, 0.08);
     }
 
     /* E5-IF4: Custom tooltip style — glassmorphic with gold accent */
@@ -1569,6 +1592,27 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform 0.1s ease;
     }
 
+    /* E8-CO1: Gold shimmer on import success card */
+    @keyframes importCelebrate {
+      0% { box-shadow: 0 0 0 rgba(237, 175, 24, 0); }
+      50% { box-shadow: 0 0 24px rgba(237, 175, 24, 0.2), inset 0 0 16px rgba(237, 175, 24, 0.05); }
+      100% { box-shadow: 0 0 0 rgba(237, 175, 24, 0); }
+    }
+    .kuro-import-success {
+      animation: importCelebrate 0.8s ease-out;
+    }
+
+    /* E7-PL1: Success toast checkmark scale-in animation */
+    @keyframes checkPop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    [role="status"] svg.text-emerald-400,
+    [role="status"] svg.text-green-400 {
+      animation: checkPop 0.3s ease-out both;
+    }
+
     /* E6-AN2: Exit animation utility for removed elements */
     @keyframes kuroExit {
       from { opacity: 1; transform: translateY(0); }
@@ -1637,9 +1681,10 @@ const KuroStyles = memo(({ oledMode }) => (
       background: rgba(140,160,200,0.28);
     }
     @media (hover: hover) {
+      /* E7-VN3: Reduced glow opacity (-30%) to avoid competing with card system */
       .collection-card:hover {
         transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       }
     }
     .collection-card:active {
