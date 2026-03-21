@@ -6637,13 +6637,13 @@ function WhisperingWishesInner() {
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
-                    className="relative w-[52px] h-[24px] rounded-[3px] transition-colors"
+                    className="relative w-[52px] h-[24px] rounded-full transition-colors"
                     style={{ background: visualSettings.oledMode ? '#fff' : 'var(--bg-btn)' }}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
                     aria-label="Toggle OLED mode"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.oledMode ? 'left-[32px] bg-black' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.oledMode ? 'left-[32px] bg-black' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
@@ -6664,13 +6664,13 @@ function WhisperingWishesInner() {
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
-                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : ''}`}
+                    className={`relative w-[52px] h-[24px] rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : ''}`}
                     style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label="Toggle swipe navigation"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.swipeNavigation ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
@@ -6693,11 +6693,11 @@ function WhisperingWishesInner() {
                       const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
                       saveVisualSettings({ ...visualSettings, animationsEnabled: next });
                     }}
-                    className={`relative w-[52px] h-[24px] rounded-[3px] transition-colors ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500' : ''}`}
+                    className={`relative w-[52px] h-[24px] rounded-full transition-colors ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500' : ''}`}
                     style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}
                     aria-label="Toggle animations: off, on, full"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-sm transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px] bg-white' : 'left-[32px] bg-white'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px] bg-white' : 'left-[32px] bg-white'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
@@ -6939,10 +6939,16 @@ Example: {"pulls":[...]}'
 
       {/* Export Modal */}
       <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="bg-black/80" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore">
-          <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
-            <CardHeader action={<button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close export modal"><X size={16} /></button>}>Backup</CardHeader>
-            <CardBody className="space-y-3">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)] flex-shrink-0" data-sheet-header>
+              <div className="flex items-center gap-2">
+                <Download size={14} className="text-yellow-400" />
+                <span className="text-white text-sm font-semibold">Backup</span>
+              </div>
+              <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4 space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
               <textarea
                 value={exportData}
@@ -7117,8 +7123,8 @@ Example: {"pulls":[...]}'
                   Restore Pre-Import Backup
                 </button>
               )}
-            </CardBody>
-          </Card>
+            </div>
+          </div>
       </FocusTrapModal>
 
       {/* Resonator ID Card Modal */}
