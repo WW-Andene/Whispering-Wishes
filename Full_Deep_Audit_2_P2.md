@@ -990,7 +990,7 @@ The Tailwind `uppercase tracking-wider` pattern in other contexts echoes this vo
 
 ---
 
-#### Finding E4-TC4: Rajdhani Inline Numbers Use Proportional Figures — LOW
+#### Finding E4-TC4 ✅: Rajdhani Inline Numbers Use Proportional Figures — LOW
 
 **Issue**: Inline number values rendered in Rajdhani (the display font) use proportional figures rather than tabular. In rare cases where Rajdhani numbers appear in vertically-aligned contexts (e.g., stat grids without `kuro-stat` class), digits may misalign.
 
@@ -1179,7 +1179,7 @@ Geometric ←————●———————————→ Humanist
 | E4-TC1 | §E4.9 | PASS | Tabular numerals comprehensive via monospace |
 | E4-TC2 | §E4.9 | PASS | No OpenType exploitation (acceptable) |
 | E4-TC3 | §E4.9 | PASS | Tracked caps create distinctive voice |
-| E4-TC4 | §E4.9 | LOW | Rajdhani inline numbers use proportional figures |
+| E4-TC4 ✅ | §E4.9 | LOW | Rajdhani inline numbers use proportional figures |
 
 ### Severity Distribution
 
@@ -1267,7 +1267,7 @@ All 5 states are present with thoughtful, character-consistent treatment. The ho
 
 ---
 
-### E5-BT2: Button hierarchy system
+### E5-BT2 ✅: Button hierarchy system
 
 **Assessment**: **LOW**
 
@@ -1418,7 +1418,7 @@ Migrate the ~100 inline buttons to `.kuro-btn-sm` or `.kuro-btn-icon` variants. 
 
 ---
 
-### E5-BT6: Button loading state
+### E5-BT6 ✅: Button loading state
 
 **Assessment**: **LOW**
 
@@ -1568,7 +1568,7 @@ The priority slider (`.priority-slider`) adds a special dual-track gradient show
 
 ---
 
-### E5-IN4: Dropdown/select quality
+### E5-IN4 ✅: Dropdown/select quality
 
 **Assessment**: **LOW**
 
@@ -1602,7 +1602,7 @@ This unifies all 12 selects under the same glass-material + gold-focus system. O
 
 ---
 
-### E5-IN5: Search bar quality
+### E5-IN5 ✅: Search bar quality
 
 **Assessment**: **LOW**
 
@@ -2011,7 +2011,7 @@ All three progress types are:
 
 ---
 
-### E5-IF4: Tooltip quality
+### E5-IF4 ✅: Tooltip quality
 
 **Assessment**: **LOW**
 
@@ -2249,7 +2249,7 @@ The empty states use designed styling (gold radiance background, dashed border, 
 
 ---
 
-### E5-CD6: Image loading states
+### E5-CD6 ✅: Image loading states
 
 **Assessment**: **LOW**
 
@@ -2380,9 +2380,9 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 | **CALC** | kuro-btn (6 selectors), kuro-input (4 number), kuro-slider (priority), PityRing (4), ProbabilityBar | Heaviest interactive component usage. All core inputs use kuro system. The astrite allocation slider with dual-color track is a craft highlight. |
 | **PLANNER** | kuro-input (number), kuro-select (2), income list, bookmark list, progress bar | Clean usage of kuro system. Goal progress bar is well-designed. Empty state for bookmarks is action-oriented. |
 | **STATS** | Trophy grid, leaderboard table, luck badge, trend charts, empty states | Most content-display components. Trophy system with tiered colors and the luck badge with gradient border are standout craft moments. |
-| **COLLECTION** | Collection grid (CollectionGridSection), search, filters (3 selects), character/weapon detail modals | Largest component count. Ghost grid cells for empty state are distinctive. Detail modals with image framing show high craft. **Select filters bypass kuro-input** (noted in E5-IN4). |
+| **COLLECTION** | Collection grid (CollectionGridSection), search, filters (3 selects), character/weapon detail modals | Largest component count. Ghost grid cells for empty state are distinctive. Detail modals with image framing show high craft. **Select filters bypass kuro-input** (noted in E5-IN4 ✅). |
 | **TEAMS** | Team slot cards, character/weapon selector modals, radio group (S0–S6), echo management, search (2) | Complex multi-modal interactions. FocusTrapModal usage on selectors is good. |
-| **PROFILE** | Toggle switches (3), server select, import/export textareas, bookmark modal, export modal, settings | Profile-specific components (switches, textareas) are well-crafted. Reset button needs hierarchy differentiation (noted in E5-BT2). |
+| **PROFILE** | Toggle switches (3), server select, import/export textareas, bookmark modal, export modal, settings | Profile-specific components (switches, textareas) are well-crafted. Reset button needs hierarchy differentiation (noted in E5-BT2 ✅). |
 
 ---
 
@@ -2393,17 +2393,17 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 | ID | Section | Severity | Component | Finding |
 |---|---|---|---|---|
 | **E5-BT1** | §E5.1 | **PASS** | Buttons: state completeness | All 5 states (default, hover, active, focus, disabled) implemented with character-consistent treatment |
-| **E5-BT2** | §E5.1 | **LOW** | Buttons: hierarchy | Flat hierarchy — no visual distinction between primary, secondary, tertiary, destructive buttons at rest |
+| **E5-BT2 ✅** | §E5.1 | **LOW** | Buttons: hierarchy | Flat hierarchy — no visual distinction between primary, secondary, tertiary, destructive buttons at rest |
 | **E5-BT3** | §E5.1 | **PASS** | Buttons: color variants | 6 active variants with coherent glow system and consistent semantic mapping |
 | **E5-BT4** | §E5.1 | **PASS** | Tab navigation | Triple-signal active state (color + glow + animated indicator), full ARIA support |
 | **E5-BT5** | §E5.1 | **MEDIUM** | Buttons: inline inconsistency | ~100+ inline buttons bypass kuro-btn system — no ripple, no consistent hover/press, 3 different border-radius values |
-| **E5-BT6** | §E5.1 | **LOW** | Buttons: loading state | No true loading state with spinner — only opacity reduction on leaderboard submit |
+| **E5-BT6 ✅** | §E5.1 | **LOW** | Buttons: loading state | No true loading state with spinner — only opacity reduction on leaderboard submit |
 | **E5-BT7** | §E5.1 | **PASS** | Buttons: character (§DCO1) | Cyberpunk outlined-glass-glow vocabulary — perfect character alignment |
 | **E5-IN1** | §E5.2 | **PASS** | Inputs: state completeness | 4 states well-implemented, gold focus glow is character-positive |
 | **E5-IN2** | §E5.2 | **PASS** | Inputs: button coherence (§DCO2) | Same glass material vocabulary, coherent radius differentiation |
 | **E5-IN3** | §E5.2 | **PASS** | Sliders | Fully custom gold-glowing thumb, cross-browser, priority slider with dual-track |
-| **E5-IN4** | §E5.2 | **LOW** | Dropdowns: mixed styling | 3 of 5 select groups bypass kuro-input, losing glass material and gold focus |
-| **E5-IN5** | §E5.2 | **LOW** | Search bars | Collection search lacks kuro-input; no clear button on any search; inconsistent icon usage |
+| **E5-IN4 ✅** | §E5.2 | **LOW** | Dropdowns: mixed styling | 3 of 5 select groups bypass kuro-input, losing glass material and gold focus |
+| **E5-IN5 ✅** | §E5.2 | **LOW** | Search bars | Collection search lacks kuro-input; no clear button on any search; inconsistent icon usage |
 | **E5-IN6** | §E5.2 | **PASS** | Toggle switches | Square-cornered character choice, distinct colors per function, correct ARIA |
 | **E5-IN7** | §E5.2 | **PASS** | Radio buttons | Gold active state, proper radiogroup/radio ARIA |
 | **E5-IN8** | §E5.2 | **PASS** | Checkbox-like toggles | Button-as-checkbox with color-semantic active states |
@@ -2415,7 +2415,7 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 | **E5-IF1** | §E5.4 | **PASS** | Badges/tags | Consistent pattern, game-aligned rarity tiers |
 | **E5-IF2** | §E5.4 | **PASS** | Toasts (§DCO6) | 4 severity variants, haptic feedback, ARIA live region, character-tinted colors |
 | **E5-IF3** | §E5.4 | **PASS** | Progress indicators | PityRing (circular), ProbabilityBar (meter), Goal bar — all accessible and color-coded |
-| **E5-IF4** | §E5.4 | **LOW** | Tooltips | Browser-native `title` only — unstyled, not accessible on touch |
+| **E5-IF4 ✅** | §E5.4 | **LOW** | Tooltips | Browser-native `title` only — unstyled, not accessible on touch |
 | **E5-IF5** | §E5.4 | **PASS** | Banners/alerts | Consistent color-semantic pattern (gold, emerald, white) |
 | **E5-IF6** | §E5.4 | **PASS** | Luck rating badge | Gradient border card with holographic feel — character-positive delight moment |
 | **E5-CD1** | §E5.5 | **PASS** | List items | Context-appropriate patterns with consistent padding/background vocabulary |
@@ -2423,7 +2423,7 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 | **E5-CD3** | §E5.5 | **PASS** | Avatars/thumbnails | Custom framing system, hideOnError fallback, skeleton loading on collection grid |
 | **E5-CD4** | §E5.5 | **PASS** | Dividers | Gradient kuro-divider + structural border-subtle — purposeful, not decorative |
 | **E5-CD5** | §E5.5 | **PASS** | Empty states | Gold-radiance atmospheric styling, action-oriented messages, ghost grid cells |
-| **E5-CD6** | §E5.5 | **LOW** | Image loading | Character detail modal lacks loading placeholder; hideOnError leaves empty space in some contexts |
+| **E5-CD6 ✅** | §E5.5 | **LOW** | Image loading | Character detail modal lacks loading placeholder; hideOnError leaves empty space in some contexts |
 | **E5-ST1** | §E5.6 | **PASS** | Skeleton/shimmer | Gold-tinted kuroShimmer — character-consistent, 4 shape variants matching content layout |
 | **E5-ST2** | §E5.6 | **PASS** | Scrollbar | 4px thin, blue-gray, unobtrusive |
 | **E5-ST3** | §E5.6 | **PASS** | Collection hover | Smooth transitions with cross-browser mask-image fix |
@@ -2454,9 +2454,9 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 
 1. **Inline button sprawl** (§E5-BT5 MEDIUM): ~100+ buttons outside the kuro-btn system creates visual inconsistency. This is the single most impactful fix opportunity in the component system — migrating inline buttons to kuro-btn variants would unify hover/press behavior across the entire app.
 
-2. **Button hierarchy** (§E5-BT2 LOW): Flat visual weight means users can't scan for the most important action on a screen. Adding primary/secondary/ghost/danger variants would improve scanability.
+2. **Button hierarchy** (§E5-BT2 ✅ LOW): Flat visual weight means users can't scan for the most important action on a screen. Adding primary/secondary/ghost/danger variants would improve scanability.
 
-3. **Select dropdown bypass** (§E5-IN4 LOW): Collection and Teams filter selects miss the glass material and gold focus glow by not using kuro-input.
+3. **Select dropdown bypass** (§E5-IN4 ✅ LOW): Collection and Teams filter selects miss the glass material and gold focus glow by not using kuro-input.
 
 ### Connection to prior findings
 
@@ -2617,7 +2617,7 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 
 ---
 
-### E6-HV9 · Inline Tailwind button hovers · **LOW**
+### E6-HV9 ✅ · Inline Tailwind button hovers · **LOW**
 
 **Finding**: The ~100+ inline buttons (identified in §E5-BT5) use Tailwind hover utilities rather than the kuro-btn system. Patterns observed:
 
@@ -2671,7 +2671,7 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 | E6-HV6 | Icon SVG glow | — | PASS |
 | E6-HV7 | Collection card hover | — | PASS |
 | E6-HV8 | Pull log row hover | — | PASS |
-| E6-HV9 | Inline Tailwind hovers | LOW | Missing multi-signal feedback, no hover:hover guard |
+| E6-HV9 ✅ | Inline Tailwind hovers | LOW | Missing multi-signal feedback, no hover:hover guard |
 | E6-HV10 | Desktop enhancements | — | PASS |
 
 ---
@@ -2724,7 +2724,7 @@ The `mask-image` trick prevents `overflow: hidden` child content from bleeding o
 
 ---
 
-### E6-AP4 · Inline Tailwind active states · **LOW**
+### E6-AP4 ✅ · Inline Tailwind active states · **LOW**
 
 **Finding**: Among the ~100+ inline buttons, only a handful use `active:scale-95`:
 
@@ -2793,7 +2793,7 @@ The toast system auto-triggers appropriate haptic per severity level — this me
 | E6-AP1 | kuro-btn active | — | PASS |
 | E6-AP2 | kuro-card interactive active | — | PASS |
 | E6-AP3 | Collection card active | — | PASS |
-| E6-AP4 | Inline button active states | LOW | ~93+ buttons with no press feedback |
+| E6-AP4 ✅ | Inline button active states | LOW | ~93+ buttons with no press feedback |
 | E6-AP5 | Tab button active | — | PASS |
 | E6-AP6 | Haptic feedback system | — | PASS |
 
@@ -2912,7 +2912,7 @@ Priority: Very low. The instant exit is acceptable for this tool's personality.
 
 ---
 
-### E6-TQ7 · Progress bar transitions · **LOW**
+### E6-TQ7 ✅ · Progress bar transitions · **LOW**
 
 **Finding**: Progress bars (astrite goal, event progress) use `transition-all` on width changes:
 
@@ -2957,7 +2957,7 @@ Priority: Low — functional but missing a micro-interaction moment.
 | E6-TQ4 | Modal entrance transition | — | PASS |
 | E6-TQ5 | Toast entrance/exit | — | PASS |
 | E6-TQ6 | Pity ring fill | — | PASS |
-| E6-TQ7 | Progress bar transition-all | LOW | Layout-triggering width animation, broad transition-all |
+| E6-TQ7 ✅ | Progress bar transition-all | LOW | Layout-triggering width animation, broad transition-all |
 | E6-TQ8 | Chevron rotation | LOW | No transition on rotate state change |
 
 ---
@@ -3536,7 +3536,7 @@ When hovering over any interactive element containing a Lucide SVG icon, the ico
 
 | Domain | Status | Notes |
 |--------|--------|-------|
-| 1. Hover states | Strong | kuro-btn system excellent; inline buttons weak (§E6-HV9) |
+| 1. Hover states | Strong | kuro-btn system excellent; inline buttons weak (§E6-HV9 ✅) |
 | 2. Focus rings | Strong | Gold outline + box-shadow, WCAG 3:1+ compliant |
 | 3. Active/press | Strong for system, weak for inline | kuro-btn scale(0.97) excellent; ~93 inline buttons no feedback |
 | 4. Loading/skeleton | Strong | Gold-tinted shimmer, geometry-matched shapes |
@@ -3671,13 +3671,13 @@ MOTION SIGNATURE BRIEF
 | E6-HV6 | Icon SVG glow | — | PASS |
 | E6-HV7 | Collection card hover | — | PASS |
 | E6-HV8 | Pull log row hover | — | PASS |
-| E6-HV9 | Inline Tailwind hovers | LOW | Missing multi-signal feedback, no hover:hover guard |
+| E6-HV9 ✅ | Inline Tailwind hovers | LOW | Missing multi-signal feedback, no hover:hover guard |
 | E6-HV10 | Desktop enhancements | — | PASS |
 | **§E6.2 — Active/Pressed** | | | |
 | E6-AP1 | kuro-btn active | — | PASS |
 | E6-AP2 | kuro-card interactive active | — | PASS |
 | E6-AP3 | Collection card active | — | PASS |
-| E6-AP4 | Inline button active states | LOW | ~93+ buttons with no press feedback |
+| E6-AP4 ✅ | Inline button active states | LOW | ~93+ buttons with no press feedback |
 | E6-AP5 | Tab button active | — | PASS |
 | E6-AP6 | Haptic feedback system | — | PASS |
 | **§E6.3 — Transition Quality** | | | |
@@ -3687,7 +3687,7 @@ MOTION SIGNATURE BRIEF
 | E6-TQ4 | Modal entrance transition | — | PASS |
 | E6-TQ5 | Toast entrance/exit | — | PASS |
 | E6-TQ6 | Pity ring fill | — | PASS |
-| E6-TQ7 | Progress bar transition-all | LOW | Layout-triggering width animation |
+| E6-TQ7 ✅ | Progress bar transition-all | LOW | Layout-triggering width animation |
 | E6-TQ8 | Chevron rotation | LOW | No transition on rotate state change |
 | **§E6.4 — Loading States** | | | |
 | E6-LS1 | kuro-skeleton system | — | PASS |
@@ -3733,7 +3733,7 @@ MOTION SIGNATURE BRIEF
 
 ### Key concerns
 
-1. **Inline button interaction gap** (§E6-HV9 + §E6-AP4): The ~100+ inline buttons outside the kuro-btn system have weaker hover states (single-signal vs five-signal) and mostly no active/press feedback. This creates a two-tier experience: system components feel physical and responsive, inline buttons feel flat. This is the interaction-design manifestation of the same issue identified in §E5-BT5.
+1. **Inline button interaction gap** (§E6-HV9 ✅ + §E6-AP4 ✅): The ~100+ inline buttons outside the kuro-btn system have weaker hover states (single-signal vs five-signal) and mostly no active/press feedback. This creates a two-tier experience: system components feel physical and responsive, inline buttons feel flat. This is the interaction-design manifestation of the same issue identified in §E5-BT5.
 
 2. **Exit animation asymmetry** (§E6-AN2): Entrance animations are polished at every level (toast, modal, tab, card), but exits are uniformly instant. For a FOCUS-TOOL this is defensible but creates a perceptual imbalance.
 
@@ -3741,7 +3741,7 @@ MOTION SIGNATURE BRIEF
 
 ### Connection to prior findings
 
-- **§E5-BT5** (inline button sprawl ~100+): The hover and active gaps (§E6-HV9, §E6-AP4) are the interaction-layer consequence of the same inline button sprawl. Migrating to kuro-btn variants would fix three issues simultaneously: visual consistency (§E5-BT5), hover quality (§E6-HV9), and press feedback (§E6-AP4).
+- **§E5-BT5** (inline button sprawl ~100+): The hover and active gaps (§E6-HV9 ✅, §E6-AP4 ✅) are the interaction-layer consequence of the same inline button sprawl. Migrating to kuro-btn variants would fix three issues simultaneously: visual consistency (§E5-BT5), hover quality (§E6-HV9 ✅), and press feedback (§E6-AP4 ✅).
 - **§E1-COV1** (token coverage ~30%): The transition tokens (`--transition-fast/normal/slow`) are well-defined but only used by kuro-* system components. Inline buttons use Tailwind defaults (`transition-colors`, `duration-300`) — widening the token coverage gap.
 - **§DBI3-S03** (rounded-lg monoculture): The motion system avoids monoculture — different elements have distinct motion profiles (buttons compress, cards lift, sliders grow, modals emerge). This is motion diversity that the static visual system could learn from.
 
@@ -3792,15 +3792,15 @@ A comprehensive CSS-in-JS design system providing:
 | Border radius | Deliberate hierarchy (16→12→10→8→3px) | `rounded-lg` (8px) everywhere | **Partial gap** — Tailwind defaults to 8px monoculture |
 | Transitions | Token-driven (fast/normal/slow) | `transition-colors`, `transition-all` | **Gap** — inline uses Tailwind defaults, not tokens |
 | Typography | `--font-display`, `--font-data` tokens | System font inherited from body | **OK** — falls back to the same system font |
-| Hover states | 5-signal (border, color, lift, shadow, ripple) | Single-signal `hover:bg-{color}/20` | **Gap** — identified in §E6-HV9 |
-| Active states | Physical (scale + lift reset) | Mostly absent | **Gap** — identified in §E6-AP4 |
+| Hover states | 5-signal (border, color, lift, shadow, ripple) | Single-signal `hover:bg-{color}/20` | **Gap** — identified in §E6-HV9 ✅ |
+| Active states | Physical (scale + lift reset) | Mostly absent | **Gap** — identified in §E6-AP4 ✅ |
 
 **Coherence rating**: The app feels **~70% designed-as-a-whole**. Every section that uses kuro-* components has the same DNA — glassy surfaces, gold accents, corner decorations, shimmer lines, physical hover responses. The remaining ~30% (inline buttons, progress bars, badges, filter selects) feels like a second, simpler design vocabulary layered on top. A user wouldn't notice this as "two different designers" — but they would notice that some elements feel more polished than others.
 
 > **Finding E7-DC1** · MEDIUM
 > **Two-layer coherence gap**: The KuroStyles system provides a comprehensive, cohesive design vocabulary. But ~30% of interactive elements bypass it entirely, creating a perceptible quality gradient within each screen. The issue isn't visual chaos — it's a polish gradient from "premium" (kuro-*) to "adequate" (inline Tailwind).
 > **Evidence**: 39 `.kuro-btn` instances vs ~100+ inline `<button>` elements (`App.jsx`). Inline buttons use `bg-white/5`, `border-white/10`, `rounded-lg`, `transition-colors` — none of which reference design tokens.
-> **Solution**: Create 2–3 lightweight kuro-btn variants (`kuro-btn-ghost`, `kuro-btn-link`, `kuro-btn-inline`) that inherit the token system. Migrate inline buttons in batches per-tab. This simultaneously fixes §E5-BT5 (visual inconsistency), §E6-HV9 (hover gap), and §E6-AP4 (active gap).
+> **Solution**: Create 2–3 lightweight kuro-btn variants (`kuro-btn-ghost`, `kuro-btn-link`, `kuro-btn-inline`) that inherit the token system. Migrate inline buttons in batches per-tab. This simultaneously fixes §E5-BT5 (visual inconsistency), §E6-HV9 ✅ (hover gap), and §E6-AP4 ✅ (active gap).
 
 > **Finding E7-DC2** · PASS
 > **Component-level coherence**: All 9 kuro-* component classes share consistent design DNA — glassmorphism backgrounds with backdrop-filter, 1px solid borders from the opacity token scale, top shimmer lines (cards, stats), gold accent color, matching padding (14px card body/header, 10px 12px buttons/inputs). The system feels like a single designer's work.
@@ -4212,7 +4212,7 @@ The WuWa tracker ecosystem includes:
 | Toggle switch description alignment → consistent left padding | Detail alignment | Trivial |
 
 > **Finding E7-PD1** · MEDIUM
-> **Primary polish lever — inline button migration**: The single change with the highest impact across ALL tabs is creating `kuro-btn-ghost` and `kuro-btn-sm` variants and migrating the ~100+ inline buttons. This simultaneously improves: hover quality (§E6-HV9), active feedback (§E6-AP4), visual consistency (§E5-BT5), token coverage (§E1-COV1), and the two-layer coherence gap (§E7-DC1). Every tab has at least 2–5 inline buttons that would benefit.
+> **Primary polish lever — inline button migration**: The single change with the highest impact across ALL tabs is creating `kuro-btn-ghost` and `kuro-btn-sm` variants and migrating the ~100+ inline buttons. This simultaneously improves: hover quality (§E6-HV9 ✅), active feedback (§E6-AP4 ✅), visual consistency (§E5-BT5), token coverage (§E1-COV1), and the two-layer coherence gap (§E7-DC1). Every tab has at least 2–5 inline buttons that would benefit.
 > **Solution**: Priority migration order: Calculator tab (most inline buttons in a data-focused context) → Events tab → Collection tab → remaining tabs.
 
 > **Finding E7-PD2** · LOW
@@ -4412,7 +4412,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 
 ### Key concerns
 
-1. **Two-layer coherence gap** (§E7-DC1, §E7-PD1): The kuro-* system covers ~70% of the UI. The remaining ~30% (inline Tailwind buttons, badges, progress bars, filter selects) uses a simpler design vocabulary that doesn't benefit from design tokens, multi-signal hover, or physical active states. This is the single most impactful professionalism gap and the one that cascades across multiple prior findings (§E5-BT5, §E6-HV9, §E6-AP4, §E1-COV1).
+1. **Two-layer coherence gap** (§E7-DC1, §E7-PD1): The kuro-* system covers ~70% of the UI. The remaining ~30% (inline Tailwind buttons, badges, progress bars, filter selects) uses a simpler design vocabulary that doesn't benefit from design tokens, multi-signal hover, or physical active states. This is the single most impactful professionalism gap and the one that cascades across multiple prior findings (§E5-BT5, §E6-HV9 ✅, §E6-AP4 ✅, §E1-COV1).
 
 2. **Gray text volume** (§E7-BC4): 459 achromatic gray text instances weaken the gold brand identity. This is a cosmetic issue that compounds across the entire app — the overall color impression is "gray with gold highlights" rather than "gold with gray support."
 
@@ -4421,7 +4421,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 ### Connection to prior findings
 
 - **§E5-BT5** (inline button sprawl): The professionalism impact of the button sprawl is confirmed — it's the primary source of the two-layer coherence gap (§E7-DC1) and the primary polish lever (§E7-PD1).
-- **§E6-HV9 + §E6-AP4** (hover/active gaps): These interaction-layer consequences of the button sprawl now have a professionalism framing — they create a perceptible polish gradient within each screen.
+- **§E6-HV9 ✅ + §E6-AP4 ✅** (hover/active gaps): These interaction-layer consequences of the button sprawl now have a professionalism framing — they create a perceptible polish gradient within each screen.
 - **§E1-COV1** (token coverage ~30%): The professionalism audit confirms that token coverage is the root cause of the coherence gap. Extending the kuro-* system to cover inline elements would simultaneously fix multiple findings.
 - **§DBI3-S07 + §E1-COL1** (gray text): The brand consistency assessment (§E7-BC4) confirms that gray text is not just a token issue but a brand identity issue visible in every tab.
 - **§DBI3-S03** (rounded-lg monoculture): The radius audit (§E7-AD1, §E7-AD2) shows the kuro-* system has a deliberate 5-level hierarchy — the monoculture is in the inline Tailwind layer's default `rounded-lg`.
@@ -9071,7 +9071,7 @@ Competitive positioning map:
 | SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 (MEDIUM), §E9-AG-F1 (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
 | SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
-| SI4 | **Inline button sprawl** | §E5-BT5 (MEDIUM), §E6-HV9 (MEDIUM), §E6-AP4 (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
+| SI4 | **Inline button sprawl** | §E5-BT5 (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
 | SI6 | **Empty state personality** | §E6-ES3 (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3) and voice inconsistency (E9-EA-F4) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
 
@@ -9096,7 +9096,7 @@ Competitive positioning map:
 |--------|-------------|-------------|-------------|
 | Gray text instances | §DBI3-S07: "459 achromatic" | §E9-AG-F1: "~492 text-gray-400" | **MINOR DISCREPANCY** — DBI3 counts all achromatic gray (gray-300/400/500). E9 counts only text-gray-400. 459 ⊃ 492 is impossible if E9 is a subset. **Resolution**: E9's "~492" likely includes text-gray-300 and text-gray-500 as well, making it a recount rather than a subset. Counts are approximate (tilde-prefixed). **No material difference** — both establish "~450-500 instances" as the magnitude. |
 | Hardcoded colors | §DS2-F8: "~240 hardcoded" | §E1-COL1: "66 unique hex" | **CONSISTENT** — 240 instances ÷ 66 unique = 3.6 avg uses per color. Plausible. |
-| Inline buttons | §E5-BT5: "~100+" | §E6-HV9: "~100+" | §E6-AP4: "~93+" | **CONSISTENT** — all approximate the same population. |
+| Inline buttons | §E5-BT5: "~100+" | §E6-HV9 ✅: "~100+" | §E6-AP4 ✅: "~93+" | **CONSISTENT** — all approximate the same population. |
 | Token coverage | §E1-COV1: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
 | Rounded-lg count | §DBI3-S03: "109× rounded-lg" | §E9-AG-F2: "~360 rounded-lg" | **DISCREPANCY** — 109 vs 360 is a 3.3× difference. **Resolution**: DBI3 likely counts `rounded-lg` class instances. E9 may count all `rounded-*` instances including `rounded`, `rounded-md`, `rounded-xl`, etc. **Clarification needed** — the finding should specify: §DBI3-S03 counts `rounded-lg` specifically (109); §E9-AG-F2 should count `rounded-lg` specifically to maintain consistency. If E9 includes all rounded-* variants, note this explicitly. |
 | Touch targets | §E2-MO1: "36px" | §CK-F2: "36px" | **CONSISTENT** — same measurement. |
@@ -9105,7 +9105,7 @@ Competitive positioning map:
 ### 19.2.4 — Inconsistency Summary
 
 **Severity adjustments needed (5)**:
-1. §E6-AP4: LOW → **MEDIUM** (inline button press feedback)
+1. §E6-AP4 ✅: LOW → **MEDIUM** (inline button press feedback)
 2. §E7-AD2: LOW → **MEDIUM** (radius token absence)
 3. §E10-NV-F3: LOW → **MEDIUM** (Stats missing kuro-number)
 4. §E9-AC-F2: POLISH → **LOW** (favicon gold mismatch)
@@ -9133,10 +9133,10 @@ Competitive positioning map:
 | G1 | **OLED mode visual hierarchy preservation** | §DC3-OLED1 ✅ (Step 6): "OLED collapses all surfaces to 0%" | The finding notes that OLED mode collapses surface elevation to pure black, but doesn't audit whether the *visual hierarchy* still functions in OLED mode | **No step performed a dedicated OLED-mode walkthrough** across all 8 tabs to verify that cards, modals, inputs, and backgrounds remain distinguishable when `--bg-card`, `--bg-card-inner`, `--bg-btn`, `--bg-input`, `--bg-stat` all collapse to `#000000` or near-black values | MEDIUM | **Perform an OLED hierarchy spot-check**: In OLED mode, surface differentiation relies entirely on borders (`--border-subtle` at rgba(255,255,255,0.06)) and shadows. Verify that: (1) Card edges remain visible against the OLED background, (2) Modal overlay contrast is sufficient, (3) Input fields are visually distinct from card surfaces. If hierarchy fails, increase OLED border opacity to `--border-subtle: 0.10` in OLED mode. |
 | G2 | **Keyboard navigation flow** | §BT-F1 (Step 18): "Focus-visible excludes anchor/role='button'" and §E6-MC3 (Step 13): reduced motion compliance | Focus ring styling is audited, but **tab order and keyboard navigation flow** across the 8-tab interface was never explicitly tested | No step verified: (1) Can a keyboard user navigate between tabs? (2) Is focus trapped in modals? (3) Does tab order follow visual order? (4) Are skip navigation links functional? | MEDIUM | **Audit keyboard flow**: The `index.html` skip-nav link (lines 42-45) exists. Focus trap in modals was mentioned as PASS (§E5-CT3). But systematic tab-order verification across all 8 tabs was not performed. **Recommendation**: Add to implementation checklist — verify `tabindex` ordering, ensure no focus traps outside modals, verify escape-key dismissal works for all overlays. |
 | G3 | **Service Worker cache strategy and its visual impact** | Step 1 §0: "Service Worker: Custom SW for offline/caching" | Service worker is listed as a tech stack component but never analyzed for its impact on visual freshness | **No step audited**: (1) What happens visually when the service worker serves stale content? (2) Is there a visual indicator for "offline mode"? (3) Does the update prompt have brand-consistent styling? The §VIII cross-cutting concern "Stale cache on deploy" is relevant but was not assessed visually | LOW | **Add to implementation scope**: Verify that (1) the SW update prompt uses the kuro-card + kuro-btn design system, (2) an "Offline" badge appears in the header or tab bar when the SW is serving cached content, (3) font/CSS files are cache-busted correctly to prevent style drift between versions. |
-| G4 | **External CDN image failure states** | §E5-CD3 PASS: "hideOnError fallback" and §E5-CD6 LOW: "hideOnError leaves empty space" | Image loading failures are noted in Step 12 but the visual impact of CDN failures across the Collection grid was not deeply analyzed | **No step simulated a full CDN outage** to check: (1) Does the Collection grid degrade gracefully with 50%+ failed images? (2) Is there a visual indicator distinguishing "loading" from "failed"? (3) Does the character detail modal show anything meaningful when its image fails? | LOW | **Add to implementation scope**: (1) Add a branded fallback placeholder (e.g., silhouette with "?" icon on #080c14 background) instead of empty space when `hideOnError` triggers. (2) Add a "retry" affordance or visual state for failed images. (3) Test Collection grid appearance with simulated CDN failure — ensure the ghost-grid pattern activates rather than showing broken image outlines. |
+| G4 | **External CDN image failure states** | §E5-CD3 PASS: "hideOnError fallback" and §E5-CD6 ✅ LOW: "hideOnError leaves empty space" | Image loading failures are noted in Step 12 but the visual impact of CDN failures across the Collection grid was not deeply analyzed | **No step simulated a full CDN outage** to check: (1) Does the Collection grid degrade gracefully with 50%+ failed images? (2) Is there a visual indicator distinguishing "loading" from "failed"? (3) Does the character detail modal show anything meaningful when its image fails? | LOW | **Add to implementation scope**: (1) Add a branded fallback placeholder (e.g., silhouette with "?" icon on #080c14 background) instead of empty space when `hideOnError` triggers. (2) Add a "retry" affordance or visual state for failed images. (3) Test Collection grid appearance with simulated CDN failure — ensure the ghost-grid pattern activates rather than showing broken image outlines. |
 | G5 | **Print stylesheet / PDF export appearance** | Not mentioned anywhere | A gacha tracker with Stats and Planner data might reasonably be printed or exported | **No step checked for `@media print` styles.** Dark backgrounds print poorly without explicit `@media print` adjustments (white backgrounds, dark text, hidden decorative elements) | LOW | **Add to implementation backlog**: If print support is desired, add a `@media print` stylesheet that: (1) Sets `background: white`, `color: black` on all containers, (2) Hides canvas animations and decorative overlays, (3) Shows all collapsed/tabbed content, (4) Uses `break-inside: avoid` on cards. If print is NOT needed, add a print-suppression rule: `@media print { body { display: none; } body::after { content: "Visit whisperingwishes.vercel.app"; display: block; } }` |
 | G6 | **Text truncation and overflow handling** | §E4-LL1 ✅ (Step 11): "Desktop line length unconstrained" | Line length was audited, but **text overflow/truncation** behavior was not systematically checked | **No step verified**: (1) Do long character names truncate gracefully? (2) Do long trophy names overflow their containers? (3) Does the event title text wrap correctly in narrow viewports? (4) Are `text-overflow: ellipsis` rules applied consistently? | LOW | **Spot-check truncation**: Verify `truncate` (Tailwind) or `text-overflow: ellipsis` is applied to: (1) Character names in Collection grid, (2) Trophy display names, (3) Event titles, (4) Banner names in Tracker. Where truncation is missing, add `truncate` class. Where truncation hides critical information, consider `line-clamp-2` instead. |
-| G7 | **Scroll behavior and scroll-linked effects** | §E6-TQ7 (Step 13): "Progress bar transition-all" and §E10-RD-F3: "scrollbar-hide" | Scroll containers are mentioned but scroll *behavior* was not systematically audited | **No step checked**: (1) `scroll-behavior: smooth` presence or absence, (2) Whether tab content scrolls to top on tab switch, (3) Whether long list views (pull history, collection grid) have scroll-to-top affordance, (4) Whether sticky headers exist for long scrollable sections | LOW | **Add scroll audit items**: (1) Verify `scroll-behavior: smooth` is set globally or on scroll containers, (2) Add scroll-to-top behavior on tab switch if not present, (3) For lists with 20+ items (pull history, collection grid, leaderboard), consider a floating scroll-to-top button that appears after scrolling 2+ viewport heights. |
+| G7 | **Scroll behavior and scroll-linked effects** | §E6-TQ7 ✅ (Step 13): "Progress bar transition-all" and §E10-RD-F3: "scrollbar-hide" | Scroll containers are mentioned but scroll *behavior* was not systematically audited | **No step checked**: (1) `scroll-behavior: smooth` presence or absence, (2) Whether tab content scrolls to top on tab switch, (3) Whether long list views (pull history, collection grid) have scroll-to-top affordance, (4) Whether sticky headers exist for long scrollable sections | LOW | **Add scroll audit items**: (1) Verify `scroll-behavior: smooth` is set globally or on scroll containers, (2) Add scroll-to-top behavior on tab switch if not present, (3) For lists with 20+ items (pull history, collection grid, leaderboard), consider a floating scroll-to-top button that appears after scrolling 2+ viewport heights. |
 | G8 | **Internationalization readiness of visual layout** | Step 1 §0: "Locale: English only" | The app is documented as English-only, but visual readiness for potential i18n was not assessed | **No step checked**: (1) Are fixed-width layouts dependent on English string lengths? (2) Would RTL languages break the tab bar? (3) Are date/time formats hardcoded to US English? | POLISH | **Document as future consideration**: The app is correctly English-only for its current WuWa audience. If i18n is ever considered: (1) Audit fixed-width containers for string length assumptions, (2) Verify Rajdhani has adequate glyph coverage for target languages, (3) Use `dir="auto"` on text containers. No immediate action needed. |
 | G9 | **Animation performance on low-end devices** | §PF-F1 (Step 18): "backdrop-filter: blur() on many elements" | Performance concern for backdrop-filter is noted, but no step assessed animation smoothness on low-end devices | **No step measured**: (1) FPS during canvas animations on low-end mobile, (2) Layout thrashing from `transition: all` instances, (3) Paint cost of multiple stacked `backdrop-filter` layers | LOW | **Add performance audit to implementation phase**: (1) Test on a throttled Chrome DevTools profile (4× CPU slowdown, 3G network) to simulate low-end devices, (2) If canvas animations drop below 30fps, reduce particle count or disable on low-end devices via `navigator.hardwareConcurrency < 4`, (3) Limit simultaneous `backdrop-filter` layers to max 3 in the DOM at any time. |
 
@@ -9273,9 +9273,9 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5)
     │       │
     │       └──→ PROFESSIONALISM: Perceptible polish gradient within each screen (§E7-PD1)
     │
-    ├──→ UX: Weak hover feedback on inline buttons — single-signal vs five-signal (§E6-HV9)
+    ├──→ UX: Weak hover feedback on inline buttons — single-signal vs five-signal (§E6-HV9 ✅)
     │       │
-    │       └──→ INTERACTION: Missing physical press feedback on ~93 buttons (§E6-AP4)
+    │       └──→ INTERACTION: Missing physical press feedback on ~93 buttons (§E6-AP4 ✅)
     │               │
     │               └──→ ACCESSIBILITY: Inconsistent interactive feedback — some elements feel responsive, others feel flat
     │
@@ -9291,7 +9291,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5)
 **Chain impact**: 12+ findings across 8 steps share a single root cause
 **Single fix**: Migrate inline buttons to `kuro-btn` variants (primary/secondary/ghost/danger)
 **Estimated effort**: ~100 button elements, each requiring class migration from inline Tailwind to kuro-btn
-**Cascade resolution**: Fixes §E5-BT5, §E6-HV9, §E6-AP4, §E7-DC1, §E7-PD1, §E8-MI1, §E9-VS-F1 (partially), §E9-AG-F3, and contributes to §E1-COV1
+**Cascade resolution**: Fixes §E5-BT5, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1, §E7-PD1, §E8-MI1, §E9-VS-F1 (partially), §E9-AG-F3, and contributes to §E1-COV1
 
 ---
 
@@ -9725,7 +9725,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
 | **Empty state CTA** | §E6-ES3 (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
-| **Select/dropdown bypass** | §E5-IN4 (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
+| **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
 | **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
 
 ### 19.8.5 — Final Reconciled Finding Count
@@ -9765,7 +9765,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | E9-AC-F2 favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 ✅ |
 | CK-F2 touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
-| E6-AP4 active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 |
+| E6-AP4 ✅ active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 ✅ |
 | E7-AD2 radius tokens: LOW → MEDIUM | Severity alignment | Consistent with E1-RAD1 |
 | E10-NV-F3 kuro-number: LOW → MEDIUM | Severity alignment | Consistent with E10-NF-F2 |
 | E9 overall score: 8.1 → 7.8/10 | Score adjustment | 3 HIGH findings pull below 8.0 |
@@ -10301,7 +10301,7 @@ Audit and reassign the 109 `rounded-lg` instances to their correct hierarchy lev
 
 Migration priority: Calculator (most inline buttons) → Planner → Collection → Events → Teams.
 
-**Cross-references**: E6-HV9, E6-AP4, E7-DC1, E7-PD1, §E9-MC-F2
+**Cross-references**: E6-HV9 ✅, E6-AP4 ✅, E7-DC1, E7-PD1, §E9-MC-F2
 
 ---
 
@@ -11003,7 +11003,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 48 | E4-TR2 ✅ | Missing `text-rendering: optimizeLegibility` | ALL | Add to global CSS: `body { text-rendering: optimizeLegibility; }` |
 | 49 | E4-LQ2 ✅ | Two overly long uppercase labels (30+ characters) | CALC | Shorten primary label, move detail to tooltip |
 | 50 | E4-LQ3 ✅ | Two weak placeholders ("0" for Astrite, "Phase" for Admin) | CALC, ADMIN | Use descriptive placeholders: "e.g. 1600" and "e.g. 1" |
-| 51 | E4-TC4 | Rajdhani inline numbers use proportional figures | STATS, CALC | Apply `.kuro-number` to column-aligned Rajdhani numbers for tabular alignment |
+| 51 | E4-TC4 ✅ | Rajdhani inline numbers use proportional figures | STATS, CALC | Apply `.kuro-number` to column-aligned Rajdhani numbers for tabular alignment |
 
 ---
 
@@ -11011,12 +11011,12 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 52 | E5-BT2 | Button hierarchy flat (no primary/secondary/tertiary distinction) | ALL | Create `.kuro-btn-primary` (gold accent bg), `.kuro-btn-ghost` (transparent), `.kuro-btn-danger` (red-tinted) |
-| 53 | E5-BT6 | Button loading state minimal (opacity only, no spinner) | STATS, PROFILE | Add spinner-based loading state with button width preserved |
-| 54 | E5-IN4 | Dropdown/select mixed styling (3 of 5 bypass `.kuro-input`) | COLLECTION, TEAMS, HEADER | Apply `.kuro-input` base styles to all `<select>` elements |
-| 55 | E5-IN5 | Search bars inconsistent (Collection search lacks `.kuro-input`) | COLLECTION, STATS | Apply `.kuro-input` class, add clear button (×), consistent search icon placement |
-| 56 | E5-IF4 | Tooltips browser-native only (not styled) | ALL | Create custom `.kuro-tooltip` with glassmorphic styling + gold accent border |
-| 57 | E5-CD6 | Image loading states (character detail modal lacks placeholder) | COLLECTION | Add skeleton loading placeholder in character detail modal image area |
+| 52 | E5-BT2 ✅ | Button hierarchy flat (no primary/secondary/tertiary distinction) | ALL | Create `.kuro-btn-primary` (gold accent bg), `.kuro-btn-ghost` (transparent), `.kuro-btn-danger` (red-tinted) |
+| 53 | E5-BT6 ✅ | Button loading state minimal (opacity only, no spinner) | STATS, PROFILE | Add spinner-based loading state with button width preserved |
+| 54 | E5-IN4 ✅ | Dropdown/select mixed styling (3 of 5 bypass `.kuro-input`) | COLLECTION, TEAMS, HEADER | Apply `.kuro-input` base styles to all `<select>` elements |
+| 55 | E5-IN5 ✅ | Search bars inconsistent (Collection search lacks `.kuro-input`) | COLLECTION, STATS | Apply `.kuro-input` class, add clear button (×), consistent search icon placement |
+| 56 | E5-IF4 ✅ | Tooltips browser-native only (not styled) | ALL | Create custom `.kuro-tooltip` with glassmorphic styling + gold accent border |
+| 57 | E5-CD6 ✅ | Image loading states (character detail modal lacks placeholder) | COLLECTION | Add skeleton loading placeholder in character detail modal image area |
 
 ---
 
@@ -11024,9 +11024,9 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 58 | E6-HV9 | Inline Tailwind hovers lack multi-signal feedback | ALL | Migrate to kuro-btn variants (MED-6); add `@media (hover: hover)` guard on all hover styles |
-| 59 | E6-AP4 | Inline button active states absent (~93+ buttons) | ALL | Add global rule: `button:not(.kuro-btn):active { transform: scale(0.97); }` |
-| 60 | E6-TQ7 | Progress bar `transition-all` on width (layout-triggering) | STATS, PLANNER | Use `transition: width 0.3s` or `transform: scaleX()` for GPU-composited animation |
+| 58 | E6-HV9 ✅ | Inline Tailwind hovers lack multi-signal feedback | ALL | Migrate to kuro-btn variants (MED-6); add `@media (hover: hover)` guard on all hover styles |
+| 59 | E6-AP4 ✅ | Inline button active states absent (~93+ buttons) | ALL | Add global rule: `button:not(.kuro-btn):active { transform: scale(0.97); }` |
+| 60 | E6-TQ7 ✅ | Progress bar `transition-all` on width (layout-triggering) | STATS, PLANNER | Use `transition: width 0.3s` or `transform: scaleX()` for GPU-composited animation |
 | 61 | E6-TQ8 | Chevron rotation has no transition | App.jsx:3770 | Add `transition-transform duration-200` to chevron elements |
 | 62 | E6-AN2 | Exit animation gap (instant removal everywhere) | ALL | Add exit animations for removed elements: `opacity 0 + translateY(-8px)` at 200ms |
 | 63 | E6-ES3 | Empty state CTA gap (missing call-to-action buttons) | ALL | Add primary CTA button to each empty state (e.g., "Import Data" on Stats empty) |

@@ -539,6 +539,39 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-tap-highlight-color: transparent;
     }
     
+    /* E5-IN5: Search input wrapper for consistent icon placement */
+    .kuro-search-wrap {
+      position: relative;
+    }
+    .kuro-search-wrap .kuro-input {
+      padding-left: 32px;
+    }
+    .kuro-search-wrap svg:first-child {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7389;
+      pointer-events: none;
+    }
+
+    /* E5-IN4: Apply kuro-input base styles to all select elements */
+    .kuro-calc select {
+      background: var(--bg-input);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text-heading);
+      font-size: 14px;
+      width: 100%;
+      transition: border-color var(--transition-fast);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
     /* Ensure minimum 44px touch targets for filter selects on touch devices */
     @media (pointer: coarse) {
       .kuro-body select {
@@ -993,6 +1026,59 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
 
+    /* E5-BT6: Button loading state — spinner + preserved width */
+    .kuro-btn-loading {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+    .kuro-btn-loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 14px;
+      height: 14px;
+      margin: -7px 0 0 -7px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: rgba(237, 175, 24, 0.9);
+      border-radius: 50%;
+      animation: kuroSpin 0.6s linear infinite;
+    }
+    @keyframes kuroSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* E5-BT2: Button hierarchy — primary (gold bg), ghost (transparent), danger (red) */
+    .kuro-btn-primary {
+      background: rgba(237, 175, 24, 0.2);
+      border-color: rgba(237, 175, 24, 0.6);
+      color: #fef08a;
+      font-weight: 600;
+    }
+    .kuro-btn-ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-body);
+    }
+    @media (hover: hover) {
+      .kuro-btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--border-medium);
+      }
+    }
+    .kuro-btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+    @media (hover: hover) {
+      .kuro-btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+        border-color: rgba(239, 68, 68, 0.7);
+      }
+    }
+
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
       background: rgba(237, 175, 24, 0.15);
@@ -1370,6 +1456,29 @@ const KuroStyles = memo(({ oledMode }) => (
       line-height: 1.2;
     }
 
+    /* E5-IF4: Custom tooltip style — glassmorphic with gold accent */
+    .kuro-tooltip {
+      position: absolute;
+      z-index: 9999;
+      padding: 6px 10px;
+      font-size: 11px;
+      color: var(--text-heading);
+      background: rgba(12, 16, 24, 0.92);
+      border: 1px solid rgba(237, 175, 24, 0.3);
+      border-radius: 6px;
+      backdrop-filter: blur(var(--blur-md));
+      -webkit-backdrop-filter: blur(var(--blur-md));
+      box-shadow: var(--shadow-md);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* E4-TC4: Ensure column-aligned numbers in grids use tabular figures */
+    .kuro-calc .grid .font-bold,
+    .kuro-calc .grid .font-extrabold {
+      font-variant-numeric: tabular-nums;
+    }
+
     /* D-TYPE-4: Scoreboard numeral treatment for countdown timers */
     .kuro-scoreboard {
       font-family: var(--font-data);
@@ -1408,6 +1517,12 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-skeleton-circle {
       border-radius: 50%;
     }
+    /* E5-CD6: Image skeleton placeholder for collection/character detail modals */
+    .kuro-skeleton-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+    }
 
     /* ═══ EMPTY STATE — D-STATE-1 atmospheric upgrade ═══ */
     @keyframes emptyFadeIn {
@@ -1431,6 +1546,22 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 40px;
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
+    }
+
+    /* E6-AP4: Active press feedback for non-kuro buttons */
+    .kuro-calc button:not(.kuro-btn):active {
+      transform: scale(0.97);
+      transition: transform 0.1s ease;
+    }
+
+    /* E6-HV9: Suppress hover effects on touch-only devices to prevent sticky states */
+    @media (hover: none) {
+      .kuro-calc button:hover,
+      .kuro-calc a:hover,
+      .kuro-calc [role="button"]:hover {
+        transform: none !important;
+        filter: none !important;
+      }
     }
 
     /* §DST1: Ghost-grid placeholder cells for collection empty state */
