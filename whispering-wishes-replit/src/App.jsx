@@ -7123,7 +7123,7 @@ Example: {"pulls":[...]}'
 
       {/* Resonator ID Card Modal */}
       <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="bg-black/90" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
-          <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '380px', maxHeight: '85vh' }} onClick={(e) => e.stopPropagation()}>
+          <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '420px', maxHeight: '90vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
               <div className="kuro-card-inner">
@@ -7289,13 +7289,13 @@ Example: {"pulls":[...]}'
                         <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
                         <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="grid grid-cols-5 gap-1.5">
                         {ownedCharNames.slice(0, 16).map(name => {
                           const imgUrl = collectionImages[name];
                           const f = getImageFraming(`collection-${name}`);
                           return (
-                            <div key={name} style={{ width: '46px' }}>
-                              <div className="relative rounded-lg overflow-hidden" style={{ width: '46px', height: '72px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
+                            <div key={name}>
+                              <div className="relative rounded-lg overflow-hidden w-full" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
                                 <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
                                 {imgUrl ? (
                                   <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
@@ -7312,7 +7312,7 @@ Example: {"pulls":[...]}'
                           );
                         })}
                         {ownedCharNames.length > 16 && (
-                          <div className="flex items-center justify-center rounded-lg" style={{ width: '46px', height: '72px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <div className="flex items-center justify-center rounded-lg w-full" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
                             <span className="text-gray-500 font-mono" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
                           </div>
                         )}
@@ -7337,11 +7337,11 @@ Example: {"pulls":[...]}'
                           {sorted.map(trophy => {
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
-                              <div key={trophy.id} className="relative p-2.5 rounded-lg text-center overflow-hidden" style={{ aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
-                                <div className="rounded-full flex items-center justify-center mb-1.5" style={{ width: '36px', height: '36px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
-                                  <IconComponent size={18} style={{ color: trophy.color }} />
+                              <div key={trophy.id} className="relative p-2 rounded-lg text-center overflow-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
+                                <div className="rounded-full flex items-center justify-center mb-1" style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                  <IconComponent size={14} style={{ color: trophy.color }} />
                                 </div>
-                                <div className="text-[10px] font-bold text-white truncate w-full px-1">{trophy.name}</div>
+                                <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '7px', wordBreak: 'break-word' }}>{trophy.name}</div>
                               </div>
                             );
                           })}
