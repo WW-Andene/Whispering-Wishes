@@ -180,11 +180,12 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} character details`} centered>
       <div
-        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-y-auto border ${colors.border}`}
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
+       <div className="overflow-y-auto max-h-[90vh]">
         {/* Header with image */}
-        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
@@ -458,6 +459,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
         </div>
+       </div>
       </div>
     </FocusTrapModal>
   );
@@ -480,11 +482,12 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
       <div
-        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-y-auto border ${colors.border}`}
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
+       <div className="overflow-y-auto max-h-[90vh]">
         {/* Header */}
-        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
@@ -562,6 +565,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             </div>
           </div>
         </div>
+       </div>
       </div>
     </FocusTrapModal>
   );
@@ -1536,7 +1540,7 @@ const VISUAL_SLIDER_CONFIGS = [
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
 const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, collapsible = false }) => {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="kuro-empty-state relative py-3">
       {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
