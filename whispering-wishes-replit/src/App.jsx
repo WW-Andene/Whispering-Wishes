@@ -6693,8 +6693,10 @@ function WhisperingWishesInner() {
                       const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
                       saveVisualSettings({ ...visualSettings, animationsEnabled: next });
                     }}
-                    className={`relative w-[52px] h-[24px] rounded-full transition-colors ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500' : ''}`}
-                    style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}
+                    className="relative w-[52px] h-[24px] rounded-full transition-colors flex-shrink-0"
+                    style={{ background: visualSettings.animationsEnabled === 'off' ? 'var(--bg-btn)' : visualSettings.animationsEnabled === 'on' ? '#a855f7' : '#d946ef' }}
+                    role="switch"
+                    aria-checked={visualSettings.animationsEnabled !== 'off'}
                     aria-label="Toggle animations: off, on, full"
                   >
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : 'left-[32px] bg-white'}`} />
