@@ -6593,8 +6593,8 @@ Tab navigation (App.jsx:3190) uses `overflow-x-auto scrollbar-hide` — tabs scr
 | 1 | §E10-NV-F1 | **HIGH** | §E10.1 | Tracker guarantee prediction at `text-[9px]` — most actionable insight is the smallest element |
 | 2 | §E10-NV-F2 | **MEDIUM** | §E10.1 | Pity count size inconsistency: `text-sm` on BannerCard vs `text-2xl` on Calculator |
 | 3 | §E10-NV-F3 | **LOW** | §E10.1 | Stats "Overall" numbers use `font-bold` without `.kuro-number` — no tabular-nums |
-| 4 | §E10-NV-F4 | **LOW** | §E10.1 | Planner daily income rate displayed inline at `text-[10px]` — key economic metric lacks emphasis |
-| 5 | §E10-NV-F5 | **POLISH** | §E10.1 | Luck Rating badge uses `text-shadow` glow but is semantically a `<span>` — no tooltip/explanation |
+| 4 | §E10-NV-F4 ✅ | **LOW** | §E10.1 | Planner daily income rate displayed inline at `text-[10px]` — key economic metric lacks emphasis |
+| 5 | §E10-NV-F5 ✅ | **POLISH** | §E10.1 | Luck Rating badge uses `text-shadow` glow but is semantically a `<span>` — no tooltip/explanation |
 | 6 | §E10-HI-F1 | **MEDIUM** | §E10.2 | Flat grid anti-pattern in Planner projections — 7/30/90 day values at equal visual weight |
 | 7 | §E10-HI-F2 | **LOW** | §E10.2 | Stats tab lacks narrative header summarizing "Your story so far" |
 | 8 | §E10-CH-F1 | **MEDIUM** | §E10.3 | Convene History AreaChart has no axis labels/tooltips — meaning requires external context |
@@ -11071,11 +11071,11 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 81 | §E9-VS-F2 ✅ | Canvas animations no reduced-motion fallback | ALL | Resolved by MED-42 |
 | 82 | §E9-VS-F3 ✅ | LAHAI-ROI palette only documented in CSS comment | DOCS | Surface palette rationale in a design guide or BRAND.md |
 | 83 | §E9-MC-F3 ✅ | Onboarding blob shapes conflict with geometric language | ONBOARDING | Replace blob shapes with angular decorative patterns matching HUD aesthetic |
-| 84 | §E9-AC-F1 | Purple dual semantics (rarity + element) | ALL | Accept minor ambiguity — context (collection vs combat) disambiguates. Document in design guide |
-| 85 | §E9-EA-F4 | Inconsistent empty state voice (game-lore vs clinical) | ALL | Unify all empty state copy to game-lore tone: "Awaiting data..." not "No data found" |
-| 86 | §E9-AG-F3 | ~280 `transition-colors` use Tailwind default timing | ALL | Migrate to `transition-colors duration-[var(--transition-fast)]` using branded timing |
-| 87 | §E9-AG-F4 | ~50 raw `border-white/5` or `border-white/10` instead of tokens | ALL | Replace with `border-[var(--border-subtle)]` and `border-[var(--border-default)]` |
-| 88 | §E9-IC-F5 | No dedicated PWA splash screen design | PWA | Create splash screen with gold "W" logo + #080c14 background in manifest theme |
+| 84 | §E9-AC-F1 ✅ | Purple dual semantics (rarity + element) | ALL | Accept minor ambiguity — context (collection vs combat) disambiguates. Document in design guide |
+| 85 | §E9-EA-F4 ✅ | Inconsistent empty state voice (game-lore vs clinical) | ALL | Unify all empty state copy to game-lore tone: "Awaiting data..." not "No data found" |
+| 86 | §E9-AG-F3 ✅ | ~280 `transition-colors` use Tailwind default timing | ALL | Migrate to `transition-colors duration-[var(--transition-fast)]` using branded timing |
+| 87 | §E9-AG-F4 ✅ | ~50 raw `border-white/5` or `border-white/10` instead of tokens | ALL | Replace with `border-[var(--border-subtle)]` and `border-[var(--border-default)]` |
+| 88 | §E9-IC-F5 ✅ | No dedicated PWA splash screen design | PWA | Create splash screen with gold "W" logo + #080c14 background in manifest theme |
 
 ---
 
@@ -11083,8 +11083,8 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 89 | §E10-NV-F4 | Daily income under-weighted (`text-sm`, not `.kuro-number`) | PLANNER | Apply `.kuro-number text-base` to daily income display |
-| 90 | §E10-NV-F5 | Win Rate % at `text-xs` (smallest readable size for key metric) | STATS | Escalate to `text-sm font-bold kuro-number` |
+| 89 | §E10-NV-F4 ✅ | Daily income under-weighted (`text-sm`, not `.kuro-number`) | PLANNER | Apply `.kuro-number text-base` to daily income display |
+| 90 | §E10-NV-F5 ✅ | Win Rate % at `text-xs` (smallest readable size for key metric) | STATS | Escalate to `text-sm font-bold kuro-number` |
 | 91 | §E10-HI-F2 | Stats tab lacks narrative header | STATS | Add "Your Convene Story" or summary sentence above stats overview |
 | 92 | §E10-CH-F2 | Histogram summary line at `text-[10px]` below bars | STATS | Move summary above histogram; increase to `text-xs` |
 | 93 | §E10-EP-F2 | No visual ceremony for first data population | ALL | Trigger brief entrance celebration when data first appears (gold pulse + stagger cards) |
@@ -11179,7 +11179,7 @@ POLISH findings are the finest-grained improvements. They refine craft details t
 | §E9-IC-F1 (missing PNG icons) | MEDIUM | **HIGH** | PWA installation broken without icons — binary fail state |
 | §E9-BS-F2 (OG image external) | MEDIUM | **HIGH** | Social sharing broken — first-impression for new users |
 | E8-CI2 (missing apple-touch-icon) | MEDIUM | → merged with §E9-IC-F1 | Same root: missing icon variants |
-| §E10-NV-F5 (Win Rate at text-xs) | LOW | **POLISH** | Smallest text for important metric, but not decision-critical |
+| §E10-NV-F5 ✅ (Win Rate at text-xs) | LOW | **POLISH** | Smallest text for important metric, but not decision-critical |
 | §E10-DD-F1 (collection grid tight) | LOW | **POLISH** | Appropriate for expert audience; no change needed |
 | §E10-CH-F2 (histogram custom HTML) | LOW | **POLISH** | Intentional — custom implementation is better than Recharts for this case |
 
