@@ -4932,6 +4932,27 @@ function WhisperingWishesInner() {
                   
                   {/* Filter & Sort Controls */}
                   <div className="space-y-1.5">
+                    {/* View Toggle */}
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => setCollectionView('items')}
+                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'items' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Resonators & Weapons"
+                        aria-label="View resonators and weapons"
+                        aria-pressed={collectionView === 'items'}
+                      >
+                        <Crown size={14} /> Items
+                      </button>
+                      <button
+                        onClick={() => setCollectionView('echoes')}
+                        className={`kuro-btn flex-1 flex items-center justify-center gap-1.5 !rounded-lg transition-all ${collectionView === 'echoes' ? 'active-gold' : 'text-gray-400'}`}
+                        title="Echoes"
+                        aria-label="View echoes"
+                        aria-pressed={collectionView === 'echoes'}
+                      >
+                        <Sparkles size={14} /> Echoes
+                      </button>
+                    </div>
                     {/* Filter Dropdowns */}
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {/* Element Filter */}
@@ -4976,26 +4997,6 @@ function WhisperingWishesInner() {
                         ]}
                         ariaLabel="Filter by ownership"
                       />
-
-                      {/* View Toggle */}
-                      <button
-                        onClick={() => setCollectionView('items')}
-                        className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionView === 'items' ? 'active-gold' : 'text-gray-400'}`}
-                        title="Resonators & Weapons"
-                        aria-label="View resonators and weapons"
-                        aria-pressed={collectionView === 'items'}
-                      >
-                        <Crown size={12} />
-                      </button>
-                      <button
-                        onClick={() => setCollectionView('echoes')}
-                        className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionView === 'echoes' ? 'active-gold' : 'text-gray-400'}`}
-                        title="Echoes"
-                        aria-label="View echoes"
-                        aria-pressed={collectionView === 'echoes'}
-                      >
-                        <Sparkles size={12} />
-                      </button>
 
                       {/* Clear Filters */}
                       {hasActiveFilters && (
