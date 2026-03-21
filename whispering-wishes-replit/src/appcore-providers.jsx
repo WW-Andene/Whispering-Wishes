@@ -126,7 +126,7 @@ const PWAProvider = ({ children }) => {
       )}
       {/* Install prompt banner — native */}
       {installPrompt && !isInstalled && !isInIframe && (
-        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-yellow-500/90 to-amber-500/90 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
               <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
@@ -152,7 +152,7 @@ const PWAProvider = ({ children }) => {
       )}
       {/* Install prompt banner — iframe fallback */}
       {isInIframe && !isInstalled && !iframeBannerDismissed && (
-        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-yellow-500/90 to-amber-500/90 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+        <div className="fixed bottom-20 left-3 right-3 z-[9998] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
               <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
