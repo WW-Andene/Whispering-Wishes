@@ -3872,14 +3872,14 @@ A comprehensive CSS-in-JS design system providing:
 > **Evidence**: `appcore-providers.jsx:441–444`.
 > **Solution**: None needed — well-designed shadow scale.
 
-> **Finding E7-AD6** · LOW
+> **Finding E7-AD6 ✅** · LOW
 > **Shadow token under-usage**: The 4-level shadow scale exists but `kuro-card` defines its own 3-layer composite shadow inline (`0 4px 24px rgba(6,10,24,0.6), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.05)`) rather than referencing `--shadow-lg`. The tokens are defined but barely consumed.
 > **Evidence**: `appcore-providers.jsx:718–721` — card shadow doesn't use `--shadow-lg`.
 > **Solution**: Refactor `kuro-card` shadow to: `box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.05)` — composites the token with the decorative layers.
 
 #### Unit system audit
 
-> **Finding E7-AD7** · LOW
+> **Finding E7-AD7 ✅** · LOW
 > **Mixed units across paradigms**: KuroStyles uses `px` consistently (14px, 10px, 12px, 16px). Tab content uses `rem` (0.75rem). Tailwind uses its own scale. Three unit systems coexist.
 > **Evidence**: `appcore-providers.jsx:807` (14px), `562` (0.75rem), `App.jsx` uses Tailwind spacing (`gap-2`, `p-3`, `space-y-3`).
 > **Solution**: Low priority — the px-in-CSS-in-JS + rem-in-layout + Tailwind-scale pattern is standard in React apps with utility CSS. Would only matter if font-size scaling were critical (it's a fixed-viewport mobile-first app). Document the convention: "kuro-* components use px, layout uses rem/Tailwind."
@@ -4363,7 +4363,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 | E7-AD3 | Card padding alignment | — | PASS |
 | E7-AD4 ✅ | Badge padding inconsistency | LOW | ISSUE |
 | E7-AD5 | Shadow token hierarchy | — | PASS |
-| E7-AD6 | Shadow token under-usage | LOW | ISSUE |
+| E7-AD6 ✅ | Shadow token under-usage | LOW | ISSUE |
 | E7-AD7 | Mixed units across paradigms | LOW | ISSUE |
 | E7-AD8 | Border opacity scale | — | PASS |
 | E7-BC1 | Collection summary bypasses kuro-card | LOW | ISSUE |
@@ -11040,8 +11040,8 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 |---|-----|------------|------|----------|
 | 65 | E7-AD1 ✅ | Non-standard 10px stat radius (not in 8/12/16 scale) | STATS | Standardize to `var(--radius-lg)` (12px) |
 | 66 | E7-AD2 ✅ | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 (radius tokens) |
-| 67 | E7-AD4 | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
-| 68 | E7-AD6 | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
+| 67 | E7-AD4 ✅ | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
+| 68 | E7-AD6 ✅ | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
 | 69 | E7-AD7 | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
 | 70 | E7-BC1 | Collection summary bypasses kuro-card system | COLLECTION | Wrap Collection Progress in `<Card>` component to gain shimmer line + corner decorations |
 | 71 | E7-FI2 | Subtitle gray dilutes first impression | HEADER | Change subtitle from `text-gray-400` to muted gold: `text-yellow-400/50` |
