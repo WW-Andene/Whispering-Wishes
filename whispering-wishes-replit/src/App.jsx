@@ -422,15 +422,18 @@ function WhisperingWishesInner() {
     } catch (err) { silentCatch(err, 'visual settings load'); }
   }, []);
 
-  // Respect prefers-reduced-motion and listen for changes
+  // Respect prefers-reduced-motion — only for first-time users (no saved setting)
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // Only apply OS preference if user has no saved setting
+    if (mql.matches && (!storageAvailable || !localStorage.getItem(VISUAL_SETTINGS_KEY))) {
+      setVisualSettings(prev => ({ ...prev, animationsEnabled: 'off' }));
+    }
+    // Listen for runtime changes (user toggles OS setting while app is open)
     const handler = (e) => {
       setVisualSettings(prev => ({ ...prev, animationsEnabled: e.matches ? 'off' : (prev.animationsEnabled === 'off' ? 'on' : prev.animationsEnabled) }));
     };
-    // Set initial value from OS preference
-    setVisualSettings(prev => ({ ...prev, animationsEnabled: mql.matches ? 'off' : (prev.animationsEnabled === 'off' ? 'on' : prev.animationsEnabled) }));
     mql.addEventListener('change', handler);
     return () => mql.removeEventListener('change', handler);
   }, []);
