@@ -1239,7 +1239,7 @@ const ALL_4COST_ECHOES = [
   // v2.6 — Sanguis Plateaus
   'Corrosaurus', 'Lady of the Sea', 'The False Sovereign', 'Lioness of Glory',
   // v2.1–2.5 — Rinascita expansion
-  'Capitaneus', 'Reminiscence: Fleurdelys', 'Dragon of Dirge', 'Nightmare: Hecate',
+  'Reminiscence: Fleurdelys', 'Dragon of Dirge', 'Nightmare: Hecate',
   // v2.0 — Rinascita
   'Nightmare: Lampylumen Myriad', 'Nightmare: Impermanence Heron', 'Sentry Construct',
   // v1.2–1.3
@@ -1254,7 +1254,7 @@ const ALL_3COST_ECHOES = [
   // v3.1+
   'Loong Cub', 'Gulpuff Guardian', 'Ice-Fire Duet',
   // v2.1–2.5 — Nightmare variants & new echoes
-  'Nightmare: Fallacy of No Return', 'Nightmare: Jué',
+  'Capitaneus', 'Nightmare: Fallacy of No Return', 'Nightmare: Jué',
   'Nightmare: Thundering Mephis', 'Nightmare: Tempest Mephis',
   'Nightmare: Inferno Rider', 'Nightmare: Feilian Beringal',
   'Nightmare: Mourning Aix', 'Mourning Proxy', 'Nightmare: Crownless',
@@ -1305,7 +1305,6 @@ const ECHO_DATA = {
   'Nightmare: Lampylumen Myriad':    { sets: ['Empyrean Anthem', 'Frosty Resolve'], buff: 'Glacio DMG', desc: 'A nightmare variant of the luminous jellyfish. Skill transforms and attacks surrounding enemies for 273% Glacio DMG. Main slot passively grants +12% Glacio DMG and +30% Coordinated ATK DMG.' },
   'Dragon of Dirge':                 { sets: ['Tidebreaking Courage'], buff: 'Fusion DMG', desc: 'A grieving dragon from the depths of Rinascita. Skill transforms and summons a Grief Rift lasting 5s, periodically dealing 36% Fusion DMG to enemies in the area. Main slot grants +12% Fusion DMG and +12% Basic ATK DMG.' },
   'Nightmare: Hecate':               { sets: ['Dream of the Lost'], buff: 'Havoc DMG', desc: 'A nightmare variant of the three-headed witch of the deep. Skill transforms into Nightmare Hecate, leaping up and smashing down for 3 stages of Havoc DMG (152% each). Main slot passively grants +12% Havoc DMG and +20% Echo Skill DMG.' },
-  'Capitaneus':                      { sets: ['Eternal Radiance', 'Gusts of Welkin'], buff: 'Spectro DMG', desc: 'The supreme commander of the Order, carrying out judgment on transgressors. Skill summons Capitaneus to jump and smash for 118% Spectro DMG, generating 4 Merciless Judgements at 59% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Heavy ATK DMG.' },
   'Reminiscence: Fleurdelys':        { sets: ['Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Aero DMG', desc: 'An echo of the ancient flower-dragon guardian. Skill summons the Windcleaver for 8 hits of 27% Aero DMG plus one hit of 136% Aero DMG. Main slot grants +10% Aero DMG (+20% if Rover: Aero or Cartethyia).' },
   'Lioness of Glory':                { sets: ['Flaming Clawprint'], buff: 'Fusion DMG', desc: 'A proud leonine Overlord wielding the Halberd of Glory. Skill summons the Halberd to crush an area for 82% Fusion DMG, then blasts off for 191% Fusion DMG. Main slot grants +12% Fusion DMG and +12% Resonance Liberation DMG.' },
   'The False Sovereign':             { sets: ['Crown of Valor'], buff: 'Electro DMG', desc: 'A puppet-king Overlord infused with Electro. Skill transforms and dashes forward in a spinning strike dealing 55% Electro DMG x4. Upon casting Intro Skill, also summons the False Sovereign for 405% Electro DMG. Main slot grants +12% Electro DMG and +12% Heavy ATK DMG. 2 charges, 1 per 8s.' },
@@ -1316,6 +1315,7 @@ const ECHO_DATA = {
   'Twin Nova: Nebulous Cannon':      { sets: ['Rite of Gilded Revelation', 'Chromatic Foam'], buff: 'Spectro DMG', desc: 'The ranged model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies twice for 80% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Basic ATK DMG. Pairing with Collapsar Blade enables combo attacks and Dyad Origins stacks (+10% Echo Skill DMG each, up to 6).' },
   'Sigillum':                        { sets: ['Trailblazing Star'], buff: 'Fusion DMG', desc: 'A Calamity-class star guardian sealed beyond the Gate of the Lost Star. Skill summons Sigillum for two attacks dealing 68%/205% Fusion DMG. When equipped by Aemeath, grants +25% Resonance Liberation DMG.' },
   // ── 3-Cost Echoes ──
+  'Capitaneus':                      { sets: ['Eternal Radiance', 'Gusts of Welkin'], buff: 'Spectro DMG', desc: 'The supreme commander of the Order, carrying out judgment on transgressors. Skill summons Capitaneus to jump and smash for 118% Spectro DMG, generating 4 Merciless Judgements at 59% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Heavy ATK DMG.' },
   'Havoc Dreadmane':                 { sets: ['Molten Rift', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A dark-maned lion-like beast radiating Havoc energy. Skill transforms into Havoc Dreadmane for 2 tail strikes, each dealing 116% Havoc DMG plus 77% bonus Havoc DMG on hit.' },
   'Lumiscale Construct':             { sets: ['Freezing Frost', 'Void Thunder'], buff: 'Glacio DMG', desc: 'An armored construct with luminous scales. Skill transforms into a Parry Stance; slash deals 553% Glacio DMG, or counterattack on hit deals 553% + 276% Glacio DMG.' },
   'Tambourinist':                    { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A rhythmic humanoid Tacet Discord that weaponizes sound. Skill summons Tambourinist playing Melodies of Annihilation; when a Resonator hits a target, deals 14% Havoc DMG up to 10 times over 10s.' },
