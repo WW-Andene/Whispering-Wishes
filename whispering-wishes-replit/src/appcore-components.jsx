@@ -1547,7 +1547,7 @@ const VISUAL_SLIDER_CONFIGS = [
 ];
 
 // Custom styled select dropdown — replaces native <select> with kuro-card backdrop
-const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small }) => {
+const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const selected = options.find(o => o.value === value);
@@ -1573,7 +1573,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       <button
         type="button"
         onClick={() => setOpen(p => !p)}
-        className={`flex items-center justify-between gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-[10px]' : 'px-2.5 py-1.5 text-[10px] min-h-[44px]'}`}
+        className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-[10px]' : 'px-2.5 py-1.5 text-[10px] min-h-[44px]'}`}
         style={{ background: 'var(--bg-btn)' }}
         aria-label={ariaLabel}
         aria-expanded={open}

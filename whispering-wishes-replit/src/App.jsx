@@ -5061,7 +5061,7 @@ function WhisperingWishesInner() {
                       </button>
                     </div>
                     {/* Filter Dropdowns */}
-                    <div className="flex flex-wrap gap-1.5 items-center">
+                    <div className="grid grid-cols-3 gap-1.5">
                       {/* Category Filter */}
                       <KuroSelect
                         value={collectionCategoryFilter}
@@ -5072,7 +5072,7 @@ function WhisperingWishesInner() {
                           { value: 'weapon', label: 'Weapon' },
                         ]}
                         ariaLabel="Filter by category"
-                        className="min-w-[90px]"
+                        center
                       />
 
                       {/* Type Filter */}
@@ -5156,7 +5156,7 @@ function WhisperingWishesInner() {
                       {hasActiveFilters && (
                         <button
                           onClick={clearCollectionFilters}
-                          className="px-2 py-1 rounded-lg text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                          className="px-2 py-1 rounded-lg text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all flex items-center justify-center"
                         >
                           Clear
                         </button>
