@@ -293,6 +293,15 @@ function WhisperingWishesInner() {
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showServerDropdown, setShowServerDropdown] = useState(false);
+  const serverDropdownRef = useRef(null);
+  useEffect(() => {
+    if (!showServerDropdown) return;
+    const handler = (e) => { if (serverDropdownRef.current && !serverDropdownRef.current.contains(e.target)) setShowServerDropdown(false); };
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => { document.removeEventListener('mousedown', handler); document.removeEventListener('touchstart', handler); };
+  }, [showServerDropdown]);
   const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
@@ -3207,9 +3216,20 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
-                {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <div className="relative" ref={serverDropdownRef}>
+                <button onClick={() => setShowServerDropdown(v => !v)} aria-label="Select server region" aria-expanded={showServerDropdown} className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={headerControlBg}>
+                  {state.server} <ChevronDown size={10} className={`transition-transform ${showServerDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                {showServerDropdown && (
+                  <div className="kuro-card absolute right-0 top-full mt-1 min-w-[120px] py-1 z-[60]" style={{ overflow: 'hidden' }}>
+                    {Object.keys(SERVERS).map(s => (
+                      <button key={s} onClick={() => { dispatch({ type: 'SET_SERVER', server: s }); setShowServerDropdown(false); }} className={`w-full text-left px-3 py-2 text-[10px] transition-colors ${s === state.server ? 'text-yellow-400 bg-yellow-500/10' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-[var(--border-medium)] text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
