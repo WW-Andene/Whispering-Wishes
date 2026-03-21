@@ -7158,7 +7158,7 @@ function WhisperingWishesInner() {
                     aria-checked={visualSettings.animationsEnabled !== 'off'}
                     aria-label="Toggle animations: off, on, full"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : 'left-[32px] bg-white'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px]' : 'left-[32px]'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
