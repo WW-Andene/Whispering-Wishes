@@ -647,8 +647,9 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                     <div className={`text-xs font-bold ${costColors.text} mb-0.5`}>{setName}</div>
                     {setData ? (
                       <div className="space-y-0.5">
-                        <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>
-                        <div className="text-[10px] text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>
+                        {setData.p2 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
+                        {setData.p3 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
+                        {setData.p5 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
                       </div>
                     ) : (
                       <div className="text-[10px] text-gray-500 italic">Set data not available</div>
