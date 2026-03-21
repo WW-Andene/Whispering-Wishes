@@ -3439,7 +3439,7 @@ function WhisperingWishesInner() {
                 ));
               })()}
             </div>
-            <p className="text-gray-500 text-[10px] text-center content-layer sticky bottom-0 py-2" style={{ background: 'linear-gradient(to top, rgba(8,12,20,0.95) 60%, transparent)' }}>Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+            <p className="text-gray-500 text-[10px] text-center content-layer sticky bottom-0 py-2" style={{ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)' }}>Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
           </div>
           </TabErrorBoundary>
           </div>
@@ -6305,7 +6305,7 @@ function WhisperingWishesInner() {
                                     );
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
-                                    background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)',
+                                    background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)',
                                   }} />
                                   {/* Element dot */}
                                   <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center"

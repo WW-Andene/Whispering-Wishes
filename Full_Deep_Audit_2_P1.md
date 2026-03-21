@@ -2926,7 +2926,7 @@ These mirror the Tailwind values but make them available for CSS-in-JS component
 | Secondary accent 4 | `--color-emerald` | `34, 197, 94` (#22c55e) | `oklch(72.3% 0.192 150°)` | ✅ Success + Aero green |
 | Secondary accent 5 | `--color-red` | `248, 113, 113` (#f87171) | `oklch(71.1% 0.166 22°)` | ⚠️ Softer than error red — split role |
 
-**Finding**: DC2-AC1 — No explicit `--accent-hover` token | **LOW**
+**Finding**: DC2-AC1 ✅ — No explicit `--accent-hover` token | **LOW**
 
 Gold hover states are computed inline or via KuroStyles classes, but there's no `--color-gold-hover` token. This means hover gold intensity isn't centrally controlled.
 
@@ -2943,7 +2943,7 @@ Gold hover states are computed inline or via KuroStyles classes, but there's no 
 | Border bright | `--border-bright` | `rgba(255,255,255,0.2)` | White at 20% | ✅ High-emphasis borders |
 | Border focus | *None* | Gold ring (inline) | — | ⚠️ No explicit focus border token |
 
-**Finding**: DC2-BD1 — No `--border-focus` token | **LOW**
+**Finding**: DC2-BD1 ✅ — No `--border-focus` token | **LOW**
 
 Focus borders use gold glow (`0 0 0 3px rgba(237,175,24,0.1)` + `0 0 20px rgba(237,175,24,0.08)`) but this is defined inline in `.kuro-input:focus`. A focus border token would centralize this.
 
@@ -3225,8 +3225,8 @@ The design system has strong structural tokens (5 border levels, 4 shadow levels
 | DC1-TMP2 | Pink at warm/cool boundary (flexible) | **PASS** | No change |
 | DC2-BG1 | Modal backdrop hardcoded 10+ places, no token | **LOW** | Add `--bg-modal` |
 | DC2-TX1 | Secondary/muted/disabled text rely on Tailwind | **LOW** | Add `--text-secondary/muted/disabled` |
-| DC2-AC1 | No `--accent-hover` token | **LOW** | Add hover opacity documentation |
-| DC2-BD1 | No `--border-focus` token | **LOW** | Add `--border-focus` |
+| DC2-AC1 ✅ | No `--accent-hover` token | **LOW** | Add hover opacity documentation |
+| DC2-BD1 ✅ | No `--border-focus` token | **LOW** | Add `--border-focus` |
 | DC2-SH1 | Glow shadows have no tokens | **LOW** | Add `--glow-gold/purple` |
 | DC2-SM1 | No semantic color tokens | **MEDIUM** | Add `--color-success/error/warning/info` |
 | DC2-GM1 | Game-domain colors in JS only, not CSS tokens | **MEDIUM** | Promote to `--element-*` and `--rarity-*` |
@@ -3330,7 +3330,7 @@ OLED Lightness:
   ·····  S1e 0.0%   ← Identical to S0
 ```
 
-**Finding DC3-OLED1**: In OLED mode, **all surfaces collapse to pure black** (0% lightness). Cards, buttons, inputs, and stat boxes are indistinguishable from the page background by lightness alone. Only `--bg-card-inner` at `rgba(5,5,5,1)` has any lift (3.5%).
+**Finding DC3-OLED1 ✅**: In OLED mode, **all surfaces collapse to pure black** (0% lightness). Cards, buttons, inputs, and stat boxes are indistinguishable from the page background by lightness alone. Only `--bg-card-inner` at `rgba(5,5,5,1)` has any lift (3.5%).
 
 - **Severity**: **MEDIUM**
 - **Why it matters**: OLED mode destroys all lightness-based depth. The UI becomes dependent entirely on border opacity (0.06-0.2 white) for structure — a fragile single-cue system.
@@ -3344,7 +3344,7 @@ OLED Lightness:
   ```
   This preserves OLED power savings (pixels mostly off) while restoring minimal depth perception. The 5% lift is perceptible on OLED panels without significantly increasing power draw.
 
-**Finding DC3-OLED2**: Toast backgrounds are **not OLED-aware** — they use the same saturated `rgba(accent,0.9)` in both modes. On OLED's pure black, these high-chroma surfaces create a jarring contrast jump.
+**Finding DC3-OLED2 ✅**: Toast backgrounds are **not OLED-aware** — they use the same saturated `rgba(accent,0.9)` in both modes. On OLED's pure black, these high-chroma surfaces create a jarring contrast jump.
 
 - **Severity**: **LOW**
 - **Why it matters**: The 0%→52-68% lightness jump from OLED background to toast is extreme. Standard dark mode has a gentler 14%→52% jump.
@@ -3402,7 +3402,7 @@ Card shadow stack (`.kuro-card`):
 inset 0 1px 0 rgba(255, 255, 255, 0.05) ← top highlight (visible)
 ```
 
-**Finding DC3-SH1**: Dark shadows are **functionally invisible** in both modes. The shadow tokens exist but carry no visual information on dark surfaces. The white hairline border (0.03 opacity) and inset highlight (0.05 opacity) do the actual depth work.
+**Finding DC3-SH1 ✅**: Dark shadows are **functionally invisible** in both modes. The shadow tokens exist but carry no visual information on dark surfaces. The white hairline border (0.03 opacity) and inset highlight (0.05 opacity) do the actual depth work.
 
 - **Severity**: **LOW**
 - **Why it matters**: Shadow tokens consume rendering resources without contributing visual information. The system already uses the correct dark-mode approach (white borders/highlights), making the dark shadows redundant.
@@ -3429,7 +3429,7 @@ Instances found:
 | Toast text (line 226) | Tailwind `text-white` | Toast message |
 | Priority slider thumb (line 1225) | `linear-gradient(135deg, #ffffff, #e5e7eb)` | Slider control |
 
-**Finding DC3-WH1**: **Four instances** of hardcoded pure white text/elements. On the app's dark surfaces (14-16% lightness), `#ffffff` creates a 84-86% contrast ratio — which is high but acceptable. However, these bypass the `--text-heading: #edf1f8` and `--text-body: #dfe5ef` tokens, creating inconsistency.
+**Finding DC3-WH1 ✅**: **Four instances** of hardcoded pure white text/elements. On the app's dark surfaces (14-16% lightness), `#ffffff` creates a 84-86% contrast ratio — which is high but acceptable. However, these bypass the `--text-heading: #edf1f8` and `--text-body: #dfe5ef` tokens, creating inconsistency.
 
 - **Severity**: **LOW**
 - **Why it matters**: Pure white (`#ffffff`) is harsher than the app's tinted whites (`#edf1f8`, `#dfe5ef`). The slight blue tint in the token values matches the cool background hue and reduces eye strain. Hardcoded white breaks this tinting.
@@ -3467,7 +3467,7 @@ The app uses `backdrop-filter: blur()` as a primary depth cue. Audit of all blur
 | Onboarding modal (line 351) | `blur(6px)` | S2 | Modal glass |
 | Desktop sidebar (line 1461) | `blur(20px)` | S2 | Sidebar header |
 
-**Finding DC3-BL1**: Blur values are **inconsistent** — 4px, 6px, 8px, 20px across just 5 components. No documented progression tied to surface level.
+**Finding DC3-BL1 ✅**: Blur values are **inconsistent** — 4px, 6px, 8px, 20px across just 5 components. No documented progression tied to surface level.
 
 - **Severity**: **LOW**
 - **Why it matters**: If blur is a depth cue, it should follow a predictable scale (like the shadow-sm/md/lg tokens do). Currently it's ad-hoc.
@@ -3486,13 +3486,13 @@ The app uses `backdrop-filter: blur()` as a primary depth cue. Audit of all blur
 | ID | Finding | Severity | Solution |
 |---|---|---|---|
 | DC3-EL1 | Surface elevation flat — all surfaces within 3.7% lightness band | **MEDIUM** | Implement lightness staircase: S0=14% → S1=17.5% → S2=20.5% → S3=23%; OR formally document flat-glass as intentional |
-| DC3-OLED1 | OLED mode collapses all surfaces to 0% lightness | **MEDIUM** | Add OLED elevation ramp: S0=0% → S1=5% → S2=8% → S3=11% |
-| DC3-OLED2 | Toasts not OLED-aware — jarring contrast jump on pure black | **LOW** | Reduce toast opacity to 0.8 in OLED; add anchoring border |
+| DC3-OLED1 ✅ | OLED mode collapses all surfaces to 0% lightness | **MEDIUM** | Add OLED elevation ramp: S0=0% → S1=5% → S2=8% → S3=11% |
+| DC3-OLED2 ✅ | Toasts not OLED-aware — jarring contrast jump on pure black | **LOW** | Reduce toast opacity to 0.8 in OLED; add anchoring border |
 | DC3-BK1 | Pure black usage appropriate for opt-in OLED | **PASS** | Document as intentional theater mode |
-| DC3-SH1 | Dark shadows invisible on dark surfaces | **LOW** | Remove dead shadows; use white hairline + accent micro-glow |
-| DC3-WH1 | 4 hardcoded `#ffffff` text instances bypass tinted tokens | **LOW** | Replace with `var(--text-heading)` except slider thumb |
+| DC3-SH1 ✅ | Dark shadows invisible on dark surfaces | **LOW** | Remove dead shadows; use white hairline + accent micro-glow |
+| DC3-WH1 ✅ | 4 hardcoded `#ffffff` text instances bypass tinted tokens | **LOW** | Replace with `var(--text-heading)` except slider thumb |
 | DC3-AS1 | No light-mode asset issues (app is dark-native) | **PASS** | No change needed |
-| DC3-BL1 | Backdrop-blur values inconsistent (4/6/8/20px) | **LOW** | Tokenize as `--blur-s1/s2/s3` aligned to surface levels |
+| DC3-BL1 ✅ | Backdrop-blur values inconsistent (4/6/8/20px) | **LOW** | Tokenize as `--blur-s1/s2/s3` aligned to surface levels |
 
 ---
 
@@ -3569,7 +3569,7 @@ In-app gold:  `#edaf18` → oklch(78.5% 0.17 85°)
 | Chroma | 0.17 | 0.17 | 0% |
 | Hue | 90° | 85° | **5°** |
 
-**Finding DC4-ICO1**: Favicon gold `#fbbf24` and in-app gold `#edaf18` differ by **4.5% lightness and 5° hue**. The favicon is lighter and slightly more yellow-green. This is a minor brand fragmentation — the user sees one gold in the browser tab and encounters a slightly different gold inside.
+**Finding DC4-ICO1 ✅**: Favicon gold `#fbbf24` and in-app gold `#edaf18` differ by **4.5% lightness and 5° hue**. The favicon is lighter and slightly more yellow-green. This is a minor brand fragmentation — the user sees one gold in the browser tab and encounters a slightly different gold inside.
 
 - **Severity**: **LOW**
 - **Why it matters**: The mismatch is subtle (4.5% L / 5° H) and likely imperceptible to most users. However, it violates the principle that the icon establishes the color promise and the app fulfills it.
@@ -3626,7 +3626,7 @@ Hue wheel (OKLCH):
 |---|---|---|---|
 | DC4-HUE1 | Gold hue at 85° has no competitive conflict (nearest at 55°, 30° away) | **PASS** | No hue change needed |
 | DC4-CAL1 | Primary gold `#edaf18` is near-identical to Tailwind yellow-500 `#eab308` | **MEDIUM** | Recalibrate to `oklch(76% 0.18 80°)` ≈ `#e6a510`; OR document as intentional |
-| DC4-ICO1 | Favicon gold `#fbbf24` ≠ in-app gold `#edaf18` (4.5% L, 5° H delta) | **LOW** | Align favicon to `#edaf18` or create documented favicon variant |
+| DC4-ICO1 ✅ | Favicon gold `#fbbf24` ≠ in-app gold `#edaf18` (4.5% L, 5° H delta) | **LOW** | Align favicon to `#edaf18` or create documented favicon variant |
 | DC4-MAP1 | Competitive hue mapping shows clear gold ownership | **PASS** | No change needed — system-level brand is distinctive |
 
 ---
@@ -3797,7 +3797,7 @@ conic-gradient(from 0deg, var(--badge-color), transparent 50%, var(--badge-color
 - **Severity**: **PASS** (with one LOW sub-finding)
 - **Solution**: Fix the install banner gradient (B2) — either widen the hue spread or flatten to a single gold.
 
-**Finding DC5-GR2**: **Two inconsistent bottom-fade implementations** — `rgba(0,0,0,0.9)` (pure black) vs `rgba(8,12,20,0.85)` (tinted) for the same visual purpose.
+**Finding DC5-GR2 ✅**: **Two inconsistent bottom-fade implementations** — `rgba(0,0,0,0.9)` (pure black) vs `rgba(8,12,20,0.85)` (tinted) for the same visual purpose.
 
 - **Severity**: **LOW**
 - **Solution**: Unify to `rgba(8,12,20,0.85)` for blue-tint consistency.
@@ -3904,7 +3904,7 @@ Hard pity (61+):     Red #ef4444    → "pain"
 
 **Narrative**: Achievement is the **only state where color breaks free** from the restrained engagement palette. The pity-to-color arc is emotionally precise — it mirrors the gacha player's anxiety curve from euphoria (green/early) through dread (red/late). The trophy system's 92 distinct colors create a "collection of color" meta-game.
 
-**Finding DC5-ST3**: The achievement color narrative is **strong but architecturally fragile**. The emotional arc (green→gold→red) is excellent. However, the 92 hardcoded trophy colors are not tokenized and bypass the design system entirely.
+**Finding DC5-ST3 ✅**: The achievement color narrative is **strong but architecturally fragile**. The emotional arc (green→gold→red) is excellent. However, the 92 hardcoded trophy colors are not tokenized and bypass the design system entirely.
 
 - **Severity**: **LOW** (narrative quality is high; implementation quality is §DC2-level concern already captured)
 - **Solution**: The narrative is correct — trophy colors *should* be diverse and celebratory. Wrap them in a `TROPHY_COLORS` constant map rather than inline strings, but don't reduce the color variety.
@@ -4061,12 +4061,12 @@ Dominance hierarchy:
 | ID | Finding | Severity | Solution |
 |---|---|---|---|
 | DC5-GR1 | Gradient system well-designed — 30+ gradients all serve clear purposes | **PASS** | Fix install banner flat gradient (B2) |
-| DC5-GR2 | Two inconsistent bottom-fade implementations (pure black vs tinted) | **LOW** | Unify to `rgba(8,12,20,0.85)` |
+| DC5-GR2 ✅ | Two inconsistent bottom-fade implementations (pure black vs tinted) | **LOW** | Unify to `rgba(8,12,20,0.85)` |
 | DC5-TN1 | Cyan serves as tension color but is overused (45+ instances) | **MEDIUM** | Accept cyan as secondary accent; consider introducing a rare true tension color at ~210° |
 | DC5-TN2 | Purple correctly used as rarity marker, not tension | **PASS** | No change |
 | DC5-ST1 | Onboarding color tour is excellent design | **PASS** | No change — document as design principle |
 | DC5-ST2 | Engagement state has correct emotional temperature | **PASS** | No change |
-| DC5-ST3 | Achievement color burst is strong but trophy colors hardcoded | **LOW** | Wrap 92 colors in `TROPHY_COLORS` map; keep variety |
+| DC5-ST3 ✅ | Achievement color burst is strong but trophy colors hardcoded | **LOW** | Wrap 92 colors in `TROPHY_COLORS` map; keep variety |
 | DC5-ST4 | Error uses graduated red + cyan recovery — coherent | **PASS** | Document red→cyan as design principle |
 | DC5-ST5 | Empty state "gold promise + ghost potential" is exceptional | **PASS** | Document as design principle |
 | DC5-ST6 | Loading gold shimmer maintains brand presence | **PASS** | No change |
@@ -4083,24 +4083,24 @@ Dominance hierarchy:
 | ID | Finding | Severity | Section |
 |---|---|---|---|
 | DC3-EL1 | Surface elevation flat — 3.7% lightness band | **MEDIUM** | §DC3.1 |
-| DC3-OLED1 | OLED collapses all surfaces to 0% | **MEDIUM** | §DC3.2 |
-| DC3-OLED2 | Toasts not OLED-aware | **LOW** | §DC3.2 |
+| DC3-OLED1 ✅ | OLED collapses all surfaces to 0% | **MEDIUM** | §DC3.2 |
+| DC3-OLED2 ✅ | Toasts not OLED-aware | **LOW** | §DC3.2 |
 | DC3-BK1 | Pure black OLED appropriate | **PASS** | §DC3.3 |
-| DC3-SH1 | Dark shadows invisible | **LOW** | §DC3.3 |
-| DC3-WH1 | 4 hardcoded `#ffffff` text | **LOW** | §DC3.3 |
+| DC3-SH1 ✅ | Dark shadows invisible | **LOW** | §DC3.3 |
+| DC3-WH1 ✅ | 4 hardcoded `#ffffff` text | **LOW** | §DC3.3 |
 | DC3-AS1 | No asset issues (dark-native) | **PASS** | §DC3.3 |
-| DC3-BL1 | Backdrop-blur inconsistent | **LOW** | §DC3.4 |
+| DC3-BL1 ✅ | Backdrop-blur inconsistent | **LOW** | §DC3.4 |
 | DC4-HUE1 | Gold hue no competitive conflict | **PASS** | §DC4.1 |
 | DC4-CAL1 | Gold near-identical to Tailwind yellow-500 | **MEDIUM** | §DC4.2 |
-| DC4-ICO1 | Favicon/in-app gold mismatch | **LOW** | §DC4.3 |
+| DC4-ICO1 ✅ | Favicon/in-app gold mismatch | **LOW** | §DC4.3 |
 | DC4-MAP1 | Competitive hue map — clear ownership | **PASS** | §DC4.4 |
 | DC5-GR1 | Gradient system well-designed | **PASS** | §DC5.1 |
-| DC5-GR2 | Inconsistent bottom-fade gradients | **LOW** | §DC5.1 |
+| DC5-GR2 ✅ | Inconsistent bottom-fade gradients | **LOW** | §DC5.1 |
 | DC5-TN1 | Cyan overused as tension color | **MEDIUM** | §DC5.2 |
 | DC5-TN2 | Purple correct as rarity marker | **PASS** | §DC5.2 |
 | DC5-ST1 | Onboarding color tour excellent | **PASS** | §DC5.3 |
 | DC5-ST2 | Engagement emotional temperature correct | **PASS** | §DC5.3 |
-| DC5-ST3 | Achievement colors strong but hardcoded | **LOW** | §DC5.3 |
+| DC5-ST3 ✅ | Achievement colors strong but hardcoded | **LOW** | §DC5.3 |
 | DC5-ST4 | Error graduated red + cyan recovery | **PASS** | §DC5.3 |
 | DC5-ST5 | Empty state gold promise exceptional | **PASS** | §DC5.3 |
 | DC5-ST6 | Loading gold shimmer on-brand | **PASS** | §DC5.3 |
@@ -6364,7 +6364,7 @@ The palette uses a **hexadic harmony** (6 near-equidistant hues) as documented i
 | **Lightness staircase** | 2% total range (S0–S3) | ❌ Insufficient — surfaces appear flat |
 | **Border hairlines** | `rgba(255,255,255,0.03–0.2)` 5-level scale | ✅ Primary depth cue |
 | **Backdrop blur** | `blur(4px)` on cards | ✅ Creates glass-like distinction |
-| **Box shadows** | Multi-layer navy shadows | ⚠️ Mostly invisible on dark surfaces (§DC3-SH1) |
+| **Box shadows** | Multi-layer navy shadows | ⚠️ Mostly invisible on dark surfaces (§DC3-SH1 ✅) |
 | **Accent micro-glow** | Color-specific box-shadow on hover/stat boxes | ✅ Creates chromatic depth on interaction |
 
 **The app uses a "glass-panel" depth model** rather than Material Design's tonal elevation model. This is architecturally consistent with the Glassmorphism (secondary) classification from §DS1. The depth cues are: border → blur → glow, not lightness → shadow.
@@ -6800,12 +6800,12 @@ The color-meaning mapping is **native to the gacha domain**. A Wuthering Waves p
 | E3-DM1 (PASS) — Chromatic near-blacks | DC3-EL1 (MEDIUM) — Flat surface elevation | ✅ **Confirmed** — E3 notes glass-panel compensation |
 | E3-DM2 (PASS) — OLED appropriate | DC3-BK1 (PASS) — Pure black intentional | ✅ **Confirmed** |
 | E3-AC1 (MEDIUM) — Gold warning collision | DC5-TN1 (MEDIUM) — Cyan overused | 🔗 **Related** — both are accent overextension issues; gold and cyan each serve too many roles |
-| E3-AC2 (LOW) — Focus/active gold blend | DC2-BD1 (LOW) — No `--border-focus` token | 🔗 **Related** — both highlight lack of focus-specific design |
+| E3-AC2 (LOW) — Focus/active gold blend | DC2-BD1 ✅ (LOW) — No `--border-focus` token | 🔗 **Related** — both highlight lack of focus-specific design |
 | E3-CT1 (PASS) — Temperature coherence | DC1-TMP1 (PASS) — Bimodal temperature | ✅ **Confirmed** |
 | E3-CT2 (LOW) — Cool accents quiet | DC1-AC1 (MEDIUM) — Wide accent lightness range | 🔗 **Related** — cyan and purple are both darker/quieter accents |
 | E3-WC1 (PASS) — WCAG AA 100% | DC1-TX1 (PASS) — Text perceptually calibrated | ✅ **Confirmed** |
 | E3-WC2 (LOW) — Gray-500 marginal | DBI3-S07 (HIGH) — 459 gray instances | 🔗 **Converges** — the same gray text issue seen from accessibility vs genericness angles |
-| E3-NC1 (MEDIUM) — Low border contrast | DC2-AC1 (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
+| E3-NC1 (MEDIUM) — Low border contrast | DC2-AC1 ✅ (LOW) — No `--accent-hover` token | 🔗 **Related** — border token system lacks contrast awareness |
 | E3-SC1 (MEDIUM) — Warning=accent collision | DC1-SM1 (PASS) — Semantic colors reuse accent tokens | ⚠️ **Partial contradiction** — DC1 rated semantic reuse as PASS; E3 finds the warning-accent overlap is problematic. The earlier assessment didn't weigh the collision risk. |
 | E3-CP1 (PASS) — Psychology alignment | DC5-ST2 (PASS) — Engagement temperature correct | ✅ **Confirmed** |
 | E3-SA1 (LOW) — #ff0000 oversaturated | E1-COL4 (LOW) — Pure #ff0000 appears 5× | ✅ **Confirmed** — flagged from both token and saturation perspectives |

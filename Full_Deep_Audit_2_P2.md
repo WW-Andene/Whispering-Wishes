@@ -9040,7 +9040,7 @@ Competitive positioning map:
 | # | Finding A | Finding B | Contradiction | Reconciliation | Corrected Assessment |
 |---|-----------|-----------|---------------|----------------|---------------------|
 | GC1 | §E9-VS-F2 LOW: "Canvas animations no reduced-motion fallback" | §E6-MC3 PASS: "Reduced motion compliance" | E6 says reduced motion is compliant; E9 says canvas lacks it | **E6 is partially incorrect.** E6 assessed CSS animations + JS `prefersReducedMotion` detection (both present and correct). But canvas animations (`BackgroundGlow`, `TriangleMirrorWave`) run independently and do NOT check `prefers-reduced-motion`. The E6 PASS should be qualified: "CSS and JS reduced motion compliant; canvas layer non-compliant." **Corrected severity: E6-MC3 → PARTIAL PASS. Canvas reduced-motion gap confirmed at LOW.** |
-| GC2 | §DC4-ICO1 LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 should be upgraded from POLISH → LOW. |
+| GC2 | §DC4-ICO1 ✅ LOW: "Favicon/in-app gold mismatch" | §E9-AC-F2 POLISH: "Favicon gold (#fbbf24) ≠ brand gold (#edaf18)" | Same finding, different severity (LOW vs POLISH) | **Severity should be consistent.** Both describe the same issue: favicon uses Tailwind amber-400 (#fbbf24) instead of brand gold (#edaf18). The E8-FV1 finding rates this as MEDIUM (including the font issue). **Reconciled severity: LOW** — the color mismatch alone is LOW; the combined color + font issue (E8-FV1) is correctly MEDIUM. §E9-AC-F2 should be upgraded from POLISH → LOW. ✅ FIXED |
 | GC3 | §E2-MO1 MEDIUM: "Touch targets 36px on touch devices (below 44px)" | §CK-F2 LOW (Step 18): "Touch targets at 36px, below 44px" | Same finding, different severity (MEDIUM vs LOW) | **E2 severity is correct.** Touch target compliance is a WCAG 2.5.8 requirement. A 36px target on `pointer: coarse` devices is a genuine accessibility gap that affects every touch interaction. **Reconciled: MEDIUM.** Step 18 §CK-F2 should be upgraded from LOW → MEDIUM. |
 | GC4 | §DS2-F8 MEDIUM: "~240 hardcoded color values" | §E1-COL1 HIGH: "66 unique hex colors, only 18 tokenized — 73% unmanaged" | Same root issue, different quantification (240 instances vs 66 unique values) | **Both are correct at different levels.** DS2 counts *instances* (how many times hardcoded values appear). E1 counts *unique values* (how many distinct colors exist). 66 unique colors × average 3.6 uses each ≈ 240 instances. **No quantification error.** But the severity differs: DS2 says MEDIUM, E1 says HIGH. **Reconciled: HIGH** — 73% unmanaged palette is a systemic token architecture issue, not a moderate concern. |
 | GC5 | §E9-EA-F4 LOW: "Inconsistent empty state voice (clinical vs game-lore)" | §E10-EP-F1 MEDIUM: "Stats empty states lack personality — clinical messages" | Same issue, different severity | **E10 severity is correct for the Stats tab specifically.** The Stats tab's "Insufficient data" messages are actively harmful to the data storytelling narrative (the tab's primary purpose). Across the full app, the inconsistency is LOW. Within the Stats context, the clinical tone is MEDIUM. **Reconciled: Both severities stand — they address different scopes.** |
@@ -9130,7 +9130,7 @@ Competitive positioning map:
 
 | # | Topic | Where Mentioned | What Was Said | What's Missing | Severity of Gap | Solution |
 |---|-------|----------------|---------------|----------------|----------------|----------|
-| G1 | **OLED mode visual hierarchy preservation** | §DC3-OLED1 (Step 6): "OLED collapses all surfaces to 0%" | The finding notes that OLED mode collapses surface elevation to pure black, but doesn't audit whether the *visual hierarchy* still functions in OLED mode | **No step performed a dedicated OLED-mode walkthrough** across all 8 tabs to verify that cards, modals, inputs, and backgrounds remain distinguishable when `--bg-card`, `--bg-card-inner`, `--bg-btn`, `--bg-input`, `--bg-stat` all collapse to `#000000` or near-black values | MEDIUM | **Perform an OLED hierarchy spot-check**: In OLED mode, surface differentiation relies entirely on borders (`--border-subtle` at rgba(255,255,255,0.06)) and shadows. Verify that: (1) Card edges remain visible against the OLED background, (2) Modal overlay contrast is sufficient, (3) Input fields are visually distinct from card surfaces. If hierarchy fails, increase OLED border opacity to `--border-subtle: 0.10` in OLED mode. |
+| G1 | **OLED mode visual hierarchy preservation** | §DC3-OLED1 ✅ (Step 6): "OLED collapses all surfaces to 0%" | The finding notes that OLED mode collapses surface elevation to pure black, but doesn't audit whether the *visual hierarchy* still functions in OLED mode | **No step performed a dedicated OLED-mode walkthrough** across all 8 tabs to verify that cards, modals, inputs, and backgrounds remain distinguishable when `--bg-card`, `--bg-card-inner`, `--bg-btn`, `--bg-input`, `--bg-stat` all collapse to `#000000` or near-black values | MEDIUM | **Perform an OLED hierarchy spot-check**: In OLED mode, surface differentiation relies entirely on borders (`--border-subtle` at rgba(255,255,255,0.06)) and shadows. Verify that: (1) Card edges remain visible against the OLED background, (2) Modal overlay contrast is sufficient, (3) Input fields are visually distinct from card surfaces. If hierarchy fails, increase OLED border opacity to `--border-subtle: 0.10` in OLED mode. |
 | G2 | **Keyboard navigation flow** | §BT-F1 (Step 18): "Focus-visible excludes anchor/role='button'" and §E6-MC3 (Step 13): reduced motion compliance | Focus ring styling is audited, but **tab order and keyboard navigation flow** across the 8-tab interface was never explicitly tested | No step verified: (1) Can a keyboard user navigate between tabs? (2) Is focus trapped in modals? (3) Does tab order follow visual order? (4) Are skip navigation links functional? | MEDIUM | **Audit keyboard flow**: The `index.html` skip-nav link (lines 42-45) exists. Focus trap in modals was mentioned as PASS (§E5-CT3). But systematic tab-order verification across all 8 tabs was not performed. **Recommendation**: Add to implementation checklist — verify `tabindex` ordering, ensure no focus traps outside modals, verify escape-key dismissal works for all overlays. |
 | G3 | **Service Worker cache strategy and its visual impact** | Step 1 §0: "Service Worker: Custom SW for offline/caching" | Service worker is listed as a tech stack component but never analyzed for its impact on visual freshness | **No step audited**: (1) What happens visually when the service worker serves stale content? (2) Is there a visual indicator for "offline mode"? (3) Does the update prompt have brand-consistent styling? The §VIII cross-cutting concern "Stale cache on deploy" is relevant but was not assessed visually | LOW | **Add to implementation scope**: Verify that (1) the SW update prompt uses the kuro-card + kuro-btn design system, (2) an "Offline" badge appears in the header or tab bar when the SW is serving cached content, (3) font/CSS files are cache-busted correctly to prevent style drift between versions. |
 | G4 | **External CDN image failure states** | §E5-CD3 PASS: "hideOnError fallback" and §E5-CD6 LOW: "hideOnError leaves empty space" | Image loading failures are noted in Step 12 but the visual impact of CDN failures across the Collection grid was not deeply analyzed | **No step simulated a full CDN outage** to check: (1) Does the Collection grid degrade gracefully with 50%+ failed images? (2) Is there a visual indicator distinguishing "loading" from "failed"? (3) Does the character detail modal show anything meaningful when its image fails? | LOW | **Add to implementation scope**: (1) Add a branded fallback placeholder (e.g., silhouette with "?" icon on #080c14 background) instead of empty space when `hideOnError` triggers. (2) Add a "retry" affordance or visual state for failed images. (3) Test Collection grid appearance with simulated CDN failure — ensure the ghost-grid pattern activates rather than showing broken image outlines. |
@@ -9390,7 +9390,7 @@ ROOT CAUSE: kuro-number class designed but inconsistently applied
 ```
 ROOT CAUSE: Brand assets incomplete for multi-platform presence
     │
-    ├──→ ICON: Favicon uses wrong gold (#fbbf24 vs #edaf18) (§E8-FV1 / §DC4-ICO1 / §E9-AC-F2)
+    ├──→ ICON: Favicon uses wrong gold (#fbbf24 vs #edaf18) (§E8-FV1 / §DC4-ICO1 ✅ / §E9-AC-F2)
     │       │
     │       └──→ BRAND: Most-frequently-seen brand representation is wrong color
     │
@@ -9413,7 +9413,7 @@ ROOT CAUSE: Brand assets incomplete for multi-platform presence
 
 **Chain impact**: 8+ findings across 4 steps
 **Single fix**: Asset generation sprint — create all missing brand assets from the existing SVG favicon design
-**Cascade resolution**: Fixes §E8-FV1, §E9-BS-F1, §E9-BS-F2, §E8-CI2, §E8-DC1, §E9-BS-F3, §DC4-ICO1, §E9-AC-F2
+**Cascade resolution**: Fixes §E8-FV1, §E9-BS-F1, §E9-BS-F2, §E8-CI2, §E8-DC1, §E9-BS-F3, §DC4-ICO1 ✅, §E9-AC-F2
 
 ---
 
@@ -9762,7 +9762,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | Correction | Type | Impact |
 |-----------|------|--------|
 | E6-MC3 reduced motion: PASS → PARTIAL PASS | Contradiction fix | Canvas gap now documented |
-| E9-AC-F2 favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 |
+| E9-AC-F2 favicon: POLISH → LOW | Severity alignment | Consistent with DC4-ICO1 ✅ |
 | CK-F2 touch targets: LOW → MEDIUM | Severity alignment | WCAG compliance |
 | DS2-F8 hardcoded colors: MEDIUM → HIGH | Severity alignment | Consistent with E1-COL1 |
 | E6-AP4 active states: LOW → MEDIUM | Severity alignment | Consistent with E6-HV9 |
@@ -10062,7 +10062,7 @@ All three token values carry blue hue (≈250°), matching the background's chro
 }
 ```
 
-**Cross-references**: E1-COL2, E1-COL3, E1-COL4, E1-COL5, DC5-ST3
+**Cross-references**: E1-COL2, E1-COL3, E1-COL4, E1-COL5, DC5-ST3 ✅
 
 ---
 
@@ -10932,16 +10932,16 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 
 | # | ID | Description | Tabs | Solution |
 |---|-----|------------|------|----------|
-| 1 | DC2-AC1 | No `--accent-hover` token for hover state variations | ALL | Add `--accent-hover: rgba(var(--color-gold), 0.8)` to `:root` |
-| 2 | DC2-BD1 | No `--border-focus` token for focus ring definition | ALL | Add `--border-focus: rgba(var(--color-gold), 0.5)` to `:root` |
-| 3 | DC3-OLED1 | OLED mode collapses all surfaces to 0% lightness | ALL | Introduce minimal lightness steps in OLED mode: `--bg-card: rgba(8,8,8,0.9)` |
-| 4 | DC3-OLED2 | Toasts not OLED-aware (use standard surface tokens) | ALL | Add OLED-specific toast background: `--bg-toast-oled: rgba(12,12,12,0.95)` |
-| 5 | DC3-SH1 | Dark shadows invisible on dark surfaces | ALL | Increase shadow opacity by 0.1 or add subtle colored glow to shadows |
-| 6 | DC3-WH1 | 4 hardcoded `#ffffff` text instances | ALL | Replace with `var(--text-heading)` (#edf1f8 — chromatic near-white) |
-| 7 | DC3-BL1 | Backdrop-blur inconsistent (12px vs 16px vs 8px) | ALL | Standardize to `--blur-sm: 8px`, `--blur-md: 12px`, `--blur-lg: 16px` tokens |
-| 8 | DC4-ICO1 | Favicon gold #fbbf24 ≠ in-app gold #edaf18 | FAVICON | Update favicon SVG fill from `#fbbf24` to `#edaf18` |
-| 9 | DC5-GR2 | Two inconsistent bottom-fade gradient implementations | TRACKER, COLLECTION | Unify to single `linear-gradient(to top, var(--bg-card), transparent)` pattern |
-| 10 | DC5-ST3 | Trophy colors hardcoded (not tokenized) | STATS | Move trophy tier colors into `--trophy-bronze`, `--trophy-silver`, `--trophy-gold`, `--trophy-diamond` tokens |
+| 1 | DC2-AC1 ✅ | No `--accent-hover` token for hover state variations | ALL | Add `--accent-hover: rgba(var(--color-gold), 0.8)` to `:root` |
+| 2 | DC2-BD1 ✅ | No `--border-focus` token for focus ring definition | ALL | Add `--border-focus: rgba(var(--color-gold), 0.5)` to `:root` |
+| 3 | DC3-OLED1 ✅ | OLED mode collapses all surfaces to 0% lightness | ALL | Introduce minimal lightness steps in OLED mode: `--bg-card: rgba(8,8,8,0.9)` |
+| 4 | DC3-OLED2 ✅ | Toasts not OLED-aware (use standard surface tokens) | ALL | Add OLED-specific toast background: `--bg-toast-oled: rgba(12,12,12,0.95)` |
+| 5 | DC3-SH1 ✅ | Dark shadows invisible on dark surfaces | ALL | Increase shadow opacity by 0.1 or add subtle colored glow to shadows |
+| 6 | DC3-WH1 ✅ | 4 hardcoded `#ffffff` text instances | ALL | Replace with `var(--text-heading)` (#edf1f8 — chromatic near-white) |
+| 7 | DC3-BL1 ✅ | Backdrop-blur inconsistent (12px vs 16px vs 8px) | ALL | Standardize to `--blur-sm: 8px`, `--blur-md: 12px`, `--blur-lg: 16px` tokens |
+| 8 | DC4-ICO1 ✅ | Favicon gold #fbbf24 ≠ in-app gold #edaf18 | FAVICON | Update favicon SVG fill from `#fbbf24` to `#edaf18` |
+| 9 | DC5-GR2 ✅ | Two inconsistent bottom-fade gradient implementations | TRACKER, COLLECTION | Unify to single `linear-gradient(to top, var(--bg-card), transparent)` pattern |
+| 10 | DC5-ST3 ✅ | Trophy colors hardcoded (not tokenized) | STATS | Move trophy tier colors into `--trophy-bronze`, `--trophy-silver`, `--trophy-gold`, `--trophy-diamond` tokens |
 | 11 | DC5-ST7 | Missing "anticipation" transition before pull results | TRACKER | Add 500ms shimmer animation on the result card before revealing pull data |
 | 12 | E1-SP1 | 2px base grid undocumented | ALL | Add comment in CSS: `/* Spacing base: 2px grid (2/4/6/8/10/12/14/16) */` |
 | 13 | E1-SP2 | 3 subpixel values (1.5px, 3px, -1px) | ALL | Round 1.5px → 2px, verify 3px and -1px are intentional |

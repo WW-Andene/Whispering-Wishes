@@ -438,10 +438,11 @@ const KuroStyles = memo(({ oledMode }) => (
       --color-purple: 168, 85, 247;
       --color-emerald: 34, 197, 94;
       --color-red: 248, 113, 113;
-      --shadow-sm: 0 1px 2px rgba(6, 10, 24, 0.4);
-      --shadow-md: 0 4px 12px rgba(6, 10, 24, 0.5);
-      --shadow-lg: 0 8px 24px rgba(6, 10, 24, 0.6);
-      --shadow-xl: 0 12px 40px rgba(6, 10, 24, 0.7);
+      /* DC3-SH1: Increased shadow opacity +0.1 with subtle colored glow for dark surface visibility */
+      --shadow-sm: 0 1px 2px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
+      --shadow-md: 0 4px 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
+      --shadow-lg: 0 8px 24px rgba(6, 10, 24, 0.7), 0 0 12px rgba(var(--color-gold), 0.05);
+      --shadow-xl: 0 12px 40px rgba(6, 10, 24, 0.8), 0 0 16px rgba(var(--color-gold), 0.06);
       --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -450,17 +451,31 @@ const KuroStyles = memo(({ oledMode }) => (
       --text-heading: #edf1f8;
       --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      --bg-card: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
-      --bg-card-inner: ${oledMode ? 'rgba(5, 5, 5, 1)' : 'rgba(6, 10, 18, 1)'};
-      --bg-btn: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
-      --bg-input: ${oledMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
-      --bg-stat: ${oledMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
+      /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
+      --bg-card: ${oledMode ? 'rgba(8, 8, 8, 0.95)' : 'rgba(12, 16, 24, 0.55)'};
+      --bg-card-inner: ${oledMode ? 'rgba(10, 10, 10, 1)' : 'rgba(6, 10, 18, 1)'};
+      --bg-btn: ${oledMode ? 'rgba(12, 12, 12, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
+      --bg-input: ${oledMode ? 'rgba(14, 14, 14, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
+      --bg-stat: ${oledMode ? 'rgba(6, 6, 6, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
       /* D-TOKEN-1: Border opacity tokens — replaces 30+ raw rgba(255,255,255,0.xx) border values */
       --border-subtle: rgba(255,255,255,0.06);
       --border-default: rgba(255,255,255,0.08);
       --border-medium: rgba(255,255,255,0.1);
       --border-hover: rgba(255,255,255,0.15);
       --border-bright: rgba(255,255,255,0.2);
+      /* DC2-AC1: Accent hover token for hover state variations */
+      --accent-hover: rgba(var(--color-gold), 0.8);
+      /* DC2-BD1: Border focus token for focus ring definition */
+      --border-focus: rgba(var(--color-gold), 0.5);
+      /* DC3-BL1: Standardized backdrop-blur tokens */
+      --blur-sm: 4px;
+      --blur-md: 8px;
+      --blur-lg: 16px;
+      /* DC5-ST3: Trophy tier color tokens */
+      --trophy-bronze: #cd7f32;
+      --trophy-silver: #c0c0c0;
+      --trophy-gold: #edaf18;
+      --trophy-diamond: #b9f2ff;
     }
     
     /* Hide scrollbar on specific horizontal scroll containers */
@@ -495,15 +510,15 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* ═══ IMPROVED FOCUS STATES ═══ */
     *:focus-visible {
-      outline: 2px solid rgba(var(--color-gold), 0.7);
+      outline: 2px solid var(--border-focus);
       outline-offset: 2px;
     }
-    
-    button:focus-visible, 
-    select:focus-visible, 
-    input:focus-visible, 
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
     textarea:focus-visible {
-      outline: 2px solid rgba(var(--color-gold), 0.8);
+      outline: 2px solid var(--accent-hover);
       outline-offset: 2px;
       box-shadow: 0 0 0 4px rgba(var(--color-gold), 0.15);
     }
@@ -713,8 +728,8 @@ const KuroStyles = memo(({ oledMode }) => (
       border: 1px solid var(--border-default);
       border-radius: 16px;
       overflow: visible;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(var(--blur-sm));
+      -webkit-backdrop-filter: blur(var(--blur-sm));
       box-shadow:
         0 4px 24px rgba(6, 10, 24, 0.6),
         0 0 0 1px rgba(255, 255, 255, 0.03),
@@ -868,10 +883,10 @@ const KuroStyles = memo(({ oledMode }) => (
       text-align: center;
       overflow: hidden;
       box-shadow: var(--shadow-md);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(var(--blur-md));
+      -webkit-backdrop-filter: blur(var(--blur-md));
     }
-    
+
     /* Ripple container */
     .kuro-btn::before {
       content: '';
@@ -886,7 +901,7 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (hover: hover) {
       .kuro-btn:hover {
         border-color: var(--border-bright);
-        color: #ffffff;
+        color: var(--text-heading);
         transform: translateY(-2px);
         box-shadow: var(--shadow-lg);
       }
@@ -989,12 +1004,12 @@ const KuroStyles = memo(({ oledMode }) => (
       border: 1px solid var(--border-bright);
       border-radius: 8px;
       padding: 10px 12px;
-      color: #ffffff;
+      color: var(--text-heading);
       font-size: 14px;
       width: 100%;
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(var(--blur-md));
+      -webkit-backdrop-filter: blur(var(--blur-md));
     }
     
     @media (hover: hover) {
@@ -1042,8 +1057,8 @@ const KuroStyles = memo(({ oledMode }) => (
       overflow: hidden;
       font-family: var(--font-data);
       line-height: 1.3;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(var(--blur-sm));
+      -webkit-backdrop-filter: blur(var(--blur-sm));
       font-variant-numeric: tabular-nums;
       transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
@@ -1439,6 +1454,13 @@ const KuroStyles = memo(({ oledMode }) => (
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border-width: 0;
+    }
+
+    /* DC3-OLED2: OLED-aware toast backgrounds — darker base with higher contrast */
+    .oled-mode [role="status"] > div {
+      background-color: rgba(12, 12, 12, 0.95) !important;
+      backdrop-filter: blur(var(--blur-md));
+      -webkit-backdrop-filter: blur(var(--blur-md));
     }
 
     /* DESKTOP LAYOUT */

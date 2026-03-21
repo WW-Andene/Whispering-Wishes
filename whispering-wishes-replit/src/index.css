@@ -73,7 +73,7 @@ body {
 /* Selection color */
 ::selection {
   background-color: rgba(96, 165, 250, 0.3);
-  color: #ffffff;
+  color: #edf1f8;
 }
 
 /* Reduce motion for users who prefer it */
