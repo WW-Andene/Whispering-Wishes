@@ -5655,7 +5655,7 @@ Despite the strong anti-generic strategies, approximately **30% of the UI surfac
 
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
-| §E9-IC-F1 | **HIGH** | Missing 192×192 and 512×512 PNG icons in manifest — Android PWA install will use a generic placeholder or degrade | **Generate PNG icon variants**: Create 192×192 and 512×512 PNGs from the SVG favicon. Add to manifest.webmanifest with `"purpose": "any maskable"`. Use a build script or manual export from the SVG |
+| §E9-IC-F1 ✅ | **HIGH** | Missing 192×192 and 512×512 PNG icons in manifest — Android PWA install will use a generic placeholder or degrade | **Generate PNG icon variants**: Create 192×192 and 512×512 PNGs from the SVG favicon. Add to manifest.webmanifest with `"purpose": "any maskable"`. Use a build script or manual export from the SVG |
 | §E9-IC-F2 | **MEDIUM** | Favicon uses `#fbbf24` (Tailwind amber) instead of brand gold `#edaf18` — the browser tab icon is technically off-brand | **Align favicon gold**: Change `fill="#fbbf24"` to `fill="#edaf18"` in favicon.svg. This is the same finding as §E9-AC-F2 ✅ — a single-line fix |
 | §E9-IC-F3 | **MEDIUM** | Favicon uses `system-ui, sans-serif` font family — if Rajdhani is the brand font, the "W" letterform in the icon doesn't match the app's typography | **Use Rajdhani in favicon**: Either embed Rajdhani as a `<style>` in the SVG or render the "W" as a `<path>` traced from the Rajdhani glyph. This ensures the letterform is identical to in-app headings |
 | §E9-IC-F4 | **MEDIUM** | OG image points to external URL (`https://whisperingwishes.vercel.app/og-image.png`) — not version-controlled, could be outdated or missing | **Create local OG image**: Design a 1200×630px social card with brand elements (gold accent bar, dark navy background, "Whispering Wishes" text, optional character art). Save as `public/og-image.png` and update meta tags to relative path |
@@ -9211,7 +9211,7 @@ Competitive positioning map:
 | §E8-CI2: Missing apple-touch-icon.png | Generate from brand design | **STRENGTHENS P2** — extends gold brand to iOS | **ALIGNED** |
 | §E8-FV1: Favicon wrong gold + system font | Update to brand gold + consider Rajdhani-derived mark | **STRENGTHENS P2 + P3** | **ALIGNED** |
 | §E8-MI1: Three defaulting signals | Migrate defaults to branded tokens | **STRENGTHENS P5** — removes Tailwind default fingerprint | **ALIGNED** |
-| §E9-VS-F1 ✅: ~30% generic Tailwind surface | Token migration | Same mechanism as E1-COV1 | **ALIGNED** |
+| §E9-VS-F1 ✅: ~30% generic Tailwind surface | Token migration | Same mechanism as E1-COV1 ✅ | **ALIGNED** |
 | §E9-MC-F1 ✅: Native select breaks HUD metaphor | Create custom .kuro-select | **STRENGTHENS P5** — replaces generic OS control with branded component | **ALIGNED** |
 | §E9-EA-F2 ✅: No escalating pity urgency | Progressive gold pulse as pity approaches | **STRENGTHENS P2** — gold as urgency signal is on-brand | **ALIGNED** |
 | §E9-EA-F3 ✅: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 — must be cyberpunk-geometric | **ALIGNED with constraint** |
@@ -9279,9 +9279,9 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
     │               │
     │               └──→ ACCESSIBILITY: Inconsistent interactive feedback — some elements feel responsive, others feel flat
     │
-    ├──→ TOKEN: Token coverage stuck at ~30% (§E1-COV1)
+    ├──→ TOKEN: Token coverage stuck at ~30% (§E1-COV1 ✅)
     │       │
-    │       └──→ MAINTENANCE: Hardcoded values across ~240 instances (§DS2-F8 / §E1-COL1)
+    │       └──→ MAINTENANCE: Hardcoded values across ~240 instances (§DS2-F8 / §E1-COL1 ✅)
     │
     └──→ MOTION: Inline buttons use Tailwind default durations, not branded easing (§E9-AG-F3 ✅)
             │
@@ -9291,7 +9291,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
 **Chain impact**: 12+ findings across 8 steps share a single root cause
 **Single fix**: Migrate inline buttons to `kuro-btn` variants (primary/secondary/ghost/danger)
 **Estimated effort**: ~100 button elements, each requiring class migration from inline Tailwind to kuro-btn
-**Cascade resolution**: Fixes §E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1 ✅, §E7-PD1 ✅, §E8-MI1, §E9-VS-F1 ✅ (partially), §E9-AG-F3 ✅, and contributes to §E1-COV1
+**Cascade resolution**: Fixes §E5-BT5 ✅, §E6-HV9 ✅, §E6-AP4 ✅, §E7-DC1 ✅, §E7-PD1 ✅, §E8-MI1, §E9-VS-F1 ✅ (partially), §E9-AG-F3 ✅, and contributes to §E1-COV1 ✅
 
 ---
 
@@ -9351,7 +9351,7 @@ ROOT CAUSE: No primitive token layer — CSS custom properties are semantic-only
 
 **Chain impact**: 15+ findings across 6 steps
 **Single fix**: Implement 3-layer token architecture: Primitives (raw values) → Semantic (role-based) → Component (context-specific)
-**Cascade resolution**: Resolves the entire token coverage gap (§E1-COV1) and all downstream hardcoded value issues
+**Cascade resolution**: Resolves the entire token coverage gap (§E1-COV1 ✅) and all downstream hardcoded value issues
 
 ---
 
