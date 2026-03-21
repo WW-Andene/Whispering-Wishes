@@ -41,7 +41,7 @@ export {
 export {
   TROPHY_ICON_MAP, generateVerticalMaskGradient, TabBackground,
   Card, CardHeader, CardBody,
-  CharacterDetailModal, WeaponDetailModal,
+  CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, CountdownTimer, PityRing,
   AppErrorBoundary, TabErrorBoundary,
   BackgroundGlow, TriangleMirrorWave,

@@ -84,6 +84,7 @@ import {
   CollectionGridSection,
   CharacterDetailModal,
   WeaponDetailModal,
+  EchoDetailModal,
   VISUAL_SLIDER_CONFIGS,
   VisualSliderGroup,
   generateVerticalMaskGradient,
@@ -5279,8 +5280,8 @@ function WhisperingWishesInner() {
                       hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
                       withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
-                      activeBanners={activeBanners} setDetailModal={() => {}}
-                      dataLookup={{}} dataType="echo" isCharacter={false}
+                      activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
+                      dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                       collapsible
                     />
@@ -5301,8 +5302,8 @@ function WhisperingWishesInner() {
                       hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
                       withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
-                      activeBanners={activeBanners} setDetailModal={() => {}}
-                      dataLookup={{}} dataType="echo" isCharacter={false}
+                      activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
+                      dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                       collapsible
                     />
@@ -5323,8 +5324,8 @@ function WhisperingWishesInner() {
                       hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
                       withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
-                      activeBanners={activeBanners} setDetailModal={() => {}}
-                      dataLookup={{}} dataType="echo" isCharacter={false}
+                      activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
+                      dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                       collapsible
                     />
@@ -8693,10 +8694,18 @@ Example: {"pulls":[...]}'
         />
       )}
       {detailModal.show && detailModal.type === 'weapon' && (
-        <WeaponDetailModal 
-          name={detailModal.name} 
+        <WeaponDetailModal
+          name={detailModal.name}
           imageUrl={detailModal.imageUrl}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })} 
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
+        />
+      )}
+      {detailModal.show && detailModal.type === 'echo' && (
+        <EchoDetailModal
+          name={detailModal.name}
+          imageUrl={detailModal.imageUrl}
+          cost={detailModal.cost}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
         />
       )}
 

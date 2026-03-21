@@ -12,6 +12,7 @@ import {
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
+  ECHO_DATA, ECHO_SETS,
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
@@ -572,6 +573,142 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               ))}
             </div>
           </div>
+        </div>
+       </div>
+      </div>
+    </FocusTrapModal>
+  );
+};
+
+// Echo Detail Modal
+const ECHO_COST_COLORS = {
+  4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', label: '4 Cost' },
+  3: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', label: '3 Cost' },
+  1: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', label: '1 Cost' },
+};
+const ECHO_BUFF_COLORS = {
+  'Glacio DMG':  { bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/25' },
+  'Fusion DMG':  { bg: 'bg-orange-500/10',   text: 'text-orange-400',  border: 'border-orange-500/25' },
+  'Electro DMG': { bg: 'bg-purple-500/10',   text: 'text-purple-400',  border: 'border-purple-500/25' },
+  'Aero DMG':    { bg: 'bg-emerald-500/10',  text: 'text-emerald-400', border: 'border-emerald-500/25' },
+  'Spectro DMG': { bg: 'bg-yellow-500/10',   text: 'text-yellow-400',  border: 'border-yellow-500/25' },
+  'Havoc DMG':   { bg: 'bg-pink-500/10',     text: 'text-pink-400',    border: 'border-pink-500/25' },
+  'Healing':     { bg: 'bg-green-500/10',     text: 'text-green-400',   border: 'border-green-500/25' },
+  'Shield':      { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
+};
+const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
+  const data = ECHO_DATA[name];
+  if (!data) return null;
+
+  const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
+  const buffColors = ECHO_BUFF_COLORS[data.buff] || { bg: 'bg-white/10', text: 'text-gray-300', border: 'border-[var(--border-medium)]' };
+
+  // Find characters that use this echo (referenced in bestEchoes)
+  const usedBy = Object.entries(CHARACTER_DATA).filter(([, cd]) =>
+    cd.bestEchoes?.some(e => e.toLowerCase().includes(name.toLowerCase()))
+  ).map(([cname]) => cname);
+
+  return (
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} echo details`} centered>
+      <div
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${costColors.border}`}
+        onClick={e => e.stopPropagation()}
+      >
+       <div className="overflow-y-auto max-h-[90vh]">
+        {/* Header */}
+        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+          <div className={`absolute inset-0 bg-gradient-to-br ${costColors.bg}`} />
+          {imageUrl && (
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
+            <X size={16} />
+          </button>
+          <div className="absolute bottom-3 left-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded ${buffColors.bg} ${buffColors.text} border ${buffColors.border}`}>{data.buff}</span>
+            </div>
+            <h2 className="text-xl font-semibold text-white">{name}</h2>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-3">
+          {/* Sonata Sets */}
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Available Sonata Sets</div>
+            <div className="space-y-2">
+              {data.sets.map(setName => {
+                const setData = ECHO_SETS[setName];
+                return (
+                  <div key={setName} className="p-2 rounded-lg bg-black/20">
+                    <div className={`text-xs font-bold ${costColors.text} mb-0.5`}>{setName}</div>
+                    {setData ? (
+                      <div className="space-y-0.5">
+                        <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>
+                        <div className="text-[10px] text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-gray-500 italic">Set data not available</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main Stat Options (based on cost) */}
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
+            <div className="flex flex-wrap gap-1">
+              {cost === 4 && ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">{s}</span>
+              ))}
+              {cost === 3 && ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25">{s}</span>
+              ))}
+              {cost === 1 && ['ATK%', 'HP%', 'DEF%'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">{s}</span>
+              ))}
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">
+              Secondary: {cost === 1 ? 'Flat HP' : 'Flat ATK'}
+            </div>
+          </div>
+
+          {/* Buff Description */}
+          <div className={`p-3 rounded-xl border ${buffColors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill Buff</div>
+            <div className={`text-xs font-medium ${buffColors.text}`}>{data.buff}</div>
+          </div>
+
+          {/* Used By Characters */}
+          {usedBy.length > 0 && (
+            <div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Recommended For</div>
+              <div className="flex flex-wrap gap-2">
+                {usedBy.map(charName => {
+                  const charImg = DEFAULT_COLLECTION_IMAGES[charName];
+                  return (
+                    <div key={charName} className="flex flex-col items-center gap-1">
+                      {charImg ? (
+                        <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden" style={{ contain: 'paint', position: 'relative' }}>
+                          <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
+                          <User size={14} className="text-gray-500" />
+                        </div>
+                      )}
+                      <span className="text-[10px] text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
        </div>
       </div>
@@ -1885,7 +2022,7 @@ const getActiveBanners = () => {
 export {
   TROPHY_ICON_MAP, generateVerticalMaskGradient,
   TabBackground, Card, CardHeader, CardBody,
-  CharacterDetailModal, WeaponDetailModal,
+  CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
   AppErrorBoundary, TabErrorBoundary,
   BackgroundGlow, TriangleMirrorWave,
