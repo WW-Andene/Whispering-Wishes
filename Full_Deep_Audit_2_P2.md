@@ -3920,7 +3920,7 @@ The app's brand identity is defined by 6 signals:
 | Teams | ✅ Team analysis | ✅ Team cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ DPS numbers |
 | Profile | ✅ Gold CTA button | ✅ Settings cards | ✅ Card tops | ✅ Card inners | ✅ Card headers | ✅ Toggle states |
 
-> **Finding E7-BC1** · LOW
+> **Finding E7-BC1 ✅** · LOW
 > **Collection summary box bypasses kuro-card**: The Collection Progress section (`App.jsx:4789`) uses `className="p-3 rounded-lg border border-white/10 bg-white/5 content-layer"` — a raw Tailwind container instead of a `kuro-card`. It misses the shimmer line, corner HUD decorations, glass background token, and backdrop-filter blur. It's the only "card-like" element that doesn't use the kuro-card system.
 > **Solution**: Wrap in `<Card><CardBody>...</CardBody></Card>` to inherit all 6 brand signals.
 
@@ -4192,7 +4192,7 @@ The WuWa tracker ecosystem includes:
 **Collection tab** — Current: 8/10 polish
 | Change | Impact | Effort |
 |--------|--------|--------|
-| Collection Progress box → wrap in `<Card>` | Brand consistency (§E7-BC1) | Low |
+| Collection Progress box → wrap in `<Card>` | Brand consistency (§E7-BC1 ✅) | Low |
 | Search input → use `kuro-input` class | Token alignment | Trivial |
 | Filter selects → add focus gold glow | Focus consistency | Low |
 | Collection card inline glow → use `glow-gold` class | Noise reduction (§E7-VN3) | Trivial |
@@ -4364,9 +4364,9 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 | E7-AD4 ✅ | Badge padding inconsistency | LOW | ISSUE |
 | E7-AD5 | Shadow token hierarchy | — | PASS |
 | E7-AD6 ✅ | Shadow token under-usage | LOW | ISSUE |
-| E7-AD7 | Mixed units across paradigms | LOW | ISSUE |
+| E7-AD7 ✅ | Mixed units across paradigms | LOW | ISSUE |
 | E7-AD8 | Border opacity scale | — | PASS |
-| E7-BC1 | Collection summary bypasses kuro-card | LOW | ISSUE |
+| E7-BC1 ✅ | Collection summary bypasses kuro-card | LOW | ISSUE |
 | E7-BC2 | Gold accent presence all tabs | — | PASS |
 | E7-BC3 | Font family consistency | — | PASS |
 | E7-BC4 | Gray text vs brand identity | MEDIUM | ISSUE |
@@ -11042,7 +11042,7 @@ LOW findings improve polish, consistency, and edge-case quality. Organized by ca
 | 66 | E7-AD2 ✅ | No radius tokens (all hardcoded) | ALL | Resolved by HIGH-3 (radius tokens) |
 | 67 | E7-AD4 ✅ | Badge padding inconsistency (2–6px variation) | STATS | Standardize badge padding to `px-2 py-0.5` (8px × 2px) |
 | 68 | E7-AD6 ✅ | Shadow token under-usage (tokens defined, rarely referenced) | ALL | Refactor kuro-card shadow to use `var(--shadow-md)` token |
-| 69 | E7-AD7 | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
+| 69 | E7-AD7 ✅ | Mixed units (px, rem, Tailwind scale) | ALL | Document convention: px for spacing/radius, Tailwind scale for padding/margin |
 | 70 | E7-BC1 | Collection summary bypasses kuro-card system | COLLECTION | Wrap Collection Progress in `<Card>` component to gain shimmer line + corner decorations |
 | 71 | E7-FI2 | Subtitle gray dilutes first impression | HEADER | Change subtitle from `text-gray-400` to muted gold: `text-yellow-400/50` |
 | 72 | E7-SQ2 | Calculator lacks visual hero moment | CALC | Add gold-accented result card with larger probability display + subtle glow |
