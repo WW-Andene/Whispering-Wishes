@@ -4311,7 +4311,7 @@ The WuWa tracker ecosystem includes:
 
 > *"Is spacing consistent enough that nothing feels accidental?"*
 
-**Mostly** — the kuro-* system maintains rigorous 14px/10px spacing. The inline Tailwind layer introduces some variation (§E7-DC1) but not enough to feel accidental to most users.
+**Mostly** — the kuro-* system maintains rigorous 14px/10px spacing. The inline Tailwind layer introduces some variation (§E7-DC1 ✅) but not enough to feel accidental to most users.
 
 > **Finding E7-PL5** · PASS
 > **Universal baseline exceeded**: The app passes all three universal baseline tests — multiple details show extra effort, the design is clearly intentional, and spacing is consistent enough that nothing feels accidental. For a NON-REVENUE app, this level of polish is exceptional.
@@ -4416,7 +4416,7 @@ Legend: ✅ = passes criterion · ⚠️ = minor gap identified
 
 2. **Gray text volume** (§E7-BC4 ✅): 459 achromatic gray text instances weaken the gold brand identity. This is a cosmetic issue that compounds across the entire app — the overall color impression is "gray with gold highlights" rather than "gold with gray support."
 
-3. **Desktop grid overflow risk** (§E7-CD2): The `minmax(420px)` and `minmax(380px)` values in desktop grids could overflow on narrow desktop/tablet windows where sidebar (72px) + content + ad margin (160px) compress the content area.
+3. **Desktop grid overflow risk** (§E7-CD2 ✅): The `minmax(420px)` and `minmax(380px)` values in desktop grids could overflow on narrow desktop/tablet windows where sidebar (72px) + content + ad margin (160px) compress the content area.
 
 ### Connection to prior findings
 
@@ -5345,7 +5345,7 @@ This dual-metaphor system (precision instrument + rarity hierarchy) is **intenti
 | ID | Severity | Finding | Solution |
 |----|----------|---------|----------|
 | §E9-MC-F1 ✅ | **HIGH** | Native `<select>` dropdown at App.jsx:3182 breaks the glassmorphism HUD metaphor with browser-default chrome | **Replace with custom dropdown**: Create a `.kuro-select` component using a `<button>` trigger + positioned `<div>` menu, styled with `var(--bg-card)`, `backdrop-filter: blur(4px)`, and border tokens — matching the card system. This is the single most visible metaphor violation |
-| §E9-MC-F2 | **MEDIUM** | ~30% of inline Tailwind surface (§E9-VS-F1) reads as "framework default" rather than "LAHAI-ROI designed" | **Same solution as §E9-VS-F1**: Migrate generic Tailwind to design-system tokens. The metaphor break and the signature dilution are the same underlying issue |
+| §E9-MC-F2 | **MEDIUM** | ~30% of inline Tailwind surface (§E9-VS-F1 ✅) reads as "framework default" rather than "LAHAI-ROI designed" | **Same solution as §E9-VS-F1 ✅**: Migrate generic Tailwind to design-system tokens. The metaphor break and the signature dilution are the same underlying issue |
 | §E9-MC-F3 ✅ | **LOW** | Onboarding gradient circles (appcore-providers.jsx:352–356) use organic blob shapes that contrast with the geometric precision language | **Replace with geometric decorative elements**: Use angular gradient strips or triangle-mesh-inspired patterns instead of circular blurs — this keeps the onboarding visually distinct while staying within the geometric design language |
 
 ---
@@ -5966,7 +5966,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 |----|---------|----------|
 | §E9-VS-F1 ✅ | ~30% generic Tailwind surface dilutes signature | Migrate to design-system tokens |
 | §E9-MC-F1 ✅ | Native `<select>` breaks HUD metaphor | Create custom `.kuro-select` dropdown |
-| §E9-MC-F2 | Inline Tailwind reads as "framework default" | Same token migration as §E9-VS-F1 |
+| §E9-MC-F2 | Inline Tailwind reads as "framework default" | Same token migration as §E9-VS-F1 ✅ |
 | §E9-EA-F2 ✅ | No escalating pity urgency visual | Add progressive gold pulse as pity approaches |
 | §E9-EA-F3 ✅ | No collection milestone celebration | Add threshold celebration animations |
 | §E9-AG-F1 ✅ | ~492 `text-gray-400` instances have no brand personality | Create `--text-muted` token |
@@ -5996,7 +5996,7 @@ This creates a distinctive **temperature personality**: the app feels meditative
 
 ### Connection to Prior Findings
 
-- **§E1-COV1** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1). Token migration is the single highest-impact improvement.
+- **§E1-COV1** (token coverage ~30%): Confirmed as the root cause of both anti-genericness drag (§E9-AG) and visual signature dilution (§E9-VS-F1 ✅). Token migration is the single highest-impact improvement.
 - **§E7-PD1 ✅** (button migration): The native `<select>` (§E9-MC-F1 ✅) is the same class of issue — a non-branded native element breaking the design system.
 - **§E8-MI1** ("made with intent" gap): The 30% generic Tailwind surface identified here confirms the §E8 finding that inline utilities signal "defaults" rather than "design."
 - **§DBI3-S03** (rounded-lg monoculture): Confirmed as an anti-genericness issue (§E9-AG-F2) — the radius monoculture prevents shape from serving as an identity signal.
@@ -9071,7 +9071,7 @@ Competitive positioning map:
 | SI1 | **Gray text genericness** | §DBI3-S07 (HIGH), §E7-BC4 ✅ (MEDIUM), §E9-AG-F1 ✅ (MEDIUM), §E8-MI1 (MEDIUM) | Same root issue — 459+ achromatic gray text instances — graded as HIGH in one step and MEDIUM in three others | **HIGH** — Step 7 correctly identified this as the highest-genericness signal. Steps 14/15/16 correctly identified it as a brand/identity issue but undergraded relative to Step 7. The count (459+ instances) and pervasiveness (all 8 tabs) justify HIGH. |
 | SI2 | **Rounded-lg monoculture** | §DBI3-S03 (MEDIUM), §E7-AD2 ✅ (LOW), §E9-AG-F2 (MEDIUM), §E1-RAD1 ✅ (MEDIUM) | Same issue rated MEDIUM in 3 steps but LOW in Step 14 | **MEDIUM** — E7-AD2 ✅ should be MEDIUM. The 109+ instances of `rounded-lg` without token-based radius scale is a systemic issue, not a minor detail. |
 | SI3 | **Token coverage gap** | §E1-COV1 (HIGH), §E7-DC1 ✅ (MEDIUM), §E8-MI1 (MEDIUM), §E9-VS-F1 ✅ (MEDIUM) | E1 rates the token gap as HIGH; later steps referencing the same root issue rate their manifestations as MEDIUM | **Consistent.** E1's HIGH is for the *systemic root cause* (30% token coverage). Later steps rate *individual symptoms* (coherence gap, intent gap, signature dilution) as MEDIUM. Root cause is correctly higher than symptoms. No adjustment needed. |
-| SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
+| SI4 | **Inline button sprawl** | §E5-BT5 ✅ (MEDIUM), §E6-HV9 ✅ (MEDIUM), §E6-AP4 ✅ (LOW), §E7-PD1 ✅ (MEDIUM) | The active/press feedback aspect (E6-AP4 ✅) is rated LOW while all other manifestations are MEDIUM | **MEDIUM** — E6-AP4 ✅ should be upgraded from LOW → MEDIUM. Missing press feedback on ~93+ buttons is the same scope as missing hover feedback (E6-HV9 ✅, rated MEDIUM). The interaction quality gap is consistent regardless of which state (hover vs active) is missing. |
 | SI5 | **Missing kuro-number propagation** | §E10-NV-F3 (LOW), §E10-NF-F2 (MEDIUM), §E10-DT-F1 (MEDIUM) | NV-F3 and NF-F2 describe the same issue (Stats tab missing kuro-number) at different severities | **MEDIUM** — NV-F3 should be upgraded from LOW → MEDIUM. The NF-F2 framing (number formatting inconsistency) correctly captures the impact. These are the same fix — adding `.kuro-number` to Stats tab numeric displays. |
 | SI6 | **Empty state personality** | §E6-ES3 ✅ (LOW), §E10-EP-F1 (MEDIUM), §E9-EA-F4 ✅ (LOW) | Empty state issues rated LOW in Steps 13/16 but MEDIUM in Step 17 for Stats specifically | **Consistent.** The generic empty state CTA gap (E6-ES3 ✅) and voice inconsistency (E9-EA-F4 ✅) are LOW across the app. The Stats-specific "clinical" tone (E10-EP-F1) is MEDIUM because it directly undermines the tab's data storytelling purpose. Different scopes justify different severities. |
 
@@ -9094,10 +9094,10 @@ Competitive positioning map:
 
 | Metric | Step A Value | Step B Value | Consistent? |
 |--------|-------------|-------------|-------------|
-| Gray text instances | §DBI3-S07: "459 achromatic" | §E9-AG-F1: "~492 text-gray-400" | **MINOR DISCREPANCY** — DBI3 counts all achromatic gray (gray-300/400/500). E9 counts only text-gray-400. 459 ⊃ 492 is impossible if E9 is a subset. **Resolution**: E9's "~492" likely includes text-gray-300 and text-gray-500 as well, making it a recount rather than a subset. Counts are approximate (tilde-prefixed). **No material difference** — both establish "~450-500 instances" as the magnitude. |
+| Gray text instances | §DBI3-S07: "459 achromatic" | §E9-AG-F1 ✅: "~492 text-gray-400" | **MINOR DISCREPANCY** — DBI3 counts all achromatic gray (gray-300/400/500). E9 counts only text-gray-400. 459 ⊃ 492 is impossible if E9 is a subset. **Resolution**: E9's "~492" likely includes text-gray-300 and text-gray-500 as well, making it a recount rather than a subset. Counts are approximate (tilde-prefixed). **No material difference** — both establish "~450-500 instances" as the magnitude. |
 | Hardcoded colors | §DS2-F8: "~240 hardcoded" | §E1-COL1: "66 unique hex" | **CONSISTENT** — 240 instances ÷ 66 unique = 3.6 avg uses per color. Plausible. |
 | Inline buttons | §E5-BT5 ✅: "~100+" | §E6-HV9 ✅: "~100+" | §E6-AP4 ✅: "~93+" | **CONSISTENT** — all approximate the same population. |
-| Token coverage | §E1-COV1: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
+| Token coverage | §E1-COV1: "~30%" | §E8-MI1: "~30% generic" | §E9-VS-F1 ✅: "~30% dilutes" | **CONSISTENT** — all reference the same approximate coverage gap. |
 | Rounded-lg count | §DBI3-S03: "109× rounded-lg" | §E9-AG-F2: "~360 rounded-lg" | **DISCREPANCY** — 109 vs 360 is a 3.3× difference. **Resolution**: DBI3 likely counts `rounded-lg` class instances. E9 may count all `rounded-*` instances including `rounded`, `rounded-md`, `rounded-xl`, etc. **Clarification needed** — the finding should specify: §DBI3-S03 counts `rounded-lg` specifically (109); §E9-AG-F2 should count `rounded-lg` specifically to maintain consistency. If E9 includes all rounded-* variants, note this explicitly. |
 | Touch targets | §E2-MO1 ✅: "36px" | §CK-F2 ✅: "36px" | **CONSISTENT** — same measurement. |
 | Surface elevation band | §DC3-EL1 ✅: "3.7% lightness band" | §CL-F1: "Surface elevation steps too small" | **CONSISTENT** — qualitative and quantitative descriptions align. |
@@ -9146,7 +9146,7 @@ Competitive positioning map:
 |---|---------|-----------|-------------------|
 | R1 | §E8-DC1 LOW: "OG image may not exist" | Social sharing meta tags | **Not verified.** The finding says "may not exist" — no step actually checked whether `og-image.png` is accessible at the stated URL. **Solution**: Verify URL accessibility during implementation. |
 | R2 | §E8-CI2 MEDIUM: "Missing apple-touch-icon.png" | PWA manifest and iOS support | **Not fully verified.** The manifest references `apple-touch-icon.png` but no step confirmed whether the file exists in `public/`. **Solution**: Check file system during implementation — `ls public/apple-touch-icon.png`. |
-| R3 | §E7-CD2 MEDIUM: "Banner/event grid minmax overflow" | Desktop responsive behavior | **Theoretical risk.** The finding identifies overflow potential at `minmax(420px)` but doesn't confirm actual breakpoint where overflow occurs. **Solution**: Test at exactly 1024px viewport with sidebar visible to identify the actual break point. |
+| R3 | §E7-CD2 ✅ MEDIUM: "Banner/event grid minmax overflow" | Desktop responsive behavior | **Theoretical risk.** The finding identifies overflow potential at `minmax(420px)` but doesn't confirm actual breakpoint where overflow occurs. **Solution**: Test at exactly 1024px viewport with sidebar visible to identify the actual break point. |
 | R4 | §E10-HI-F1 MEDIUM: "Flat grid anti-pattern connects to E4-PERF-F1" | Performance finding E4-PERF-F1 | **Cross-reference to non-existent finding.** There is no finding numbered "E4-PERF-F1" in Step 11 (§E4 Typography). This appears to be an erroneous cross-reference. **Solution**: Remove this cross-reference from Step 17. The Planner flat grid is purely a visual hierarchy issue, not a performance issue (unless re-renders are independently verified). |
 
 ### 19.3.3 — Gap Summary
@@ -9206,16 +9206,16 @@ Competitive positioning map:
 | §E3-SC1 ✅: Warning = accent (both gold) | Assign amber-500 to warnings | Same as E3-AC1 ✅ above | **ALIGNED with constraint** |
 | §E5-BT5 ✅: Inline button sprawl ~100+ | Migrate to kuro-btn variants | **STRENGTHENS P5** — brings inline elements into the design system's cyberpunk vocabulary | **ALIGNED** |
 | §E7-DC1 ✅: Two-layer coherence gap | Extend kuro-* system to inline layer | Same mechanism as E5-BT5 ✅ | **ALIGNED** |
-| §E7-BC4: Gray text vs brand identity | Create chromatic --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
-| §E7-CD2: Desktop grid overflow risk | Add `min(420px, 100%)` safeguard | **NONE** — purely defensive layout fix | **ALIGNED** |
+| §E7-BC4 ✅: Gray text vs brand identity | Create chromatic --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
+| §E7-CD2 ✅: Desktop grid overflow risk | Add `min(420px, 100%)` safeguard | **NONE** — purely defensive layout fix | **ALIGNED** |
 | §E8-CI2: Missing apple-touch-icon.png | Generate from brand design | **STRENGTHENS P2** — extends gold brand to iOS | **ALIGNED** |
 | §E8-FV1: Favicon wrong gold + system font | Update to brand gold + consider Rajdhani-derived mark | **STRENGTHENS P2 + P3** | **ALIGNED** |
 | §E8-MI1: Three defaulting signals | Migrate defaults to branded tokens | **STRENGTHENS P5** — removes Tailwind default fingerprint | **ALIGNED** |
-| §E9-VS-F1: ~30% generic Tailwind surface | Token migration | Same mechanism as E1-COV1 | **ALIGNED** |
-| §E9-MC-F1: Native select breaks HUD metaphor | Create custom .kuro-select | **STRENGTHENS P5** — replaces generic OS control with branded component | **ALIGNED** |
-| §E9-EA-F2: No escalating pity urgency | Progressive gold pulse as pity approaches | **STRENGTHENS P2** — gold as urgency signal is on-brand | **ALIGNED** |
-| §E9-EA-F3: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 — must be cyberpunk-geometric | **ALIGNED with constraint** |
-| §E9-AG-F1: ~492 text-gray-400 | Create --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
+| §E9-VS-F1 ✅: ~30% generic Tailwind surface | Token migration | Same mechanism as E1-COV1 | **ALIGNED** |
+| §E9-MC-F1 ✅: Native select breaks HUD metaphor | Create custom .kuro-select | **STRENGTHENS P5** — replaces generic OS control with branded component | **ALIGNED** |
+| §E9-EA-F2 ✅: No escalating pity urgency | Progressive gold pulse as pity approaches | **STRENGTHENS P2** — gold as urgency signal is on-brand | **ALIGNED** |
+| §E9-EA-F3 ✅: No collection milestone celebration | Threshold celebration animations | Same constraint as §E9-EA-F1 — must be cyberpunk-geometric | **ALIGNED with constraint** |
+| §E9-AG-F1 ✅: ~492 text-gray-400 | Create --text-muted token | Same as DBI3-S07 | **ALIGNED with constraint** |
 | §E9-AG-F2: ~360 rounded-lg monoculture | Create radius scale tokens | **NONE** — formalizing existing values | **ALIGNED** |
 | §E9-MO-F1: Desktop easing differs | Unify to branded cubic-bezier | **STRENGTHENS P5** — consistent motion identity | **ALIGNED** |
 | §E10 MEDIUM findings (12 total) | Various data storytelling fixes | **NONE** — all improve data display without altering visual identity | **ALIGNED** |
@@ -9269,7 +9269,7 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
     │       │
     │       ├──→ BRAND: "Made with intent" gap — Tailwind defaults visible (§E8-MI1)
     │       │       │
-    │       │       └──→ IDENTITY: ~30% generic surface dilutes visual signature (§E9-VS-F1)
+    │       │       └──→ IDENTITY: ~30% generic surface dilutes visual signature (§E9-VS-F1 ✅)
     │       │
     │       └──→ PROFESSIONALISM: Perceptible polish gradient within each screen (§E7-PD1 ✅)
     │
@@ -9300,9 +9300,9 @@ ROOT CAUSE: ~100+ buttons outside kuro-btn system (§E5-BT5 ✅)
 ```
 ROOT CAUSE: 459+ achromatic gray text instances (§DBI3-S07)
     │
-    ├──→ AESTHETIC: Overall color impression is "gray with gold highlights" (§E7-BC4)
+    ├──→ AESTHETIC: Overall color impression is "gray with gold highlights" (§E7-BC4 ✅)
     │       │
-    │       └──→ BRAND: Gold accent appears as exception, not rule (§E9-AG-F1)
+    │       └──→ BRAND: Gold accent appears as exception, not rule (§E9-AG-F1 ✅)
     │               │
     │               └──→ IDENTITY: App impression shifts from "purposefully branded" to "dark theme with accents"
     │
@@ -9317,7 +9317,7 @@ ROOT CAUSE: 459+ achromatic gray text instances (§DBI3-S07)
 
 **Chain impact**: 6+ findings across 5 steps
 **Single fix**: Create `--text-muted`, `--text-secondary`, `--text-disabled` tokens using cool-tinted chromatic grays and apply via `.kuro-text-muted` etc.
-**Cascade resolution**: Fixes §DBI3-S07, §E7-BC4, §E9-AG-F1, §DC2-TX1 and contributes to §E1-COV1, §E1-COL1
+**Cascade resolution**: Fixes §DBI3-S07, §E7-BC4 ✅, §E9-AG-F1 ✅, §DC2-TX1 and contributes to §E1-COV1, §E1-COL1
 
 ---
 
@@ -9432,7 +9432,7 @@ ROOT CAUSE: No dedicated visual treatment for emotional peak moments
     │               │
     │               └──→ RETENTION: Users miss the dopamine reward that keeps them returning
     │
-    ├──→ COLLECTION: No milestone celebration (§E9-EA-F3)
+    ├──→ COLLECTION: No milestone celebration (§E9-EA-F3 ✅)
     │       │
     │       └──→ PROGRESS: Collecting all characters in an element has no acknowledgment
     │
@@ -9440,7 +9440,7 @@ ROOT CAUSE: No dedicated visual treatment for emotional peak moments
     │       │
     │       └──→ ONBOARDING: Transition from "nothing" to "your data" is uncelebrated
     │
-    └──→ PITY: No escalating urgency visual (§E9-EA-F2)
+    └──→ PITY: No escalating urgency visual (§E9-EA-F2 ✅)
             │
             └──→ ANTICIPATION: The approach to pity has no building tension signal
 ```
@@ -9725,7 +9725,7 @@ The 4 primary data tabs (Tracker, Calculator, Planner, Stats) received additiona
 | **Gold token consolidation** | §DS2-F7 (split gold), §E1-COL2 ✅ (near-duplicate golds), §DC2-ND1 (5 gold variants), §E9-AC-F2 ✅ (favicon gold) | **"Gold color fragmentation"**: 5 gold-family values exist where 1 token (#edaf18) should govern all. Favicon uses wrong gold. | MEDIUM |
 | **Empty state CTA** | §E6-ES3 ✅ (missing CTAs), §E10-EP-F1 (clinical Stats empty), §E9-EA-F4 ✅ (inconsistent voice) | **"Empty state completion gap"**: Empty states have excellent visual design but miss (1) action CTAs, (2) consistent game-lore voice, (3) Stats-specific personality. | MEDIUM |
 | **kuro-number propagation** | §E10-NV-F3, §E10-NF-F2, §E10-DT-F1 | **"kuro-number inconsistency"**: The kuro-number class providing tabular-nums + JetBrains Mono is designed but not applied to Stats tab numbers, leaderboard columns, or pull log numbers. | MEDIUM |
-| **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
+| **Select/dropdown bypass** | §E5-IN4 ✅ (dropdowns bypass kuro-input), §E9-MC-F1 ✅ (native select breaks HUD) | **"Native select inconsistency"**: 3 of 5 select groups use browser-native styling instead of the kuro-input glass material system. | MEDIUM |
 | **Text-rendering enhancement** | §E1-TYP5 ✅ (missing optimizeLegibility), §E4-TR2 ✅ (same) | **"Missing text-rendering: optimizeLegibility"**: Single CSS declaration missing from root styles. ✅ FIXED | LOW |
 
 ### 19.8.5 — Final Reconciled Finding Count
@@ -10020,7 +10020,7 @@ Replacement mapping:
 
 All three token values carry blue hue (≈250°), matching the background's chromatic temperature. The visual change is subtle (achromatic gray → blue-tinted gray) but the cumulative effect makes the entire UI feel unified and intentional rather than template-derived.
 
-**Cross-references**: E7-BC4, §E9-AG-F1, DBI3-TAB1 ✅
+**Cross-references**: E7-BC4 ✅, §E9-AG-F1 ✅, DBI3-TAB1 ✅
 
 ---
 
@@ -10193,7 +10193,7 @@ Priority: Apply `--radius-xl` to all kuro-card instances first (largest visual s
 - Gold border pulse on the pull log entry for pulls significantly below average pity
 - Subtle text glow on the pity count
 
-**Cross-references**: §E10-success-rating (7/10), §E9-EA-F2, §E9-EA-F3
+**Cross-references**: §E10-success-rating (7/10), §E9-EA-F2 ✅, §E9-EA-F3 ✅
 
 ---
 
@@ -11214,7 +11214,7 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
-| **1A** | Create chromatic text tokens (`--text-secondary`, `--text-muted`, `--text-disabled`) | HIGH-1, MED-17, MED-24 |
+| **1A** | Create chromatic text tokens (`--text-secondary`, `--text-muted`, `--text-disabled`) | HIGH-1, MED-17 ✅, MED-24 ✅ |
 | **1B** | Create radius, spacing, z-index tokens | HIGH-3, MED-3 ✅, MED-4 ✅ |
 | **1C** | Consolidate color palette to ~40 managed tokens | HIGH-2 |
 | **1D** | Replace `text-gray-*` with chromatic tokens (459 instances) | Chain #2 |
@@ -11225,9 +11225,9 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
 | **2A** | Create kuro-btn-sm, kuro-btn-icon, kuro-btn-ghost variants | MED-6 ✅ |
-| **2B** | Migrate ~100+ inline buttons to kuro-btn variants | Chain #1, MED-16, MED-19 |
+| **2B** | Migrate ~100+ inline buttons to kuro-btn variants | Chain #1, MED-16 ✅, MED-19 ✅ |
 | **2C** | Wrap ~5 inline containers in `<Card>` components | #70, #76 |
-| **2D** | Create custom `.kuro-select` dropdown | MED-21 |
+| **2D** | Create custom `.kuro-select` dropdown | MED-21 ✅ |
 
 ### Phase 3: Brand Assets (HIGH impact, LOW effort)
 *Estimated: ~5 files created/modified*
@@ -11254,7 +11254,7 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
 | **5A** | Add 5★ celebration animation | HIGH-6 |
-| **5B** | Add pity danger zone visual escalation | MED-22 |
+| **5B** | Add pity danger zone visual escalation | MED-22 ✅ |
 | **5C** | Replace `rgba(0,0,0,...)` with palette-derived shadows | MED-40 |
 | **5D** | Tighten transition durations | #122 |
 | **5E** | Add display text tracking | MED-45 |
@@ -11264,7 +11264,7 @@ Step 19 identified 13 findings that were not explicitly covered in Steps 1–18 
 | Priority | Action | Findings Resolved |
 |----------|--------|-------------------|
 | **6A** | Canvas reduced-motion check | MED-42 |
-| **6B** | Touch targets 44px on mobile | MED-15 |
+| **6B** | Touch targets 44px on mobile | MED-15 ✅ |
 | **6C** | Extend `:focus-visible` to all interactive elements | #117 |
 | **6D** | Warning color separation (gold → amber) | MED-11 ✅ |
 | **6E** | Input border contrast increase (0.08 → 0.15) | MED-12 ✅ |
