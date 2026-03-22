@@ -187,7 +187,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
       >
        <div className="overflow-y-auto max-h-[90vh]">
         {/* Header with image */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl breath-zoom ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
@@ -197,10 +197,12 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           )}
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
-              transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
-              transformOrigin: 'right bottom'
-            }} />
+            <div className="absolute inset-0 breath-zoom">
+              <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
+                transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                transformOrigin: 'right bottom'
+              }} />
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
@@ -405,8 +407,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
-                                <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden breath-zoom${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                                  <div className="absolute inset-0 breath-zoom">
+                                    <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
@@ -780,8 +784,10 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                   return (
                     <div key={charName} className="flex flex-col items-center gap-1">
                       {charImg ? (
-                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden breath-zoom${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
-                          <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
+                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                          <div className="absolute inset-0 breath-zoom">
+                            <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
+                          </div>
                         </div>
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
