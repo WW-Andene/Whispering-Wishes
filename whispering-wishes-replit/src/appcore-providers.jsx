@@ -2330,6 +2330,9 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     /* ── Luck Badge: stronger glow + particle aura ── */
+    .animations-full .luck-badge {
+      overflow: visible;
+    }
     .animations-full .luck-badge::before {
       opacity: 1;
       filter: blur(2px);
@@ -2338,7 +2341,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .animations-full .luck-badge::after {
       content: '';
       position: absolute;
-      inset: -8px;
+      inset: -10px;
       border-radius: inherit;
       background: radial-gradient(ellipse at center, var(--badge-color), transparent 70%);
       opacity: 0;
@@ -2347,8 +2350,8 @@ const KuroStyles = memo(({ oledMode }) => (
       z-index: -1;
     }
     @keyframes badgeAura {
-      0%, 100% { opacity: 0.15; transform: scale(1); }
-      50% { opacity: 0.35; transform: scale(1.08); }
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.12); }
     }
 
     /* ── Collection Grid: holographic shimmer sweep on 5★ owned ── */
@@ -2356,16 +2359,16 @@ const KuroStyles = memo(({ oledMode }) => (
       content: '';
       position: absolute;
       top: 0; left: -100%;
-      width: 60%;
+      width: 80%;
       height: 100%;
-      background: linear-gradient(105deg, transparent 30%, rgba(255,220,100,0.12) 45%, rgba(255,255,255,0.18) 50%, rgba(255,220,100,0.12) 55%, transparent 70%);
-      animation: holoSweep 4s ease-in-out infinite;
+      background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.15) 40%, rgba(255,255,255,0.25) 50%, rgba(255,220,100,0.15) 60%, transparent 75%);
+      animation: holoSweep 3.5s ease-in-out infinite;
       pointer-events: none;
       z-index: 15;
     }
     @keyframes holoSweep {
-      0%, 100% { left: -100%; }
-      50% { left: 150%; }
+      0% { left: -100%; }
+      100% { left: 150%; }
     }
 
     /* ── Tab transitions: enhanced slide + fade ── */
@@ -2386,55 +2389,51 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     /* ── Background: shooting stars ── */
-    .animations-full::before {
-      content: '';
+    .shooting-star-1, .shooting-star-2 {
       position: fixed;
-      top: 0; left: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .shooting-star-1 {
+      width: 4px; height: 4px;
+      background: white;
+      box-shadow: 0 0 8px 3px rgba(200,220,255,0.8), -8px 0 12px rgba(200,220,255,0.4);
+      opacity: 0;
+      animation: shootingStar 6s linear infinite;
+    }
+    .shooting-star-2 {
       width: 3px; height: 3px;
       background: white;
-      border-radius: 50%;
-      box-shadow: 0 0 6px 2px rgba(200,220,255,0.6);
+      box-shadow: 0 0 6px 2px rgba(180,200,255,0.7), -6px 0 10px rgba(180,200,255,0.3);
       opacity: 0;
-      z-index: 3;
-      pointer-events: none;
-      animation: shootingStar 8s linear infinite;
-    }
-    .animations-full::after {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 2px; height: 2px;
-      background: white;
-      border-radius: 50%;
-      box-shadow: 0 0 4px 1px rgba(180,200,255,0.5);
-      opacity: 0;
-      z-index: 3;
-      pointer-events: none;
-      animation: shootingStar2 12s linear infinite 5s;
+      animation: shootingStar2 9s linear infinite 3s;
     }
     @keyframes shootingStar {
-      0% { opacity: 0; top: 8%; left: 75%; }
-      2% { opacity: 0.9; }
-      8% { opacity: 0; top: 35%; left: 20%; }
+      0% { opacity: 0; top: 6%; left: 80%; }
+      1% { opacity: 1; }
+      6% { opacity: 1; top: 30%; left: 25%; }
+      7% { opacity: 0; }
       100% { opacity: 0; }
     }
     @keyframes shootingStar2 {
-      0% { opacity: 0; top: 12%; left: 90%; }
-      2% { opacity: 0.7; }
-      6% { opacity: 0; top: 28%; left: 45%; }
+      0% { opacity: 0; top: 10%; left: 92%; }
+      1% { opacity: 0.8; }
+      5% { opacity: 0.8; top: 25%; left: 40%; }
+      6% { opacity: 0; }
       100% { opacity: 0; }
     }
 
     /* ── Breathing zoom on character images ── */
     .animations-full .breath-zoom {
-      animation: breathZoom 8s ease-in-out infinite;
+      animation: breathZoom 6s ease-in-out infinite;
     }
     .animations-full .collection-card .collection-img-wrap {
-      animation: breathZoom 6s ease-in-out infinite;
+      animation: breathZoom 5s ease-in-out infinite;
     }
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
+      50% { transform: scale(1.035); }
     }
 
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
