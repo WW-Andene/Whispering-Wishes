@@ -1726,18 +1726,14 @@ const BANNER_THEMES = {
     }));
     // Leaves — varied shade/size/speed, brighter near moon, darker far away
     const moonX = w * 0.75, moonY = h * 0.12;
-    // Color tint variations: warm grey, cool grey, greenish grey
-    const tints = [
-      { r: 10, g: 5, b: 0 },   // warm
-      { r: -5, g: 0, b: 10 },  // cool
-      { r: -5, g: 10, b: 0 },  // green
-      { r: 0, g: 0, b: 0 },    // neutral
-    ];
+    // Leaf colors: cool blue-grey to dark blue-grey (matching art palette)
+    // Dark end: ~(35,40,55)  Cool/light end: ~(90,100,120)
     const leaves = Array.from({ length: 16 }, () => {
       const lx = Math.random() * w, ly = Math.random() * h;
       const distToMoon = Math.sqrt((lx - moonX) ** 2 + (ly - moonY) ** 2);
       const maxDist = Math.sqrt(w * w + h * h);
       const moonProx = 1 - Math.min(distToMoon / (maxDist * 0.5), 1);
+      const colorMix = Math.random(); // 0 = dark blue-grey, 1 = cool blue-grey
       return {
         x: lx, y: ly,
         size: 2 + Math.random() * 3 + moonProx * 1.5,
@@ -1746,12 +1742,10 @@ const BANNER_THEMES = {
         swaySpeed: 0.12 + Math.random() * 0.22, phase: Math.random() * Math.PI * 2,
         rot: Math.random() * Math.PI * 2,
         rotV: (Math.random() - 0.5) * (0.008 + moonProx * 0.006),
-        // Self-rotation (tumble around own axis, like flipping in 3D)
         spinPhase: Math.random() * Math.PI * 2,
         spinSpeed: 0.3 + Math.random() * 0.5,
         alpha: 0.4 + Math.random() * 0.35 + moonProx * 0.2,
-        shade: Math.floor(45 + Math.random() * 50 + moonProx * 60),
-        tint: tints[Math.floor(Math.random() * tints.length)],
+        colorMix, moonProx,
       };
     });
     // Jade glint particles
@@ -1807,22 +1801,24 @@ const BANNER_THEMES = {
           const d = Math.sqrt((l.x - moonX) ** 2 + (l.y - moonY) ** 2);
           const maxD = Math.sqrt(w * w + h * h);
           const prox = 1 - Math.min(d / (maxD * 0.5), 1);
-          l.shade = Math.floor(45 + Math.random() * 50 + prox * 60);
+          l.colorMix = Math.random();
           l.size = 2 + Math.random() * 3 + prox * 1.5;
           l.alpha = 0.4 + Math.random() * 0.35 + prox * 0.2;
-          l.tint = tints[Math.floor(Math.random() * tints.length)];
+          l.moonProx = prox;
         }
         // 3D self-rotation: cos squashes width to simulate tumbling
         const spin = Math.cos(t * l.spinSpeed + l.spinPhase);
-        const widthScale = 0.2 + Math.abs(spin) * 0.8; // never fully flat
+        const widthScale = 0.2 + Math.abs(spin) * 0.8;
+        // Color: lerp from dark blue-grey (35,40,55) to cool blue-grey (90,100,120)
+        // Moon proximity shifts toward lighter end
+        const cm = Math.min(1, l.colorMix + l.moonProx * 0.4);
+        const lr = Math.floor(35 + cm * 55);
+        const lg = Math.floor(40 + cm * 60);
+        const lb = Math.floor(55 + cm * 65);
         ctx.save();
         ctx.globalAlpha = l.alpha;
         ctx.translate(sx, l.y); ctx.rotate(l.rot);
-        const s = l.shade;
-        const r = Math.min(255, Math.max(0, s + l.tint.r));
-        const g = Math.min(255, Math.max(0, s + 8 + l.tint.g));
-        const b = Math.min(255, Math.max(0, s + 4 + l.tint.b));
-        ctx.fillStyle = `rgba(${r},${g},${b},0.9)`;
+        ctx.fillStyle = `rgba(${lr},${lg},${lb},0.9)`;
         ctx.beginPath();
         ctx.ellipse(0, 0, l.size * 0.45 * widthScale, l.size * 1.7, 0, 0, Math.PI * 2);
         ctx.fill();
