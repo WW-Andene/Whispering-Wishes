@@ -1929,11 +1929,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     ? generateMaskGradient(visualSettings.fadePosition, visualSettings.fadeIntensity)
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
-  const animEnabled = visualSettings?.animationsEnabled !== 'off' && visualSettings?.animationsEnabled !== false;
+  const isFull = visualSettings?.animationsEnabled === 'full';
 
   return (
-    <div className={animEnabled ? 'banner-card-glow rounded-xl' : ''} style={animEnabled ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: animEnabled ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <img
           src={imgUrl}
