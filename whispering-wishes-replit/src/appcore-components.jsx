@@ -1390,6 +1390,21 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 
   return (
     <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+      {imgUrl && animEnabled && [1, 2, 3].map(i => (
+        <img
+          key={`echo-${i}`}
+          src={imgUrl}
+          alt=""
+          className={`absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-ghost banner-ghost-${i}`}
+          style={{
+            zIndex: 0,
+            maskImage: maskGradient,
+            WebkitMaskImage: maskGradient,
+          }}
+          loading="eager"
+          aria-hidden="true"
+        />
+      ))}
       {imgUrl && (
         <img
           src={imgUrl}

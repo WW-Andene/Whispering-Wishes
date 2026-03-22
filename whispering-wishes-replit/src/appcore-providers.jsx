@@ -916,6 +916,26 @@ const KuroStyles = memo(({ oledMode }) => (
       75%  { transform: scale(1.10) translate(-1%, 0.5%); }
       100% { transform: scale(1.08) translate(0%, 0%); }
     }
+    .banner-ghost {
+      animation-fill-mode: both !important;
+      animation-iteration-count: infinite !important;
+    }
+    .banner-ghost-1 {
+      animation: bannerGhost 8s ease-in-out 0s infinite both !important;
+    }
+    .banner-ghost-2 {
+      animation: bannerGhost 10s ease-in-out 2.5s infinite both !important;
+    }
+    .banner-ghost-3 {
+      animation: bannerGhost 12s ease-in-out 5s infinite both !important;
+    }
+    @keyframes bannerGhost {
+      0%, 100% { opacity: 0; transform: translate(0, 0) scale(1); filter: blur(0px) brightness(1); }
+      15%  { opacity: 0.3; transform: translate(8px, -3px) scale(1.02); filter: blur(2px) brightness(1.3); }
+      35%  { opacity: 0.2; transform: translate(18px, -5px) scale(1.04); filter: blur(4px) brightness(1.2); }
+      55%  { opacity: 0.08; transform: translate(28px, -3px) scale(1.05); filter: blur(7px) brightness(1.1); }
+      75%  { opacity: 0; transform: translate(40px, -1px) scale(1.06); filter: blur(12px) brightness(1); }
+    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;
