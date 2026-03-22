@@ -1754,26 +1754,45 @@ const BANNER_THEMES = {
     }));
     const moonR = 20;
     return (ctx, t) => {
-      // Moon disc — small bright core visible on canvas
+      // Animated glow pulse — slow breathe with layered harmonics
+      const pulse1 = Math.sin(t * 0.08);          // slow primary breathe
+      const pulse2 = Math.sin(t * 0.19 + 1.2);    // faster secondary shimmer
+      const pulse3 = Math.sin(t * 0.042 + 2.5);   // very slow drift
+      const glowStrength = 0.5 + pulse1 * 0.15 + pulse2 * 0.08 + pulse3 * 0.1;
+      const haloScale = 1 + pulse1 * 0.12 + pulse3 * 0.08; // halo radius breathes
+
+      // Moon outer glow — soft expanding ring
       ctx.save();
-      ctx.globalAlpha = 0.35 + Math.sin(t * 0.1) * 0.08;
+      ctx.globalAlpha = (0.08 + pulse1 * 0.04 + pulse2 * 0.02) * glowStrength;
+      const og = ctx.createRadialGradient(moonX, moonY, moonR * 2, moonX, moonY, moonR * 11 * haloScale);
+      og.addColorStop(0, 'rgba(180,210,245,0.15)');
+      og.addColorStop(0.5, 'rgba(150,185,220,0.05)');
+      og.addColorStop(1, 'rgba(120,155,190,0)');
+      ctx.fillStyle = og;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 11 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Moon halo — atmospheric glow, breathes with pulse
+      ctx.save();
+      ctx.globalAlpha = (0.15 + pulse1 * 0.06 + pulse2 * 0.03) * glowStrength;
+      const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 7 * haloScale);
+      mg.addColorStop(0, 'rgba(200,220,245,0.45)');
+      mg.addColorStop(0.3, 'rgba(170,200,225,0.2)');
+      mg.addColorStop(0.6, 'rgba(140,170,200,0.07)');
+      mg.addColorStop(1, 'rgba(110,140,170,0)');
+      ctx.fillStyle = mg;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 7 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Moon disc — bright core pulses
+      ctx.save();
+      ctx.globalAlpha = glowStrength * 0.7;
       const disc = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR);
-      disc.addColorStop(0, 'rgba(240,245,255,0.9)');
-      disc.addColorStop(0.5, 'rgba(210,225,245,0.5)');
+      disc.addColorStop(0, 'rgba(245,248,255,0.95)');
+      disc.addColorStop(0.4, 'rgba(220,235,250,0.6)');
       disc.addColorStop(1, 'rgba(180,200,230,0)');
       ctx.fillStyle = disc;
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-      // Moon halo — wide atmospheric glow
-      ctx.save();
-      ctx.globalAlpha = 0.15 + Math.sin(t * 0.12) * 0.05;
-      const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 7);
-      mg.addColorStop(0, 'rgba(200,220,245,0.4)');
-      mg.addColorStop(0.3, 'rgba(170,200,225,0.18)');
-      mg.addColorStop(0.6, 'rgba(140,170,200,0.06)');
-      mg.addColorStop(1, 'rgba(110,140,170,0)');
-      ctx.fillStyle = mg;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 7, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
       // Brume
       for (const b of brume) {
