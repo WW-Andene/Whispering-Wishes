@@ -905,7 +905,8 @@ const KuroStyles = memo(({ oledMode }) => (
       to { transform: rotate(360deg); }
     }
     .banner-echo-img {
-      animation: bannerDrift 20s ease-in-out infinite;
+      animation: bannerDrift 20s ease-in-out infinite !important;
+      animation-iteration-count: infinite !important;
       transform-origin: center top;
     }
     @keyframes bannerDrift {
