@@ -1726,13 +1726,15 @@ const BANNER_THEMES = {
     }));
     // Leaves — varied shade/size/speed, brighter near moon, darker far away
     const moonX = w * 0.75, moonY = h * 0.12;
-    // Leaf colors: dark blue-grey (35,40,55) → cool blue-grey (90,100,120)
-    // X position drives color: dark on right, lighter on left
-    const leaves = Array.from({ length: 16 }, () => {
-      const lx = Math.random() * w, ly = Math.random() * h;
+    // Leaves spawn from top-right, drift down-left
+    // Color: very dark (20,25,35) on right → light (120,135,155) on left
+    const leaves = Array.from({ length: 16 }, (_, i) => {
+      // Stagger initial positions so they don't all cluster at spawn
+      const lx = w * 0.5 + Math.random() * w * 0.5;
+      const ly = -Math.random() * h * 0.8; // scattered above top-right
       return {
         x: lx, y: ly,
-        size: 1.5 + Math.random() * 5, // wide size variation
+        size: 1 + Math.random() * 7, // tiny specks to big leaves
         vy: 0.08 + Math.random() * 0.16,
         vx: -0.1 - Math.random() * 0.18, swayAmp: 10 + Math.random() * 18,
         swaySpeed: 0.12 + Math.random() * 0.22, phase: Math.random() * Math.PI * 2,
@@ -1740,8 +1742,8 @@ const BANNER_THEMES = {
         rotV: (Math.random() - 0.5) * 0.01,
         spinPhase: Math.random() * Math.PI * 2,
         spinSpeed: 0.3 + Math.random() * 0.5,
-        alpha: 0.4 + Math.random() * 0.4,
-        colorJitter: (Math.random() - 0.5) * 0.15, // per-leaf random offset
+        alpha: 0.35 + Math.random() * 0.45,
+        colorJitter: (Math.random() - 0.5) * 0.18,
       };
     });
     // Jade glint particles
@@ -1793,22 +1795,24 @@ const BANNER_THEMES = {
         l.rot += l.rotV + Math.sin(t * 0.25 + l.phase) * 0.003;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
-          l.y = -8; l.x = w * 0.1 + Math.random() * w * 0.9;
-          l.size = 1.5 + Math.random() * 5;
-          l.alpha = 0.4 + Math.random() * 0.4;
-          l.colorJitter = (Math.random() - 0.5) * 0.15;
+          // Respawn from top-right corner
+          l.y = -8 - Math.random() * 20;
+          l.x = w * 0.6 + Math.random() * w * 0.45;
+          l.size = 1 + Math.random() * 7;
+          l.alpha = 0.35 + Math.random() * 0.45;
+          l.colorJitter = (Math.random() - 0.5) * 0.18;
         }
         // 3D self-rotation: cos squashes width to simulate tumbling
         const spin = Math.cos(t * l.spinSpeed + l.spinPhase);
         const widthScale = 0.2 + Math.abs(spin) * 0.8;
-        // Color based on X position: right=dark (35,40,55), left=lighter (90,100,120)
-        // + per-leaf jitter + spin shifts shade to simulate front/back face
-        const xRatio = Math.min(1, Math.max(0, 1 - sx / w + l.colorJitter));
-        const faceBias = spin * 0.12; // front face slightly lighter, back darker
-        const cm = Math.min(1, Math.max(0, (1 - xRatio) + faceBias));
-        const lr = Math.floor(35 + cm * 55);
-        const lg = Math.floor(40 + cm * 60);
-        const lb = Math.floor(55 + cm * 65);
+        // Color: right=very dark (20,25,35), left=lighter (120,135,155)
+        // + jitter + spin face bias for front/back shading
+        const xRatio = Math.min(1, Math.max(0, sx / w + l.colorJitter));
+        const faceBias = spin * 0.15;
+        const cm = Math.min(1, Math.max(0, xRatio + faceBias));
+        const lr = Math.floor(20 + cm * 100);
+        const lg = Math.floor(25 + cm * 110);
+        const lb = Math.floor(35 + cm * 120);
         ctx.save();
         ctx.globalAlpha = l.alpha;
         ctx.translate(sx, l.y); ctx.rotate(l.rot);
