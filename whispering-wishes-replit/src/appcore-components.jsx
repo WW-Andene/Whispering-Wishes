@@ -1728,22 +1728,22 @@ const BANNER_THEMES = {
     const moonX = w * 0.75, moonY = h * 0.12;
     // Leaves spawn from top-right, drift down-left
     // Color: very dark (20,25,35) on right → light (120,135,155) on left
-    const leaves = Array.from({ length: 28 }, (_, i) => {
-      // Squared random biases spawn toward the right while still covering full width
-      const rx = Math.random();
-      const lx = w * (0.1 + rx * rx * 0.95);
-      const ly = -Math.random() * h * 1.2;
+    const leaves = Array.from({ length: 22 }, (_, i) => {
+      // Spawn from top edge (right half) and right edge (upper half)
+      const fromRight = Math.random() < 0.4; // 40% from right edge, 60% from top
+      const lx = fromRight ? w + Math.random() * 10 : w * 0.35 + Math.random() * w * 0.65;
+      const ly = fromRight ? Math.random() * h * 0.5 : -Math.random() * 20;
       return {
         x: lx, y: ly,
         size: 1.5 + Math.random() * 7,
-        vy: 0.18 + Math.random() * 0.28,
-        vx: -0.35 - Math.random() * 0.4, swayAmp: 12 + Math.random() * 22,
+        vy: 0.12 + Math.random() * 0.2,
+        vx: -0.25 - Math.random() * 0.3, swayAmp: 12 + Math.random() * 22,
         swaySpeed: 0.15 + Math.random() * 0.28, phase: Math.random() * Math.PI * 2,
         rot: Math.random() * Math.PI * 2,
         rotV: 0.015 + Math.random() * 0.025,
         spinPhase: Math.random() * Math.PI * 2,
         spinSpeed: 0.4 + Math.random() * 0.6,
-        alpha: 0.7 + Math.random() * 0.3,
+        alpha: 0.55 + Math.random() * 0.25,
         colorShift: Math.random(),
       };
     });
@@ -1817,11 +1817,11 @@ const BANNER_THEMES = {
         l.rot += l.rotV;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
-          l.y = -8 - Math.random() * 20;
-          const rx = Math.random();
-          l.x = w * (0.1 + rx * rx * 0.95);
+          const fromRight = Math.random() < 0.4;
+          l.x = fromRight ? w + Math.random() * 10 : w * 0.35 + Math.random() * w * 0.65;
+          l.y = fromRight ? Math.random() * h * 0.5 : -Math.random() * 20;
           l.size = 1.5 + Math.random() * 7;
-          l.alpha = 0.7 + Math.random() * 0.3;
+          l.alpha = 0.55 + Math.random() * 0.25;
           l.colorShift = Math.random();
         }
         // 3D self-rotation: cos squashes width to simulate tumbling
