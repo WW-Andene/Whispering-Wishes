@@ -904,12 +904,14 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
     }
-    /* §BANNER_ANIM: particle overlay + element-colored border glow */
+    /* §BANNER_ANIM: particle overlay + element-colored border glow + edge line */
     .banner-card-glow {
       animation: bannerGlow 4s ease-in-out infinite !important;
+      border-color: rgba(var(--glow-color), 0.25) !important;
     }
     @keyframes bannerGlow {
       0%, 100% {
+        border-color: rgba(var(--glow-color), 0.25);
         box-shadow:
           0 0 40px rgba(237,175,24,0.06),
           0 4px 16px rgba(0,0,0,0.3),
@@ -917,10 +919,12 @@ const KuroStyles = memo(({ oledMode }) => (
           inset 0 0 10px rgba(var(--glow-color), 0.05);
       }
       50% {
+        border-color: rgba(var(--glow-color), 0.7);
         box-shadow:
           0 0 40px rgba(237,175,24,0.06),
           0 4px 16px rgba(0,0,0,0.3),
           0 0 16px 3px rgba(var(--glow-color), 0.3),
+          0 0 2px 0px rgba(var(--glow-color), 0.5),
           inset 0 0 20px rgba(var(--glow-color), 0.15);
       }
     }
