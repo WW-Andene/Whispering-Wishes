@@ -7152,7 +7152,39 @@ function WhisperingWishesInner() {
                   <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
 
-                {/* Animations Toggle — 3-state: off < on < full */}
+                {/* Install App on Device */}
+                {pwa?.canInstall && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                        <Download size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Install App</div>
+                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const accepted = await pwa.promptInstall();
+                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                    >
+                      Install
+                    </button>
+                  </div>
+                )}
+                {pwa?.isInstalled && (
+                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
+                )}
+              </CardBody>
+            </Card>
+
+            {/* Animations Toggle — 3-state: off < on < full */}
+            <Card>
+              <CardHeader><Sparkles size={14} className={visualSettings.animationsEnabled === 'full' ? 'text-fuchsia-400' : visualSettings.animationsEnabled === 'on' ? 'text-purple-400' : 'text-gray-400'} /> Animations</CardHeader>
+              <CardBody className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
@@ -7185,33 +7217,6 @@ function WhisperingWishesInner() {
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
                   <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
-                )}
-
-                {/* Install App on Device */}
-                {pwa?.canInstall && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
-                        <Download size={16} />
-                      </div>
-                      <div>
-                        <div className="text-white text-xs font-medium">Install App</div>
-                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const accepted = await pwa.promptInstall();
-                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
-                      }}
-                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
-                    >
-                      Install
-                    </button>
-                  </div>
-                )}
-                {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
                 )}
               </CardBody>
             </Card>
