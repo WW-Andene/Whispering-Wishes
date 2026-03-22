@@ -1376,111 +1376,262 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
-// §BANNER_PARTICLES: Region-based sparkle/shimmer overlay for banner cards
-const BannerParticleOverlay = memo(({ width = 400, height = 190 }) => {
+// §BANNER_PARTICLES: Region-based particle overlay with per-object animation personality
+// Element → color palette for energy/aura effects
+const ELEMENT_PARTICLE_COLORS = {
+  Fusion:  { primary: '249,115,22', secondary: '255,180,60', aura: '255,140,40' },
+  Electro: { primary: '168,85,247', secondary: '200,140,255', aura: '180,100,255' },
+  Aero:    { primary: '16,185,129', secondary: '100,230,180', aura: '60,210,160' },
+  Glacio:  { primary: '6,182,212',  secondary: '140,220,240', aura: '80,200,230' },
+  Havoc:   { primary: '236,72,153', secondary: '255,130,180', aura: '240,90,160' },
+  Spectro: { primary: '234,179,8',  secondary: '255,220,80',  aura: '245,200,40' },
+};
+
+const BannerParticleOverlay = memo(({ element = 'Spectro' }) => {
   const canvasRef = useRef(null);
+  const elementRef = useRef(element);
+  elementRef.current = element;
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width || 400;
+    const h = rect.height || 190;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
 
-    // Sparkle particles — concentrated in bottom 40% where stars are in banner art
-    const sparkles = Array.from({ length: 12 }, () => ({
-      x: Math.random() * width,
-      y: height * 0.55 + Math.random() * height * 0.45,
-      size: 1 + Math.random() * 2.5,
+    const colors = ELEMENT_PARTICLE_COLORS[elementRef.current] || ELEMENT_PARTICLE_COLORS.Spectro;
+
+    // ─── ZONE 1: SKY STARS (top 35%) ───
+    // Personality: peaceful, slow twinkle, tiny points with cross flares
+    const skyStars = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h * 0.35,
+      size: 0.5 + Math.random() * 1.2,
       phase: Math.random() * Math.PI * 2,
-      speed: 0.5 + Math.random() * 1.5,
-      color: Math.random() > 0.5 ? '255,220,100' : '180,220,255',
+      speed: 0.3 + Math.random() * 0.6,
+      color: Math.random() > 0.3 ? '220,230,255' : '180,200,255',
     }));
 
-    // Floating light motes — drift upward across the whole image
-    const motes = Array.from({ length: 8 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: -0.15 - Math.random() * 0.3,
-      size: 1 + Math.random() * 1.5,
-      alpha: 0.2 + Math.random() * 0.4,
+    // ─── ZONE 2: CHARACTER ENERGY WISPS (center column, rising) ───
+    // Personality: element-colored, spiral upward like magical energy
+    const energyWisps = Array.from({ length: 6 }, () => {
+      const x = w * 0.3 + Math.random() * w * 0.4;
+      return {
+        x, baseX: x,
+        y: h * 0.3 + Math.random() * h * 0.5,
+        vy: -0.3 - Math.random() * 0.5,
+        size: 1.5 + Math.random() * 2,
+        phase: Math.random() * Math.PI * 2,
+        spiralRadius: 3 + Math.random() * 8,
+        spiralSpeed: 0.8 + Math.random() * 1.2,
+        alpha: 0.15 + Math.random() * 0.35,
+        life: Math.random(),
+        lifeSpeed: 0.003 + Math.random() * 0.004,
+      };
+    });
+
+    // ─── ZONE 3: GROUND SPARKLES (bottom 30%) ───
+    // Personality: bright diamond bursts, quick flash then slow fade, golden
+    const groundSparkles = Array.from({ length: 8 }, () => ({
+      x: w * 0.15 + Math.random() * w * 0.7,
+      y: h * 0.7 + Math.random() * h * 0.28,
+      size: 1.5 + Math.random() * 2.5,
       phase: Math.random() * Math.PI * 2,
+      speed: 1.2 + Math.random() * 2.0,
+      burstPhase: Math.random() * 10,
     }));
 
-    // Shimmer — a diagonal light sweep
-    let shimmerX = -width * 0.3;
-    const shimmerSpeed = 0.35;
-    const shimmerWidth = width * 0.15;
+    // ─── ZONE 4: NATURE DRIFT (right 35%) ───
+    // Personality: leaf/petal shapes falling with gentle sway, organic motion
+    const natureDrift = Array.from({ length: 5 }, () => ({
+      x: w * 0.6 + Math.random() * w * 0.38,
+      y: -5 - Math.random() * h * 0.3,
+      size: 1 + Math.random() * 2,
+      vx: -0.2 - Math.random() * 0.3,
+      vy: 0.2 + Math.random() * 0.4,
+      swayAmp: 8 + Math.random() * 15,
+      swaySpeed: 0.4 + Math.random() * 0.6,
+      phase: Math.random() * Math.PI * 2,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.02,
+      alpha: 0.2 + Math.random() * 0.3,
+      color: Math.random() > 0.5 ? '200,170,80' : '120,180,100',
+    }));
 
-    let animId;
-    let t = 0;
+    // ─── ZONE 5: AURA RING (center, behind character) ───
+    // Personality: orbiting particles in a flattened ellipse, element-colored, ethereal
+    const auraParticles = Array.from({ length: 10 }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      speed: 0.15 + Math.random() * 0.15,
+      radiusOffset: (Math.random() - 0.5) * 12,
+      size: 0.8 + Math.random() * 1.5,
+      alpha: 0.1 + Math.random() * 0.25,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    const auraCx = w * 0.48, auraCy = h * 0.42;
+    const auraRadius = Math.min(w, h) * 0.3;
+
+    // ─── ZONE 6: SHIMMER SWEEP ───
+    let shimmerX = -w * 0.3;
+
+    let animId, t = 0;
+
+    // Helper: 4-point star shape
+    const drawStar4 = (cx, cy, sz) => {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - sz * 2.2);
+      ctx.lineTo(cx + sz * 0.35, cy - sz * 0.35);
+      ctx.lineTo(cx + sz * 2.2, cy);
+      ctx.lineTo(cx + sz * 0.35, cy + sz * 0.35);
+      ctx.lineTo(cx, cy + sz * 2.2);
+      ctx.lineTo(cx - sz * 0.35, cy + sz * 0.35);
+      ctx.lineTo(cx - sz * 2.2, cy);
+      ctx.lineTo(cx - sz * 0.35, cy - sz * 0.35);
+      ctx.closePath();
+    };
 
     const draw = () => {
-      ctx.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, w, h);
       t += 0.016;
 
-      // Draw sparkles
-      for (const s of sparkles) {
-        const twinkle = Math.sin(t * s.speed + s.phase);
-        const alpha = Math.max(0, twinkle) * 0.7;
-        if (alpha > 0.05) {
+      // ── SKY STARS: gentle independent twinkle with cross flare ──
+      for (const s of skyStars) {
+        const raw = Math.sin(t * s.speed + s.phase);
+        const alpha = Math.pow(Math.max(0, raw), 2.5) * 0.6;
+        if (alpha > 0.03) {
           ctx.save();
           ctx.globalAlpha = alpha;
           ctx.fillStyle = `rgba(${s.color},1)`;
-          ctx.shadowColor = `rgba(${s.color},0.8)`;
-          ctx.shadowBlur = 6;
-          // 4-point star shape
-          const sz = s.size * (0.6 + twinkle * 0.4);
+          ctx.shadowColor = `rgba(${s.color},0.5)`;
+          ctx.shadowBlur = 4;
           ctx.beginPath();
-          ctx.moveTo(s.x, s.y - sz * 2);
-          ctx.lineTo(s.x + sz * 0.4, s.y - sz * 0.4);
-          ctx.lineTo(s.x + sz * 2, s.y);
-          ctx.lineTo(s.x + sz * 0.4, s.y + sz * 0.4);
-          ctx.lineTo(s.x, s.y + sz * 2);
-          ctx.lineTo(s.x - sz * 0.4, s.y + sz * 0.4);
-          ctx.lineTo(s.x - sz * 2, s.y);
-          ctx.lineTo(s.x - sz * 0.4, s.y - sz * 0.4);
-          ctx.closePath();
+          ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+          ctx.fill();
+          if (alpha > 0.3) {
+            ctx.strokeStyle = `rgba(${s.color},${alpha * 0.5})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(s.x - s.size * 3, s.y);
+            ctx.lineTo(s.x + s.size * 3, s.y);
+            ctx.moveTo(s.x, s.y - s.size * 3);
+            ctx.lineTo(s.x, s.y + s.size * 3);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+
+      // ── CHARACTER ENERGY WISPS: spiral upward, element-colored ──
+      for (const e of energyWisps) {
+        e.life += e.lifeSpeed;
+        if (e.life > 1) {
+          e.life = 0;
+          e.x = w * 0.3 + Math.random() * w * 0.4;
+          e.baseX = e.x;
+          e.y = h * 0.6 + Math.random() * h * 0.2;
+        }
+        e.y += e.vy;
+        const spiralX = e.baseX + Math.sin(t * e.spiralSpeed + e.phase) * e.spiralRadius;
+        const lifeFade = e.life < 0.15 ? e.life / 0.15 : e.life > 0.7 ? (1 - e.life) / 0.3 : 1;
+        const a = e.alpha * lifeFade;
+        if (a > 0.02) {
+          ctx.save();
+          ctx.globalAlpha = a;
+          const grad = ctx.createRadialGradient(spiralX, e.y, 0, spiralX, e.y, e.size * 3);
+          grad.addColorStop(0, `rgba(${colors.secondary},0.8)`);
+          grad.addColorStop(0.5, `rgba(${colors.primary},0.3)`);
+          grad.addColorStop(1, `rgba(${colors.primary},0)`);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(spiralX, e.y, e.size * 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(${colors.secondary},1)`;
+          ctx.beginPath();
+          ctx.arc(spiralX, e.y, e.size * 0.5, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
       }
 
-      // Draw floating motes
-      for (const m of motes) {
-        m.x += m.vx + Math.sin(t + m.phase) * 0.15;
-        m.y += m.vy;
-        // Wrap around
-        if (m.y < -5) { m.y = height + 5; m.x = Math.random() * width; }
-        if (m.x < -5) m.x = width + 5;
-        if (m.x > width + 5) m.x = -5;
-        const pulse = 0.6 + Math.sin(t * 1.5 + m.phase) * 0.4;
+      // ── GROUND SPARKLES: sharp diamond bursts ──
+      for (const g of groundSparkles) {
+        g.burstPhase += 0.016 * g.speed;
+        const cycle = (g.burstPhase + g.phase) % 6.28;
+        const raw2 = cycle < 0.8 ? cycle / 0.8 : Math.max(0, 1 - (cycle - 0.8) / 3.0);
+        const alpha = raw2 * raw2 * 0.75;
+        if (alpha > 0.03) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = 'rgba(255,220,100,1)';
+          ctx.shadowColor = 'rgba(255,200,50,0.9)';
+          ctx.shadowBlur = 8;
+          drawStar4(g.x, g.y, g.size * (0.5 + raw2 * 0.5));
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // ── NATURE DRIFT: swaying leaf-like particles ──
+      for (const n of natureDrift) {
+        n.y += n.vy;
+        n.x += n.vx;
+        n.rotation += n.rotSpeed;
+        const swayX = n.x + Math.sin(t * n.swaySpeed + n.phase) * n.swayAmp;
+        if (n.y > h + 10) {
+          n.y = -8;
+          n.x = w * 0.55 + Math.random() * w * 0.43;
+        }
         ctx.save();
-        ctx.globalAlpha = m.alpha * pulse;
-        ctx.fillStyle = 'rgba(255,245,200,1)';
-        ctx.shadowColor = 'rgba(255,220,100,0.6)';
-        ctx.shadowBlur = 8;
+        ctx.globalAlpha = n.alpha;
+        ctx.translate(swayX, n.y);
+        ctx.rotate(n.rotation);
+        ctx.fillStyle = `rgba(${n.color},1)`;
+        ctx.shadowColor = `rgba(${n.color},0.3)`;
+        ctx.shadowBlur = 3;
         ctx.beginPath();
-        ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, n.size * 0.5, n.size * 1.8, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
 
-      // Draw shimmer sweep
-      shimmerX += shimmerSpeed;
-      if (shimmerX > width * 1.3) shimmerX = -width * 0.3;
+      // ── AURA RING: orbiting element particles ──
+      for (const a of auraParticles) {
+        a.angle += a.speed * 0.016;
+        const r = auraRadius + a.radiusOffset + Math.sin(t * 0.8 + a.phase) * 4;
+        const ax = auraCx + Math.cos(a.angle) * r;
+        const ay = auraCy + Math.sin(a.angle) * r * 0.45;
+        const pulse = 0.6 + Math.sin(t * 1.2 + a.phase) * 0.4;
+        const aa = a.alpha * pulse;
+        if (aa > 0.02) {
+          ctx.save();
+          ctx.globalAlpha = aa;
+          ctx.fillStyle = `rgba(${colors.aura},1)`;
+          ctx.shadowColor = `rgba(${colors.aura},0.6)`;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(ax, ay, a.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // ── SHIMMER SWEEP: diagonal light band ──
+      shimmerX += 0.3;
+      if (shimmerX > w * 1.4) shimmerX = -w * 0.4;
       ctx.save();
-      const grad = ctx.createLinearGradient(shimmerX, 0, shimmerX + shimmerWidth, 0);
-      grad.addColorStop(0, 'rgba(255,255,255,0)');
-      grad.addColorStop(0.5, 'rgba(255,255,255,0.06)');
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = grad;
-      // Angled sweep
-      ctx.transform(1, -0.15, 0.15, 1, 0, height * 0.15);
-      ctx.fillRect(shimmerX, 0, shimmerWidth, height);
+      const sGrad = ctx.createLinearGradient(shimmerX, 0, shimmerX + w * 0.12, 0);
+      sGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      sGrad.addColorStop(0.5, 'rgba(255,255,255,0.045)');
+      sGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = sGrad;
+      ctx.transform(1, -0.12, 0.12, 1, 0, h * 0.12);
+      ctx.fillRect(shimmerX, 0, w * 0.12, h);
       ctx.restore();
 
       animId = requestAnimationFrame(draw);
@@ -1488,7 +1639,7 @@ const BannerParticleOverlay = memo(({ width = 400, height = 190 }) => {
 
     animId = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animId);
-  }, [width, height]);
+  }, []);
 
   return (
     <canvas
@@ -1530,7 +1681,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           onError={hideOnError}
         />
       )}
-      {imgUrl && animEnabled && <BannerParticleOverlay />}
+      {imgUrl && animEnabled && <BannerParticleOverlay element={item.element} />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
