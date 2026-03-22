@@ -1394,7 +1394,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <img
           src={imgUrl}
           alt={item.name}
-          className={`absolute inset-0 w-full h-full object-cover object-top ${animEnabled ? 'banner-echo-img' : ''}`}
+          className="absolute inset-0 w-full h-full object-cover object-top"
           style={{
             zIndex: 1,
             opacity: pictureOpacity,
@@ -1403,20 +1403,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           }}
           loading="eager"
           onError={hideOnError}
-        />
-      )}
-      {imgUrl && animEnabled && (
-        <img
-          src={imgUrl}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-smear"
-          style={{
-            zIndex: 2,
-            maskImage: maskGradient,
-            WebkitMaskImage: maskGradient,
-          }}
-          loading="eager"
-          aria-hidden="true"
         />
       )}
       

@@ -904,36 +904,7 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
     }
-    .banner-echo-img {
-      animation: bannerDrift 20s ease-in-out infinite !important;
-      animation-iteration-count: infinite !important;
-      transform-origin: center top;
-    }
-    @keyframes bannerDrift {
-      0%   { transform: scale(1.08) translate(0%, 0%); }
-      25%  { transform: scale(1.12) translate(-2%, 1%); }
-      50%  { transform: scale(1.06) translate(1%, -1%); }
-      75%  { transform: scale(1.10) translate(-1%, 0.5%); }
-      100% { transform: scale(1.08) translate(0%, 0%); }
-    }
-    .banner-smear {
-      opacity: 0;
-      animation: bannerSmear 6s ease-in-out infinite both !important;
-      transform-origin: center center;
-    }
-    @keyframes bannerSmear {
-      0%, 100% { opacity: 0; transform: scaleX(1) skewX(0deg) translateX(0); filter: blur(0px) brightness(1); }
-      /* idle */
-      42% { opacity: 0; transform: scaleX(1) skewX(0deg) translateX(0); filter: blur(0px) brightness(1); }
-      /* smear in — fast horizontal stretch */
-      46% { opacity: 0.35; transform: scaleX(1.25) skewX(-4deg) translateX(12px); filter: blur(6px) brightness(1.3); }
-      /* peak smear */
-      48% { opacity: 0.25; transform: scaleX(1.4) skewX(-6deg) translateX(20px); filter: blur(10px) brightness(1.2); }
-      /* snap back */
-      52% { opacity: 0.1; transform: scaleX(1.1) skewX(2deg) translateX(-4px); filter: blur(3px) brightness(1.1); }
-      /* settle */
-      56% { opacity: 0; transform: scaleX(1) skewX(0deg) translateX(0); filter: blur(0px) brightness(1); }
-    }
+    /* §BANNER_ANIM: banner image animation slot (currently empty) */
     .luck-badge-inner {
       position: relative;
       z-index: 1;
