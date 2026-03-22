@@ -3661,45 +3661,48 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="events" />
 
-            <div className="flex items-center justify-between content-layer">
-              <h2 className="text-white font-semibold text-sm">Time-Gated Content</h2>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => {
-                    setActiveBanners(getActiveBanners());
-                    toast?.addToast?.('Banner data refreshed!', 'success');
-                  }}
-                  className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
-                >
-                  <RefreshCcw size={12} /> Refresh
-                </button>
-                <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
-              </div>
-            </div>
-            {(() => {
-              const eventEntries = Object.entries(EVENTS);
-              const totalAstrite = eventEntries.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
-              const doneKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'done');
-              const skippedKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped');
-              const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
-              const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
-              return (
-                <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg content-layer">
-                  <div className="flex items-center justify-between">
-                    <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
-                    <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
-                  </div>
-                  {hasProgress && (
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
-                      </div>
-                      <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
-                    </div>
-                  )}
+            <Card>
+              <CardHeader action={
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setActiveBanners(getActiveBanners());
+                      toast?.addToast?.('Banner data refreshed!', 'success');
+                    }}
+                    className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+                  >
+                    <RefreshCcw size={12} /> Refresh
+                  </button>
+                  <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
                 </div>
-              );
-            })()}
+              }>Time-Gated Content</CardHeader>
+              <CardBody>
+                {(() => {
+                  const eventEntries = Object.entries(EVENTS);
+                  const totalAstrite = eventEntries.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
+                  const doneKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'done');
+                  const skippedKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped');
+                  const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
+                  const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
+                  return (
+                    <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
+                        <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
+                      </div>
+                      {hasProgress && (
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
+                          </div>
+                          <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </CardBody>
+            </Card>
             <div className="space-y-2 event-grid">
               {(() => {
                 const eventImageMap = {
@@ -7152,39 +7155,7 @@ function WhisperingWishesInner() {
                   <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
 
-                {/* Install App on Device */}
-                {pwa?.canInstall && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
-                        <Download size={16} />
-                      </div>
-                      <div>
-                        <div className="text-white text-xs font-medium">Install App</div>
-                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const accepted = await pwa.promptInstall();
-                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
-                      }}
-                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
-                    >
-                      Install
-                    </button>
-                  </div>
-                )}
-                {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
-                )}
-              </CardBody>
-            </Card>
-
-            {/* Animations Toggle — 3-state: off < on < full */}
-            <Card>
-              <CardHeader><Sparkles size={14} className={visualSettings.animationsEnabled === 'full' ? 'text-fuchsia-400' : visualSettings.animationsEnabled === 'on' ? 'text-purple-400' : 'text-gray-400'} /> Animations</CardHeader>
-              <CardBody className="space-y-3">
+                {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
@@ -7217,6 +7188,33 @@ function WhisperingWishesInner() {
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
                   <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                )}
+
+                {/* Install App on Device */}
+                {pwa?.canInstall && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                        <Download size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Install App</div>
+                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const accepted = await pwa.promptInstall();
+                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                    >
+                      Install
+                    </button>
+                  </div>
+                )}
+                {pwa?.isInstalled && (
+                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
                 )}
               </CardBody>
             </Card>
