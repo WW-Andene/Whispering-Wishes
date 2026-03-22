@@ -1405,12 +1405,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           onError={hideOnError}
         />
       )}
-      {imgUrl && animEnabled && [1, 2, 3].map(i => (
+      {imgUrl && animEnabled && (
         <img
-          key={`echo-${i}`}
           src={imgUrl}
           alt=""
-          className={`absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-ghost banner-ghost-${i}`}
+          className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-smear"
           style={{
             zIndex: 2,
             maskImage: maskGradient,
@@ -1419,7 +1418,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           loading="eager"
           aria-hidden="true"
         />
-      ))}
+      )}
       
       {endDate && (
         <div className="absolute top-2 right-2 z-20">

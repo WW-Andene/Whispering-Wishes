@@ -916,25 +916,23 @@ const KuroStyles = memo(({ oledMode }) => (
       75%  { transform: scale(1.10) translate(-1%, 0.5%); }
       100% { transform: scale(1.08) translate(0%, 0%); }
     }
-    .banner-ghost {
-      animation-fill-mode: both !important;
-      animation-iteration-count: infinite !important;
+    .banner-smear {
+      opacity: 0;
+      animation: bannerSmear 6s ease-in-out infinite both !important;
+      transform-origin: center center;
     }
-    .banner-ghost-1 {
-      animation: bannerGhost 8s ease-in-out 0s infinite both !important;
-    }
-    .banner-ghost-2 {
-      animation: bannerGhost 10s ease-in-out 2.5s infinite both !important;
-    }
-    .banner-ghost-3 {
-      animation: bannerGhost 12s ease-in-out 5s infinite both !important;
-    }
-    @keyframes bannerGhost {
-      0%, 100% { opacity: 0; transform: translate(0, 0) scale(1); filter: blur(0px) brightness(1); }
-      15%  { opacity: 0.3; transform: translate(8px, -3px) scale(1.02); filter: blur(2px) brightness(1.3); }
-      35%  { opacity: 0.2; transform: translate(18px, -5px) scale(1.04); filter: blur(4px) brightness(1.2); }
-      55%  { opacity: 0.08; transform: translate(28px, -3px) scale(1.05); filter: blur(7px) brightness(1.1); }
-      75%  { opacity: 0; transform: translate(40px, -1px) scale(1.06); filter: blur(12px) brightness(1); }
+    @keyframes bannerSmear {
+      0%, 100% { opacity: 0; transform: scaleX(1) skewX(0deg) translateX(0); filter: blur(0px) brightness(1); }
+      /* idle */
+      42% { opacity: 0; transform: scaleX(1) skewX(0deg) translateX(0); filter: blur(0px) brightness(1); }
+      /* smear in — fast horizontal stretch */
+      46% { opacity: 0.35; transform: scaleX(1.25) skewX(-4deg) translateX(12px); filter: blur(6px) brightness(1.3); }
+      /* peak smear */
+      48% { opacity: 0.25; transform: scaleX(1.4) skewX(-6deg) translateX(20px); filter: blur(10px) brightness(1.2); }
+      /* snap back */
+      52% { opacity: 0.1; transform: scaleX(1.1) skewX(2deg) translateX(-4px); filter: blur(3px) brightness(1.1); }
+      /* settle */
+      56% { opacity: 0; transform: scaleX(1) skewX(0deg) translateX(0); filter: blur(0px) brightness(1); }
     }
     .luck-badge-inner {
       position: relative;
