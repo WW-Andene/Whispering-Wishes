@@ -1716,7 +1716,7 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🌙 QIUYUAN: moonlit brume, dark drifting leaves, jade glints
+  // 🌙 QIUYUAN: moonlit brume, drifting leaves, jade glints
   qiuyuan: (w, h) => {
     // Brume patches — muted grey-green
     const brume = Array.from({ length: 7 }, () => ({
@@ -1724,35 +1724,53 @@ const BANNER_THEMES = {
       size: 60 + Math.random() * 80, vx: -0.12 - Math.random() * 0.18,
       alpha: 0.12 + Math.random() * 0.1, phase: Math.random() * Math.PI * 2,
     }));
-    // Dark leaves — grey/charcoal tones matching art, slow organic drift
-    const leaves = Array.from({ length: 12 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      size: 2.2 + Math.random() * 2.5, vy: 0.06 + Math.random() * 0.12,
-      vx: -0.08 - Math.random() * 0.15, swayAmp: 10 + Math.random() * 18,
-      swaySpeed: 0.12 + Math.random() * 0.2, phase: Math.random() * Math.PI * 2,
-      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.006,
-      alpha: 0.35 + Math.random() * 0.35,
-      shade: Math.floor(30 + Math.random() * 40),
-    }));
+    // Leaves — varied shade/size/speed, brighter near moon, darker far away
+    const moonX = w * 0.75, moonY = h * 0.12;
+    const leaves = Array.from({ length: 16 }, () => {
+      const lx = Math.random() * w, ly = Math.random() * h;
+      const distToMoon = Math.sqrt((lx - moonX) ** 2 + (ly - moonY) ** 2);
+      const maxDist = Math.sqrt(w * w + h * h);
+      const moonProx = 1 - Math.min(distToMoon / (maxDist * 0.5), 1);
+      return {
+        x: lx, y: ly,
+        size: 2 + Math.random() * 3 + moonProx * 1.5,
+        vy: 0.08 + Math.random() * 0.16 + moonProx * 0.04,
+        vx: -0.1 - Math.random() * 0.18, swayAmp: 10 + Math.random() * 18,
+        swaySpeed: 0.12 + Math.random() * 0.22, phase: Math.random() * Math.PI * 2,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * (0.008 + moonProx * 0.006),
+        alpha: 0.4 + Math.random() * 0.35 + moonProx * 0.2,
+        shade: Math.floor(45 + Math.random() * 50 + moonProx * 60),
+      };
+    });
     // Jade glint particles
     const jadeGlints = Array.from({ length: 12 }, () => ({
       x: Math.random() * w, y: h * 0.15 + Math.random() * h * 0.75,
       phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
       size: 1.2 + Math.random() * 2,
     }));
-    // Soft moonlight glow — dimmer but with wider halo
-    const moonX = w * 0.75, moonY = h * 0.12, moonR = 20;
+    const moonR = 20;
     return (ctx, t) => {
-      // Moonlight — softer, more atmospheric glow
+      // Moon disc — small bright core visible on canvas
       ctx.save();
-      ctx.globalAlpha = 0.07 + Math.sin(t * 0.12) * 0.025;
-      const mg = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 6);
-      mg.addColorStop(0, 'rgba(200,220,240,0.6)');
-      mg.addColorStop(0.3, 'rgba(170,200,220,0.25)');
-      mg.addColorStop(0.7, 'rgba(140,170,190,0.08)');
-      mg.addColorStop(1, 'rgba(110,140,160,0)');
+      ctx.globalAlpha = 0.35 + Math.sin(t * 0.1) * 0.08;
+      const disc = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR);
+      disc.addColorStop(0, 'rgba(240,245,255,0.9)');
+      disc.addColorStop(0.5, 'rgba(210,225,245,0.5)');
+      disc.addColorStop(1, 'rgba(180,200,230,0)');
+      ctx.fillStyle = disc;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      // Moon halo — wide atmospheric glow
+      ctx.save();
+      ctx.globalAlpha = 0.15 + Math.sin(t * 0.12) * 0.05;
+      const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 7);
+      mg.addColorStop(0, 'rgba(200,220,245,0.4)');
+      mg.addColorStop(0.3, 'rgba(170,200,225,0.18)');
+      mg.addColorStop(0.6, 'rgba(140,170,200,0.06)');
+      mg.addColorStop(1, 'rgba(110,140,170,0)');
       ctx.fillStyle = mg;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 7, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
       // Brume
       for (const b of brume) {
@@ -1768,17 +1786,25 @@ const BANNER_THEMES = {
         ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      // Drifting leaves — dark grey tones, slow rotation, gentle wind sway
+      // Drifting leaves — proximity to moon affects brightness, size, rotation
       for (const l of leaves) {
         l.y += l.vy; l.x += l.vx;
-        l.rot += l.rotV + Math.sin(t * 0.3 + l.phase) * 0.002;
+        l.rot += l.rotV + Math.sin(t * 0.25 + l.phase) * 0.003;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
-        if (l.y > h + 10 || l.x < -20) { l.y = -8; l.x = w * 0.2 + Math.random() * w * 0.8; }
+        if (l.y > h + 10 || l.x < -20) {
+          l.y = -8; l.x = w * 0.1 + Math.random() * w * 0.9;
+          const d = Math.sqrt((l.x - moonX) ** 2 + (l.y - moonY) ** 2);
+          const maxD = Math.sqrt(w * w + h * h);
+          const prox = 1 - Math.min(d / (maxD * 0.5), 1);
+          l.shade = Math.floor(45 + Math.random() * 50 + prox * 60);
+          l.size = 2 + Math.random() * 3 + prox * 1.5;
+          l.alpha = 0.4 + Math.random() * 0.35 + prox * 0.2;
+        }
         ctx.save();
         ctx.globalAlpha = l.alpha;
         ctx.translate(sx, l.y); ctx.rotate(l.rot);
         const s = l.shade;
-        ctx.fillStyle = `rgba(${s},${s + 5},${s + 2},0.9)`;
+        ctx.fillStyle = `rgba(${s},${s + 8},${s + 4},0.9)`;
         ctx.beginPath(); ctx.ellipse(0, 0, l.size * 0.45, l.size * 1.7, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
