@@ -245,7 +245,7 @@ const CHARACTER_DATA = {
     bestEchoes: ['Feilian Beringal', 'Sierra Gale 4pc'], bestWeapon: 'Verdant Summit',
     teams: ['Jiyan + Iuno + Shorekeeper', 'Jiyan + Mortefi + Verina'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'Notorious mercenary known as "The Ghost." On-field Electro DPS who chains Resonance Skill combos and enters Death Messenger mode via Liberation for burst finishers.',
+    desc: 'Notorious mercenary known as "The Ghost". On-field Electro DPS who chains Resonance Skill combos and enters Death Messenger mode via Liberation for burst finishers.',
     skills: ['Gnawing Fangs', 'Extermination Order', 'Phantom Etching', 'Death Messenger'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
