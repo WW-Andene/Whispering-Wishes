@@ -1729,20 +1729,20 @@ const BANNER_THEMES = {
     // Leaves spawn from top-right, drift down-left
     // Color: very dark (20,25,35) on right → light (120,135,155) on left
     const leaves = Array.from({ length: 28 }, (_, i) => {
-      const lx = w * 0.4 + Math.random() * w * 0.65;
+      const lx = w * 0.65 + Math.random() * w * 0.4;
       const ly = -Math.random() * h * 1.2;
       return {
         x: lx, y: ly,
         size: 1.5 + Math.random() * 7,
         vy: 0.18 + Math.random() * 0.28,
-        vx: -0.18 - Math.random() * 0.28, swayAmp: 12 + Math.random() * 22,
+        vx: -0.35 - Math.random() * 0.4, swayAmp: 12 + Math.random() * 22,
         swaySpeed: 0.15 + Math.random() * 0.28, phase: Math.random() * Math.PI * 2,
         rot: Math.random() * Math.PI * 2,
         rotV: 0.015 + Math.random() * 0.025,
         spinPhase: Math.random() * Math.PI * 2,
         spinSpeed: 0.4 + Math.random() * 0.6,
         alpha: 0.7 + Math.random() * 0.3,
-        colorJitter: (Math.random() - 0.5) * 0.18,
+        colorShift: Math.random(),
       };
     });
     // Jade glint particles
@@ -1809,33 +1809,32 @@ const BANNER_THEMES = {
         ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      // Drifting leaves — circular rotation, dark on right, lighter on left
+      // Drifting leaves — circular rotation, strong leftward drift, wide color range
       for (const l of leaves) {
         l.y += l.vy; l.x += l.vx;
         l.rot += l.rotV;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
           l.y = -8 - Math.random() * 20;
-          l.x = w * 0.4 + Math.random() * w * 0.65;
+          l.x = w * 0.65 + Math.random() * w * 0.4;
           l.size = 1.5 + Math.random() * 7;
           l.alpha = 0.7 + Math.random() * 0.3;
-          l.colorJitter = (Math.random() - 0.5) * 0.18;
+          l.colorShift = Math.random();
         }
         // 3D self-rotation: cos squashes width to simulate tumbling
         const spin = Math.cos(t * l.spinSpeed + l.spinPhase);
         const widthScale = 0.2 + Math.abs(spin) * 0.8;
-        // Color: right=very dark (20,25,35), left=lighter (120,135,155)
-        // + jitter + spin face bias for front/back shading
-        const xRatio = Math.min(1, Math.max(0, sx / w + l.colorJitter));
-        const faceBias = spin * 0.15;
-        const cm = Math.min(1, Math.max(0, xRatio + faceBias));
-        const lr = Math.floor(20 + cm * 100);
-        const lg = Math.floor(25 + cm * 110);
-        const lb = Math.floor(35 + cm * 120);
+        // Color: wide range from very dark (8,12,18) to bright (160,175,140)
+        // Each leaf has its own colorShift, plus face shading from spin
+        const faceBias = spin * 0.12;
+        const cm = Math.min(1, Math.max(0, l.colorShift + faceBias));
+        const lr = Math.floor(8 + cm * 152);
+        const lg = Math.floor(12 + cm * 163);
+        const lb = Math.floor(18 + cm * 122);
         ctx.save();
         ctx.globalAlpha = l.alpha;
         ctx.translate(sx, l.y); ctx.rotate(l.rot);
-        ctx.fillStyle = `rgba(${lr},${lg},${lb},0.9)`;
+        ctx.fillStyle = `rgb(${lr},${lg},${lb})`;
         ctx.beginPath();
         ctx.ellipse(0, 0, l.size * 0.45 * widthScale, l.size * 1.7, 0, 0, Math.PI * 2);
         ctx.fill();
