@@ -135,9 +135,9 @@ const CURRENT_BANNERS = {
   // Banner: Wed, 19 Mar 2026 10:00 - Thu, 09 Apr 2026 11:59 (Europe CEST)
   startDate: '2026-03-19T08:00:00Z', // Mar 19, 10:00 Europe CEST = 08:00 UTC
   endDate: '2026-04-09T09:59:00Z',   // Apr 09, 11:59 Europe CEST = 09:59 UTC
-  characterBannerImage: '',
-  weaponBannerImage: '',
-  eventBannerImage: '',
+  characterBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
+  weaponBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
+  eventBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
   doubledPawnsImage: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg',
   towerOfAdversityImage: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg',
