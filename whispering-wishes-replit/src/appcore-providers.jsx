@@ -1710,15 +1710,15 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* MED-22: Pity danger zone — progressive visual urgency */
     .pity-danger {
-      filter: drop-shadow(0 0 8px rgba(237,175,24,0.4));
+      box-shadow: 0 0 8px rgba(237,175,24,0.4);
       animation: pityPulse 0.5s ease-in-out infinite alternate;
     }
     .pity-critical {
-      filter: drop-shadow(0 0 12px rgba(237,175,24,0.6));
+      box-shadow: 0 0 12px rgba(237,175,24,0.6);
       animation: pityPulse 0.3s ease-in-out infinite alternate;
     }
     @keyframes pityPulse {
-      to { filter: drop-shadow(0 0 16px rgba(237,175,24,0.8)); }
+      to { box-shadow: 0 0 16px rgba(237,175,24,0.8); }
     }
 
     /* MED-23: Collection milestone celebration */
@@ -2169,17 +2169,17 @@ const KuroStyles = memo(({ oledMode }) => (
       50% { text-shadow: 0 0 24px rgba(236, 72, 153, 1); }
     }
 
-    /* Pity danger/critical: stronger pulsing drop-shadow */
+    /* Pity danger/critical: stronger pulsing box-shadow */
     .animations-full .pity-danger {
-      filter: drop-shadow(0 0 12px rgba(237,175,24,0.6));
+      box-shadow: 0 0 12px rgba(237,175,24,0.6);
       animation: pityPulseFull 0.4s ease-in-out infinite alternate;
     }
     .animations-full .pity-critical {
-      filter: drop-shadow(0 0 16px rgba(237,175,24,0.8));
+      box-shadow: 0 0 16px rgba(237,175,24,0.8);
       animation: pityPulseFull 0.25s ease-in-out infinite alternate;
     }
     @keyframes pityPulseFull {
-      to { filter: drop-shadow(0 0 24px rgba(237,175,24,1)); }
+      to { box-shadow: 0 0 24px rgba(237,175,24,1); }
     }
 
     /* Card shimmer: brighter shimmer line */
