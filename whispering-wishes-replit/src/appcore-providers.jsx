@@ -906,11 +906,11 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     /* §BANNER_ANIM: outer glow wrapper (not clipped by overflow:hidden) + inner border line */
     .banner-card-glow {
-      animation: bannerGlow 4s ease-in-out infinite !important;
+      animation: bannerGlow 6s ease-in-out infinite !important;
     }
     .banner-card-glow > div {
       border-color: rgba(var(--glow-color), 0.25) !important;
-      animation: bannerBorderGlow 4s ease-in-out infinite !important;
+      animation: bannerBorderGlow 6s ease-in-out infinite !important;
     }
     @keyframes bannerGlow {
       0%, 100% {
