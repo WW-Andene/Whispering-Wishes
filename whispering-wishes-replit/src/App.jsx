@@ -3547,9 +3547,9 @@ function WhisperingWishesInner() {
                             <div key={idx} className="flex items-center gap-4">
                               {c ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 breath-zoom holo-5star" style={{ position: 'relative' }}>
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
                                     )}
@@ -3617,9 +3617,9 @@ function WhisperingWishesInner() {
                             <div key={idx} className="flex items-center gap-4">
                               {c ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 breath-zoom holo-5star" style={{ position: 'relative' }}>
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
                                     )}
@@ -5726,7 +5726,7 @@ function WhisperingWishesInner() {
                           return (
                             <div
                               key={slotIdx}
-                              className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === teamKey ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === teamKey ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30 holo-5star' : 'bg-purple-500/10 border-purple-500/30'}`}
                               style={{ height: '160px', contain: 'paint' }}
                               onClick={() => {
                                 if (framingMode) {
@@ -5745,7 +5745,7 @@ function WhisperingWishesInner() {
                                 <img
                                   src={imgUrl}
                                   alt={charName}
-                                  className="absolute inset-0 w-full h-full object-contain pointer-events-none breath-zoom"
+                                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                                   style={{
                                     transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
                                   }}
@@ -6219,10 +6219,10 @@ function WhisperingWishesInner() {
                                   {/* Character header */}
                                   <div className="mb-2">
                                     <div className="flex items-start gap-2 mb-1.5">
-                                      <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
-                                        style={{ background: 'rgba(0,0,0,0.3)' }}>
+                                      <div className={`w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0 breath-zoom${rarity5 ? ' holo-5star' : ''}`}
+                                        style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                                         {collectionImages[m.name] ? (
-                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
+                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
                                         ) : (
                                           <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">{m.name[0]}</div>
                                         )}
@@ -6683,10 +6683,10 @@ function WhisperingWishesInner() {
                                   const cd = CHARACTER_DATA[m];
                                   const sf = getImageFraming(`collection-${m}`);
                                   return (
-                                    <div key={j} className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative"
+                                    <div key={j} className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative breath-zoom${cd?.rarity === 5 ? ' holo-5star' : ''}`}
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>
                                       {collectionImages[m] ? (
-                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none breath-zoom" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
+                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
                                       ) : (
                                         <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400 font-medium">{m[0]}</div>
                                       )}
@@ -6849,10 +6849,11 @@ function WhisperingWishesInner() {
                                   {img && (() => {
                                     const f = getImageFraming(`collection-${name}`);
                                     return (
+                                    <div className="absolute inset-0 collection-img-wrap">
                                     <img
                                       src={img}
                                       alt={name}
-                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none breath-zoom"
+                                      className="w-full h-full object-contain pointer-events-none"
                                       style={{
                                         transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
                                         filter: owned ? 'none' : 'grayscale(100%)',
@@ -6860,6 +6861,7 @@ function WhisperingWishesInner() {
                                       loading="lazy"
                                       onError={hideOnError}
                                     />
+                                    </div>
                                     );
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
@@ -7046,10 +7048,10 @@ function WhisperingWishesInner() {
                 <div>
                   <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
+                    <div className={`w-14 h-14 rounded-lg flex-shrink-0 breath-zoom${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint', position: 'relative' }}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain breath-zoom" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} />;
+                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} />;
                       })() : (
                         <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
                       )}
@@ -7150,39 +7152,7 @@ function WhisperingWishesInner() {
                   <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
 
-                {/* Install App on Device */}
-                {pwa?.canInstall && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
-                        <Download size={16} />
-                      </div>
-                      <div>
-                        <div className="text-white text-xs font-medium">Install App</div>
-                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const accepted = await pwa.promptInstall();
-                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
-                      }}
-                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
-                    >
-                      Install
-                    </button>
-                  </div>
-                )}
-                {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
-                )}
-              </CardBody>
-            </Card>
-
-            {/* Animations Toggle — 3-state: off < on < full */}
-            <Card>
-              <CardHeader><Sparkles size={14} className={visualSettings.animationsEnabled === 'full' ? 'text-fuchsia-400' : visualSettings.animationsEnabled === 'on' ? 'text-purple-400' : 'text-gray-400'} /> Animations</CardHeader>
-              <CardBody className="space-y-3">
+                {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
@@ -7215,6 +7185,33 @@ function WhisperingWishesInner() {
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
                   <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                )}
+
+                {/* Install App on Device */}
+                {pwa?.canInstall && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                        <Download size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Install App</div>
+                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const accepted = await pwa.promptInstall();
+                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                    >
+                      Install
+                    </button>
+                  </div>
+                )}
+                {pwa?.isInstalled && (
+                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
                 )}
               </CardBody>
             </Card>
@@ -7660,12 +7657,12 @@ Example: {"pulls":[...]}'
                         )}
                       </div>
                       <div className="flex-shrink-0 flex flex-col items-center">
-                        <div className="relative rounded-xl overflow-hidden" style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
+                        <div className={`relative rounded-xl overflow-hidden breath-zoom${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
                           <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
                           {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                             const f = getImageFraming(`collection-${state.profile.profilePic}`);
                             {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
-                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none breath-zoom" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
+                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
                           })() : (
                             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
                               <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
@@ -7789,12 +7786,13 @@ Example: {"pulls":[...]}'
                         {ownedCharNames.slice(0, 16).map(name => {
                           const imgUrl = collectionImages[name];
                           const f = getImageFraming(`collection-${name}`);
+                          const is5Star = CHARACTER_DATA[name]?.rarity === 5;
                           return (
                             <div key={name}>
-                              <div className="relative rounded-lg overflow-hidden w-full" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
+                              <div className={`relative rounded-lg overflow-hidden w-full breath-zoom${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
                                 <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
                                 {imgUrl ? (
-                                  <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none breath-zoom" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
+                                  <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
                                     <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>

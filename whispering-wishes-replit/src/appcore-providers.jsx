@@ -2335,8 +2335,9 @@ const KuroStyles = memo(({ oledMode }) => (
       filter: blur(3px);
     }
 
-    /* ── Collection Grid: holographic shimmer sweep on 5★ owned ── */
-    .animations-full .collection-card.glow-gold::after {
+    /* ── Holographic shimmer sweep on 5★ owned ── */
+    .animations-full .collection-card.glow-gold::after,
+    .animations-full .holo-5star::after {
       content: '' !important;
       position: absolute;
       top: 0; left: -100%;
@@ -2369,12 +2370,15 @@ const KuroStyles = memo(({ oledMode }) => (
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Breathing zoom on all character images — Full mode only ── */
-    .animations-full .breath-zoom {
-      animation: breathZoom 5s ease-in-out infinite;
+    /* ── Breathing zoom on character images ── */
+    .collection-card .collection-img-wrap {
+      animation: breathZoom 6s ease-in-out infinite;
     }
     .animations-full .collection-card .collection-img-wrap {
-      animation: breathZoom 4.5s ease-in-out infinite;
+      animation: breathZoom 4.5s ease-in-out infinite !important;
+    }
+    .animations-full .breath-zoom {
+      animation: breathZoom 5s ease-in-out infinite;
     }
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
