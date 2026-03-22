@@ -3530,7 +3530,9 @@ function WhisperingWishesInner() {
                 <div className="space-y-2">
                   {/* Show only the latest banner */}
                   {BANNER_HISTORY.slice(0, 1).map(b => (
-                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                    <div key={`bh-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                      <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
@@ -3547,7 +3549,7 @@ function WhisperingWishesInner() {
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
                                     )}
@@ -3559,7 +3561,7 @@ function WhisperingWishesInner() {
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                     {wImg ? (
-                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
@@ -3570,6 +3572,7 @@ function WhisperingWishesInner() {
                             </div>
                           );
                         })}
+                      </div>
                       </div>
                     </div>
                   ))}
@@ -3597,7 +3600,9 @@ function WhisperingWishesInner() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
                   {BANNER_HISTORY.map(b => (
-                    <div key={`bhm-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                    <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                      <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
@@ -3614,7 +3619,7 @@ function WhisperingWishesInner() {
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
                                     )}
@@ -3626,7 +3631,7 @@ function WhisperingWishesInner() {
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
                                     {wImg ? (
-                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
@@ -3637,6 +3642,7 @@ function WhisperingWishesInner() {
                             </div>
                           );
                         })}
+                      </div>
                       </div>
                     </div>
                   ))}
