@@ -5768,7 +5768,7 @@ function WhisperingWishesInner() {
                               {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] rounded-lg bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />
