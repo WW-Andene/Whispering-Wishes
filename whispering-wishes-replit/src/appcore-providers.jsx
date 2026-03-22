@@ -904,7 +904,25 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
     }
-    /* §BANNER_ANIM: region-based particle overlay (canvas-driven, see BannerParticleOverlay) */
+    /* §BANNER_ANIM: particle overlay + element-colored border glow */
+    .banner-card-glow {
+      box-shadow:
+        inset 0 0 12px rgba(var(--glow-color), 0),
+        0 0 8px rgba(var(--glow-color), 0);
+      animation: bannerGlow 4s ease-in-out infinite;
+    }
+    @keyframes bannerGlow {
+      0%, 100% {
+        box-shadow:
+          inset 0 0 8px rgba(var(--glow-color), 0.05),
+          0 0 4px rgba(var(--glow-color), 0.08);
+      }
+      50% {
+        box-shadow:
+          inset 0 0 18px rgba(var(--glow-color), 0.15),
+          0 0 12px rgba(var(--glow-color), 0.25);
+      }
+    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;
