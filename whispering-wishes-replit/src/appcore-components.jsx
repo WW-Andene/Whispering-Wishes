@@ -1827,13 +1827,13 @@ const BANNER_THEMES = {
         // 3D self-rotation: cos squashes width to simulate tumbling
         const spin = Math.cos(t * l.spinSpeed + l.spinPhase);
         const widthScale = 0.2 + Math.abs(spin) * 0.8;
-        // Color: wide range from very dark (8,12,18) to bright (160,175,140)
+        // Color: dark (8,12,18) to cool blue-grey (120,135,170)
         // Each leaf has its own colorShift, plus face shading from spin
         const faceBias = spin * 0.12;
         const cm = Math.min(1, Math.max(0, l.colorShift + faceBias));
-        const lr = Math.floor(8 + cm * 152);
-        const lg = Math.floor(12 + cm * 163);
-        const lb = Math.floor(18 + cm * 122);
+        const lr = Math.floor(8 + cm * 112);
+        const lg = Math.floor(12 + cm * 123);
+        const lb = Math.floor(18 + cm * 152);
         ctx.save();
         ctx.globalAlpha = l.alpha;
         ctx.translate(sx, l.y); ctx.rotate(l.rot);
