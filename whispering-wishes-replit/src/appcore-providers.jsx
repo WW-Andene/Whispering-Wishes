@@ -904,6 +904,13 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
     }
+    @keyframes bannerEcho {
+      0%, 100% { opacity: 0; transform: translate(0, 0) scale(1); filter: blur(0px); }
+      15% { opacity: 0.15; transform: translate(4px, -2px) scale(1.02); filter: blur(1px); }
+      40% { opacity: 0.08; transform: translate(8px, -4px) scale(1.04); filter: blur(3px); }
+      60% { opacity: 0.04; transform: translate(12px, -3px) scale(1.05); filter: blur(5px); }
+      80% { opacity: 0; transform: translate(16px, -2px) scale(1.06); filter: blur(8px); }
+    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;

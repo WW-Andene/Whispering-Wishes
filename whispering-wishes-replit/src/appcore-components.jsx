@@ -1380,15 +1380,34 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
-  
+
   // Use unified mask generator
-  const maskGradient = visualSettings 
+  const maskGradient = visualSettings
     ? generateMaskGradient(visualSettings.fadePosition, visualSettings.fadeIntensity)
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
-  
+  const animEnabled = visualSettings?.animationsEnabled !== 'off' && visualSettings?.animationsEnabled !== false;
+
   return (
     <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+      {/* Ghost echo layers — clones that drift and fade to simulate movement */}
+      {imgUrl && animEnabled && [1, 2, 3].map(i => (
+        <img
+          key={`echo-${i}`}
+          src={imgUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-echo"
+          style={{
+            zIndex: 0,
+            opacity: 0,
+            maskImage: maskGradient,
+            WebkitMaskImage: maskGradient,
+            animation: `bannerEcho ${6 + i * 2}s ease-in-out ${i * 2}s infinite`,
+          }}
+          loading="eager"
+          aria-hidden="true"
+        />
+      ))}
       {imgUrl && (
         <img
           src={imgUrl}
