@@ -1752,42 +1752,11 @@ const BannerParticleOverlay = memo(({ characterName, element }) => {
       || 'sparkle';
     const drawFn = (BANNER_THEMES[themeKey] || BANNER_THEMES.sparkle)(w, h);
 
-    // Tiny wind particles — universal layer, subtle horizontal streaks
-    const windMotes = Array.from({ length: 10 }, () => ({
-      x: Math.random() * w * 1.3,
-      y: Math.random() * h,
-      len: 6 + Math.random() * 14,
-      speed: 0.6 + Math.random() * 1.2,
-      alpha: 0.06 + Math.random() * 0.1,
-      phase: Math.random() * Math.PI * 2,
-      yDrift: (Math.random() - 0.5) * 0.15,
-    }));
-
     let animId, t = 0;
     const frame = () => {
       ctx.clearRect(0, 0, w, h);
       t += 0.016;
       drawFn(ctx, t);
-
-      // Wind streaks — tiny horizontal lines drifting across
-      for (const wm of windMotes) {
-        wm.x += wm.speed;
-        wm.y += wm.yDrift + Math.sin(t * 0.8 + wm.phase) * 0.08;
-        if (wm.x > w + 20) { wm.x = -wm.len - 5; wm.y = Math.random() * h; }
-        const a = wm.alpha * (0.5 + Math.sin(t * 0.6 + wm.phase) * 0.5);
-        if (a < 0.01) continue;
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-        ctx.lineWidth = 0.5;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(wm.x, wm.y);
-        ctx.lineTo(wm.x - wm.len, wm.y + wm.yDrift * 3);
-        ctx.stroke();
-        ctx.restore();
-      }
-
       animId = requestAnimationFrame(frame);
     };
     animId = requestAnimationFrame(frame);
@@ -1818,7 +1787,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const animEnabled = visualSettings?.animationsEnabled !== 'off' && visualSettings?.animationsEnabled !== false;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border${animEnabled ? ' banner-card-glow' : ''}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, '--glow-color': style.glow, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className={animEnabled ? 'banner-card-glow rounded-xl' : ''} style={animEnabled ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: animEnabled ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <img
           src={imgUrl}
@@ -1886,6 +1856,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             </div>
           </div>
         )}
+    </div>
     </div>
   );
 });
