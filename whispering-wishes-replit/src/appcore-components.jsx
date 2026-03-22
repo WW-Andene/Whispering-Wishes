@@ -1376,6 +1376,131 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
+// §BANNER_PARTICLES: Region-based sparkle/shimmer overlay for banner cards
+const BannerParticleOverlay = memo(({ width = 400, height = 190 }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Sparkle particles — concentrated in bottom 40% where stars are in banner art
+    const sparkles = Array.from({ length: 12 }, () => ({
+      x: Math.random() * width,
+      y: height * 0.55 + Math.random() * height * 0.45,
+      size: 1 + Math.random() * 2.5,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 1.5,
+      color: Math.random() > 0.5 ? '255,220,100' : '180,220,255',
+    }));
+
+    // Floating light motes — drift upward across the whole image
+    const motes = Array.from({ length: 8 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -0.15 - Math.random() * 0.3,
+      size: 1 + Math.random() * 1.5,
+      alpha: 0.2 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+    }));
+
+    // Shimmer — a diagonal light sweep
+    let shimmerX = -width * 0.3;
+    const shimmerSpeed = 0.35;
+    const shimmerWidth = width * 0.15;
+
+    let animId;
+    let t = 0;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      t += 0.016;
+
+      // Draw sparkles
+      for (const s of sparkles) {
+        const twinkle = Math.sin(t * s.speed + s.phase);
+        const alpha = Math.max(0, twinkle) * 0.7;
+        if (alpha > 0.05) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = `rgba(${s.color},1)`;
+          ctx.shadowColor = `rgba(${s.color},0.8)`;
+          ctx.shadowBlur = 6;
+          // 4-point star shape
+          const sz = s.size * (0.6 + twinkle * 0.4);
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y - sz * 2);
+          ctx.lineTo(s.x + sz * 0.4, s.y - sz * 0.4);
+          ctx.lineTo(s.x + sz * 2, s.y);
+          ctx.lineTo(s.x + sz * 0.4, s.y + sz * 0.4);
+          ctx.lineTo(s.x, s.y + sz * 2);
+          ctx.lineTo(s.x - sz * 0.4, s.y + sz * 0.4);
+          ctx.lineTo(s.x - sz * 2, s.y);
+          ctx.lineTo(s.x - sz * 0.4, s.y - sz * 0.4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Draw floating motes
+      for (const m of motes) {
+        m.x += m.vx + Math.sin(t + m.phase) * 0.15;
+        m.y += m.vy;
+        // Wrap around
+        if (m.y < -5) { m.y = height + 5; m.x = Math.random() * width; }
+        if (m.x < -5) m.x = width + 5;
+        if (m.x > width + 5) m.x = -5;
+        const pulse = 0.6 + Math.sin(t * 1.5 + m.phase) * 0.4;
+        ctx.save();
+        ctx.globalAlpha = m.alpha * pulse;
+        ctx.fillStyle = 'rgba(255,245,200,1)';
+        ctx.shadowColor = 'rgba(255,220,100,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Draw shimmer sweep
+      shimmerX += shimmerSpeed;
+      if (shimmerX > width * 1.3) shimmerX = -width * 0.3;
+      ctx.save();
+      const grad = ctx.createLinearGradient(shimmerX, 0, shimmerX + shimmerWidth, 0);
+      grad.addColorStop(0, 'rgba(255,255,255,0)');
+      grad.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      // Angled sweep
+      ctx.transform(1, -0.15, 0.15, 1, 0, height * 0.15);
+      ctx.fillRect(shimmerX, 0, shimmerWidth, height);
+      ctx.restore();
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    animId = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animId);
+  }, [width, height]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 2, width: '100%', height: '100%' }}
+      aria-hidden="true"
+    />
+  );
+});
+BannerParticleOverlay.displayName = 'BannerParticleOverlay';
+
 const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
@@ -1405,21 +1530,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           onError={hideOnError}
         />
       )}
-      {imgUrl && animEnabled && [1, 2].map(i => (
-        <img
-          key={`trail-${i}`}
-          src={imgUrl}
-          alt=""
-          className={`absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-trail banner-trail-${i}`}
-          style={{
-            zIndex: 2,
-            maskImage: maskGradient,
-            WebkitMaskImage: maskGradient,
-          }}
-          loading="eager"
-          aria-hidden="true"
-        />
-      ))}
+      {imgUrl && animEnabled && <BannerParticleOverlay />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
