@@ -2343,7 +2343,7 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 80%;
       height: 100%;
       background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.18) 40%, rgba(255,255,255,0.3) 50%, rgba(255,220,100,0.18) 60%, transparent 75%);
-      animation: holoSweep 3.5s ease-in-out infinite !important;
+      animation: holoSweep 6s ease-in-out infinite !important;
       pointer-events: none;
       z-index: 15;
     }
@@ -2369,56 +2369,22 @@ const KuroStyles = memo(({ oledMode }) => (
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Background: shooting stars ── */
-    .shooting-star-1, .shooting-star-2 {
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
+    /* ── Breathing zoom on all character images ── */
+    .breath-zoom {
+      animation: breathZoom 7s ease-in-out infinite;
     }
-    .shooting-star-1 {
-      width: 4px; height: 4px;
-      background: white;
-      box-shadow: 0 0 8px 3px rgba(200,220,255,0.8), -8px 0 12px rgba(200,220,255,0.4);
-      opacity: 0;
-      animation: shootingStar 6s linear infinite !important;
+    .collection-card .collection-img-wrap {
+      animation: breathZoom 6s ease-in-out infinite;
     }
-    .shooting-star-2 {
-      width: 3px; height: 3px;
-      background: white;
-      box-shadow: 0 0 6px 2px rgba(180,200,255,0.7), -6px 0 10px rgba(180,200,255,0.3);
-      opacity: 0;
-      animation: shootingStar2 9s linear infinite 3s !important;
-    }
-    @keyframes shootingStar {
-      0% { opacity: 0; top: 6%; left: 80%; }
-      1% { opacity: 1; }
-      6% { opacity: 1; top: 30%; left: 25%; }
-      7% { opacity: 0; }
-      100% { opacity: 0; }
-    }
-    @keyframes shootingStar2 {
-      0% { opacity: 0; top: 10%; left: 92%; }
-      1% { opacity: 0.8; }
-      5% { opacity: 0.8; top: 25%; left: 40%; }
-      6% { opacity: 0; }
-      100% { opacity: 0; }
-    }
-
-    /* ── Breathing zoom on character images ── */
     .animations-full .breath-zoom {
-      animation: breathZoom 6s ease-in-out infinite !important;
+      animation: breathZoom 5s ease-in-out infinite !important;
     }
     .animations-full .collection-card .collection-img-wrap {
-      animation: breathZoomCollection 5s ease-in-out infinite !important;
+      animation: breathZoom 4.5s ease-in-out infinite !important;
     }
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.04); }
-    }
-    @keyframes breathZoomCollection {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.04); }
+      50% { transform: scale(1.03); }
     }
 
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */

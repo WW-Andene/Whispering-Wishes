@@ -1936,7 +1936,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
     <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
-        <div className={`absolute inset-0 ${isFull ? 'breath-zoom' : ''}`} style={{ zIndex: 1 }}>
+        <div className="absolute inset-0 breath-zoom" style={{ zIndex: 1 }}>
           <img
             src={imgUrl}
             alt={item.name}
