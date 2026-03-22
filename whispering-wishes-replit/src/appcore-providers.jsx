@@ -923,8 +923,8 @@ const KuroStyles = memo(({ oledMode }) => (
         box-shadow:
           0 0 40px rgba(237,175,24,0.06),
           0 4px 16px rgba(0,0,0,0.3),
-          0 0 24px 6px rgba(var(--glow-color), 0.45),
-          0 0 4px 1px rgba(var(--glow-color), 0.6);
+          0 0 18px 4px rgba(var(--glow-color), 0.35),
+          0 0 3px 1px rgba(var(--glow-color), 0.5);
       }
     }
     @keyframes bannerBorderGlow {

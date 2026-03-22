@@ -1398,28 +1398,42 @@ const ELEMENT_THEME_FALLBACK = {
 
 // ── Theme definitions: each returns { particles[], draw(ctx, particles, t, w, h) } ──
 const BANNER_THEMES = {
-  // ✨ SPARKLE: golden 4-point stars twinkling + warm motes floating up
+  // ✨ SPARKLE: golden 4-point stars twinkling + warm motes floating up + orange glow
   sparkle: (w, h) => {
-    const stars = Array.from({ length: 14 }, () => ({
-      x: Math.random() * w, y: h * 0.2 + Math.random() * h * 0.78,
-      size: 1.8 + Math.random() * 3, phase: Math.random() * Math.PI * 2,
+    const stars = Array.from({ length: 18 }, () => ({
+      x: Math.random() * w, y: h * 0.15 + Math.random() * h * 0.83,
+      size: 2.2 + Math.random() * 3.5, phase: Math.random() * Math.PI * 2,
       speed: 0.5 + Math.random() * 1.5,
     }));
-    const motes = Array.from({ length: 10 }, () => ({
+    const motes = Array.from({ length: 14 }, () => ({
       x: Math.random() * w, y: Math.random() * h,
       vy: -0.15 - Math.random() * 0.25, phase: Math.random() * Math.PI * 2,
-      size: 1 + Math.random() * 1.5, alpha: 0.35 + Math.random() * 0.45,
+      size: 1.2 + Math.random() * 2, alpha: 0.5 + Math.random() * 0.4,
     }));
+    // Orange glow zone — bottom-left warm ambient light
+    const glowX = w * 0.2, glowY = h * 0.85;
     return (ctx, t) => {
+      // Ambient orange glow — subtle warm light from bottom-left
+      const gPulse = 0.7 + Math.sin(t * 0.12) * 0.2 + Math.sin(t * 0.07 + 1.5) * 0.1;
+      ctx.save();
+      ctx.globalAlpha = 0.18 * gPulse;
+      const og = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, w * 0.45);
+      og.addColorStop(0, 'rgba(255,160,50,0.4)');
+      og.addColorStop(0.4, 'rgba(255,130,30,0.15)');
+      og.addColorStop(1, 'rgba(255,100,20,0)');
+      ctx.fillStyle = og;
+      ctx.beginPath(); ctx.arc(glowX, glowY, w * 0.45, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
       for (const s of stars) {
         const tw = Math.sin(t * s.speed + s.phase);
-        const a = Math.max(0, tw) * 0.9;
+        const a = Math.max(0, tw) * 0.95;
         if (a < 0.05) continue;
         ctx.save();
         ctx.globalAlpha = a;
         ctx.fillStyle = 'rgba(255,220,100,1)';
         ctx.shadowColor = 'rgba(255,200,50,0.9)';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 12;
         const sz = s.size * (0.6 + tw * 0.4);
         ctx.beginPath();
         ctx.moveTo(s.x, s.y - sz * 2); ctx.lineTo(s.x + sz * 0.35, s.y - sz * 0.35);
@@ -1436,8 +1450,8 @@ const BANNER_THEMES = {
         ctx.save();
         ctx.globalAlpha = m.alpha * (0.6 + Math.sin(t + m.phase) * 0.4);
         ctx.fillStyle = 'rgba(255,240,180,1)';
-        ctx.shadowColor = 'rgba(255,220,100,0.7)';
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255,220,100,0.8)';
+        ctx.shadowBlur = 12;
         ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
@@ -1729,10 +1743,10 @@ const BANNER_THEMES = {
     // Leaves spawn from top-right, drift down-left
     // Color: very dark (20,25,35) on right → light (120,135,155) on left
     const leaves = Array.from({ length: 22 }, (_, i) => {
-      // Spawn from top edge (right half) and right edge (upper half)
-      const fromRight = Math.random() < 0.4; // 40% from right edge, 60% from top
-      const lx = fromRight ? w + Math.random() * 10 : w * 0.35 + Math.random() * w * 0.65;
-      const ly = fromRight ? Math.random() * h * 0.5 : -Math.random() * 20;
+      // Spawn from top edge (wider spread) and right edge (upper half)
+      const fromRight = Math.random() < 0.35;
+      const lx = fromRight ? w + Math.random() * 10 : w * 0.15 + Math.random() * w * 0.85;
+      const ly = fromRight ? Math.random() * h * 0.55 : -Math.random() * 20;
       return {
         x: lx, y: ly,
         size: 1.5 + Math.random() * 7,
@@ -1753,49 +1767,51 @@ const BANNER_THEMES = {
       phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
       size: 1.2 + Math.random() * 2,
     }));
-    const moonR = 20;
+    const moonR = 28;
     return (ctx, t) => {
       // Animated glow pulse — slow breathe with layered harmonics
       const pulse1 = Math.sin(t * 0.08);
       const pulse2 = Math.sin(t * 0.19 + 1.2);
       const pulse3 = Math.sin(t * 0.042 + 2.5);
-      const glowStrength = 0.7 + pulse1 * 0.18 + pulse2 * 0.08 + pulse3 * 0.1;
-      const haloScale = 1 + pulse1 * 0.15 + pulse3 * 0.1;
+      const glowStrength = 0.85 + pulse1 * 0.15;
+      const haloScale = 1 + pulse1 * 0.12 + pulse3 * 0.08;
 
       // Moon outer glow — wide atmospheric bloom
       ctx.save();
-      ctx.globalAlpha = 0.25 + pulse1 * 0.1 + pulse2 * 0.05;
-      const og = ctx.createRadialGradient(moonX, moonY, moonR, moonX, moonY, moonR * 10 * haloScale);
-      og.addColorStop(0, 'rgba(200,220,250,0.35)');
-      og.addColorStop(0.3, 'rgba(170,200,235,0.15)');
-      og.addColorStop(0.6, 'rgba(150,185,220,0.05)');
+      ctx.globalAlpha = 0.5 + pulse1 * 0.15;
+      const og = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 8 * haloScale);
+      og.addColorStop(0, 'rgba(210,225,255,0.5)');
+      og.addColorStop(0.25, 'rgba(180,205,240,0.25)');
+      og.addColorStop(0.5, 'rgba(150,185,220,0.1)');
       og.addColorStop(1, 'rgba(120,155,190,0)');
       ctx.fillStyle = og;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 10 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 8 * haloScale, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
       // Moon halo — brighter inner glow
       ctx.save();
-      ctx.globalAlpha = 0.4 + pulse1 * 0.12 + pulse2 * 0.06;
-      const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.3, moonX, moonY, moonR * 5 * haloScale);
-      mg.addColorStop(0, 'rgba(220,235,255,0.6)');
-      mg.addColorStop(0.3, 'rgba(190,215,240,0.3)');
-      mg.addColorStop(0.6, 'rgba(160,190,220,0.1)');
-      mg.addColorStop(1, 'rgba(130,160,195,0)');
+      ctx.globalAlpha = 0.6 + pulse1 * 0.15;
+      const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.2, moonX, moonY, moonR * 3.5 * haloScale);
+      mg.addColorStop(0, 'rgba(230,240,255,0.7)');
+      mg.addColorStop(0.35, 'rgba(200,220,245,0.35)');
+      mg.addColorStop(0.7, 'rgba(170,195,225,0.1)');
+      mg.addColorStop(1, 'rgba(140,165,200,0)');
       ctx.fillStyle = mg;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 5 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 3.5 * haloScale, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
       // Moon disc — solid bright core
       ctx.save();
       ctx.globalAlpha = glowStrength;
-      const disc = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 1.2);
-      disc.addColorStop(0, 'rgba(250,252,255,1)');
-      disc.addColorStop(0.3, 'rgba(235,242,255,0.85)');
-      disc.addColorStop(0.7, 'rgba(210,225,250,0.4)');
-      disc.addColorStop(1, 'rgba(180,200,230,0)');
+      ctx.fillStyle = 'rgba(240,245,255,0.95)';
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.6, 0, Math.PI * 2); ctx.fill();
+      // Softer edge
+      const disc = ctx.createRadialGradient(moonX, moonY, moonR * 0.4, moonX, moonY, moonR * 1.4);
+      disc.addColorStop(0, 'rgba(245,250,255,0.9)');
+      disc.addColorStop(0.4, 'rgba(225,238,255,0.5)');
+      disc.addColorStop(1, 'rgba(190,210,240,0)');
       ctx.fillStyle = disc;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 1.4, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
       // Brume
       for (const b of brume) {
@@ -1817,9 +1833,9 @@ const BANNER_THEMES = {
         l.rot += l.rotV;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
-          const fromRight = Math.random() < 0.4;
-          l.x = fromRight ? w + Math.random() * 10 : w * 0.35 + Math.random() * w * 0.65;
-          l.y = fromRight ? Math.random() * h * 0.5 : -Math.random() * 20;
+          const fromRight = Math.random() < 0.35;
+          l.x = fromRight ? w + Math.random() * 10 : w * 0.15 + Math.random() * w * 0.85;
+          l.y = fromRight ? Math.random() * h * 0.55 : -Math.random() * 20;
           l.size = 1.5 + Math.random() * 7;
           l.alpha = 0.55 + Math.random() * 0.25;
           l.colorShift = Math.random();
