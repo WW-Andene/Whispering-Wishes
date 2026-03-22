@@ -1405,7 +1405,22 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           onError={hideOnError}
         />
       )}
-      
+      {imgUrl && animEnabled && [1, 2].map(i => (
+        <img
+          key={`trail-${i}`}
+          src={imgUrl}
+          alt=""
+          className={`absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-trail banner-trail-${i}`}
+          style={{
+            zIndex: 2,
+            maskImage: maskGradient,
+            WebkitMaskImage: maskGradient,
+          }}
+          loading="eager"
+          aria-hidden="true"
+        />
+      ))}
+
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
           <CountdownTimer endDate={endDate} color={timerColor || 'yellow'} />

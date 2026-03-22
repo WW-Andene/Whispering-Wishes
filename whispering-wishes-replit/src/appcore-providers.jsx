@@ -904,7 +904,25 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
     }
-    /* §BANNER_ANIM: banner image animation slot (currently empty) */
+    /* §BANNER_ANIM: sprite echo / afterimage trail */
+    .banner-trail {
+      opacity: 0;
+      transform-origin: center center;
+    }
+    .banner-trail-1 {
+      animation: bannerTrail 8s linear infinite !important;
+    }
+    .banner-trail-2 {
+      animation: bannerTrail 8s linear 4s infinite !important;
+    }
+    @keyframes bannerTrail {
+      0%   { opacity: 0;    transform: translateX(0%)  scale(1);    filter: blur(0px)  brightness(1); }
+      8%   { opacity: 0.2;  transform: translateX(1%)  scale(1.01); filter: blur(1px)  brightness(1.1); }
+      30%  { opacity: 0.12; transform: translateX(4%)  scale(1.02); filter: blur(3px)  brightness(1.05); }
+      60%  { opacity: 0.05; transform: translateX(8%)  scale(1.03); filter: blur(6px)  brightness(1); }
+      85%  { opacity: 0;    transform: translateX(12%) scale(1.04); filter: blur(10px) brightness(1); }
+      100% { opacity: 0;    transform: translateX(14%) scale(1.04); filter: blur(12px) brightness(1); }
+    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;
