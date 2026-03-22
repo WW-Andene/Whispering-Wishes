@@ -1396,13 +1396,12 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           key={`echo-${i}`}
           src={imgUrl}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none banner-echo"
+          className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none"
           style={{
             zIndex: 0,
-            opacity: 0,
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient,
-            animation: `bannerEcho ${6 + i * 2}s ease-in-out ${i * 2}s infinite`,
+            animation: `bannerEcho ${6 + i * 2}s ease-in-out ${i * 2}s infinite both`,
           }}
           loading="eager"
           aria-hidden="true"
