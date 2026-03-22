@@ -1380,7 +1380,7 @@ TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 // Character-specific theme overrides (matched to their banner art mood)
 const CHARACTER_THEME_MAP = {
   Sigrika: 'sparkle',    // warm, magical, golden sparkles at feet, starry sky
-  Qiuyuan: 'mist',       // dark forest, moon, crows, brume, leaves
+  Qiuyuan: 'qiuyuan',    // dark forest, moon, crows, brume, swirling leaves
   Aemeath: 'frost',      // ice crystals, cold blue digital structures
   'Luuk Herssen': 'feathers', // white doves, bright nature, airy
   Chisa: 'energy',       // urban, red energy lines, industrial
@@ -1711,6 +1711,117 @@ const BANNER_THEMES = {
         ctx.shadowColor = 'rgba(100,180,255,0.6)';
         ctx.shadowBlur = 7;
         ctx.beginPath(); ctx.arc(ox, oy, o.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌙 QIUYUAN: moonlit brume, dark swirling leaves, crow silhouettes, jade glints
+  qiuyuan: (w, h) => {
+    // Dark brume / fog patches
+    const brume = Array.from({ length: 5 }, () => ({
+      x: Math.random() * w * 1.5, y: h * 0.25 + Math.random() * h * 0.55,
+      size: 55 + Math.random() * 75, vx: -0.12 - Math.random() * 0.18,
+      alpha: 0.06 + Math.random() * 0.06, phase: Math.random() * Math.PI * 2,
+    }));
+    // Swirling dark leaves
+    const leaves = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      size: 1.2 + Math.random() * 2.2, vy: 0.12 + Math.random() * 0.25,
+      vx: -0.2 - Math.random() * 0.3, swayAmp: 8 + Math.random() * 14,
+      swaySpeed: 0.25 + Math.random() * 0.4, phase: Math.random() * Math.PI * 2,
+      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.02,
+      alpha: 0.3 + Math.random() * 0.4,
+    }));
+    // Jade / green glint particles
+    const jadeGlints = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: h * 0.2 + Math.random() * h * 0.7,
+      phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
+      size: 0.8 + Math.random() * 1.2,
+    }));
+    // Crow silhouettes drifting across
+    const crows = Array.from({ length: 3 }, () => ({
+      x: w + Math.random() * w * 0.5, y: h * 0.08 + Math.random() * h * 0.35,
+      vx: -0.3 - Math.random() * 0.4, wingPhase: Math.random() * Math.PI * 2,
+      wingSpeed: 2 + Math.random() * 1.5, size: 3 + Math.random() * 3,
+      alpha: 0.2 + Math.random() * 0.2,
+    }));
+    // Subtle moonlight glow
+    const moonX = w * 0.75, moonY = h * 0.12, moonR = 18;
+    return (ctx, t) => {
+      // Moonlight ambient
+      ctx.save();
+      ctx.globalAlpha = 0.04 + Math.sin(t * 0.15) * 0.015;
+      const mg = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 4);
+      mg.addColorStop(0, 'rgba(200,220,240,0.5)');
+      mg.addColorStop(0.5, 'rgba(160,190,210,0.15)');
+      mg.addColorStop(1, 'rgba(120,150,170,0)');
+      ctx.fillStyle = mg;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      // Brume
+      for (const b of brume) {
+        b.x += b.vx + Math.sin(t * 0.15 + b.phase) * 0.08;
+        if (b.x < -b.size * 2) b.x = w + b.size;
+        const pulse = b.alpha * (0.7 + Math.sin(t * 0.25 + b.phase) * 0.3);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.size);
+        grad.addColorStop(0, 'rgba(60,75,65,0.55)');
+        grad.addColorStop(1, 'rgba(40,55,45,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Swirling leaves
+      for (const l of leaves) {
+        l.y += l.vy; l.x += l.vx; l.rot += l.rotV;
+        const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
+        if (l.y > h + 10 || l.x < -20) { l.y = -8; l.x = w * 0.3 + Math.random() * w * 0.7; }
+        ctx.save();
+        ctx.globalAlpha = l.alpha;
+        ctx.translate(sx, l.y); ctx.rotate(l.rot);
+        ctx.fillStyle = 'rgba(35,55,35,0.9)';
+        ctx.shadowColor = 'rgba(80,140,80,0.2)';
+        ctx.shadowBlur = 3;
+        ctx.beginPath(); ctx.ellipse(0, 0, l.size * 0.45, l.size * 1.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      // Jade glints
+      for (const g of jadeGlints) {
+        const a = Math.pow(Math.max(0, Math.sin(t * g.speed + g.phase)), 2) * 0.7;
+        if (a < 0.04) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(120,220,150,1)';
+        ctx.shadowColor = 'rgba(80,200,120,0.7)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Crow silhouettes
+      for (const c of crows) {
+        c.x += c.vx;
+        if (c.x < -30) { c.x = w + 20 + Math.random() * 40; c.y = h * 0.05 + Math.random() * h * 0.3; }
+        const wing = Math.sin(t * c.wingSpeed + c.wingPhase);
+        ctx.save();
+        ctx.globalAlpha = c.alpha;
+        ctx.translate(c.x, c.y);
+        ctx.fillStyle = 'rgba(20,20,25,0.9)';
+        // Body
+        ctx.beginPath(); ctx.ellipse(0, 0, c.size * 0.8, c.size * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+        // Wings
+        ctx.beginPath();
+        ctx.moveTo(-c.size * 0.3, 0);
+        ctx.quadraticCurveTo(-c.size * 1.2, -c.size * (0.6 + wing * 0.5), -c.size * 1.8, -c.size * (0.2 + wing * 0.3));
+        ctx.lineTo(-c.size * 0.3, c.size * 0.1);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(c.size * 0.3, 0);
+        ctx.quadraticCurveTo(c.size * 1.2, -c.size * (0.6 + wing * 0.5), c.size * 1.8, -c.size * (0.2 + wing * 0.3));
+        ctx.lineTo(c.size * 0.3, c.size * 0.1);
+        ctx.fill();
         ctx.restore();
       }
     };
