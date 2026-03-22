@@ -197,7 +197,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           )}
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
+            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80 breath-zoom" onError={hideOnError} style={{
               transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'right bottom'
             }} />
@@ -405,7 +405,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
                                 <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden" style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top breath-zoom" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                 </div>
                               ) : (
                                 <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
@@ -779,7 +779,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                     <div key={charName} className="flex flex-col items-center gap-1">
                       {charImg ? (
                         <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden" style={{ contain: 'paint', position: 'relative' }}>
-                          <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
+                          <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
                         </div>
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">

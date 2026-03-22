@@ -2369,18 +2369,12 @@ const KuroStyles = memo(({ oledMode }) => (
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Breathing zoom on all character images ── */
-    .breath-zoom {
-      animation: breathZoom 7s ease-in-out infinite;
-    }
-    .collection-card .collection-img-wrap {
-      animation: breathZoom 6s ease-in-out infinite;
-    }
+    /* ── Breathing zoom on all character images — Full mode only ── */
     .animations-full .breath-zoom {
-      animation: breathZoom 5s ease-in-out infinite !important;
+      animation: breathZoom 5s ease-in-out infinite;
     }
     .animations-full .collection-card .collection-img-wrap {
-      animation: breathZoom 4.5s ease-in-out infinite !important;
+      animation: breathZoom 4.5s ease-in-out infinite;
     }
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
