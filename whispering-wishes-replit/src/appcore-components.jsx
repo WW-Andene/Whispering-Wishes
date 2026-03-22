@@ -187,7 +187,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
       >
        <div className="overflow-y-auto max-h-[90vh]">
         {/* Header with image */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl breath-zoom ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
