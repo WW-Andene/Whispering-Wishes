@@ -5162,6 +5162,8 @@ function WhisperingWishesInner() {
                       </CardBody>
                     </Card>
                     {/* Filter Dropdowns — context-sensitive per view */}
+                    <Card>
+                      <CardBody>
                     <div className="grid grid-cols-3 gap-1.5">
 
                       {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
@@ -5298,6 +5300,8 @@ function WhisperingWishesInner() {
                         </button>
                       )}
                     </div>
+                      </CardBody>
+                    </Card>
                     {/* Sort Controls */}
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
