@@ -1376,21 +1376,362 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
-// §BANNER_PARTICLES: Region-based particle overlay with per-object animation personality
-// Element → color palette for energy/aura effects
-const ELEMENT_PARTICLE_COLORS = {
-  Fusion:  { primary: '249,115,22', secondary: '255,180,60', aura: '255,140,40' },
-  Electro: { primary: '168,85,247', secondary: '200,140,255', aura: '180,100,255' },
-  Aero:    { primary: '16,185,129', secondary: '100,230,180', aura: '60,210,160' },
-  Glacio:  { primary: '6,182,212',  secondary: '140,220,240', aura: '80,200,230' },
-  Havoc:   { primary: '236,72,153', secondary: '255,130,180', aura: '240,90,160' },
-  Spectro: { primary: '234,179,8',  secondary: '255,220,80',  aura: '245,200,40' },
+// §BANNER_PARTICLES: Theme-driven particle overlay — each banner gets a fitting visual personality
+// Character-specific theme overrides (matched to their banner art mood)
+const CHARACTER_THEME_MAP = {
+  Sigrika: 'sparkle',    // warm, magical, golden sparkles at feet, starry sky
+  Qiuyuan: 'mist',       // dark forest, moon, crows, brume, leaves
+  Aemeath: 'frost',      // ice crystals, cold blue digital structures
+  'Luuk Herssen': 'feathers', // white doves, bright nature, airy
+  Chisa: 'energy',       // urban, red energy lines, industrial
+  Galbrena: 'embers',    // fire/ice duality, intense swirling flames
+  Augusta: 'embers',     // grand, dragon wings, fire, golden city
+  Lupa: 'embers',        // battle energy, red/white explosive swirl
+  Mornye: 'cosmic',      // cosmic water, ethereal blue sphere
+  Iuno: 'cosmic',        // ocean/cosmic, swirling water energy
+};
+// Element-based fallback for characters without specific overrides
+const ELEMENT_THEME_FALLBACK = {
+  Fusion: 'embers', Glacio: 'frost', Aero: 'feathers',
+  Havoc: 'mist', Electro: 'energy', Spectro: 'sparkle',
 };
 
-const BannerParticleOverlay = memo(({ element = 'Spectro' }) => {
+// ── Theme definitions: each returns { particles[], draw(ctx, particles, t, w, h) } ──
+const BANNER_THEMES = {
+  // ✨ SPARKLE: golden 4-point stars twinkling + warm motes floating up
+  sparkle: (w, h) => {
+    const stars = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: h * 0.3 + Math.random() * h * 0.68,
+      size: 1.2 + Math.random() * 2.5, phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 1.5,
+    }));
+    const motes = Array.from({ length: 6 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vy: -0.15 - Math.random() * 0.25, phase: Math.random() * Math.PI * 2,
+      size: 0.8 + Math.random() * 1.2, alpha: 0.2 + Math.random() * 0.35,
+    }));
+    return (ctx, t) => {
+      // Golden star twinkles
+      for (const s of stars) {
+        const tw = Math.sin(t * s.speed + s.phase);
+        const a = Math.max(0, tw) * 0.7;
+        if (a < 0.05) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(255,220,100,1)';
+        ctx.shadowColor = 'rgba(255,200,50,0.8)';
+        ctx.shadowBlur = 6;
+        const sz = s.size * (0.6 + tw * 0.4);
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y - sz * 2); ctx.lineTo(s.x + sz * 0.35, s.y - sz * 0.35);
+        ctx.lineTo(s.x + sz * 2, s.y); ctx.lineTo(s.x + sz * 0.35, s.y + sz * 0.35);
+        ctx.lineTo(s.x, s.y + sz * 2); ctx.lineTo(s.x - sz * 0.35, s.y + sz * 0.35);
+        ctx.lineTo(s.x - sz * 2, s.y); ctx.lineTo(s.x - sz * 0.35, s.y - sz * 0.35);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      // Warm floating motes
+      for (const m of motes) {
+        m.y += m.vy;
+        m.x += Math.sin(t * 0.5 + m.phase) * 0.2;
+        if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = m.alpha * (0.6 + Math.sin(t + m.phase) * 0.4);
+        ctx.fillStyle = 'rgba(255,240,180,1)';
+        ctx.shadowColor = 'rgba(255,220,100,0.5)';
+        ctx.shadowBlur = 6;
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌫️ MIST: dark fog wisps drifting + falling leaves/feathers
+  mist: (w, h) => {
+    const fog = Array.from({ length: 4 }, () => ({
+      x: Math.random() * w * 1.5, y: h * 0.3 + Math.random() * h * 0.5,
+      size: 40 + Math.random() * 60, vx: -0.15 - Math.random() * 0.2,
+      alpha: 0.03 + Math.random() * 0.04, phase: Math.random() * Math.PI * 2,
+    }));
+    const leaves = Array.from({ length: 6 }, () => ({
+      x: Math.random() * w, y: -10 - Math.random() * h * 0.5,
+      size: 1 + Math.random() * 2, vy: 0.2 + Math.random() * 0.35,
+      vx: -0.1 - Math.random() * 0.2, swayAmp: 6 + Math.random() * 12,
+      swaySpeed: 0.3 + Math.random() * 0.5, phase: Math.random() * Math.PI * 2,
+      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.015,
+      alpha: 0.15 + Math.random() * 0.25,
+    }));
+    return (ctx, t) => {
+      // Dark fog wisps
+      for (const f of fog) {
+        f.x += f.vx + Math.sin(t * 0.2 + f.phase) * 0.1;
+        if (f.x < -f.size * 2) f.x = w + f.size;
+        const pulse = f.alpha * (0.7 + Math.sin(t * 0.3 + f.phase) * 0.3);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.size);
+        grad.addColorStop(0, 'rgba(80,90,100,0.5)');
+        grad.addColorStop(1, 'rgba(60,70,80,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Falling dark leaves
+      for (const l of leaves) {
+        l.y += l.vy; l.x += l.vx; l.rot += l.rotV;
+        const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
+        if (l.y > h + 10) { l.y = -8; l.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = l.alpha;
+        ctx.translate(sx, l.y); ctx.rotate(l.rot);
+        ctx.fillStyle = 'rgba(50,60,50,0.8)';
+        ctx.beginPath(); ctx.ellipse(0, 0, l.size * 0.4, l.size * 1.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // ❄️ FROST: ice crystal particles drifting down + cold blue sparkle dots
+  frost: (w, h) => {
+    const crystals = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: -5 - Math.random() * h * 0.3,
+      size: 1.5 + Math.random() * 2, vy: 0.15 + Math.random() * 0.3,
+      vx: (Math.random() - 0.5) * 0.15, rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.01, alpha: 0.2 + Math.random() * 0.35,
+    }));
+    const dots = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      phase: Math.random() * Math.PI * 2, speed: 0.4 + Math.random() * 0.8,
+      size: 0.5 + Math.random() * 1,
+    }));
+    return (ctx, t) => {
+      // Drifting ice crystals (hexagon shape)
+      for (const c of crystals) {
+        c.y += c.vy; c.x += c.vx; c.rot += c.rotV;
+        if (c.y > h + 10) { c.y = -8; c.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = c.alpha;
+        ctx.translate(c.x, c.y); ctx.rotate(c.rot);
+        ctx.strokeStyle = 'rgba(140,220,240,0.8)';
+        ctx.lineWidth = 0.6;
+        ctx.shadowColor = 'rgba(100,200,240,0.4)';
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i;
+          ctx[i === 0 ? 'moveTo' : 'lineTo'](Math.cos(a) * c.size, Math.sin(a) * c.size);
+        }
+        ctx.closePath(); ctx.stroke();
+        ctx.restore();
+      }
+      // Cold blue sparkle dots
+      for (const d of dots) {
+        const a = Math.pow(Math.max(0, Math.sin(t * d.speed + d.phase)), 3) * 0.6;
+        if (a < 0.03) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(180,230,255,1)';
+        ctx.shadowColor = 'rgba(100,200,240,0.6)';
+        ctx.shadowBlur = 5;
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🔥 EMBERS: orange/red sparks rising + heat shimmer
+  embers: (w, h) => {
+    const sparks = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: h * 0.5 + Math.random() * h * 0.5,
+      vy: -0.3 - Math.random() * 0.6, vx: (Math.random() - 0.5) * 0.3,
+      size: 0.8 + Math.random() * 1.5, alpha: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2, life: Math.random(),
+      lifeSpeed: 0.004 + Math.random() * 0.005,
+      color: Math.random() > 0.4 ? '255,130,40' : '255,80,30',
+    }));
+    return (ctx, t) => {
+      for (const s of sparks) {
+        s.life += s.lifeSpeed;
+        if (s.life > 1) {
+          s.life = 0; s.x = Math.random() * w; s.y = h * 0.5 + Math.random() * h * 0.5;
+        }
+        s.y += s.vy; s.x += s.vx + Math.sin(t * 2 + s.phase) * 0.3;
+        const fade = s.life < 0.1 ? s.life / 0.1 : s.life > 0.6 ? (1 - s.life) / 0.4 : 1;
+        const a = s.alpha * fade;
+        if (a < 0.02) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = `rgba(${s.color},1)`;
+        ctx.shadowColor = `rgba(${s.color},0.7)`;
+        ctx.shadowBlur = 5;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.size * (0.5 + fade * 0.5), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      // Heat shimmer
+      ctx.save();
+      ctx.globalAlpha = 0.015 + Math.sin(t * 0.5) * 0.01;
+      const hg = ctx.createLinearGradient(0, h, 0, h * 0.5);
+      hg.addColorStop(0, 'rgba(255,100,30,0.3)');
+      hg.addColorStop(1, 'rgba(255,100,30,0)');
+      ctx.fillStyle = hg;
+      ctx.fillRect(0, h * 0.5, w, h * 0.5);
+      ctx.restore();
+    };
+  },
+
+  // 🕊️ FEATHERS: white feathers floating up + soft light dots
+  feathers: (w, h) => {
+    const feathers = Array.from({ length: 5 }, () => ({
+      x: Math.random() * w, y: h + Math.random() * h * 0.3,
+      vy: -0.15 - Math.random() * 0.25, vx: (Math.random() - 0.5) * 0.15,
+      swayAmp: 10 + Math.random() * 15, swaySpeed: 0.3 + Math.random() * 0.4,
+      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.008,
+      size: 1.5 + Math.random() * 2, alpha: 0.2 + Math.random() * 0.3,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    const lights = Array.from({ length: 6 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
+      size: 0.6 + Math.random() * 0.8,
+    }));
+    return (ctx, t) => {
+      for (const f of feathers) {
+        f.y += f.vy; f.x += f.vx; f.rot += f.rotV;
+        const sx = f.x + Math.sin(t * f.swaySpeed + f.phase) * f.swayAmp;
+        if (f.y < -15) { f.y = h + 10; f.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = f.alpha;
+        ctx.translate(sx, f.y); ctx.rotate(f.rot);
+        ctx.fillStyle = 'rgba(255,255,250,0.7)';
+        ctx.shadowColor = 'rgba(255,250,230,0.3)';
+        ctx.shadowBlur = 4;
+        ctx.beginPath(); ctx.ellipse(0, 0, f.size * 0.35, f.size * 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // feather spine
+        ctx.strokeStyle = 'rgba(220,210,190,0.3)';
+        ctx.lineWidth = 0.3;
+        ctx.beginPath(); ctx.moveTo(0, -f.size * 1.8); ctx.lineTo(0, f.size * 1.8); ctx.stroke();
+        ctx.restore();
+      }
+      // Soft golden light dots
+      for (const l of lights) {
+        const a = Math.pow(Math.max(0, Math.sin(t * l.speed + l.phase)), 2) * 0.4;
+        if (a < 0.03) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(255,240,200,1)';
+        ctx.shadowColor = 'rgba(255,230,160,0.4)';
+        ctx.shadowBlur = 5;
+        ctx.beginPath(); ctx.arc(l.x, l.y, l.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // ⚡ ENERGY: sharp quick line flashes + geometric bright dots
+  energy: (w, h) => {
+    const flashes = Array.from({ length: 5 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      angle: Math.random() * Math.PI, len: 15 + Math.random() * 25,
+      phase: Math.random() * 20, speed: 3 + Math.random() * 4,
+      color: Math.random() > 0.5 ? '255,60,80' : '255,255,255',
+    }));
+    const dots = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.5,
+      size: 0.5 + Math.random() * 1, alpha: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    return (ctx, t) => {
+      // Sharp line flashes
+      for (const f of flashes) {
+        f.phase += 0.016 * f.speed;
+        const cycle = f.phase % 8;
+        const a = cycle < 0.3 ? cycle / 0.3 : cycle < 0.6 ? (0.6 - cycle) / 0.3 : 0;
+        if (a < 0.02) {
+          if (cycle > 7.5) { f.x = Math.random() * w; f.y = Math.random() * h; f.angle = Math.random() * Math.PI; }
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = a * 0.5;
+        ctx.strokeStyle = `rgba(${f.color},1)`;
+        ctx.shadowColor = `rgba(${f.color},0.6)`;
+        ctx.shadowBlur = 4;
+        ctx.lineWidth = 1;
+        const dx = Math.cos(f.angle) * f.len * 0.5;
+        const dy = Math.sin(f.angle) * f.len * 0.5;
+        ctx.beginPath(); ctx.moveTo(f.x - dx, f.y - dy); ctx.lineTo(f.x + dx, f.y + dy); ctx.stroke();
+        ctx.restore();
+      }
+      // Fast geometric dots
+      for (const d of dots) {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > w) d.vx *= -1;
+        if (d.y < 0 || d.y > h) d.vy *= -1;
+        const pulse = d.alpha * (0.5 + Math.sin(t * 3 + d.phase) * 0.5);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = 'rgba(255,200,200,1)';
+        ctx.shadowColor = 'rgba(255,60,80,0.5)';
+        ctx.shadowBlur = 3;
+        ctx.fillRect(d.x - d.size, d.y - d.size, d.size * 2, d.size * 2);
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌌 COSMIC: slow orbiting particles + soft radial glow pulses
+  cosmic: (w, h) => {
+    const cx = w * 0.5, cy = h * 0.45, radius = Math.min(w, h) * 0.28;
+    const orbiters = Array.from({ length: 8 }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      speed: 0.08 + Math.random() * 0.12,
+      rOff: (Math.random() - 0.5) * 15,
+      size: 0.6 + Math.random() * 1.2, alpha: 0.15 + Math.random() * 0.3,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    const glows = Array.from({ length: 3 }, () => ({
+      x: w * 0.3 + Math.random() * w * 0.4, y: h * 0.2 + Math.random() * h * 0.5,
+      size: 20 + Math.random() * 30, phase: Math.random() * Math.PI * 2,
+      speed: 0.2 + Math.random() * 0.3,
+    }));
+    return (ctx, t) => {
+      // Radial glow pulses
+      for (const g of glows) {
+        const a = 0.02 + Math.sin(t * g.speed + g.phase) * 0.015;
+        if (a < 0.005) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        const grad = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, g.size);
+        grad.addColorStop(0, 'rgba(100,180,255,0.6)');
+        grad.addColorStop(1, 'rgba(60,120,200,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Slow orbiting dots
+      for (const o of orbiters) {
+        o.angle += o.speed * 0.016;
+        const r = radius + o.rOff + Math.sin(t * 0.5 + o.phase) * 5;
+        const ox = cx + Math.cos(o.angle) * r;
+        const oy = cy + Math.sin(o.angle) * r * 0.4;
+        const pulse = 0.6 + Math.sin(t * 0.8 + o.phase) * 0.4;
+        ctx.save();
+        ctx.globalAlpha = o.alpha * pulse;
+        ctx.fillStyle = 'rgba(140,200,255,1)';
+        ctx.shadowColor = 'rgba(100,180,255,0.5)';
+        ctx.shadowBlur = 5;
+        ctx.beginPath(); ctx.arc(ox, oy, o.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+};
+
+const BannerParticleOverlay = memo(({ characterName, element }) => {
   const canvasRef = useRef(null);
-  const elementRef = useRef(element);
-  elementRef.current = element;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1405,241 +1746,22 @@ const BannerParticleOverlay = memo(({ element = 'Spectro' }) => {
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
 
-    const colors = ELEMENT_PARTICLE_COLORS[elementRef.current] || ELEMENT_PARTICLE_COLORS.Spectro;
-
-    // ─── ZONE 1: SKY STARS (top 35%) ───
-    // Personality: peaceful, slow twinkle, tiny points with cross flares
-    const skyStars = Array.from({ length: 10 }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h * 0.35,
-      size: 0.5 + Math.random() * 1.2,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 0.6,
-      color: Math.random() > 0.3 ? '220,230,255' : '180,200,255',
-    }));
-
-    // ─── ZONE 2: CHARACTER ENERGY WISPS (center column, rising) ───
-    // Personality: element-colored, spiral upward like magical energy
-    const energyWisps = Array.from({ length: 6 }, () => {
-      const x = w * 0.3 + Math.random() * w * 0.4;
-      return {
-        x, baseX: x,
-        y: h * 0.3 + Math.random() * h * 0.5,
-        vy: -0.3 - Math.random() * 0.5,
-        size: 1.5 + Math.random() * 2,
-        phase: Math.random() * Math.PI * 2,
-        spiralRadius: 3 + Math.random() * 8,
-        spiralSpeed: 0.8 + Math.random() * 1.2,
-        alpha: 0.15 + Math.random() * 0.35,
-        life: Math.random(),
-        lifeSpeed: 0.003 + Math.random() * 0.004,
-      };
-    });
-
-    // ─── ZONE 3: GROUND SPARKLES (bottom 30%) ───
-    // Personality: bright diamond bursts, quick flash then slow fade, golden
-    const groundSparkles = Array.from({ length: 8 }, () => ({
-      x: w * 0.15 + Math.random() * w * 0.7,
-      y: h * 0.7 + Math.random() * h * 0.28,
-      size: 1.5 + Math.random() * 2.5,
-      phase: Math.random() * Math.PI * 2,
-      speed: 1.2 + Math.random() * 2.0,
-      burstPhase: Math.random() * 10,
-    }));
-
-    // ─── ZONE 4: NATURE DRIFT (right 35%) ───
-    // Personality: leaf/petal shapes falling with gentle sway, organic motion
-    const natureDrift = Array.from({ length: 5 }, () => ({
-      x: w * 0.6 + Math.random() * w * 0.38,
-      y: -5 - Math.random() * h * 0.3,
-      size: 1 + Math.random() * 2,
-      vx: -0.2 - Math.random() * 0.3,
-      vy: 0.2 + Math.random() * 0.4,
-      swayAmp: 8 + Math.random() * 15,
-      swaySpeed: 0.4 + Math.random() * 0.6,
-      phase: Math.random() * Math.PI * 2,
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.02,
-      alpha: 0.2 + Math.random() * 0.3,
-      color: Math.random() > 0.5 ? '200,170,80' : '120,180,100',
-    }));
-
-    // ─── ZONE 5: AURA RING (center, behind character) ───
-    // Personality: orbiting particles in a flattened ellipse, element-colored, ethereal
-    const auraParticles = Array.from({ length: 10 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      speed: 0.15 + Math.random() * 0.15,
-      radiusOffset: (Math.random() - 0.5) * 12,
-      size: 0.8 + Math.random() * 1.5,
-      alpha: 0.1 + Math.random() * 0.25,
-      phase: Math.random() * Math.PI * 2,
-    }));
-    const auraCx = w * 0.48, auraCy = h * 0.42;
-    const auraRadius = Math.min(w, h) * 0.3;
-
-    // ─── ZONE 6: SHIMMER SWEEP ───
-    let shimmerX = -w * 0.3;
+    // Pick theme: character-specific override → element fallback → sparkle default
+    const themeKey = CHARACTER_THEME_MAP[characterName]
+      || ELEMENT_THEME_FALLBACK[element]
+      || 'sparkle';
+    const drawFn = (BANNER_THEMES[themeKey] || BANNER_THEMES.sparkle)(w, h);
 
     let animId, t = 0;
-
-    // Helper: 4-point star shape
-    const drawStar4 = (cx, cy, sz) => {
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - sz * 2.2);
-      ctx.lineTo(cx + sz * 0.35, cy - sz * 0.35);
-      ctx.lineTo(cx + sz * 2.2, cy);
-      ctx.lineTo(cx + sz * 0.35, cy + sz * 0.35);
-      ctx.lineTo(cx, cy + sz * 2.2);
-      ctx.lineTo(cx - sz * 0.35, cy + sz * 0.35);
-      ctx.lineTo(cx - sz * 2.2, cy);
-      ctx.lineTo(cx - sz * 0.35, cy - sz * 0.35);
-      ctx.closePath();
-    };
-
-    const draw = () => {
+    const frame = () => {
       ctx.clearRect(0, 0, w, h);
       t += 0.016;
-
-      // ── SKY STARS: gentle independent twinkle with cross flare ──
-      for (const s of skyStars) {
-        const raw = Math.sin(t * s.speed + s.phase);
-        const alpha = Math.pow(Math.max(0, raw), 2.5) * 0.6;
-        if (alpha > 0.03) {
-          ctx.save();
-          ctx.globalAlpha = alpha;
-          ctx.fillStyle = `rgba(${s.color},1)`;
-          ctx.shadowColor = `rgba(${s.color},0.5)`;
-          ctx.shadowBlur = 4;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-          ctx.fill();
-          if (alpha > 0.3) {
-            ctx.strokeStyle = `rgba(${s.color},${alpha * 0.5})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(s.x - s.size * 3, s.y);
-            ctx.lineTo(s.x + s.size * 3, s.y);
-            ctx.moveTo(s.x, s.y - s.size * 3);
-            ctx.lineTo(s.x, s.y + s.size * 3);
-            ctx.stroke();
-          }
-          ctx.restore();
-        }
-      }
-
-      // ── CHARACTER ENERGY WISPS: spiral upward, element-colored ──
-      for (const e of energyWisps) {
-        e.life += e.lifeSpeed;
-        if (e.life > 1) {
-          e.life = 0;
-          e.x = w * 0.3 + Math.random() * w * 0.4;
-          e.baseX = e.x;
-          e.y = h * 0.6 + Math.random() * h * 0.2;
-        }
-        e.y += e.vy;
-        const spiralX = e.baseX + Math.sin(t * e.spiralSpeed + e.phase) * e.spiralRadius;
-        const lifeFade = e.life < 0.15 ? e.life / 0.15 : e.life > 0.7 ? (1 - e.life) / 0.3 : 1;
-        const a = e.alpha * lifeFade;
-        if (a > 0.02) {
-          ctx.save();
-          ctx.globalAlpha = a;
-          const grad = ctx.createRadialGradient(spiralX, e.y, 0, spiralX, e.y, e.size * 3);
-          grad.addColorStop(0, `rgba(${colors.secondary},0.8)`);
-          grad.addColorStop(0.5, `rgba(${colors.primary},0.3)`);
-          grad.addColorStop(1, `rgba(${colors.primary},0)`);
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(spiralX, e.y, e.size * 3, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = `rgba(${colors.secondary},1)`;
-          ctx.beginPath();
-          ctx.arc(spiralX, e.y, e.size * 0.5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      // ── GROUND SPARKLES: sharp diamond bursts ──
-      for (const g of groundSparkles) {
-        g.burstPhase += 0.016 * g.speed;
-        const cycle = (g.burstPhase + g.phase) % 6.28;
-        const raw2 = cycle < 0.8 ? cycle / 0.8 : Math.max(0, 1 - (cycle - 0.8) / 3.0);
-        const alpha = raw2 * raw2 * 0.75;
-        if (alpha > 0.03) {
-          ctx.save();
-          ctx.globalAlpha = alpha;
-          ctx.fillStyle = 'rgba(255,220,100,1)';
-          ctx.shadowColor = 'rgba(255,200,50,0.9)';
-          ctx.shadowBlur = 8;
-          drawStar4(g.x, g.y, g.size * (0.5 + raw2 * 0.5));
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      // ── NATURE DRIFT: swaying leaf-like particles ──
-      for (const n of natureDrift) {
-        n.y += n.vy;
-        n.x += n.vx;
-        n.rotation += n.rotSpeed;
-        const swayX = n.x + Math.sin(t * n.swaySpeed + n.phase) * n.swayAmp;
-        if (n.y > h + 10) {
-          n.y = -8;
-          n.x = w * 0.55 + Math.random() * w * 0.43;
-        }
-        ctx.save();
-        ctx.globalAlpha = n.alpha;
-        ctx.translate(swayX, n.y);
-        ctx.rotate(n.rotation);
-        ctx.fillStyle = `rgba(${n.color},1)`;
-        ctx.shadowColor = `rgba(${n.color},0.3)`;
-        ctx.shadowBlur = 3;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, n.size * 0.5, n.size * 1.8, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // ── AURA RING: orbiting element particles ──
-      for (const a of auraParticles) {
-        a.angle += a.speed * 0.016;
-        const r = auraRadius + a.radiusOffset + Math.sin(t * 0.8 + a.phase) * 4;
-        const ax = auraCx + Math.cos(a.angle) * r;
-        const ay = auraCy + Math.sin(a.angle) * r * 0.45;
-        const pulse = 0.6 + Math.sin(t * 1.2 + a.phase) * 0.4;
-        const aa = a.alpha * pulse;
-        if (aa > 0.02) {
-          ctx.save();
-          ctx.globalAlpha = aa;
-          ctx.fillStyle = `rgba(${colors.aura},1)`;
-          ctx.shadowColor = `rgba(${colors.aura},0.6)`;
-          ctx.shadowBlur = 6;
-          ctx.beginPath();
-          ctx.arc(ax, ay, a.size, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      // ── SHIMMER SWEEP: diagonal light band ──
-      shimmerX += 0.3;
-      if (shimmerX > w * 1.4) shimmerX = -w * 0.4;
-      ctx.save();
-      const sGrad = ctx.createLinearGradient(shimmerX, 0, shimmerX + w * 0.12, 0);
-      sGrad.addColorStop(0, 'rgba(255,255,255,0)');
-      sGrad.addColorStop(0.5, 'rgba(255,255,255,0.045)');
-      sGrad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = sGrad;
-      ctx.transform(1, -0.12, 0.12, 1, 0, h * 0.12);
-      ctx.fillRect(shimmerX, 0, w * 0.12, h);
-      ctx.restore();
-
-      animId = requestAnimationFrame(draw);
+      drawFn(ctx, t);
+      animId = requestAnimationFrame(frame);
     };
-
-    animId = requestAnimationFrame(draw);
+    animId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(animId);
-  }, []);
+  }, [characterName, element]);
 
   return (
     <canvas
@@ -1681,7 +1803,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           onError={hideOnError}
         />
       )}
-      {imgUrl && animEnabled && <BannerParticleOverlay element={item.element} />}
+      {imgUrl && animEnabled && <BannerParticleOverlay characterName={item.name} element={item.element} />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
