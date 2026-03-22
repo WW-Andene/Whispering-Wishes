@@ -531,6 +531,13 @@ function WhisperingWishesInner() {
     return () => mql.removeEventListener('change', handler);
   }, [visualSettings, saveVisualSettings]);
 
+  // Sync animation classes to <html> so portals (rendered outside root div) inherit them
+  useEffect(() => {
+    const el = document.documentElement;
+    el.classList.toggle('animations-full', visualSettings.animationsEnabled === 'full');
+    el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
+  }, [visualSettings.animationsEnabled]);
+
   // Image framing state - stores position/zoom for each image by key
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
