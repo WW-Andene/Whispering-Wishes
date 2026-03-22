@@ -1787,8 +1787,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const animEnabled = visualSettings?.animationsEnabled !== 'off' && visualSettings?.animationsEnabled !== false;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
-      {animEnabled && <div className="absolute inset-0 rounded-xl pointer-events-none banner-card-glow" style={{ zIndex: 15, '--glow-color': style.glow }} aria-hidden="true" />}
+    <div className={`relative overflow-hidden rounded-xl border${animEnabled ? ' banner-card-glow' : ''}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, '--glow-color': style.glow, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <img
           src={imgUrl}

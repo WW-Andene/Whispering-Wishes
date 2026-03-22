@@ -906,21 +906,22 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     /* §BANNER_ANIM: particle overlay + element-colored border glow */
     .banner-card-glow {
-      box-shadow:
-        inset 0 0 12px rgba(var(--glow-color), 0),
-        0 0 8px rgba(var(--glow-color), 0);
-      animation: bannerGlow 4s ease-in-out infinite;
+      animation: bannerGlow 4s ease-in-out infinite !important;
     }
     @keyframes bannerGlow {
       0%, 100% {
         box-shadow:
-          inset 0 0 8px rgba(var(--glow-color), 0.05),
-          0 0 4px rgba(var(--glow-color), 0.08);
+          0 0 40px rgba(237,175,24,0.06),
+          0 4px 16px rgba(0,0,0,0.3),
+          0 0 6px 1px rgba(var(--glow-color), 0.1),
+          inset 0 0 10px rgba(var(--glow-color), 0.05);
       }
       50% {
         box-shadow:
-          inset 0 0 18px rgba(var(--glow-color), 0.15),
-          0 0 12px rgba(var(--glow-color), 0.25);
+          0 0 40px rgba(237,175,24,0.06),
+          0 4px 16px rgba(0,0,0,0.3),
+          0 0 16px 3px rgba(var(--glow-color), 0.3),
+          inset 0 0 20px rgba(var(--glow-color), 0.15);
       }
     }
     .luck-badge-inner {
