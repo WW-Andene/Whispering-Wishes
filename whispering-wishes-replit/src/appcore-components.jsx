@@ -1949,7 +1949,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           onError={hideOnError}
         />
       )}
-      {imgUrl && animEnabled && <BannerParticleOverlay characterName={item.name} element={item.element} />}
+      {imgUrl && visualSettings?.animationsEnabled === 'full' && <BannerParticleOverlay characterName={item.name} element={item.element} />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
