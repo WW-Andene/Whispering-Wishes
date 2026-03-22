@@ -906,30 +906,30 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     /* §BANNER_ANIM: outer glow wrapper (not clipped by overflow:hidden) + inner border line */
     .banner-card-glow {
-      animation: bannerGlow 4s ease-in-out infinite !important;
+      animation: bannerGlow 7s ease-in-out infinite !important;
     }
     .banner-card-glow > div {
-      border-color: rgba(var(--glow-color), 0.25) !important;
-      animation: bannerBorderGlow 4s ease-in-out infinite !important;
+      border-color: rgba(var(--glow-color), 0.3) !important;
+      animation: bannerBorderGlow 7s ease-in-out infinite !important;
     }
     @keyframes bannerGlow {
       0%, 100% {
         box-shadow:
           0 0 40px rgba(237,175,24,0.06),
           0 4px 16px rgba(0,0,0,0.3),
-          0 0 6px 1px rgba(var(--glow-color), 0.12);
+          0 0 10px 2px rgba(var(--glow-color), 0.18);
       }
       50% {
         box-shadow:
           0 0 40px rgba(237,175,24,0.06),
           0 4px 16px rgba(0,0,0,0.3),
-          0 0 18px 4px rgba(var(--glow-color), 0.35),
-          0 0 3px 1px rgba(var(--glow-color), 0.5);
+          0 0 24px 6px rgba(var(--glow-color), 0.45),
+          0 0 4px 1px rgba(var(--glow-color), 0.6);
       }
     }
     @keyframes bannerBorderGlow {
-      0%, 100% { border-color: rgba(var(--glow-color), 0.25); }
-      50% { border-color: rgba(var(--glow-color), 0.7); }
+      0%, 100% { border-color: rgba(var(--glow-color), 0.3); }
+      50% { border-color: rgba(var(--glow-color), 0.85); }
     }
     .luck-badge-inner {
       position: relative;
