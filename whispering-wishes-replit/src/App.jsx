@@ -6246,18 +6246,6 @@ function WhisperingWishesInner() {
                                     </div>
                                     <span className="text-[10px] text-gray-400">{m.d.weapon}</span>
                                   </div>
-                                  {/* Description */}
-                                  {m.d.desc && (() => {
-                                    const dot = m.d.desc.indexOf('. ');
-                                    const lore = dot > 0 ? m.d.desc.slice(0, dot + 1) : null;
-                                    const gameplay = dot > 0 ? m.d.desc.slice(dot + 2) : m.d.desc;
-                                    return (
-                                      <div className="text-[10px] leading-relaxed mb-1.5">
-                                        {lore && <span className="text-gray-500 italic">{lore} </span>}
-                                        <span className="text-gray-400">{gameplay}</span>
-                                      </div>
-                                    );
-                                  })()}
                                   {/* Damage Focus */}
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Damage Focus</div>
