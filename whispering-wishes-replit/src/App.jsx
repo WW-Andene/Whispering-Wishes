@@ -7181,14 +7181,20 @@ function WhisperingWishesInner() {
               </CardBody>
             </Card>
 
-            {/* Animations — own Kuro card with styled sub-row */}
+            {/* Animations Toggle — 3-state: off < on < full */}
             <Card>
               <CardHeader><Sparkles size={14} className={visualSettings.animationsEnabled === 'full' ? 'text-fuchsia-400' : visualSettings.animationsEnabled === 'on' ? 'text-purple-400' : 'text-gray-400'} /> Animations</CardHeader>
               <CardBody className="space-y-3">
-                <div className={`flex items-center justify-between p-2.5 rounded-lg border ${visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500/10 border-fuchsia-500/30' : visualSettings.animationsEnabled === 'on' ? 'bg-purple-500/10 border-purple-500/30' : 'bg-white/5 border-[var(--border-medium)]'}`}>
-                  <span className={`text-xs font-medium ${visualSettings.animationsEnabled === 'full' ? 'text-fuchsia-400' : visualSettings.animationsEnabled === 'on' ? 'text-purple-400' : 'text-gray-400'}`}>
-                    {visualSettings.animationsEnabled === 'off' ? 'Disabled' : visualSettings.animationsEnabled === 'on' ? 'Background effects, transitions & glow' : 'Full — breathing & holographic on all characters'}
-                  </span>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Animations</div>
+                      <div className="text-gray-400 text-[10px]">Background effects, transitions & glow</div>
+                    </div>
+                  </div>
                   <button
                     onClick={() => {
                       const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
@@ -7203,6 +7209,15 @@ function WhisperingWishesInner() {
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px]' : 'left-[32px]'}`} />
                   </button>
                 </div>
+                {visualSettings.animationsEnabled === 'off' && (
+                  <p className="text-gray-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
+                )}
+                {visualSettings.animationsEnabled === 'on' && (
+                  <p className="text-purple-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
+                )}
+                {visualSettings.animationsEnabled === 'full' && (
+                  <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                )}
               </CardBody>
             </Card>
 
