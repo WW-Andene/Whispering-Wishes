@@ -1726,26 +1726,22 @@ const BANNER_THEMES = {
     }));
     // Leaves — varied shade/size/speed, brighter near moon, darker far away
     const moonX = w * 0.75, moonY = h * 0.12;
-    // Leaf colors: cool blue-grey to dark blue-grey (matching art palette)
-    // Dark end: ~(35,40,55)  Cool/light end: ~(90,100,120)
+    // Leaf colors: dark blue-grey (35,40,55) → cool blue-grey (90,100,120)
+    // X position drives color: dark on right, lighter on left
     const leaves = Array.from({ length: 16 }, () => {
       const lx = Math.random() * w, ly = Math.random() * h;
-      const distToMoon = Math.sqrt((lx - moonX) ** 2 + (ly - moonY) ** 2);
-      const maxDist = Math.sqrt(w * w + h * h);
-      const moonProx = 1 - Math.min(distToMoon / (maxDist * 0.5), 1);
-      const colorMix = Math.random(); // 0 = dark blue-grey, 1 = cool blue-grey
       return {
         x: lx, y: ly,
-        size: 2 + Math.random() * 3 + moonProx * 1.5,
-        vy: 0.08 + Math.random() * 0.16 + moonProx * 0.04,
+        size: 1.5 + Math.random() * 5, // wide size variation
+        vy: 0.08 + Math.random() * 0.16,
         vx: -0.1 - Math.random() * 0.18, swayAmp: 10 + Math.random() * 18,
         swaySpeed: 0.12 + Math.random() * 0.22, phase: Math.random() * Math.PI * 2,
         rot: Math.random() * Math.PI * 2,
-        rotV: (Math.random() - 0.5) * (0.008 + moonProx * 0.006),
+        rotV: (Math.random() - 0.5) * 0.01,
         spinPhase: Math.random() * Math.PI * 2,
         spinSpeed: 0.3 + Math.random() * 0.5,
-        alpha: 0.4 + Math.random() * 0.35 + moonProx * 0.2,
-        colorMix, moonProx,
+        alpha: 0.4 + Math.random() * 0.4,
+        colorJitter: (Math.random() - 0.5) * 0.15, // per-leaf random offset
       };
     });
     // Jade glint particles
@@ -1791,27 +1787,25 @@ const BANNER_THEMES = {
         ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      // Drifting leaves — 3D tumble, color variation, moon proximity
+      // Drifting leaves — dark on right, lighter on left, 3D face shading
       for (const l of leaves) {
         l.y += l.vy; l.x += l.vx;
         l.rot += l.rotV + Math.sin(t * 0.25 + l.phase) * 0.003;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
           l.y = -8; l.x = w * 0.1 + Math.random() * w * 0.9;
-          const d = Math.sqrt((l.x - moonX) ** 2 + (l.y - moonY) ** 2);
-          const maxD = Math.sqrt(w * w + h * h);
-          const prox = 1 - Math.min(d / (maxD * 0.5), 1);
-          l.colorMix = Math.random();
-          l.size = 2 + Math.random() * 3 + prox * 1.5;
-          l.alpha = 0.4 + Math.random() * 0.35 + prox * 0.2;
-          l.moonProx = prox;
+          l.size = 1.5 + Math.random() * 5;
+          l.alpha = 0.4 + Math.random() * 0.4;
+          l.colorJitter = (Math.random() - 0.5) * 0.15;
         }
         // 3D self-rotation: cos squashes width to simulate tumbling
         const spin = Math.cos(t * l.spinSpeed + l.spinPhase);
         const widthScale = 0.2 + Math.abs(spin) * 0.8;
-        // Color: lerp from dark blue-grey (35,40,55) to cool blue-grey (90,100,120)
-        // Moon proximity shifts toward lighter end
-        const cm = Math.min(1, l.colorMix + l.moonProx * 0.4);
+        // Color based on X position: right=dark (35,40,55), left=lighter (90,100,120)
+        // + per-leaf jitter + spin shifts shade to simulate front/back face
+        const xRatio = Math.min(1, Math.max(0, 1 - sx / w + l.colorJitter));
+        const faceBias = spin * 0.12; // front face slightly lighter, back darker
+        const cm = Math.min(1, Math.max(0, (1 - xRatio) + faceBias));
         const lr = Math.floor(35 + cm * 55);
         const lg = Math.floor(40 + cm * 60);
         const lb = Math.floor(55 + cm * 65);
