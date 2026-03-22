@@ -904,12 +904,22 @@ const KuroStyles = memo(({ oledMode }) => (
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
     }
+    .banner-echo-img {
+      animation: bannerEcho 8s ease-in-out infinite;
+    }
     @keyframes bannerEcho {
-      0%, 100% { opacity: 0; transform: translate(0, 0) scale(1); filter: blur(0px) brightness(1); }
-      10% { opacity: 0.35; transform: translate(6px, -3px) scale(1.01); filter: blur(1px) brightness(1.3); }
-      30% { opacity: 0.25; transform: translate(15px, -6px) scale(1.03); filter: blur(3px) brightness(1.2); }
-      55% { opacity: 0.12; transform: translate(25px, -4px) scale(1.05); filter: blur(6px) brightness(1.1); }
-      80% { opacity: 0; transform: translate(35px, -2px) scale(1.07); filter: blur(10px) brightness(1); }
+      0%, 100% {
+        filter: drop-shadow(0px 0px 0px transparent) drop-shadow(0px 0px 0px transparent) drop-shadow(0px 0px 0px transparent);
+      }
+      25% {
+        filter: drop-shadow(8px -3px 2px rgba(255,255,255,0.12)) drop-shadow(16px -5px 5px rgba(255,255,255,0.06)) drop-shadow(28px -4px 10px rgba(255,255,255,0.03));
+      }
+      50% {
+        filter: drop-shadow(-8px 3px 2px rgba(255,255,255,0.12)) drop-shadow(-16px 5px 5px rgba(255,255,255,0.06)) drop-shadow(-28px 4px 10px rgba(255,255,255,0.03));
+      }
+      75% {
+        filter: drop-shadow(5px 4px 3px rgba(255,255,255,0.10)) drop-shadow(12px 8px 6px rgba(255,255,255,0.05)) drop-shadow(22px 6px 12px rgba(255,255,255,0.02));
+      }
     }
     .luck-badge-inner {
       position: relative;
