@@ -3347,10 +3347,6 @@ function WhisperingWishesInner() {
       <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
-      {visualSettings.animationsEnabled === 'full' && <>
-        <div className="shooting-star-1" aria-hidden="true" />
-        <div className="shooting-star-2" aria-hidden="true" />
-      </>}
 
       {/* Onboarding Modal */}
       {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
