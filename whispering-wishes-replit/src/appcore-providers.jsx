@@ -905,21 +905,15 @@ const KuroStyles = memo(({ oledMode }) => (
       to { transform: rotate(360deg); }
     }
     .banner-echo-img {
-      animation: bannerEcho 8s ease-in-out infinite;
+      animation: bannerDrift 20s ease-in-out infinite;
+      transform-origin: center top;
     }
-    @keyframes bannerEcho {
-      0%, 100% {
-        filter: drop-shadow(0px 0px 0px transparent) drop-shadow(0px 0px 0px transparent) drop-shadow(0px 0px 0px transparent);
-      }
-      25% {
-        filter: drop-shadow(8px -3px 2px rgba(255,255,255,0.12)) drop-shadow(16px -5px 5px rgba(255,255,255,0.06)) drop-shadow(28px -4px 10px rgba(255,255,255,0.03));
-      }
-      50% {
-        filter: drop-shadow(-8px 3px 2px rgba(255,255,255,0.12)) drop-shadow(-16px 5px 5px rgba(255,255,255,0.06)) drop-shadow(-28px 4px 10px rgba(255,255,255,0.03));
-      }
-      75% {
-        filter: drop-shadow(5px 4px 3px rgba(255,255,255,0.10)) drop-shadow(12px 8px 6px rgba(255,255,255,0.05)) drop-shadow(22px 6px 12px rgba(255,255,255,0.02));
-      }
+    @keyframes bannerDrift {
+      0%   { transform: scale(1.08) translate(0%, 0%); }
+      25%  { transform: scale(1.12) translate(-2%, 1%); }
+      50%  { transform: scale(1.06) translate(1%, -1%); }
+      75%  { transform: scale(1.10) translate(-1%, 0.5%); }
+      100% { transform: scale(1.08) translate(0%, 0%); }
     }
     .luck-badge-inner {
       position: relative;
