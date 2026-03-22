@@ -1096,7 +1096,8 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
   const softThreshold = softPityStart != null ? softPityStart : (max === HARD_PITY ? SOFT_PITY_START : null);
   const showSoftZone = softThreshold != null && softThreshold < max;
   const isSoftPity = showSoftZone && safeValue >= softThreshold;
-  
+  const isDanger = max === HARD_PITY && safeValue >= 75;
+
   const softStart = showSoftZone ? softThreshold / max : 0;
   const softLen = showSoftZone ? (max - softThreshold) / max : 0;
   const softDash = softLen * circumference;
@@ -1105,7 +1106,7 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
   
   return (
     <div className="flex flex-col items-center">
-      <svg width={size} height={size} className={isSoftPity ? 'pulse-subtle' : ''} role="img" aria-label={`Pity: ${safeValue} out of ${max}${isSoftPity ? ', in soft pity zone' : ''}`}>
+      <svg width={size} height={size} className={`${isSoftPity ? 'pulse-subtle' : ''} ${isDanger ? 'pity-danger' : isSoftPity ? 'pity-soft' : ''}`} role="img" aria-label={`Pity: ${safeValue} out of ${max}${isSoftPity ? ', in soft pity zone' : ''}`}>
         <circle className="pity-ring-track" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} />
         {showSoftZone && (
           <circle 
@@ -1935,21 +1936,22 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
     <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
-        <img
-          src={imgUrl}
-          alt={item.name}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{
-            zIndex: 1,
-            opacity: pictureOpacity,
-            maskImage: maskGradient,
-            WebkitMaskImage: maskGradient
-          }}
-          loading="eager"
-          onError={hideOnError}
-        />
+        <div className={`absolute inset-0 ${isFull ? 'breath-zoom' : ''}`} style={{ zIndex: 1 }}>
+          <img
+            src={imgUrl}
+            alt={item.name}
+            className="w-full h-full object-cover object-top"
+            style={{
+              opacity: pictureOpacity,
+              maskImage: maskGradient,
+              WebkitMaskImage: maskGradient
+            }}
+            loading="eager"
+            onError={hideOnError}
+          />
+        </div>
       )}
-      {imgUrl && visualSettings?.animationsEnabled === 'full' && <BannerParticleOverlay characterName={item.name} element={item.element} />}
+      {imgUrl && isFull && <BannerParticleOverlay characterName={item.name} element={item.element} />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
@@ -2159,20 +2161,22 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
-      <img
-        src={imgUrl}
-        alt={name}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-        style={{
-          transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-          opacity: owned ? collOpacity : 0.3,
-          filter: owned ? 'none' : 'grayscale(100%)',
-          maskImage: collMask,
-          WebkitMaskImage: collMask
-        }}
-        onError={hideOnError}
-      />
+      <div className="absolute inset-0 collection-img-wrap">
+        <img
+          src={imgUrl}
+          alt={name}
+          loading="lazy"
+          className="w-full h-full object-contain pointer-events-none"
+          style={{
+            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+            opacity: owned ? collOpacity : 0.3,
+            filter: owned ? 'none' : 'grayscale(100%)',
+            maskImage: collMask,
+            WebkitMaskImage: collMask
+          }}
+          onError={hideOnError}
+        />
+      </div>
     ) : (
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}

@@ -2279,13 +2279,48 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
 
-    /* Luck badge: stronger glow */
-    .animations-full .luck-badge::before {
-      opacity: 0.9;
-      filter: blur(3px);
+    /* ═══ FULL MODE ENHANCEMENTS ═══ */
+
+    /* ── Pity Ring: rotating gradient stroke ── */
+    .animations-full .pity-ring-fill {
+      filter: drop-shadow(0 0 8px var(--ring-glow));
+      animation: pityRingRotateGlow 4s linear infinite;
+    }
+    @keyframes pityRingRotateGlow {
+      0% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(2px 0 3px var(--ring-glow)); }
+      25% { filter: drop-shadow(0 0 10px var(--ring-glow)) drop-shadow(0 2px 3px var(--ring-glow)); }
+      50% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(-2px 0 3px var(--ring-glow)); }
+      75% { filter: drop-shadow(0 0 10px var(--ring-glow)) drop-shadow(0 -2px 3px var(--ring-glow)); }
+      100% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(2px 0 3px var(--ring-glow)); }
     }
 
-    /* Pulse subtle: more pronounced */
+    /* ── Pity Ring: glow pulse intensifying near soft pity (65+) ── */
+    .animations-full .pity-soft .pity-ring-fill {
+      animation: pitySoftGlow 1.8s ease-in-out infinite;
+    }
+    @keyframes pitySoftGlow {
+      0%, 100% { filter: drop-shadow(0 0 8px var(--ring-glow)); }
+      50% { filter: drop-shadow(0 0 16px var(--ring-glow)) drop-shadow(0 0 24px var(--ring-glow)); }
+    }
+
+    /* ── Pity Ring: color shift / flame effect near hard pity (75+) ── */
+    .animations-full .pity-danger .pity-ring-fill {
+      animation: pityFlame 1.2s ease-in-out infinite;
+    }
+    @keyframes pityFlame {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(255,100,30,0.7)) drop-shadow(0 -3px 8px rgba(255,60,20,0.5)); }
+      33% { filter: drop-shadow(0 0 18px rgba(255,140,40,0.9)) drop-shadow(0 -5px 12px rgba(255,80,20,0.7)); }
+      66% { filter: drop-shadow(0 0 12px rgba(255,60,20,0.8)) drop-shadow(0 -4px 10px rgba(255,40,10,0.6)); }
+    }
+    .animations-full .pity-danger .pity-ring-text {
+      animation: pityTextFlame 1.2s ease-in-out infinite;
+    }
+    @keyframes pityTextFlame {
+      0%, 100% { fill: #edaf18; }
+      50% { fill: #ff6b2b; }
+    }
+
+    /* ── Pulse subtle: more pronounced ── */
     .animations-full .pulse-subtle {
       animation: pulseScaleFull 1.5s ease-in-out infinite;
     }
@@ -2294,9 +2329,112 @@ const KuroStyles = memo(({ oledMode }) => (
       50% { transform: scale(1.04); }
     }
 
-    /* Pity ring: stronger glow */
-    .animations-full .pity-ring-fill {
-      filter: drop-shadow(0 0 8px var(--ring-glow));
+    /* ── Luck Badge: stronger glow + particle aura ── */
+    .animations-full .luck-badge::before {
+      opacity: 1;
+      filter: blur(2px);
+      animation: badgeRotate 8s linear infinite !important;
+    }
+    .animations-full .luck-badge::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: inherit;
+      background: radial-gradient(ellipse at center, var(--badge-color), transparent 70%);
+      opacity: 0;
+      animation: badgeAura 3s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+    @keyframes badgeAura {
+      0%, 100% { opacity: 0.15; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.08); }
+    }
+
+    /* ── Collection Grid: holographic shimmer sweep on 5★ owned ── */
+    .animations-full .collection-card.glow-gold::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(105deg, transparent 30%, rgba(255,220,100,0.12) 45%, rgba(255,255,255,0.18) 50%, rgba(255,220,100,0.12) 55%, transparent 70%);
+      animation: holoSweep 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 15;
+    }
+    @keyframes holoSweep {
+      0%, 100% { left: -100%; }
+      50% { left: 150%; }
+    }
+
+    /* ── Tab transitions: enhanced slide + fade ── */
+    .animations-full .tab-content {
+      animation: tabFadeInFull 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes tabFadeInFull {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animations-full .tab-content > .kuro-card,
+    .animations-full .tab-content > div > .kuro-card {
+      animation: cardSlideInFull 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    @keyframes cardSlideInFull {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Background: shooting stars ── */
+    .animations-full::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 3px; height: 3px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 6px 2px rgba(200,220,255,0.6);
+      opacity: 0;
+      z-index: 3;
+      pointer-events: none;
+      animation: shootingStar 8s linear infinite;
+    }
+    .animations-full::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 2px; height: 2px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 4px 1px rgba(180,200,255,0.5);
+      opacity: 0;
+      z-index: 3;
+      pointer-events: none;
+      animation: shootingStar2 12s linear infinite 5s;
+    }
+    @keyframes shootingStar {
+      0% { opacity: 0; top: 8%; left: 75%; }
+      2% { opacity: 0.9; }
+      8% { opacity: 0; top: 35%; left: 20%; }
+      100% { opacity: 0; }
+    }
+    @keyframes shootingStar2 {
+      0% { opacity: 0; top: 12%; left: 90%; }
+      2% { opacity: 0.7; }
+      6% { opacity: 0; top: 28%; left: 45%; }
+      100% { opacity: 0; }
+    }
+
+    /* ── Breathing zoom on character images ── */
+    .animations-full .breath-zoom {
+      animation: breathZoom 8s ease-in-out infinite;
+    }
+    .animations-full .collection-card .collection-img-wrap {
+      animation: breathZoom 6s ease-in-out infinite;
+    }
+    @keyframes breathZoom {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
     }
 
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
