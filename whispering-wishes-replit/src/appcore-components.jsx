@@ -1728,21 +1728,20 @@ const BANNER_THEMES = {
     const moonX = w * 0.75, moonY = h * 0.12;
     // Leaves spawn from top-right, drift down-left
     // Color: very dark (20,25,35) on right → light (120,135,155) on left
-    const leaves = Array.from({ length: 16 }, (_, i) => {
-      // Stagger initial positions so they don't all cluster at spawn
-      const lx = w * 0.5 + Math.random() * w * 0.5;
-      const ly = -Math.random() * h * 0.8; // scattered above top-right
+    const leaves = Array.from({ length: 28 }, (_, i) => {
+      const lx = w * 0.4 + Math.random() * w * 0.65;
+      const ly = -Math.random() * h * 1.2;
       return {
         x: lx, y: ly,
-        size: 1 + Math.random() * 7, // tiny specks to big leaves
-        vy: 0.08 + Math.random() * 0.16,
-        vx: -0.1 - Math.random() * 0.18, swayAmp: 10 + Math.random() * 18,
-        swaySpeed: 0.12 + Math.random() * 0.22, phase: Math.random() * Math.PI * 2,
+        size: 1.5 + Math.random() * 7,
+        vy: 0.18 + Math.random() * 0.28,
+        vx: -0.18 - Math.random() * 0.28, swayAmp: 12 + Math.random() * 22,
+        swaySpeed: 0.15 + Math.random() * 0.28, phase: Math.random() * Math.PI * 2,
         rot: Math.random() * Math.PI * 2,
-        rotV: (Math.random() - 0.5) * 0.01,
+        rotV: 0.015 + Math.random() * 0.025,
         spinPhase: Math.random() * Math.PI * 2,
-        spinSpeed: 0.3 + Math.random() * 0.5,
-        alpha: 0.35 + Math.random() * 0.45,
+        spinSpeed: 0.4 + Math.random() * 0.6,
+        alpha: 0.7 + Math.random() * 0.3,
         colorJitter: (Math.random() - 0.5) * 0.18,
       };
     });
@@ -1810,17 +1809,16 @@ const BANNER_THEMES = {
         ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      // Drifting leaves — dark on right, lighter on left, 3D face shading
+      // Drifting leaves — circular rotation, dark on right, lighter on left
       for (const l of leaves) {
         l.y += l.vy; l.x += l.vx;
-        l.rot += l.rotV + Math.sin(t * 0.25 + l.phase) * 0.003;
+        l.rot += l.rotV;
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
-          // Respawn from top-right corner
           l.y = -8 - Math.random() * 20;
-          l.x = w * 0.6 + Math.random() * w * 0.45;
-          l.size = 1 + Math.random() * 7;
-          l.alpha = 0.35 + Math.random() * 0.45;
+          l.x = w * 0.4 + Math.random() * w * 0.65;
+          l.size = 1.5 + Math.random() * 7;
+          l.alpha = 0.7 + Math.random() * 0.3;
           l.colorJitter = (Math.random() - 0.5) * 0.18;
         }
         // 3D self-rotation: cos squashes width to simulate tumbling
