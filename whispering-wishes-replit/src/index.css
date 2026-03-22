@@ -7,7 +7,7 @@
     color-scheme: dark;
   }
   #root {
-    contain: layout style;
+    contain: style;
   }
 }
 

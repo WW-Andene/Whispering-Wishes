@@ -19,6 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 import {
@@ -80,9 +81,11 @@ import {
   TabBackground,
   BackgroundGlow,
   TriangleMirrorWave,
+  KuroSelect,
   CollectionGridSection,
   CharacterDetailModal,
   WeaponDetailModal,
+  EchoDetailModal,
   VISUAL_SLIDER_CONFIGS,
   VisualSliderGroup,
   generateVerticalMaskGradient,
@@ -95,6 +98,14 @@ import {
   ALL_4STAR_RESONATORS,
   ALL_4STAR_WEAPONS,
   ALL_3STAR_WEAPONS,
+  ALL_2STAR_WEAPONS,
+  ALL_1STAR_WEAPONS,
+  ALL_4COST_ECHOES,
+  ALL_3COST_ECHOES,
+  ALL_1COST_ECHOES,
+  ECHO_DATA,
+  ALL_ECHO_SONATA_SETS,
+  ALL_ECHO_BUFF_TYPES,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
   STANDARD_5STAR_WEAPONS,
@@ -293,6 +304,7 @@ function WhisperingWishesInner() {
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showServerDropdown, setShowServerDropdown] = useState(false);
   const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
@@ -519,6 +531,13 @@ function WhisperingWishesInner() {
     return () => mql.removeEventListener('change', handler);
   }, [visualSettings, saveVisualSettings]);
 
+  // Sync animation classes to <html> so portals (rendered outside root div) inherit them
+  useEffect(() => {
+    const el = document.documentElement;
+    el.classList.toggle('animations-full', visualSettings.animationsEnabled === 'full');
+    el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
+  }, [visualSettings.animationsEnabled]);
+
   // Image framing state - stores position/zoom for each image by key
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
@@ -549,7 +568,7 @@ function WhisperingWishesInner() {
   const defaultFraming = useMemo(() => ({ x: 0, y: 0, zoom: 100 }), []);
   const DEFAULT_IMAGE_FRAMING = useMemo(() => ({
     // Collection framing
-    'collection-Jiyan': { x: 8, y: -26, zoom: 250 },
+    'collection-Jiyan': { x: 8, y: -24, zoom: 250 },
     'collection-Calcharo': { x: -2, y: -26, zoom: 220 },
     'collection-Encore': { x: -2, y: -20, zoom: 150 },
     'collection-Jianxin': { x: 2, y: -24, zoom: 210 },
@@ -571,17 +590,19 @@ function WhisperingWishesInner() {
     'collection-Ciaccona': { x: 10, y: -24, zoom: 230 },
     'collection-Cartethyia': { x: -4, y: -26, zoom: 210 },
     'collection-Lupa': { x: 0, y: -12, zoom: 210 },
-    'collection-Augusta': { x: 4, y: -30, zoom: 250 },
-    'collection-Galbrena': { x: 12, y: -24, zoom: 230 },
-    'collection-Iuno': { x: -4, y: -22, zoom: 190 },
-    'collection-Luuk Herssen': { x: 2, y: -2, zoom: 110 },
-    'collection-Aemeath': { x: -12, y: -20, zoom: 190 },
-    'collection-Mornye': { x: 2, y: -20, zoom: 170 },
+    'collection-Augusta': { x: 4, y: -30, zoom: 240 },
+    'collection-Galbrena': { x: 14, y: -24, zoom: 230 },
+    'collection-Iuno': { x: -2, y: -24, zoom: 190 },
+    'collection-Luuk Herssen': { x: 2, y: 0, zoom: 120 },
+    'collection-Aemeath': { x: -14, y: -20, zoom: 190 },
+    'collection-Mornye': { x: 4, y: -20, zoom: 170 },
     'collection-Rover': { x: 24, y: -24, zoom: 230 },
-    'collection-Chisa': { x: -4, y: -24, zoom: 210 },
+    'collection-Chisa': { x: -6, y: -20, zoom: 230 },
     'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
-    'collection-Qiuyuan': { x: -6, y: -26, zoom: 210 },
-    'collection-Lynae': { x: -12, y: -26, zoom: 190 },
+    'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
+    'collection-Lynae': { x: -12, y: -28, zoom: 190 },
+    'collection-Sigrika': { x: 2, y: -26, zoom: 180 },
+    'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
     'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
     // 4★ Resonators
     'collection-Aalto': { x: 4, y: -24, zoom: 210 },
@@ -592,16 +613,66 @@ function WhisperingWishesInner() {
     'collection-Sanhua': { x: 12, y: -26, zoom: 190 },
     'collection-Taoqi': { x: 4, y: -26, zoom: 190 },
     'collection-Yuanwu': { x: 2, y: -24, zoom: 210 },
-    'collection-Mortefi': { x: 0, y: -28, zoom: 210 },
-    'collection-Youhu': { x: 0, y: -22, zoom: 150 },
+    'collection-Mortefi': { x: -2, y: -28, zoom: 210 },
+    'collection-Youhu': { x: 0, y: -24, zoom: 160 },
     'collection-Lumi': { x: 0, y: -24, zoom: 170 },
     'collection-Buling': { x: 0, y: -22, zoom: 170 },
+    // Team card framing
+    'team-Jiyan': { x: 6, y: -18, zoom: 260 },
+    'team-Calcharo': { x: 0, y: -20, zoom: 230 },
+    'team-Rover': { x: 24, y: -16, zoom: 240 },
+    'team-Encore': { x: 0, y: -14, zoom: 150 },
+    'team-Jianxin': { x: 2, y: -18, zoom: 180 },
+    'team-Lingyang': { x: -4, y: -12, zoom: 160 },
+    'team-Sanhua': { x: 12, y: -22, zoom: 170 },
+    'team-Verina': { x: 0, y: -8, zoom: 250 },
+    'team-Jinhsi': { x: 0, y: -22, zoom: 160 },
+    'team-Yinlin': { x: 2, y: -22, zoom: 170 },
+    'team-Changli': { x: 8, y: -20, zoom: 160 },
+    'team-Mortefi': { x: -2, y: -24, zoom: 180 },
+    'team-Shorekeeper': { x: 12, y: -18, zoom: 180 },
+    'team-Zhezhi': { x: -2, y: -10, zoom: 200 },
+    'team-Xiangli Yao': { x: -4, y: -10, zoom: 300 },
+    'team-Camellya': { x: 0, y: -22, zoom: 170 },
+    'team-Carlotta': { x: 0, y: -20, zoom: 170 },
+    'team-Roccia': { x: 8, y: 0, zoom: 180 },
+    'team-Phoebe': { x: 12, y: -20, zoom: 170 },
+    'team-Brant': { x: -2, y: -18, zoom: 190 },
+    'team-Cantarella': { x: 0, y: -16, zoom: 220 },
+    'team-Zani': { x: 6, y: -26, zoom: 200 },
+    'team-Ciaccona': { x: 10, y: -20, zoom: 190 },
+    'team-Cartethyia': { x: 0, y: -22, zoom: 170 },
+    'team-Lupa': { x: 4, y: -8, zoom: 210 },
+    'team-Phrolova': { x: 2, y: -24, zoom: 170 },
+    'team-Augusta': { x: 4, y: -22, zoom: 180 },
+    'team-Iuno': { x: 0, y: -16, zoom: 200 },
+    'team-Galbrena': { x: 16, y: -20, zoom: 200 },
+    'team-Qiuyuan': { x: -8, y: -26, zoom: 200 },
+    'team-Chisa': { x: -4, y: -20, zoom: 230 },
+    'team-Lynae': { x: -10, y: -22, zoom: 160 },
+    'team-Luuk Herssen': { x: 2, y: 4, zoom: 130 },
+    'team-Aemeath': { x: -12, y: -16, zoom: 170 },
+    'team-Sigrika': { x: 4, y: -20, zoom: 160 },
+    'team-Aalto': { x: 6, y: -20, zoom: 190 },
+    'team-Baizhi': { x: -2, y: -6, zoom: 220 },
+    'team-Chixia': { x: -6, y: -24, zoom: 180 },
+    'team-Danjin': { x: 0, y: -22, zoom: 180 },
+    'team-Yangyang': { x: -4, y: -12, zoom: 270 },
+    'team-Taoqi': { x: 6, y: -20, zoom: 180 },
+    'team-Yuanwu': { x: 2, y: -22, zoom: 190 },
+    'team-Youhu': { x: 2, y: -14, zoom: 130 },
+    'team-Lumi': { x: 0, y: -22, zoom: 170 },
+    'team-Buling': { x: 0, y: -18, zoom: 150 },
+    'team-Mornye': { x: 4, y: -20, zoom: 170 },
+    'team-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
+    'team-Blazing Justice': { x: 0, y: 0, zoom: 100 },
     // Info panel framing
     'info-Encore': { x: -8, y: -50, zoom: 170 },
     'info-Lingyang': { x: -14, y: -50, zoom: 170 },
     'info-Calcharo': { x: -24, y: -68, zoom: 250 },
     'info-Aemeath': { x: -26, y: -60, zoom: 230 },
     'info-Lynae': { x: -14, y: -62, zoom: 210 },
+    'info-Sigrika': { x: -8, y: -60, zoom: 210 },
     'info-Chisa': { x: -30, y: -66, zoom: 230 },
     'info-Iuno': { x: -18, y: -56, zoom: 190 },
     'info-Augusta': { x: -12, y: -64, zoom: 250 },
@@ -687,51 +758,163 @@ function WhisperingWishesInner() {
   
   // Collection filter states
   const [collectionSearch, setCollectionSearch] = useState('');
-  const [collectionElementFilter, setCollectionElementFilter] = useState('all'); // 'all', 'Aero', 'Glacio', etc.
+  const [collectionCategoryFilter, setCollectionCategoryFilter] = useState('all'); // 'all', 'character', 'weapon'
   const [collectionWeaponFilter, setCollectionWeaponFilter] = useState('all'); // 'all', 'Broadblade', 'Sword', etc.
-  const [collectionOwnershipFilter, setCollectionOwnershipFilter] = useState('all'); // 'all', 'owned', 'missing'
+  const [collectionElementFilter, setCollectionElementFilter] = useState('all'); // 'all', 'Aero', 'Glacio', etc.
+  const [collectionStatFilter, setCollectionStatFilter] = useState('all'); // 'all', 'ATK', 'HP', 'DEF', 'Crit Rate', 'Crit DMG', 'Energy Regen'
+  const [collectionDamageFilter, setCollectionDamageFilter] = useState('all'); // 'all', 'Basic ATK', 'Heavy ATK', 'Skill', 'Liberation', 'Echo', 'Coordinated'
+  const [collectionRoleFilter, setCollectionRoleFilter] = useState('all'); // 'all', 'Main DPS', 'Sub DPS', 'Support', 'Healer'
+  const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useState('all'); // 'all' or sonata set name
+  const [collectionEchoBuffFilter, setCollectionEchoBuffFilter] = useState('all'); // 'all' or buff type
+  const [collectionView, setCollectionView] = useState('items'); // 'items' (characters), 'weapons', 'echoes'
   
+  // Keyword tags for search matching (maps keywords to character/weapon properties)
+  const getSearchTags = useCallback((name, isCharacter) => {
+    const tags = [name.toLowerCase()];
+    if (isCharacter) {
+      const data = CHARACTER_DATA[name];
+      if (data) {
+        tags.push(data.element?.toLowerCase());
+        if (data.elements) data.elements.forEach(e => tags.push(e.toLowerCase()));
+        tags.push(data.weapon?.toLowerCase());
+        tags.push(data.role?.toLowerCase());
+        // Role aliases
+        if (data.role === 'Main DPS' || data.role === 'Sub DPS') tags.push('dps');
+        if (data.role === 'Healer') tags.push('heal', 'healing');
+        if (data.role === 'Support') tags.push('buff', 'buffer', 'utility');
+        if (data.role === 'Sub DPS') tags.push('sub', 'off-field', 'coordinated');
+        // Desc keywords
+        if (data.desc) tags.push(data.desc.toLowerCase());
+        // Damage focus tags
+        if (data.damageFocus) data.damageFocus.forEach(d => tags.push(d.toLowerCase()));
+        // Stat scaling
+        if (data.statScaling) tags.push(data.statScaling.toLowerCase(), data.statScaling.toLowerCase() + ' scaling');
+        // Buff-related tags from CHAR_BUFF_TABLE
+        const buffs = CHAR_BUFF_TABLE[name];
+        if (buffs) {
+          const allBuffs = [...(buffs.outroBuffs || []), ...(buffs.libBuffs || []), ...(buffs.selfBuffs || [])];
+          allBuffs.forEach(b => {
+            if (b.stat) tags.push(b.stat.toLowerCase());
+            if (b.stat === 'basicDmg') tags.push('basic atk', 'basic attack');
+            if (b.stat === 'heavyDmg') tags.push('heavy atk', 'heavy attack', 'charged');
+            if (b.stat === 'libDmg') tags.push('liberation');
+            if (b.stat === 'echoDmg') tags.push('echo');
+            if (b.stat === 'skillDmg') tags.push('skill');
+            if (b.stat === 'coordDmg') tags.push('coordinated');
+            if (b.stat === 'deepen') tags.push('deepen', 'buff');
+            if (b.stat === 'atkPct') tags.push('atk', 'buff');
+            if (b.stat === 'critRate' || b.stat === 'critDmg') tags.push('crit', 'buff');
+            if (b.stat === 'resShred' || b.stat === 'defShred') tags.push('shred', 'debuff');
+          });
+          if (buffs.debuffs?.length) tags.push('debuff', 'shred');
+        }
+      }
+    } else {
+      const data = WEAPON_DATA[name];
+      if (data) {
+        tags.push(data.type?.toLowerCase());
+        tags.push(data.stat?.toLowerCase());
+        if (data.desc) tags.push(data.desc.toLowerCase());
+        if (data.stat === 'Crit Rate') tags.push('crit');
+        if (data.stat === 'Crit DMG') tags.push('crit');
+        if (data.stat === 'ATK%') tags.push('atk', 'attack');
+        if (data.stat === 'HP%') tags.push('hp', 'health');
+        if (data.stat === 'DEF%') tags.push('def', 'defense');
+        if (data.stat === 'Energy Regen') tags.push('energy', 'er');
+        if (data.bestFor) data.bestFor.forEach(c => tags.push(c.toLowerCase()));
+      }
+    }
+    return tags.join(' ');
+  }, []);
+
+  // Damage type matching for characters using damageFocus field
+  const charMatchesDamage = useCallback((name, damageType) => {
+    const data = CHARACTER_DATA[name];
+    const focus = data?.dmgFocus;
+    if (!focus) return false;
+    const mapping = {
+      'Basic ATK': 'Basic ATK',
+      'Heavy ATK': 'Heavy ATK',
+      'Skill': 'Skill',
+      'Liberation': 'Liberation',
+      'Echo': 'Echo',
+      'Coordinated': 'Coordinated ATK',
+    };
+    return focus.includes(mapping[damageType] || damageType);
+  }, []);
+
+  // Stat matching for characters using statScaling field, and weapons using sub stat
+  const charMatchesStat = useCallback((name, statType) => {
+    const data = CHARACTER_DATA[name];
+    if (!data || !data.statScaling) return false;
+    return data.statScaling === statType;
+  }, []);
+
   // Filter function for collection items
   const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
     return items.filter(name => {
-      // Search filter
-      if (collectionSearch && !name.toLowerCase().includes(collectionSearch.toLowerCase())) {
-        return false;
+      // Category filter
+      if (collectionCategoryFilter === 'character' && !isCharacter) return false;
+      if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
+
+      // Search filter (keyword-based)
+      if (collectionSearch) {
+        const searchLower = collectionSearch.toLowerCase();
+        const searchTags = getSearchTags(name, isCharacter);
+        if (!searchTags.includes(searchLower)) return false;
       }
-      
-      // Ownership filter
-      const count = countsObj[name] || 0;
-      if (collectionOwnershipFilter === 'owned' && count === 0) return false;
-      if (collectionOwnershipFilter === 'missing' && count > 0) return false;
-      
-      // Element/Weapon type filter (only for characters with data)
+
+      // Element filter (characters only)
       if (isCharacter) {
         const data = CHARACTER_DATA[name];
         if (data) {
           if (collectionElementFilter !== 'all' && data.element !== collectionElementFilter) return false;
           if (collectionWeaponFilter !== 'all' && data.weapon !== collectionWeaponFilter) return false;
+          if (collectionRoleFilter !== 'all' && data.role !== collectionRoleFilter) return false;
+          if (collectionStatFilter !== 'all' && !charMatchesStat(name, collectionStatFilter)) return false;
+          if (collectionDamageFilter !== 'all' && !charMatchesDamage(name, collectionDamageFilter)) return false;
         }
       } else {
         const data = WEAPON_DATA[name];
-        if (data && collectionWeaponFilter !== 'all' && data.type !== collectionWeaponFilter) return false;
+        if (data) {
+          if (collectionWeaponFilter !== 'all' && data.type !== collectionWeaponFilter) return false;
+          if (collectionStatFilter !== 'all' && data.stat !== collectionStatFilter) return false;
+        }
       }
-      
+
       return true;
     });
-  }, [collectionSearch, collectionElementFilter, collectionWeaponFilter, collectionOwnershipFilter]);
+  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, getSearchTags, charMatchesStat, charMatchesDamage]);
   
   // Clear all filters
   const clearCollectionFilters = useCallback(() => {
     setCollectionSearch('');
-    setCollectionElementFilter('all');
+    setCollectionCategoryFilter('all');
     setCollectionWeaponFilter('all');
-    setCollectionOwnershipFilter('all');
+    setCollectionElementFilter('all');
+    setCollectionStatFilter('all');
+    setCollectionDamageFilter('all');
+    setCollectionRoleFilter('all');
+    setCollectionEchoSetFilter('all');
+    setCollectionEchoBuffFilter('all');
   }, []);
-  
+
+  // Filter echoes by set and buff
+  const filterEchoes = useCallback((echoNames) => {
+    return echoNames.filter(name => {
+      if (collectionSearch && !name.toLowerCase().includes(collectionSearch.toLowerCase())) return false;
+      const data = ECHO_DATA[name];
+      if (!data) return true; // no data → show it
+      if (collectionEchoSetFilter !== 'all' && !data.sets.includes(collectionEchoSetFilter)) return false;
+      if (collectionEchoBuffFilter !== 'all' && !(Array.isArray(data.buff) ? data.buff.includes(collectionEchoBuffFilter) : data.buff === collectionEchoBuffFilter)) return false;
+      return true;
+    });
+  }, [collectionSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
+
   // Check if any filter is active
-  const hasActiveFilters = useMemo(() => 
-    !!(collectionSearch || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionOwnershipFilter !== 'all'),
-    [collectionSearch, collectionElementFilter, collectionWeaponFilter, collectionOwnershipFilter]
+  const hasActiveFilters = useMemo(() =>
+    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all'),
+    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionEchoSetFilter, collectionEchoBuffFilter]
   );
   
   // Cache-busting for images (version-based, only refreshes on manual refresh)
@@ -1776,6 +1959,7 @@ function WhisperingWishesInner() {
       'Mornye': { name: 'Rhythm of Regret', desc: 'S6 Mornye — the beat dropped and so did your balance', color: '#f97316' },
       'Luuk Herssen': { name: 'Fist Full of Debt', desc: 'S6 Luuk Herssen — punched his way through your wallet', color: '#edaf18' },
       'Aemeath': { name: 'Rode Into Bankruptcy', desc: 'S6 Aemeath — the Exostrider ran over your finances', color: '#f97316' },
+      'Sigrika': { name: 'Rune Bankruptcy', desc: 'S6 Sigrika — deciphered every rune except your bank statement', color: '#22c55e' },
     };
     
     // Check each character for S6
@@ -1970,6 +2154,7 @@ function WhisperingWishesInner() {
       ['Augusta', 'Thunderflare Dominion'], ['Iuno', "Moongazer's Sigil"], ['Galbrena', 'Lux & Umbra'],
       ['Qiuyuan', 'Emerald Sentence'], ['Chisa', 'Kumokiri'], ['Lynae', 'Spectrum Blaster'],
       ['Mornye', 'Starfield Calibrator'], ['Luuk Herssen', 'Everbright Polestar'], ['Aemeath', "Daybreaker's Spine"],
+      ['Sigrika', 'Solsworn Ciphers'],
     ];
     const sigCount = sigPairs.filter(([char, weap]) => owned5StarChars.has(char) && owned5StarWeaps.has(weap)).length;
     if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
@@ -2097,7 +2282,7 @@ function WhisperingWishesInner() {
     const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
     const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
     const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
-    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false);
+    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false), w2=countUniqueOwned(weapHist,2,false), w1=countUniqueOwned(weapHist,1,false);
     const newestRes = [...new Set(charHist.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
     const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
     const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
@@ -2343,8 +2528,8 @@ function WhisperingWishesInner() {
 
     // Collection row
     const drawColl = (cx2,cy2,cw2) => {
-      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'}];
-      const g2=6,iw=(cw2-4*g2)/5;
+      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'},{l:'2* Wep',o:w2,t:ALL_2STAR_WEAPONS.length,c:'#4ade80'},{l:'1* Wep',o:w1,t:ALL_1STAR_WEAPONS.length,c:'#9ca3af'}];
+      const g2=6,iw=(cw2-(items.length-1)*g2)/items.length;
       items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,48,it.o+'/'+it.t,it.l,it.c,16);});
       return 48;
     };
@@ -2687,7 +2872,9 @@ function WhisperingWishesInner() {
     return {
       chars5Counts: chars5, chars4Counts: countItems(charHistory, 4, true),
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
-      weaps3Counts: countItems(weapHistory, 3, false), sortItems
+      weaps3Counts: countItems(weapHistory, 3, false),
+      weaps2Counts: countItems(weapHistory, 2, false),
+      weaps1Counts: countItems(weapHistory, 1, false), sortItems
     };
   }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
 
@@ -2831,7 +3018,7 @@ function WhisperingWishesInner() {
         return filtered.map((p, i) => {
           pityCounter++;
           const rawRarity = parseInt(p.rarity ?? p.qualityLevel, 10);
-          const rarity = (rawRarity >= 3 && rawRarity <= 5) ? rawRarity : 4; // validate range
+          const rarity = (rawRarity >= 1 && rawRarity <= 5) ? rawRarity : 4; // validate range (1-5★)
           const rawName = (p.name || p.resourceName || '').trim();
           const name = IMPORT_NAME_ALIASES[rawName] || rawName;
 
@@ -3163,11 +3350,11 @@ function WhisperingWishesInner() {
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
-    <div className={`desktop-layout ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''}`}>
-      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled !== 'off'} />
-      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled !== 'off'} />
+    <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
+      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       <KuroStyles oledMode={visualSettings.oledMode} />
-      
+
       {/* Onboarding Modal */}
       {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
       
@@ -3207,9 +3394,9 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
-              <select value={state.server} onChange={e => dispatch({ type: 'SET_SERVER', server: e.target.value })} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px]" style={headerControlBg}>
-                {Object.keys(SERVERS).map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={headerControlBg}>
+                {state.server} <ChevronDown size={10} />
+              </button>
               <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-[var(--border-medium)] text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
                 <Download size={14} />
               </button>
@@ -3238,7 +3425,7 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))'}}>
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 py-3 space-y-3 w-full">
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
@@ -3350,42 +3537,49 @@ function WhisperingWishesInner() {
                 <div className="space-y-2">
                   {/* Show only the latest banner */}
                   {BANNER_HISTORY.slice(0, 1).map(b => (
-                    <div key={`bh-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                    <div key={`bh-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                      <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {b.characters.map(c => {
-                          const img = collectionImages[c];
+                      <div className="space-y-1.5">
+                        {Array.from({ length: Math.max(b.characters.length, b.weapons.length) }).map((_, idx) => {
+                          const c = b.characters[idx];
+                          const w = b.weapons[idx];
+                          const cImg = c ? collectionImages[c] : null;
+                          const wImg = w ? collectionImages[w] : null;
                           return (
-                            <div key={c} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
+                            <div key={idx} className="flex items-center gap-4">
+                              {c ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                    {cImg ? (
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-yellow-400 font-medium truncate">{c}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
+                              {w ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                    {wImg ? (
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-pink-400 font-medium truncate">{w}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
                             </div>
                           );
                         })}
-                        {b.weapons.map(w => {
-                          const img = collectionImages[w];
-                          return (
-                            <div key={w} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-pink-400 font-medium">{w}</span>
-                            </div>
-                          );
-                        })}
+                      </div>
                       </div>
                     </div>
                   ))}
@@ -3402,9 +3596,8 @@ function WhisperingWishesInner() {
             </Card>
 
             {/* Banner History Modal */}
-            <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)}>
-              <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={e => e.stopPropagation()}>
-                <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+            <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} className="" ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)} centered>
+              <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
@@ -3412,49 +3605,56 @@ function WhisperingWishesInner() {
                   </div>
                   <button onClick={() => setShowBannerHistory(false)} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 space-y-2" data-sheet-scroll>
+                <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
                   {BANNER_HISTORY.map(b => (
-                    <div key={`bhm-${b.version}-${b.phase}`} className="p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                    <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                      {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                      <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-[10px]">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {b.characters.map(c => {
-                          const img = collectionImages[c];
+                      <div className="space-y-1.5">
+                        {Array.from({ length: Math.max(b.characters.length, b.weapons.length) }).map((_, idx) => {
+                          const c = b.characters[idx];
+                          const w = b.weapons[idx];
+                          const cImg = c ? collectionImages[c] : null;
+                          const wImg = w ? collectionImages[w] : null;
                           return (
-                            <div key={c} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={c} className="w-full h-full object-cover object-top" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-yellow-400 font-medium">{c}</span>
-                            </div>
-                          );
-                        })}
-                        {b.weapons.map(w => {
-                          const img = collectionImages[w];
-                          return (
-                            <div key={w} className="flex items-center gap-1.5">
-                              <div className="w-11 h-11 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
-                                {img ? (
-                                  <img src={img} alt={w} className="w-full h-full object-contain p-0.5" onError={hideOnError} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-pink-400 font-medium">{w}</span>
+                            <div key={idx} className="flex items-center gap-4">
+                              {c ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                    {cImg ? (
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[10px] text-yellow-400">{c[0]}</div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-yellow-400 font-medium truncate">{c}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
+                              {w ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                    {wImg ? (
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-pink-400 font-medium truncate">{w}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
                             </div>
                           );
                         })}
                       </div>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </div></div>
             </FocusTrapModal>
           </div>
           </TabErrorBoundary>
@@ -3468,45 +3668,48 @@ function WhisperingWishesInner() {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="events" />
 
-            <div className="flex items-center justify-between content-layer">
-              <h2 className="text-white font-semibold text-sm">Time-Gated Content</h2>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => {
-                    setActiveBanners(getActiveBanners());
-                    toast?.addToast?.('Banner data refreshed!', 'success');
-                  }}
-                  className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
-                >
-                  <RefreshCcw size={12} /> Refresh
-                </button>
-                <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
-              </div>
-            </div>
-            {(() => {
-              const eventEntries = Object.entries(EVENTS);
-              const totalAstrite = eventEntries.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
-              const doneKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'done');
-              const skippedKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped');
-              const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
-              const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
-              return (
-                <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg content-layer">
-                  <div className="flex items-center justify-between">
-                    <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
-                    <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
-                  </div>
-                  {hasProgress && (
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
-                      </div>
-                      <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
-                    </div>
-                  )}
+            <Card>
+              <CardHeader action={
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setActiveBanners(getActiveBanners());
+                      toast?.addToast?.('Banner data refreshed!', 'success');
+                    }}
+                    className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+                  >
+                    <RefreshCcw size={12} /> Refresh
+                  </button>
+                  <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
                 </div>
-              );
-            })()}
+              }>Time-Gated Content</CardHeader>
+              <CardBody>
+                {(() => {
+                  const eventEntries = Object.entries(EVENTS);
+                  const totalAstrite = eventEntries.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
+                  const doneKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'done');
+                  const skippedKeys = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped');
+                  const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
+                  const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
+                  return (
+                    <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
+                        <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
+                      </div>
+                      {hasProgress && (
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
+                          </div>
+                          <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </CardBody>
+            </Card>
             <div className="space-y-2 event-grid">
               {(() => {
                 const eventImageMap = {
@@ -3995,19 +4198,33 @@ function WhisperingWishesInner() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="kuro-label">Base Convenes (per copy)</label>
-                    <select value={state.planner.goalPulls} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +e.target.value })} className="kuro-input w-full" aria-label="Base Convenes per copy">
-                      <option value={HARD_PITY}>{HARD_PITY} (Hard Pity)</option>
-                      <option value={HARD_PITY * 2}>{HARD_PITY * 2} (Guaranteed)</option>
-                      <option value={240}>240 (Char + Signature)</option>
-                    </select>
+                    <KuroSelect
+                      value={state.planner.goalPulls}
+                      onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +v })}
+                      options={[
+                        { value: HARD_PITY, label: `${HARD_PITY} (Hard Pity)` },
+                        { value: HARD_PITY * 2, label: `${HARD_PITY * 2} (Guaranteed)` },
+                        { value: 240, label: '240 (Char + Signature)' },
+                      ]}
+                      className="w-full"
+                      ariaLabel="Base Convenes per copy"
+                      small
+                    />
                   </div>
                   <div>
                     <label className="kuro-label">Multiplier</label>
-                    <select value={state.planner.goalModifier} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +e.target.value })} className="kuro-input w-full" aria-label="Copies multiplier">
-                      <option value={1}>×1</option>
-                      <option value={2}>×2</option>
-                      <option value={3}>×3</option>
-                    </select>
+                    <KuroSelect
+                      value={state.planner.goalModifier}
+                      onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
+                      options={[
+                        { value: 1, label: '×1' },
+                        { value: 2, label: '×2' },
+                        { value: 3, label: '×3' },
+                      ]}
+                      className="w-full"
+                      ariaLabel="Copies multiplier"
+                      small
+                    />
                   </div>
                 </div>
                 <div className="p-2 bg-white/5 rounded-lg text-[10px] text-gray-400 text-center">
@@ -4095,7 +4312,7 @@ function WhisperingWishesInner() {
                     <CardHeader action={<button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button>}>Luck Rating</CardHeader>
                     <CardBody>
                       <div className="flex items-center gap-4">
-                        <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': visualSettings.animationsEnabled === 'full' ? '6s' : '12s'}}>
+                        <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': '12s'}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
                             <div className="text-[16px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-display)'}}>{luckRating.tier}</div>
                             <div className="text-[24px] font-extrabold kuro-number" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-data)'}}>{luckRating.rating}</div>
@@ -4150,9 +4367,8 @@ function WhisperingWishesInner() {
                 )}
 
                 {/* Luck Leaderboard Modal */}
-                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="bg-black/80" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard">
-                    <div className="kuro-card w-full sm:max-w-sm max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-                      <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard" centered>
+                    <div className="kuro-card w-full max-w-sm max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                       <div className="p-4 pb-2 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -4179,7 +4395,7 @@ function WhisperingWishesInner() {
                               <div className="space-y-2 py-2" aria-label="Loading leaderboard">
                                 {[...Array(6)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
-                                    <div className="kuro-skeleton kuro-skeleton-circle w-7 h-7 flex-shrink-0" />
+                                    <div className="kuro-skeleton kuro-skeleton-circle w-[28px] h-[28px] flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1.5">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
@@ -4204,7 +4420,7 @@ function WhisperingWishesInner() {
                                     className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
                                   >
                                     <div 
-                                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                      className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                                       style={{
                                         background: i < 3 ? `linear-gradient(135deg, ${(MEDAL_COLORS[i] ?? '#9ca3af')}40, ${(MEDAL_COLORS[i] ?? '#9ca3af')}20)` : 'rgba(255,255,255,0.1)',
                                         color: i < 3 ? MEDAL_COLORS[i] : '#9ca3af',
@@ -4243,7 +4459,7 @@ function WhisperingWishesInner() {
                                 {[...Array(5)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-2.5 py-1.5">
                                     <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
-                                    <div className="kuro-skeleton w-7 h-7 rounded-md flex-shrink-0" />
+                                    <div className="kuro-skeleton w-[28px] h-[28px] rounded-md flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
                                       <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
@@ -4263,7 +4479,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-[28px] h-[28px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -4287,7 +4503,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-7 h-7 rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-[28px] h-[28px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -4413,7 +4629,7 @@ function WhisperingWishesInner() {
                         if (!t) return null;
                         const Icon = TROPHY_ICON_MAP[t.icon] || Star;
                         return (
-                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="bg-black/70" onClick={() => setSelectedTrophy(null)} ariaLabel={`Trophy: ${t.name}`} centered>
+                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="" onClick={() => setSelectedTrophy(null)} ariaLabel={`Trophy: ${t.name}`} centered>
                             <div
                               className="relative mx-6 p-5 rounded-xl text-center max-w-xs w-full"
                               onClick={(e) => e.stopPropagation()}
@@ -4856,7 +5072,8 @@ function WhisperingWishesInner() {
                 <CardBody className="text-center py-8">
                   <Archive size={32} className="mx-auto mb-2 text-gray-500" />
                   <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
-                  <p className="text-gray-500 text-xs mt-1">Import via Profile to initialize your archive</p>
+                  <p className="text-gray-500 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
             ) : (
@@ -4869,8 +5086,10 @@ function WhisperingWishesInner() {
                   const ownedWeaps5 = Object.keys(collectionData.weaps5Counts).length;
                   const ownedWeaps4 = Object.keys(collectionData.weaps4Counts).length;
                   const ownedWeaps3 = Object.keys(collectionData.weaps3Counts).length;
-                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5 + ownedWeaps4 + ownedWeaps3;
-                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length;
+                  const ownedWeaps2 = Object.keys(collectionData.weaps2Counts).length;
+                  const ownedWeaps1 = Object.keys(collectionData.weaps1Counts).length;
+                  const totalOwned = ownedChars5 + ownedChars4 + ownedWeaps5 + ownedWeaps4 + ownedWeaps3 + ownedWeaps2 + ownedWeaps1;
+                  const totalItems = ALL_5STAR_RESONATORS.length + ALL_4STAR_RESONATORS.length + ALL_5STAR_WEAPONS.length + ALL_4STAR_WEAPONS.length + ALL_3STAR_WEAPONS.length + ALL_2STAR_WEAPONS.length + ALL_1STAR_WEAPONS.length;
                   const pct = totalItems > 0 ? Math.round((totalOwned / totalItems) * 100) : 0;
                   return (
                     <Card><CardBody>
@@ -4881,12 +5100,14 @@ function WhisperingWishesInner() {
                       <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                         <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center text-[10px]">
+                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-[10px]">
                         <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
                         <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
                         <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">4★ Wep</div></div>
                         <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">3★ Wep</div></div>
+                        <div><div className="text-green-400 font-bold">{ownedWeaps2}<span className="text-gray-500 font-normal">/{ALL_2STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">2★ Wep</div></div>
+                        <div><div className="text-gray-400 font-bold">{ownedWeaps1}<span className="text-gray-500 font-normal">/{ALL_1STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">1★ Wep</div></div>
                       </div>
                     </CardBody></Card>
                   );
@@ -4901,10 +5122,10 @@ function WhisperingWishesInner() {
                       type="text"
                       value={collectionSearch}
                       onChange={(e) => setCollectionSearch(e.target.value)}
-                      placeholder="Search by name..."
+                      placeholder="Search by name, DPS, Electro, Broadblade..."
                       className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-[var(--border-medium)] text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
                       style={{ background: 'var(--bg-btn)' }}
-                      aria-label="Search collection by name"
+                      aria-label="Search collection by keyword"
                     />
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                     {collectionSearch && (
@@ -4914,78 +5135,196 @@ function WhisperingWishesInner() {
                     )}
                   </div>
                   
-                  {/* Filter Row */}
+                  {/* Filter & Sort Controls */}
                   <div className="space-y-1.5">
-                    <div className="flex flex-wrap gap-1.5 items-center">
-                      {/* Element Filter */}
-                      <select
-                        value={collectionElementFilter}
-                        onChange={(e) => setCollectionElementFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
-                        aria-label="Filter by element"
-                      >
-                        <option value="all">All Elements</option>
-                        <option value="Aero">Aero</option>
-                        <option value="Glacio">Glacio</option>
-                        <option value="Electro">Electro</option>
-                        <option value="Fusion">Fusion</option>
-                        <option value="Spectro">Spectro</option>
-                        <option value="Havoc">Havoc</option>
-                      </select>
+                    {/* View Toggle */}
+                    <Card>
+                      <CardBody>
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                            className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
+                            title="Characters"
+                            aria-label="View characters"
+                            aria-pressed={collectionView === 'items'}
+                          >
+                            <Crown size={12} className="inline mr-1" />Characters
+                          </button>
+                          <button
+                            onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                            className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
+                            title="Weapons"
+                            aria-label="View weapons"
+                            aria-pressed={collectionView === 'weapons'}
+                          >
+                            <Sword size={12} className="inline mr-1" />Weapons
+                          </button>
+                          <button
+                            onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); }}
+                            className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
+                            title="Echoes"
+                            aria-label="View echoes"
+                            aria-pressed={collectionView === 'echoes'}
+                          >
+                            <Sparkles size={12} className="inline mr-1" />Echoes
+                          </button>
+                        </div>
+                      </CardBody>
+                    </Card>
+                    {/* Filter Dropdowns — context-sensitive per view */}
+                    <Card>
+                      <CardBody>
+                    <div className="grid grid-cols-3 gap-1.5">
 
-                      {/* Weapon Filter */}
-                      <select
-                        value={collectionWeaponFilter}
-                        onChange={(e) => setCollectionWeaponFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
-                        aria-label="Filter by weapon type"
-                      >
-                        <option value="all">All Weapons</option>
-                        <option value="Broadblade">Broadblade</option>
-                        <option value="Sword">Sword</option>
-                        <option value="Pistols">Pistols</option>
-                        <option value="Gauntlets">Gauntlets</option>
-                        <option value="Rectifier">Rectifier</option>
-                      </select>
+                      {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
+                      {collectionView === 'items' && (<>
+                        <KuroSelect
+                          value={collectionWeaponFilter}
+                          onChange={setCollectionWeaponFilter}
+                          options={[
+                            { value: 'all', label: 'All Types' },
+                            { value: 'Broadblade', label: 'Broadblade' },
+                            { value: 'Sword', label: 'Sword' },
+                            { value: 'Pistols', label: 'Pistols' },
+                            { value: 'Gauntlets', label: 'Gauntlets' },
+                            { value: 'Rectifier', label: 'Rectifier' },
+                          ]}
+                          ariaLabel="Filter by weapon type"
+                        />
+                        <KuroSelect
+                          value={collectionElementFilter}
+                          onChange={setCollectionElementFilter}
+                          options={[
+                            { value: 'all', label: 'All Elements' },
+                            { value: 'Aero', label: 'Aero' },
+                            { value: 'Glacio', label: 'Glacio' },
+                            { value: 'Electro', label: 'Electro' },
+                            { value: 'Fusion', label: 'Fusion' },
+                            { value: 'Spectro', label: 'Spectro' },
+                            { value: 'Havoc', label: 'Havoc' },
+                          ]}
+                          ariaLabel="Filter by element"
+                        />
+                        <KuroSelect
+                          value={collectionStatFilter}
+                          onChange={setCollectionStatFilter}
+                          options={[
+                            { value: 'all', label: 'Stat Scaling' },
+                            { value: 'ATK', label: 'ATK' },
+                            { value: 'HP', label: 'HP' },
+                            { value: 'DEF', label: 'DEF' },
+                            { value: 'Crit Rate', label: 'Crit Rate' },
+                            { value: 'Crit DMG', label: 'Crit DMG' },
+                            { value: 'Energy Regen', label: 'Energy Regen' },
+                          ]}
+                          ariaLabel="Filter by stat scaling"
+                        />
+                        <KuroSelect
+                          value={collectionDamageFilter}
+                          onChange={setCollectionDamageFilter}
+                          options={[
+                            { value: 'all', label: 'All Damage' },
+                            { value: 'Basic ATK', label: 'Basic ATK' },
+                            { value: 'Heavy ATK', label: 'Heavy ATK' },
+                            { value: 'Skill', label: 'Skill' },
+                            { value: 'Liberation', label: 'Liberation' },
+                            { value: 'Echo', label: 'Echo' },
+                            { value: 'Coordinated', label: 'Coordinated' },
+                          ]}
+                          ariaLabel="Filter by damage type"
+                        />
+                        <KuroSelect
+                          value={collectionRoleFilter}
+                          onChange={setCollectionRoleFilter}
+                          options={[
+                            { value: 'all', label: 'All Rôles' },
+                            { value: 'Main DPS', label: 'Main DPS' },
+                            { value: 'Sub DPS', label: 'Sub DPS' },
+                            { value: 'Support', label: 'Support' },
+                            { value: 'Healer', label: 'Healer' },
+                          ]}
+                          ariaLabel="Filter by role"
+                        />
+                      </>)}
 
-                      {/* Ownership Filter */}
-                      <select
-                        value={collectionOwnershipFilter}
-                        onChange={(e) => setCollectionOwnershipFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none min-h-[44px]" style={{ background: 'var(--bg-btn)' }}
-                        aria-label="Filter by ownership"
-                      >
-                        <option value="all">All Items</option>
-                        <option value="owned">Owned</option>
-                        <option value="missing">Missing</option>
-                      </select>
-                      
+                      {/* ── Weapons view: Type, Sub-stat ── */}
+                      {collectionView === 'weapons' && (<>
+                        <KuroSelect
+                          value={collectionWeaponFilter}
+                          onChange={setCollectionWeaponFilter}
+                          options={[
+                            { value: 'all', label: 'All Types' },
+                            { value: 'Broadblade', label: 'Broadblade' },
+                            { value: 'Sword', label: 'Sword' },
+                            { value: 'Pistols', label: 'Pistols' },
+                            { value: 'Gauntlets', label: 'Gauntlets' },
+                            { value: 'Rectifier', label: 'Rectifier' },
+                          ]}
+                          ariaLabel="Filter by weapon type"
+                        />
+                        <KuroSelect
+                          value={collectionStatFilter}
+                          onChange={setCollectionStatFilter}
+                          options={[
+                            { value: 'all', label: 'All Sub-stats' },
+                            { value: 'ATK%', label: 'ATK%' },
+                            { value: 'HP%', label: 'HP%' },
+                            { value: 'DEF%', label: 'DEF%' },
+                            { value: 'Crit Rate', label: 'Crit Rate' },
+                            { value: 'Crit DMG', label: 'Crit DMG' },
+                            { value: 'Energy Regen', label: 'Energy Regen' },
+                          ]}
+                          ariaLabel="Filter by sub-stat"
+                        />
+                      </>)}
+
+                      {/* ── Echoes view: Set, Buff ── */}
+                      {collectionView === 'echoes' && (<>
+                        <KuroSelect
+                          value={collectionEchoSetFilter}
+                          onChange={setCollectionEchoSetFilter}
+                          options={[
+                            { value: 'all', label: 'All Sets' },
+                            ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s })),
+                          ]}
+                          ariaLabel="Filter by sonata set"
+                        />
+                        <KuroSelect
+                          value={collectionEchoBuffFilter}
+                          onChange={setCollectionEchoBuffFilter}
+                          options={[
+                            { value: 'all', label: 'All Buffs' },
+                            ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b })),
+                          ]}
+                          ariaLabel="Filter by buff type"
+                        />
+                      </>)}
+
                       {/* Clear Filters */}
                       {hasActiveFilters && (
                         <button
                           onClick={clearCollectionFilters}
-                          className="px-2 py-1 rounded-lg text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                          className="px-2 py-1 rounded-lg text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all flex items-center justify-center"
                         >
                           Clear
                         </button>
                       )}
                     </div>
-                    
+                      </CardBody>
+                    </Card>
                     {/* Sort Controls */}
                     <div className="flex gap-1.5 items-center justify-end">
                       <button
                         onClick={refreshImages}
-                        className="px-2 py-1 rounded-lg text-[10px] text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-[var(--border-medium)] transition-all"
-                        style={{ background: 'var(--bg-btn)' }}
+                        className="kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
                         title="Refresh images if they don't load"
                         aria-label="Refresh images"
                       >
-                        <RefreshCcw size={10} />
+                        <RefreshCcw size={12} />
                       </button>
                       <button
                         onClick={() => setCollectionSort('copies')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'copies' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 border border-[var(--border-medium)]'}`}
-                        style={collectionSort !== 'copies' ? { background: 'var(--bg-btn)' } : undefined}
+                        className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                         title="Sort by copies"
                         aria-label="Sort by copies"
                         aria-pressed={collectionSort === 'copies'}
@@ -4994,18 +5333,86 @@ function WhisperingWishesInner() {
                       </button>
                       <button
                         onClick={() => setCollectionSort('release')}
-                        className={`px-2 py-1 rounded-lg text-[10px] transition-all ${collectionSort === 'release' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 border border-[var(--border-medium)]'}`}
-                        style={collectionSort !== 'release' ? { background: 'var(--bg-btn)' } : undefined}
+                        className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
                         title="Sort by release date"
                         aria-label="Sort by release date"
                         aria-pressed={collectionSort === 'release'}
                       >
-                        <Calendar size={10} />
+                        <Calendar size={12} />
                       </button>
                     </div>
                   </div>
                 </div>
 
+                {collectionView === 'echoes' && (<>
+                {/* 4-Cost Echoes */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-yellow-400">4</span> Cost Echoes
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={filterEchoes(ALL_4COST_ECHOES).map(name => [name, 0])}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
+                      countColor="text-yellow-400" countPrefix="" totalCount={ALL_4COST_ECHOES.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
+                      dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 3-Cost Echoes */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-purple-400">3</span> Cost Echoes
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={filterEchoes(ALL_3COST_ECHOES).map(name => [name, 0])}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
+                      countColor="text-purple-400" countPrefix="" totalCount={ALL_3COST_ECHOES.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
+                      dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 1-Cost Echoes */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-cyan-400">1</span> Cost Echoes
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={filterEchoes(ALL_1COST_ECHOES).map(name => [name, 0])}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="" ownedBg="bg-cyan-500/10" ownedBorder="border-cyan-500/30"
+                      countColor="text-cyan-400" countPrefix="" totalCount={ALL_1COST_ECHOES.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
+                      dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+                </>)}
+
+                {collectionView === 'items' && (<>
                 {/* 5★ Resonators */}
                 <Card>
                   <CardHeader>
@@ -5049,7 +5456,9 @@ function WhisperingWishesInner() {
                     />
                   </CardBody>
                 </Card>
+                </>)}
 
+                {collectionView === 'weapons' && (<>
                 {/* 5★ Weapons */}
                 <Card>
                   <CardHeader>
@@ -5109,12 +5518,57 @@ function WhisperingWishesInner() {
                       withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                       framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                       activeBanners={activeBanners} setDetailModal={setDetailModal}
-                      dataLookup={{}} dataType="weapon" isCharacter={false}
+                      dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                       profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                       collapsible
                     />
                   </CardBody>
                 </Card>
+
+                {/* 2★ Weapons */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-green-400">★★</span> Weapons
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={collectionData.sortItems(filterCollectionItems(ALL_2STAR_WEAPONS, collectionData.weaps2Counts, false).map(name => [name, collectionData.weaps2Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="" ownedBg="bg-green-500/10" ownedBorder="border-green-500/30"
+                      countColor="text-green-400" countPrefix="R" totalCount={ALL_2STAR_WEAPONS.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={setDetailModal}
+                      dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+
+                {/* 1★ Weapons */}
+                <Card>
+                  <CardHeader>
+                    <span className="text-gray-400">★</span> Weapons
+                  </CardHeader>
+                  <CardBody>
+                    <CollectionGridSection
+                      items={collectionData.sortItems(filterCollectionItems(ALL_1STAR_WEAPONS, collectionData.weaps1Counts, false).map(name => [name, collectionData.weaps1Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                      collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
+                      glowClass="" ownedBg="bg-gray-500/10" ownedBorder="border-gray-500/30"
+                      countColor="text-gray-400" countPrefix="R" totalCount={ALL_1STAR_WEAPONS.length}
+                      hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                      withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
+                      framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                      activeBanners={activeBanners} setDetailModal={setDetailModal}
+                      dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
+                      profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                      collapsible
+                    />
+                  </CardBody>
+                </Card>
+                </>)}
               </>
             )}
           </div>
@@ -5260,7 +5714,8 @@ function WhisperingWishesInner() {
                         {teamSlots.map((charName, slotIdx) => {
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
-                          const framing = charName ? getImageFraming(`collection-${charName}`) : null;
+                          const teamKey = `team-${charName}`;
+                          const framing = charName ? getImageFraming(teamKey) : null;
 
                           if (!charName) {
                             return (
@@ -5281,11 +5736,23 @@ function WhisperingWishesInner() {
                           return (
                             <div
                               key={slotIdx}
-                              className={`relative overflow-hidden border rounded-lg text-center collection-card cursor-pointer group ${rarity5 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-purple-500/10 border-purple-500/30'}`}
+                              className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === teamKey ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30 holo-5star' : 'bg-purple-500/10 border-purple-500/30'}`}
                               style={{ height: '160px', contain: 'paint' }}
-                              onClick={() => openSelector(slotIdx)}
+                              onClick={() => {
+                                if (framingMode) {
+                                  setEditingImage(teamKey);
+                                } else {
+                                  openSelector(slotIdx);
+                                }
+                              }}
                             >
+                              {framingMode && editingImage === teamKey && (
+                                <div className="absolute top-1 left-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                                  <span className="text-black text-[10px]">✓</span>
+                                </div>
+                              )}
                               {imgUrl && (
+                                <div className="absolute inset-0 breath-zoom">
                                 <img
                                   src={imgUrl}
                                   alt={charName}
@@ -5296,15 +5763,16 @@ function WhisperingWishesInner() {
                                   loading="lazy"
                                   onError={hideOnError}
                                 />
+                                </div>
                               )}
-                              {/* P6-FIX: Increased from w-5 h-5 to w-7 h-7 for touch targets (F-P6-050) */}
-                              <button
+                              {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
+                              {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-icon-square"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />
-                              </button>
+                              </button>}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-[10px] truncate text-gray-200">{charName}</div>
@@ -5490,13 +5958,13 @@ function WhisperingWishesInner() {
 
                       // Map DPS's dmgFocus to the right skill DMG bonus
                       const focus = mainDps.d.dmgFocus || [];
-                      if (focus.includes('Normal ATK') || focus.includes('Basic ATK')) skillDmg += basicDmg;
+                      if (focus.includes('Basic ATK')) skillDmg += basicDmg;
                       else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5; // partial benefit
                       if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
                       else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
                       if (focus.includes('Liberation')) skillDmg += libDmg;
                       else if (libDmg > 0) skillDmg += libDmg * 0.3; // partial — some rotation damage is Lib
-                      if (focus.includes('Echo Skill')) skillDmg += echoDmg;
+                      if (focus.includes('Echo')) skillDmg += echoDmg;
 
                       // Support echo set contributions
                       mems.forEach(m => {
@@ -5763,10 +6231,10 @@ function WhisperingWishesInner() {
                                   {/* Character header */}
                                   <div className="mb-2">
                                     <div className="flex items-start gap-2 mb-1.5">
-                                      <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
-                                        style={{ background: 'rgba(0,0,0,0.3)' }}>
+                                      <div className={`w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
+                                        style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                                         {collectionImages[m.name] ? (
-                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top" onError={hideOnError} />
+                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
                                         ) : (
                                           <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">{m.name[0]}</div>
                                         )}
@@ -5787,8 +6255,6 @@ function WhisperingWishesInner() {
                                     </div>
                                     <span className="text-[10px] text-gray-400">{m.d.weapon}</span>
                                   </div>
-                                  {/* Description */}
-                                  <p className="text-[10px] text-gray-400 leading-relaxed mb-1.5">{m.d.desc}</p>
                                   {/* Damage Focus */}
                                   <div className="mb-1.5">
                                     <div className="kuro-label">Damage Focus</div>
@@ -5800,6 +6266,9 @@ function WhisperingWishesInner() {
                                       {(m.d.dmgFocus || []).map((df, di) => (
                                         <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
                                       ))}
+                                      {m.d.statScaling && (
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400" style={{ boxShadow: "0 0 6px rgba(139,92,246,0.12)" }}>{m.d.statScaling} Scaling</span>
+                                      )}
                                     </div>
                                   </div>
                                   {/* Buffs */}
@@ -5933,25 +6402,25 @@ function WhisperingWishesInner() {
                                         {/* Sonata Set selector */}
                                         <div>
                                           <div className="text-[10px] text-gray-400 mb-0.5">Sonata Set</div>
-                                          <select
+                                          <KuroSelect
                                             value={eq.echoSet || ''}
-                                            onChange={e => {
+                                            onChange={v => {
                                               setTeamEquipment(prev => {
                                                 const n = { ...prev };
-                                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: e.target.value || '' };
+                                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
                                                 try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                                                 return n;
                                               });
                                               haptic.light();
                                             }}
-                                            className="kuro-input kuro-input-sm w-full text-[10px]"
-                                            aria-label={`${m.name} sonata echo set`}
-                                          >
-                                            <option value="">Auto (from recommended)</option>
-                                            {Object.keys(ECHO_SETS).map(setName => (
-                                              <option key={setName} value={setName}>{setName}</option>
-                                            ))}
-                                          </select>
+                                            options={[
+                                              { value: '', label: 'Auto (from recommended)' },
+                                              ...Object.keys(ECHO_SETS).map(setName => ({ value: setName, label: setName })),
+                                            ]}
+                                            className="w-full"
+                                            ariaLabel={`${m.name} sonata echo set`}
+                                            small
+                                          />
                                         </div>
                                         {/* Weapon info */}
                                         {equippedWeap && (
@@ -6069,7 +6538,7 @@ function WhisperingWishesInner() {
                                 return (
                                   <div key={entry.id} className="p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                      className="absolute top-1.5 right-1.5 z-20 w-7 h-7 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                                      className="absolute top-1.5 right-1.5 z-20 w-[28px] h-[28px] rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
                                       aria-label="Remove this team from comparison">
                                       <X size={12} />
                                     </button>
@@ -6214,10 +6683,10 @@ function WhisperingWishesInner() {
                                   const cd = CHARACTER_DATA[m];
                                   const sf = getImageFraming(`collection-${m}`);
                                   return (
-                                    <div key={j} className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative"
+                                    <div key={j} className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>
                                       {collectionImages[m] ? (
-                                        <img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} />
+                                        <div className="absolute inset-0 breath-zoom"><img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} /></div>
                                       ) : (
                                         <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400 font-medium">{m[0]}</div>
                                       )}
@@ -6239,13 +6708,11 @@ function WhisperingWishesInner() {
                   </Card>
 
                   {/* Character Selector Modal — FIX: pass isOpen prop */}
-                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="bg-black/70" onClick={() => setTeamSelectorOpen(false)}>
+                  <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="" onClick={() => setTeamSelectorOpen(false)} centered>
                       <div
-                        className="w-full sm:max-w-lg max-h-[85vh] rounded-t-2xl sm:rounded-2xl border border-white/15 overflow-hidden flex flex-col"
-                        style={{ background: 'var(--bg-card, rgba(8,12,18,0.97))' }}
+                        className="kuro-card w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
@@ -6273,78 +6740,78 @@ function WhisperingWishesInner() {
                             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                           </div>
                           <div className="flex flex-wrap gap-1.5">
-                            <select
+                            <KuroSelect
                               value={teamElementFilter}
-                              onChange={(e) => setTeamElementFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by element"
-                            >
-                              <option value="all">All Elements</option>
-                              <option value="Aero">Aero</option>
-                              <option value="Glacio">Glacio</option>
-                              <option value="Electro">Electro</option>
-                              <option value="Fusion">Fusion</option>
-                              <option value="Spectro">Spectro</option>
-                              <option value="Havoc">Havoc</option>
-                            </select>
-                            <select
+                              onChange={setTeamElementFilter}
+                              options={[
+                                { value: 'all', label: 'All Elements' },
+                                { value: 'Aero', label: 'Aero' },
+                                { value: 'Glacio', label: 'Glacio' },
+                                { value: 'Electro', label: 'Electro' },
+                                { value: 'Fusion', label: 'Fusion' },
+                                { value: 'Spectro', label: 'Spectro' },
+                                { value: 'Havoc', label: 'Havoc' },
+                              ]}
+                              ariaLabel="Filter by element"
+                              small
+                            />
+                            <KuroSelect
                               value={teamRarityFilter}
-                              onChange={(e) => setTeamRarityFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by rarity"
-                            >
-                              <option value="all">All Rarity</option>
-                              <option value="5">5★</option>
-                              <option value="4">4★</option>
-                            </select>
-                            <select
+                              onChange={setTeamRarityFilter}
+                              options={[
+                                { value: 'all', label: 'All Rarity' },
+                                { value: '5', label: '5★' },
+                                { value: '4', label: '4★' },
+                              ]}
+                              ariaLabel="Filter by rarity"
+                              small
+                            />
+                            <KuroSelect
                               value={teamDmgFilter}
-                              onChange={(e) => setTeamDmgFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by damage focus"
-                            >
-                              <option value="all">Dmg Focus</option>
-                              <option value="Normal ATK">Normal ATK</option>
-                              <option value="Heavy ATK">Heavy ATK</option>
-                              <option value="Res. Skill">Res. Skill</option>
-                              <option value="Liberation">Liberation</option>
-                              <option value="Echo Skill">Echo Skill</option>
-                              <option value="Coordinated ATK">Coordinated ATK</option>
-                            </select>
-                            <select
+                              onChange={setTeamDmgFilter}
+                              options={[
+                                { value: 'all', label: 'Dmg Focus' },
+                                { value: 'Basic ATK', label: 'Basic ATK' },
+                                { value: 'Heavy ATK', label: 'Heavy ATK' },
+                                { value: 'Skill', label: 'Skill' },
+                                { value: 'Liberation', label: 'Liberation' },
+                                { value: 'Echo', label: 'Echo' },
+                                { value: 'Coordinated ATK', label: 'Coordinated ATK' },
+                              ]}
+                              ariaLabel="Filter by damage focus"
+                              small
+                            />
+                            <KuroSelect
                               value={teamBuffFilter}
-                              onChange={(e) => setTeamBuffFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by buff type"
-                            >
-                              <option value="all">All Buffs</option>
-                              <option value="Heal">Heal</option>
-                              <option value="Shield">Shield</option>
-                              <option value="Coordinated ATK">Coordinated ATK</option>
-                              <option value="ATK Buff">ATK Buff</option>
-                              <option value="Crit">Crit</option>
-                              <option value="DMG">DMG Buff</option>
-                              <option value="Energy Regen">Energy Regen</option>
-                              <option value="Grouping">Grouping</option>
-                            </select>
-                            <select
+                              onChange={setTeamBuffFilter}
+                              options={[
+                                { value: 'all', label: 'All Buffs' },
+                                { value: 'Heal', label: 'Heal' },
+                                { value: 'Shield', label: 'Shield' },
+                                { value: 'Coordinated ATK', label: 'Coordinated ATK' },
+                                { value: 'ATK Buff', label: 'ATK Buff' },
+                                { value: 'Crit', label: 'Crit' },
+                                { value: 'DMG', label: 'DMG Buff' },
+                                { value: 'Energy Regen', label: 'Energy Regen' },
+                                { value: 'Grouping', label: 'Grouping' },
+                              ]}
+                              ariaLabel="Filter by buff type"
+                              small
+                            />
+                            <KuroSelect
                               value={teamDebuffFilter}
-                              onChange={(e) => setTeamDebuffFilter(e.target.value)}
-                              className="px-2 py-1.5 rounded-lg text-[10px] text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none"
-                              style={{ background: 'var(--bg-btn)' }}
-                              aria-label="Filter by debuff type"
-                            >
-                              <option value="all">All Debuffs</option>
-                              <option value="Frazzle">Frazzle</option>
-                              <option value="Erosion">Erosion</option>
-                              <option value="Off-Tune">Off-Tune</option>
-                              <option value="DEF Shred">DEF Shred</option>
-                              <option value="RES Shred">RES Shred</option>
-                            </select>
+                              onChange={setTeamDebuffFilter}
+                              options={[
+                                { value: 'all', label: 'All Debuffs' },
+                                { value: 'Frazzle', label: 'Frazzle' },
+                                { value: 'Erosion', label: 'Erosion' },
+                                { value: 'Off-Tune', label: 'Off-Tune' },
+                                { value: 'DEF Shred', label: 'DEF Shred' },
+                                { value: 'RES Shred', label: 'RES Shred' },
+                              ]}
+                              ariaLabel="Filter by debuff type"
+                              small
+                            />
                           </div>
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (
@@ -6356,7 +6823,7 @@ function WhisperingWishesInner() {
                         </div>
 
                         {/* Character Grid */}
-                        <div className="flex-1 overflow-y-auto p-3">
+                        <div className="flex-1 overflow-y-auto p-4">
                           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                             {filteredChars.map(name => {
                               const cd = CHARACTER_DATA[name];
@@ -6371,7 +6838,7 @@ function WhisperingWishesInner() {
                                 <button
                                   key={name}
                                   onClick={() => selectCharacter(name)}
-                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
+                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${cd?.rarity === 5 ? 'holo-5star' : ''} ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
                                   style={{
                                     height: '90px',
                                     contain: 'paint',
@@ -6382,10 +6849,11 @@ function WhisperingWishesInner() {
                                   {img && (() => {
                                     const f = getImageFraming(`collection-${name}`);
                                     return (
+                                    <div className="absolute inset-0 collection-img-wrap">
                                     <img
                                       src={img}
                                       alt={name}
-                                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                                      className="w-full h-full object-contain pointer-events-none"
                                       style={{
                                         transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
                                         filter: owned ? 'none' : 'grayscale(100%)',
@@ -6393,6 +6861,7 @@ function WhisperingWishesInner() {
                                       loading="lazy"
                                       onError={hideOnError}
                                     />
+                                    </div>
                                     );
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
@@ -6444,9 +6913,8 @@ function WhisperingWishesInner() {
                   </FocusTrapModal>
 
                   {/* Weapon Selector Modal */}
-                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="bg-black/70" onClick={() => setWeaponSelectorOpen(false)}>
-                      <div className="w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] rounded-t-2xl sm:rounded-2xl overflow-hidden border border-[var(--border-medium)] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="" onClick={() => setWeaponSelectorOpen(false)} centered>
+                      <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
@@ -6580,10 +7048,10 @@ function WhisperingWishesInner() {
                 <div>
                   <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-lg flex-shrink-0" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint' }}>
+                    <div className={`w-14 h-14 rounded-lg flex-shrink-0${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint', position: 'relative', overflow: 'hidden' }}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                        return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} />;
+                        return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
                       })() : (
                         <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
                       )}
@@ -6633,7 +7101,7 @@ function WhisperingWishesInner() {
                 {/* OLED Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Monitor size={16} />
                     </div>
                     <div>
@@ -6660,7 +7128,7 @@ function WhisperingWishesInner() {
                 {/* Swipe Navigation Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
@@ -6683,11 +7151,11 @@ function WhisperingWishesInner() {
                 {visualSettings.swipeNavigation && (
                   <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
-                
+
                 {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -6706,7 +7174,7 @@ function WhisperingWishesInner() {
                     aria-checked={visualSettings.animationsEnabled !== 'off'}
                     aria-label="Toggle animations: off, on, full"
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] bg-gray-400' : 'left-[32px] bg-white'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px]' : 'left-[32px]'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
@@ -6716,14 +7184,14 @@ function WhisperingWishesInner() {
                   <p className="text-purple-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity</p>
+                  <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
                 )}
 
                 {/* Install App on Device */}
                 {pwa?.canInstall && (
                   <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
                         <Download size={16} />
                       </div>
                       <div>
@@ -6920,7 +7388,7 @@ Example: {"pulls":[...]}'
                   <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
                 </div>
                 
-                <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} Whispering Wishes by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
               </CardBody>
             </Card>
           </div>
@@ -6931,9 +7399,8 @@ Example: {"pulls":[...]}'
       </main>
 
       {/* Bookmark Modal */}
-      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="bg-black/80" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark">
-          <Card className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark" centered>
+          <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
@@ -6946,10 +7413,21 @@ Example: {"pulls":[...]}'
           </Card>
       </FocusTrapModal>
 
+      {/* Server Selector Modal */}
+      <FocusTrapModal isOpen={showServerDropdown} onClose={() => setShowServerDropdown(false)} className="" onClick={() => setShowServerDropdown(false)} ariaLabel="Select server region" centered>
+          <div className="kuro-card w-full max-w-[200px] rounded-2xl py-2" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-white font-semibold text-xs px-4 py-2 border-b border-[var(--border-medium)]">Server Region</h3>
+            {Object.keys(SERVERS).map(s => (
+              <button key={s} onClick={() => { dispatch({ type: 'SET_SERVER', server: s }); setShowServerDropdown(false); }} className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${s === state.server ? 'text-yellow-400 bg-yellow-500/10' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+      </FocusTrapModal>
+
       {/* Export Modal */}
-      <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="bg-black/80" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore">
-          <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+      <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore" centered>
+          <div className="kuro-card w-full sm:max-w-sm rounded-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)] flex-shrink-0" data-sheet-header>
               <div className="flex items-center gap-2">
                 <Download size={14} className="text-yellow-400" />
@@ -7137,7 +7615,7 @@ Example: {"pulls":[...]}'
       </FocusTrapModal>
 
       {/* Resonator ID Card Modal */}
-      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="bg-black/90" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
+      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
           <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '420px', maxHeight: '90vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
@@ -7179,12 +7657,12 @@ Example: {"pulls":[...]}'
                         )}
                       </div>
                       <div className="flex-shrink-0 flex flex-col items-center">
-                        <div className="relative rounded-xl overflow-hidden" style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
+                        <div className={`relative rounded-xl overflow-hidden${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
                           <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
                           {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                             const f = getImageFraming(`collection-${state.profile.profilePic}`);
                             {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
-                            return <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} />;
+                            return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
                           })() : (
                             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
                               <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
@@ -7308,12 +7786,13 @@ Example: {"pulls":[...]}'
                         {ownedCharNames.slice(0, 16).map(name => {
                           const imgUrl = collectionImages[name];
                           const f = getImageFraming(`collection-${name}`);
+                          const is5Star = CHARACTER_DATA[name]?.rarity === 5;
                           return (
                             <div key={name}>
-                              <div className="relative rounded-lg overflow-hidden w-full" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
+                              <div className={`relative rounded-lg overflow-hidden w-full${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
                                 <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
                                 {imgUrl ? (
-                                  <img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} />
+                                  <div className="absolute inset-0 breath-zoom"><img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} /></div>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
                                     <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
@@ -7415,8 +7894,8 @@ Example: {"pulls":[...]}'
       </FocusTrapModal>
 
       {/* Admin Panel Modal */}
-      <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="bg-black/80" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel">
-          <div className="kuro-card w-full max-w-2xl" style={{ maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
+      <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel" centered>
+          <div className="kuro-card w-full max-w-2xl max-h-[90vh]" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
             <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
@@ -7538,7 +8017,7 @@ Example: {"pulls":[...]}'
                                       <img
                                         src={displayUrl}
                                         alt={name}
-                                        className="w-8 h-8 object-cover rounded border border-purple-500/30"
+                                        className="w-[28px] h-[28px] object-cover rounded border border-purple-500/30"
                                         loading="lazy"
                                         onError={hideOnError}
                                       />
@@ -8132,9 +8611,9 @@ Example: {"pulls":[...]}'
           </div>
       </FocusTrapModal>
 
-      {/* Admin Mini Window */}
-      {showAdminPanel && adminMiniMode && adminUnlocked && (
-        <div 
+      {/* Admin Mini Window — portaled to body so it's never overlapped by detail modals */}
+      {showAdminPanel && adminMiniMode && adminUnlocked && createPortal(
+        <div
           className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
           style={{ 
             boxShadow: '0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3)'
@@ -8175,14 +8654,14 @@ Example: {"pulls":[...]}'
               onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}
               className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
             >
-              {framingMode ? '✓ Framing Mode ON (Collection only)' : '⊞ Enable Framing Mode (Collection)'}
+              {framingMode ? '✓ Framing Mode ON' : '⊞ Enable Framing Mode'}
             </button>
             
             {/* Framing Controls - show when image selected */}
             {framingMode && editingImage && (
               <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                 <div className="text-emerald-400 text-[10px] font-medium mb-2 truncate">
-                  Editing: {editingImage.replace('collection-', '')}
+                  Editing: {editingImage.replace('collection-', '').replace('team-', 'Team: ')}
                 </div>
                 {/* Position controls — P6-FIX: Added aria-labels for D-pad clarity (HIGH-22) */}
                 <div className="grid grid-cols-3 gap-1 mb-2">
@@ -8208,7 +8687,7 @@ Example: {"pulls":[...]}'
             
             {framingMode && !editingImage && (
               <div className="p-2 bg-white/5 border border-[var(--border-medium)] rounded-lg text-center">
-                <div className="text-gray-400 text-[10px]">Go to Collection tab and tap an image to frame it</div>
+                <div className="text-gray-400 text-[10px]">Tap any character image to frame it (Collection, Teams, or Detail modal)</div>
               </div>
             )}
 
@@ -8284,35 +8763,49 @@ Example: {"pulls":[...]}'
             ))}
               </>
             )}
+
+            {/* App Info */}
+            <Card>
+              <CardBody className="text-center">
+                <p className="text-gray-500 text-[10px]">
+                  {`Whispering Wishes v${APP_VERSION}`} • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
+                </p>
+              </CardBody>
+            </Card>
           </div>
-        </div>
-      )}
+        </div>,
+      document.body)}
 
       {/* Character/Weapon Detail Modal */}
       {detailModal.show && detailModal.type === 'character' && (
-        <CharacterDetailModal 
-          name={detailModal.name} 
+        <CharacterDetailModal
+          name={detailModal.name}
           imageUrl={detailModal.imageUrl}
           framing={detailModal.framing}
           infoFraming={getImageFraming(`info-${detailModal.name}`)}
           getImageFraming={getImageFraming}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })} 
+          framingMode={framingMode}
+          editingImage={editingImage}
+          setEditingImage={setEditingImage}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
         />
       )}
       {detailModal.show && detailModal.type === 'weapon' && (
-        <WeaponDetailModal 
-          name={detailModal.name} 
+        <WeaponDetailModal
+          name={detailModal.name}
           imageUrl={detailModal.imageUrl}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })} 
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
+        />
+      )}
+      {detailModal.show && detailModal.type === 'echo' && (
+        <EchoDetailModal
+          name={detailModal.name}
+          imageUrl={detailModal.imageUrl}
+          cost={detailModal.cost}
+          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
         />
       )}
 
-      {/* Footer */}
-      <footer className="app-footer-mobile relative z-10 py-4 px-4 text-center border-t border-[var(--border-medium)]" style={{background: visualSettings.oledMode ? 'rgba(0,0,0,0.95)' : 'rgba(8,12,18,0.9)'}}>
-        <p className="text-gray-500 text-[10px]">
-          <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes v${APP_VERSION}`}</span> • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
-        </p>
-      </footer>
 
       {/* Desktop right margin — ad slot + footer text at bottom (hidden on mobile) */}
       <div className="desktop-ad-margin">

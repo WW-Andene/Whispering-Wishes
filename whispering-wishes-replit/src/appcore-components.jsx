@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
@@ -12,6 +12,8 @@ import {
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
+  ECHO_DATA, ECHO_SETS,
+  ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
 } from './appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
@@ -122,12 +124,12 @@ const DETAIL_ELEMENT_COLORS = {
 };
 
 const BANNER_GRADIENT_MAP = {
-  Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400' },
-  Electro: { borderColor: 'rgba(168,85,247,0.4)', bgColor: 'rgba(168,85,247,0.2)', text: 'text-purple-400' },
-  Aero: { borderColor: 'rgba(16,185,129,0.4)', bgColor: 'rgba(16,185,129,0.2)', text: 'text-emerald-400' },
-  Glacio: { borderColor: 'rgba(6,182,212,0.4)', bgColor: 'rgba(6,182,212,0.2)', text: 'text-cyan-400' },
-  Havoc: { borderColor: 'rgba(236,72,153,0.55)', bgColor: 'rgba(236,72,153,0.25)', text: 'text-pink-400' },
-  Spectro: { borderColor: 'rgba(234,179,8,0.4)', bgColor: 'rgba(234,179,8,0.2)', text: 'text-yellow-400' },
+  Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
+  Electro: { borderColor: 'rgba(168,85,247,0.4)', bgColor: 'rgba(168,85,247,0.2)', text: 'text-purple-400', glow: '168,85,247' },
+  Aero: { borderColor: 'rgba(16,185,129,0.4)', bgColor: 'rgba(16,185,129,0.2)', text: 'text-emerald-400', glow: '16,185,129' },
+  Glacio: { borderColor: 'rgba(6,182,212,0.4)', bgColor: 'rgba(6,182,212,0.2)', text: 'text-cyan-400', glow: '6,182,212' },
+  Havoc: { borderColor: 'rgba(236,72,153,0.55)', bgColor: 'rgba(236,72,153,0.25)', text: 'text-pink-400', glow: '236,72,153' },
+  Spectro: { borderColor: 'rgba(234,179,8,0.4)', bgColor: 'rgba(234,179,8,0.2)', text: 'text-yellow-400', glow: '234,179,8' },
 };
 
 const EVENT_ACCENT_COLORS = {
@@ -165,7 +167,7 @@ CardBody.displayName = 'CardBody';
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
 // Character Detail Modal
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage }) => {
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 
@@ -178,21 +180,29 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
   
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/80" onClick={onClose} ariaLabel={`${name} character details`}>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} character details`} centered>
       <div
-        className={`relative w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
-        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+       <div className="overflow-y-auto max-h-[90vh]">
         {/* Header with image */}
-        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+          onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
+        >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          {framingMode && editingImage === `info-${name}` && (
+            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+              <span className="text-black text-[10px]">✓</span>
+            </div>
+          )}
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
-              transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
-              transformOrigin: 'right bottom'
-            }} />
+            <div className="absolute inset-0 breath-zoom">
+              <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
+                transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                transformOrigin: 'right bottom'
+              }} />
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
@@ -214,7 +224,17 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         {/* Content */}
         <div className="p-4 space-y-4">
           {/* Description */}
-          <p className="text-gray-300 text-sm leading-relaxed">{data.desc}</p>
+          {data.desc && (() => {
+            const dot = data.desc.indexOf('. ');
+            const lore = dot > 0 ? data.desc.slice(0, dot + 1) : null;
+            const gameplay = dot > 0 ? data.desc.slice(dot + 2) : data.desc;
+            return (
+              <div className="text-sm space-y-1">
+                {lore && <p className="text-gray-400 italic leading-relaxed">{lore}</p>}
+                <p className="text-gray-300 leading-relaxed">{gameplay}</p>
+              </div>
+            );
+          })()}
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
@@ -245,6 +265,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 <div className="text-[10px] text-gray-400 mb-1">Damage Focus</div>
                 <div className="flex flex-wrap gap-1">
                   {data.dmgFocus.map((df, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
+                </div>
+              </div>
+            )}
+            {data.statScaling && (
+              <div>
+                <div className="text-[10px] text-gray-400 mb-1">Stat Scaling</div>
+                <div className="flex flex-wrap gap-1">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{data.statScaling} Scaling</span>
                 </div>
               </div>
             )}
@@ -375,14 +403,17 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                         {members.map((member, j) => {
                           const memberImg = DEFAULT_COLLECTION_IMAGES[member] || (member.includes('Rover') ? DEFAULT_COLLECTION_IMAGES['Rover'] : null);
                           const mf = getImageFraming ? getImageFraming(`collection-${member}`) : { x: 0, y: 0, zoom: 100 };
+                          const is5Star = CHARACTER_DATA[member]?.rarity === 5;
                           return (
                             <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
                               {memberImg ? (
-                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)]" style={{ contain: 'paint', position: 'relative' }}>
-                                  <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-contain" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                                  <div className="absolute inset-0 breath-zoom">
+                                    <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
+                                  </div>
                                 </div>
                               ) : (
-                                <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
+                                <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
                                   {/* AUDIT-FIX H12: gray-600 fails WCAG AA contrast on dark bg */}
                                   <User size={14} className="text-gray-500" />
                                 </div>
@@ -460,6 +491,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
         </div>
+       </div>
       </div>
     </FocusTrapModal>
   );
@@ -480,15 +512,14 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="bg-black/80" onClick={onClose} ariaLabel={`${name} weapon details`}>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
       <div
-        className={`relative w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border ${colors.border}`}
-        style={{ background: 'rgba(12, 16, 24, 0.95)', animation: 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
+       <div className="overflow-y-auto max-h-[90vh]">
         {/* Header */}
-        <div className="relative h-40 overflow-hidden sm:rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
@@ -512,7 +543,20 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         
         {/* Content */}
         <div className="p-4 space-y-3">
-          <p className="text-gray-300 text-sm">{data.desc}</p>
+          {data.desc && (() => {
+            const sig = data.desc.match(/^(\w+ signature)\.\s*/);
+            const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
+            const dot = rest.indexOf('. ');
+            const lore = dot > 0 ? rest.slice(0, dot + 1) : null;
+            const effect = dot > 0 ? rest.slice(dot + 2) : rest;
+            return (
+              <div className="text-sm space-y-1">
+                {sig && <div className="text-[10px] text-gray-500 uppercase tracking-wider">{sig[1]}</div>}
+                {lore && <p className="text-gray-400 italic">{lore}</p>}
+                <p className="text-gray-300">{effect}</p>
+              </div>
+            );
+          })()}
           
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
@@ -566,6 +610,199 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             </div>
           </div>
         </div>
+       </div>
+      </div>
+    </FocusTrapModal>
+  );
+};
+
+// Echo Detail Modal
+const ECHO_COST_COLORS = {
+  4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', label: '4 Cost' },
+  3: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', label: '3 Cost' },
+  1: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', label: '1 Cost' },
+};
+const ECHO_BUFF_COLORS = {
+  'Glacio DMG':  { bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/25' },
+  'Fusion DMG':  { bg: 'bg-orange-500/10',   text: 'text-orange-400',  border: 'border-orange-500/25' },
+  'Electro DMG': { bg: 'bg-purple-500/10',   text: 'text-purple-400',  border: 'border-purple-500/25' },
+  'Aero DMG':    { bg: 'bg-emerald-500/10',  text: 'text-emerald-400', border: 'border-emerald-500/25' },
+  'Spectro DMG': { bg: 'bg-yellow-500/10',   text: 'text-yellow-400',  border: 'border-yellow-500/25' },
+  'Havoc DMG':   { bg: 'bg-pink-500/10',     text: 'text-pink-400',    border: 'border-pink-500/25' },
+  'Healing':      { bg: 'bg-green-500/10',     text: 'text-green-400',   border: 'border-green-500/25' },
+  'Shield':       { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
+  'Physical DMG': { bg: 'bg-slate-400/10',     text: 'text-slate-300',   border: 'border-slate-400/25' },
+};
+const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
+  const data = ECHO_DATA[name];
+  if (!data) return null;
+
+  const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
+  const buffColors = ECHO_BUFF_COLORS[data.buff] || { bg: 'bg-white/10', text: 'text-gray-300', border: 'border-[var(--border-medium)]' };
+
+  // Get element-based colors for gradient header and border
+  const setColors = getEchoSetColors(name);
+  const primaryBuffColor = getBuffElementColor(Array.isArray(data.buff) ? data.buff[0] : data.buff);
+  const headerGradient = setColors.length >= 2
+    ? `linear-gradient(135deg, ${setColors[0]}25 0%, ${setColors[1]}25 ${setColors.length >= 3 ? '50%' : '100%'}${setColors.length >= 3 ? `, ${setColors[2]}25 100%` : ''})`
+    : setColors.length === 1
+      ? `linear-gradient(135deg, ${setColors[0]}25 0%, ${setColors[0]}10 100%)`
+      : undefined;
+  const borderColor = setColors.length >= 2
+    ? setColors[0]
+    : setColors.length === 1 ? setColors[0] : undefined;
+
+  // Find characters that use this echo (referenced in bestEchoes)
+  const usedBy = Object.entries(CHARACTER_DATA).filter(([, cd]) =>
+    cd.bestEchoes?.some(e => e.toLowerCase().includes(name.toLowerCase()))
+  ).map(([cname]) => cname);
+
+  return (
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} echo details`} centered>
+      <div
+        className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border"
+        style={borderColor ? { borderColor: `${borderColor}80` } : {}}
+        onClick={e => e.stopPropagation()}
+      >
+       <div className="overflow-y-auto max-h-[90vh]">
+        {/* Header */}
+        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+          <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
+          {!headerGradient && <div className={`absolute inset-0 bg-gradient-to-br ${costColors.bg}`} />}
+          {imageUrl && (
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
+            <X size={16} />
+          </button>
+          <div className="absolute bottom-3 left-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
+                const bc = ECHO_BUFF_COLORS[b] || buffColors;
+                return <span key={b} className={`text-[10px] px-2 py-0.5 rounded ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
+              })}
+            </div>
+            <h2 className="text-xl font-semibold text-white">{name}</h2>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-3">
+          {/* Description */}
+          {data.desc && (() => {
+            const parts = data.desc.split(/(?<=\.)\s+/);
+            const identity = parts[0] || '';
+            const skillParts = [];
+            const buffParts = [];
+            for (let i = 1; i < parts.length; i++) {
+              if (/grants?\s|Main slot/i.test(parts[i])) buffParts.push(parts[i]);
+              else skillParts.push(parts[i]);
+            }
+            return (
+              <div className="text-sm space-y-2">
+                <p className="text-gray-400 italic">{identity}</p>
+                {skillParts.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-white/5">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+                    <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
+                  </div>
+                )}
+                {buffParts.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-white/5">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
+                    <p className="text-gray-300 text-xs leading-relaxed">{buffParts.join(' ')}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Sonata Sets */}
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Available Sonata Sets</div>
+            <div className="space-y-2">
+              {data.sets.map(setName => {
+                const setData = ECHO_SETS[setName];
+                const setColor = getSetElementColor(setName);
+                return (
+                  <div key={setName} className="p-2 rounded-lg" style={{ background: `${setColor}10`, borderLeft: `3px solid ${setColor}80` }}>
+                    <div className="text-xs font-bold mb-0.5" style={{ color: setColor }}>{setName}</div>
+                    {setData ? (
+                      <div className="space-y-0.5">
+                        {setData.p2 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
+                        {setData.p3 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
+                        {setData.p5 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-gray-500 italic">Set data not available</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main Stat Options (based on cost) */}
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
+            <div className="flex flex-wrap gap-1">
+              {cost === 4 && ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">{s}</span>
+              ))}
+              {cost === 3 && ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25">{s}</span>
+              ))}
+              {cost === 1 && ['ATK%', 'HP%', 'DEF%'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">{s}</span>
+              ))}
+            </div>
+            <div className="text-[10px] text-gray-500 mt-1">
+              Secondary: {cost === 1 ? 'Flat HP' : 'Flat ATK'}
+            </div>
+          </div>
+
+          {/* Buff Description */}
+          <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill Buff</div>
+            <div className="flex flex-wrap gap-1.5">
+              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => (
+                <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Used By Characters */}
+          {usedBy.length > 0 && (
+            <div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Recommended For</div>
+              <div className="flex flex-wrap gap-2">
+                {usedBy.map(charName => {
+                  const charImg = DEFAULT_COLLECTION_IMAGES[charName];
+                  const is5Star = CHARACTER_DATA[charName]?.rarity === 5;
+                  return (
+                    <div key={charName} className="flex flex-col items-center gap-1">
+                      {charImg ? (
+                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                          <div className="absolute inset-0 breath-zoom">
+                            <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
+                          <User size={14} className="text-gray-500" />
+                        </div>
+                      )}
+                      <span className="text-[10px] text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+       </div>
       </div>
     </FocusTrapModal>
   );
@@ -867,7 +1104,8 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
   const softThreshold = softPityStart != null ? softPityStart : (max === HARD_PITY ? SOFT_PITY_START : null);
   const showSoftZone = softThreshold != null && softThreshold < max;
   const isSoftPity = showSoftZone && safeValue >= softThreshold;
-  
+  const isDanger = max === HARD_PITY && safeValue >= 75;
+
   const softStart = showSoftZone ? softThreshold / max : 0;
   const softLen = showSoftZone ? (max - softThreshold) / max : 0;
   const softDash = softLen * circumference;
@@ -876,7 +1114,8 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
   
   return (
     <div className="flex flex-col items-center">
-      <svg width={size} height={size} className={isSoftPity ? 'pulse-subtle' : ''} role="img" aria-label={`Pity: ${safeValue} out of ${max}${isSoftPity ? ', in soft pity zone' : ''}`}>
+      <div className={`${isDanger ? 'pity-danger' : isSoftPity ? 'pity-soft' : ''}`} style={{ borderRadius: '50%', width: size, height: size, overflow: 'hidden' }}>
+      <svg width={size} height={size} className={`${isSoftPity ? 'pulse-subtle' : ''}`} role="img" aria-label={`Pity: ${safeValue} out of ${max}${isSoftPity ? ', in soft pity zone' : ''}`}>
         <circle className="pity-ring-track" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} />
         {showSoftZone && (
           <circle 
@@ -893,6 +1132,7 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
         <circle className="pity-ring-fill" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth} stroke={color} strokeDasharray={circumference} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{'--ring-glow': glowColor}} />
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.36} fill={color}>{safeValue}</text>
       </svg>
+      </div>
       {label && <div className="text-gray-300 text-[10px] mt-0.5">{label}</div>}
       {sublabel && <div className="text-gray-400 text-[10px]">{sublabel}</div>}
     </div>
@@ -909,10 +1149,10 @@ const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0
 // LAYER A: Smooth ambient glow gradient — z-index 1
 // P11-FIX: Wrapped in memo — canvas heavy lifting is in useEffect, but memo prevents
 // unnecessary React reconciliation on parent re-renders (Step 7 audit — LOW-3b)
-const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
+const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
-    if (!animationsEnabled) {
+    if (animationsEnabled === 'off' || animationsEnabled === false) {
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -936,6 +1176,14 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
     // OLED mode uses darker base color
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,6)';
     
+    // Full mode: boost glow intensity
+    const isFull = animationsEnabled === 'full';
+    const glowAlphaMax = isFull ? 0.45 : 0.3;
+    const glowAlphaScale = isFull ? 1.0 : 0.7;
+    const specMul = isFull ? 0.45 : 0.3;
+    const peakMul = isFull ? 0.30 : 0.22;
+    const colorBoost = isFull ? 1.4 : 1.0;
+
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
@@ -948,7 +1196,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
     };
     init();
     window.addEventListener('resize', init);
-    
+
     let lastFrame = 0;
 
     const draw = (t) => {
@@ -976,15 +1224,15 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = true }) => {
           const tilt = Math.sqrt(slX*slX + slY*slY);
 
           const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
-          const peak = Math.max(0, totalH / 1.5) * 0.22;
-          const gI = spec * 0.3 + peak;
+          const peak = Math.max(0, totalH / 1.5) * peakMul;
+          const gI = spec * specMul + peak;
 
           if (gI > 0.008) {
-            const a = Math.min(gI * 0.7, 0.3);
+            const a = Math.min(gI * glowAlphaScale, glowAlphaMax);
             const blend = Math.max(0, Math.min(1, (totalH + 1.6) / 3.2));
-            const rr = Math.round(6 + blend * 25);
-            const gg = Math.round(12 + blend * 40);
-            const bb = Math.round(45 + blend * 70);
+            const rr = Math.round(Math.min(255, (6 + blend * 25) * colorBoost));
+            const gg = Math.round(Math.min(255, (12 + blend * 40) * colorBoost));
+            const bb = Math.round(Math.min(255, (45 + blend * 70) * colorBoost));
             bctx.fillStyle = `rgba(${rr},${gg},${bb},${a})`;
             bctx.fillRect(bx, by, gs, gs);
           }
@@ -1013,10 +1261,10 @@ BackgroundGlow.displayName = 'BackgroundGlow';
 
 // LAYER B: Triangle wave mask — traveling wavefront specular, z-index 2
 // P11-FIX: Wrapped in memo — same rationale as BackgroundGlow (Step 7 audit — LOW-3b)
-const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
+const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
-    if (!animationsEnabled) {
+    if (animationsEnabled === 'off' || animationsEnabled === false) {
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -1050,6 +1298,14 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
     init();
     window.addEventListener('resize', init);
     
+    // Full mode: boost specular and peak intensity
+    const isFull = animationsEnabled === 'full';
+    const twSpecMul = isFull ? 0.65 : 0.45;
+    const twPeakMul = isFull ? 0.18 : 0.12;
+    const twAlphaScale = isFull ? 0.6 : 0.45;
+    const twAlphaMax = isFull ? 0.35 : 0.25;
+    const twColorBoost = isFull ? 1.3 : 1.0;
+
     let lastFrame = 0;
 
     const draw = (t) => {
@@ -1058,27 +1314,27 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
       lastFrame = t;
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.001;
-      
+
       for (let r = -1; r < rows; r++) {
         for (let c = -1; c < cols; c++) {
           const isUp = ((c + r) % 2 + 2) % 2 === 0;
           const cx = c * HALF;
           const cy = r * TH + (isUp ? TH * 0.33 : TH * 0.66);
-          
+
           if (cx < -HALF || cx > w + HALF || cy < -TH || cy > h + TH) continue;
-          
+
           const seedIdx = ((r + 1) * cols + (c + 1));
           const seed = seedIdx >= 0 && seedIdx < seeds.length ? seeds[seedIdx] : 0;
-          
+
           // Minimal seed for subtle per-triangle variation
           const so = seed * 0.05;
-          
+
           // Wave heights at this triangle center
           const v1 = Math.sin(_wf1(cx, cy, time) + so);
           const v2 = Math.sin(_wf2(cx, cy, time) + so * 0.7);
           const v3 = Math.sin(_wf3(cx, cy, time) + so * 0.5);
           const totalH = v1 * 0.7 + v2 * 0.5 + v3 * 0.4;
-          
+
           // Slope from finite differences (traveling wavefront detection)
           const dd = 4;
           const hR = Math.sin(_wf1(cx+dd,cy,time)+so)*0.7 + Math.sin(_wf2(cx+dd,cy,time)+so*0.7)*0.5 + Math.sin(_wf3(cx+dd,cy,time)+so*0.5)*0.4;
@@ -1086,15 +1342,15 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
           const slopeX = hR - totalH;
           const slopeY = hD - totalH;
           const tilt = Math.sqrt(slopeX * slopeX + slopeY * slopeY);
-          
+
           // Specular: flat faces (low tilt) catch light → traveling bright bands
           const specular = Math.pow(Math.max(0, 1 - tilt * 3.5), 5);
           // Peak height glow: wave crests glow slightly
-          const peakGlow = Math.max(0, totalH / 2.0) * 0.12;
-          
-          const intensity = specular * 0.45 + peakGlow;
+          const peakGlow = Math.max(0, totalH / 2.0) * twPeakMul;
+
+          const intensity = specular * twSpecMul + peakGlow;
           if (intensity < 0.015) continue;
-          
+
           const x = c * HALF;
           const y = r * TH;
           ctx.beginPath();
@@ -1108,12 +1364,12 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
             ctx.lineTo(x, y + TH);
           }
           ctx.closePath();
-          
+
           const sp = Math.min(specular * 3, 1);
-          const ri = Math.round(60 + sp * 120);
-          const gi = Math.round(85 + sp * 100);
-          const bi = Math.round(150 + sp * 80);
-          const alpha = Math.min(intensity * 0.45, 0.25);
+          const ri = Math.round(Math.min(255, (60 + sp * 120) * twColorBoost));
+          const gi = Math.round(Math.min(255, (85 + sp * 100) * twColorBoost));
+          const bi = Math.round(Math.min(255, (150 + sp * 80) * twColorBoost));
+          const alpha = Math.min(intensity * twAlphaScale, twAlphaMax);
           ctx.fillStyle = `rgba(${ri},${gi},${bi},${alpha})`;
           ctx.fill();
         }
@@ -1131,35 +1387,582 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = true }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
+// §BANNER_PARTICLES: Theme-driven particle overlay — each banner gets a fitting visual personality
+// Character-specific theme overrides (matched to their banner art mood)
+const CHARACTER_THEME_MAP = {
+  Sigrika: 'sparkle',    // warm, magical, golden sparkles at feet, starry sky
+  Qiuyuan: 'qiuyuan',    // dark forest, moon, crows, brume, swirling leaves
+  Aemeath: 'frost',      // ice crystals, cold blue digital structures
+  'Luuk Herssen': 'feathers', // white doves, bright nature, airy
+  Chisa: 'energy',       // urban, red energy lines, industrial
+  Galbrena: 'embers',    // fire/ice duality, intense swirling flames
+  Augusta: 'embers',     // grand, dragon wings, fire, golden city
+  Lupa: 'embers',        // battle energy, red/white explosive swirl
+  Mornye: 'cosmic',      // cosmic water, ethereal blue sphere
+  Iuno: 'cosmic',        // ocean/cosmic, swirling water energy
+};
+// Element-based fallback for characters without specific overrides
+const ELEMENT_THEME_FALLBACK = {
+  Fusion: 'embers', Glacio: 'frost', Aero: 'feathers',
+  Havoc: 'mist', Electro: 'energy', Spectro: 'sparkle',
+};
+
+// ── Theme definitions: each returns { particles[], draw(ctx, particles, t, w, h) } ──
+const BANNER_THEMES = {
+  // ✨ SPARKLE: golden 4-point stars twinkling + warm motes floating up + orange glow
+  sparkle: (w, h) => {
+    const stars = Array.from({ length: 18 }, () => ({
+      x: Math.random() * w, y: h * 0.15 + Math.random() * h * 0.83,
+      size: 2.2 + Math.random() * 3.5, phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 1.5,
+    }));
+    const motes = Array.from({ length: 14 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vy: -0.15 - Math.random() * 0.25, phase: Math.random() * Math.PI * 2,
+      size: 1.2 + Math.random() * 2, alpha: 0.5 + Math.random() * 0.4,
+    }));
+    // Orange glow zone — bottom-left warm ambient light
+    const glowX = w * 0.2, glowY = h * 0.85;
+    return (ctx, t) => {
+      // Ambient orange glow — subtle warm light from bottom-left
+      const gPulse = 0.7 + Math.sin(t * 0.12) * 0.2 + Math.sin(t * 0.07 + 1.5) * 0.1;
+      ctx.save();
+      ctx.globalAlpha = 0.18 * gPulse;
+      const og = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, w * 0.45);
+      og.addColorStop(0, 'rgba(255,160,50,0.4)');
+      og.addColorStop(0.4, 'rgba(255,130,30,0.15)');
+      og.addColorStop(1, 'rgba(255,100,20,0)');
+      ctx.fillStyle = og;
+      ctx.beginPath(); ctx.arc(glowX, glowY, w * 0.45, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      for (const s of stars) {
+        const tw = Math.sin(t * s.speed + s.phase);
+        const a = Math.max(0, tw) * 0.95;
+        if (a < 0.05) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(255,220,100,1)';
+        ctx.shadowColor = 'rgba(255,200,50,0.9)';
+        ctx.shadowBlur = 12;
+        const sz = s.size * (0.6 + tw * 0.4);
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y - sz * 2); ctx.lineTo(s.x + sz * 0.35, s.y - sz * 0.35);
+        ctx.lineTo(s.x + sz * 2, s.y); ctx.lineTo(s.x + sz * 0.35, s.y + sz * 0.35);
+        ctx.lineTo(s.x, s.y + sz * 2); ctx.lineTo(s.x - sz * 0.35, s.y + sz * 0.35);
+        ctx.lineTo(s.x - sz * 2, s.y); ctx.lineTo(s.x - sz * 0.35, s.y - sz * 0.35);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      for (const m of motes) {
+        m.y += m.vy;
+        m.x += Math.sin(t * 0.5 + m.phase) * 0.2;
+        if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = m.alpha * (0.6 + Math.sin(t + m.phase) * 0.4);
+        ctx.fillStyle = 'rgba(255,240,180,1)';
+        ctx.shadowColor = 'rgba(255,220,100,0.8)';
+        ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌫️ MIST: dark fog wisps drifting + falling leaves/feathers
+  mist: (w, h) => {
+    const fog = Array.from({ length: 6 }, () => ({
+      x: Math.random() * w * 1.5, y: h * 0.2 + Math.random() * h * 0.6,
+      size: 50 + Math.random() * 70, vx: -0.15 - Math.random() * 0.2,
+      alpha: 0.05 + Math.random() * 0.06, phase: Math.random() * Math.PI * 2,
+    }));
+    const leaves = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: -10 - Math.random() * h * 0.5,
+      size: 1.3 + Math.random() * 2.5, vy: 0.2 + Math.random() * 0.35,
+      vx: -0.1 - Math.random() * 0.2, swayAmp: 6 + Math.random() * 12,
+      swaySpeed: 0.3 + Math.random() * 0.5, phase: Math.random() * Math.PI * 2,
+      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.015,
+      alpha: 0.25 + Math.random() * 0.35,
+    }));
+    return (ctx, t) => {
+      for (const f of fog) {
+        f.x += f.vx + Math.sin(t * 0.2 + f.phase) * 0.1;
+        if (f.x < -f.size * 2) f.x = w + f.size;
+        const pulse = f.alpha * (0.7 + Math.sin(t * 0.3 + f.phase) * 0.3);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.size);
+        grad.addColorStop(0, 'rgba(80,90,100,0.6)');
+        grad.addColorStop(1, 'rgba(60,70,80,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      for (const l of leaves) {
+        l.y += l.vy; l.x += l.vx; l.rot += l.rotV;
+        const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
+        if (l.y > h + 10) { l.y = -8; l.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = l.alpha;
+        ctx.translate(sx, l.y); ctx.rotate(l.rot);
+        ctx.fillStyle = 'rgba(50,60,50,0.9)';
+        ctx.beginPath(); ctx.ellipse(0, 0, l.size * 0.5, l.size * 1.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // ❄️ FROST: ice crystal particles drifting down + cold blue sparkle dots
+  frost: (w, h) => {
+    const crystals = Array.from({ length: 12 }, () => ({
+      x: Math.random() * w, y: -5 - Math.random() * h * 0.3,
+      size: 2 + Math.random() * 2.5, vy: 0.15 + Math.random() * 0.3,
+      vx: (Math.random() - 0.5) * 0.15, rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.01, alpha: 0.35 + Math.random() * 0.4,
+    }));
+    const dots = Array.from({ length: 12 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      phase: Math.random() * Math.PI * 2, speed: 0.4 + Math.random() * 0.8,
+      size: 0.7 + Math.random() * 1.3,
+    }));
+    return (ctx, t) => {
+      for (const c of crystals) {
+        c.y += c.vy; c.x += c.vx; c.rot += c.rotV;
+        if (c.y > h + 10) { c.y = -8; c.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = c.alpha;
+        ctx.translate(c.x, c.y); ctx.rotate(c.rot);
+        ctx.strokeStyle = 'rgba(140,220,240,0.9)';
+        ctx.lineWidth = 0.8;
+        ctx.shadowColor = 'rgba(100,200,240,0.6)';
+        ctx.shadowBlur = 7;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i;
+          ctx[i === 0 ? 'moveTo' : 'lineTo'](Math.cos(a) * c.size, Math.sin(a) * c.size);
+        }
+        ctx.closePath(); ctx.stroke();
+        ctx.restore();
+      }
+      for (const d of dots) {
+        const a = Math.pow(Math.max(0, Math.sin(t * d.speed + d.phase)), 2) * 0.8;
+        if (a < 0.03) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(180,230,255,1)';
+        ctx.shadowColor = 'rgba(100,200,240,0.7)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🔥 EMBERS: orange/red sparks rising + heat shimmer
+  embers: (w, h) => {
+    const sparks = Array.from({ length: 14 }, () => ({
+      x: Math.random() * w, y: h * 0.4 + Math.random() * h * 0.6,
+      vy: -0.3 - Math.random() * 0.6, vx: (Math.random() - 0.5) * 0.3,
+      size: 1.1 + Math.random() * 1.8, alpha: 0.45 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2, life: Math.random(),
+      lifeSpeed: 0.004 + Math.random() * 0.005,
+      color: Math.random() > 0.4 ? '255,130,40' : '255,80,30',
+    }));
+    return (ctx, t) => {
+      for (const s of sparks) {
+        s.life += s.lifeSpeed;
+        if (s.life > 1) {
+          s.life = 0; s.x = Math.random() * w; s.y = h * 0.4 + Math.random() * h * 0.6;
+        }
+        s.y += s.vy; s.x += s.vx + Math.sin(t * 2 + s.phase) * 0.3;
+        const fade = s.life < 0.1 ? s.life / 0.1 : s.life > 0.6 ? (1 - s.life) / 0.4 : 1;
+        const a = s.alpha * fade;
+        if (a < 0.02) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = `rgba(${s.color},1)`;
+        ctx.shadowColor = `rgba(${s.color},0.8)`;
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.size * (0.5 + fade * 0.5), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.save();
+      ctx.globalAlpha = 0.025 + Math.sin(t * 0.5) * 0.015;
+      const hg = ctx.createLinearGradient(0, h, 0, h * 0.4);
+      hg.addColorStop(0, 'rgba(255,100,30,0.4)');
+      hg.addColorStop(1, 'rgba(255,100,30,0)');
+      ctx.fillStyle = hg;
+      ctx.fillRect(0, h * 0.4, w, h * 0.6);
+      ctx.restore();
+    };
+  },
+
+  // 🕊️ FEATHERS: white feathers floating up + soft light dots
+  feathers: (w, h) => {
+    const feathers = Array.from({ length: 7 }, () => ({
+      x: Math.random() * w, y: h + Math.random() * h * 0.3,
+      vy: -0.15 - Math.random() * 0.25, vx: (Math.random() - 0.5) * 0.15,
+      swayAmp: 10 + Math.random() * 15, swaySpeed: 0.3 + Math.random() * 0.4,
+      rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.008,
+      size: 2 + Math.random() * 2.5, alpha: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    const lights = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
+      size: 0.8 + Math.random() * 1,
+    }));
+    return (ctx, t) => {
+      for (const f of feathers) {
+        f.y += f.vy; f.x += f.vx; f.rot += f.rotV;
+        const sx = f.x + Math.sin(t * f.swaySpeed + f.phase) * f.swayAmp;
+        if (f.y < -15) { f.y = h + 10; f.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = f.alpha;
+        ctx.translate(sx, f.y); ctx.rotate(f.rot);
+        ctx.fillStyle = 'rgba(255,255,250,0.85)';
+        ctx.shadowColor = 'rgba(255,250,230,0.5)';
+        ctx.shadowBlur = 6;
+        ctx.beginPath(); ctx.ellipse(0, 0, f.size * 0.4, f.size * 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(220,210,190,0.4)';
+        ctx.lineWidth = 0.4;
+        ctx.beginPath(); ctx.moveTo(0, -f.size * 1.8); ctx.lineTo(0, f.size * 1.8); ctx.stroke();
+        ctx.restore();
+      }
+      for (const l of lights) {
+        const a = Math.pow(Math.max(0, Math.sin(t * l.speed + l.phase)), 2) * 0.6;
+        if (a < 0.03) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(255,240,200,1)';
+        ctx.shadowColor = 'rgba(255,230,160,0.5)';
+        ctx.shadowBlur = 7;
+        ctx.beginPath(); ctx.arc(l.x, l.y, l.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // ⚡ ENERGY: sharp quick line flashes + geometric bright dots
+  energy: (w, h) => {
+    const flashes = Array.from({ length: 7 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      angle: Math.random() * Math.PI, len: 18 + Math.random() * 30,
+      phase: Math.random() * 20, speed: 3 + Math.random() * 4,
+      color: Math.random() > 0.5 ? '255,60,80' : '255,255,255',
+    }));
+    const dots = Array.from({ length: 12 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.5,
+      size: 0.7 + Math.random() * 1.2, alpha: 0.4 + Math.random() * 0.45,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    return (ctx, t) => {
+      for (const f of flashes) {
+        f.phase += 0.016 * f.speed;
+        const cycle = f.phase % 8;
+        const a = cycle < 0.3 ? cycle / 0.3 : cycle < 0.6 ? (0.6 - cycle) / 0.3 : 0;
+        if (a < 0.02) {
+          if (cycle > 7.5) { f.x = Math.random() * w; f.y = Math.random() * h; f.angle = Math.random() * Math.PI; }
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = a * 0.7;
+        ctx.strokeStyle = `rgba(${f.color},1)`;
+        ctx.shadowColor = `rgba(${f.color},0.7)`;
+        ctx.shadowBlur = 6;
+        ctx.lineWidth = 1.2;
+        const dx = Math.cos(f.angle) * f.len * 0.5;
+        const dy = Math.sin(f.angle) * f.len * 0.5;
+        ctx.beginPath(); ctx.moveTo(f.x - dx, f.y - dy); ctx.lineTo(f.x + dx, f.y + dy); ctx.stroke();
+        ctx.restore();
+      }
+      for (const d of dots) {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > w) d.vx *= -1;
+        if (d.y < 0 || d.y > h) d.vy *= -1;
+        const pulse = d.alpha * (0.5 + Math.sin(t * 3 + d.phase) * 0.5);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = 'rgba(255,200,200,1)';
+        ctx.shadowColor = 'rgba(255,60,80,0.6)';
+        ctx.shadowBlur = 5;
+        ctx.fillRect(d.x - d.size, d.y - d.size, d.size * 2, d.size * 2);
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌌 COSMIC: slow orbiting particles + soft radial glow pulses
+  cosmic: (w, h) => {
+    const cx = w * 0.5, cy = h * 0.45, radius = Math.min(w, h) * 0.3;
+    const orbiters = Array.from({ length: 12 }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      speed: 0.08 + Math.random() * 0.12,
+      rOff: (Math.random() - 0.5) * 20,
+      size: 0.8 + Math.random() * 1.5, alpha: 0.25 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    const glows = Array.from({ length: 4 }, () => ({
+      x: w * 0.2 + Math.random() * w * 0.6, y: h * 0.15 + Math.random() * h * 0.6,
+      size: 25 + Math.random() * 40, phase: Math.random() * Math.PI * 2,
+      speed: 0.2 + Math.random() * 0.3,
+    }));
+    return (ctx, t) => {
+      for (const g of glows) {
+        const a = 0.035 + Math.sin(t * g.speed + g.phase) * 0.025;
+        if (a < 0.005) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        const grad = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, g.size);
+        grad.addColorStop(0, 'rgba(100,180,255,0.7)');
+        grad.addColorStop(1, 'rgba(60,120,200,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      for (const o of orbiters) {
+        o.angle += o.speed * 0.016;
+        const r = radius + o.rOff + Math.sin(t * 0.5 + o.phase) * 5;
+        const ox = cx + Math.cos(o.angle) * r;
+        const oy = cy + Math.sin(o.angle) * r * 0.4;
+        const pulse = 0.6 + Math.sin(t * 0.8 + o.phase) * 0.4;
+        ctx.save();
+        ctx.globalAlpha = o.alpha * pulse;
+        ctx.fillStyle = 'rgba(140,200,255,1)';
+        ctx.shadowColor = 'rgba(100,180,255,0.6)';
+        ctx.shadowBlur = 7;
+        ctx.beginPath(); ctx.arc(ox, oy, o.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌙 QIUYUAN: moonlit brume, drifting leaves, jade glints
+  qiuyuan: (w, h) => {
+    // Brume patches — muted grey-green
+    const brume = Array.from({ length: 7 }, () => ({
+      x: Math.random() * w * 1.5, y: h * 0.2 + Math.random() * h * 0.6,
+      size: 60 + Math.random() * 80, vx: -0.12 - Math.random() * 0.18,
+      alpha: 0.12 + Math.random() * 0.1, phase: Math.random() * Math.PI * 2,
+    }));
+    // Leaves — varied shade/size/speed, brighter near moon, darker far away
+    const moonX = w * 0.75, moonY = h * 0.12;
+    // Leaves spawn from top-right, drift down-left
+    // Color: very dark (20,25,35) on right → light (120,135,155) on left
+    const leaves = Array.from({ length: 22 }, (_, i) => {
+      // Spawn from top edge (wider spread) and right edge (upper half)
+      const fromRight = Math.random() < 0.35;
+      const lx = fromRight ? w + Math.random() * 10 : w * 0.15 + Math.random() * w * 0.85;
+      const ly = fromRight ? Math.random() * h * 0.55 : -Math.random() * 20;
+      return {
+        x: lx, y: ly,
+        size: 1.5 + Math.random() * 7,
+        vy: 0.12 + Math.random() * 0.2,
+        vx: -0.25 - Math.random() * 0.3, swayAmp: 12 + Math.random() * 22,
+        swaySpeed: 0.15 + Math.random() * 0.28, phase: Math.random() * Math.PI * 2,
+        rot: Math.random() * Math.PI * 2,
+        rotV: 0.015 + Math.random() * 0.025,
+        spinPhase: Math.random() * Math.PI * 2,
+        spinSpeed: 0.4 + Math.random() * 0.6,
+        alpha: 0.55 + Math.random() * 0.25,
+        colorShift: Math.random(),
+      };
+    });
+    // Jade glint particles
+    const jadeGlints = Array.from({ length: 12 }, () => ({
+      x: Math.random() * w, y: h * 0.15 + Math.random() * h * 0.75,
+      phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
+      size: 1.2 + Math.random() * 2,
+    }));
+    const moonR = 28;
+    return (ctx, t) => {
+      // Animated glow pulse — slow breathe with layered harmonics
+      const pulse1 = Math.sin(t * 0.08);
+      const pulse2 = Math.sin(t * 0.19 + 1.2);
+      const pulse3 = Math.sin(t * 0.042 + 2.5);
+      const glowStrength = 0.85 + pulse1 * 0.15;
+      const haloScale = 1 + pulse1 * 0.12 + pulse3 * 0.08;
+
+      // Moon outer glow — wide atmospheric bloom
+      ctx.save();
+      ctx.globalAlpha = 0.5 + pulse1 * 0.15;
+      const og = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 8 * haloScale);
+      og.addColorStop(0, 'rgba(210,225,255,0.5)');
+      og.addColorStop(0.25, 'rgba(180,205,240,0.25)');
+      og.addColorStop(0.5, 'rgba(150,185,220,0.1)');
+      og.addColorStop(1, 'rgba(120,155,190,0)');
+      ctx.fillStyle = og;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 8 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Moon halo — brighter inner glow
+      ctx.save();
+      ctx.globalAlpha = 0.6 + pulse1 * 0.15;
+      const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.2, moonX, moonY, moonR * 3.5 * haloScale);
+      mg.addColorStop(0, 'rgba(230,240,255,0.7)');
+      mg.addColorStop(0.35, 'rgba(200,220,245,0.35)');
+      mg.addColorStop(0.7, 'rgba(170,195,225,0.1)');
+      mg.addColorStop(1, 'rgba(140,165,200,0)');
+      ctx.fillStyle = mg;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 3.5 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Moon disc — solid bright core
+      ctx.save();
+      ctx.globalAlpha = glowStrength;
+      ctx.fillStyle = 'rgba(240,245,255,0.95)';
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.6, 0, Math.PI * 2); ctx.fill();
+      // Softer edge
+      const disc = ctx.createRadialGradient(moonX, moonY, moonR * 0.4, moonX, moonY, moonR * 1.4);
+      disc.addColorStop(0, 'rgba(245,250,255,0.9)');
+      disc.addColorStop(0.4, 'rgba(225,238,255,0.5)');
+      disc.addColorStop(1, 'rgba(190,210,240,0)');
+      ctx.fillStyle = disc;
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 1.4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      // Brume
+      for (const b of brume) {
+        b.x += b.vx + Math.sin(t * 0.15 + b.phase) * 0.08;
+        if (b.x < -b.size * 2) b.x = w + b.size;
+        const pulse = b.alpha * (0.7 + Math.sin(t * 0.25 + b.phase) * 0.3);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.size);
+        grad.addColorStop(0, 'rgba(100,160,120,0.5)');
+        grad.addColorStop(1, 'rgba(60,100,70,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Drifting leaves — circular rotation, strong leftward drift, wide color range
+      for (const l of leaves) {
+        l.y += l.vy; l.x += l.vx;
+        l.rot += l.rotV;
+        const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
+        if (l.y > h + 10 || l.x < -20) {
+          const fromRight = Math.random() < 0.35;
+          l.x = fromRight ? w + Math.random() * 10 : w * 0.15 + Math.random() * w * 0.85;
+          l.y = fromRight ? Math.random() * h * 0.55 : -Math.random() * 20;
+          l.size = 1.5 + Math.random() * 7;
+          l.alpha = 0.55 + Math.random() * 0.25;
+          l.colorShift = Math.random();
+        }
+        // 3D self-rotation: cos squashes width to simulate tumbling
+        const spin = Math.cos(t * l.spinSpeed + l.spinPhase);
+        const widthScale = 0.2 + Math.abs(spin) * 0.8;
+        // Color: dark (8,12,18) to cool blue-grey (120,135,170)
+        // Each leaf has its own colorShift, plus face shading from spin
+        const faceBias = spin * 0.12;
+        const cm = Math.min(1, Math.max(0, l.colorShift + faceBias));
+        const lr = Math.floor(8 + cm * 112);
+        const lg = Math.floor(12 + cm * 123);
+        const lb = Math.floor(18 + cm * 152);
+        ctx.save();
+        ctx.globalAlpha = l.alpha;
+        ctx.translate(sx, l.y); ctx.rotate(l.rot);
+        ctx.fillStyle = `rgb(${lr},${lg},${lb})`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, l.size * 0.45 * widthScale, l.size * 1.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      // Jade glints
+      for (const g of jadeGlints) {
+        const a = Math.pow(Math.max(0, Math.sin(t * g.speed + g.phase)), 1.5) * 0.95;
+        if (a < 0.04) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = 'rgba(140,255,170,1)';
+        ctx.shadowColor = 'rgba(100,240,140,0.9)';
+        ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+};
+
+const BannerParticleOverlay = memo(({ characterName, element }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width || 400;
+    const h = rect.height || 190;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Pick theme: character-specific override → element fallback → sparkle default
+    const themeKey = CHARACTER_THEME_MAP[characterName]
+      || ELEMENT_THEME_FALLBACK[element]
+      || 'sparkle';
+    const drawFn = (BANNER_THEMES[themeKey] || BANNER_THEMES.sparkle)(w, h);
+
+    let animId, t = 0;
+    const frame = () => {
+      ctx.clearRect(0, 0, w, h);
+      t += 0.016;
+      drawFn(ctx, t);
+      animId = requestAnimationFrame(frame);
+    };
+    animId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(animId);
+  }, [characterName, element]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 2, width: '100%', height: '100%' }}
+      aria-hidden="true"
+    />
+  );
+});
+BannerParticleOverlay.displayName = 'BannerParticleOverlay';
+
 const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
-  
+
   // Use unified mask generator
-  const maskGradient = visualSettings 
+  const maskGradient = visualSettings
     ? generateMaskGradient(visualSettings.fadePosition, visualSettings.fadeIntensity)
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
-  
+  const isFull = visualSettings?.animationsEnabled === 'full';
+
   return (
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', zIndex: 5, borderColor: style.borderColor, boxShadow: '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
-        <img
-          src={imgUrl}
-          alt={item.name}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{
-            zIndex: 1,
-            opacity: pictureOpacity,
-            maskImage: maskGradient,
-            WebkitMaskImage: maskGradient
-          }}
-          loading="eager"
-          onError={hideOnError}
-        />
+        <div className="absolute inset-0" style={{ zIndex: 1 }}>
+          <img
+            src={imgUrl}
+            alt={item.name}
+            className="w-full h-full object-cover object-top"
+            style={{
+              opacity: pictureOpacity,
+              maskImage: maskGradient,
+              WebkitMaskImage: maskGradient
+            }}
+            loading="eager"
+            onError={hideOnError}
+          />
+        </div>
       )}
-      
+      {imgUrl && isFull && <BannerParticleOverlay characterName={isChar ? item.name : item.forCharacter || item.name} element={item.element} />}
+
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
           <CountdownTimer endDate={endDate} color={timerColor || 'yellow'} />
@@ -1210,6 +2013,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             </div>
           </div>
         )}
+    </div>
     </div>
   );
 });
@@ -1367,20 +2171,22 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
-      <img
-        src={imgUrl}
-        alt={name}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-        style={{
-          transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-          opacity: owned ? collOpacity : 0.3,
-          filter: owned ? 'none' : 'grayscale(100%)',
-          maskImage: collMask,
-          WebkitMaskImage: collMask
-        }}
-        onError={hideOnError}
-      />
+      <div className="absolute inset-0 collection-img-wrap">
+        <img
+          src={imgUrl}
+          alt={name}
+          loading="lazy"
+          className="w-full h-full object-contain pointer-events-none"
+          style={{
+            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+            opacity: owned ? collOpacity : 0.3,
+            filter: owned ? 'none' : 'grayscale(100%)',
+            maskImage: collMask,
+            WebkitMaskImage: collMask
+          }}
+          onError={hideOnError}
+        />
+      </div>
     ) : (
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
@@ -1522,9 +2328,77 @@ const VISUAL_SLIDER_CONFIGS = [
   },
 ];
 
+// Custom styled select dropdown — replaces native <select> with kuro-card backdrop
+const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find(o => o.value === value);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('pointerdown', handler);
+    return () => document.removeEventListener('pointerdown', handler);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-[10px]' : 'px-2.5 py-1.5 text-[10px] min-h-[44px]'}`}
+        style={{ background: 'var(--bg-btn)' }}
+        aria-label={ariaLabel}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="truncate">{selected?.label ?? value}</span>
+        <ChevronDown size={12} className={`flex-shrink-0 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5"
+          role="listbox"
+          aria-label={ariaLabel}
+        >
+          {options.map(opt => {
+            const active = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`kuro-btn w-full text-left px-3 py-2.5 text-sm ${active ? 'active-gold' : 'text-gray-300'}`}
+                style={{
+                  backdropFilter: 'blur(2px) brightness(0.6)',
+                  WebkitBackdropFilter: 'blur(2px) brightness(0.6)',
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+KuroSelect.displayName = 'KuroSelect';
+
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
 const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, collapsible = false }) => {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="kuro-empty-state relative py-3">
       {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
@@ -1793,14 +2667,14 @@ const getActiveBanners = () => {
 export {
   TROPHY_ICON_MAP, generateVerticalMaskGradient,
   TabBackground, Card, CardHeader, CardBody,
-  CharacterDetailModal, WeaponDetailModal,
+  CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
   AppErrorBoundary, TabErrorBoundary,
   BackgroundGlow, TriangleMirrorWave,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  CollectionGridSection, PityCounterInput, CalcResultsCard,
+  KuroSelect, CollectionGridSection, PityCounterInput, CalcResultsCard,
   StandardBannerSection, ImportGuide,
   getActiveBanners,
   hideOnError,

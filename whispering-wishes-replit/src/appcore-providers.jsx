@@ -364,7 +364,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     <div
       ref={focusTrapRef}
       className={`fixed inset-0 z-[100] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} ${className}`}
-      style={{ backdropFilter: 'blur(3px) brightness(0.7)', WebkitBackdropFilter: 'blur(3px) brightness(0.7)' }}
+      style={{ backdropFilter: 'blur(2px) brightness(0.4)', WebkitBackdropFilter: 'blur(2px) brightness(0.4)' }}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
@@ -734,7 +734,7 @@ const KuroStyles = memo(({ oledMode }) => (
         min-height: 44px;
       }
       /* P10-FIX: Ensure all standalone buttons meet minimum 36px touch target on touch devices (Step 10 audit — MEDIUM-5b) */
-      .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn) {
+      .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn):not(.btn-icon-square) {
         min-height: 44px; /* MED-15: iOS HIG 44px minimum */
       }
     }
@@ -897,12 +897,39 @@ const KuroStyles = memo(({ oledMode }) => (
       width: 200%;
       height: 200%;
       background: conic-gradient(from 0deg, var(--badge-color), transparent 30%, transparent 70%, var(--badge-color));
-      animation: badgeRotate var(--badge-speed, 12s) linear infinite;
+      animation: badgeRotate 12s linear infinite !important;
       opacity: 0.7;
       filter: blur(4px);
     }
     @keyframes badgeRotate {
       to { transform: rotate(360deg); }
+    }
+    /* §BANNER_ANIM: outer glow wrapper (not clipped by overflow:hidden) + inner border line */
+    .banner-card-glow {
+      animation: bannerGlow 7s ease-in-out infinite !important;
+    }
+    .banner-card-glow > div {
+      border-color: rgba(var(--glow-color), 0.3) !important;
+      animation: bannerBorderGlow 7s ease-in-out infinite !important;
+    }
+    @keyframes bannerGlow {
+      0%, 100% {
+        box-shadow:
+          0 0 40px rgba(237,175,24,0.06),
+          0 4px 16px rgba(0,0,0,0.3),
+          0 0 10px 2px rgba(var(--glow-color), 0.18);
+      }
+      50% {
+        box-shadow:
+          0 0 40px rgba(237,175,24,0.06),
+          0 4px 16px rgba(0,0,0,0.3),
+          0 0 18px 4px rgba(var(--glow-color), 0.35),
+          0 0 3px 1px rgba(var(--glow-color), 0.5);
+      }
+    }
+    @keyframes bannerBorderGlow {
+      0%, 100% { border-color: rgba(var(--glow-color), 0.3); }
+      50% { border-color: rgba(var(--glow-color), 0.85); }
     }
     .luck-badge-inner {
       position: relative;
@@ -1683,15 +1710,15 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* MED-22: Pity danger zone — progressive visual urgency */
     .pity-danger {
-      filter: drop-shadow(0 0 8px rgba(237,175,24,0.4));
+      box-shadow: 0 0 8px rgba(237,175,24,0.4);
       animation: pityPulse 0.5s ease-in-out infinite alternate;
     }
     .pity-critical {
-      filter: drop-shadow(0 0 12px rgba(237,175,24,0.6));
+      box-shadow: 0 0 12px rgba(237,175,24,0.6);
       animation: pityPulse 0.3s ease-in-out infinite alternate;
     }
     @keyframes pityPulse {
-      to { filter: drop-shadow(0 0 16px rgba(237,175,24,0.8)); }
+      to { box-shadow: 0 0 16px rgba(237,175,24,0.8); }
     }
 
     /* MED-23: Collection milestone celebration */
@@ -2101,8 +2128,262 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast);
     }
     
+    /* ═══ FULL ANIMATIONS — 2× intensity mode ═══ */
+
+    /* Glow effects: stronger box-shadows & drop-shadows */
+    .animations-full .glow-gold {
+      box-shadow: 0 0 36px rgba(237, 175, 24, 0.35), inset 0 0 28px rgba(237, 175, 24, 0.10), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .animations-full .glow-purple {
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.22), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    @media (hover: hover) {
+      .animations-full .glow-gold:hover {
+        box-shadow: 0 0 48px rgba(237, 175, 24, 0.45), inset 0 0 32px rgba(237, 175, 24, 0.12), 0 8px 20px rgba(0,0,0,0.4);
+      }
+      .animations-full .glow-purple:hover {
+        box-shadow: 0 0 36px rgba(168, 85, 247, 0.30), 0 8px 20px rgba(0,0,0,0.4);
+      }
+    }
+
+    /* Soft pity pulses: stronger glow range */
+    .animations-full .kuro-soft-pity {
+      animation: kuroPulseOrangeFull 1.5s ease-in-out infinite;
+    }
+    .animations-full .kuro-soft-pity-cyan {
+      animation: kuroPulseCyanFull 1.5s ease-in-out infinite;
+    }
+    .animations-full .kuro-soft-pity-pink {
+      animation: kuroPulsePinkFull 1.5s ease-in-out infinite;
+    }
+    @keyframes kuroPulseOrangeFull {
+      0%, 100% { text-shadow: 0 0 12px rgba(251, 146, 60, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(251, 146, 60, 1); }
+    }
+    @keyframes kuroPulseCyanFull {
+      0%, 100% { text-shadow: 0 0 12px rgba(103, 232, 249, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(103, 232, 249, 1); }
+    }
+    @keyframes kuroPulsePinkFull {
+      0%, 100% { text-shadow: 0 0 12px rgba(236, 72, 153, 0.8); }
+      50% { text-shadow: 0 0 24px rgba(236, 72, 153, 1); }
+    }
+
+    /* Pity danger/critical: stronger pulsing box-shadow */
+    .animations-full .pity-danger {
+      box-shadow: 0 0 12px rgba(237,175,24,0.6);
+      animation: pityPulseFull 0.4s ease-in-out infinite alternate;
+    }
+    .animations-full .pity-critical {
+      box-shadow: 0 0 16px rgba(237,175,24,0.8);
+      animation: pityPulseFull 0.25s ease-in-out infinite alternate;
+    }
+    @keyframes pityPulseFull {
+      to { box-shadow: 0 0 24px rgba(237,175,24,1); }
+    }
+
+    /* Card shimmer: brighter shimmer line */
+    .animations-full .kuro-card::after {
+      animation: shimmer 2s ease-in-out infinite;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 20%,
+        rgba(255, 255, 255, 0.7) 50%,
+        rgba(255, 255, 255, 0.4) 80%,
+        transparent 100%
+      );
+    }
+
+    /* Card hover: more dramatic lift */
+    @media (hover: hover) {
+      .animations-full .kuro-card:hover {
+        transform: translateY(-4px);
+        box-shadow:
+          var(--shadow-xl),
+          0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 0 50px rgba(100, 140, 200, 0.06),
+          inset 0 1px 0 rgba(255, 255, 255, 0.10);
+      }
+      .animations-full .collection-card:hover {
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      }
+    }
+
+    /* Celebrations: bigger gold glow expansion */
+    .animations-full .celebrate-5star {
+      animation: celebrateGoldFull 1.5s var(--ease-branded);
+    }
+    .animations-full .celebrate-lucky {
+      animation: celebrateGoldFull 0.8s var(--ease-branded);
+    }
+    @keyframes celebrateGoldFull {
+      0%   { box-shadow: 0 0 0 0 rgba(237,175,24,0.8); }
+      50%  { box-shadow: 0 0 60px 30px rgba(237,175,24,0.3); }
+      100% { box-shadow: 0 0 0 0 rgba(237,175,24,0); }
+    }
+
+    /* Import success: stronger gold shimmer */
+    .animations-full .kuro-import-success {
+      animation: importCelebrateFull 0.8s ease-out;
+    }
+    @keyframes importCelebrateFull {
+      0% { box-shadow: 0 0 0 rgba(237, 175, 24, 0); }
+      50% { box-shadow: 0 0 36px rgba(237, 175, 24, 0.3), inset 0 0 24px rgba(237, 175, 24, 0.08); }
+      100% { box-shadow: 0 0 0 rgba(237, 175, 24, 0); }
+    }
+
+    /* Milestone celebration: stronger shimmer */
+    .animations-full .kuro-milestone {
+      animation: milestoneShimmerFull 1s ease-out;
+    }
+    @keyframes milestoneShimmerFull {
+      0% { box-shadow: 0 0 0 rgba(237,175,24,0); }
+      50% { box-shadow: 0 0 48px rgba(237,175,24,0.25), inset 0 0 24px rgba(237,175,24,0.08); }
+      100% { box-shadow: 0 0 0 rgba(237,175,24,0); }
+    }
+
+    /* Entrance animation: more dramatic bounce */
+    .animations-full .kuro-entrance > * {
+      animation: kuroEntranceFull 0.5s ease-out both;
+    }
+    .animations-full .kuro-entrance > *:nth-child(2) { animation-delay: 0.1s; }
+    .animations-full .kuro-entrance > *:nth-child(3) { animation-delay: 0.2s; }
+    .animations-full .kuro-entrance > *:nth-child(4) { animation-delay: 0.3s; }
+    .animations-full .kuro-entrance > *:nth-child(5) { animation-delay: 0.4s; }
+    @keyframes kuroEntranceFull {
+      0% { opacity: 0; transform: translateY(16px) scale(0.95); }
+      55% { opacity: 1; transform: translateY(-3px) scale(1.02); box-shadow: 0 0 24px rgba(237,175,24,0.18); }
+      100% { opacity: 1; transform: translateY(0) scale(1); box-shadow: none; }
+    }
+
+    /* Success checkmark: bigger pop */
+    .animations-full [role="status"] svg.text-emerald-400,
+    .animations-full [role="status"] svg.text-green-400 {
+      animation: checkPopFull 0.35s ease-out both;
+    }
+    @keyframes checkPopFull {
+      0% { transform: scale(0); opacity: 0; }
+      55% { transform: scale(1.4); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Stat reveal: stronger gold glow on reveal */
+    .animations-full .kuro-stat {
+      animation: statRevealFull 0.4s ease-out both;
+    }
+    @keyframes statRevealFull {
+      0% { opacity: 0; box-shadow: 0 0 0 rgba(var(--color-gold), 0); }
+      40% { opacity: 1; box-shadow: 0 0 24px rgba(var(--color-gold), 0.25); }
+      100% { opacity: 1; box-shadow: var(--shadow-sm); }
+    }
+
+
+    /* ═══ FULL MODE ENHANCEMENTS ═══ */
+
+    /* ── Pity Ring: rotating gradient stroke ── */
+    .animations-full .pity-ring-fill {
+      filter: drop-shadow(0 0 8px var(--ring-glow));
+      animation: pityRingRotateGlow 4s linear infinite !important;
+    }
+    @keyframes pityRingRotateGlow {
+      0% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(2px 0 3px var(--ring-glow)); }
+      25% { filter: drop-shadow(0 0 10px var(--ring-glow)) drop-shadow(0 2px 3px var(--ring-glow)); }
+      50% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(-2px 0 3px var(--ring-glow)); }
+      75% { filter: drop-shadow(0 0 10px var(--ring-glow)) drop-shadow(0 -2px 3px var(--ring-glow)); }
+      100% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(2px 0 3px var(--ring-glow)); }
+    }
+
+    /* ── Pity Ring: glow pulse intensifying near soft pity (65+) ── */
+    .animations-full .pity-soft .pity-ring-fill {
+      animation: pitySoftGlow 1.8s ease-in-out infinite !important;
+    }
+    @keyframes pitySoftGlow {
+      0%, 100% { filter: drop-shadow(0 0 8px var(--ring-glow)); }
+      50% { filter: drop-shadow(0 0 16px var(--ring-glow)) drop-shadow(0 0 24px var(--ring-glow)); }
+    }
+
+    /* ── Pity Ring: color shift / flame effect near hard pity (75+) ── */
+    .animations-full .pity-danger .pity-ring-fill {
+      animation: pityFlame 1.2s ease-in-out infinite !important;
+    }
+    @keyframes pityFlame {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(255,100,30,0.7)) drop-shadow(0 -3px 8px rgba(255,60,20,0.5)); }
+      33% { filter: drop-shadow(0 0 18px rgba(255,140,40,0.9)) drop-shadow(0 -5px 12px rgba(255,80,20,0.7)); }
+      66% { filter: drop-shadow(0 0 12px rgba(255,60,20,0.8)) drop-shadow(0 -4px 10px rgba(255,40,10,0.6)); }
+    }
+    .animations-full .pity-danger .pity-ring-text {
+      animation: pityTextFlame 1.2s ease-in-out infinite !important;
+    }
+    @keyframes pityTextFlame {
+      0%, 100% { fill: #edaf18; }
+      50% { fill: #ff6b2b; }
+    }
+
+    /* ── Pulse subtle: more pronounced ── */
+    .animations-full .pulse-subtle {
+      animation: pulseScaleFull 1.5s ease-in-out infinite;
+    }
+    @keyframes pulseScaleFull {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+
+    /* Luck badge: stronger glow */
+    .animations-full .luck-badge::before {
+      opacity: 0.9;
+      filter: blur(3px);
+    }
+
+    /* ── Holographic shimmer sweep on 5★ owned ── */
+    .animations-full .collection-card.glow-gold::after,
+    .animations-full .holo-5star::after {
+      content: '' !important;
+      position: absolute;
+      top: 0; left: -100%;
+      width: 80%;
+      height: 100%;
+      background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.18) 40%, rgba(255,255,255,0.3) 50%, rgba(255,220,100,0.18) 60%, transparent 75%);
+      animation: holoSweep 6s ease-in-out infinite !important;
+      pointer-events: none;
+      z-index: 15;
+    }
+    @keyframes holoSweep {
+      0% { left: -100%; }
+      100% { left: 150%; }
+    }
+
+    /* ── Tab transitions: enhanced slide + fade ── */
+    .animations-full .tab-content {
+      animation: tabFadeInFull 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes tabFadeInFull {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animations-full .tab-content > .kuro-card,
+    .animations-full .tab-content > div > .kuro-card {
+      animation: cardSlideInFull 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    @keyframes cardSlideInFull {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Breathing zoom on character images ── */
+    @keyframes breathZoom {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .breath-zoom {
+      animation: breathZoom 5s ease-in-out infinite !important;
+    }
+    .collection-card .collection-img-wrap {
+      animation: breathZoom 6s ease-in-out infinite !important;
+    }
+
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
-    
+
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */
     .no-animations *, .no-animations *::before, .no-animations *::after {
       animation-duration: 0.01ms !important;
@@ -2328,8 +2609,7 @@ const KuroStyles = memo(({ oledMode }) => (
         width: 100%;
       }
 
-      /* Hide inline footer on desktop */
-      .desktop-layout .app-footer-mobile { display: none !important; }
+      /* Footer removed — now lives inside Profile tab as a kuro-card */
       .desktop-layout > footer, .desktop-layout footer {
         margin-bottom: 0 !important; padding-bottom: 0 !important;
         background: transparent !important;
