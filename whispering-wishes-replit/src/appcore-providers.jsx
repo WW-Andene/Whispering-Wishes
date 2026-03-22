@@ -2284,7 +2284,7 @@ const KuroStyles = memo(({ oledMode }) => (
     /* ── Pity Ring: rotating gradient stroke ── */
     .animations-full .pity-ring-fill {
       filter: drop-shadow(0 0 8px var(--ring-glow));
-      animation: pityRingRotateGlow 4s linear infinite;
+      animation: pityRingRotateGlow 4s linear infinite !important;
     }
     @keyframes pityRingRotateGlow {
       0% { filter: drop-shadow(0 0 6px var(--ring-glow)) drop-shadow(2px 0 3px var(--ring-glow)); }
@@ -2296,7 +2296,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* ── Pity Ring: glow pulse intensifying near soft pity (65+) ── */
     .animations-full .pity-soft .pity-ring-fill {
-      animation: pitySoftGlow 1.8s ease-in-out infinite;
+      animation: pitySoftGlow 1.8s ease-in-out infinite !important;
     }
     @keyframes pitySoftGlow {
       0%, 100% { filter: drop-shadow(0 0 8px var(--ring-glow)); }
@@ -2305,7 +2305,7 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* ── Pity Ring: color shift / flame effect near hard pity (75+) ── */
     .animations-full .pity-danger .pity-ring-fill {
-      animation: pityFlame 1.2s ease-in-out infinite;
+      animation: pityFlame 1.2s ease-in-out infinite !important;
     }
     @keyframes pityFlame {
       0%, 100% { filter: drop-shadow(0 0 10px rgba(255,100,30,0.7)) drop-shadow(0 -3px 8px rgba(255,60,20,0.5)); }
@@ -2313,7 +2313,7 @@ const KuroStyles = memo(({ oledMode }) => (
       66% { filter: drop-shadow(0 0 12px rgba(255,60,20,0.8)) drop-shadow(0 -4px 10px rgba(255,40,10,0.6)); }
     }
     .animations-full .pity-danger .pity-ring-text {
-      animation: pityTextFlame 1.2s ease-in-out infinite;
+      animation: pityTextFlame 1.2s ease-in-out infinite !important;
     }
     @keyframes pityTextFlame {
       0%, 100% { fill: #edaf18; }
@@ -2329,40 +2329,21 @@ const KuroStyles = memo(({ oledMode }) => (
       50% { transform: scale(1.04); }
     }
 
-    /* ── Luck Badge: stronger glow + particle aura ── */
-    .animations-full .luck-badge {
-      overflow: visible;
-    }
+    /* Luck badge: stronger glow */
     .animations-full .luck-badge::before {
-      opacity: 1;
-      filter: blur(2px);
-      animation: badgeRotate 8s linear infinite !important;
-    }
-    .animations-full .luck-badge::after {
-      content: '';
-      position: absolute;
-      inset: -10px;
-      border-radius: inherit;
-      background: radial-gradient(ellipse at center, var(--badge-color), transparent 70%);
-      opacity: 0;
-      animation: badgeAura 3s ease-in-out infinite;
-      pointer-events: none;
-      z-index: -1;
-    }
-    @keyframes badgeAura {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.12); }
+      opacity: 0.9;
+      filter: blur(3px);
     }
 
     /* ── Collection Grid: holographic shimmer sweep on 5★ owned ── */
     .animations-full .collection-card.glow-gold::after {
-      content: '';
+      content: '' !important;
       position: absolute;
       top: 0; left: -100%;
       width: 80%;
       height: 100%;
-      background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.15) 40%, rgba(255,255,255,0.25) 50%, rgba(255,220,100,0.15) 60%, transparent 75%);
-      animation: holoSweep 3.5s ease-in-out infinite;
+      background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.18) 40%, rgba(255,255,255,0.3) 50%, rgba(255,220,100,0.18) 60%, transparent 75%);
+      animation: holoSweep 3.5s ease-in-out infinite !important;
       pointer-events: none;
       z-index: 15;
     }
@@ -2400,14 +2381,14 @@ const KuroStyles = memo(({ oledMode }) => (
       background: white;
       box-shadow: 0 0 8px 3px rgba(200,220,255,0.8), -8px 0 12px rgba(200,220,255,0.4);
       opacity: 0;
-      animation: shootingStar 6s linear infinite;
+      animation: shootingStar 6s linear infinite !important;
     }
     .shooting-star-2 {
       width: 3px; height: 3px;
       background: white;
       box-shadow: 0 0 6px 2px rgba(180,200,255,0.7), -6px 0 10px rgba(180,200,255,0.3);
       opacity: 0;
-      animation: shootingStar2 9s linear infinite 3s;
+      animation: shootingStar2 9s linear infinite 3s !important;
     }
     @keyframes shootingStar {
       0% { opacity: 0; top: 6%; left: 80%; }
@@ -2426,14 +2407,18 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* ── Breathing zoom on character images ── */
     .animations-full .breath-zoom {
-      animation: breathZoom 6s ease-in-out infinite;
+      animation: breathZoom 6s ease-in-out infinite !important;
     }
     .animations-full .collection-card .collection-img-wrap {
-      animation: breathZoom 5s ease-in-out infinite;
+      animation: breathZoomCollection 5s ease-in-out infinite !important;
     }
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.035); }
+      50% { transform: scale(1.04); }
+    }
+    @keyframes breathZoomCollection {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
     }
 
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
