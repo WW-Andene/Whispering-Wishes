@@ -1729,7 +1729,9 @@ const BANNER_THEMES = {
     // Leaves spawn from top-right, drift down-left
     // Color: very dark (20,25,35) on right → light (120,135,155) on left
     const leaves = Array.from({ length: 28 }, (_, i) => {
-      const lx = w * 0.65 + Math.random() * w * 0.4;
+      // Squared random biases spawn toward the right while still covering full width
+      const rx = Math.random();
+      const lx = w * (0.1 + rx * rx * 0.95);
       const ly = -Math.random() * h * 1.2;
       return {
         x: lx, y: ly,
@@ -1816,7 +1818,8 @@ const BANNER_THEMES = {
         const sx = l.x + Math.sin(t * l.swaySpeed + l.phase) * l.swayAmp;
         if (l.y > h + 10 || l.x < -20) {
           l.y = -8 - Math.random() * 20;
-          l.x = w * 0.65 + Math.random() * w * 0.4;
+          const rx = Math.random();
+          l.x = w * (0.1 + rx * rx * 0.95);
           l.size = 1.5 + Math.random() * 7;
           l.alpha = 0.7 + Math.random() * 0.3;
           l.colorShift = Math.random();
