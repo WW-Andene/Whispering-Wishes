@@ -1488,15 +1488,25 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       centerOffX = rawCenter ? rawCenter.sx : 0;
       centerOffY = rawCenter ? rawCenter.sy : 0;
 
-      // --- Ambient glow at center ---
+      // --- Ambient glow at center (brighter) + dark vignette outside ---
       const centerP = project(0, 0, 0);
       if (centerP) {
-        const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.6);
-        grd.addColorStop(0, `rgba(120, 180, 240, ${0.45 * alphaScale})`);
-        grd.addColorStop(0.1, `rgba(90, 150, 220, ${0.30 * alphaScale})`);
-        grd.addColorStop(0.25, `rgba(70, 100, 200, ${0.18 * alphaScale})`);
-        grd.addColorStop(0.4, `rgba(100, 70, 180, ${0.10 * alphaScale})`);
-        grd.addColorStop(0.6, `rgba(140, 50, 160, ${0.05 * alphaScale})`);
+        // Darken edges: vignette pushing darkness outside the ring area
+        const vigSize = Math.max(w, h) * 0.7;
+        const vig = ctx.createRadialGradient(centerP.sx, centerP.sy, vigSize * 0.35, centerP.sx, centerP.sy, vigSize);
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(0.5, `rgba(0,0,0,${0.15 * alphaScale})`);
+        vig.addColorStop(1, `rgba(0,0,0,${0.35 * alphaScale})`);
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, w, h);
+
+        // Bright glow in the ring zone
+        const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.55);
+        grd.addColorStop(0, `rgba(140, 200, 255, ${0.55 * alphaScale})`);
+        grd.addColorStop(0.08, `rgba(110, 170, 240, ${0.40 * alphaScale})`);
+        grd.addColorStop(0.2, `rgba(80, 120, 220, ${0.25 * alphaScale})`);
+        grd.addColorStop(0.4, `rgba(110, 80, 200, ${0.12 * alphaScale})`);
+        grd.addColorStop(0.6, `rgba(150, 55, 170, ${0.06 * alphaScale})`);
         grd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, w, h);
