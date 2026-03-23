@@ -2187,9 +2187,9 @@ const KuroStyles = memo(({ oledMode }) => (
       animation: shimmer 2s ease-in-out infinite;
       background: linear-gradient(90deg,
         transparent 0%,
-        rgba(255, 255, 255, 0.4) 20%,
-        rgba(255, 255, 255, 0.7) 50%,
-        rgba(255, 255, 255, 0.4) 80%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.4)) 20%,
+        var(--shimmer-color-bright, rgba(255, 255, 255, 0.7)) 50%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.4)) 80%,
         transparent 100%
       );
     }
@@ -2200,8 +2200,8 @@ const KuroStyles = memo(({ oledMode }) => (
         transform: translateY(-4px);
         box-shadow:
           var(--shadow-xl),
-          0 0 0 1px rgba(255, 255, 255, 0.08),
-          0 0 50px rgba(100, 140, 200, 0.06),
+          0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.08)),
+          0 0 50px var(--card-glow, rgba(100, 140, 200, 0.06)),
           inset 0 1px 0 rgba(255, 255, 255, 0.10);
       }
       .animations-full .collection-card:hover {
