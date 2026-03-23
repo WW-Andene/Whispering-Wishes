@@ -2013,25 +2013,20 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
           ctx.restore();
 
-          // --- Glitch animated effects (horizontal blocks perpendicular to heart's Y axis) ---
-          // Glitch burst trigger — periodic spikes of intensity
+          // --- Glitch animated effects (3D-projected blocks perpendicular to heart's symmetry axis) ---
           const glitchCycle = Math.sin(time * 1.7) * Math.sin(time * 3.1) * Math.sin(time * 0.6);
           const glitchActive = glitchCycle > 0.3;
           const glitchIntensity = glitchActive ? (glitchCycle - 0.3) / 0.7 : 0;
 
-          // Heart center and dimensions
-          const hCx = (bds.x0 + bds.x1) / 2;
-          const hCy = (bds.y0 + bds.y1) / 2;
-          const hW = bds.x1 - bds.x0;
-          const hH = bds.y1 - bds.y0;
-
-          // Deterministic pseudo-random from seed
           const pseudoRand = (seed) => {
             const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
             return x - Math.floor(x);
           };
 
-          // Glitch blocks: horizontal bands across heart, extending left/right
+          // Glitch blocks in heart's LOCAL coordinate space, then project to screen.
+          // Heart Y axis = symmetry line (x=0 in world, from cleft to tail).
+          // Perpendicular to Y axis = along world X axis.
+          // Each block: a horizontal band at some Y level, extending in X beyond the heart.
           const baseBlockCount = 4;
           const burstBlockCount = glitchActive ? Math.floor(6 + glitchIntensity * 8) : 0;
           const totalBlocks = baseBlockCount + burstBlockCount;
@@ -2041,68 +2036,85 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const isBurst = gi >= baseBlockCount;
             const intensity = isBurst ? glitchIntensity : 0.25 + Math.sin(time * 0.5 + gi) * 0.15;
 
-            // Animated seed so blocks shift over time
             const seed = gi * 73.7 + Math.floor(time * (isBurst ? 6 : 1.5)) * 13.1;
 
-            // Y position: distributed along heart's Y axis (vertical)
+            // Y in heart's local coords: ranges from ~-HEART_SIZE*1.3 (cleft) to ~-HEART_SIZE*0.05 (tail)
             const yFrac = pseudoRand(seed + 1.1);
-            const blockY = bds.y0 + yFrac * hH;
+            const wy = -HEART_SIZE * 1.3 + yFrac * HEART_SIZE * 1.25;
 
-            // Block height: thin horizontal bands
-            const blockH = (1.5 + pseudoRand(seed + 2.2) * 3.5) * (isBurst ? (1 + glitchIntensity) : 1);
+            // Block half-height in world units
+            const blockHalfH = (0.8 + pseudoRand(seed + 2.2) * 2.0) * (isBurst ? (1 + glitchIntensity) : 1);
 
-            // Horizontal: blocks extend beyond left or right edge of heart
+            // X extent: start somewhere and extend outward past heart edge
+            // Heart is ~HEART_SIZE wide at its widest
             const side = pseudoRand(seed + 3.3) > 0.5 ? 1 : -1;
-            const overshoot = hW * (0.15 + pseudoRand(seed + 4.4) * 0.5) * intensity;
-            const blockW = hW * (0.15 + pseudoRand(seed + 5.5) * 0.35);
-            const blockX = side > 0
-              ? hCx + pseudoRand(seed + 6.6) * hW * 0.3 - blockW * 0.3 + overshoot * 0.3
-              : hCx - pseudoRand(seed + 6.6) * hW * 0.3 - blockW * 0.7 - overshoot * 0.3;
+            const xStart = side * (pseudoRand(seed + 4.4) * HEART_SIZE * 0.5);
+            const xEnd = side * (HEART_SIZE * (0.8 + pseudoRand(seed + 5.5) * 0.8 * intensity));
 
-            // Cyan or lavender-pink (matching heart fill)
+            const x0 = Math.min(xStart, xEnd);
+            const x1 = Math.max(xStart, xEnd);
+
+            // Project the 4 corners of this rectangle through 3D
+            const p0 = project(x0, wy - blockHalfH, 0);
+            const p1 = project(x1, wy - blockHalfH, 0);
+            const p2 = project(x1, wy + blockHalfH, 0);
+            const p3 = project(x0, wy + blockHalfH, 0);
+            if (!p0 || !p1 || !p2 || !p3) continue;
+
             const isCyan = pseudoRand(seed + 7.7) > 0.5;
             const col = isCyan ? [80, 230, 255] : [230, 190, 255];
-
             const blockAlpha = (isBurst ? (0.35 + glitchIntensity * 0.4) : (0.15 + Math.sin(time * 0.8 + gi * 2) * 0.1)) * alphaScale;
 
+            ctx.beginPath();
+            ctx.moveTo(p0.sx, p0.sy);
+            ctx.lineTo(p1.sx, p1.sy);
+            ctx.lineTo(p2.sx, p2.sy);
+            ctx.lineTo(p3.sx, p3.sy);
+            ctx.closePath();
             ctx.fillStyle = `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${blockAlpha})`;
-            ctx.fillRect(blockX, blockY, blockW, blockH);
+            ctx.fill();
 
-            // Sometimes draw a second thinner block offset slightly
+            // Secondary thinner block nearby
             if (pseudoRand(seed + 8.8) > 0.5) {
               const col2 = isCyan ? [230, 190, 255] : [80, 230, 255];
-              const offsetX = (pseudoRand(seed + 9.9) - 0.5) * 6 * intensity;
-              ctx.fillStyle = `rgba(${col2[0]}, ${col2[1]}, ${col2[2]}, ${blockAlpha * 0.6})`;
-              ctx.fillRect(blockX + offsetX, blockY + blockH + 1, blockW * 0.7, blockH * 0.5);
+              const wy2 = wy + blockHalfH * 2.5;
+              const q0 = project(x0 * 0.7, wy2 - blockHalfH * 0.4, 0);
+              const q1 = project(x1 * 0.7, wy2 - blockHalfH * 0.4, 0);
+              const q2 = project(x1 * 0.7, wy2 + blockHalfH * 0.4, 0);
+              const q3 = project(x0 * 0.7, wy2 + blockHalfH * 0.4, 0);
+              if (q0 && q1 && q2 && q3) {
+                ctx.beginPath();
+                ctx.moveTo(q0.sx, q0.sy);
+                ctx.lineTo(q1.sx, q1.sy);
+                ctx.lineTo(q2.sx, q2.sy);
+                ctx.lineTo(q3.sx, q3.sy);
+                ctx.closePath();
+                ctx.fillStyle = `rgba(${col2[0]}, ${col2[1]}, ${col2[2]}, ${blockAlpha * 0.6})`;
+                ctx.fill();
+              }
             }
           }
 
-          // Chromatic split — shifted heart outlines along heart's X axis (horizontal)
+          // Chromatic split — heart outline shifted along heart's X axis (projected)
           const splitAmt = glitchActive ? 2 + glitchIntensity * 5 : 0.8 + Math.sin(time * 0.8) * 0.5;
 
-          // Cyan heart shifted right
-          ctx.beginPath();
-          for (let i = 0; i <= HEART_PTS; i++) {
-            const p = heartPts[i % heartPts.length];
-            if (i === 0) ctx.moveTo(p.sx + splitAmt, p.sy);
-            else ctx.lineTo(p.sx + splitAmt, p.sy);
+          // Cyan heart shifted right in world X
+          const cyanPts = makeHeart(1, splitAmt, 0);
+          if (cyanPts) {
+            drawPath(cyanPts);
+            ctx.strokeStyle = `rgba(80, 230, 255, ${(0.2 + glitchIntensity * 0.3) * alphaScale})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
           }
-          ctx.closePath();
-          ctx.strokeStyle = `rgba(80, 230, 255, ${(0.2 + glitchIntensity * 0.3) * alphaScale})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
 
-          // Lavender-pink heart shifted left (matching heart fill)
-          ctx.beginPath();
-          for (let i = 0; i <= HEART_PTS; i++) {
-            const p = heartPts[i % heartPts.length];
-            if (i === 0) ctx.moveTo(p.sx - splitAmt, p.sy);
-            else ctx.lineTo(p.sx - splitAmt, p.sy);
+          // Lavender-pink heart shifted left in world X
+          const pinkPts = makeHeart(1, -splitAmt, 0);
+          if (pinkPts) {
+            drawPath(pinkPts);
+            ctx.strokeStyle = `rgba(230, 190, 255, ${(0.15 + glitchIntensity * 0.25) * alphaScale})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
           }
-          ctx.closePath();
-          ctx.strokeStyle = `rgba(230, 190, 255, ${(0.15 + glitchIntensity * 0.25) * alphaScale})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
 
           ctx.restore();
         }
