@@ -1578,9 +1578,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
         const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
-        // Aemeath colors: lavender inner → pink outer (matches heart palette)
-        const hue = 260 + rowT * 60 + heightNorm * 15; // 260 lavender → 320 pink
-        const sat = 55 + heightNorm * 30;
+        // Aemeath colors: cyan accent on wave crests, lavender mid, pink outer
+        const cyanPunch = Math.pow(heightNorm, 3); // strong only on brightest crests
+        const hue = (260 + rowT * 60 + heightNorm * 15) * (1 - cyanPunch) + 190 * cyanPunch;
+        const sat = 55 + heightNorm * 30 + cyanPunch * 15;
         const lit = 55 + brightness * 35;
 
         const dotAlpha = brightness * 0.5 * alphaScale;
@@ -1610,7 +1611,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         if (spP.sx < -5 || spP.sx > w + 5 || spP.sy < -5 || spP.sy > h + 5) continue;
         const twinkle = Math.sin(time * 2.5 + sp * 5.3) * 0.5 + 0.5;
         const spAlpha = twinkle * 0.35 * alphaScale;
-        const spHue = 250 + spRand * 80; // lavender → pink
+        // Mostly lavender-pink, occasional cyan sparkle
+        const spHue = spRand < 0.15 ? 185 + spRand * 40 : 250 + spRand * 80;
         const spSize = (1 + twinkle * 2.5) * spP.scale * 0.3;
         ctx.fillStyle = `hsla(${spHue}, 75%, 85%, ${spAlpha})`;
         ctx.fillRect(spP.sx - spSize * 0.5, spP.sy - spSize * 0.5, spSize, spSize);
@@ -1646,7 +1648,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           else ctx.lineTo(p.sx, p.sy);
         }
 
-        const lineHue = 255 + rowT_l * 65; // lavender → pink across width
+        // Inner edge cyan, mid lavender, outer pink
+        const lineHue = rowT_l < 0.25 ? 190 + rowT_l * 240 : 250 + rowT_l * 60;
         ctx.strokeStyle = `hsla(${lineHue}, 75%, 72%, ${lineAlpha})`;
         ctx.stroke();
         if (li === 0 || li === LINE_ROWS.length - 1) {
@@ -1660,7 +1663,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       for (let fl = 0; fl < 10; fl++) {
         const flRadius = RADIUS + RIBBON_WIDTH * (0.5 + fl * 0.12);
         const flYOff = (fl - 5) * 12; // spread above/below
-        const flHue = 260 + fl * 10; // lavender → pink
+        const flHue = (fl % 4 === 0) ? 190 : 260 + fl * 10; // every 4th line cyan
         const flAlpha = (0.06 + Math.sin(time * 0.2 + fl * 1.3) * 0.03) * alphaScale;
 
         ctx.beginPath();
@@ -1715,7 +1718,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const barAlpha = (0.12 + depthNorm * 0.28) * alphaScale;
 
         // Vertical bars on screen (not rotated)
-        const barHue = 255 + barSeed * 65; // lavender → pink range
+        const barHue = barSeed < 0.12 ? 185 + barSeed * 50 : 255 + barSeed * 65;
         ctx.fillStyle = `hsla(${barHue}, 75%, 65%, ${barAlpha})`;
         ctx.fillRect(p.sx - barW * 0.5, p.sy - barH, barW, barH);
       }
@@ -1746,12 +1749,18 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(230, 200, 255, ${sparkAlpha})`;
+        // Alternate between lavender and cyan sparkles
+        const spkCyan = (i % 5 === 0);
+        ctx.fillStyle = spkCyan
+          ? `rgba(160, 235, 255, ${sparkAlpha})`
+          : `rgba(230, 200, 255, ${sparkAlpha})`;
         ctx.fill();
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(210, 170, 250, ${sparkAlpha * 0.12})`;
+        ctx.fillStyle = spkCyan
+          ? `rgba(100, 210, 245, ${sparkAlpha * 0.12})`
+          : `rgba(210, 170, 250, ${sparkAlpha * 0.12})`;
         ctx.fill();
       }
 
@@ -1778,12 +1787,12 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Large disc glow
         const discSize = Math.max(w, h) * (0.5 + pulse * 0.1);
         const discGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, discSize);
-        discGrd.addColorStop(0, `rgba(240, 210, 255, ${0.35 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.08, `rgba(220, 190, 255, ${0.25 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.2, `rgba(200, 170, 250, ${0.15 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.4, `rgba(210, 150, 240, ${0.08 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.6, `rgba(220, 140, 220, ${0.04 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.8, `rgba(230, 150, 200, ${0.02 * pulse * alphaScale})`);
+        discGrd.addColorStop(0, `rgba(190, 235, 255, ${0.35 * pulse * alphaScale})`);   // cyan core
+        discGrd.addColorStop(0.05, `rgba(220, 215, 255, ${0.30 * pulse * alphaScale})`); // transition
+        discGrd.addColorStop(0.12, `rgba(235, 200, 255, ${0.22 * pulse * alphaScale})`); // lavender
+        discGrd.addColorStop(0.3, `rgba(220, 180, 250, ${0.12 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.5, `rgba(225, 155, 235, ${0.06 * pulse * alphaScale})`);  // pink
+        discGrd.addColorStop(0.7, `rgba(230, 150, 210, ${0.03 * pulse * alphaScale})`);
         discGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
@@ -1971,8 +1980,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const alpha = fade * 0.14 * alphaScale;
           if (alpha < 0.005) continue;
 
-          // Hue shifts with radius: lavender(265) center → pink(320) edge
-          const hue = 265 + phase * 55;
+          // Inner ripples cyan, mid lavender, outer pink
+          const hue = phase < 0.3 ? 190 + phase * 230 : 260 + phase * 60;
           const wy = -RIPPLE_AMP * fade;
 
           const rOuter = r + BAND_W * 0.5 * fade;
