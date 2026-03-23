@@ -1799,8 +1799,13 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const pts = [];
           for (let hi = 0; hi <= HEART_PTS; hi++) {
             const t = (hi / HEART_PTS) * Math.PI * 2;
-            const hx = 16 * Math.pow(Math.sin(t), 3);
-            const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            let hx = 16 * Math.pow(Math.sin(t), 3);
+            let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            // Squarify: push coordinates outward to make shape wider/blockier
+            const nx = hx / 16; // normalize to -1..1
+            const ny = hy / 17;
+            hx = Math.sign(nx) * Math.pow(Math.abs(nx), 0.75) * 17.5; // widen + square-ify x
+            hy = Math.sign(ny) * Math.pow(Math.abs(ny), 0.85) * 17;   // flatten y slightly
             const wx = hx * HEART_SIZE * scale / 16 + (oxW || 0);
             const wy = -hy * HEART_SIZE * scale / 17 - HEART_SIZE + (oyW || 0);
             const p = project(wx, wy, 0);
