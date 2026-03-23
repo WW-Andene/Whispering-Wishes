@@ -3403,10 +3403,12 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div className="relative">
-                {activeTheme && <div className="absolute inset-0 rounded-xl blur-md opacity-50" style={{ background: `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` }} aria-hidden="true" />}
-                <h1 className="relative text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
+              <div className="relative group">
+                <div className="absolute inset-0 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
+                <div className="relative" style={{ padding: '4px 10px' }}>
+                  <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
+                  <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
+                </div>
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
