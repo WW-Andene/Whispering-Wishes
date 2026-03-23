@@ -2428,14 +2428,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ============================================================
 
       // --- 3D rectangle with perspective pointing toward the sun ---
-      // Bottom at 50% of L1 = 62.5% h, top at 50% of L3 = 12.5% h.
-      // Width at each Y scales by distance from VP (sun).
+      // Bottom at 50% of L1 = 62.5% h, top just above the sun VP.
+      // Width at each Y scales with distance from VP (sun).
       {
         const vpX = sunX;           // w * 0.5
         const vpY = sunY;           // h * 0.18
 
         const botY = h * 0.625;     // 50% of L1
-        const topY = h * 0.125;     // 50% of L3
+        // Top must stay below VP for correct perspective convergence
+        const topY = vpY + h * 0.02; // just below the sun
 
         // Clip so nothing renders outside the intended bounds
         ctx.save();
@@ -2444,8 +2445,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.clip();
 
         // Half-width scales with distance from the sun VP
-        const dBot = Math.abs(botY - vpY);  // 0.445 * h
-        const dTop = Math.abs(topY - vpY);  // 0.055 * h
+        const dBot = botY - vpY;    // distance bottom→VP
+        const dTop = topY - vpY;    // distance top→VP (positive, top is below VP)
         const hwBot = w * 0.5;              // full width at bottom
         const hwTop = hwBot * dTop / dBot;  // narrow at top
 
