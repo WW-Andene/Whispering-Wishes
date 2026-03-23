@@ -2302,7 +2302,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Sun/Vortex glow (top center) ---
       const sunX = w * 0.5;
-      const sunY = h * 0.18;
+      const sunY = h * 0.13;
       const sunPulse = 1 + Math.sin(time * 0.3) * 0.08;
 
       // Outer atmospheric haze
@@ -2437,25 +2437,44 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         // Cloud banks: wide horizontal masses, no rotation
         // Perspective: clouds lower on screen (further from sun) get flatter
+        const sunYn = 0.13; // match sunY
         const cloudDefs = [
           // { cx, cy (normalized), widthN, heightN } — always horizontal
-          // Left bank
-          { cx: 0.05, cy: 0.10, wN: 0.22, hN: 0.06 },
-          { cx: -0.02, cy: 0.20, wN: 0.20, hN: 0.05 },
-          { cx: 0.12, cy: 0.28, wN: 0.18, hN: 0.04 },
-          { cx: -0.04, cy: 0.35, wN: 0.19, hN: 0.035 },
-          { cx: 0.08, cy: 0.42, wN: 0.16, hN: 0.03 },
-          // Right bank
-          { cx: 0.95, cy: 0.09, wN: 0.21, hN: 0.06 },
-          { cx: 1.02, cy: 0.19, wN: 0.19, hN: 0.05 },
-          { cx: 0.88, cy: 0.27, wN: 0.17, hN: 0.04 },
-          { cx: 1.04, cy: 0.34, wN: 0.18, hN: 0.035 },
-          { cx: 0.92, cy: 0.41, wN: 0.15, hN: 0.03 },
-          // Wisps near vortex (smaller, thinner)
-          { cx: 0.28, cy: 0.08, wN: 0.12, hN: 0.03 },
-          { cx: 0.72, cy: 0.07, wN: 0.11, hN: 0.025 },
-          { cx: 0.22, cy: 0.16, wN: 0.10, hN: 0.025 },
-          { cx: 0.78, cy: 0.15, wN: 0.10, hN: 0.025 },
+          // Left bank — large masses
+          { cx: 0.04, cy: 0.06, wN: 0.20, hN: 0.055 },
+          { cx: -0.03, cy: 0.14, wN: 0.22, hN: 0.05 },
+          { cx: 0.10, cy: 0.22, wN: 0.19, hN: 0.045 },
+          { cx: -0.05, cy: 0.29, wN: 0.20, hN: 0.04 },
+          { cx: 0.07, cy: 0.36, wN: 0.17, hN: 0.035 },
+          { cx: -0.02, cy: 0.43, wN: 0.18, hN: 0.03 },
+          { cx: 0.13, cy: 0.48, wN: 0.15, hN: 0.025 },
+          // Right bank — large masses
+          { cx: 0.96, cy: 0.05, wN: 0.19, hN: 0.055 },
+          { cx: 1.03, cy: 0.13, wN: 0.21, hN: 0.05 },
+          { cx: 0.90, cy: 0.21, wN: 0.18, hN: 0.045 },
+          { cx: 1.05, cy: 0.28, wN: 0.19, hN: 0.04 },
+          { cx: 0.93, cy: 0.35, wN: 0.16, hN: 0.035 },
+          { cx: 1.02, cy: 0.42, wN: 0.17, hN: 0.03 },
+          { cx: 0.87, cy: 0.47, wN: 0.14, hN: 0.025 },
+          // Mid-left fills
+          { cx: 0.18, cy: 0.10, wN: 0.14, hN: 0.04 },
+          { cx: 0.20, cy: 0.32, wN: 0.12, hN: 0.03 },
+          { cx: 0.15, cy: 0.40, wN: 0.13, hN: 0.028 },
+          // Mid-right fills
+          { cx: 0.82, cy: 0.09, wN: 0.13, hN: 0.04 },
+          { cx: 0.80, cy: 0.31, wN: 0.12, hN: 0.03 },
+          { cx: 0.85, cy: 0.39, wN: 0.11, hN: 0.028 },
+          // Wisps near vortex
+          { cx: 0.30, cy: 0.04, wN: 0.10, hN: 0.028 },
+          { cx: 0.70, cy: 0.03, wN: 0.09, hN: 0.025 },
+          { cx: 0.25, cy: 0.12, wN: 0.09, hN: 0.022 },
+          { cx: 0.75, cy: 0.11, wN: 0.09, hN: 0.022 },
+          { cx: 0.35, cy: 0.18, wN: 0.08, hN: 0.02 },
+          { cx: 0.65, cy: 0.17, wN: 0.08, hN: 0.02 },
+          // Low horizon wisps
+          { cx: 0.30, cy: 0.45, wN: 0.14, hN: 0.022 },
+          { cx: 0.50, cy: 0.50, wN: 0.18, hN: 0.02 },
+          { cx: 0.70, cy: 0.46, wN: 0.13, hN: 0.022 },
         ];
 
         for (let ci = 0; ci < cloudDefs.length; ci++) {
@@ -2465,7 +2484,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const cyP = cd.cy * h;
 
           // Perspective: further from sun → squash height, stretch width
-          const vpDist = Math.abs(cd.cy - 0.18);
+          const vpDist = Math.abs(cd.cy - sunYn);
           const perspSquash = Math.max(0.3, 1 - vpDist * 1.5);
           const rxP = cd.wN * w * (1 + vpDist * 0.6);
           const ryP = cd.hN * h * perspSquash;
