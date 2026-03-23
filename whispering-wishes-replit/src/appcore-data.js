@@ -1226,6 +1226,18 @@ const RESONANCE_CHAIN_DATA = {
   'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 20 } },
   'Zhezhi':       { s1: { coordDmg: 10 }, s2: { totalMult: 15 }, s3: { coordDmg: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { coordDmg: 20 } },
   'Qiuyuan':      { s1: { echoDmg: 10 }, s2: { totalMult: 15 }, s3: { echoDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { echoDmg: 20 } },
+  // 4★ + missing characters
+  'Jianxin':      { s1: { atkPct: 8 }, s2: { deepen: 8 }, s3: { defShred: 5 }, s4: { atkPct: 8 }, s5: { totalMult: 10 }, s6: { deepen: 12 } },
+  'Rover':        { s1: { elemDmg: 8 }, s2: { skillDmg: 12 }, s3: { critRate: 8 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 10, deepen: 15 } },
+  'Aalto':        { s1: { elemDmg: 8 }, s2: { totalMult: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
+  'Baizhi':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
+  'Buling':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
+  'Chixia':       { s1: { atkPct: 8 }, s2: { skillDmg: 10 }, s3: { atkPct: 8 }, s4: { skillDmg: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
+  'Lumi':         { s1: { skillDmg: 10 }, s2: { totalMult: 10 }, s3: { skillDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { skillDmg: 15 } },
+  'Taoqi':        { s1: { defShred: 5 }, s2: { deepen: 5 }, s3: { defShred: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { defShred: 8 } },
+  'Yangyang':     { s1: { atkPct: 5 }, s2: { totalMult: 8 }, s3: { atkPct: 5 }, s4: { totalMult: 8 }, s5: { atkPct: 8 }, s6: { elemDmg: 10 } },
+  'Youhu':        { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
+  'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
 };
 
 // [SECTION:ECHO_SETS] — Sonata Effect set bonuses
