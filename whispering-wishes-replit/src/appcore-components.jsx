@@ -1896,7 +1896,7 @@ const BannerParticleOverlay = memo(({ characterName, element }) => {
       {isQiuyuan && (
         <div
           className="absolute pointer-events-none moon-glow-pulse"
-          style={{ left: '63%', top: '11%', width: '20px', height: '20px', zIndex: 3 }}
+          style={{ left: '61%', top: '10.5%', width: '20px', height: '20px', zIndex: 3 }}
           aria-hidden="true"
         />
       )}
