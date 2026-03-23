@@ -7145,12 +7145,14 @@ function WhisperingWishesInner() {
                         // Build recommended echoes from bestEchoes + matching sonata sets
                         const recommendedEchoes = new Set();
                         const recSets = new Set();
-                        (charData?.bestEchoes || []).forEach(e => {
+                        (charData?.bestEchoes || []).forEach(entry => {
                           // Direct echo name matches
-                          echoList.forEach(en => { if (e.toLowerCase().includes(en.toLowerCase())) recommendedEchoes.add(en); });
-                          // Extract set names (e.g. "Eternal Radiance 5pc" → "Eternal Radiance")
-                          const setMatch = e.replace(/\s+\d+pc$/i, '').trim();
-                          if (ECHO_SETS[setMatch]) recSets.add(setMatch);
+                          echoList.forEach(en => { if (entry.toLowerCase().includes(en.toLowerCase())) recommendedEchoes.add(en); });
+                          // Extract all set names from entries like "Eternal Radiance 5pc" or "Dream of the Lost 3pc + Havoc Eclipse 2pc"
+                          entry.split('+').forEach(part => {
+                            const setName = part.trim().replace(/\s+\d+pc$/i, '').trim();
+                            if (ECHO_SETS[setName]) recSets.add(setName);
+                          });
                         });
                         // Add echoes that belong to recommended sets
                         if (recSets.size > 0) {
@@ -7323,6 +7325,40 @@ function WhisperingWishesInner() {
                           ? ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen']
                           : ['ATK%', 'HP%', 'DEF%'];
                         const substatOptions = ['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'];
+                        // Recommended stats based on character role/element
+                        const cd = CHARACTER_DATA[charName];
+                        const charEl = cd?.element;
+                        const charRole = cd?.role;
+                        const elDmgStat = charEl ? `${charEl} DMG` : null;
+                        const isHealer = charRole === 'Healer';
+                        const isSupport = charRole === 'Support';
+                        const recMainStats = new Set();
+                        const recSubstats = new Set();
+                        // Recommended sonata sets for this character
+                        const charRecSets = new Set();
+                        (cd?.bestEchoes || []).forEach(entry => {
+                          entry.split('+').forEach(part => {
+                            const setName = part.trim().replace(/\s+\d+pc$/i, '').trim();
+                            if (ECHO_SETS[setName]) charRecSets.add(setName);
+                          });
+                        });
+                        if (isHealer) {
+                          if (costNum === 4) { recMainStats.add('Healing Bonus'); }
+                          else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); recMainStats.add('ATK%'); }
+                          else { recMainStats.add('HP%'); }
+                          ['HP%', 'ATK%', 'Energy Regen'].forEach(s => recSubstats.add(s));
+                        } else if (isSupport) {
+                          if (costNum === 4) { recMainStats.add('Energy Regen'); recMainStats.add('ATK%'); }
+                          else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); recMainStats.add('ATK%'); }
+                          else { recMainStats.add('ATK%'); }
+                          ['ATK%', 'Energy Regen', 'Crit Rate', 'Crit DMG'].forEach(s => recSubstats.add(s));
+                        } else {
+                          // DPS (Main DPS / Sub DPS)
+                          if (costNum === 4) { recMainStats.add('Crit Rate'); recMainStats.add('Crit DMG'); }
+                          else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); }
+                          else { recMainStats.add('ATK%'); }
+                          ['Crit Rate', 'Crit DMG', 'ATK%', 'Energy Regen'].forEach(s => recSubstats.add(s));
+                        }
                         const updateEchoData = (updates) => {
                           setTeamEquipment(prev => {
                             const n = { ...prev };
@@ -7354,28 +7390,39 @@ function WhisperingWishesInner() {
                               <button onClick={() => setEchoStatPanel(null)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>
                             </div>
                             <div className="overflow-y-auto flex-1 p-3 space-y-4">
-                              {/* Sonata sets */}
+                              {/* Sonata sets — highlight recommended */}
                               {echoData?.sets && (
                                 <div>
                                   <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sonata Sets</div>
                                   <div className="flex flex-wrap gap-1">
-                                    {echoData.sets.map(s => <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">{s}</span>)}
+                                    {echoData.sets.map(s => {
+                                      const isRec = charRecSets.has(s);
+                                      return <span key={s} className={`text-[10px] px-2 py-0.5 rounded border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
+                                    })}
                                   </div>
+                                  {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
+                                    <div className="flex items-center gap-1 mt-1 text-[9px] text-orange-400/80">
+                                      <Star size={8} className="text-orange-400" fill="currentColor" />
+                                      <span>Recommended set for {charName}</span>
+                                    </div>
+                                  )}
                                 </div>
                               )}
 
                               {/* Main Stat Selection */}
                               <div>
-                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat</div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                                 <div className="grid grid-cols-2 gap-1">
                                   {mainStatOptions.map(stat => {
                                     const isActive = currentMainStat === stat;
+                                    const isRec = recMainStats.has(stat);
                                     return (
                                       <button key={stat}
-                                        className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                                        className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                                        style={isRec && !isActive ? { boxShadow: '0 0 8px rgba(251,146,60,0.2)' } : {}}
                                         onClick={() => { updateEchoData({ mainStat: isActive ? null : stat }); haptic.light(); }}
                                       >
-                                        {stat}
+                                        {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}
                                       </button>
                                     );
                                   })}
@@ -7384,15 +7431,16 @@ function WhisperingWishesInner() {
 
                               {/* Sub Stats Selection */}
                               <div>
-                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sub Stats <span className="text-gray-600">(select up to 5)</span></div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                                 <div className="grid grid-cols-2 gap-1">
                                   {substatOptions.map(stat => {
                                     const isActive = currentSubstats.includes(stat);
                                     const atMax = currentSubstats.length >= 5 && !isActive;
+                                    const isRec = recSubstats.has(stat);
                                     return (
                                       <button key={stat}
                                         disabled={atMax}
-                                        className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                                        className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : isRec ? 'border-orange-500/30 bg-orange-500/5 text-orange-300/80 hover:bg-orange-500/10' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
                                         onClick={() => {
                                           if (atMax) return;
                                           const newSubs = isActive ? currentSubstats.filter(s => s !== stat) : [...currentSubstats, stat];
@@ -7400,7 +7448,7 @@ function WhisperingWishesInner() {
                                           haptic.light();
                                         }}
                                       >
-                                        {stat}
+                                        {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}
                                       </button>
                                     );
                                   })}
