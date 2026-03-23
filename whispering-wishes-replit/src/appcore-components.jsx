@@ -3315,6 +3315,103 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
 ));
 CalcResultsCard.displayName = 'CalcResultsCard';
 
+// Standard banner particle overlay — subtle silver/white floating motes with soft shimmer
+const StandardBannerOverlay = memo(() => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width || 400;
+    const h = rect.height || 190;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Slow-drifting silver motes
+    const motes = Array.from({ length: 20 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: -0.08 - Math.random() * 0.12,
+      size: 1 + Math.random() * 1.8,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.3 + Math.random() * 0.7,
+      alpha: 0.3 + Math.random() * 0.4,
+    }));
+
+    // Soft horizontal light streaks
+    const streaks = Array.from({ length: 3 }, () => ({
+      y: h * 0.2 + Math.random() * h * 0.6,
+      phase: Math.random() * Math.PI * 2,
+      width: w * (0.3 + Math.random() * 0.4),
+      x: Math.random() * w,
+    }));
+
+    let animId, t = 0;
+    const frame = () => {
+      ctx.clearRect(0, 0, w, h);
+      t += 0.016;
+
+      // Subtle horizontal light streaks — premium shimmer
+      for (const s of streaks) {
+        const a = (0.03 + Math.sin(t * 0.4 + s.phase) * 0.02) * (0.5 + Math.sin(t * 0.15 + s.phase * 2) * 0.5);
+        if (a < 0.005) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        const g = ctx.createLinearGradient(s.x - s.width / 2, 0, s.x + s.width / 2, 0);
+        g.addColorStop(0, 'rgba(255,255,255,0)');
+        g.addColorStop(0.3, 'rgba(220,230,245,0.6)');
+        g.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+        g.addColorStop(0.7, 'rgba(220,230,245,0.6)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(s.x - s.width / 2, s.y - 0.5, s.width, 1);
+        ctx.restore();
+      }
+
+      // Floating silver motes
+      for (const m of motes) {
+        m.x += m.vx + Math.sin(t * 0.3 + m.phase) * 0.1;
+        m.y += m.vy;
+        if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
+        if (m.x < -5) m.x = w + 5;
+        if (m.x > w + 5) m.x = -5;
+
+        const pulse = m.alpha * (0.5 + Math.sin(t * m.speed + m.phase) * 0.5);
+        if (pulse < 0.05) continue;
+
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = 'rgba(230,240,255,1)';
+        ctx.shadowColor = 'rgba(200,220,255,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      animId = requestAnimationFrame(frame);
+    };
+    animId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 2, width: '100%', height: '100%' }}
+      aria-hidden="true"
+    />
+  );
+});
+StandardBannerOverlay.displayName = 'StandardBannerOverlay';
+
 // Standard banner card — eliminates ~110 lines of copy-paste between standard char/weap banners
 const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
@@ -3333,7 +3430,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           onError={hideOnError}
         />
       )}
-      {bannerImage && isFull && <BannerParticleOverlay characterName="" element="Spectro" />}
+      {bannerImage && isFull && <StandardBannerOverlay w={0} h={0} />}
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
