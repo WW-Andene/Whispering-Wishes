@@ -2594,27 +2594,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Draw stripes bottom→top; each stripe thins with perspective
-        const STRIPES = 20;
-        const totalH = botY - topY;
+        // Draw stripes bottom→top; perspective-scaled, light thinner than dark
         let y = botY;
-        for (let i = 0; i < STRIPES; i++) {
-          // Distance from VP at current y → stripe height scales with it
-          const dist = y - vpY;
-          const stripeH = dist / (totalH / (totalH / STRIPES));
-          // Proportional height: thicker at bottom, thinner at top
-          const baseH = totalH / STRIPES;
-          const scale = dist / dBot; // 1 at bottom, small at top
-          const sh = baseH * scale;
-          if (sh < 1 || y - sh < topY) break;
-          y -= sh;
-          const isDark = i % 2 === 0; // first (bottom) is dark
+        let i = 0;
+        while (y > topY) {
+          const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
+          const isDark = i % 2 === 0;     // first (bottom) is dark
+          // Dark stripes are thicker, light stripes are thinner
+          const baseH = isDark ? h * 0.035 : h * 0.015;
+          const sh = Math.max(1, baseH * scale);
+          const drawY = Math.max(topY, y - sh);
           ctx.beginPath();
-          ctx.rect(0, y, w, sh);
+          ctx.rect(0, drawY, w, y - drawY);
           ctx.fillStyle = isDark
             ? `rgba(10, 7, 3, ${edgeAlpha * 0.3})`
             : `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
           ctx.fill();
+          y = drawY;
+          i++;
         }
         ctx.restore();
 
