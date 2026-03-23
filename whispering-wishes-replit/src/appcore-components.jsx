@@ -2606,7 +2606,72 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Clip to trapezoid so steps stay within staircase bounds
+        // Seeded hash for deterministic per-step randomness
+        const sHash = (a, b) => {
+          let n = a * 374761393 + b * 668265263;
+          n = (n ^ (n >> 13)) * 1274126177;
+          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
+        };
+
+        // Helper: get x position on left/right diagonal edge at given y
+        const diagL = (py) => botL + (topL - botL) * (botY - py) / (botY - topY);
+        const diagR = (py) => botR + (topR - botR) * (botY - py) / (botY - topY);
+
+        // Pre-compute step positions (just y coords and heights)
+        const steps = [];
+        {
+          let sy = botY;
+          let si = 0;
+          while (sy > topY) {
+            const scale = (sy - vpY) / dBot;
+            const s = (a) => sHash(si, a);
+
+            // Riser height varies dramatically per step
+            const hMul = 0.5 + s(0) * 1.0;
+            const darkH = Math.max(3, h * 0.014 * scale * hMul);
+            const riserTop = Math.max(topY, sy - darkH);
+
+            // Gap between this step and next (visible dark crack)
+            const gapH = Math.max(1, h * 0.002 * scale * (0.5 + s(1) * 1.0));
+
+            // Tread depth
+            const treadMul = 0.4 + s(2) * 1.0;
+            const treadH = Math.max(1, h * 0.004 * scale * scale * treadMul);
+            const treadTop = Math.max(topY, riserTop - treadH);
+
+            // Break info (~30% of steps)
+            let breakSide = 0, breakFrac = 0;
+            const breakJag = [];
+            if (s(8) > 0.7) {
+              breakSide = s(10) > 0.5 ? 1 : -1;
+              breakFrac = 0.08 + s(9) * 0.18; // fraction of width broken off
+              const nPts = 5 + Math.floor(s(11) * 3);
+              for (let p = 0; p <= nPts; p++) {
+                breakJag.push({
+                  t: p / nPts,
+                  jag: (sHash(si, 70 + p) - 0.5) * 0.7
+                });
+              }
+            }
+
+            // Per-step color tone (dramatic variation)
+            // Each step gets a unique brightness and warm/cool shift
+            const brightness = 0.15 + s(3) * 0.7; // 0.15 = very dark, 0.85 = quite light
+            const warmth = s(4) - 0.5; // -0.5 cool (bluish) to +0.5 warm (brownish)
+
+            steps.push({
+              idx: si, y: sy, riserTop, treadTop, darkH, gapH, scale,
+              breakSide, breakFrac, breakJag,
+              treadH, brightness, warmth
+            });
+
+            sy = treadTop - gapH; // next step starts after gap
+            si++;
+            if (riserTop <= topY) break;
+          }
+        }
+
+        // Clip to trapezoid
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(botL, botY);
@@ -2616,284 +2681,203 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Seeded hash for deterministic per-step randomness
-        const sHash = (a, b) => {
-          let n = a * 374761393 + b * 668265263;
-          n = (n ^ (n >> 13)) * 1274126177;
-          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
-        };
+        // === PASS 1: Fill entire trapezoid with dark inner stone ===
+        // This is the "revealed layer" under broken parts
+        ctx.beginPath();
+        ctx.moveTo(botL, botY);
+        ctx.lineTo(topL, topY);
+        ctx.lineTo(topR, topY);
+        ctx.lineTo(botR, botY);
+        ctx.closePath();
+        ctx.fillStyle = rockPat;
+        ctx.fill();
+        ctx.fillStyle = 'rgba(6, 4, 2, 0.8)';
+        ctx.fill();
 
-        // Pre-compute all step geometries
-        const steps = [];
-        {
-          let sy = botY;
-          let si = 0;
-          while (sy > topY) {
-            const scale = (sy - vpY) / dBot;
-            const s = (a) => sHash(si, a);
-
-            // Riser height varies per step
-            const hMul = 0.6 + s(0) * 0.8;
-            const darkH = Math.max(3, h * 0.013 * scale * hMul);
-            const dY = Math.max(topY, sy - darkH);
-            const hwAt = hwBot * (dY - vpY) / dBot;
-
-            // Full width for inner layer (always fills entire width)
-            const fullL = vpX - hwAt;
-            const fullR = vpX + hwAt;
-
-            // Visible step can be narrower/shifted (the "stone slab" on top)
-            const wMul = 0.92 + s(2) * 0.16;
-            const wShift = (s(1) - 0.5) * hwAt * 0.08;
-            let rL = vpX - hwAt * wMul + wShift;
-            let rR = vpX + hwAt * wMul + wShift;
-
-            // Some steps have a crumbled/broken edge (~30%)
-            let breakSide = 0; // 0=none, -1=left, 1=right
-            let breakAmt = 0;
-            let breakJagged = [];
-            if (s(8) > 0.7) {
-              breakSide = s(10) > 0.5 ? 1 : -1;
-              breakAmt = hwAt * (0.06 + s(9) * 0.14);
-              // Generate jagged break edge (5-7 points)
-              const nPts = 5 + Math.floor(s(11) * 3);
-              for (let p = 0; p <= nPts; p++) {
-                const t = p / nPts;
-                const jag = (sHash(si, 70 + p) - 0.5) * breakAmt * 0.6;
-                breakJagged.push({ t, jag });
-              }
-            }
-
-            const stepW = rR - rL;
-
-            // Tread geometry
-            let treadH = 0, lY = sy;
-            if (dY > topY) {
-              const treadMul = 0.5 + s(18) * 0.8;
-              treadH = Math.max(1, h * 0.003 * scale * scale * treadMul);
-              lY = Math.max(topY, dY - treadH);
-            }
-
-            steps.push({
-              idx: si, y: sy, dY, lY, darkH, scale,
-              fullL, fullR, rL, rR, stepW,
-              breakSide, breakAmt, breakJagged,
-              treadH, hwAt
-            });
-
-            sy = lY;
-            si++;
-            if (dY <= topY) break;
-          }
-        }
-
-        // === PASS 1: Draw dark inner stone layer behind ALL steps ===
-        // This is what shows through broken/missing parts
-        for (const st of steps) {
-          const s = (a) => sHash(st.idx, a);
-          // Fill full-width area with dark rough stone
-          ctx.beginPath();
-          ctx.moveTo(st.fullL, st.y);
-          ctx.lineTo(st.fullR, st.y);
-          ctx.lineTo(st.fullR, st.dY);
-          ctx.lineTo(st.fullL, st.dY);
-          ctx.closePath();
-          ctx.fillStyle = rockPat;
-          ctx.fill();
-          // Very dark overlay — this is the "inner rubble/mortar" layer
-          ctx.fillStyle = `rgba(8, 5, 3, 0.75)`;
-          ctx.fill();
-
-          // Tread inner layer too
-          if (st.treadH > 0 && st.dY > topY) {
-            ctx.beginPath();
-            ctx.moveTo(st.fullL, st.dY);
-            ctx.lineTo(st.fullR, st.dY);
-            ctx.lineTo(st.fullR, st.lY);
-            ctx.lineTo(st.fullL, st.lY);
-            ctx.closePath();
-            ctx.fillStyle = rockPat;
-            ctx.fill();
-            ctx.fillStyle = `rgba(12, 8, 4, 0.65)`;
-            ctx.fill();
-          }
-        }
-
-        // === PASS 2: Draw actual stone slabs on top ===
-        // Broken parts leave the dark inner layer visible
-        const rubble = []; // collect rubble pieces to draw on treads
+        // === PASS 2: Draw each step slab ===
+        const rubble = [];
         for (let i = 0; i < steps.length; i++) {
           const st = steps[i];
           const s = (a) => sHash(st.idx, a);
 
-          // --- Riser (front face) ---
+          // Step edges touch the diagonal walls
+          const edgeL_bot = diagL(st.y);
+          const edgeR_bot = diagR(st.y);
+          const edgeL_top = diagL(st.riserTop);
+          const edgeR_top = diagR(st.riserTop);
+
+          // Break: one side is shortened
+          let rL_bot = edgeL_bot, rR_bot = edgeR_bot;
+          let rL_top = edgeL_top, rR_top = edgeR_top;
+          const stepW_bot = edgeR_bot - edgeL_bot;
+          const stepW_top = edgeR_top - edgeL_top;
+
+          if (st.breakSide < 0) {
+            rL_bot += stepW_bot * st.breakFrac;
+            rL_top += stepW_top * st.breakFrac;
+          } else if (st.breakSide > 0) {
+            rR_bot -= stepW_bot * st.breakFrac;
+            rR_top -= stepW_top * st.breakFrac;
+          }
+
+          // --- Riser (front face of the stone slab) ---
           ctx.beginPath();
           if (st.breakSide === 0) {
-            // No break — full riser with slight jagged top
-            ctx.moveTo(st.rL, st.y);
-            ctx.lineTo(st.rR, st.y);
-            ctx.lineTo(st.rR, st.dY);
-            // Jagged top edge right→left
+            // Full width riser
+            ctx.moveTo(rL_bot, st.y);
+            ctx.lineTo(rR_bot, st.y);
+            ctx.lineTo(rR_top, st.riserTop);
+            // Jagged top edge
             for (let si = 10; si >= 0; si--) {
               const t = si / 10;
-              const jx = st.rL + st.stepW * t;
-              const jy = st.dY + (sHash(st.idx, 40 + si) - 0.5) * st.darkH * 0.15;
+              const jx = rL_top + (rR_top - rL_top) * t;
+              const jy = st.riserTop + (sHash(st.idx, 40 + si) - 0.5) * st.darkH * 0.2;
               ctx.lineTo(jx, jy);
             }
             ctx.closePath();
+          } else if (st.breakSide < 0) {
+            // Left side broken — jagged left edge
+            ctx.moveTo(rL_bot, st.y);
+            // Jagged break edge from bottom to top
+            for (const pt of st.breakJag) {
+              const py = st.y - (st.y - st.riserTop) * pt.t;
+              const baseX = edgeL_bot + (edgeL_top - edgeL_bot) * pt.t;
+              const brkOffset = (st.breakSide < 0 ? stepW_bot : stepW_top) * st.breakFrac;
+              ctx.lineTo(baseX + brkOffset + pt.jag * brkOffset * 0.5, py);
+            }
+            // Top edge
+            for (let si = 0; si <= 10; si++) {
+              const t = si / 10;
+              const jx = rL_top + (rR_top - rL_top) * t;
+              const jy = st.riserTop + (sHash(st.idx, 40 + si) - 0.5) * st.darkH * 0.15;
+              ctx.lineTo(jx, jy);
+            }
+            ctx.lineTo(rR_bot, st.y);
+            ctx.closePath();
           } else {
-            // Broken edge — riser shape has irregular cutout on one side
-            const breakEdgeX = st.breakSide > 0
-              ? st.rR - st.breakAmt
-              : st.rL + st.breakAmt;
-
-            ctx.moveTo(st.rL, st.y);
-            if (st.breakSide < 0) {
-              // Left side broken: bottom goes from breakEdgeX
-              // Jagged break edge going up from bottom
-              for (const pt of st.breakJagged) {
-                const py = st.y - (st.y - st.dY) * pt.t;
-                const px = st.rL + st.breakAmt + pt.jag;
-                ctx.lineTo(px, py);
-              }
-              // Top edge left→right
-              for (let si = 0; si <= 10; si++) {
-                const t = si / 10;
-                const jx = st.rL + st.breakAmt + (st.rR - st.rL - st.breakAmt) * t;
-                const jy = st.dY + (sHash(st.idx, 40 + si) - 0.5) * st.darkH * 0.12;
-                ctx.lineTo(jx, jy);
-              }
-              ctx.lineTo(st.rR, st.dY);
-              ctx.lineTo(st.rR, st.y);
-            } else {
-              // Right side broken
-              ctx.lineTo(st.rR, st.y);
-              // Jagged break edge going up on right side
-              for (const pt of [...st.breakJagged].reverse()) {
-                const py = st.y - (st.y - st.dY) * pt.t;
-                const px = st.rR - st.breakAmt + pt.jag;
-                ctx.lineTo(px, py);
-              }
-              // Top edge right→left
-              for (let si = 10; si >= 0; si--) {
-                const t = si / 10;
-                const jx = st.rL + (st.rR - st.rL - st.breakAmt) * t;
-                const jy = st.dY + (sHash(st.idx, 40 + si) - 0.5) * st.darkH * 0.12;
-                ctx.lineTo(jx, jy);
-              }
+            // Right side broken — jagged right edge
+            ctx.moveTo(rL_bot, st.y);
+            ctx.lineTo(rR_bot, st.y);
+            // Jagged break edge going up on right
+            for (const pt of [...st.breakJag].reverse()) {
+              const py = st.y - (st.y - st.riserTop) * pt.t;
+              const baseX = edgeR_bot + (edgeR_top - edgeR_bot) * pt.t;
+              const brkOffset = stepW_bot * st.breakFrac;
+              ctx.lineTo(baseX - brkOffset + pt.jag * brkOffset * 0.5, py);
+            }
+            // Top edge right→left
+            for (let si = 10; si >= 0; si--) {
+              const t = si / 10;
+              const jx = rL_top + (rR_top - rL_top) * t;
+              const jy = st.riserTop + (sHash(st.idx, 40 + si) - 0.5) * st.darkH * 0.15;
+              ctx.lineTo(jx, jy);
             }
             ctx.closePath();
-
-            // Generate rubble pieces near the break
-            if (st.scale > 0.15) {
-              const nRub = 2 + Math.floor(s(30) * 3);
-              for (let ri = 0; ri < nRub; ri++) {
-                const rx = st.breakSide > 0
-                  ? st.rR - st.breakAmt * (0.3 + sHash(st.idx, 80 + ri) * 1.2)
-                  : st.rL + st.breakAmt * (0.3 + sHash(st.idx, 80 + ri) * 1.2);
-                const rySurf = st.dY; // sits on the tread surface
-                const rSz = st.stepW * (0.01 + sHash(st.idx, 85 + ri) * 0.03);
-                rubble.push({ x: rx, y: rySurf, sz: rSz, seed: st.idx * 100 + ri });
-              }
-            }
           }
 
-          // Fill the riser slab
+          // Fill with rock texture
           ctx.fillStyle = rockPat;
           ctx.fill();
-          // Shade overlay — varies per step
-          const dShade = 0.25 + s(6) * 0.25;
-          const bTint = s(7) > 0.4 ? 12 : 0;
-          ctx.fillStyle = `rgba(${bTint}, ${bTint}, ${bTint + 15}, ${dShade})`;
+
+          // STRONG per-step shade — dramatic differences
+          const br = st.brightness;
+          const wr = st.warmth;
+          // Riser is the dark front face
+          const rR_col = Math.max(0, Math.min(255, (20 + br * 40 + wr * 25) | 0));
+          const rG_col = Math.max(0, Math.min(255, (15 + br * 35 + wr * 10) | 0));
+          const rB_col = Math.max(0, Math.min(255, (12 + br * 30 - wr * 15) | 0));
+          ctx.fillStyle = `rgba(${rR_col}, ${rG_col}, ${rB_col}, ${0.45 + s(6) * 0.25})`;
           ctx.fill();
 
-          // Thin dark line at bottom of riser (crack between steps)
-          if (i > 0) {
-            ctx.beginPath();
-            ctx.moveTo(st.rL, st.y);
-            ctx.lineTo(st.rR, st.y);
-            ctx.strokeStyle = `rgba(2, 1, 0, ${0.4 + s(31) * 0.3})`;
-            ctx.lineWidth = Math.max(0.5, 1.5 * st.scale);
-            ctx.stroke();
-          }
-
-          // --- Tread (top face) ---
-          if (st.treadH > 0 && st.dY > topY) {
-            const nextSt = i + 1 < steps.length ? steps[i + 1] : null;
-            const tTopL = nextSt ? nextSt.rL : st.rL * 0.98;
-            const tTopR = nextSt ? nextSt.rR : st.rR * 0.98;
+          // --- Tread (top surface, lighter) ---
+          if (st.treadH > 0 && st.riserTop > topY) {
+            const tL_front = st.breakSide < 0 ? rL_top : edgeL_top;
+            const tR_front = st.breakSide > 0 ? rR_top : edgeR_top;
+            const tL_back = diagL(st.treadTop);
+            const tR_back = diagR(st.treadTop);
 
             ctx.beginPath();
-            // If this step is broken, the tread also has the break
-            if (st.breakSide < 0) {
-              // Left break — tread starts from break edge
-              ctx.moveTo(st.rL + st.breakAmt, st.dY);
-              ctx.lineTo(st.rR, st.dY);
-              ctx.lineTo(tTopR, st.lY);
-              ctx.lineTo(tTopL, st.lY);
-            } else if (st.breakSide > 0) {
-              // Right break — tread ends at break edge
-              ctx.moveTo(st.rL, st.dY);
-              ctx.lineTo(st.rR - st.breakAmt, st.dY);
-              ctx.lineTo(tTopR, st.lY);
-              ctx.lineTo(tTopL, st.lY);
-            } else {
-              ctx.moveTo(st.rL, st.dY);
-              ctx.lineTo(st.rR, st.dY);
-              ctx.lineTo(tTopR, st.lY);
-              ctx.lineTo(tTopL, st.lY);
-            }
+            ctx.moveTo(tL_front, st.riserTop);
+            ctx.lineTo(tR_front, st.riserTop);
+            ctx.lineTo(tR_back, st.treadTop);
+            ctx.lineTo(tL_back, st.treadTop);
             ctx.closePath();
             ctx.fillStyle = rockPat;
             ctx.fill();
-            // Lighter overlay for top surface
-            const litR = 130 + s(23) * 50;
-            const litG = 120 + s(24) * 45;
-            const litB = 110 + s(25) * 55;
-            ctx.fillStyle = `rgba(${litR|0}, ${litG|0}, ${litB|0}, ${0.08 + s(26) * 0.14})`;
+
+            // Tread is lighter — top-lit surface
+            const tR_c = Math.max(0, Math.min(255, (60 + br * 100 + wr * 35) | 0));
+            const tG_c = Math.max(0, Math.min(255, (55 + br * 90 + wr * 15) | 0));
+            const tB_c = Math.max(0, Math.min(255, (50 + br * 80 - wr * 20) | 0));
+            ctx.fillStyle = `rgba(${tR_c}, ${tG_c}, ${tB_c}, ${0.25 + s(26) * 0.2})`;
             ctx.fill();
+
+            // Dark line at front edge of tread (riser-tread junction)
+            ctx.beginPath();
+            ctx.moveTo(tL_front, st.riserTop);
+            ctx.lineTo(tR_front, st.riserTop);
+            ctx.strokeStyle = `rgba(2, 1, 0, ${0.5 + s(31) * 0.3})`;
+            ctx.lineWidth = Math.max(0.8, 2.5 * st.scale);
+            ctx.stroke();
 
             // Surface cracks on some treads (~40%)
             if (s(32) > 0.6 && st.scale > 0.2) {
-              const crackX = st.rL + st.stepW * (0.2 + s(33) * 0.6);
-              const crackLen = st.stepW * (0.05 + s(34) * 0.15);
+              const tw = tR_front - tL_front;
+              const crackX = tL_front + tw * (0.15 + s(33) * 0.7);
               ctx.beginPath();
-              ctx.moveTo(crackX, st.dY);
-              ctx.lineTo(crackX + crackLen * (s(35) - 0.3), st.dY - st.treadH * 0.5);
-              ctx.lineTo(crackX + crackLen * (s(36) - 0.5), st.lY);
-              ctx.strokeStyle = `rgba(3, 2, 1, ${0.3 + s(37) * 0.3})`;
-              ctx.lineWidth = Math.max(0.3, 0.8 * st.scale);
+              ctx.moveTo(crackX, st.riserTop);
+              const crackMidX = crackX + tw * (s(35) - 0.4) * 0.2;
+              ctx.lineTo(crackMidX, (st.riserTop + st.treadTop) * 0.5);
+              ctx.lineTo(crackMidX + tw * (s(36) - 0.5) * 0.1, st.treadTop);
+              ctx.strokeStyle = `rgba(3, 2, 1, ${0.4 + s(37) * 0.35})`;
+              ctx.lineWidth = Math.max(0.5, 1.2 * st.scale);
               ctx.stroke();
             }
 
-            // Random rubble on some treads (~25%) even without breaks
-            if (s(38) > 0.75 && st.scale > 0.2) {
+            // Rubble near breaks
+            if (st.breakSide !== 0 && st.scale > 0.15) {
+              const nRub = 2 + Math.floor(s(30) * 4);
+              const tw = tR_front - tL_front;
+              for (let ri = 0; ri < nRub; ri++) {
+                const spread = sHash(st.idx, 80 + ri);
+                const rx = st.breakSide > 0
+                  ? tR_front - tw * 0.05 - spread * tw * 0.2
+                  : tL_front + tw * 0.05 + spread * tw * 0.2;
+                const ry = st.riserTop + (st.treadTop - st.riserTop) * sHash(st.idx, 83 + ri) * 0.8;
+                const rSz = tw * (0.015 + sHash(st.idx, 85 + ri) * 0.035);
+                rubble.push({ x: rx, y: ry, sz: rSz, seed: st.idx * 100 + ri });
+              }
+            }
+
+            // Random rubble on some treads (~30%)
+            if (s(38) > 0.7 && st.scale > 0.2) {
+              const tw = tR_front - tL_front;
               const nRub = 1 + Math.floor(s(39) * 3);
               for (let ri = 0; ri < nRub; ri++) {
-                const rx = st.rL + st.stepW * (0.15 + sHash(st.idx, 90 + ri) * 0.7);
-                const rSz = st.stepW * (0.008 + sHash(st.idx, 95 + ri) * 0.025);
-                rubble.push({ x: rx, y: st.dY, sz: rSz, seed: st.idx * 100 + 50 + ri });
+                const rx = tL_front + tw * (0.1 + sHash(st.idx, 90 + ri) * 0.8);
+                const ry = st.riserTop + (st.treadTop - st.riserTop) * sHash(st.idx, 93 + ri) * 0.6;
+                const rSz = tw * (0.01 + sHash(st.idx, 95 + ri) * 0.025);
+                rubble.push({ x: rx, y: ry, sz: rSz, seed: st.idx * 100 + 50 + ri });
               }
             }
           }
         }
 
-        // === PASS 3: Rubble/debris pieces sitting on treads ===
+        // === PASS 3: Rubble/debris sitting on treads ===
         for (const rb of rubble) {
           const sa = sHash(rb.seed, 50), sb = sHash(rb.seed, 51);
           const sc = sHash(rb.seed, 52), sd = sHash(rb.seed, 53);
           const sz = rb.sz;
-          // Irregular polygon shape — small broken chunk
           ctx.beginPath();
-          ctx.moveTo(rb.x - sz * 0.3, rb.y);
-          ctx.lineTo(rb.x - sz * (0.5 + sa * 0.3), rb.y - sz * (0.4 + sb * 0.4));
-          ctx.lineTo(rb.x + sz * (0.1 + sc * 0.3), rb.y - sz * (0.5 + sd * 0.5));
-          ctx.lineTo(rb.x + sz * (0.5 + sa * 0.4), rb.y - sz * (0.2 + sc * 0.3));
-          ctx.lineTo(rb.x + sz * 0.4, rb.y);
+          ctx.moveTo(rb.x - sz * 0.4, rb.y);
+          ctx.lineTo(rb.x - sz * (0.3 + sa * 0.4), rb.y - sz * (0.5 + sb * 0.5));
+          ctx.lineTo(rb.x + sz * (0.2 + sc * 0.4), rb.y - sz * (0.4 + sd * 0.6));
+          ctx.lineTo(rb.x + sz * (0.4 + sa * 0.3), rb.y - sz * 0.15);
+          ctx.lineTo(rb.x + sz * 0.3, rb.y);
           ctx.closePath();
           ctx.fillStyle = rockPat;
           ctx.fill();
-          ctx.fillStyle = `rgba(15, 10, 6, ${0.3 + sa * 0.25})`;
+          ctx.fillStyle = `rgba(20, 14, 8, ${0.35 + sa * 0.3})`;
           ctx.fill();
         }
 
