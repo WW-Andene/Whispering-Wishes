@@ -1718,13 +1718,14 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const barAlpha = (0.12 + depthNorm * 0.28) * alphaScale;
 
         // Vertical bars on screen (not rotated)
-        const barHue = barSeed < 0.12 ? 185 + barSeed * 50 : 255 + barSeed * 65;
-        ctx.fillStyle = `hsla(${barHue}, 75%, 65%, ${barAlpha})`;
+        const barHue = barSeed < 0.35 ? 180 + barSeed * 30 : 255 + barSeed * 65;
+        const barSat = barSeed < 0.35 ? 85 : 75;
+        ctx.fillStyle = `hsla(${barHue}, ${barSat}%, 65%, ${barAlpha})`;
         ctx.fillRect(p.sx - barW * 0.5, p.sy - barH, barW, barH);
       }
 
       // --- Sparkle highlights (frost colors) ---
-      for (let i = 0; i < 35; i++) {
+      for (let i = 0; i < 55; i++) {
         const seed = i * 137.508;
         const angleT_s = (seed * 1.73) % 1;
         const rowT_s = (seed * 0.31) % 1;
@@ -1750,7 +1751,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
         // Alternate between lavender and cyan sparkles
-        const spkCyan = (i % 5 === 0);
+        const spkCyan = (i % 3 === 0);
         ctx.fillStyle = spkCyan
           ? `rgba(160, 235, 255, ${sparkAlpha})`
           : `rgba(230, 200, 255, ${sparkAlpha})`;
@@ -1761,6 +1762,45 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = spkCyan
           ? `rgba(100, 210, 245, ${sparkAlpha * 0.12})`
           : `rgba(210, 170, 250, ${sparkAlpha * 0.12})`;
+        ctx.fill();
+      }
+
+      // --- Flat cyan particles drifting across the field ---
+      for (let i = 0; i < 40; i++) {
+        const seed = i * 97.31 + 42;
+        const aT = ((seed * 2.17) % 1 + time * 0.02 * (0.5 + (seed % 3) * 0.3)) % 1;
+        const rT = (seed * 0.47) % 1;
+        const r = INNER_RADIUS * 0.3 + rT * RADIUS * 0.9;
+        const angle = aT * Math.PI * 2 + rot;
+
+        const wx = Math.cos(angle) * r;
+        const wz = Math.sin(angle) * r;
+        const wy = Math.sin(angle * 2 + time * 0.3 + i) * 5;
+
+        const p = project(wx, wy, wz);
+        if (!p) continue;
+        if (p.sx < -5 || p.sx > w + 5 || p.sy < -5 || p.sy > h + 5) continue;
+
+        const flicker = Math.sin(time * 1.5 + i * 2.7) * 0.5 + 0.5;
+        const pAlpha = (0.15 + flicker * 0.25) * alphaScale;
+        if (pAlpha < 0.04) continue;
+
+        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
+        const sz = (1.2 + flicker * 1.0) * (0.3 + depthNorm * 0.7);
+
+        // Flat diamond/square shape
+        ctx.save();
+        ctx.translate(p.sx, p.sy);
+        ctx.rotate(time * 0.4 + i);
+        ctx.globalAlpha = pAlpha;
+        ctx.fillStyle = `hsl(${185 + (i % 5) * 4}, 80%, ${65 + flicker * 15}%)`;
+        ctx.fillRect(-sz, -sz, sz * 2, sz * 2);
+        ctx.restore();
+
+        // Soft glow
+        ctx.beginPath();
+        ctx.arc(p.sx, p.sy, sz * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(100, 220, 250, ${pAlpha * 0.1})`;
         ctx.fill();
       }
 
