@@ -2013,7 +2013,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
           ctx.restore();
 
-          // --- Glitch animated effects (3D-projected blocks perpendicular to heart's symmetry axis) ---
+          // --- Glitch: displaced horizontal slices of the heart itself ---
           const glitchCycle = Math.sin(time * 1.7) * Math.sin(time * 3.1) * Math.sin(time * 0.6);
           const glitchActive = glitchCycle > 0.3;
           const glitchIntensity = glitchActive ? (glitchCycle - 0.3) / 0.7 : 0;
@@ -2023,100 +2023,97 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             return x - Math.floor(x);
           };
 
-          // Glitch blocks in heart's LOCAL coordinate space, then project to screen.
-          // Heart Y axis = symmetry line (x=0 in world, from cleft to tail).
-          // Perpendicular to Y axis = along world X axis.
-          // Each block: a horizontal band at some Y level, extending in X beyond the heart.
-          const baseBlockCount = 4;
-          const burstBlockCount = glitchActive ? Math.floor(6 + glitchIntensity * 8) : 0;
-          const totalBlocks = baseBlockCount + burstBlockCount;
+          // For each glitch slice: clip to a horizontal band in the heart's
+          // local Y, then draw a shifted copy of the heart shape within that band.
+          // This makes the glitch follow the heart's actual contour.
+          const baseSliceCount = 3;
+          const burstSliceCount = glitchActive ? Math.floor(4 + glitchIntensity * 6) : 0;
+          const totalSlices = baseSliceCount + burstSliceCount;
 
-          ctx.save();
-          for (let gi = 0; gi < totalBlocks; gi++) {
-            const isBurst = gi >= baseBlockCount;
-            const intensity = isBurst ? glitchIntensity : 0.25 + Math.sin(time * 0.5 + gi) * 0.15;
+          for (let gi = 0; gi < totalSlices; gi++) {
+            const isBurst = gi >= baseSliceCount;
+            const intensity = isBurst ? glitchIntensity : 0.2 + Math.sin(time * 0.5 + gi) * 0.12;
 
             const seed = gi * 73.7 + Math.floor(time * (isBurst ? 6 : 1.5)) * 13.1;
 
-            // Y in heart's local coords: ranges from ~-HEART_SIZE*1.3 (cleft) to ~-HEART_SIZE*0.05 (tail)
+            // Y band in heart local coords (cleft ~-HEART_SIZE*1.3, tail ~-HEART_SIZE*0.05)
             const yFrac = pseudoRand(seed + 1.1);
-            const wy = -HEART_SIZE * 1.3 + yFrac * HEART_SIZE * 1.25;
+            const bandCenterY = -HEART_SIZE * 1.3 + yFrac * HEART_SIZE * 1.25;
+            const bandHalfH = (1.0 + pseudoRand(seed + 2.2) * 2.5) * (isBurst ? (1 + glitchIntensity * 0.5) : 1);
 
-            // Block half-height in world units
-            const blockHalfH = (0.8 + pseudoRand(seed + 2.2) * 2.0) * (isBurst ? (1 + glitchIntensity) : 1);
-
-            // X extent: start somewhere and extend outward past heart edge
-            // Heart is ~HEART_SIZE wide at its widest
+            // How far to shift this slice along heart's X axis
             const side = pseudoRand(seed + 3.3) > 0.5 ? 1 : -1;
-            const xStart = side * (pseudoRand(seed + 4.4) * HEART_SIZE * 0.5);
-            const xEnd = side * (HEART_SIZE * (0.8 + pseudoRand(seed + 5.5) * 0.8 * intensity));
+            const shiftX = side * (2 + pseudoRand(seed + 4.4) * 8) * intensity;
 
-            const x0 = Math.min(xStart, xEnd);
-            const x1 = Math.max(xStart, xEnd);
+            // Project the clip band corners (wide enough to cover shifted heart)
+            const clipExtent = HEART_SIZE * 2.5;
+            const c0 = project(-clipExtent, bandCenterY - bandHalfH, 0);
+            const c1 = project(clipExtent, bandCenterY - bandHalfH, 0);
+            const c2 = project(clipExtent, bandCenterY + bandHalfH, 0);
+            const c3 = project(-clipExtent, bandCenterY + bandHalfH, 0);
+            if (!c0 || !c1 || !c2 || !c3) continue;
 
-            // Project the 4 corners of this rectangle through 3D
-            const p0 = project(x0, wy - blockHalfH, 0);
-            const p1 = project(x1, wy - blockHalfH, 0);
-            const p2 = project(x1, wy + blockHalfH, 0);
-            const p3 = project(x0, wy + blockHalfH, 0);
-            if (!p0 || !p1 || !p2 || !p3) continue;
+            // Make a shifted heart in world X
+            const shiftedH = makeHeart(1, shiftX, 0);
+            if (!shiftedH) continue;
 
             const isCyan = pseudoRand(seed + 7.7) > 0.5;
-            const col = isCyan ? [80, 230, 255] : [230, 190, 255];
-            const blockAlpha = (isBurst ? (0.35 + glitchIntensity * 0.4) : (0.15 + Math.sin(time * 0.8 + gi * 2) * 0.1)) * alphaScale;
+            const sliceAlpha = (isBurst ? (0.4 + glitchIntensity * 0.35) : (0.18 + Math.sin(time * 0.8 + gi * 2) * 0.1)) * alphaScale;
 
+            // Draw the shifted heart slice, clipped to the horizontal band
+            ctx.save();
             ctx.beginPath();
-            ctx.moveTo(p0.sx, p0.sy);
-            ctx.lineTo(p1.sx, p1.sy);
-            ctx.lineTo(p2.sx, p2.sy);
-            ctx.lineTo(p3.sx, p3.sy);
+            ctx.moveTo(c0.sx, c0.sy);
+            ctx.lineTo(c1.sx, c1.sy);
+            ctx.lineTo(c2.sx, c2.sy);
+            ctx.lineTo(c3.sx, c3.sy);
             ctx.closePath();
-            ctx.fillStyle = `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${blockAlpha})`;
+            ctx.clip();
+
+            // Fill the shifted heart shape within the band
+            drawPath(shiftedH);
+            const fillCol = isCyan ? `rgba(80, 230, 255, ${sliceAlpha})` : `rgba(230, 190, 255, ${sliceAlpha})`;
+            ctx.fillStyle = fillCol;
             ctx.fill();
 
-            // Secondary thinner block nearby
-            if (pseudoRand(seed + 8.8) > 0.5) {
-              const col2 = isCyan ? [230, 190, 255] : [80, 230, 255];
-              const wy2 = wy + blockHalfH * 2.5;
-              const q0 = project(x0 * 0.7, wy2 - blockHalfH * 0.4, 0);
-              const q1 = project(x1 * 0.7, wy2 - blockHalfH * 0.4, 0);
-              const q2 = project(x1 * 0.7, wy2 + blockHalfH * 0.4, 0);
-              const q3 = project(x0 * 0.7, wy2 + blockHalfH * 0.4, 0);
-              if (q0 && q1 && q2 && q3) {
+            // Outline for definition
+            drawPath(shiftedH);
+            const strokeCol = isCyan ? `rgba(80, 230, 255, ${sliceAlpha * 1.2})` : `rgba(230, 190, 255, ${sliceAlpha * 1.2})`;
+            ctx.strokeStyle = strokeCol;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.restore();
+
+            // Optional second slice: opposite color, smaller shift
+            if (pseudoRand(seed + 8.8) > 0.55) {
+              const shift2 = -shiftX * (0.4 + pseudoRand(seed + 9.9) * 0.3);
+              const band2Y = bandCenterY + bandHalfH * 1.8;
+              const band2HH = bandHalfH * 0.5;
+
+              const d0 = project(-clipExtent, band2Y - band2HH, 0);
+              const d1 = project(clipExtent, band2Y - band2HH, 0);
+              const d2 = project(clipExtent, band2Y + band2HH, 0);
+              const d3 = project(-clipExtent, band2Y + band2HH, 0);
+              const shifted2 = makeHeart(1, shift2, 0);
+              if (d0 && d1 && d2 && d3 && shifted2) {
+                ctx.save();
                 ctx.beginPath();
-                ctx.moveTo(q0.sx, q0.sy);
-                ctx.lineTo(q1.sx, q1.sy);
-                ctx.lineTo(q2.sx, q2.sy);
-                ctx.lineTo(q3.sx, q3.sy);
+                ctx.moveTo(d0.sx, d0.sy);
+                ctx.lineTo(d1.sx, d1.sy);
+                ctx.lineTo(d2.sx, d2.sy);
+                ctx.lineTo(d3.sx, d3.sy);
                 ctx.closePath();
-                ctx.fillStyle = `rgba(${col2[0]}, ${col2[1]}, ${col2[2]}, ${blockAlpha * 0.6})`;
+                ctx.clip();
+
+                drawPath(shifted2);
+                const col2 = isCyan ? `rgba(230, 190, 255, ${sliceAlpha * 0.6})` : `rgba(80, 230, 255, ${sliceAlpha * 0.6})`;
+                ctx.fillStyle = col2;
                 ctx.fill();
+                ctx.restore();
               }
             }
           }
-
-          // Chromatic split — heart outline shifted along heart's X axis (projected)
-          const splitAmt = glitchActive ? 2 + glitchIntensity * 5 : 0.8 + Math.sin(time * 0.8) * 0.5;
-
-          // Cyan heart shifted right in world X
-          const cyanPts = makeHeart(1, splitAmt, 0);
-          if (cyanPts) {
-            drawPath(cyanPts);
-            ctx.strokeStyle = `rgba(80, 230, 255, ${(0.2 + glitchIntensity * 0.3) * alphaScale})`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-          }
-
-          // Lavender-pink heart shifted left in world X
-          const pinkPts = makeHeart(1, -splitAmt, 0);
-          if (pinkPts) {
-            drawPath(pinkPts);
-            ctx.strokeStyle = `rgba(230, 190, 255, ${(0.15 + glitchIntensity * 0.25) * alphaScale})`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-          }
-
-          ctx.restore();
         }
 
         // Draw ripple rings using the same phases
