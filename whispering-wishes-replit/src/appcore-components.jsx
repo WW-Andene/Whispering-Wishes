@@ -1785,7 +1785,7 @@ const BANNER_THEMES = {
       phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
       size: 1.2 + Math.random() * 2,
     }));
-    const moonR = 28;
+    const moonR = 30;
     return (ctx, t) => {
       // Animated glow pulse — very slow breathe with layered harmonics
       const pulse1 = Math.sin(t * 0.025);
