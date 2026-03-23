@@ -5190,35 +5190,39 @@ function WhisperingWishesInner() {
                   {/* Filter & Sort Controls */}
                   <div className="space-y-1.5">
                     {/* View Toggle */}
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
-                        className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
-                        title="Characters"
-                        aria-label="View characters"
-                        aria-pressed={collectionView === 'items'}
-                      >
-                        <Crown size={12} className="inline mr-1" />Characters
-                      </button>
-                      <button
-                        onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
-                        className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
-                        title="Weapons"
-                        aria-label="View weapons"
-                        aria-pressed={collectionView === 'weapons'}
-                      >
-                        <Sword size={12} className="inline mr-1" />Weapons
-                      </button>
-                      <button
-                        onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); }}
-                        className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
-                        title="Echoes"
-                        aria-label="View echoes"
-                        aria-pressed={collectionView === 'echoes'}
-                      >
-                        <Sparkles size={12} className="inline mr-1" />Echoes
-                      </button>
-                    </div>
+                    <Card>
+                      <CardBody>
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                            className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
+                            title="Characters"
+                            aria-label="View characters"
+                            aria-pressed={collectionView === 'items'}
+                          >
+                            <Crown size={12} className="inline mr-1" />Characters
+                          </button>
+                          <button
+                            onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                            className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
+                            title="Weapons"
+                            aria-label="View weapons"
+                            aria-pressed={collectionView === 'weapons'}
+                          >
+                            <Sword size={12} className="inline mr-1" />Weapons
+                          </button>
+                          <button
+                            onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); }}
+                            className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
+                            title="Echoes"
+                            aria-label="View echoes"
+                            aria-pressed={collectionView === 'echoes'}
+                          >
+                            <Sparkles size={12} className="inline mr-1" />Echoes
+                          </button>
+                        </div>
+                      </CardBody>
+                    </Card>
                     {/* Filter Dropdowns — context-sensitive per view */}
                     <Card>
                       <CardBody>
