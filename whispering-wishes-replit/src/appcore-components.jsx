@@ -2437,6 +2437,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const botY = h * 0.625;     // 50% of L1
         const topY = h * 0.125;     // 50% of L3
 
+        // Clip so nothing renders outside the intended bounds
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, topY, w, botY - topY);
+        ctx.clip();
+
         // Half-width scales with distance from the sun VP
         const dBot = Math.abs(botY - vpY);  // 0.445 * h
         const dTop = Math.abs(topY - vpY);  // 0.055 * h
@@ -2504,6 +2510,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
         // Bottom horizontal
         drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
+
+        ctx.restore(); // remove clip
       }
 
       // --- Atmospheric lightning (sky to ground) ---
