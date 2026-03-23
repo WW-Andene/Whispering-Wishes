@@ -2546,6 +2546,57 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.lineWidth = 2;
       ctx.stroke();
 
+      // ---- STANDALONE RUIN PILLARS (scattered in layer 0) ----
+      const pillarData = [
+        // Between the two arches — visible through the gap
+        { x: 0.42, ht: 0.30, wd: 0.012, broken: false, capital: true },
+        { x: 0.46, ht: 0.22, wd: 0.010, broken: true, capital: false },
+        { x: 0.50, ht: 0.26, wd: 0.011, broken: false, capital: true },
+        { x: 0.54, ht: 0.18, wd: 0.009, broken: true, capital: false },
+        { x: 0.58, ht: 0.24, wd: 0.010, broken: false, capital: true },
+        { x: 0.63, ht: 0.20, wd: 0.010, broken: true, capital: false },
+        // Behind left arch (peeking out)
+        { x: 0.16, ht: 0.32, wd: 0.008, broken: false, capital: true },
+        { x: 0.22, ht: 0.25, wd: 0.009, broken: true, capital: false },
+        // Behind right arch
+        { x: 0.80, ht: 0.22, wd: 0.008, broken: true, capital: false },
+        { x: 0.84, ht: 0.28, wd: 0.009, broken: false, capital: true },
+      ];
+      const pillarBaseY = h * 0.72; // shared horizon line for layer 0 pillars
+      for (const p of pillarData) {
+        const px = p.x * w;
+        const pw = p.wd * w;
+        const ph = p.ht * h;
+        const topY = pillarBaseY - ph;
+
+        ctx.fillStyle = stoneM;
+
+        if (p.broken) {
+          // Jagged broken top
+          ctx.beginPath();
+          ctx.moveTo(px - pw * 0.5, pillarBaseY);
+          ctx.lineTo(px - pw * 0.5, topY + ph * 0.15);
+          ctx.lineTo(px - pw * 0.2, topY);
+          ctx.lineTo(px + pw * 0.1, topY + ph * 0.08);
+          ctx.lineTo(px + pw * 0.4, topY + ph * 0.03);
+          ctx.lineTo(px + pw * 0.5, topY + ph * 0.12);
+          ctx.lineTo(px + pw * 0.5, pillarBaseY);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillRect(px - pw * 0.5, topY, pw, ph);
+          if (p.capital) {
+            // Capital — wider block on top
+            ctx.fillRect(px - pw * 0.9, topY - pw * 0.5, pw * 1.8, pw * 0.5);
+            ctx.fillRect(px - pw * 0.7, topY - pw * 0.9, pw * 1.4, pw * 0.45);
+          }
+        }
+
+        // Subtle lit edge (right side, facing sun)
+        ctx.fillStyle = edgeGold;
+        ctx.fillRect(px + pw * 0.2, topY, pw * 0.3, ph);
+      }
+
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
       if (lightningActive) {
