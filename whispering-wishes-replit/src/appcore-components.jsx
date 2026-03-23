@@ -2501,16 +2501,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // // Outer edges
-        // drawEdge(botL, botY, topL, topY, edgeAlpha);
-        // drawEdge(botR, botY, topR, topY, edgeAlpha);
-        // // Inner edges
+        // Outer edges
+        drawEdge(botL, botY, topL, topY, edgeAlpha);
+        drawEdge(botR, botY, topR, topY, edgeAlpha);
+        // Inner edges (hidden — 3D depth lines)
         // drawEdge(botL + thkBot, botY, topL + thkTop, topY, edgeAlpha * 0.4);
         // drawEdge(botR - thkBot, botY, topR - thkTop, topY, edgeAlpha * 0.4);
-        // // Top horizontal
-        // drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
-        // // Bottom horizontal
-        // drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
+        // Top horizontal
+        drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
+        // Bottom horizontal
+        drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
 
         ctx.restore(); // remove clip
       }
@@ -2630,12 +2630,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
         ctx.restore();
 
-        // drawEdge(botL, botY, topL, topY, edgeAlpha);
-        // drawEdge(botR, botY, topR, topY, edgeAlpha);
+        drawEdge(botL, botY, topL, topY, edgeAlpha);
+        drawEdge(botR, botY, topR, topY, edgeAlpha);
         // drawEdge(botL + thkBot, botY, topL + thkTop, topY, edgeAlpha * 0.4);
         // drawEdge(botR - thkBot, botY, topR - thkTop, topY, edgeAlpha * 0.4);
-        // drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
-        // drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
+        drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
+        drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
 
         ctx.restore();
       }
