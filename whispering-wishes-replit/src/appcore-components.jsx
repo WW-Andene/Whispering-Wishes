@@ -1758,10 +1758,11 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // --- Disc light: center is a light source radiating outward ---
       // Like the reference: bright white-cyan core → blue → purple → pink at edges
       if (centerP) {
-        const pulse = 0.7 + Math.sin(time * 0.4) * 0.2;
+        // Layered pulsation: slow breath + gentle secondary beat
+        const pulse = 0.5 + Math.sin(time * 0.3) * 0.3 + Math.sin(time * 0.7) * 0.15;
 
         // Large disc glow radiating from center (the "light pool")
-        const discSize = Math.max(w, h) * 0.55;
+        const discSize = Math.max(w, h) * (0.5 + pulse * 0.1);
         const discGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, discSize);
         discGrd.addColorStop(0, `rgba(200, 240, 255, ${0.35 * pulse * alphaScale})`);    // bright white-cyan
         discGrd.addColorStop(0.08, `rgba(140, 210, 250, ${0.25 * pulse * alphaScale})`); // cyan
@@ -1773,8 +1774,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // Bright core glow (intense white center like the reference)
-        const coreSize = 90 * pulse;
+        // Bright core glow — pulsates in size and intensity
+        const coreSize = 60 + 50 * pulse;
         const coreGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, coreSize);
         coreGrd.addColorStop(0, `rgba(240, 250, 255, ${0.5 * pulse * alphaScale})`);
         coreGrd.addColorStop(0.15, `rgba(200, 235, 255, ${0.35 * pulse * alphaScale})`);
@@ -1786,8 +1787,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, coreSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Halo ring around core
-        const haloSize = 150 * pulse;
+        // Halo ring around core — breathes with pulse
+        const haloSize = 110 + 60 * pulse;
         const haloGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, haloSize * 0.5, centerP.sx, centerP.sy, haloSize);
         haloGrd.addColorStop(0, `rgba(160, 200, 255, ${0.1 * pulse * alphaScale})`);
         haloGrd.addColorStop(1, 'rgba(0,0,0,0)');
