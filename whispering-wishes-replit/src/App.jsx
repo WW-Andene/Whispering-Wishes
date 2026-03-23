@@ -5687,6 +5687,10 @@ function WhisperingWishesInner() {
                 const aRec = recommendedNames.has(a) ? 0 : 1;
                 const bRec = recommendedNames.has(b) ? 0 : 1;
                 if (aRec !== bRec) return aRec - bRec;
+                // 5★ before 4★
+                const aRar = CHARACTER_DATA[a]?.rarity || 0;
+                const bRar = CHARACTER_DATA[b]?.rarity || 0;
+                if (aRar !== bRar) return bRar - aRar;
                 // Within each group, sort newest first (later in array = newer)
                 const aIdx = allCharNames.indexOf(a);
                 const bIdx = allCharNames.indexOf(b);
