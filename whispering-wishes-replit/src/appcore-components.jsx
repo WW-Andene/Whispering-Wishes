@@ -2626,6 +2626,132 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
+      // --- Staircase side faces (stone panels between outer frame and inner stairway) ---
+      {
+        const vpX = sunX;
+        const vpY = sunY;
+        const botY = h * 0.625;
+        const topY = vpY + h * 0.04;
+        const dBot = botY - vpY;
+
+        // Outer edges (frame)
+        const hwOBot = w * 0.5;
+        const hwOTop = hwOBot * (topY - vpY) / dBot;
+        const obl = vpX - hwOBot, obr = vpX + hwOBot;
+        const otl = vpX - hwOTop, otr = vpX + hwOTop;
+
+        // Inner edges (stairway)
+        const hwIBot = w * 0.39;
+        const hwITop = hwIBot * (topY - vpY) / dBot;
+        const ibl = vpX - hwIBot, ibr = vpX + hwIBot;
+        const itl = vpX - hwITop, itr = vpX + hwITop;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, topY, w, botY - topY);
+        ctx.clip();
+
+        // Left side face — trapezoid between outer-left and inner-left
+        ctx.beginPath();
+        ctx.moveTo(obl, botY);
+        ctx.lineTo(otl, topY);
+        ctx.lineTo(itl, topY);
+        ctx.lineTo(ibl, botY);
+        ctx.closePath();
+        // Use a cached rock pattern if available, otherwise dark fill
+        if (canvas._rockPat2) {
+          ctx.fillStyle = canvas._rockPat2;
+          ctx.fill();
+        }
+        // Dark overlay — left side is in shadow
+        ctx.fillStyle = `rgba(6, 4, 2, 0.72)`;
+        ctx.fill();
+        // Subtle warm light on the inner edge (facing the steps/sun)
+        {
+          const grd = ctx.createLinearGradient(obl, botY, ibl, botY);
+          grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          grd.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
+          grd.addColorStop(1, `rgba(180, 110, 40, ${0.12 * alphaScale})`);
+          ctx.fillStyle = grd;
+          ctx.fill();
+        }
+
+        // Right side face — trapezoid between inner-right and outer-right
+        ctx.beginPath();
+        ctx.moveTo(ibr, botY);
+        ctx.lineTo(itr, topY);
+        ctx.lineTo(otr, topY);
+        ctx.lineTo(obr, botY);
+        ctx.closePath();
+        if (canvas._rockPat2) {
+          ctx.fillStyle = canvas._rockPat2;
+          ctx.fill();
+        }
+        // Right side gets a bit more light (facing slight angle)
+        ctx.fillStyle = `rgba(6, 4, 2, 0.65)`;
+        ctx.fill();
+        {
+          const grd = ctx.createLinearGradient(obr, botY, ibr, botY);
+          grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          grd.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
+          grd.addColorStop(1, `rgba(180, 110, 40, ${0.12 * alphaScale})`);
+          ctx.fillStyle = grd;
+          ctx.fill();
+        }
+
+        // Stone block lines on sides — horizontal courses
+        const courseCount = 18;
+        for (let ci = 0; ci <= courseCount; ci++) {
+          const t = ci / courseCount;
+          const cy = botY + (topY - botY) * t;
+          // Left side course line
+          const lx0 = obl + (otl - obl) * t;
+          const lx1 = ibl + (itl - ibl) * t;
+          ctx.beginPath();
+          ctx.moveTo(lx0, cy);
+          ctx.lineTo(lx1, cy);
+          ctx.strokeStyle = `rgba(0, 0, 0, ${0.25 + t * 0.15})`;
+          ctx.lineWidth = Math.max(0.5, 1.2 * (1 - t));
+          ctx.stroke();
+          // Right side course line
+          const rx0 = ibr + (itr - ibr) * t;
+          const rx1 = obr + (otr - obr) * t;
+          ctx.beginPath();
+          ctx.moveTo(rx0, cy);
+          ctx.lineTo(rx1, cy);
+          ctx.strokeStyle = `rgba(0, 0, 0, ${0.25 + t * 0.15})`;
+          ctx.lineWidth = Math.max(0.5, 1.2 * (1 - t));
+          ctx.stroke();
+        }
+
+        // Vertical joints on sides — perspective-correct
+        const jointCountL = 6, jointCountR = 6;
+        for (let ji = 1; ji < jointCountL; ji++) {
+          const frac = ji / jointCountL;
+          const bx = obl + (ibl - obl) * frac;
+          const tx = otl + (itl - otl) * frac;
+          ctx.beginPath();
+          ctx.moveTo(bx, botY);
+          ctx.lineTo(tx, topY);
+          ctx.strokeStyle = `rgba(0, 0, 0, 0.18)`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+        for (let ji = 1; ji < jointCountR; ji++) {
+          const frac = ji / jointCountR;
+          const bx = ibr + (obr - ibr) * frac;
+          const tx = itr + (otr - itr) * frac;
+          ctx.beginPath();
+          ctx.moveTo(bx, botY);
+          ctx.lineTo(tx, topY);
+          ctx.strokeStyle = `rgba(0, 0, 0, 0.18)`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
       // Rock texture pattern (cached, tiles in canvas coords so it flows across faces)
       if (!canvas._rockPat2) {
         const sz = 128;
