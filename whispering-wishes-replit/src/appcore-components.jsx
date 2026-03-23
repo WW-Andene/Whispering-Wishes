@@ -1787,19 +1787,17 @@ const BANNER_THEMES = {
     }));
     const moonR = 38;
     return (ctx, t) => {
-      // Pulsating glow — 5s cycle
-      const pulse = (Math.sin(t * (Math.PI * 2 / 5)) + 1) / 2; // 0→1→0 over 5s
-      const glowSize = moonR * (1.2 + pulse * 1.3);
+      // Pulsating glow — 5s cycle using shadowBlur for real glow
+      const pulse = (Math.sin(t * (Math.PI * 2 / 5)) + 1) / 2;
 
-      // Glow pulses from nearly invisible to bright
       ctx.save();
-      ctx.globalAlpha = 0.05 + pulse * 0.7;
-      const g = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, glowSize);
-      g.addColorStop(0, 'rgba(220,235,255,0.7)');
-      g.addColorStop(0.4, 'rgba(190,215,248,0.3)');
-      g.addColorStop(1, 'rgba(150,185,220,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(moonX, moonY, glowSize, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.15 + pulse * 0.65;
+      ctx.fillStyle = 'rgba(200,220,255,0.6)';
+      ctx.shadowColor = 'rgba(180,210,255,0.9)';
+      ctx.shadowBlur = moonR * (1 + pulse * 2);
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.3, 0, Math.PI * 2); ctx.fill();
+      // Double draw for stronger glow
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.3, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
       // Brume
       for (const b of brume) {
