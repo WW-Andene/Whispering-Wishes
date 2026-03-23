@@ -1720,6 +1720,33 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fill();
       }
 
+      // --- Waving ambient light below the ribbon ---
+      // Soft colored glows that drift slowly beneath the ring
+      const ambientLights = [
+        { hue: 200, x: -0.2, speed: 0.08, phase: 0 },     // blue
+        { hue: 230, x: 0.1, speed: 0.06, phase: 1.5 },     // indigo
+        { hue: 280, x: 0.3, speed: 0.07, phase: 3.0 },     // purple
+        { hue: 310, x: -0.1, speed: 0.09, phase: 4.5 },    // magenta
+        { hue: 330, x: 0.25, speed: 0.05, phase: 2.0 },    // pink
+        { hue: 195, x: -0.3, speed: 0.07, phase: 5.5 },    // cyan
+      ];
+      for (let al = 0; al < ambientLights.length; al++) {
+        const light = ambientLights[al];
+        // Wave position: drifts horizontally and pulses in intensity
+        const wave = Math.sin(time * light.speed + light.phase);
+        const lx = w * (0.5 + light.x + wave * 0.15);
+        const ly = h * (0.65 + Math.sin(time * light.speed * 0.7 + light.phase + 1) * 0.08);
+        const radius = Math.max(w, h) * (0.2 + wave * 0.05);
+        const intensity = (0.04 + Math.sin(time * light.speed * 1.3 + light.phase) * 0.02) * alphaScale;
+
+        const grd = ctx.createRadialGradient(lx, ly, 0, lx, ly, radius);
+        grd.addColorStop(0, `hsla(${light.hue}, 80%, 50%, ${intensity})`);
+        grd.addColorStop(0.5, `hsla(${light.hue}, 70%, 40%, ${intensity * 0.4})`);
+        grd.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grd;
+        ctx.fillRect(lx - radius, ly - radius, radius * 2, radius * 2);
+      }
+
       // --- Epicenter core (frost glow) ---
       if (centerP) {
         const pulse = 0.6 + Math.sin(time * 0.5) * 0.25;
