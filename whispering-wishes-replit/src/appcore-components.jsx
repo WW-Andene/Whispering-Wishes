@@ -1788,128 +1788,98 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // --- Holographic Heart of Aemaeth (vertical, in perspective) ---
-        // Each heart point gets its own 3D scale based on Y height.
-        // The heart is drawn vertical on screen at the disc center,
-        // with per-point perspective: top (lobes) = farther = smaller,
-        // bottom (tip) = closer = wider. Like a hologram standing on the disc.
-        const HEART_SIZE = 75 + 15 * pulse;
-        const HEART_PTS = 60;
+        // --- Holographic Heart of Aemaeth (3D object in the scene) ---
+        // Heart lives in XY plane at Z=0, projected through the same
+        // camera as the ribbon. It IS an object in the 3D scene.
+        const HEART_SIZE = 80 + 15 * pulse;
+        const HEART_PTS = 64;
+        const heartPts = [];
+        let heartOk = true;
+        for (let hi = 0; hi <= HEART_PTS; hi++) {
+          const t = (hi / HEART_PTS) * Math.PI * 2;
+          const hx = 16 * Math.pow(Math.sin(t), 3);
+          const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+          // world X = heart horizontal, world Y = heart vertical (up), world Z = 0
+          const p = project(hx * HEART_SIZE / 16, -hy * HEART_SIZE / 17, 0);
+          if (!p) { heartOk = false; break; }
+          heartPts.push(p);
+        }
 
-        // Get per-Y scale: project points at different Y heights at center
-        // to find how the 3D camera scales them
-        const scaleAtY = (wy) => {
-          const p = projectRaw(0, wy, 0);
-          return p ? p.scale : 0;
-        };
-        const baseScale = scaleAtY(0);
-        if (baseScale > 0) {
-          const cx = centerP.sx, cy = centerP.sy;
+        if (heartOk && heartPts.length > 2) {
+          const drawHP = () => {
+            ctx.beginPath();
+            ctx.moveTo(heartPts[0].sx, heartPts[0].sy);
+            for (let i = 1; i < heartPts.length; i++) ctx.lineTo(heartPts[i].sx, heartPts[i].sy);
+            ctx.closePath();
+          };
 
-          // Build heart outline with per-point perspective
-          const heartScreenPts = [];
-          for (let hi = 0; hi <= HEART_PTS; hi++) {
-            const t = (hi / HEART_PTS) * Math.PI * 2;
-            const hx3 = 16 * Math.pow(Math.sin(t), 3);
-            const hy3 = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            // Local heart coords (normalized -1..1 range)
-            const localX = hx3 / 16; // -1..1
-            const localY = -hy3 / 17; // -1 (tip) to ~1 (lobes), flipped so lobes = up
-            // World Y for this point (lobes high up = negative, tip low = positive)
-            const worldY = -localY * HEART_SIZE;
-            // Get 3D scale at this height
-            const ptScale = scaleAtY(worldY);
-            if (ptScale <= 0) continue;
-            // Screen position: vertical on screen, width scaled by perspective
-            const sx = cx + localX * HEART_SIZE * ptScale;
-            const sy = cy - localY * HEART_SIZE * baseScale; // keep vertical spacing uniform
-            heartScreenPts.push({ sx, sy, localX, localY, ptScale });
-          }
+          // Glow
+          ctx.save();
+          ctx.shadowColor = `rgba(100, 220, 255, ${0.6 * pulse * alphaScale})`;
+          ctx.shadowBlur = 25 + pulse * 15;
+          drawHP();
+          ctx.fillStyle = `rgba(80, 200, 240, ${0.08 * pulse * alphaScale})`;
+          ctx.fill();
+          ctx.restore();
 
-          if (heartScreenPts.length > 2) {
-            const drawHeartPath = () => {
+          // Holographic fill
+          const bds = heartPts.reduce((b, p) => ({
+            x0: Math.min(b.x0, p.sx), x1: Math.max(b.x1, p.sx),
+            y0: Math.min(b.y0, p.sy), y1: Math.max(b.y1, p.sy)
+          }), { x0: 9999, x1: -9999, y0: 9999, y1: -9999 });
+          const iridShift = Math.sin(time * 0.5) * 0.5 + 0.5;
+          const hGrd = ctx.createLinearGradient(bds.x0, bds.y0, bds.x1, bds.y1);
+          hGrd.addColorStop(0, `rgba(${60 + iridShift * 40}, ${200 + iridShift * 30}, 255, ${0.2 * pulse * alphaScale})`);
+          hGrd.addColorStop(0.4, `rgba(200, 240, 255, ${0.25 * pulse * alphaScale})`);
+          hGrd.addColorStop(0.7, `rgba(${200 + iridShift * 40}, ${150 - iridShift * 50}, ${220 + iridShift * 35}, ${0.2 * pulse * alphaScale})`);
+          hGrd.addColorStop(1, `rgba(180, 100, 220, ${0.14 * pulse * alphaScale})`);
+          drawHP();
+          ctx.fillStyle = hGrd;
+          ctx.fill();
+
+          // Hex grid inside (each hex vertex projected through 3D camera)
+          ctx.save();
+          drawHP();
+          ctx.clip();
+          const hexR = 8 + pulse * 2;
+          const hexH = hexR * Math.sqrt(3);
+          const gridAlpha = (0.12 + pulse * 0.08) * alphaScale;
+          for (let gx = -HEART_SIZE; gx < HEART_SIZE; gx += hexR * 3) {
+            for (let gy = -HEART_SIZE; gy < HEART_SIZE; gy += hexH) {
+              const offX = (Math.round(gy / hexH) % 2) * hexR * 1.5;
+              const wx = gx + offX;
               ctx.beginPath();
-              ctx.moveTo(heartScreenPts[0].sx, heartScreenPts[0].sy);
-              for (let hi = 1; hi < heartScreenPts.length; hi++) {
-                ctx.lineTo(heartScreenPts[hi].sx, heartScreenPts[hi].sy);
+              let ok = true;
+              for (let c = 0; c < 6; c++) {
+                const a = Math.PI / 3 * c - Math.PI / 6;
+                const cp = project(wx + Math.cos(a) * hexR, -(gy + Math.sin(a) * hexR), 0);
+                if (!cp) { ok = false; break; }
+                if (c === 0) ctx.moveTo(cp.sx, cp.sy); else ctx.lineTo(cp.sx, cp.sy);
               }
+              if (!ok) continue;
               ctx.closePath();
-            };
-
-            // Outer glow
-            ctx.save();
-            ctx.shadowColor = `rgba(100, 220, 255, ${0.6 * pulse * alphaScale})`;
-            ctx.shadowBlur = 25 + pulse * 15;
-            drawHeartPath();
-            ctx.fillStyle = `rgba(80, 200, 240, ${0.08 * pulse * alphaScale})`;
-            ctx.fill();
-            ctx.restore();
-
-            // Holographic fill
-            const hBounds = heartScreenPts.reduce((b, p) => ({
-              minX: Math.min(b.minX, p.sx), maxX: Math.max(b.maxX, p.sx),
-              minY: Math.min(b.minY, p.sy), maxY: Math.max(b.maxY, p.sy)
-            }), { minX: 9999, maxX: -9999, minY: 9999, maxY: -9999 });
-            const hGrd = ctx.createLinearGradient(hBounds.minX, hBounds.minY, hBounds.maxX, hBounds.maxY);
-            const iridShift = Math.sin(time * 0.5) * 0.5 + 0.5;
-            hGrd.addColorStop(0, `rgba(${60 + iridShift * 40}, ${200 + iridShift * 30}, 255, ${0.2 * pulse * alphaScale})`);
-            hGrd.addColorStop(0.4, `rgba(200, 240, 255, ${0.25 * pulse * alphaScale})`);
-            hGrd.addColorStop(0.7, `rgba(${200 + iridShift * 40}, ${150 - iridShift * 50}, ${220 + iridShift * 35}, ${0.2 * pulse * alphaScale})`);
-            hGrd.addColorStop(1, `rgba(180, 100, 220, ${0.14 * pulse * alphaScale})`);
-            drawHeartPath();
-            ctx.fillStyle = hGrd;
-            ctx.fill();
-
-            // Hexagonal grid inside heart
-            ctx.save();
-            drawHeartPath();
-            ctx.clip();
-            const hexR = 7 + pulse * 2;
-            const hexH = hexR * Math.sqrt(3);
-            const gridAlpha = (0.12 + pulse * 0.08) * alphaScale;
-            for (let gLocalX = -1; gLocalX < 1; gLocalX += hexR * 3 / HEART_SIZE) {
-              for (let gLocalY = -1; gLocalY < 1; gLocalY += hexH / HEART_SIZE) {
-                const offsetX = (Math.round(gLocalY * HEART_SIZE / hexH) % 2) * hexR * 1.5 / HEART_SIZE;
-                const lx = gLocalX + offsetX;
-                const ly = gLocalY;
-                const worldY = -ly * HEART_SIZE;
-                const ps = scaleAtY(worldY);
-                if (ps <= 0) continue;
-                const hsx = cx + lx * HEART_SIZE * ps;
-                const hsy = cy - ly * HEART_SIZE * baseScale;
-                // Hex in screen space, scaled by perspective
-                ctx.beginPath();
-                for (let corner = 0; corner < 6; corner++) {
-                  const a = Math.PI / 3 * corner - Math.PI / 6;
-                  const hpx = hsx + Math.cos(a) * hexR * ps;
-                  const hpy = hsy + Math.sin(a) * hexR * baseScale;
-                  if (corner === 0) ctx.moveTo(hpx, hpy);
-                  else ctx.lineTo(hpx, hpy);
-                }
-                ctx.closePath();
-                const hexShimmer = Math.sin(time * 1.5 + lx * 12 + ly * 10) * 0.5 + 0.5;
-                ctx.strokeStyle = `rgba(150, 230, 255, ${gridAlpha * (0.5 + hexShimmer * 0.5)})`;
-                ctx.lineWidth = 0.4 + hexShimmer * 0.4;
-                ctx.stroke();
-                if (hexShimmer > 0.8) {
-                  ctx.fillStyle = `rgba(200, 245, 255, ${0.2 * alphaScale * pulse})`;
-                  ctx.fill();
-                }
+              const shim = Math.sin(time * 1.5 + wx * 0.12 + gy * 0.1) * 0.5 + 0.5;
+              ctx.strokeStyle = `rgba(150, 230, 255, ${gridAlpha * (0.5 + shim * 0.5)})`;
+              ctx.lineWidth = 0.4 + shim * 0.4;
+              ctx.stroke();
+              if (shim > 0.8) {
+                ctx.fillStyle = `rgba(200, 245, 255, ${0.2 * alphaScale * pulse})`;
+                ctx.fill();
               }
             }
-            ctx.restore();
-
-            // Specular edge
-            ctx.save();
-            ctx.shadowColor = `rgba(140, 240, 255, ${0.4 * pulse * alphaScale})`;
-            ctx.shadowBlur = 8;
-            drawHeartPath();
-            const edgeShift = Math.sin(time * 0.4) * 0.5 + 0.5;
-            ctx.strokeStyle = `rgba(${180 + edgeShift * 60}, ${230 + edgeShift * 20}, 255, ${(0.3 + pulse * 0.2) * alphaScale})`;
-            ctx.lineWidth = 1.2 + pulse * 0.8;
-            ctx.stroke();
-            ctx.restore();
           }
+          ctx.restore();
+
+          // Edge outline
+          ctx.save();
+          ctx.shadowColor = `rgba(140, 240, 255, ${0.4 * pulse * alphaScale})`;
+          ctx.shadowBlur = 8;
+          drawHP();
+          const eShift = Math.sin(time * 0.4) * 0.5 + 0.5;
+          ctx.strokeStyle = `rgba(${180 + eShift * 60}, ${230 + eShift * 20}, 255, ${(0.3 + pulse * 0.2) * alphaScale})`;
+          ctx.lineWidth = 1.2 + pulse * 0.8;
+          ctx.stroke();
+          ctx.restore();
         }
 
         // Draw ripple rings using the same phases
