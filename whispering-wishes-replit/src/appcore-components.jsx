@@ -2428,20 +2428,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ============================================================
 
       // --- 3D rectangle with perspective converging toward the sun ---
-      // Bottom edge at 100% h (screen bottom), top edge at 50% h.
+      // Bottom edge at 50% L4 (87.5% h), top edge at 50% L1 (12.5% h).
       // Edges converge toward sun (vanishing point) as they go up.
       {
         const vpX = sunX;           // vanishing point = sun center
         const vpY = sunY;
 
-        // Bottom corners (full width at screen bottom)
-        const botY = h;
+        // Bottom corners (full width at 87.5% h)
+        const botY = h * 0.875;
         const botL = 0;
         const botR = w;
 
         // Top corners: lerp from bottom corners toward vanishing point
-        // at 50% height. t = how far from bottom toward VP.
-        const topY = h * 0.50;
+        // at 12.5% height. t = how far from bottom toward VP.
+        const topY = h * 0.125;
         const t = (botY - topY) / (botY - vpY);   // interpolation factor
         const topL = botL + (vpX - botL) * t;
         const topR = botR + (vpX - botR) * t;
