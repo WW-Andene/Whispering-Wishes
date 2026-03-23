@@ -1100,6 +1100,7 @@ function WhisperingWishesInner() {
   const [teamBuffFilter, setTeamBuffFilter] = useState('all');
   const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
   const [teamDmgFilter, setTeamDmgFilter] = useState('all');
+  const [teamRoleFilter, setTeamRoleFilter] = useState('all');
   const [teamCompareEntries, setTeamCompareEntries] = useState([]); // [{slots: [name,name,name], damageScore, members, mainDpsName}]
   const [teamEquipment, setTeamEquipment] = useState(() => {
     try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
@@ -5635,6 +5636,7 @@ function WhisperingWishesInner() {
                 setTeamBuffFilter('all');
                 setTeamDebuffFilter('all');
                 setTeamDmgFilter('all');
+                setTeamRoleFilter('all');
                 setTeamSelectorOpen(true);
                 haptic.light();
               };
@@ -5679,11 +5681,16 @@ function WhisperingWishesInner() {
                 if (teamBuffFilter !== 'all' && !(data.buffs || []).some(b => b.includes(teamBuffFilter))) return false;
                 if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.includes(teamDebuffFilter))) return false;
                 if (teamDmgFilter !== 'all' && !(data.dmgFocus || []).includes(teamDmgFilter)) return false;
+                if (teamRoleFilter !== 'all' && data.role !== teamRoleFilter) return false;
                 return true;
               }).sort((a, b) => {
                 const aRec = recommendedNames.has(a) ? 0 : 1;
                 const bRec = recommendedNames.has(b) ? 0 : 1;
-                return aRec - bRec;
+                if (aRec !== bRec) return aRec - bRec;
+                // Within each group, sort newest first (later in array = newer)
+                const aIdx = allCharNames.indexOf(a);
+                const bIdx = allCharNames.indexOf(b);
+                return bIdx - aIdx;
               });
 
               // P6-FIX: Element color utilities now imported from appcore-data.js (F-P6-046)
@@ -6805,6 +6812,19 @@ function WhisperingWishesInner() {
                                 { value: '4', label: '4★' },
                               ]}
                               ariaLabel="Filter by rarity"
+                              small
+                            />
+                            <KuroSelect
+                              value={teamRoleFilter}
+                              onChange={setTeamRoleFilter}
+                              options={[
+                                { value: 'all', label: 'All Rôles' },
+                                { value: 'Main DPS', label: 'Main DPS' },
+                                { value: 'Sub DPS', label: 'Sub DPS' },
+                                { value: 'Support', label: 'Support' },
+                                { value: 'Healer', label: 'Healer' },
+                              ]}
+                              ariaLabel="Filter by role"
                               small
                             />
                             <KuroSelect
