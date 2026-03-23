@@ -1576,7 +1576,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION + jitter * 0.02); // tangent + near-imperceptible tilt
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION); // tangent aligned, no random tilt
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
