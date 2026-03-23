@@ -1111,6 +1111,8 @@ function WhisperingWishesInner() {
   const [echoSelectorOpen, setEchoSelectorOpen] = useState(false);
   const [echoSelectorTarget, setEchoSelectorTarget] = useState({ teamIdx: 0, charName: '', slotIdx: 0 }); // slotIdx: 0=4cost, 1-2=3cost, 3-4=1cost
   const [echoSearch, setEchoSearch] = useState('');
+  const [echoSetFilter, setEchoSetFilter] = useState('all');
+  const [echoBuffFilter, setEchoBuffFilter] = useState('all');
   const [echoStatPanel, setEchoStatPanel] = useState(null); // { teamIdx, charName, slotIdx, echoName } — open stat config
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
@@ -7132,7 +7134,7 @@ function WhisperingWishesInner() {
                   </FocusTrapModal>
 
                   {/* Echo Selector Modal */}
-                  <FocusTrapModal isOpen={echoSelectorOpen} onClose={() => setEchoSelectorOpen(false)} className="" onClick={() => setEchoSelectorOpen(false)} centered>
+                  <FocusTrapModal isOpen={echoSelectorOpen} onClose={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="" onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} centered>
                     <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
                       {(() => {
                         const slotIdx = echoSelectorTarget.slotIdx;
@@ -7140,11 +7142,40 @@ function WhisperingWishesInner() {
                         const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
                         const echoList = costNum === 4 ? ALL_4COST_ECHOES : costNum === 3 ? ALL_3COST_ECHOES : ALL_1COST_ECHOES;
                         const charData = CHARACTER_DATA[echoSelectorTarget.charName];
-                        const recommendedEchoes = new Set(charData?.bestEchoes?.flatMap(e => {
-                          // bestEchoes can contain echo names or set names like "Eternal Radiance 5pc"
-                          const echoMatch = echoList.filter(en => e.toLowerCase().includes(en.toLowerCase()));
-                          return echoMatch;
-                        }) || []);
+                        // Build recommended echoes from bestEchoes + matching sonata sets
+                        const recommendedEchoes = new Set();
+                        const recSets = new Set();
+                        (charData?.bestEchoes || []).forEach(e => {
+                          // Direct echo name matches
+                          echoList.forEach(en => { if (e.toLowerCase().includes(en.toLowerCase())) recommendedEchoes.add(en); });
+                          // Extract set names (e.g. "Eternal Radiance 5pc" → "Eternal Radiance")
+                          const setMatch = e.replace(/\s+\d+pc$/i, '').trim();
+                          if (ECHO_SETS[setMatch]) recSets.add(setMatch);
+                        });
+                        // Add echoes that belong to recommended sets
+                        if (recSets.size > 0) {
+                          echoList.forEach(en => {
+                            const ed = ECHO_DATA[en];
+                            if (ed?.sets?.some(s => recSets.has(s))) recommendedEchoes.add(en);
+                          });
+                        }
+                        // Available sonata sets for this cost tier
+                        const availableSets = [...new Set(echoList.flatMap(n => ECHO_DATA[n]?.sets || []))].sort();
+                        const availableBuffs = [...new Set(echoList.flatMap(n => { const d = ECHO_DATA[n]; return d ? (Array.isArray(d.buff) ? d.buff : [d.buff]) : []; }))].sort();
+                        const hasFilters = echoSetFilter !== 'all' || echoBuffFilter !== 'all';
+                        // Filter
+                        const filtered = echoList.filter(name => {
+                          if (echoSearch && !name.toLowerCase().includes(echoSearch.toLowerCase())) return false;
+                          const ed = ECHO_DATA[name];
+                          if (!ed) return !echoSearch;
+                          if (echoSetFilter !== 'all' && !ed.sets.includes(echoSetFilter)) return false;
+                          if (echoBuffFilter !== 'all' && !(Array.isArray(ed.buff) ? ed.buff.includes(echoBuffFilter) : ed.buff === echoBuffFilter)) return false;
+                          return true;
+                        }).sort((a, b) => {
+                          const aRec = recommendedEchoes.has(a) ? 0 : 1;
+                          const bRec = recommendedEchoes.has(b) ? 0 : 1;
+                          return aRec - bRec;
+                        });
                         return (
                           <>
                             <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
@@ -7152,10 +7183,41 @@ function WhisperingWishesInner() {
                                 <h3 className="text-white font-semibold text-sm">Select Echo</h3>
                                 <p className="text-gray-400 text-[10px]">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                               </div>
-                              <button onClick={() => setEchoSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
+                              <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
                             </div>
-                            <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
+                            {/* Search + Filters */}
+                            <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
                               <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+                              <div className="flex gap-1.5">
+                                <KuroSelect
+                                  value={echoSetFilter}
+                                  onChange={v => setEchoSetFilter(v)}
+                                  options={[
+                                    { value: 'all', label: 'All Sets' },
+                                    ...availableSets.map(s => ({ value: s, label: s })),
+                                  ]}
+                                  className="flex-1 text-[10px]"
+                                />
+                                <KuroSelect
+                                  value={echoBuffFilter}
+                                  onChange={v => setEchoBuffFilter(v)}
+                                  options={[
+                                    { value: 'all', label: 'All Buffs' },
+                                    ...availableBuffs.map(b => ({ value: b, label: b })),
+                                  ]}
+                                  className="flex-1 text-[10px]"
+                                />
+                                {hasFilters && (
+                                  <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="px-2 rounded border border-[var(--border-medium)] text-[10px] text-gray-400 hover:text-white transition-all">Clear</button>
+                                )}
+                              </div>
+                              {/* Recommendation indicator */}
+                              {recommendedEchoes.size > 0 && (
+                                <div className="flex items-center gap-1.5 text-[10px] text-orange-400">
+                                  <Star size={10} className="text-orange-400" fill="currentColor" />
+                                  <span>Orange glow = recommended for {echoSelectorTarget.charName}</span>
+                                </div>
+                              )}
                             </div>
                             <div className="overflow-y-auto flex-1 p-2">
                               <div className="space-y-1">
@@ -7173,6 +7235,7 @@ function WhisperingWishesInner() {
                                       return n;
                                     });
                                     setEchoSelectorOpen(false);
+                                    setEchoSetFilter('all'); setEchoBuffFilter('all');
                                     haptic.light();
                                   }}
                                   className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
@@ -7181,14 +7244,7 @@ function WhisperingWishesInner() {
                                   ✕ Unequip echo
                                 </button>
                                 {/* Echo list */}
-                                {echoList
-                                  .filter(name => !echoSearch || name.toLowerCase().includes(echoSearch.toLowerCase()))
-                                  .sort((a, b) => {
-                                    const aRec = recommendedEchoes.has(a) ? 0 : 1;
-                                    const bRec = recommendedEchoes.has(b) ? 0 : 1;
-                                    return aRec - bRec;
-                                  })
-                                  .map(name => {
+                                {filtered.map(name => {
                                     const ed = ECHO_DATA[name];
                                     const isRec = recommendedEchoes.has(name);
                                     const buffs = ed ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
@@ -7207,24 +7263,26 @@ function WhisperingWishesInner() {
                                             return n;
                                           });
                                           setEchoSelectorOpen(false);
+                                          setEchoSetFilter('all'); setEchoBuffFilter('all');
                                           // Open stat config immediately
                                           setEchoStatPanel({ teamIdx: echoSelectorTarget.teamIdx, charName: echoSelectorTarget.charName, slotIdx, echoName: name });
                                           haptic.success();
                                         }}
-                                        className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] border-${costColor}-500/30 bg-${costColor}-500/5 hover:bg-${costColor}-500/10`}
+                                        className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isRec ? 'border-2 border-orange-400' : `border-${costColor}-500/30 bg-${costColor}-500/5`} hover:bg-${costColor}-500/10`}
+                                        style={isRec ? { boxShadow: '0 0 20px rgba(251,146,60,0.5), 0 0 40px rgba(251,146,60,0.2), inset 0 0 15px rgba(251,146,60,0.15)', background: 'rgba(251,146,60,0.12)' } : {}}
                                       >
                                         <div className="flex items-center gap-2">
                                           {collectionImages[name] ? (
-                                            <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
+                                            <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
                                               <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
                                             </div>
                                           ) : (
-                                            <Diamond size={14} className={`text-${costColor}-400`} />
+                                            <Diamond size={14} className={isRec ? 'text-orange-400' : `text-${costColor}-400`} />
                                           )}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-1.5">
                                               <span className="text-white text-xs font-semibold truncate">{name}</span>
-                                              {isRec && <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">Rec</span>}
+                                              {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>}
                                             </div>
                                             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                               {buffs.map(b => <span key={b} className="text-[10px] text-gray-400">{b}</span>)}
@@ -7235,6 +7293,9 @@ function WhisperingWishesInner() {
                                       </button>
                                     );
                                   })}
+                                {filtered.length === 0 && (
+                                  <div className="text-center py-6 text-gray-500 text-xs">No echoes match filters</div>
+                                )}
                               </div>
                             </div>
                           </>
