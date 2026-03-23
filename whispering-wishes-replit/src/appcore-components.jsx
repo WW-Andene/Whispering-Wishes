@@ -2427,121 +2427,97 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
-      // --- ROCKS: Layer 1 (far depth, y 50%–75%) ---
-      // Smaller, lighter, more spaced — gives depth
-      const farRocks = [
-        { x: 0.08, y: 0.56, rw: 0.05, rh: 0.03, rot: -0.1 },
-        { x: 0.18, y: 0.58, rw: 0.06, rh: 0.025, rot: 0.12 },
-        { x: 0.30, y: 0.54, rw: 0.04, rh: 0.02, rot: -0.05 },
-        { x: 0.40, y: 0.57, rw: 0.05, rh: 0.028, rot: 0.08 },
-        { x: 0.52, y: 0.55, rw: 0.045, rh: 0.022, rot: -0.15 },
-        { x: 0.62, y: 0.58, rw: 0.055, rh: 0.03, rot: 0.06 },
-        { x: 0.74, y: 0.54, rw: 0.04, rh: 0.025, rot: -0.1 },
-        { x: 0.85, y: 0.57, rw: 0.05, rh: 0.028, rot: 0.14 },
-        { x: 0.94, y: 0.55, rw: 0.045, rh: 0.02, rot: -0.08 },
-        // Second row deeper
-        { x: 0.12, y: 0.62, rw: 0.06, rh: 0.035, rot: 0.1 },
-        { x: 0.25, y: 0.60, rw: 0.055, rh: 0.03, rot: -0.12 },
-        { x: 0.36, y: 0.63, rw: 0.05, rh: 0.032, rot: 0.07 },
-        { x: 0.48, y: 0.61, rw: 0.06, rh: 0.035, rot: -0.05 },
-        { x: 0.58, y: 0.64, rw: 0.055, rh: 0.03, rot: 0.11 },
-        { x: 0.70, y: 0.62, rw: 0.05, rh: 0.028, rot: -0.09 },
-        { x: 0.82, y: 0.63, rw: 0.06, rh: 0.032, rot: 0.06 },
-        { x: 0.92, y: 0.61, rw: 0.04, rh: 0.025, rot: -0.13 },
-        // Third row
-        { x: 0.05, y: 0.68, rw: 0.07, rh: 0.04, rot: 0.08 },
-        { x: 0.20, y: 0.66, rw: 0.06, rh: 0.035, rot: -0.06 },
-        { x: 0.33, y: 0.69, rw: 0.065, rh: 0.038, rot: 0.1 },
-        { x: 0.45, y: 0.67, rw: 0.055, rh: 0.032, rot: -0.11 },
-        { x: 0.56, y: 0.70, rw: 0.07, rh: 0.04, rot: 0.05 },
-        { x: 0.68, y: 0.68, rw: 0.06, rh: 0.035, rot: -0.07 },
-        { x: 0.78, y: 0.71, rw: 0.065, rh: 0.038, rot: 0.09 },
-        { x: 0.90, y: 0.69, rw: 0.055, rh: 0.032, rot: -0.04 },
+      // --- LAYER 1: Far ground (50%–75%) — rocky terrain with boulders ---
+      // Solid ground fill first
+      const L1_groundY = h * 0.58;
+      const L1_alpha = 0.30 * alphaScale;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.75);
+      for (let x = 0; x <= w; x += 4) {
+        const n = Math.sin(x * 0.012) * 8
+                + Math.sin(x * 0.025 + 2.1) * 5
+                + Math.sin(x * 0.005 + 0.7) * 14;
+        ctx.lineTo(x, L1_groundY + n);
+      }
+      ctx.lineTo(w, h * 0.75);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(50, 36, 20, ${L1_alpha})`;
+      ctx.fill();
+
+      // Boulders sitting on layer 1 ground
+      const L1_boulders = [
+        { x: 0.10, sz: 0.035 }, { x: 0.22, sz: 0.028 }, { x: 0.35, sz: 0.040 },
+        { x: 0.48, sz: 0.032 }, { x: 0.60, sz: 0.038 }, { x: 0.72, sz: 0.030 },
+        { x: 0.85, sz: 0.036 }, { x: 0.95, sz: 0.025 },
       ];
-      const farRockAlpha = 0.25 * alphaScale;
-      for (const r of farRocks) {
-        ctx.save();
-        ctx.translate(r.x * w, r.y * h);
-        ctx.rotate(r.rot);
-        const rw2 = r.rw * w;
-        const rh2 = r.rh * h;
-        // Angular rock silhouette
+      for (const b of L1_boulders) {
+        const bx = b.x * w;
+        const groundAtX = L1_groundY + Math.sin(bx * 0.012) * 8
+                        + Math.sin(bx * 0.025 + 2.1) * 5
+                        + Math.sin(bx * 0.005 + 0.7) * 14;
+        const bsz = b.sz * w;
+        // Boulder: rounded-ish shape sitting on ground
         ctx.beginPath();
-        ctx.moveTo(-rw2 * 0.45, rh2 * 0.3);
-        ctx.lineTo(-rw2 * 0.35, -rh2 * 0.35);
-        ctx.lineTo(-rw2 * 0.05, -rh2 * 0.5);
-        ctx.lineTo(rw2 * 0.25, -rh2 * 0.4);
-        ctx.lineTo(rw2 * 0.5, -rh2 * 0.15);
-        ctx.lineTo(rw2 * 0.4, rh2 * 0.35);
-        ctx.lineTo(rw2 * 0.05, rh2 * 0.5);
-        ctx.lineTo(-rw2 * 0.3, rh2 * 0.45);
+        ctx.moveTo(bx - bsz * 0.5, groundAtX);
+        ctx.quadraticCurveTo(bx - bsz * 0.55, groundAtX - bsz * 0.6, bx - bsz * 0.1, groundAtX - bsz * 0.85);
+        ctx.quadraticCurveTo(bx + bsz * 0.3, groundAtX - bsz * 0.95, bx + bsz * 0.5, groundAtX - bsz * 0.4);
+        ctx.quadraticCurveTo(bx + bsz * 0.55, groundAtX - bsz * 0.1, bx + bsz * 0.5, groundAtX);
         ctx.closePath();
-        ctx.fillStyle = `rgba(55, 40, 22, ${farRockAlpha})`;
+        ctx.fillStyle = `rgba(45, 32, 18, ${L1_alpha * 1.2})`;
         ctx.fill();
-        // Lit top face
-        ctx.fillStyle = `rgba(160, 120, 50, ${0.03 * alphaScale})`;
+        // Lit top edge
         ctx.beginPath();
-        ctx.moveTo(-rw2 * 0.35, -rh2 * 0.35);
-        ctx.lineTo(-rw2 * 0.05, -rh2 * 0.5);
-        ctx.lineTo(rw2 * 0.25, -rh2 * 0.4);
-        ctx.lineTo(rw2 * 0.05, -rh2 * 0.15);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        ctx.moveTo(bx - bsz * 0.1, groundAtX - bsz * 0.85);
+        ctx.quadraticCurveTo(bx + bsz * 0.3, groundAtX - bsz * 0.95, bx + bsz * 0.5, groundAtX - bsz * 0.4);
+        ctx.strokeStyle = `rgba(170, 125, 55, ${0.04 * alphaScale})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
       }
 
-      // --- ROCKS: Layer 0 (near depth, y 75%–100%) ---
-      // Bigger, darker, overlapping — foreground weight
-      const nearRocks = [
-        { x: 0.04, y: 0.78, rw: 0.10, rh: 0.06, rot: -0.08 },
-        { x: 0.16, y: 0.80, rw: 0.09, rh: 0.055, rot: 0.12 },
-        { x: 0.28, y: 0.77, rw: 0.11, rh: 0.065, rot: -0.06 },
-        { x: 0.40, y: 0.82, rw: 0.10, rh: 0.058, rot: 0.1 },
-        { x: 0.52, y: 0.79, rw: 0.09, rh: 0.055, rot: -0.14 },
-        { x: 0.64, y: 0.81, rw: 0.11, rh: 0.06, rot: 0.07 },
-        { x: 0.76, y: 0.78, rw: 0.10, rh: 0.058, rot: -0.1 },
-        { x: 0.88, y: 0.80, rw: 0.09, rh: 0.055, rot: 0.13 },
-        { x: 0.96, y: 0.77, rw: 0.08, rh: 0.05, rot: -0.05 },
-        // Larger bottom row — fills the very bottom
-        { x: 0.08, y: 0.88, rw: 0.14, rh: 0.08, rot: 0.06 },
-        { x: 0.24, y: 0.90, rw: 0.13, rh: 0.075, rot: -0.1 },
-        { x: 0.38, y: 0.92, rw: 0.15, rh: 0.085, rot: 0.04 },
-        { x: 0.54, y: 0.89, rw: 0.13, rh: 0.07, rot: -0.08 },
-        { x: 0.68, y: 0.91, rw: 0.14, rh: 0.08, rot: 0.09 },
-        { x: 0.84, y: 0.88, rw: 0.12, rh: 0.07, rot: -0.06 },
-        { x: 0.96, y: 0.90, rw: 0.10, rh: 0.065, rot: 0.11 },
+      // --- LAYER 0: Near ground (75%–100%) — closer, darker, bigger boulders ---
+      const L0_groundY = h * 0.76;
+      const L0_alpha = 0.70 * alphaScale;
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      for (let x = 0; x <= w; x += 4) {
+        const n = Math.sin(x * 0.009 + 1.3) * 10
+                + Math.sin(x * 0.022 + 4.5) * 7
+                + Math.sin(x * 0.004 + 2.0) * 18;
+        ctx.lineTo(x, L0_groundY + n);
+      }
+      ctx.lineTo(w, h);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(20, 14, 8, ${L0_alpha})`;
+      ctx.fill();
+
+      // Large boulders on layer 0 ground
+      const L0_boulders = [
+        { x: 0.06, sz: 0.07 }, { x: 0.18, sz: 0.06 }, { x: 0.30, sz: 0.08 },
+        { x: 0.44, sz: 0.065 }, { x: 0.56, sz: 0.075 }, { x: 0.68, sz: 0.06 },
+        { x: 0.80, sz: 0.07 }, { x: 0.92, sz: 0.055 },
       ];
-      const nearRockAlpha = 0.65 * alphaScale;
-      for (const r of nearRocks) {
-        ctx.save();
-        ctx.translate(r.x * w, r.y * h);
-        ctx.rotate(r.rot);
-        const rw2 = r.rw * w;
-        const rh2 = r.rh * h;
-        // Chunkier angular shape
+      for (const b of L0_boulders) {
+        const bx = b.x * w;
+        const groundAtX = L0_groundY + Math.sin(bx * 0.009 + 1.3) * 10
+                        + Math.sin(bx * 0.022 + 4.5) * 7
+                        + Math.sin(bx * 0.004 + 2.0) * 18;
+        const bsz = b.sz * w;
+        // Boulder sitting on ground
         ctx.beginPath();
-        ctx.moveTo(-rw2 * 0.5, rh2 * 0.2);
-        ctx.lineTo(-rw2 * 0.4, -rh2 * 0.3);
-        ctx.lineTo(-rw2 * 0.15, -rh2 * 0.5);
-        ctx.lineTo(rw2 * 0.2, -rh2 * 0.45);
-        ctx.lineTo(rw2 * 0.45, -rh2 * 0.2);
-        ctx.lineTo(rw2 * 0.5, rh2 * 0.15);
-        ctx.lineTo(rw2 * 0.3, rh2 * 0.5);
-        ctx.lineTo(-rw2 * 0.1, rh2 * 0.48);
-        ctx.lineTo(-rw2 * 0.45, rh2 * 0.35);
+        ctx.moveTo(bx - bsz * 0.55, groundAtX);
+        ctx.quadraticCurveTo(bx - bsz * 0.6, groundAtX - bsz * 0.55, bx - bsz * 0.15, groundAtX - bsz * 0.8);
+        ctx.quadraticCurveTo(bx + bsz * 0.25, groundAtX - bsz * 0.9, bx + bsz * 0.55, groundAtX - bsz * 0.35);
+        ctx.quadraticCurveTo(bx + bsz * 0.6, groundAtX - bsz * 0.05, bx + bsz * 0.55, groundAtX);
         ctx.closePath();
-        ctx.fillStyle = `rgba(22, 15, 8, ${nearRockAlpha})`;
+        ctx.fillStyle = `rgba(16, 10, 5, ${L0_alpha * 1.1})`;
         ctx.fill();
-        // Lit top-right face
-        ctx.fillStyle = `rgba(140, 100, 40, ${0.04 * alphaScale})`;
+        // Lit top edge
         ctx.beginPath();
-        ctx.moveTo(-rw2 * 0.15, -rh2 * 0.5);
-        ctx.lineTo(rw2 * 0.2, -rh2 * 0.45);
-        ctx.lineTo(rw2 * 0.45, -rh2 * 0.2);
-        ctx.lineTo(rw2 * 0.1, -rh2 * 0.1);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        ctx.moveTo(bx - bsz * 0.15, groundAtX - bsz * 0.8);
+        ctx.quadraticCurveTo(bx + bsz * 0.25, groundAtX - bsz * 0.9, bx + bsz * 0.55, groundAtX - bsz * 0.35);
+        ctx.strokeStyle = `rgba(150, 110, 45, ${0.05 * alphaScale})`;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
       }
 
       // --- Atmospheric lightning (sky to ground) ---
