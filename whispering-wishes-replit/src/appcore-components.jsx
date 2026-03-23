@@ -2594,24 +2594,51 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Draw stripes bottom→top; perspective-scaled, light thinner than dark
+        // Draw stripes bottom→top: dark band, then double light lines, repeat
+        // Light proportion shrinks toward the top
         let y = botY;
-        let i = 0;
         while (y > topY) {
           const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
-          const isDark = i % 2 === 0;     // first (bottom) is dark
-          // Dark stripes are thicker, light stripes are thinner
-          const baseH = isDark ? h * 0.035 : h * 0.015;
-          const sh = Math.max(1, baseH * scale);
-          const drawY = Math.max(topY, y - sh);
+
+          // Dark band
+          const darkH = Math.max(1, h * 0.035 * scale);
+          const darkY = Math.max(topY, y - darkH);
           ctx.beginPath();
-          ctx.rect(0, drawY, w, y - drawY);
-          ctx.fillStyle = isDark
-            ? `rgba(10, 7, 3, ${edgeAlpha * 0.3})`
-            : `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
+          ctx.rect(0, darkY, w, y - darkY);
+          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
           ctx.fill();
-          y = drawY;
-          i++;
+          y = darkY;
+          if (y <= topY) break;
+
+          // Double light lines — proportion shrinks with scale
+          const lightH = Math.max(1, h * 0.012 * scale * scale);
+          const gapH = Math.max(1, h * 0.006 * scale * scale);
+
+          // First light line
+          const l1Y = Math.max(topY, y - lightH);
+          ctx.beginPath();
+          ctx.rect(0, l1Y, w, y - l1Y);
+          ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
+          ctx.fill();
+          y = l1Y;
+          if (y <= topY) break;
+
+          // Thin dark gap between double lines
+          const gY = Math.max(topY, y - gapH);
+          ctx.beginPath();
+          ctx.rect(0, gY, w, y - gY);
+          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.2})`;
+          ctx.fill();
+          y = gY;
+          if (y <= topY) break;
+
+          // Second light line
+          const l2Y = Math.max(topY, y - lightH);
+          ctx.beginPath();
+          ctx.rect(0, l2Y, w, y - l2Y);
+          ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
+          ctx.fill();
+          y = l2Y;
         }
         ctx.restore();
 
