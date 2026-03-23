@@ -2324,6 +2324,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = core;
       ctx.fillRect(0, 0, w, h);
 
+      // Inner sun — tight bright disc with secondary pulse
+      const innerPulse = 1 + Math.sin(time * 0.55 + 1.2) * 0.12;
+      const innerR = w * 0.028 * innerPulse;
+      const inner = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, innerR);
+      inner.addColorStop(0, `rgba(255, 255, 248, ${0.92 * alphaScale * innerPulse})`);
+      inner.addColorStop(0.25, `rgba(255, 248, 220, ${0.7 * alphaScale * innerPulse})`);
+      inner.addColorStop(0.55, `rgba(255, 230, 160, ${0.35 * alphaScale})`);
+      inner.addColorStop(0.8, `rgba(255, 200, 100, ${0.1 * alphaScale})`);
+      inner.addColorStop(1, 'rgba(255, 180, 60, 0)');
+      ctx.fillStyle = inner;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, innerR, 0, Math.PI * 2);
+      ctx.fill();
+
       // --- Swirling vortex ring around sun ---
       const vortexR = Math.min(w, h) * 0.14;
       const vortexRot = time * 0.12;
@@ -2662,10 +2676,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const stepW = eR - eL;
 
           // --- Break: ~25% of steps have a chunk missing ---
+          // Bias: more breaks on left side near top and bottom of staircase
           let breakSide = 0, breakW = 0;
-          if (s(8) > 0.75) {
-            breakSide = s(9) > 0.5 ? 1 : -1;
-            breakW = stepW * (0.13 + s(10) * 0.18); // 13-31% of width
+          const posRatio = (botY - y) / (botY - topY); // 0=bottom, 1=top
+          const edgeBias = posRatio < 0.15 || posRatio > 0.85; // near top or bottom
+          const breakThresh = edgeBias ? 0.45 : 0.75; // ~55% vs ~25%
+          if (s(8) > breakThresh) {
+            // Near edges, strongly prefer left side (-1)
+            breakSide = edgeBias ? (s(9) > 0.8 ? 1 : -1) : (s(9) > 0.5 ? 1 : -1);
+            breakW = stepW * (edgeBias ? (0.18 + s(10) * 0.22) : (0.13 + s(10) * 0.18));
           }
 
           // Riser left/right after break
@@ -2956,23 +2975,25 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillStyle = grad;
           ctx.fillRect(cx - glowR, cy - glowR, glowR * 2, glowR * 2);
 
-          // Arcs between consecutive pairs
+          // Arcs between consecutive pairs — slower, more erratic, bolder
           for (let gi = 0; gi < group.length - 1; gi++) {
             const a = group[gi], b = group[gi + 1];
             const dx = b.x - a.x, dy = b.y - a.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < 1) continue;
 
-            // Flickering — subtle, mostly off
             const arcSeed = a.idx * 31 + b.idx * 17;
-            const flicker = sHash(arcSeed, Math.floor(time * 6)) * 0.5 +
-                            sHash(arcSeed, Math.floor(time * 14) + 100) * 0.5;
-            if (flicker < 0.45) continue; // off more often
+            // Slow base flicker + erratic bursts
+            const slowWave = Math.sin(time * 0.8 + arcSeed * 0.3) * 0.5 + 0.5;
+            const erratic = sHash(arcSeed, Math.floor(time * 3)) > 0.6 ? 1 : 0;
+            const burst = sHash(arcSeed, Math.floor(time * 1.5) + 50);
+            const flicker = slowWave * 0.4 + erratic * 0.4 + burst * 0.2;
+            if (flicker < 0.25) continue;
 
-            const alpha = (0.12 + flicker * 0.25) * Math.min(1, 0.12 / (dist / h + 0.01));
+            const alpha = (0.25 + flicker * 0.55) * Math.min(1, 0.18 / (dist / h + 0.01));
 
-            // Jagged arc: 3-4 segments
-            const nSeg = 3 + Math.floor(sHash(arcSeed, 200) * 2);
+            // Erratic jagged arc: 4-7 segments with large, uneven jitter
+            const nSeg = 4 + Math.floor(sHash(arcSeed, 200) * 4);
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             for (let si = 1; si < nSeg; si++) {
@@ -2981,22 +3002,26 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const my = a.y + dy * t;
               const perpX = -dy / dist;
               const perpY = dx / dist;
-              const jitter = (sHash(arcSeed + si, Math.floor(time * 10)) - 0.5) * dist * 0.25;
+              // Large erratic jitter that changes shape unpredictably
+              const jBase = (sHash(arcSeed + si, Math.floor(time * 3)) - 0.5);
+              const jSpike = sHash(arcSeed + si * 7, Math.floor(time * 1.2)) > 0.7
+                ? (sHash(arcSeed + si, 300) - 0.5) * 1.8 : 0;
+              const jitter = (jBase + jSpike) * dist * 0.4;
               ctx.lineTo(mx + perpX * jitter, my + perpY * jitter);
             }
             ctx.lineTo(b.x, b.y);
 
-            // Soft outer glow
-            ctx.strokeStyle = `rgba(255, 100, 40, ${alpha * 0.5})`;
-            ctx.lineWidth = 1.5;
+            // Bold outer glow
+            ctx.strokeStyle = `rgba(255, 90, 30, ${alpha * 0.45})`;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
             // Orange-red arc
             ctx.strokeStyle = `rgba(255, 130, 50, ${alpha})`;
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 1.0;
             ctx.stroke();
-            // Bright thin core
-            ctx.strokeStyle = `rgba(255, 210, 120, ${alpha * 0.4})`;
-            ctx.lineWidth = 0.2;
+            // Bright core
+            ctx.strokeStyle = `rgba(255, 220, 140, ${alpha * 0.5})`;
+            ctx.lineWidth = 0.4;
             ctx.stroke();
           }
         }
