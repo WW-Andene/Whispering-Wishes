@@ -2594,16 +2594,26 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
+        // Draw stripes bottom→top; each stripe thins with perspective
         const STRIPES = 20;
-        const stripeH = (botY - topY) / STRIPES;
+        const totalH = botY - topY;
+        let y = botY;
         for (let i = 0; i < STRIPES; i++) {
-          const y = topY + i * stripeH;
-          const isLight = i % 2 === 1;
+          // Distance from VP at current y → stripe height scales with it
+          const dist = y - vpY;
+          const stripeH = dist / (totalH / (totalH / STRIPES));
+          // Proportional height: thicker at bottom, thinner at top
+          const baseH = totalH / STRIPES;
+          const scale = dist / dBot; // 1 at bottom, small at top
+          const sh = baseH * scale;
+          if (sh < 1 || y - sh < topY) break;
+          y -= sh;
+          const isDark = i % 2 === 0; // first (bottom) is dark
           ctx.beginPath();
-          ctx.rect(0, y, w, stripeH);
-          ctx.fillStyle = isLight
-            ? `rgba(200, 140, 60, ${edgeAlpha * 0.15})`
-            : `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
+          ctx.rect(0, y, w, sh);
+          ctx.fillStyle = isDark
+            ? `rgba(10, 7, 3, ${edgeAlpha * 0.3})`
+            : `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
           ctx.fill();
         }
         ctx.restore();
