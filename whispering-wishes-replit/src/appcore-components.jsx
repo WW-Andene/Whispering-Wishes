@@ -1442,7 +1442,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     // then offset everything so the ring center sits at screen center
     let centerOffX = 0, centerOffY = 0;
 
-    const CAM_HEIGHT = 250; // camera elevated above the ribbon
+    const CAM_HEIGHT = 100; // camera slightly above the ribbon
 
     const projectRaw = (wx, wy, wz) => {
       const cy = wy - CAM_HEIGHT; // translate Y relative to camera height
