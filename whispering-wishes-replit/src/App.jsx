@@ -3403,7 +3403,7 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div className="rounded-xl p-1.5" style={{ background: 'rgba(0,0,0,0.05)' }}>
+              <div className="kuro-card-inline" style={{ padding: '6px 12px' }}>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
                 <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
