@@ -1822,59 +1822,73 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rOuter = r + BAND_W * 0.5 * fade;
           const rInner = Math.max(0, r - BAND_W * 0.5 * fade);
 
-          // Dark underside
+          // Dark underside — tighter, softer, blurred
+          const darkBandW = BAND_W * 0.35 * fade;
+          const rDarkOuter = r + darkBandW;
+          const rDarkInner = Math.max(0, r - darkBandW * 0.3);
+          ctx.save();
+          ctx.shadowColor = `hsla(${hue + 10}, 50%, 8%, ${alpha * 0.3})`;
+          ctx.shadowBlur = 6;
           ctx.beginPath();
           let started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rOuter, wy * 0.3, Math.sin(a) * rOuter);
+            const p = project(Math.cos(a) * rDarkOuter, wy * 0.3, Math.sin(a) * rDarkOuter);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
           for (let s = STEPS; s >= 0; s--) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rInner, 0, Math.sin(a) * rInner);
+            const p = project(Math.cos(a) * rDarkInner, 0, Math.sin(a) * rDarkInner);
             if (!p) continue;
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(${hue + 10}, 50%, 15%, ${alpha * 0.6})`;
+          ctx.fillStyle = `hsla(${hue + 10}, 50%, 12%, ${alpha * 0.35})`;
           ctx.fill();
+          ctx.restore();
 
-          // Bright top face
+          // Bright top face — tighter band
+          const topBandW = BAND_W * 0.4 * fade;
+          const rTopOuter = r + topBandW;
+          const rTopInner = Math.max(0, r - topBandW * 0.5);
           ctx.beginPath();
           started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rOuter, wy, Math.sin(a) * rOuter);
+            const p = project(Math.cos(a) * rTopOuter, wy, Math.sin(a) * rTopOuter);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
           for (let s = STEPS; s >= 0; s--) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rInner, wy * 0.7, Math.sin(a) * rInner);
+            const p = project(Math.cos(a) * rTopInner, wy * 0.7, Math.sin(a) * rTopInner);
             if (!p) continue;
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(${hue}, 60%, 48%, ${alpha * 0.5})`;
+          ctx.fillStyle = `hsla(${hue}, 60%, 48%, ${alpha * 0.4})`;
           ctx.fill();
 
-          // Specular highlight
+          // Specular highlight — tighter, softer, blurred
+          ctx.save();
+          ctx.shadowColor = `hsla(${hue - 15}, 80%, 80%, ${alpha * 0.5})`;
+          ctx.shadowBlur = 5;
           ctx.beginPath();
           started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * r, wy - 1.5, Math.sin(a) * r);
+            const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
-          ctx.strokeStyle = `hsla(${hue - 15}, 80%, 85%, ${alpha * 1.2})`;
-          ctx.lineWidth = 1.5 + fade * 2;
+          ctx.strokeStyle = `hsla(${hue - 15}, 75%, 88%, ${alpha * 0.7})`;
+          ctx.lineWidth = 0.8 + fade * 1.2;
           ctx.stroke();
+          ctx.restore();
         }
       }
     };
