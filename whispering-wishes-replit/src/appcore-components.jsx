@@ -1762,6 +1762,37 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.beginPath();
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
+
+        // --- Ripple rings: "stone in a puddle" expanding from center ---
+        // Multiple rings at different phases, continuously spawning outward
+        const RIPPLE_COUNT = 5;
+        const RIPPLE_MAX = Math.max(w, h) * 0.6;
+        const RIPPLE_SPEED = 0.12; // how fast they expand
+        const RIPPLE_LIFE = 1 / RIPPLE_SPEED; // time for one ripple to reach max
+
+        for (let ri = 0; ri < RIPPLE_COUNT; ri++) {
+          // Each ripple is offset in time so they stagger
+          const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1; // 0→1 lifecycle
+          const radius = phase * RIPPLE_MAX;
+          // Fade in then out: peak at ~0.2, gone by 1.0
+          const fade = Math.sin(phase * Math.PI) * (1 - phase * 0.5);
+          const rippleAlpha = fade * 0.12 * alphaScale;
+          if (rippleAlpha < 0.005) continue;
+
+          const thickness = 1.5 + (1 - phase) * 2; // thicker when young
+          const hue = 200 + phase * 80; // cyan → purple as it expands
+
+          ctx.beginPath();
+          ctx.arc(centerP.sx, centerP.sy, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${rippleAlpha})`;
+          ctx.lineWidth = thickness;
+          ctx.stroke();
+
+          // Soft glow on the ripple
+          ctx.lineWidth = thickness * 4;
+          ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${rippleAlpha * 0.2})`;
+          ctx.stroke();
+        }
       }
     };
     animId = requestAnimationFrame(draw);
