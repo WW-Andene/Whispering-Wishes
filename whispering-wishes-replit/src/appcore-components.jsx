@@ -2434,13 +2434,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;           // vanishing point = sun center
         const vpY = sunY;
 
-        // Bottom corners (full width at 87.5% h)
-        const botY = h * 0.875;
+        // Bottom corners (full width at 62.5% h = 50% of L1)
+        const botY = h * 0.625;
         const botL = 0;
         const botR = w;
 
         // Top corners: lerp from bottom corners toward vanishing point
-        // at 12.5% height. t = how far from bottom toward VP.
+        // at 12.5% height (50% of L3).
         const topY = h * 0.125;
         const t = (botY - topY) / (botY - vpY);   // interpolation factor
         const topL = botL + (vpX - botL) * t;
