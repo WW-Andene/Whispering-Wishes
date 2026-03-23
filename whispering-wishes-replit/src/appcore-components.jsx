@@ -1210,7 +1210,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
       animId = requestAnimationFrame(draw);
       if (t - lastFrame < 66) return;
       lastFrame = t;
-      const time = t * 0.001;
+      const time = t * 0.00075; // 25% slower
       bctx.fillStyle = bgColor;
       bctx.fillRect(0, 0, bw, bh);
 
@@ -1320,7 +1320,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
       if (t - lastFrame < 66) return;
       lastFrame = t;
       ctx.clearRect(0, 0, w, h);
-      const time = t * 0.001;
+      const time = t * 0.00075; // 25% slower
 
       for (let r = -1; r < rows; r++) {
         for (let c = -1; c < cols; c++) {
