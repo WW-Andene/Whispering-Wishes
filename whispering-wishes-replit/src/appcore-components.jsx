@@ -1523,16 +1523,19 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const jitter = (hash - Math.floor(hash)) * 2 - 1; // -1..1
 
           // Position on the ring with slight radius jitter (less stiff)
-          const radiusJitter = jitter * 1.5;
+          const radiusJitter = jitter * 0.5;
           const wx = Math.cos(angle) * (r + radiusJitter);
           const wz = Math.sin(angle) * (r + radiusJitter);
 
-          // Ribbon wave + per-square Y float offset
+          // Ribbon wave + veil-like ripple across the ribbon surface
           const ribbonWave = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
                            + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
-          const squareFloat = jitter * 3; // very subtle ±3 off ribbon surface
-          const drift = Math.sin(time * 0.2 + row * 0.5 + i * 0.3) * 1.5;
-          const wy = ribbonWave + squareFloat + drift;
+          // Veil: slow ripples that travel across the ribbon width (like fabric in wind)
+          const veil = Math.sin(rowT * Math.PI * 3 + angle * 4 + time * 0.25) * 5
+                     + Math.sin(rowT * Math.PI * 5 - angle * 2 + time * 0.18) * 3;
+          const squareFloat = jitter * 1; // barely perceptible ±1
+          const drift = Math.sin(time * 0.2 + row * 0.5 + i * 0.3) * 0.5;
+          const wy = ribbonWave + veil + squareFloat + drift;
 
           const p = project(wx, wy, wz);
           if (!p) continue;
@@ -1573,7 +1576,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION + jitter * 0.05); // tangent + very slight tilt
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION + jitter * 0.02); // tangent + near-imperceptible tilt
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
