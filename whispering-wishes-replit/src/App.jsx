@@ -6280,15 +6280,56 @@ function WhisperingWishesInner() {
                         if (isMain) {
                           totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
                         } else {
-                          // Support/sub DPS: own weapon substat + basic element bonus, reduced crit
-                          let sElem = 10; // 2pc echo bonus
+                          // Support/sub DPS: read actual echo stats if configured
+                          const sEqKey = teamIdx + ':' + m.name;
+                          const sEq = teamEquipment[sEqKey];
+                          const sEchoes = sEq?.echoes || [];
+                          const sEl = (m.d.element || '').toLowerCase();
+                          const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
+                          let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0;
+                          // Echo set bonuses
                           if (m.echoSet) {
-                            const ek2 = (m.d.element || '').toLowerCase() + 'Dmg';
-                            sElem += (m.echoSet.p2val?.[ek2] || 0) + (m.echoSet.p5val?.[ek2] || 0);
+                            const ek2 = sEl + 'Dmg';
+                            const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
+                            if (p2.atkPct) sAtkPct += p2.atkPct; if (p5.atkPct) sAtkPct += p5.atkPct;
+                            if (p2.critRate) sCr += p2.critRate; if (p5.critRate) sCr += p5.critRate;
+                            if (p2[ek2]) sElem += p2[ek2]; if (p5[ek2]) sElem += p5[ek2];
+                            if (p2.skillDmg) sSkillDmg += p2.skillDmg; if (p5.skillDmg) sSkillDmg += p5.skillDmg;
                           }
-                          const sAtk = mAtk * 1.15; // ~15% ATK from substats
-                          const sCrit = 1 + (0.05) * (0.5); // minimal crit contribution
-                          totalRotDmg += sAtk * (mult / 100) * sCrit * (1 + sElem / 100) * defMult * resMult;
+                          // Weapon substat
+                          if (m.weapSubstat === 'Crit Rate') sCr += parseFloat(m.weapSubVal) || 0;
+                          if (m.weapSubstat === 'Crit DMG') sCd += parseFloat(m.weapSubVal) || 0;
+                          if (m.weapSubstat === 'ATK%') sAtkPct += parseFloat(m.weapSubVal) || 0;
+                          // Echo individual stats
+                          const sMainStatVals = {
+                            4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+                            3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+                            1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+                          };
+                          const sSubVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Resonance Skill DMG': 9 };
+                          sEchoes.forEach((echo, ei) => {
+                            if (!echo || typeof echo !== 'object') return;
+                            const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
+                            if (echo.mainStat) {
+                              const val = sMainStatVals[cost]?.[echo.mainStat] || 0;
+                              if (echo.mainStat === 'ATK%') sAtkPct += val;
+                              else if (echo.mainStat === 'Crit Rate') sCr += val;
+                              else if (echo.mainStat === 'Crit DMG') sCd += val;
+                              else if (echo.mainStat === sElDmgKey) sElem += val;
+                            }
+                            (echo.substats || []).forEach(sub => {
+                              const val = sSubVals[sub];
+                              if (!val) return;
+                              if (sub === 'ATK%') sAtkPct += val;
+                              else if (sub === 'Crit Rate') sCr += val;
+                              else if (sub === 'Crit DMG') sCd += val;
+                              else if (sub === 'Resonance Skill DMG') sSkillDmg += val;
+                            });
+                          });
+                          const sEffAtk = mAtk * (1 + sAtkPct / 100);
+                          const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
+                          const sDmgBonus = (1 + sElem / 100) * (1 + sSkillDmg / 100);
+                          totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * defMult * resMult;
                         }
                       });
                       const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
