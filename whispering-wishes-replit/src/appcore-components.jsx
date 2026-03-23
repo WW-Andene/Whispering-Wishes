@@ -1431,28 +1431,35 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     init();
     window.addEventListener('resize', init);
 
-    // Camera: diagonal view — tilt around X for side view, plus yaw around Y for diagonal
-    const tilt = -35 * Math.PI / 180;   // X-axis tilt (more top-down = more diagonal)
-    const yaw = 30 * Math.PI / 180;     // Y-axis rotation (stronger diagonal)
+    // Camera: side view with slight top-down, no yaw — diagonal comes from canvas rotation
+    const tilt = -28 * Math.PI / 180;   // X-axis tilt (side view with a bit of top)
     const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
-    const cosY = Math.cos(yaw), sinY = Math.sin(yaw);
+
+    // Screen-space diagonal: rotate the entire output ~30° on screen
+    const SCREEN_ROTATION = -30 * Math.PI / 180;
 
     const project = (wx, wy, wz) => {
-      // Rotate around Y axis first (yaw — makes it diagonal)
-      const rx = wx * cosY - wz * sinY;
-      const rz = wx * sinY + wz * cosY;
-
-      // Then tilt around X axis (pitch — side view)
-      const cz = rz + 600;
+      // Camera pull-back (closer to fill the screen)
+      const cz = wz + 400;
       const ey = wy * cosT - cz * sinT;
       const ez = wy * sinT + cz * cosT;
 
       if (ez < 10) return null;
-      const fov = Math.min(w, h) * 0.9;
+      const fov = Math.min(w, h) * 1.1;
       const scale = fov / ez;
+
+      // Project to screen center
+      const sx = wx * scale;
+      const sy = ey * scale;
+
+      // Rotate on screen for diagonal appearance
+      const cosR = Math.cos(SCREEN_ROTATION), sinR = Math.sin(SCREEN_ROTATION);
+      const rsx = sx * cosR - sy * sinR;
+      const rsy = sx * sinR + sy * cosR;
+
       return {
-        sx: w * 0.5 + rx * scale,
-        sy: h * 0.5 + ey * scale,
+        sx: w * 0.5 + rsx,
+        sy: h * 0.5 + rsy,
         scale,
         depth: ez
       };
@@ -1488,8 +1495,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // Ring params
       const RADIUS = 350;          // radius of the circular ring
       const RIBBON_WIDTH = 120;    // width of the ribbon (multiple rows of dots)
-      const ROWS = 12;             // number of dot-rows across ribbon width
-      const DOTS_AROUND = 120;     // dots around the circumference per row
+      const ROWS = 20;             // number of dot-rows across ribbon width
+      const DOTS_AROUND = 200;     // dots around the circumference per row
       const WAVE_AMP = 60;         // how high the ribbon waves up/down
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
@@ -1532,10 +1539,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
 
-        // Square size scales with depth (perspective)
-        const sqSize = (1.2 + depthNorm * 3.5) * p.scale * 0.5;
-        const rectW = sqSize;
-        const rectH = sqSize;
+        // Flat rectangle: wide and thin (like dashes/tiles)
+        const baseSize = (1 + depthNorm * 3) * p.scale * 0.45;
+        const rectW = baseSize * 2.2;  // wide
+        const rectH = baseSize * 0.5;  // thin/flat
 
         // Brighter on wave crests
         const heightNorm = (wy + WAVE_AMP * 1.3) / (WAVE_AMP * 2.6);
@@ -1553,7 +1560,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5); // tangent = angle + 90°
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION); // tangent + screen diagonal
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
@@ -1622,8 +1629,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const wx = Math.cos(angle) * r;
         const wz = Math.sin(angle) * r;
-        const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
-                 + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
+        const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                 + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
 
         const p = project(wx, wy, wz);
         if (!p) continue;
