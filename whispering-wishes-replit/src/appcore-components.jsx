@@ -1516,8 +1516,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // Ring params
       const RADIUS = 250;          // radius of the circular ring (smaller, less big)
       const RIBBON_WIDTH = 90;     // width of the ribbon
-      const ROWS = 40;             // more rows across ribbon width
-      const DOTS_AROUND = 600;     // doubled again
+      const ROWS = 44;             // more rows across ribbon width
+      const DOTS_AROUND = 680;     // denser squares
       const WAVE_AMP = 35;         // reduced wave amplitude
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
@@ -1594,6 +1594,29 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
+      }
+
+      // --- Sparkle particles floating above/around the ribbon ---
+      for (let sp = 0; sp < 60; sp++) {
+        const spHash = Math.sin(sp * 191.7) * 43758.5453;
+        const spRand = spHash - Math.floor(spHash);
+        const spHash2 = Math.sin(sp * 337.3) * 29871.2;
+        const spRand2 = spHash2 - Math.floor(spHash2);
+        const spAngle = spRand * Math.PI * 2 + rot + time * (0.02 + spRand2 * 0.03);
+        const spR = RADIUS - RIBBON_WIDTH * 0.4 + spRand2 * RIBBON_WIDTH * 0.8;
+        const spWy = Math.sin(spAngle * WAVE_FREQ + time * 0.15) * WAVE_AMP - 6 - spRand * 25;
+        const spP = project(Math.cos(spAngle) * spR, spWy, Math.sin(spAngle) * spR);
+        if (!spP) continue;
+        if (spP.sx < -5 || spP.sx > w + 5 || spP.sy < -5 || spP.sy > h + 5) continue;
+        const twinkle = Math.sin(time * 2.5 + sp * 5.3) * 0.5 + 0.5;
+        const spAlpha = twinkle * 0.35 * alphaScale;
+        const spHue = 190 + spRand * 120;
+        const spSize = (1 + twinkle * 2.5) * spP.scale * 0.3;
+        ctx.fillStyle = `hsla(${spHue}, 80%, 85%, ${spAlpha})`;
+        ctx.fillRect(spP.sx - spSize * 0.5, spP.sy - spSize * 0.5, spSize, spSize);
+        ctx.fillStyle = `hsla(${spHue}, 70%, 75%, ${spAlpha * 0.25})`;
+        const glowS = spSize * 3;
+        ctx.fillRect(spP.sx - glowS * 0.5, spP.sy - glowS * 0.5, glowS, glowS);
       }
 
       // --- Ribbon ring lines (multiple across the width) ---
