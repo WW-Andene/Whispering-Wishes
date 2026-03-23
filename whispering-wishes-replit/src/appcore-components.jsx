@@ -2581,7 +2581,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
 
           // Dark stripe (riser) — rectangle, width matches trapezoid at top edge
-          const darkH = Math.max(1, h * 0.0175 * scale);
+          const darkH = Math.max(1, h * 0.02 * scale);
           const dY = Math.max(topY, y - darkH);
           const hwAtTop = hwBot * (dY - vpY) / dBot;
           const rL = vpX - hwAtTop;
@@ -2594,7 +2594,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (y <= topY) break;
 
           // Light stripe (tread) — trapezoid connecting riser corners
-          const lightH = Math.max(1, h * 0.0075 * scale * scale);
+          const lightH = Math.max(1, h * 0.005 * scale * scale);
           const lY = Math.max(topY, y - lightH);
           // Bottom corners = current riser's top corners
           const tBotL = rL;
