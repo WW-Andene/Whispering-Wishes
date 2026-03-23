@@ -2205,6 +2205,351 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 ResonanceField.displayName = 'ResonanceField';
 
+// LAYER ALT-2: Augusta Ruins — Ancient golden ruins with sun glow, mist, and floating dust
+// Inspired by Rinascita: warm amber tones, stone pillars/arches, atmospheric haze, golden sunlight
+const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    if (animationsEnabled === 'off' || animationsEnabled === false) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let animId;
+
+    const isFull = animationsEnabled === 'full';
+    const alphaScale = isFull ? 1.4 : 1.0;
+    const bgBase = oledMode ? [0, 0, 0] : [12, 8, 4];
+
+    let w, h;
+
+    const init = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+    };
+    init();
+    window.addEventListener('resize', init);
+
+    // Pseudo-random hash function for deterministic randomness
+    const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
+
+    // Generate ruin pillars (deterministic)
+    const PILLAR_COUNT = 14;
+    const pillars = [];
+    for (let i = 0; i < PILLAR_COUNT; i++) {
+      const h0 = hash(i * 127.1 + 31.7);
+      const h1 = hash(i * 269.5 + 183.3);
+      const h2 = hash(i * 419.2 + 71.9);
+      pillars.push({
+        xNorm: h0,                          // 0..1 horizontal position
+        heightNorm: 0.12 + h1 * 0.28,      // pillar height as fraction of screen
+        widthNorm: 0.008 + h2 * 0.018,     // pillar width
+        depthLayer: Math.floor(h2 * 3),    // 0=far, 1=mid, 2=near
+        hasCapital: h1 > 0.4,              // top decoration
+        broken: h0 > 0.6,                  // broken/jagged top
+        lean: (hash(i * 571.3) - 0.5) * 0.03, // slight lean
+      });
+    }
+
+    // Generate arch structures
+    const ARCH_COUNT = 4;
+    const arches = [];
+    for (let i = 0; i < ARCH_COUNT; i++) {
+      arches.push({
+        xNorm: 0.15 + hash(i * 337.1) * 0.7,
+        widthNorm: 0.06 + hash(i * 491.3) * 0.08,
+        heightNorm: 0.15 + hash(i * 223.7) * 0.15,
+        depthLayer: Math.floor(hash(i * 613.9) * 2),
+      });
+    }
+
+    // Dust particles
+    const DUST_COUNT = 120;
+    const dust = [];
+    for (let i = 0; i < DUST_COUNT; i++) {
+      dust.push({
+        x: hash(i * 173.7),
+        y: hash(i * 311.3),
+        size: 0.5 + hash(i * 547.1) * 2.5,
+        speed: 0.2 + hash(i * 631.9) * 0.8,
+        drift: hash(i * 419.7) * 6.28,
+        brightness: 0.3 + hash(i * 293.1) * 0.7,
+      });
+    }
+
+    // Mist layers
+    const MIST_COUNT = 6;
+    const mistLayers = [];
+    for (let i = 0; i < MIST_COUNT; i++) {
+      mistLayers.push({
+        yNorm: 0.55 + hash(i * 197.3) * 0.4,
+        speed: 0.01 + hash(i * 283.1) * 0.03,
+        opacity: 0.04 + hash(i * 367.9) * 0.08,
+        scale: 0.15 + hash(i * 431.7) * 0.2,
+      });
+    }
+
+    let lastFrame = 0;
+
+    const draw = (t) => {
+      animId = requestAnimationFrame(draw);
+      if (t - lastFrame < 50) return;
+      lastFrame = t;
+      const time = t * 0.0005;
+
+      // --- Base: dark warm gradient ---
+      const grd = ctx.createLinearGradient(0, 0, 0, h);
+      if (oledMode) {
+        grd.addColorStop(0, 'rgb(0,0,0)');
+        grd.addColorStop(0.4, 'rgb(3,2,1)');
+        grd.addColorStop(1, 'rgb(0,0,0)');
+      } else {
+        grd.addColorStop(0, 'rgb(18,12,6)');
+        grd.addColorStop(0.3, 'rgb(10,7,4)');
+        grd.addColorStop(0.7, 'rgb(8,5,3)');
+        grd.addColorStop(1, 'rgb(5,3,2)');
+      }
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
+
+      // --- Sun glow (upper center, slightly right) ---
+      const sunX = w * 0.55;
+      const sunY = h * 0.22;
+      const sunPulse = 1 + Math.sin(time * 0.3) * 0.05;
+
+      // Outer atmospheric haze
+      const haze = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(w, h) * 0.9);
+      haze.addColorStop(0, `rgba(255, 200, 80, ${0.25 * alphaScale * sunPulse})`);
+      haze.addColorStop(0.1, `rgba(255, 170, 50, ${0.15 * alphaScale})`);
+      haze.addColorStop(0.25, `rgba(200, 120, 30, ${0.08 * alphaScale})`);
+      haze.addColorStop(0.5, `rgba(140, 70, 15, ${0.04 * alphaScale})`);
+      haze.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = haze;
+      ctx.fillRect(0, 0, w, h);
+
+      // Inner sun core
+      const core = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, w * 0.12);
+      core.addColorStop(0, `rgba(255, 240, 200, ${0.6 * alphaScale * sunPulse})`);
+      core.addColorStop(0.3, `rgba(255, 210, 130, ${0.35 * alphaScale})`);
+      core.addColorStop(0.7, `rgba(255, 170, 60, ${0.12 * alphaScale})`);
+      core.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = core;
+      ctx.fillRect(0, 0, w, h);
+
+      // --- God rays (light shafts from sun) ---
+      const RAY_COUNT = 8;
+      for (let i = 0; i < RAY_COUNT; i++) {
+        const rayAngle = (i / RAY_COUNT) * Math.PI * 0.8 + Math.PI * 0.1 + Math.sin(time * 0.15 + i * 1.7) * 0.08;
+        const rayLen = h * (0.6 + hash(i * 811.3) * 0.4);
+        const rayWidth = w * (0.015 + hash(i * 937.1) * 0.025);
+        const rayAlpha = (0.03 + Math.sin(time * 0.2 + i * 2.1) * 0.015) * alphaScale;
+
+        ctx.save();
+        ctx.translate(sunX, sunY);
+        ctx.rotate(rayAngle - Math.PI * 0.5);
+
+        const rayGrd = ctx.createLinearGradient(0, 0, 0, rayLen);
+        rayGrd.addColorStop(0, `rgba(255, 200, 100, ${rayAlpha * 2})`);
+        rayGrd.addColorStop(0.3, `rgba(255, 180, 70, ${rayAlpha})`);
+        rayGrd.addColorStop(1, 'rgba(255, 160, 40, 0)');
+        ctx.fillStyle = rayGrd;
+        ctx.beginPath();
+        ctx.moveTo(-rayWidth * 0.3, 0);
+        ctx.lineTo(rayWidth * 0.3, 0);
+        ctx.lineTo(rayWidth * 1.5, rayLen);
+        ctx.lineTo(-rayWidth * 1.5, rayLen);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // --- Ruin silhouettes ---
+      // Draw from far to near (depth layers 0, 1, 2)
+      for (let layer = 0; layer < 3; layer++) {
+        const layerDarkness = layer === 0 ? 0.35 : layer === 1 ? 0.55 : 0.75;
+        const layerScale = layer === 0 ? 0.7 : layer === 1 ? 0.85 : 1.0;
+
+        // Rocky terrain base for this layer
+        const terrainY = h * (0.72 - layer * 0.04);
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (let x = 0; x <= w; x += 8) {
+          const noise = Math.sin(x * 0.008 + layer * 3) * 15
+                      + Math.sin(x * 0.015 + layer * 7 + time * 0.05) * 8
+                      + Math.sin(x * 0.003 + layer * 11) * 25;
+          ctx.lineTo(x, terrainY + noise);
+        }
+        ctx.lineTo(w, h);
+        ctx.closePath();
+
+        // Warm dark fill with subtle amber tint
+        const tR = Math.round(15 + layer * 8);
+        const tG = Math.round(8 + layer * 5);
+        const tB = Math.round(4 + layer * 2);
+        ctx.fillStyle = `rgba(${tR}, ${tG}, ${tB}, ${layerDarkness * alphaScale})`;
+        ctx.fill();
+
+        // Draw pillars for this depth layer
+        for (const p of pillars) {
+          if (p.depthLayer !== layer) continue;
+          const px = p.xNorm * w;
+          const pillarH = p.heightNorm * h * layerScale;
+          const pillarW = p.widthNorm * w * layerScale;
+          const baseY = terrainY + Math.sin(px * 0.008 + layer * 3) * 15
+                       + Math.sin(px * 0.015 + layer * 7 + time * 0.05) * 8
+                       + Math.sin(px * 0.003 + layer * 11) * 25;
+
+          ctx.save();
+          ctx.translate(px, baseY);
+          ctx.rotate(p.lean);
+
+          // Pillar shaft
+          const pR = Math.round(20 + layer * 12);
+          const pG = Math.round(14 + layer * 8);
+          const pB = Math.round(8 + layer * 4);
+          ctx.fillStyle = `rgba(${pR}, ${pG}, ${pB}, ${(layerDarkness + 0.1) * alphaScale})`;
+
+          if (p.broken) {
+            // Jagged broken top
+            ctx.beginPath();
+            ctx.moveTo(-pillarW * 0.5, 0);
+            ctx.lineTo(-pillarW * 0.5, -pillarH * 0.7);
+            ctx.lineTo(-pillarW * 0.2, -pillarH * 0.85);
+            ctx.lineTo(0, -pillarH * 0.75);
+            ctx.lineTo(pillarW * 0.3, -pillarH);
+            ctx.lineTo(pillarW * 0.5, -pillarH * 0.8);
+            ctx.lineTo(pillarW * 0.5, 0);
+            ctx.closePath();
+            ctx.fill();
+          } else {
+            ctx.fillRect(-pillarW * 0.5, -pillarH, pillarW, pillarH);
+            // Capital (top decoration)
+            if (p.hasCapital) {
+              ctx.fillRect(-pillarW * 0.8, -pillarH - pillarW * 0.4, pillarW * 1.6, pillarW * 0.4);
+              ctx.fillRect(-pillarW * 0.65, -pillarH - pillarW * 0.7, pillarW * 1.3, pillarW * 0.35);
+            }
+          }
+
+          // Subtle lit edge (sun-facing side)
+          const edgeAlpha = (0.06 + Math.sin(time * 0.3) * 0.02) * alphaScale;
+          ctx.fillStyle = `rgba(255, 190, 80, ${edgeAlpha})`;
+          ctx.fillRect(pillarW * 0.25, -pillarH, pillarW * 0.25, pillarH);
+
+          ctx.restore();
+        }
+
+        // Draw arches for this layer
+        for (const a of arches) {
+          if (a.depthLayer !== layer) continue;
+          const ax = a.xNorm * w;
+          const archW = a.widthNorm * w * layerScale;
+          const archH = a.heightNorm * h * layerScale;
+          const archBaseY = terrainY + Math.sin(ax * 0.008 + layer * 3) * 15
+                          + Math.sin(ax * 0.015 + layer * 7 + time * 0.05) * 8
+                          + Math.sin(ax * 0.003 + layer * 11) * 25;
+
+          const aR = Math.round(18 + layer * 10);
+          const aG = Math.round(12 + layer * 7);
+          const aB = Math.round(6 + layer * 3);
+          ctx.fillStyle = `rgba(${aR}, ${aG}, ${aB}, ${(layerDarkness + 0.1) * alphaScale})`;
+
+          // Left pillar
+          ctx.fillRect(ax - archW * 0.5 - archW * 0.08, archBaseY - archH, archW * 0.16, archH);
+          // Right pillar
+          ctx.fillRect(ax + archW * 0.5 - archW * 0.08, archBaseY - archH * 0.9, archW * 0.16, archH * 0.9);
+          // Arch top (semicircle approximation)
+          ctx.beginPath();
+          ctx.ellipse(ax, archBaseY - archH, archW * 0.5, archH * 0.25, 0, Math.PI, 0);
+          ctx.fill();
+        }
+      }
+
+      // --- Atmospheric mist layers ---
+      for (const m of mistLayers) {
+        const my = m.yNorm * h;
+        const drift = time * m.speed * w;
+        const mistW = m.scale * w * 3;
+
+        for (let rep = -1; rep <= 2; rep++) {
+          const mx = ((drift + rep * mistW) % (w + mistW)) - mistW * 0.5;
+          const mistGrd = ctx.createRadialGradient(mx, my, 0, mx, my, mistW * 0.5);
+          const mistAlpha = m.opacity * alphaScale * (0.8 + Math.sin(time * 0.4 + m.yNorm * 10) * 0.2);
+          mistGrd.addColorStop(0, `rgba(180, 140, 80, ${mistAlpha})`);
+          mistGrd.addColorStop(0.4, `rgba(140, 100, 50, ${mistAlpha * 0.5})`);
+          mistGrd.addColorStop(1, 'rgba(100, 70, 30, 0)');
+          ctx.fillStyle = mistGrd;
+          ctx.fillRect(mx - mistW * 0.5, my - mistW * 0.3, mistW, mistW * 0.6);
+        }
+      }
+
+      // --- Floating golden dust particles ---
+      for (const d of dust) {
+        const dx = ((d.x * w + Math.sin(time * d.speed + d.drift) * 30 + time * 8) % (w + 20)) - 10;
+        const dy = ((d.y * h - time * d.speed * 15 + Math.cos(time * d.speed * 0.7 + d.drift) * 20) % (h + 20)) - 10;
+
+        if (dx < -5 || dx > w + 5 || dy < -5 || dy > h + 5) continue;
+
+        // Twinkle
+        const twinkle = Math.sin(time * 2 + d.drift) * 0.5 + 0.5;
+        const dAlpha = d.brightness * twinkle * 0.4 * alphaScale;
+        if (dAlpha < 0.03) continue;
+
+        // Distance from sun affects brightness (closer = brighter gold)
+        const sunDist = Math.sqrt((dx - sunX) ** 2 + (dy - sunY) ** 2) / Math.max(w, h);
+        const sunInfluence = Math.max(0, 1 - sunDist * 1.5);
+
+        const dR = Math.round(200 + sunInfluence * 55);
+        const dG = Math.round(160 + sunInfluence * 40);
+        const dB = Math.round(60 + sunInfluence * 40);
+
+        ctx.beginPath();
+        ctx.arc(dx, dy, d.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${dR}, ${dG}, ${dB}, ${dAlpha})`;
+        ctx.fill();
+
+        // Soft glow around brighter particles
+        if (d.brightness > 0.6) {
+          ctx.beginPath();
+          ctx.arc(dx, dy, d.size * 4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dR}, ${dG}, ${dB}, ${dAlpha * 0.12})`;
+          ctx.fill();
+        }
+      }
+
+      // --- Vignette darkening at edges ---
+      const vigX = w * 0.5;
+      const vigY = h * 0.45;
+      const vigR = Math.max(w, h) * 0.75;
+      const vig = ctx.createRadialGradient(vigX, vigY, vigR * 0.4, vigX, vigY, vigR);
+      vig.addColorStop(0, 'rgba(0,0,0,0)');
+      vig.addColorStop(0.6, `rgba(0,0,0,${0.15 * alphaScale})`);
+      vig.addColorStop(1, `rgba(0,0,0,${0.4 * alphaScale})`);
+      ctx.fillStyle = vig;
+      ctx.fillRect(0, 0, w, h);
+    };
+
+    animId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', init);
+    };
+  }, [oledMode, animationsEnabled]);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
+});
+AugustaRuins.displayName = 'AugustaRuins';
+
 // §BANNER_PARTICLES: Theme-driven particle overlay — each banner gets a fitting visual personality
 // Character-specific theme overrides (matched to their banner art mood)
 const CHARACTER_THEME_MAP = {
@@ -3574,7 +3919,7 @@ export {
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
   AppErrorBoundary, TabErrorBoundary,
-  BackgroundGlow, TriangleMirrorWave, ResonanceField,
+  BackgroundGlow, TriangleMirrorWave, ResonanceField, AugustaRuins,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   VisualSliderGroup, VISUAL_SLIDER_CONFIGS,

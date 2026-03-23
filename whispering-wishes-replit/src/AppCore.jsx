@@ -45,7 +45,7 @@ export {
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, CountdownTimer, PityRing,
   AppErrorBoundary, TabErrorBoundary,
-  BackgroundGlow, TriangleMirrorWave, ResonanceField,
+  BackgroundGlow, TriangleMirrorWave, ResonanceField, AugustaRuins,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
