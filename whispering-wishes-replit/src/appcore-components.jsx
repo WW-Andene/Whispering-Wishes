@@ -2457,6 +2457,61 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const edgeAlpha = 0.55 * alphaScale;
 
+        // Wall thickness (3D depth)
+        const thkBot = hwBot * 0.08;
+        const thkTop = hwTop * 0.08;
+
+        // Left wall
+        ctx.beginPath();
+        ctx.moveTo(botL, botY);
+        ctx.lineTo(topL, topY);
+        ctx.lineTo(topL + thkTop, topY);
+        ctx.lineTo(botL + thkBot, botY);
+        ctx.closePath();
+        ctx.fillStyle = 'rgb(128, 0, 255)';
+        ctx.fill();
+
+        // Right wall
+        ctx.beginPath();
+        ctx.moveTo(botR, botY);
+        ctx.lineTo(topR, topY);
+        ctx.lineTo(topR - thkTop, topY);
+        ctx.lineTo(botR - thkBot, botY);
+        ctx.closePath();
+        ctx.fillStyle = 'rgb(128, 0, 255)';
+        ctx.fill();
+
+        // Floor strip
+        ctx.beginPath();
+        ctx.moveTo(botL + thkBot, botY);
+        ctx.lineTo(botR - thkBot, botY);
+        ctx.lineTo(botR - thkBot, botY - h * 0.015);
+        ctx.lineTo(botL + thkBot, botY - h * 0.015);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.9})`;
+        ctx.fill();
+
+        // Edge outlines
+        const drawEdge = (x1, y1, x2, y2, a) => {
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = 'rgb(255, 165, 0)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        };
+
+        // Outer edges
+        drawEdge(botL, botY, topL, topY, edgeAlpha);
+        drawEdge(botR, botY, topR, topY, edgeAlpha);
+        // Inner edges (hidden — 3D depth lines)
+        // drawEdge(botL + thkBot, botY, topL + thkTop, topY, edgeAlpha * 0.4);
+        // drawEdge(botR - thkBot, botY, topR - thkTop, topY, edgeAlpha * 0.4);
+        // Top horizontal
+        drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
+        // Bottom horizontal
+        drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
+
         ctx.restore(); // remove clip
       }
 
