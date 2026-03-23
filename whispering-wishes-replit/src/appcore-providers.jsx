@@ -932,10 +932,15 @@ const KuroStyles = memo(({ oledMode }) => (
       50% { border-color: rgba(var(--glow-color), 0.85); }
     }
     .moon-glow-pulse {
-      border-radius: 50%;
-      background: transparent;
-      box-shadow: inset 0 0 30px 15px rgba(200,220,255,0.35), inset 0 0 60px 30px rgba(180,210,250,0.15);
       animation: moonGlowPulse 8s ease-in-out infinite !important;
+    }
+    .moon-glow-outer {
+      border-radius: 50%;
+      background: rgba(180,210,250,0.15);
+    }
+    .moon-glow-inner {
+      border-radius: 50%;
+      background: rgba(200,220,255,0.4);
     }
     @keyframes moonGlowPulse {
       0%, 100% {
