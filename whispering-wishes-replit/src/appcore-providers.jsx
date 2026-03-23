@@ -1035,6 +1035,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     .kuro-card-inner {
       position: relative;
+      overflow: hidden;
       border-radius: 15px;
     }
     
