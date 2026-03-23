@@ -1514,11 +1514,11 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- The ribbon: a ring with width, undulating in Y ---
       // Ring params
-      const RADIUS = 250;          // radius of the circular ring (smaller, less big)
-      const RIBBON_WIDTH = 90;     // width of the ribbon
+      const RADIUS = 212;          // 15% tighter
+      const RIBBON_WIDTH = 76;     // 15% tighter
       const ROWS = 44;             // more rows across ribbon width
       const DOTS_AROUND = 680;     // denser squares
-      const WAVE_AMP = 35;         // reduced wave amplitude
+      const WAVE_AMP = 30;         // 15% tighter
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
       // Collect all dots for depth sorting
