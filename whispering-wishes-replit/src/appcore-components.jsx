@@ -2611,8 +2611,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Alternating light/dark horizontal lines inside the rectangle
-        // Clip to the trapezoid interior
+        // Clip to trapezoid, fill entire surface with rock texture first
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(botL, botY);
@@ -2622,29 +2621,29 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Stripes bottom→top: dark then light, light shrinks toward top
-        // Halved base heights for twice the total count
+        // Continuous rock texture across the whole face
+        ctx.fillStyle = rockPat;
+        ctx.fillRect(topL, topY, botR - topL, botY - topY);
+
+        // Stair geometry: shadow/light overlays on top
         let y = botY;
         while (y > topY) {
-          const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
+          const scale = (y - vpY) / dBot;
 
-          // Dark stripe (riser) — rectangle, width matches trapezoid at top edge
+          // Riser (front face — in shadow)
           const darkH = Math.max(1, h * 0.012 * scale);
           const dY = Math.max(topY, y - darkH);
           const hwAtTop = hwBot * (dY - vpY) / dBot;
           const rL = vpX - hwAtTop;
           const rR = vpX + hwAtTop;
-          // Riser (front face — in shadow): rock + dark overlay
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.fillStyle = rockPat;
-          ctx.fill();
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
           ctx.fill();
           y = dY;
           if (y <= topY) break;
 
-          // Tread (top face — lit): rock + light overlay
+          // Tread (top face — lit)
           const lightH = Math.max(1, h * 0.003 * scale * scale);
           const lY = Math.max(topY, y - lightH);
           const tBotL = rL;
@@ -2661,9 +2660,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);
           ctx.lineTo(tTopL, lY);
           ctx.closePath();
-          ctx.fillStyle = rockPat;
-          ctx.fill();
-          ctx.fillStyle = 'rgba(255, 220, 160, 0.3)';
+          ctx.fillStyle = 'rgba(255, 220, 160, 0.25)';
           ctx.fill();
           y = lY;
         }
