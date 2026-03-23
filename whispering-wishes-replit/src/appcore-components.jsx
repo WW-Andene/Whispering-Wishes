@@ -2476,7 +2476,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
-          ctx.strokeStyle = 'rgb(255, 165, 0)';
+          ctx.strokeStyle = `rgba(200, 140, 60, ${a})`;
           ctx.lineWidth = 2;
           ctx.stroke();
         };
@@ -2529,7 +2529,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = 'rgb(128, 0, 255)';
+        ctx.fillStyle = `rgba(15, 10, 5, ${edgeAlpha * 0.6})`;
         ctx.fill();
 
         // Right wall
@@ -2539,7 +2539,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = 'rgb(128, 0, 255)';
+        ctx.fillStyle = `rgba(15, 10, 5, ${edgeAlpha * 0.6})`;
         ctx.fill();
 
         // Floor strip
@@ -2557,7 +2557,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
-          ctx.strokeStyle = 'rgb(255, 165, 0)';
+          ctx.strokeStyle = `rgba(200, 140, 60, ${a})`;
           ctx.lineWidth = 2;
           ctx.stroke();
         };
@@ -2587,7 +2587,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.fillStyle = 'rgb(40, 40, 40)';
+          ctx.fillStyle = `rgba(12, 8, 4, ${edgeAlpha * 0.35})`;
           ctx.fill();
           y = dY;
           if (y <= topY) break;
@@ -2611,7 +2611,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);             // top-right
           ctx.lineTo(tTopL, lY);             // top-left
           ctx.closePath();
-          ctx.fillStyle = 'rgb(220, 20, 20)';
+          ctx.fillStyle = `rgba(180, 130, 70, ${edgeAlpha * 0.18})`;
           ctx.fill();
           y = lY;
         }
