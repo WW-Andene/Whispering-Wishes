@@ -2606,15 +2606,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Clip to trapezoid
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(botL, botY);
-        ctx.lineTo(topL, topY);
-        ctx.lineTo(topR, topY);
-        ctx.lineTo(botR, botY);
-        ctx.closePath();
-        ctx.clip();
+        // No clip — steps and shards can extend beyond trapezoid
 
         // Seeded hash for deterministic per-step randomness
         const sHash = (a, b) => {
@@ -2629,123 +2621,116 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const shards = [];
         while (y > topY) {
           const scale = (y - vpY) / dBot;
-          const s = (a) => sHash(stepIdx, a); // shorthand
+          const s = (a) => sHash(stepIdx, a);
 
-          // --- Step geometry with variation ---
-          // Height varies per step (+/- 30%)
-          const hMul = 0.7 + s(0) * 0.6;
+          // --- Step geometry with big variation ---
+          const hMul = 0.5 + s(0) * 1.0; // height varies +/- 50%
           const darkH = Math.max(2, h * 0.012 * scale * hMul);
           const dY = Math.max(topY, y - darkH);
           const hwAtTop = hwBot * (dY - vpY) / dBot;
 
-          // Width offset: step shifts left or right
-          const wShift = (s(1) - 0.5) * hwAtTop * 0.15;
-          // Width variation: some steps wider, some narrower
-          const wMul = 0.88 + s(2) * 0.24;
-          const rL = vpX - hwAtTop * wMul + wShift;
-          const rR = vpX + hwAtTop * wMul + wShift;
+          // Width: some steps much wider or narrower
+          const wMul = 0.8 + s(2) * 0.4;
+          // Shift left/right
+          const wShift = (s(1) - 0.5) * hwAtTop * 0.2;
+          let rL = vpX - hwAtTop * wMul + wShift;
+          let rR = vpX + hwAtTop * wMul + wShift;
+
+          // --- Break: shorten one side on ~25% of steps ---
+          if (s(8) > 0.75) {
+            const breakAmt = hwAtTop * (0.08 + s(9) * 0.15);
+            if (s(10) > 0.5) rR -= breakAmt; else rL += breakAmt;
+          }
           const stepW = rR - rL;
 
           // --- Riser (front face) with jagged top edge ---
           ctx.beginPath();
-          // Bottom edge: mostly straight with slight unevenness
-          ctx.moveTo(rL, y + (s(3) - 0.5) * darkH * 0.1);
-          ctx.lineTo(rR, y + (s(4) - 0.5) * darkH * 0.1);
-          // Right side up
-          ctx.lineTo(rR + (s(5) - 0.5) * stepW * 0.03, dY);
-          // Jagged top edge (right to left, 8 segments)
-          for (let si = 7; si >= 0; si--) {
+          ctx.moveTo(rL, y);
+          ctx.lineTo(rR, y);
+          // Right edge up (slight wobble)
+          ctx.lineTo(rR + (s(5) - 0.5) * stepW * 0.02, dY);
+          // Jagged top edge right→left
+          for (let si = 8; si >= 0; si--) {
             const t = si / 8;
             const jx = rL + stepW * t;
-            const jy = dY + (sHash(stepIdx, 40 + si) - 0.5) * darkH * 0.25;
+            const jy = dY + (sHash(stepIdx, 40 + si) - 0.5) * darkH * 0.35;
             ctx.lineTo(jx, jy);
           }
+          // Left edge down
+          ctx.lineTo(rL + (s(3) - 0.5) * stepW * 0.02, y);
           ctx.closePath();
           ctx.fillStyle = rockPat;
           ctx.fill();
-          // Shade: varies dark with blue-brown tint
-          const dShade = 0.3 + s(6) * 0.25;
-          const bTint = s(7) > 0.5 ? 12 : 0;
-          ctx.fillStyle = `rgba(${bTint}, ${bTint}, ${bTint + 15}, ${dShade})`;
+          const dShade = 0.3 + s(6) * 0.3;
+          const bTint = s(7) > 0.4 ? 15 : 0;
+          ctx.fillStyle = `rgba(${bTint}, ${bTint}, ${bTint + 18}, ${dShade})`;
           ctx.fill();
 
-          // --- Broken chunk missing from edge (~30% of steps) ---
-          if (s(8) > 0.7) {
-            const onRight = s(9) > 0.5;
-            const chunkW = stepW * (0.05 + s(10) * 0.1);
-            const chunkH = darkH * (0.3 + s(11) * 0.5);
-            const cx0 = onRight ? rR - chunkW : rL;
-            ctx.beginPath();
-            ctx.moveTo(cx0, dY);
-            ctx.lineTo(cx0 + chunkW * (onRight ? 0.5 : 0.5), dY - chunkH * 0.3);
-            ctx.lineTo(cx0 + chunkW, dY);
-            ctx.lineTo(cx0 + chunkW, dY + chunkH);
-            ctx.lineTo(cx0 + chunkW * 0.3, dY + chunkH * 0.7);
-            ctx.lineTo(cx0, dY + chunkH * 0.4);
-            ctx.closePath();
-            // Erase by drawing background-colored shape
-            ctx.fillStyle = 'rgba(5, 3, 2, 0.8)';
-            ctx.fill();
-          }
-
-          // --- Protruding block on some steps (~20%) ---
-          if (s(12) > 0.8 && scale > 0.2) {
+          // --- Protruding block on ~25% of steps ---
+          if (s(12) > 0.75 && scale > 0.15) {
             const onRight = s(13) > 0.5;
-            const bx = onRight ? rR : rL - stepW * 0.06;
-            const bw = stepW * (0.04 + s(14) * 0.05);
-            const bh = darkH * (0.4 + s(15) * 0.4);
+            const bw = stepW * (0.06 + s(14) * 0.08);
+            const bh = darkH * (0.5 + s(15) * 0.5);
+            const bx = onRight ? rR : rL - bw;
             const by = dY + (darkH - bh) * s(16);
             ctx.beginPath();
-            ctx.rect(bx, by, bw, bh);
+            // Irregular quad, not a rect
+            ctx.moveTo(bx, by);
+            ctx.lineTo(bx + bw, by + bh * 0.1 * (s(17) - 0.5));
+            ctx.lineTo(bx + bw * (0.8 + s(18) * 0.2), by + bh);
+            ctx.lineTo(bx + bw * 0.1, by + bh * (0.85 + s(19) * 0.15));
+            ctx.closePath();
             ctx.fillStyle = rockPat;
             ctx.fill();
-            ctx.fillStyle = `rgba(0, 0, 8, ${0.25 + s(17) * 0.2})`;
+            ctx.fillStyle = `rgba(0, 0, 10, ${0.2 + s(17) * 0.25})`;
             ctx.fill();
           }
 
           y = dY;
           if (y <= topY) break;
 
-          // --- Tread (top face) with irregular corners ---
-          const treadMul = 0.6 + s(18) * 0.8; // tread height varies
+          // --- Tread (top face) ---
+          const treadMul = 0.5 + s(18) * 1.0;
           const lightH = Math.max(1, h * 0.003 * scale * scale * treadMul);
           const lY = Math.max(topY, y - lightH);
           const nextScale = (lY - vpY) / dBot;
           const nextDarkH = Math.max(1, h * 0.0175 * nextScale);
           const nextDY = Math.max(topY, lY - nextDarkH);
           const nextHw = hwBot * (nextDY - vpY) / dBot;
-          // Next step also has offset
-          const nextShift = (sHash(stepIdx + 1, 1) - 0.5) * nextHw * 0.15;
-          const nextWMul = 0.88 + sHash(stepIdx + 1, 2) * 0.24;
-          const tTopL = vpX - nextHw * nextWMul + nextShift;
-          const tTopR = vpX + nextHw * nextWMul + nextShift;
+          const nxWMul = 0.8 + sHash(stepIdx + 1, 2) * 0.4;
+          const nxShift = (sHash(stepIdx + 1, 1) - 0.5) * nextHw * 0.2;
+          let tTopL = vpX - nextHw * nxWMul + nxShift;
+          let tTopR = vpX + nextHw * nxWMul + nxShift;
+          // Next step might also be broken
+          if (sHash(stepIdx + 1, 8) > 0.75) {
+            const ba = nextHw * (0.08 + sHash(stepIdx + 1, 9) * 0.15);
+            if (sHash(stepIdx + 1, 10) > 0.5) tTopR -= ba; else tTopL += ba;
+          }
 
           ctx.beginPath();
-          ctx.moveTo(rL + (s(19) - 0.5) * stepW * 0.02, y);
-          ctx.lineTo(rR + (s(20) - 0.5) * stepW * 0.02, y);
-          ctx.lineTo(tTopR + (s(21) - 0.5) * stepW * 0.03, lY);
-          ctx.lineTo(tTopL + (s(22) - 0.5) * stepW * 0.03, lY);
+          ctx.moveTo(rL, y);
+          ctx.lineTo(rR, y);
+          ctx.lineTo(tTopR, lY);
+          ctx.lineTo(tTopL, lY);
           ctx.closePath();
           ctx.fillStyle = rockPat;
           ctx.fill();
-          // Cool/warm variation on lit face
-          const litR = 140 + s(23) * 60;
-          const litG = 130 + s(24) * 50;
-          const litB = 120 + s(25) * 70; // bluer range
-          ctx.fillStyle = `rgba(${litR|0}, ${litG|0}, ${litB|0}, ${0.1 + s(26) * 0.15})`;
+          const litR = 120 + s(23) * 70;
+          const litG = 110 + s(24) * 60;
+          const litB = 100 + s(25) * 80;
+          ctx.fillStyle = `rgba(${litR|0}, ${litG|0}, ${litB|0}, ${0.08 + s(26) * 0.18})`;
           ctx.fill();
 
-          // --- Floating shards near ~15% of steps ---
-          if (s(27) > 0.85 && scale > 0.25) {
-            const nShards = 1 + (s(28) > 0.5 ? 1 : 0);
-            for (let si = 0; si < nShards; si++) {
-              const onRight = sHash(stepIdx, 60 + si) > 0.5;
-              const shX = onRight
-                ? rR + stepW * (0.02 + sHash(stepIdx, 61 + si) * 0.08)
-                : rL - stepW * (0.02 + sHash(stepIdx, 62 + si) * 0.08);
-              const shY = y - darkH * sHash(stepIdx, 63 + si);
-              const shSz = stepW * (0.02 + sHash(stepIdx, 64 + si) * 0.04);
-              shards.push({ x: shX, y: shY, sz: shSz, seed: stepIdx * 10 + si });
+          // --- Collect shards near ~20% of steps ---
+          if (s(27) > 0.8 && scale > 0.2) {
+            const nSh = 1 + (s(28) > 0.6 ? 1 : 0) + (s(29) > 0.8 ? 1 : 0);
+            for (let si = 0; si < nSh; si++) {
+              const onR = sHash(stepIdx, 60 + si) > 0.5;
+              const dist = stepW * (0.03 + sHash(stepIdx, 61 + si) * 0.12);
+              const shX = onR ? rR + dist : rL - dist;
+              const shY = y - darkH * (0.2 + sHash(stepIdx, 63 + si) * 0.6);
+              const shSz = stepW * (0.03 + sHash(stepIdx, 64 + si) * 0.06);
+              shards.push({ x: shX, y: shY, sz: shSz, seed: stepIdx * 10 + si, scale });
             }
           }
 
@@ -2753,30 +2738,27 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           stepIdx++;
         }
 
-        // Floating shards — small rock fragments drifting near the staircase
+        // Floating shards — outside clip, visible
         for (const sh of shards) {
           const sa = sHash(sh.seed, 50), sb = sHash(sh.seed, 51);
           const sc = sHash(sh.seed, 52), sd = sHash(sh.seed, 53);
-          const bobY = sh.y + Math.sin(time * (1.0 + sa) + sh.seed) * h * 0.006;
-          const bobX = sh.x + Math.sin(time * 0.7 + sh.seed * 2) * h * 0.002;
-          // Irregular triangle/quad shard
+          const bobY = sh.y + Math.sin(time * (0.8 + sa) + sh.seed) * h * 0.008;
+          const bobX = sh.x + Math.sin(time * 0.5 + sh.seed * 2) * h * 0.003;
+          const sz = sh.sz * (1 + Math.sin(time * 0.3 + sh.seed) * 0.1);
           ctx.beginPath();
-          ctx.moveTo(bobX, bobY - sh.sz);
-          ctx.lineTo(bobX + sh.sz * (0.6 + sa * 0.6), bobY + sh.sz * (sb - 0.2));
-          if (sc > 0.5) ctx.lineTo(bobX + sh.sz * 0.2, bobY + sh.sz * (0.8 + sd * 0.3));
-          ctx.lineTo(bobX - sh.sz * (0.4 + sd * 0.4), bobY + sh.sz * 0.6);
+          ctx.moveTo(bobX, bobY - sz);
+          ctx.lineTo(bobX + sz * (0.7 + sa * 0.5), bobY + sz * (sb * 0.6));
+          if (sc > 0.4) ctx.lineTo(bobX + sz * (0.1 + sd * 0.3), bobY + sz * (0.7 + sd * 0.4));
+          ctx.lineTo(bobX - sz * (0.5 + sd * 0.5), bobY + sz * 0.5);
           ctx.closePath();
           ctx.fillStyle = rockPat;
           ctx.fill();
-          ctx.fillStyle = `rgba(0, 0, 10, ${0.25 + sa * 0.25})`;
+          ctx.fillStyle = `rgba(0, 0, 12, ${0.2 + sa * 0.3})`;
           ctx.fill();
-          // Bright edge catch on top
-          ctx.strokeStyle = `rgba(180, 160, 140, ${0.15 + sb * 0.15})`;
-          ctx.lineWidth = 0.5;
+          ctx.strokeStyle = `rgba(160, 140, 120, ${0.2 + sb * 0.2})`;
+          ctx.lineWidth = 0.7;
           ctx.stroke();
         }
-
-        ctx.restore();
 
         // Diagonals start at bottom of lowest dark stripe, not at botY
         const cutY = botY - h * 0.02;
