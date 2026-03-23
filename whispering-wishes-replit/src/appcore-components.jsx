@@ -1757,7 +1757,7 @@ const BANNER_THEMES = {
       alpha: 0.12 + Math.random() * 0.1, phase: Math.random() * Math.PI * 2,
     }));
     // Leaves — varied shade/size/speed, brighter near moon, darker far away
-    const moonX = w * 0.63, moonY = h * 0.11;
+    const moonX = w * 0.645, moonY = h * 0.115;
     // Leaves spawn from top-right, drift down-left
     // Color: very dark (20,25,35) on right → light (120,135,155) on left
     const leaves = Array.from({ length: 22 }, (_, i) => {
@@ -1896,7 +1896,7 @@ const BannerParticleOverlay = memo(({ characterName, element }) => {
       {isQiuyuan && (
         <div
           className="absolute pointer-events-none moon-glow-pulse"
-          style={{ left: '65%', top: '11.5%', width: '20px', height: '20px', zIndex: 3 }}
+          style={{ left: '64.5%', top: '11.5%', width: '140px', height: '140px', zIndex: 3 }}
           aria-hidden="true"
         />
       )}
