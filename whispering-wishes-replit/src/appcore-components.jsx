@@ -1533,9 +1533,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Veil: slow ripples that travel across the ribbon width (like fabric in wind)
           const veil = Math.sin(rowT * Math.PI * 3 + angle * 4 + time * 0.25) * 5
                      + Math.sin(rowT * Math.PI * 5 - angle * 2 + time * 0.18) * 3;
-          const squareFloat = jitter * 1; // barely perceptible ±1
-          const drift = Math.sin(time * 0.2 + row * 0.5 + i * 0.3) * 0.5;
-          const wy = ribbonWave + veil + squareFloat + drift;
+          const wy = ribbonWave + veil;
 
           const p = project(wx, wy, wz);
           if (!p) continue;
@@ -1565,10 +1563,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
         const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
-        // Aemeath frost/ice colors: cyan → icy blue → cold white on crests
-        const hue = 190 + heightNorm * 20 + rowT * 10;
-        const sat = 55 + heightNorm * 35;
-        const lit = 50 + brightness * 40;
+        // Aemeath colors: cyan inner → purple mid → pink/magenta outer edges
+        const hue = 190 + rowT * 110 + heightNorm * 15; // 190 cyan → 300 pink
+        const sat = 60 + heightNorm * 30;
+        const lit = 50 + brightness * 38;
 
         const dotAlpha = brightness * 0.5 * alphaScale;
         if (dotAlpha < 0.02) continue;
@@ -1610,18 +1608,52 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           else ctx.lineTo(p.sx, p.sy);
         }
 
-        ctx.strokeStyle = `hsla(195, 80%, 70%, ${lineAlpha})`;
+        const lineHue = 190 + rowT_l * 110; // cyan → pink across width
+        ctx.strokeStyle = `hsla(${lineHue}, 80%, 70%, ${lineAlpha})`;
         ctx.stroke();
         if (li === 0 || li === LINE_ROWS.length - 1) {
           ctx.lineWidth = 5;
-          ctx.strokeStyle = `hsla(195, 75%, 55%, ${lineAlpha * 0.2})`;
+          ctx.strokeStyle = `hsla(${lineHue}, 75%, 55%, ${lineAlpha * 0.2})`;
           ctx.stroke();
         }
       }
 
-      // --- Inner ribbon: vertical mixer bars (not rotating, just moving up/down) ---
+      // --- Floating lines: loose curves drifting near the ribbon ---
+      for (let fl = 0; fl < 5; fl++) {
+        const flRadius = RADIUS + RIBBON_WIDTH * (0.6 + fl * 0.15);
+        const flYOff = (fl - 2) * 15; // spread above/below
+        const flHue = 220 + fl * 25; // blue → purple → pink
+        const flAlpha = (0.06 + Math.sin(time * 0.2 + fl * 1.3) * 0.03) * alphaScale;
+
+        ctx.beginPath();
+        ctx.lineWidth = 0.8;
+        let started = false;
+
+        for (let i = 0; i <= 150; i++) {
+          const angle = (i / 150) * Math.PI * 2 + rot;
+          const drift = Math.sin(angle * 3 + time * 0.12 + fl * 2) * 15;
+          const wx = Math.cos(angle) * (flRadius + drift);
+          const wz = Math.sin(angle) * (flRadius + drift);
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP * 0.4 + flYOff
+                   + Math.sin(angle * 5 + time * 0.2 + fl) * 8;
+
+          const p = project(wx, wy, wz);
+          if (!p) { started = false; continue; }
+
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
+        }
+
+        ctx.strokeStyle = `hsla(${flHue}, 75%, 65%, ${flAlpha})`;
+        ctx.stroke();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = `hsla(${flHue}, 70%, 50%, ${flAlpha * 0.15})`;
+        ctx.stroke();
+      }
+
+      // --- Inner ribbon: vertical mixer bars (flat on Y=0 plane, no wave) ---
       const INNER_RADIUS = RADIUS * 0.55;
-      const INNER_BARS = 80;
+      const INNER_BARS = 180;
       for (let i = 0; i < INNER_BARS; i++) {
         const angleT_b = i / INNER_BARS;
         const angle = angleT_b * Math.PI * 2 + rot;
@@ -1629,27 +1661,25 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const wx = Math.cos(angle) * INNER_RADIUS;
         const wz = Math.sin(angle) * INNER_RADIUS;
 
-        // Base Y follows the ribbon wave
-        const baseY = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP * 0.5;
-
         // Each bar has a different height that pulses like a sound mixer
         const hash = Math.sin(i * 173.7) * 43758.5453;
         const barSeed = hash - Math.floor(hash);
-        const barHeight = 8 + barSeed * 20 + Math.sin(time * 0.4 + i * 0.8) * 10;
+        const barHeight = 5 + barSeed * 25 + Math.sin(time * 0.5 + i * 0.6) * 12;
 
-        // Project the bar center
-        const p = project(wx, baseY, wz);
+        // Project from flat plane (Y=0), bar extends vertically on screen
+        const p = project(wx, 0, wz);
         if (!p) continue;
         if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
 
         const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
-        const barW = (1 + depthNorm * 2) * p.scale * 0.3;
-        const barH = barHeight * p.scale * 0.15;
-        const barAlpha = (0.15 + depthNorm * 0.3) * alphaScale;
+        const barW = (0.8 + depthNorm * 1.5) * p.scale * 0.25;
+        const barH = barHeight * p.scale * 0.12;
+        const barAlpha = (0.12 + depthNorm * 0.28) * alphaScale;
 
-        // Vertical bars: no rotation, just straight up/down on screen
-        ctx.fillStyle = `rgba(140, 220, 240, ${barAlpha})`;
-        ctx.fillRect(p.sx - barW * 0.5, p.sy - barH * 0.5, barW, barH);
+        // Vertical bars on screen (not rotated)
+        const barHue = 200 + barSeed * 100; // cyan → pink range
+        ctx.fillStyle = `hsla(${barHue}, 75%, 65%, ${barAlpha})`;
+        ctx.fillRect(p.sx - barW * 0.5, p.sy - barH, barW, barH);
       }
 
       // --- Sparkle highlights (frost colors) ---
