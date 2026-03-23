@@ -2594,28 +2594,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Draw stripes bottom→top: dark band, then double light lines, repeat
-        // Light proportion shrinks toward the top
+        // Double stripes bottom→top: dark+light pair, repeated twice per cycle
+        // Light proportion shrinks toward the top (scale²)
         let y = botY;
         while (y > topY) {
           const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
 
-          // Dark band
-          const darkH = Math.max(1, h * 0.035 * scale);
-          const darkY = Math.max(topY, y - darkH);
+          // --- First pair: dark then light ---
+          const darkH1 = Math.max(1, h * 0.025 * scale);
+          const d1Y = Math.max(topY, y - darkH1);
           ctx.beginPath();
-          ctx.rect(0, darkY, w, y - darkY);
+          ctx.rect(0, d1Y, w, y - d1Y);
           ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
           ctx.fill();
-          y = darkY;
+          y = d1Y;
           if (y <= topY) break;
 
-          // Double light lines — proportion shrinks with scale
-          const lightH = Math.max(1, h * 0.012 * scale * scale);
-          const gapH = Math.max(1, h * 0.006 * scale * scale);
-
-          // First light line
-          const l1Y = Math.max(topY, y - lightH);
+          const lightH1 = Math.max(1, h * 0.015 * scale * scale);
+          const l1Y = Math.max(topY, y - lightH1);
           ctx.beginPath();
           ctx.rect(0, l1Y, w, y - l1Y);
           ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
@@ -2623,17 +2619,18 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           y = l1Y;
           if (y <= topY) break;
 
-          // Thin dark gap between double lines
-          const gY = Math.max(topY, y - gapH);
+          // --- Second pair: dark then light ---
+          const darkH2 = Math.max(1, h * 0.025 * scale);
+          const d2Y = Math.max(topY, y - darkH2);
           ctx.beginPath();
-          ctx.rect(0, gY, w, y - gY);
-          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.2})`;
+          ctx.rect(0, d2Y, w, y - d2Y);
+          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
           ctx.fill();
-          y = gY;
+          y = d2Y;
           if (y <= topY) break;
 
-          // Second light line
-          const l2Y = Math.max(topY, y - lightH);
+          const lightH2 = Math.max(1, h * 0.015 * scale * scale);
+          const l2Y = Math.max(topY, y - lightH2);
           ctx.beginPath();
           ctx.rect(0, l2Y, w, y - l2Y);
           ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
