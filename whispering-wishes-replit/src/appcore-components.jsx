@@ -1767,7 +1767,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // --- Puddle waves: soft filled bands expanding from center in 3D ---
         const RIPPLE_COUNT = 6;
         const RIPPLE_MAX_R = 550;
-        const RIPPLE_SPEED = 0.04; // much slower
+        const RIPPLE_SPEED = 0.015; // very slow, calm water
 
         for (let ri = 0; ri < RIPPLE_COUNT; ri++) {
           const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1;
@@ -1778,40 +1778,44 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (rippleAlpha < 0.003 || rippleR < 5) continue;
 
           const hue = 200 + phase * 80;
-          const innerR = Math.max(0, rippleR - bandWidth * 0.5);
-          const outerR = rippleR + bandWidth * 0.5;
           const steps = 100;
 
-          // Draw as filled band between two 3D-projected rings with ribbon wave
-          // Outer edge
-          ctx.beginPath();
-          let started = false;
-          for (let s = 0; s <= steps; s++) {
-            const a = (s / steps) * Math.PI * 2 + rot;
-            const wx = Math.cos(a) * outerR;
-            const wz = Math.sin(a) * outerR;
-            // Gentle water-like wave: very low amplitude, slow
-            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * 8
-                     + Math.sin(a * 3 + time * 0.08) * 4;
-            const p = project(wx, wy, wz);
-            if (!p) { started = false; continue; }
-            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-            else ctx.lineTo(p.sx, p.sy);
+          // Draw ripple as a 3D wave crest with height layers
+          // Multiple Y-offset layers give it thickness/volume
+          const WAVE_HEIGHT = 12 + (1 - phase) * 10; // taller when young
+          const LAYERS = 5;
+
+          for (let layer = 0; layer < LAYERS; layer++) {
+            const layerT = layer / (LAYERS - 1); // 0=bottom, 1=top
+            const layerY = -WAVE_HEIGHT * 0.3 + layerT * WAVE_HEIGHT;
+            // Bell curve brightness: brightest at top of wave crest
+            const layerBright = Math.exp(-((layerT - 0.7) * (layerT - 0.7)) * 5);
+            const layerAlpha = rippleAlpha * (0.3 + layerBright * 0.7);
+            // Each layer is a slightly different radius (wave shape)
+            const waveBulge = Math.sin(layerT * Math.PI) * bandWidth * 0.4;
+            const layerR = rippleR + waveBulge;
+
+            ctx.beginPath();
+            let started = false;
+            for (let s = 0; s <= steps; s++) {
+              const a = (s / steps) * Math.PI * 2 + rot;
+              const wx = Math.cos(a) * layerR;
+              const wz = Math.sin(a) * layerR;
+              // Gentle water surface + layer height
+              const wy = layerY
+                       + Math.sin(a * WAVE_FREQ + time * 0.08) * 4
+                       + Math.sin(a * 3 + time * 0.05) * 2;
+              const p = project(wx, wy, wz);
+              if (!p) { started = false; continue; }
+              if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+              else ctx.lineTo(p.sx, p.sy);
+            }
+
+            const lit = 55 + layerBright * 30;
+            ctx.strokeStyle = `hsla(${hue}, 75%, ${lit}%, ${layerAlpha})`;
+            ctx.lineWidth = 1 + layerBright * 2;
+            ctx.stroke();
           }
-          // Inner edge (reverse direction to create a filled ring shape)
-          for (let s = steps; s >= 0; s--) {
-            const a = (s / steps) * Math.PI * 2 + rot;
-            const wx = Math.cos(a) * innerR;
-            const wz = Math.sin(a) * innerR;
-            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * 8
-                     + Math.sin(a * 3 + time * 0.08) * 4;
-            const p = project(wx, wy, wz);
-            if (!p) continue;
-            ctx.lineTo(p.sx, p.sy);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `hsla(${hue}, 75%, 60%, ${rippleAlpha})`;
-          ctx.fill();
         }
       }
     };
