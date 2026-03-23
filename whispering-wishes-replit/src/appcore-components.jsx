@@ -2296,6 +2296,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, w, h);
 
+      // --- All light rendered with blur ---
+      ctx.save();
+      ctx.filter = 'blur(6px)';
+
       // --- Sun/Vortex glow (top center) ---
       const sunX = w * 0.5;
       const sunY = h * 0.18;
@@ -2396,10 +2400,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore();
       }
 
-      // --- Blurry horizontal lens flare streak (anamorphic) ---
+      // --- Horizontal lens flare streak (anamorphic) ---
       const flareAlpha = (0.05 + Math.sin(time * 0.25) * 0.025) * alphaScale;
-      ctx.save();
-      ctx.filter = 'blur(12px)';
       // Primary soft flare band
       const flareGrd = ctx.createLinearGradient(0, sunY, w, sunY);
       flareGrd.addColorStop(0, 'rgba(255, 160, 40, 0)');
@@ -2413,6 +2415,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.globalAlpha = 0.3;
       ctx.fillRect(0, sunY - h * 0.04, w, h * 0.08);
       ctx.globalAlpha = 1;
+
+      // End blur for all light
       ctx.restore();
 
       // ============================================================
@@ -2478,11 +2482,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = farColor(farAlpha * 0.7);
       ctx.fill();
 
-      // --- Atmospheric lightning (sky to ground) ---
+      // --- Atmospheric lightning (sky to ground, blurred) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
       if (lightningActive) {
+        ctx.save();
+        ctx.filter = 'blur(4px)';
         const lightA = (0.12 + Math.sin(time * 8) * 0.08) * alphaScale;
-        // Light orange with a touch of red: rgb(255, 160, 80)
         ctx.strokeStyle = `rgba(255, 150, 70, ${lightA})`;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
@@ -2500,6 +2505,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.strokeStyle = `rgba(255, 100, 50, ${lightA * 0.25})`;
         ctx.lineWidth = 6;
         ctx.stroke();
+        ctx.restore();
       }
 
       // --- Atmospheric mist layers ---
