@@ -1779,51 +1779,76 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (rippleAlpha < 0.003 || rippleR < 5) continue;
 
           const hue = 200 + phase * 80;
-
-          // Rolling light wave: a soft glowing band that brightens the scene
-          // Draw as a thick filled ring of additive light
-          const innerR = Math.max(0, rippleR - bandWidth * 0.5);
-          const outerR = rippleR + bandWidth * 0.5;
           const steps = 100;
 
-          // Multiple radial slices to create a gradient across the band width
-          const SLICES = 8;
-          for (let sl = 0; sl < SLICES; sl++) {
-            const slT = sl / (SLICES - 1); // 0=inner, 1=outer
-            const slR = innerR + slT * (outerR - innerR);
-            // Bell curve intensity: brightest at center of band
-            const bell = Math.exp(-((slT - 0.5) * (slT - 0.5)) * 8);
-            const slAlpha = rippleAlpha * bell * 1.5;
-            if (slAlpha < 0.003) continue;
+          // 3D transparent wave crest — only visible where light catches it
+          // The wave has a bell-curve height profile across its width
+          const WAVE_HEIGHT = 15 + (1 - phase) * 12;
+          const innerR = Math.max(0, rippleR - bandWidth * 0.5);
+          const outerR = rippleR + bandWidth * 0.5;
 
-            // Next slice radius for fill
-            const nextSlT = (sl + 1) / (SLICES - 1);
-            const nextSlR = innerR + Math.min(nextSlT, 1) * (outerR - innerR);
-            if (sl >= SLICES - 1) continue;
-
-            ctx.beginPath();
-            let started = false;
-            // Outer ring of this slice
-            for (let s = 0; s <= steps; s++) {
-              const a = (s / steps) * Math.PI * 2 + rot;
-              const p = project(Math.cos(a) * nextSlR, 0, Math.sin(a) * nextSlR);
-              if (!p) { started = false; continue; }
-              if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-              else ctx.lineTo(p.sx, p.sy);
-            }
-            // Inner ring (reverse)
-            for (let s = steps; s >= 0; s--) {
-              const a = (s / steps) * Math.PI * 2 + rot;
-              const p = project(Math.cos(a) * slR, 0, Math.sin(a) * slR);
-              if (!p) continue;
-              ctx.lineTo(p.sx, p.sy);
-            }
-            ctx.closePath();
-
-            const lit = 65 + bell * 30;
-            ctx.fillStyle = `hsla(${hue}, 60%, ${lit}%, ${slAlpha})`;
-            ctx.fill();
+          // Top edge highlight: the crest catches light from center
+          // Draw the wave crest line at peak height
+          ctx.beginPath();
+          let started = false;
+          for (let s = 0; s <= steps; s++) {
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const wx = Math.cos(a) * rippleR;
+            const wz = Math.sin(a) * rippleR;
+            // Light intensity based on angle to center (facing center = brighter)
+            const wy = -WAVE_HEIGHT; // crest sits above the plane
+            const p = project(wx, wy, wz);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
           }
+          ctx.strokeStyle = `hsla(${hue}, 70%, 85%, ${rippleAlpha * 2.5})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          // Soft specular glow on crest
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = `hsla(${hue}, 65%, 70%, ${rippleAlpha * 0.6})`;
+          ctx.stroke();
+
+          // Inner slope: faint fill from base to crest (facing the light source)
+          ctx.beginPath();
+          started = false;
+          for (let s = 0; s <= steps; s++) {
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rippleR, -WAVE_HEIGHT, Math.sin(a) * rippleR);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+          for (let s = steps; s >= 0; s--) {
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * innerR, 0, Math.sin(a) * innerR);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue}, 60%, 70%, ${rippleAlpha * 0.4})`;
+          ctx.fill();
+
+          // Outer slope: even fainter (facing away from light)
+          ctx.beginPath();
+          started = false;
+          for (let s = 0; s <= steps; s++) {
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * outerR, 0, Math.sin(a) * outerR);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+          for (let s = steps; s >= 0; s--) {
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rippleR, -WAVE_HEIGHT, Math.sin(a) * rippleR);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue}, 55%, 60%, ${rippleAlpha * 0.2})`;
+          ctx.fill();
         }
       }
     };
