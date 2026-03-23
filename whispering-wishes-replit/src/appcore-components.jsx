@@ -3332,23 +3332,23 @@ const StandardBannerOverlay = memo(() => {
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
 
-    // Slow-drifting silver motes
-    const motes = Array.from({ length: 20 }, () => ({
+    // Floating silver-white motes
+    const motes = Array.from({ length: 30 }, () => ({
       x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: -0.08 - Math.random() * 0.12,
-      size: 1 + Math.random() * 1.8,
+      vx: (Math.random() - 0.5) * 0.2,
+      vy: -0.12 - Math.random() * 0.2,
+      size: 1.5 + Math.random() * 2.5,
       phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 0.7,
-      alpha: 0.3 + Math.random() * 0.4,
+      speed: 0.4 + Math.random() * 0.8,
+      alpha: 0.6 + Math.random() * 0.4,
     }));
 
-    // Soft horizontal light streaks
-    const streaks = Array.from({ length: 3 }, () => ({
-      y: h * 0.2 + Math.random() * h * 0.6,
+    // Horizontal light streaks
+    const streaks = Array.from({ length: 4 }, () => ({
+      y: h * 0.15 + Math.random() * h * 0.7,
       phase: Math.random() * Math.PI * 2,
-      width: w * (0.3 + Math.random() * 0.4),
-      x: Math.random() * w,
+      width: w * (0.35 + Math.random() * 0.45),
+      x: w * 0.1 + Math.random() * w * 0.8,
     }));
 
     let animId, t = 0;
@@ -3356,39 +3356,51 @@ const StandardBannerOverlay = memo(() => {
       ctx.clearRect(0, 0, w, h);
       t += 0.016;
 
-      // Subtle horizontal light streaks — premium shimmer
+      // Soft ambient glow — cool center light
+      const gPulse = 0.6 + Math.sin(t * 0.15) * 0.2;
+      ctx.save();
+      ctx.globalAlpha = 0.12 * gPulse;
+      const ag = ctx.createRadialGradient(w * 0.5, h * 0.4, 0, w * 0.5, h * 0.4, w * 0.5);
+      ag.addColorStop(0, 'rgba(180,210,255,0.5)');
+      ag.addColorStop(0.5, 'rgba(160,200,255,0.2)');
+      ag.addColorStop(1, 'rgba(140,180,255,0)');
+      ctx.fillStyle = ag;
+      ctx.beginPath(); ctx.arc(w * 0.5, h * 0.4, w * 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Horizontal light streaks
       for (const s of streaks) {
-        const a = (0.03 + Math.sin(t * 0.4 + s.phase) * 0.02) * (0.5 + Math.sin(t * 0.15 + s.phase * 2) * 0.5);
-        if (a < 0.005) continue;
+        const a = (0.08 + Math.sin(t * 0.5 + s.phase) * 0.06) * (0.5 + Math.sin(t * 0.2 + s.phase * 2) * 0.5);
+        if (a < 0.01) continue;
         ctx.save();
         ctx.globalAlpha = a;
         const g = ctx.createLinearGradient(s.x - s.width / 2, 0, s.x + s.width / 2, 0);
         g.addColorStop(0, 'rgba(255,255,255,0)');
-        g.addColorStop(0.3, 'rgba(220,230,245,0.6)');
-        g.addColorStop(0.5, 'rgba(255,255,255,0.8)');
-        g.addColorStop(0.7, 'rgba(220,230,245,0.6)');
+        g.addColorStop(0.3, 'rgba(200,220,255,0.7)');
+        g.addColorStop(0.5, 'rgba(255,255,255,0.9)');
+        g.addColorStop(0.7, 'rgba(200,220,255,0.7)');
         g.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = g;
-        ctx.fillRect(s.x - s.width / 2, s.y - 0.5, s.width, 1);
+        ctx.fillRect(s.x - s.width / 2, s.y - 1, s.width, 2);
         ctx.restore();
       }
 
       // Floating silver motes
       for (const m of motes) {
-        m.x += m.vx + Math.sin(t * 0.3 + m.phase) * 0.1;
+        m.x += m.vx + Math.sin(t * 0.4 + m.phase) * 0.15;
         m.y += m.vy;
         if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
         if (m.x < -5) m.x = w + 5;
         if (m.x > w + 5) m.x = -5;
 
-        const pulse = m.alpha * (0.5 + Math.sin(t * m.speed + m.phase) * 0.5);
-        if (pulse < 0.05) continue;
+        const pulse = m.alpha * (0.4 + Math.sin(t * m.speed + m.phase) * 0.6);
+        if (pulse < 0.08) continue;
 
         ctx.save();
         ctx.globalAlpha = pulse;
-        ctx.fillStyle = 'rgba(230,240,255,1)';
-        ctx.shadowColor = 'rgba(200,220,255,0.6)';
-        ctx.shadowBlur = 8;
+        ctx.fillStyle = 'rgba(220,235,255,1)';
+        ctx.shadowColor = 'rgba(180,210,255,0.9)';
+        ctx.shadowBlur = 14;
         ctx.beginPath();
         ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
         ctx.fill();
