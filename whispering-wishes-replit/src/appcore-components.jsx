@@ -1822,13 +1822,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rOuter = r + BAND_W * 0.5 * fade;
           const rInner = Math.max(0, r - BAND_W * 0.5 * fade);
 
-          // Dark underside — tighter, softer, blurred
+          // Dark underside — tighter, softer (no shadowBlur to avoid covering ribbon)
           const darkBandW = BAND_W * 0.35 * fade;
           const rDarkOuter = r + darkBandW;
           const rDarkInner = Math.max(0, r - darkBandW * 0.3);
-          ctx.save();
-          ctx.shadowColor = `hsla(${hue + 10}, 50%, 8%, ${alpha * 0.3})`;
-          ctx.shadowBlur = 6;
           ctx.beginPath();
           let started = false;
           for (let s = 0; s <= STEPS; s++) {
@@ -1845,9 +1842,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(${hue + 10}, 50%, 12%, ${alpha * 0.35})`;
+          ctx.fillStyle = `hsla(${hue + 10}, 50%, 12%, ${alpha * 0.3})`;
           ctx.fill();
-          ctx.restore();
 
           // Bright top face — tighter band
           const topBandW = BAND_W * 0.4 * fade;
