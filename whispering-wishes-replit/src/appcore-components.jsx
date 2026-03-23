@@ -2243,35 +2243,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
 
-    // Generate ruin pillars (deterministic)
-    const PILLAR_COUNT = 14;
-    const pillars = [];
-    for (let i = 0; i < PILLAR_COUNT; i++) {
+    // Generate battlefield swords (thrust into ground at angles)
+    const SWORD_COUNT = 28;
+    const swords = [];
+    for (let i = 0; i < SWORD_COUNT; i++) {
       const h0 = hash(i * 127.1 + 31.7);
       const h1 = hash(i * 269.5 + 183.3);
       const h2 = hash(i * 419.2 + 71.9);
-      pillars.push({
-        xNorm: h0,                          // 0..1 horizontal position
-        heightNorm: 0.12 + h1 * 0.28,      // pillar height as fraction of screen
-        widthNorm: 0.008 + h2 * 0.018,     // pillar width
-        depthLayer: Math.floor(h2 * 3),    // 0=far, 1=mid, 2=near
-        hasCapital: h1 > 0.4,              // top decoration
-        broken: h0 > 0.6,                  // broken/jagged top
-        lean: (hash(i * 571.3) - 0.5) * 0.03, // slight lean
+      swords.push({
+        xNorm: h0,
+        heightNorm: 0.06 + h1 * 0.18,       // sword blade length
+        widthNorm: 0.002 + h2 * 0.004,       // blade width (thin)
+        depthLayer: Math.floor(h2 * 3),
+        lean: (hash(i * 571.3) - 0.5) * 0.35, // swords lean at various angles
+        hasCrossguard: h1 > 0.3,
+        hasGlow: h0 > 0.7,                    // some swords have ember glow
       });
     }
 
-    // Generate arch structures
-    const ARCH_COUNT = 4;
-    const arches = [];
-    for (let i = 0; i < ARCH_COUNT; i++) {
-      arches.push({
-        xNorm: 0.15 + hash(i * 337.1) * 0.7,
-        widthNorm: 0.06 + hash(i * 491.3) * 0.08,
-        heightNorm: 0.15 + hash(i * 223.7) * 0.15,
-        depthLayer: Math.floor(hash(i * 613.9) * 2),
-      });
-    }
+    // Central spire (always present)
+    const spire = {
+      xNorm: 0.5,
+      heightNorm: 0.45,
+      widthBase: 0.04,
+      widthTop: 0.008,
+    };
 
     // Dust particles
     const DUST_COUNT = 120;
@@ -2322,156 +2318,276 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, w, h);
 
-      // --- Sun glow (upper center, slightly right) ---
-      const sunX = w * 0.55;
-      const sunY = h * 0.22;
-      const sunPulse = 1 + Math.sin(time * 0.3) * 0.05;
+      // --- Sun/Vortex glow (top center) ---
+      const sunX = w * 0.5;
+      const sunY = h * 0.18;
+      const sunPulse = 1 + Math.sin(time * 0.3) * 0.08;
 
       // Outer atmospheric haze
       const haze = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(w, h) * 0.9);
-      haze.addColorStop(0, `rgba(255, 200, 80, ${0.25 * alphaScale * sunPulse})`);
-      haze.addColorStop(0.1, `rgba(255, 170, 50, ${0.15 * alphaScale})`);
-      haze.addColorStop(0.25, `rgba(200, 120, 30, ${0.08 * alphaScale})`);
-      haze.addColorStop(0.5, `rgba(140, 70, 15, ${0.04 * alphaScale})`);
+      haze.addColorStop(0, `rgba(255, 210, 80, ${0.30 * alphaScale * sunPulse})`);
+      haze.addColorStop(0.08, `rgba(255, 170, 50, ${0.20 * alphaScale})`);
+      haze.addColorStop(0.2, `rgba(220, 120, 20, ${0.10 * alphaScale})`);
+      haze.addColorStop(0.45, `rgba(150, 60, 10, ${0.05 * alphaScale})`);
       haze.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = haze;
       ctx.fillRect(0, 0, w, h);
 
-      // Inner sun core
-      const core = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, w * 0.12);
-      core.addColorStop(0, `rgba(255, 240, 200, ${0.6 * alphaScale * sunPulse})`);
-      core.addColorStop(0.3, `rgba(255, 210, 130, ${0.35 * alphaScale})`);
-      core.addColorStop(0.7, `rgba(255, 170, 60, ${0.12 * alphaScale})`);
+      // Inner sun core — brighter, more intense
+      const core = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, w * 0.1);
+      core.addColorStop(0, `rgba(255, 250, 220, ${0.7 * alphaScale * sunPulse})`);
+      core.addColorStop(0.2, `rgba(255, 220, 120, ${0.45 * alphaScale})`);
+      core.addColorStop(0.6, `rgba(255, 170, 50, ${0.15 * alphaScale})`);
       core.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = core;
       ctx.fillRect(0, 0, w, h);
 
-      // --- God rays (light shafts from sun) ---
-      const RAY_COUNT = 8;
+      // --- Swirling vortex ring around sun ---
+      const vortexR = Math.min(w, h) * 0.14;
+      const vortexRot = time * 0.12;
+      ctx.save();
+      ctx.translate(sunX, sunY);
+      // Draw swirling cloud ring segments
+      for (let i = 0; i < 40; i++) {
+        const angle = (i / 40) * Math.PI * 2 + vortexRot;
+        const wobble = Math.sin(angle * 3 + time * 0.5) * vortexR * 0.12;
+        const rx = Math.cos(angle) * (vortexR + wobble);
+        const ry = Math.sin(angle) * (vortexR * 0.45 + wobble * 0.4); // elliptical — viewed at angle
+        const segSize = vortexR * (0.08 + Math.sin(angle * 2 + time * 0.8) * 0.03);
+        const segAlpha = (0.08 + Math.sin(angle * 4 + time * 0.6) * 0.04) * alphaScale;
+        const segGrd = ctx.createRadialGradient(rx, ry, 0, rx, ry, segSize);
+        segGrd.addColorStop(0, `rgba(255, 180, 60, ${segAlpha})`);
+        segGrd.addColorStop(0.5, `rgba(200, 100, 20, ${segAlpha * 0.4})`);
+        segGrd.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = segGrd;
+        ctx.fillRect(rx - segSize, ry - segSize, segSize * 2, segSize * 2);
+      }
+      // Thin bright ring line
+      ctx.beginPath();
+      ctx.ellipse(0, 0, vortexR, vortexR * 0.45, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 200, 100, ${0.12 * alphaScale})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Second ring, slightly larger, dimmer
+      ctx.beginPath();
+      ctx.ellipse(0, 0, vortexR * 1.25, vortexR * 0.55, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 160, 60, ${0.06 * alphaScale})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // --- Golden energy halo rings (horizontal, expanding) ---
+      for (let ring = 0; ring < 3; ring++) {
+        const ringPhase = (time * 0.15 + ring * 2.1) % 6.28;
+        const ringExpand = (Math.sin(ringPhase) * 0.5 + 0.5);
+        const ringR = vortexR * (0.6 + ringExpand * 1.2);
+        const ringAlpha = (0.06 - ringExpand * 0.04) * alphaScale;
+        if (ringAlpha < 0.005) continue;
+        ctx.beginPath();
+        ctx.ellipse(sunX, sunY, ringR, ringR * 0.35, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 190, 80, ${ringAlpha})`;
+        ctx.lineWidth = 1.5 - ringExpand * 0.8;
+        ctx.stroke();
+      }
+
+      // --- God rays (dramatic light shafts from sun/vortex) ---
+      const RAY_COUNT = 12;
       for (let i = 0; i < RAY_COUNT; i++) {
-        const rayAngle = (i / RAY_COUNT) * Math.PI * 0.8 + Math.PI * 0.1 + Math.sin(time * 0.15 + i * 1.7) * 0.08;
-        const rayLen = h * (0.6 + hash(i * 811.3) * 0.4);
-        const rayWidth = w * (0.015 + hash(i * 937.1) * 0.025);
-        const rayAlpha = (0.03 + Math.sin(time * 0.2 + i * 2.1) * 0.015) * alphaScale;
+        const rayAngle = (i / RAY_COUNT) * Math.PI * 1.2 - Math.PI * 0.1 + Math.sin(time * 0.12 + i * 1.7) * 0.06;
+        const rayLen = h * (0.5 + hash(i * 811.3) * 0.5);
+        const rayWidth = w * (0.01 + hash(i * 937.1) * 0.03);
+        const rayAlpha = (0.025 + Math.sin(time * 0.18 + i * 2.1) * 0.015) * alphaScale;
 
         ctx.save();
         ctx.translate(sunX, sunY);
         ctx.rotate(rayAngle - Math.PI * 0.5);
 
         const rayGrd = ctx.createLinearGradient(0, 0, 0, rayLen);
-        rayGrd.addColorStop(0, `rgba(255, 200, 100, ${rayAlpha * 2})`);
-        rayGrd.addColorStop(0.3, `rgba(255, 180, 70, ${rayAlpha})`);
-        rayGrd.addColorStop(1, 'rgba(255, 160, 40, 0)');
+        rayGrd.addColorStop(0, `rgba(255, 200, 100, ${rayAlpha * 2.5})`);
+        rayGrd.addColorStop(0.15, `rgba(255, 170, 60, ${rayAlpha * 1.5})`);
+        rayGrd.addColorStop(0.5, `rgba(255, 140, 40, ${rayAlpha * 0.5})`);
+        rayGrd.addColorStop(1, 'rgba(200, 100, 20, 0)');
         ctx.fillStyle = rayGrd;
         ctx.beginPath();
-        ctx.moveTo(-rayWidth * 0.3, 0);
-        ctx.lineTo(rayWidth * 0.3, 0);
-        ctx.lineTo(rayWidth * 1.5, rayLen);
-        ctx.lineTo(-rayWidth * 1.5, rayLen);
+        ctx.moveTo(-rayWidth * 0.2, 0);
+        ctx.lineTo(rayWidth * 0.2, 0);
+        ctx.lineTo(rayWidth * 2, rayLen);
+        ctx.lineTo(-rayWidth * 2, rayLen);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
       }
 
-      // --- Ruin silhouettes ---
+      // --- Horizontal lens flare streak (anamorphic) ---
+      const flareAlpha = (0.06 + Math.sin(time * 0.25) * 0.03) * alphaScale;
+      const flareGrd = ctx.createLinearGradient(0, sunY, w, sunY);
+      flareGrd.addColorStop(0, 'rgba(255, 160, 40, 0)');
+      flareGrd.addColorStop(0.3, `rgba(255, 190, 80, ${flareAlpha * 0.4})`);
+      flareGrd.addColorStop(0.5, `rgba(255, 220, 140, ${flareAlpha})`);
+      flareGrd.addColorStop(0.7, `rgba(255, 190, 80, ${flareAlpha * 0.4})`);
+      flareGrd.addColorStop(1, 'rgba(255, 160, 40, 0)');
+      ctx.fillStyle = flareGrd;
+      ctx.fillRect(0, sunY - h * 0.005, w, h * 0.01);
+      // Secondary wider, dimmer streak
+      ctx.globalAlpha = 0.4;
+      ctx.fillRect(0, sunY - h * 0.02, w, h * 0.04);
+      ctx.globalAlpha = 1;
+
+      // --- Battlefield terrain & silhouettes ---
       // Draw from far to near (depth layers 0, 1, 2)
       for (let layer = 0; layer < 3; layer++) {
         const layerDarkness = layer === 0 ? 0.35 : layer === 1 ? 0.55 : 0.75;
         const layerScale = layer === 0 ? 0.7 : layer === 1 ? 0.85 : 1.0;
 
-        // Rocky terrain base for this layer
-        const terrainY = h * (0.72 - layer * 0.04);
+        // Battlefield mound terrain — rises toward center
+        const terrainY = h * (0.68 - layer * 0.03);
         ctx.beginPath();
         ctx.moveTo(0, h);
-        for (let x = 0; x <= w; x += 8) {
-          const noise = Math.sin(x * 0.008 + layer * 3) * 15
-                      + Math.sin(x * 0.015 + layer * 7 + time * 0.05) * 8
-                      + Math.sin(x * 0.003 + layer * 11) * 25;
-          ctx.lineTo(x, terrainY + noise);
+        for (let x = 0; x <= w; x += 6) {
+          const centerDist = Math.abs(x / w - 0.5) * 2; // 0 at center, 1 at edges
+          const mound = (1 - centerDist * centerDist) * h * 0.08; // raised center hill
+          const noise = Math.sin(x * 0.01 + layer * 3) * 12
+                      + Math.sin(x * 0.02 + layer * 7 + time * 0.04) * 6
+                      + Math.sin(x * 0.004 + layer * 11) * 20;
+          ctx.lineTo(x, terrainY + noise - mound);
         }
         ctx.lineTo(w, h);
         ctx.closePath();
 
-        // Warm dark fill with subtle amber tint
         const tR = Math.round(15 + layer * 8);
         const tG = Math.round(8 + layer * 5);
         const tB = Math.round(4 + layer * 2);
         ctx.fillStyle = `rgba(${tR}, ${tG}, ${tB}, ${layerDarkness * alphaScale})`;
         ctx.fill();
 
-        // Draw pillars for this depth layer
-        for (const p of pillars) {
-          if (p.depthLayer !== layer) continue;
-          const px = p.xNorm * w;
-          const pillarH = p.heightNorm * h * layerScale;
-          const pillarW = p.widthNorm * w * layerScale;
-          const baseY = terrainY + Math.sin(px * 0.008 + layer * 3) * 15
-                       + Math.sin(px * 0.015 + layer * 7 + time * 0.05) * 8
-                       + Math.sin(px * 0.003 + layer * 11) * 25;
+        // Draw swords for this depth layer
+        for (const s of swords) {
+          if (s.depthLayer !== layer) continue;
+          const sx2 = s.xNorm * w;
+          const sH = s.heightNorm * h * layerScale;
+          const sW = s.widthNorm * w * layerScale;
+          const centerDist = Math.abs(s.xNorm - 0.5) * 2;
+          const mound = (1 - centerDist * centerDist) * h * 0.08;
+          const baseY = terrainY + Math.sin(sx2 * 0.01 + layer * 3) * 12
+                       + Math.sin(sx2 * 0.02 + layer * 7 + time * 0.04) * 6
+                       + Math.sin(sx2 * 0.004 + layer * 11) * 20 - mound;
 
           ctx.save();
-          ctx.translate(px, baseY);
-          ctx.rotate(p.lean);
+          ctx.translate(sx2, baseY);
+          ctx.rotate(s.lean);
 
-          // Pillar shaft
-          const pR = Math.round(20 + layer * 12);
-          const pG = Math.round(14 + layer * 8);
-          const pB = Math.round(8 + layer * 4);
-          ctx.fillStyle = `rgba(${pR}, ${pG}, ${pB}, ${(layerDarkness + 0.1) * alphaScale})`;
+          // Blade
+          const bR = Math.round(22 + layer * 14);
+          const bG = Math.round(16 + layer * 10);
+          const bB = Math.round(10 + layer * 5);
+          ctx.fillStyle = `rgba(${bR}, ${bG}, ${bB}, ${(layerDarkness + 0.15) * alphaScale})`;
+          ctx.beginPath();
+          ctx.moveTo(-sW * 0.5, 0);
+          ctx.lineTo(-sW * 0.3, -sH * 0.85);
+          ctx.lineTo(0, -sH);          // blade tip
+          ctx.lineTo(sW * 0.3, -sH * 0.85);
+          ctx.lineTo(sW * 0.5, 0);
+          ctx.closePath();
+          ctx.fill();
 
-          if (p.broken) {
-            // Jagged broken top
-            ctx.beginPath();
-            ctx.moveTo(-pillarW * 0.5, 0);
-            ctx.lineTo(-pillarW * 0.5, -pillarH * 0.7);
-            ctx.lineTo(-pillarW * 0.2, -pillarH * 0.85);
-            ctx.lineTo(0, -pillarH * 0.75);
-            ctx.lineTo(pillarW * 0.3, -pillarH);
-            ctx.lineTo(pillarW * 0.5, -pillarH * 0.8);
-            ctx.lineTo(pillarW * 0.5, 0);
-            ctx.closePath();
-            ctx.fill();
-          } else {
-            ctx.fillRect(-pillarW * 0.5, -pillarH, pillarW, pillarH);
-            // Capital (top decoration)
-            if (p.hasCapital) {
-              ctx.fillRect(-pillarW * 0.8, -pillarH - pillarW * 0.4, pillarW * 1.6, pillarW * 0.4);
-              ctx.fillRect(-pillarW * 0.65, -pillarH - pillarW * 0.7, pillarW * 1.3, pillarW * 0.35);
-            }
+          // Crossguard
+          if (s.hasCrossguard) {
+            ctx.fillRect(-sW * 2.5, -sH * 0.12, sW * 5, sH * 0.025);
           }
 
-          // Subtle lit edge (sun-facing side)
-          const edgeAlpha = (0.06 + Math.sin(time * 0.3) * 0.02) * alphaScale;
-          ctx.fillStyle = `rgba(255, 190, 80, ${edgeAlpha})`;
-          ctx.fillRect(pillarW * 0.25, -pillarH, pillarW * 0.25, pillarH);
+          // Ember glow on some swords
+          if (s.hasGlow && layer >= 1) {
+            const glowPulse = Math.sin(time * 1.5 + s.xNorm * 20) * 0.5 + 0.5;
+            const glowA = (0.15 + glowPulse * 0.1) * alphaScale;
+            const sg = ctx.createRadialGradient(0, -sH * 0.4, 0, 0, -sH * 0.4, sH * 0.3);
+            sg.addColorStop(0, `rgba(255, 140, 30, ${glowA})`);
+            sg.addColorStop(0.5, `rgba(255, 80, 10, ${glowA * 0.3})`);
+            sg.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = sg;
+            ctx.fillRect(-sH * 0.3, -sH * 0.7, sH * 0.6, sH * 0.6);
+          }
+
+          // Lit edge facing sun
+          ctx.fillStyle = `rgba(255, 180, 70, ${0.04 * alphaScale})`;
+          ctx.fillRect(sW * 0.15, -sH, sW * 0.2, sH);
 
           ctx.restore();
         }
+      }
 
-        // Draw arches for this layer
-        for (const a of arches) {
-          if (a.depthLayer !== layer) continue;
-          const ax = a.xNorm * w;
-          const archW = a.widthNorm * w * layerScale;
-          const archH = a.heightNorm * h * layerScale;
-          const archBaseY = terrainY + Math.sin(ax * 0.008 + layer * 3) * 15
-                          + Math.sin(ax * 0.015 + layer * 7 + time * 0.05) * 8
-                          + Math.sin(ax * 0.003 + layer * 11) * 25;
+      // --- Central spire tower (drawn on top of terrain) ---
+      const spireX = spire.xNorm * w;
+      const spireBaseY = h * 0.62;
+      const spireH = spire.heightNorm * h;
+      const spireWB = spire.widthBase * w;
+      const spireWT = spire.widthTop * w;
 
-          const aR = Math.round(18 + layer * 10);
-          const aG = Math.round(12 + layer * 7);
-          const aB = Math.round(6 + layer * 3);
-          ctx.fillStyle = `rgba(${aR}, ${aG}, ${aB}, ${(layerDarkness + 0.1) * alphaScale})`;
+      // Spire body — tapered trapezoid with radiating blade fragments
+      ctx.fillStyle = `rgba(25, 18, 10, ${0.85 * alphaScale})`;
+      ctx.beginPath();
+      ctx.moveTo(spireX - spireWB * 0.5, spireBaseY);
+      ctx.lineTo(spireX - spireWT * 0.5, spireBaseY - spireH);
+      ctx.lineTo(spireX + spireWT * 0.5, spireBaseY - spireH);
+      ctx.lineTo(spireX + spireWB * 0.5, spireBaseY);
+      ctx.closePath();
+      ctx.fill();
 
-          // Left pillar
-          ctx.fillRect(ax - archW * 0.5 - archW * 0.08, archBaseY - archH, archW * 0.16, archH);
-          // Right pillar
-          ctx.fillRect(ax + archW * 0.5 - archW * 0.08, archBaseY - archH * 0.9, archW * 0.16, archH * 0.9);
-          // Arch top (semicircle approximation)
-          ctx.beginPath();
-          ctx.ellipse(ax, archBaseY - archH, archW * 0.5, archH * 0.25, 0, Math.PI, 0);
-          ctx.fill();
+      // Radiating blade fragments at spire top (like the crown in the reference)
+      const BLADE_COUNT = 10;
+      for (let i = 0; i < BLADE_COUNT; i++) {
+        const bladeAngle = (i / BLADE_COUNT) * Math.PI - Math.PI * 0.5 + Math.sin(time * 0.2 + i * 1.1) * 0.03;
+        const bladeLen = spireH * (0.15 + hash(i * 713.7) * 0.2);
+        const bladeW = w * 0.003;
+        const topY = spireBaseY - spireH;
+
+        ctx.save();
+        ctx.translate(spireX, topY);
+        ctx.rotate(bladeAngle);
+
+        ctx.fillStyle = `rgba(30, 22, 12, ${0.8 * alphaScale})`;
+        ctx.beginPath();
+        ctx.moveTo(-bladeW, 0);
+        ctx.lineTo(-bladeW * 0.3, -bladeLen);
+        ctx.lineTo(bladeW * 0.3, -bladeLen);
+        ctx.lineTo(bladeW, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Orange edge glow on blade tips
+        ctx.fillStyle = `rgba(255, 140, 40, ${0.08 * alphaScale})`;
+        ctx.fillRect(-bladeW * 0.5, -bladeLen, bladeW, bladeLen * 0.3);
+        ctx.restore();
+      }
+
+      // Spire golden edge highlights
+      const spireEdgeA = (0.08 + Math.sin(time * 0.3) * 0.03) * alphaScale;
+      const spireGrd = ctx.createLinearGradient(spireX, spireBaseY - spireH, spireX, spireBaseY);
+      spireGrd.addColorStop(0, `rgba(255, 200, 80, ${spireEdgeA * 2})`);
+      spireGrd.addColorStop(0.4, `rgba(255, 150, 50, ${spireEdgeA})`);
+      spireGrd.addColorStop(1, `rgba(200, 100, 30, ${spireEdgeA * 0.3})`);
+      ctx.fillStyle = spireGrd;
+      ctx.fillRect(spireX + spireWT * 0.1, spireBaseY - spireH, spireWT * 0.3, spireH);
+
+      // --- Lightning crackling along spire ---
+      const lightningActive = Math.sin(time * 3) > 0.6;
+      if (lightningActive) {
+        const lightA = (0.15 + Math.sin(time * 8) * 0.1) * alphaScale;
+        ctx.strokeStyle = `rgba(255, 200, 100, ${lightA})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        let lx = spireX + (hash(Math.floor(time * 5)) - 0.5) * spireWT;
+        let ly = spireBaseY - spireH * 0.9;
+        ctx.moveTo(lx, ly);
+        for (let seg = 0; seg < 8; seg++) {
+          lx += (hash(seg * 41.7 + Math.floor(time * 5) * 13.3) - 0.5) * spireWB * 0.6;
+          ly += spireH * 0.1;
+          ctx.lineTo(lx, ly);
         }
+        ctx.stroke();
+        // Glow around lightning
+        ctx.strokeStyle = `rgba(255, 160, 40, ${lightA * 0.3})`;
+        ctx.lineWidth = 5;
+        ctx.stroke();
       }
 
       // --- Atmospheric mist layers ---
