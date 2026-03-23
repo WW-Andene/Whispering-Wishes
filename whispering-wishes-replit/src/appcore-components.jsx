@@ -2013,7 +2013,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
           ctx.restore();
 
-          // --- Glitch animated effects (horizontal rect blocks extending beyond heart) ---
+          // --- Glitch animated effects (horizontal rect blocks perpendicular to heart Y axis) ---
           // Glitch burst trigger — periodic spikes of intensity
           const glitchCycle = Math.sin(time * 1.7) * Math.sin(time * 3.1) * Math.sin(time * 0.6);
           const glitchActive = glitchCycle > 0.3;
@@ -2024,17 +2024,6 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hCy = (bds.y0 + bds.y1) / 2;
           const hW = bds.x1 - bds.x0;
           const hH = bds.y1 - bds.y0;
-
-          // Glitch block colors matching reference (cyan, pink, blue, green, yellow)
-          const glitchColors = [
-            [80, 230, 255],   // cyan
-            [255, 50, 150],   // hot pink
-            [50, 100, 255],   // blue
-            [100, 255, 80],   // green
-            [255, 255, 80],   // yellow
-            [200, 80, 255],   // purple
-            [255, 140, 50],   // orange
-          ];
 
           // Deterministic pseudo-random from seed
           const pseudoRand = (seed) => {
@@ -2055,24 +2044,24 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Animated seed so blocks move over time
             const seed = gi * 73.7 + Math.floor(time * (isBurst ? 6 : 1.5)) * 13.1;
 
-            // Y position: distributed across heart height
-            const yFrac = pseudoRand(seed + 1.1);
-            const blockY = bds.y0 + yFrac * hH;
+            // X position: distributed across heart width, centered on heart
+            const xFrac = pseudoRand(seed + 1.1);
+            const blockX = bds.x0 + xFrac * hW;
 
-            // Block height: thin rectangles
-            const blockH = (1.5 + pseudoRand(seed + 2.2) * 3.5) * (isBurst ? (1 + glitchIntensity) : 1);
+            // Block width: thin vertical strips (perpendicular to Y axis = horizontal rectangles rotated)
+            const blockW = (1.5 + pseudoRand(seed + 2.2) * 3.5) * (isBurst ? (1 + glitchIntensity) : 1);
 
-            // Horizontal offset: blocks extend beyond the heart edge
+            // Vertical offset: blocks extend beyond the heart top/bottom
             const side = pseudoRand(seed + 3.3) > 0.5 ? 1 : -1;
-            const overshoot = hW * (0.15 + pseudoRand(seed + 4.4) * 0.5) * intensity;
-            const blockW = hW * (0.15 + pseudoRand(seed + 5.5) * 0.35);
-            const blockX = side > 0
-              ? hCx + pseudoRand(seed + 6.6) * hW * 0.3 - blockW * 0.3 + overshoot * 0.3
-              : hCx - pseudoRand(seed + 6.6) * hW * 0.3 - blockW * 0.7 - overshoot * 0.3;
+            const overshoot = hH * (0.15 + pseudoRand(seed + 4.4) * 0.5) * intensity;
+            const blockH = hH * (0.15 + pseudoRand(seed + 5.5) * 0.35);
+            const blockY = side > 0
+              ? hCy + pseudoRand(seed + 6.6) * hH * 0.3 - blockH * 0.3 + overshoot * 0.3
+              : hCy - pseudoRand(seed + 6.6) * hH * 0.3 - blockH * 0.7 - overshoot * 0.3;
 
-            // Pick color
-            const colIdx = Math.floor(pseudoRand(seed + 7.7) * glitchColors.length);
-            const col = glitchColors[colIdx];
+            // Cyan or pink only
+            const isCyan = pseudoRand(seed + 7.7) > 0.5;
+            const col = isCyan ? [80, 230, 255] : [255, 50, 150];
 
             const blockAlpha = (isBurst ? (0.35 + glitchIntensity * 0.4) : (0.15 + Math.sin(time * 0.8 + gi * 2) * 0.1)) * alphaScale;
 
@@ -2081,51 +2070,39 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Sometimes draw a second thinner block offset slightly
             if (pseudoRand(seed + 8.8) > 0.5) {
-              const col2 = glitchColors[(colIdx + 2) % glitchColors.length];
-              const offsetX = (pseudoRand(seed + 9.9) - 0.5) * 6 * intensity;
+              const col2 = isCyan ? [255, 50, 150] : [80, 230, 255];
+              const offsetY = (pseudoRand(seed + 9.9) - 0.5) * 6 * intensity;
               ctx.fillStyle = `rgba(${col2[0]}, ${col2[1]}, ${col2[2]}, ${blockAlpha * 0.6})`;
-              ctx.fillRect(blockX + offsetX, blockY + blockH + 1, blockW * 0.7, blockH * 0.5);
+              ctx.fillRect(blockX + blockW + 1, blockY + offsetY, blockW * 0.5, blockH * 0.7);
             }
           }
 
-          // RGB chromatic split — shifted copies of heart outline
+          // RGB chromatic split — shifted copies of heart outline (vertical shift, perpendicular to Y)
           const splitAmt = glitchActive ? 2 + glitchIntensity * 5 : 0.8 + Math.sin(time * 0.8) * 0.5;
 
-          // Cyan heart shifted right
+          // Cyan heart shifted up
           ctx.beginPath();
           for (let i = 0; i <= HEART_PTS; i++) {
             const p = heartPts[i % heartPts.length];
-            if (i === 0) ctx.moveTo(p.sx + splitAmt, p.sy);
-            else ctx.lineTo(p.sx + splitAmt, p.sy);
+            if (i === 0) ctx.moveTo(p.sx, p.sy - splitAmt);
+            else ctx.lineTo(p.sx, p.sy - splitAmt);
           }
           ctx.closePath();
           ctx.strokeStyle = `rgba(80, 230, 255, ${(0.2 + glitchIntensity * 0.3) * alphaScale})`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
-          // Pink heart shifted left
+          // Pink heart shifted down
           ctx.beginPath();
           for (let i = 0; i <= HEART_PTS; i++) {
             const p = heartPts[i % heartPts.length];
-            if (i === 0) ctx.moveTo(p.sx - splitAmt, p.sy);
-            else ctx.lineTo(p.sx - splitAmt, p.sy);
+            if (i === 0) ctx.moveTo(p.sx, p.sy + splitAmt);
+            else ctx.lineTo(p.sx, p.sy + splitAmt);
           }
           ctx.closePath();
           ctx.strokeStyle = `rgba(255, 50, 150, ${(0.15 + glitchIntensity * 0.25) * alphaScale})`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
-
-          // Scanlines across heart (subtle CRT effect)
-          ctx.save();
-          drawPath(heartPts);
-          ctx.clip();
-          const scanGap = 3;
-          for (let sy = bds.y0; sy < bds.y1; sy += scanGap) {
-            const scanAlpha = (0.03 + glitchIntensity * 0.06) * alphaScale;
-            ctx.fillStyle = `rgba(0, 0, 0, ${scanAlpha})`;
-            ctx.fillRect(bds.x0, sy, hW, 1);
-          }
-          ctx.restore();
 
           ctx.restore();
         }
