@@ -1758,11 +1758,16 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // --- Disc light: center is a light source radiating outward ---
       // Like the reference: bright white-cyan core → blue → purple → pink at edges
       if (centerP) {
-        // Pulse synced with ripple spawns: brighten each time a ring leaves center
-        // Ripples spawn every RIPPLE_CYCLE/RIPPLE_COUNT = 4s
-        const rippleSpawnPhase = ((time / 20) * 5) % 1; // 0..1 per spawn cycle
-        const spawnPulse = Math.pow(Math.max(0, 1 - rippleSpawnPhase * 3), 2); // sharp bright flash at spawn, quick decay
-        const pulse = 0.45 + spawnPulse * 0.5 + Math.sin(time * 0.3) * 0.08;
+        // Pulse synced with ripple waves — use same phase as nearest ripple at r=0
+        // Ripple phase for ring i at center: ((time/20) + i/5) % 1
+        // Find the ripple closest to center (smallest phase) and pulse with it
+        let minPhase = 1;
+        for (let i = 0; i < 5; i++) {
+          const ph = ((time / 20) + i / 5) % 1;
+          if (ph < minPhase) minPhase = ph;
+        }
+        // Smooth pulse: bright when ripple is near center, dim as it expands out
+        const pulse = 0.4 + (1 - minPhase) * 0.2 + Math.cos(minPhase * Math.PI) * 0.25;
 
         // Large disc glow radiating from center (the "light pool")
         const discSize = Math.max(w, h) * (0.5 + pulse * 0.1);
