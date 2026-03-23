@@ -1017,11 +1017,11 @@ const KuroStyles = memo(({ oledMode }) => (
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.3) 20%,
-        rgba(255, 255, 255, 0.5) 50%,
-        rgba(255, 255, 255, 0.3) 80%,
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.3)) 20%,
+        var(--shimmer-color-bright, rgba(255, 255, 255, 0.5)) 50%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.3)) 80%,
         transparent 100%
       );
       animation: shimmer 3s ease-in-out infinite;

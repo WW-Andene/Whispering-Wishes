@@ -3355,6 +3355,26 @@ function WhisperingWishesInner() {
   }, [visualSettings.theme]);
   const themeAccent = activeTheme ? getElementColor(activeTheme.element) : null;
 
+  // Apply theme accent as CSS custom properties for kuro-card system
+  useEffect(() => {
+    const el = document.documentElement;
+    if (themeAccent) {
+      el.style.setProperty('--theme-accent', themeAccent);
+      el.style.setProperty('--border-default', `${themeAccent}20`);
+      el.style.setProperty('--border-hover', `${themeAccent}40`);
+      el.style.setProperty('--border-bright', `${themeAccent}50`);
+      el.style.setProperty('--shimmer-color', `${themeAccent}4d`);
+      el.style.setProperty('--shimmer-color-bright', `${themeAccent}80`);
+    } else {
+      el.style.removeProperty('--theme-accent');
+      el.style.setProperty('--border-default', 'rgba(255,255,255,0.08)');
+      el.style.setProperty('--border-hover', 'rgba(255,255,255,0.15)');
+      el.style.setProperty('--border-bright', 'rgba(255,255,255,0.2)');
+      el.style.removeProperty('--shimmer-color');
+      el.style.removeProperty('--shimmer-color-bright');
+    }
+  }, [themeAccent]);
+
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
