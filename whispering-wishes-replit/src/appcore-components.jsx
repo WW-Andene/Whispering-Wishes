@@ -2646,12 +2646,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         let y = botY;
         let stepIdx = 0;
         const rubble = [];
+        const shards = []; // floating stone shards near broken steps
         while (y > topY) {
           const scale = (y - vpY) / dBot;
           const s = (a) => sHash(stepIdx, a);
 
-          // --- Riser height varies per step (dramatic) ---
-          const hMul = 0.4 + s(0) * 1.2;
+          // --- Riser height varies per step ---
+          const hMul = 0.46 + s(0) * 1.08;
           const darkH = Math.max(2, h * 0.012 * scale * hMul);
           const dY = Math.max(topY, y - darkH);
 
@@ -2660,11 +2661,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const eR = diagR(dY);
           const stepW = eR - eL;
 
-          // --- Break: ~35% of steps have a big chunk missing ---
+          // --- Break: ~25% of steps have a chunk missing ---
           let breakSide = 0, breakW = 0;
-          if (s(8) > 0.65) {
+          if (s(8) > 0.75) {
             breakSide = s(9) > 0.5 ? 1 : -1;
-            breakW = stepW * (0.15 + s(10) * 0.2); // 15-35% of width
+            breakW = stepW * (0.13 + s(10) * 0.18); // 13-31% of width
           }
 
           // Riser left/right after break
@@ -2682,7 +2683,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let ji = 8; ji >= 0; ji--) {
             const t = ji / 8;
             const jx = rL + (rR - rL) * t;
-            const jy = dY + (sHash(stepIdx, 40 + ji) - 0.5) * darkH * 0.6;
+            const jy = dY + (sHash(stepIdx, 40 + ji) - 0.5) * darkH * 0.54;
             ctx.lineTo(jx, jy);
           }
           // Left edge down
@@ -2744,11 +2745,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             for (let p = 0; p <= nPts; p++) {
               const t = p / nPts;
               const py = y - (y - dY) * t;
-              const jag = (sHash(stepIdx, 70 + p) - 0.5) * breakW * 0.7;
+              const jag = (sHash(stepIdx, 70 + p) - 0.5) * breakW * 0.63;
               jagPts.push({ x: (breakSide > 0 ? rR : rL) + jag, y: py });
             }
             // Draw the inner face as a filled shape with depth
-            const depthOff = breakW * 0.4 * (breakSide > 0 ? 1 : -1);
+            const depthOff = breakW * 0.36 * (breakSide > 0 ? 1 : -1);
             ctx.beginPath();
             for (let p = 0; p < jagPts.length; p++) {
               if (p === 0) ctx.moveTo(jagPts[p].x, jagPts[p].y);
@@ -2773,6 +2774,28 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.strokeStyle = `rgba(50, 35, 20, 0.5)`;
             ctx.lineWidth = Math.max(0.5, 1.2 * scale);
             ctx.stroke();
+
+            // Collect floating shards near this break
+            if (scale > 0.12) {
+              const nSh = 2 + Math.floor(s(25) * 3); // 2-4 shards per break
+              const brkCenterX = breakSide > 0 ? rR : rL;
+              const brkCenterY = (y + dY) * 0.5;
+              for (let si = 0; si < nSh; si++) {
+                const sa = sHash(stepIdx, 110 + si);
+                const sb = sHash(stepIdx, 115 + si);
+                const sc = sHash(stepIdx, 120 + si);
+                // Scatter near the break edge
+                const shX = brkCenterX + (sa - 0.5) * breakW * 1.5;
+                const shY = brkCenterY + (sb - 0.5) * darkH * 1.8;
+                const shSz = stepW * (0.01 + sc * 0.02);
+                shards.push({
+                  x: shX, y: shY, sz: shSz,
+                  seed: stepIdx * 10 + si,
+                  phase: sa * 6.28, // unique phase for bob
+                  speed: 0.6 + sb * 0.8 // unique bob speed
+                });
+              }
+            }
           }
 
           y = dY;
@@ -2812,39 +2835,39 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // --- Rubble near broken edges ---
           if (breakSide !== 0 && scale > 0.1) {
-            const nRub = 3 + Math.floor(s(13) * 5);
+            const nRub = 2 + Math.floor(s(13) * 4);
             for (let ri = 0; ri < nRub; ri++) {
               const spread = sHash(stepIdx, 80 + ri);
               const rx = breakSide > 0
-                ? tBotR - breakW * 0.5 + breakW * spread * 1.2
-                : tBotL + breakW * 0.5 - breakW * spread * 1.2;
+                ? tBotR - breakW * 0.5 + breakW * spread * 1.1
+                : tBotL + breakW * 0.5 - breakW * spread * 1.1;
               const ry = y - lightH * sHash(stepIdx, 83 + ri) * 0.8;
-              const rSz = stepW * (0.025 + sHash(stepIdx, 85 + ri) * 0.05);
+              const rSz = stepW * (0.022 + sHash(stepIdx, 85 + ri) * 0.045);
               rubble.push({ x: rx, y: ry, sz: rSz, seed: stepIdx * 100 + ri });
             }
           }
 
-          // --- Occasional rubble on intact treads (~25%) ---
-          if (s(14) > 0.75 && scale > 0.15) {
-            const nRub = 1 + Math.floor(s(15) * 3);
+          // --- Occasional rubble on intact treads (~20%) ---
+          if (s(14) > 0.8 && scale > 0.15) {
+            const nRub = 1 + Math.floor(s(15) * 2);
             for (let ri = 0; ri < nRub; ri++) {
               const rx = tBotL + (tBotR - tBotL) * (0.1 + sHash(stepIdx, 90 + ri) * 0.8);
               const ry = y - lightH * sHash(stepIdx, 93 + ri) * 0.6;
-              const rSz = stepW * (0.02 + sHash(stepIdx, 95 + ri) * 0.04);
+              const rSz = stepW * (0.018 + sHash(stepIdx, 95 + ri) * 0.036);
               rubble.push({ x: rx, y: ry, sz: rSz, seed: stepIdx * 100 + 50 + ri });
             }
           }
 
-          // --- Surface crack on some treads (~40%) ---
-          if (s(16) > 0.6 && scale > 0.15) {
+          // --- Surface crack on some treads (~35%) ---
+          if (s(16) > 0.65 && scale > 0.15) {
             const tw = tBotR - tBotL;
             const crackX = tBotL + tw * (0.15 + s(17) * 0.7);
             ctx.beginPath();
             ctx.moveTo(crackX, y);
-            ctx.lineTo(crackX + tw * (s(18) - 0.4) * 0.2, (y + lY) * 0.5);
-            ctx.lineTo(crackX + tw * (s(19) - 0.5) * 0.15, lY);
-            ctx.strokeStyle = `rgba(2, 1, 0, ${0.5 + s(20) * 0.35})`;
-            ctx.lineWidth = Math.max(0.7, 1.8 * scale);
+            ctx.lineTo(crackX + tw * (s(18) - 0.4) * 0.18, (y + lY) * 0.5);
+            ctx.lineTo(crackX + tw * (s(19) - 0.5) * 0.13, lY);
+            ctx.strokeStyle = `rgba(2, 1, 0, ${0.45 + s(20) * 0.32})`;
+            ctx.lineWidth = Math.max(0.6, 1.6 * scale);
             ctx.stroke();
           }
 
@@ -2880,6 +2903,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         ctx.restore();
+
+        // Floating stone shards near broken steps — drawn outside clip
+        for (const sh of shards) {
+          const sa = sHash(sh.seed, 130), sb = sHash(sh.seed, 131);
+          const sc = sHash(sh.seed, 132), sd = sHash(sh.seed, 133);
+          // Gentle bob up and down
+          const bobY = sh.y + Math.sin(time * sh.speed + sh.phase) * h * 0.005;
+          const bobX = sh.x + Math.sin(time * sh.speed * 0.6 + sh.phase + 1.5) * h * 0.002;
+          const sz = sh.sz;
+          // Tiny irregular triangle/quad shard
+          ctx.beginPath();
+          ctx.moveTo(bobX, bobY - sz * (0.6 + sa * 0.4));
+          ctx.lineTo(bobX + sz * (0.5 + sb * 0.4), bobY + sz * (sc * 0.4));
+          if (sd > 0.4) ctx.lineTo(bobX + sz * (0.1 + sa * 0.2), bobY + sz * (0.5 + sd * 0.3));
+          ctx.lineTo(bobX - sz * (0.3 + sc * 0.4), bobY + sz * 0.3);
+          ctx.closePath();
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.fillStyle = `rgba(8, 5, 2, ${0.25 + sa * 0.25})`;
+          ctx.fill();
+          // Subtle lit edge
+          ctx.strokeStyle = `rgba(180, 150, 110, ${0.12 + sb * 0.12})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
 
         // Diagonals start at bottom of lowest dark stripe, not at botY
         const cutY = botY - h * 0.02;
