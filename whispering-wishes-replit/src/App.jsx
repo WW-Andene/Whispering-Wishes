@@ -6419,64 +6419,8 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className="relative p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2.5"
+                                <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2.5"
                                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
-
-                                  {/* Auto Equip — top-right corner */}
-                                  {(() => {
-                                    const aeqKey = state.activeTeamIndex + ':' + m.name;
-                                    return (
-                                      <button
-                                        className="kuro-btn text-[10px] px-2 py-0.5"
-                                        style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 10 }}
-                                        aria-label={`Auto equip best build for ${m.name}`}
-                                        onClick={() => {
-                                          const d = m.d;
-                                          if (!d) return;
-                                          const weapon = d.bestWeapon && WEAPON_DATA[d.bestWeapon] ? d.bestWeapon : null;
-                                          const recSets = new Map();
-                                          const directEchoes = new Set();
-                                          (d.bestEchoes || []).forEach(entry => {
-                                            [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES].forEach(en => {
-                                              if (entry.toLowerCase().includes(en.toLowerCase())) directEchoes.add(en);
-                                            });
-                                            entry.split('+').forEach(part => {
-                                              const trimmed = part.trim();
-                                              const pcMatch = trimmed.match(/^(.+?)\s+(\d+)pc$/i);
-                                              if (pcMatch && ECHO_SETS[pcMatch[1].trim()]) {
-                                                recSets.set(pcMatch[1].trim(), parseInt(pcMatch[2]));
-                                              } else {
-                                                const plain = trimmed.replace(/\s+\d+pc$/i, '').trim();
-                                                if (ECHO_SETS[plain]) recSets.set(plain, 5);
-                                              }
-                                            });
-                                          });
-                                          const newEchoes = [null, null, null, null, null];
-                                          const usedNames = new Set();
-                                          const pickEcho = (tierList, setPrefs) => {
-                                            for (const name of tierList) { if (!usedNames.has(name) && directEchoes.has(name)) { usedNames.add(name); return name; } }
-                                            for (const [setName] of setPrefs) { for (const name of tierList) { if (usedNames.has(name)) continue; const ed = ECHO_DATA[name]; if (ed?.sets?.includes(setName)) { usedNames.add(name); return name; } } }
-                                            return null;
-                                          };
-                                          const e0 = pickEcho(ALL_4COST_ECHOES, recSets);
-                                          if (e0) newEchoes[0] = { name: e0, mainStat: null, substats: [] };
-                                          for (let i = 1; i <= 2; i++) { const e = pickEcho(ALL_3COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: null, substats: [] }; }
-                                          for (let i = 3; i <= 4; i++) { const e = pickEcho(ALL_1COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: null, substats: [] }; }
-                                          let echoSetVal = '';
-                                          if (recSets.size > 0) echoSetVal = [...recSets.keys()][0];
-                                          setTeamEquipment(prev => {
-                                            const n = { ...prev };
-                                            n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, sequence: n[aeqKey]?.sequence || 0 };
-                                            try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                            return n;
-                                          });
-                                          haptic.success();
-                                        }}
-                                      >
-                                        <Zap size={10} className="inline mr-0.5" />Auto Equip
-                                      </button>
-                                    );
-                                  })()}
 
                                   {/* ── Section 1: Character Header ── */}
                                   <div className="flex items-center gap-2.5">
@@ -6502,6 +6446,60 @@ function WhisperingWishesInner() {
                                         <span className="text-[10px] text-gray-500">{m.d.weapon}</span>
                                       </div>
                                     </div>
+                                    {/* Auto Equip button */}
+                                    {(() => {
+                                      const aeqKey = state.activeTeamIndex + ':' + m.name;
+                                      return (
+                                        <button
+                                          className="kuro-btn text-[10px] px-2 py-1 flex-shrink-0"
+                                          aria-label={`Auto equip best build for ${m.name}`}
+                                          onClick={() => {
+                                            const d = m.d;
+                                            if (!d) return;
+                                            const weapon = d.bestWeapon && WEAPON_DATA[d.bestWeapon] ? d.bestWeapon : null;
+                                            const recSets = new Map();
+                                            const directEchoes = new Set();
+                                            (d.bestEchoes || []).forEach(entry => {
+                                              [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES].forEach(en => {
+                                                if (entry.toLowerCase().includes(en.toLowerCase())) directEchoes.add(en);
+                                              });
+                                              entry.split('+').forEach(part => {
+                                                const trimmed = part.trim();
+                                                const pcMatch = trimmed.match(/^(.+?)\s+(\d+)pc$/i);
+                                                if (pcMatch && ECHO_SETS[pcMatch[1].trim()]) {
+                                                  recSets.set(pcMatch[1].trim(), parseInt(pcMatch[2]));
+                                                } else {
+                                                  const plain = trimmed.replace(/\s+\d+pc$/i, '').trim();
+                                                  if (ECHO_SETS[plain]) recSets.set(plain, 5);
+                                                }
+                                              });
+                                            });
+                                            const newEchoes = [null, null, null, null, null];
+                                            const usedNames = new Set();
+                                            const pickEcho = (tierList, setPrefs) => {
+                                              for (const name of tierList) { if (!usedNames.has(name) && directEchoes.has(name)) { usedNames.add(name); return name; } }
+                                              for (const [setName] of setPrefs) { for (const name of tierList) { if (usedNames.has(name)) continue; const ed = ECHO_DATA[name]; if (ed?.sets?.includes(setName)) { usedNames.add(name); return name; } } }
+                                              return null;
+                                            };
+                                            const e0 = pickEcho(ALL_4COST_ECHOES, recSets);
+                                            if (e0) newEchoes[0] = { name: e0, mainStat: null, substats: [] };
+                                            for (let i = 1; i <= 2; i++) { const e = pickEcho(ALL_3COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: null, substats: [] }; }
+                                            for (let i = 3; i <= 4; i++) { const e = pickEcho(ALL_1COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: null, substats: [] }; }
+                                            let echoSetVal = '';
+                                            if (recSets.size > 0) echoSetVal = [...recSets.keys()][0];
+                                            setTeamEquipment(prev => {
+                                              const n = { ...prev };
+                                              n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, sequence: n[aeqKey]?.sequence || 0 };
+                                              try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                              return n;
+                                            });
+                                            haptic.success();
+                                          }}
+                                        >
+                                          <Zap size={10} className="inline mr-0.5" />Auto Equip
+                                        </button>
+                                      );
+                                    })()}
                                   </div>
 
                                   {/* ── Section 2: Base Stats ── */}
