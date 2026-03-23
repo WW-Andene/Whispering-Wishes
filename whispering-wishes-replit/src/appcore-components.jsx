@@ -1764,91 +1764,42 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fill();
 
         // --- Ripple rings: "stone in a puddle" expanding from center in 3D ---
-        // --- Puddle waves: soft filled bands expanding from center in 3D ---
-        const RIPPLE_COUNT = 3;
-        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH; // stay within the disc
-        const RIPPLE_SPEED = 0.02;
+        // --- Puddle wave: continuous sine wave radiating from center ---
+        // Like dropping a stone: concentric sine ripples on the disc plane
+        // Every point on the disc gets a Y displacement based on distance from center
+        const PUDDLE_RINGS = 30;
+        const PUDDLE_MAX_R = RADIUS + RIBBON_WIDTH;
+        const PUDDLE_WAVELENGTH = 80; // distance between wave peaks
+        const PUDDLE_AMP = 12; // wave height
+        const PUDDLE_SPEED = 0.3; // how fast waves travel outward
 
-        for (let ri = 0; ri < RIPPLE_COUNT; ri++) {
-          const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1;
-          const rippleR = phase * RIPPLE_MAX_R;
-          const bandWidth = 15 + (1 - phase) * 20;
-          // Fade in quickly, fade out well before reaching edge
-          const fade = Math.sin(phase * Math.PI) * Math.max(0, 1 - phase * 1.2);
-          const rippleAlpha = fade * 0.04 * alphaScale;
-          if (rippleAlpha < 0.003 || rippleR < 5) continue;
+        for (let ri = 0; ri < PUDDLE_RINGS; ri++) {
+          const r = (ri / PUDDLE_RINGS) * PUDDLE_MAX_R;
+          if (r < 10) continue;
 
-          const hue = 200 + phase * 80;
-          const steps = 100;
+          // Y = sine wave based on distance from center, moving outward over time
+          const wy = Math.sin(r / PUDDLE_WAVELENGTH * Math.PI * 2 - time * PUDDLE_SPEED) * PUDDLE_AMP
+                   * Math.max(0, 1 - r / PUDDLE_MAX_R); // fade amplitude at edges
 
-          // 3D transparent wave crest — only visible where light catches it
-          // The wave has a bell-curve height profile across its width
-          const WAVE_HEIGHT = 15 + (1 - phase) * 12;
-          const innerR = Math.max(0, rippleR - bandWidth * 0.5);
-          const outerR = rippleR + bandWidth * 0.5;
-
-          // Top edge highlight: the crest catches light from center
-          // Draw the wave crest line at peak height
+          const steps = 80;
           ctx.beginPath();
           let started = false;
           for (let s = 0; s <= steps; s++) {
             const a = (s / steps) * Math.PI * 2 + rot;
-            const wx = Math.cos(a) * rippleR;
-            const wz = Math.sin(a) * rippleR;
-            // Light intensity based on angle to center (facing center = brighter)
-            const wy = -WAVE_HEIGHT; // crest sits above the plane
-            const p = project(wx, wy, wz);
+            const p = project(Math.cos(a) * r, wy, Math.sin(a) * r);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
-          ctx.strokeStyle = `hsla(${hue}, 70%, 85%, ${rippleAlpha * 2.5})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-          // Soft specular glow on crest
-          ctx.lineWidth = 6;
-          ctx.strokeStyle = `hsla(${hue}, 65%, 70%, ${rippleAlpha * 0.6})`;
-          ctx.stroke();
 
-          // Inner slope: faint fill from base to crest (facing the light source)
-          ctx.beginPath();
-          started = false;
-          for (let s = 0; s <= steps; s++) {
-            const a = (s / steps) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rippleR, -WAVE_HEIGHT, Math.sin(a) * rippleR);
-            if (!p) { started = false; continue; }
-            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          }
-          for (let s = steps; s >= 0; s--) {
-            const a = (s / steps) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * innerR, 0, Math.sin(a) * innerR);
-            if (!p) continue;
-            ctx.lineTo(p.sx, p.sy);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `hsla(${hue}, 60%, 70%, ${rippleAlpha * 0.4})`;
-          ctx.fill();
+          // Brighter on wave crests, dimmer in troughs
+          const crestNorm = (wy / PUDDLE_AMP + 1) * 0.5; // 0=trough, 1=crest
+          const hue = 200 + crestNorm * 60;
+          const alpha = (0.02 + crestNorm * 0.06) * alphaScale;
 
-          // Outer slope: even fainter (facing away from light)
-          ctx.beginPath();
-          started = false;
-          for (let s = 0; s <= steps; s++) {
-            const a = (s / steps) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * outerR, 0, Math.sin(a) * outerR);
-            if (!p) { started = false; continue; }
-            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          }
-          for (let s = steps; s >= 0; s--) {
-            const a = (s / steps) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rippleR, -WAVE_HEIGHT, Math.sin(a) * rippleR);
-            if (!p) continue;
-            ctx.lineTo(p.sx, p.sy);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `hsla(${hue}, 55%, 60%, ${rippleAlpha * 0.2})`;
-          ctx.fill();
+          ctx.strokeStyle = `hsla(${hue}, 70%, ${55 + crestNorm * 30}%, ${alpha})`;
+          ctx.lineWidth = 0.8 + crestNorm * 1.5;
+          ctx.stroke();
         }
       }
     };
