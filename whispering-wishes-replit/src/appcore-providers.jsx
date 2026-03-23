@@ -2351,7 +2351,9 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* ── Holographic shimmer sweep on 5★ owned ── */
     .holo-5star {
+      position: relative;
       overflow: hidden;
+      isolation: isolate;
     }
     .animations-full .collection-card.glow-gold::after,
     .animations-full .holo-5star::after {
@@ -2360,10 +2362,11 @@ const KuroStyles = memo(({ oledMode }) => (
       top: 0; left: -100%;
       width: 80%;
       height: 100%;
+      border-radius: inherit;
       background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.18) 40%, rgba(255,255,255,0.3) 50%, rgba(255,220,100,0.18) 60%, transparent 75%);
       animation: holoSweep 6s ease-in-out infinite !important;
       pointer-events: none;
-      z-index: 15;
+      z-index: 1;
     }
     @keyframes holoSweep {
       0% { left: -100%; }
