@@ -2416,13 +2416,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.restore();
 
       // ============================================================
-      // LAYERED RUINS — inspired by reference: bowl composition
-      //   Far bg: giant cliff walls + arch on left
-      //   Mid: ruin towers, broken structures, columns
-      //   Near: large foreground rubble framing the bottom
+      // LAYER 0 ONLY: Far background cliff walls + arches
       // ============================================================
-
-      // --- LAYER 0: Far background cliff walls (framing sides) ---
       const farAlpha = 0.30 * alphaScale;
       const farColor = (a) => `rgba(45, 32, 18, ${a})`;
 
@@ -2466,7 +2461,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.lineTo(w * 0.22, h * 0.12);
       ctx.quadraticCurveTo(w * 0.35, h * 0.06, w * 0.42, h * 0.20);
       ctx.lineTo(w * 0.40, h * 0.28);
-      // Arch curve underneath
       ctx.quadraticCurveTo(w * 0.32, h * 0.15, w * 0.22, h * 0.22);
       ctx.lineTo(w * 0.15, h * 0.15);
       ctx.closePath();
@@ -2483,204 +2477,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.closePath();
       ctx.fillStyle = farColor(farAlpha * 0.7);
       ctx.fill();
-
-      // --- Depth fog between far and mid layers ---
-      const fog0 = ctx.createLinearGradient(0, h * 0.3, 0, h * 0.55);
-      fog0.addColorStop(0, `rgba(180, 130, 70, ${0.06 * alphaScale})`);
-      fog0.addColorStop(0.5, `rgba(140, 100, 50, ${0.10 * alphaScale})`);
-      fog0.addColorStop(1, `rgba(80, 55, 30, ${0.04 * alphaScale})`);
-      ctx.fillStyle = fog0;
-      ctx.fillRect(0, h * 0.3, w, h * 0.25);
-
-      // --- LAYER 1: Mid-ground ruin structures ---
-      const midAlpha = 0.50 * alphaScale;
-      const midColor = (a) => `rgba(30, 22, 12, ${a})`;
-
-      // Left tower (tall, partially broken)
-      ctx.beginPath();
-      ctx.moveTo(w * 0.25, h * 0.65);
-      ctx.lineTo(w * 0.24, h * 0.30);
-      ctx.lineTo(w * 0.245, h * 0.27);
-      ctx.lineTo(w * 0.26, h * 0.25);  // broken jagged top
-      ctx.lineTo(w * 0.27, h * 0.28);
-      ctx.lineTo(w * 0.275, h * 0.26);
-      ctx.lineTo(w * 0.29, h * 0.30);
-      ctx.lineTo(w * 0.30, h * 0.65);
-      ctx.closePath();
-      ctx.fillStyle = midColor(midAlpha);
-      ctx.fill();
-      // Lit edge
-      ctx.fillStyle = `rgba(200, 150, 60, ${0.06 * alphaScale})`;
-      ctx.fillRect(w * 0.28, h * 0.30, w * 0.015, h * 0.35);
-
-      // Central cluster of broken buildings (lower, in the valley)
-      const bldgs = [
-        { x: 0.38, y: 0.48, bw: 0.04, bh: 0.17 },
-        { x: 0.42, y: 0.50, bw: 0.05, bh: 0.14 },
-        { x: 0.47, y: 0.52, bw: 0.03, bh: 0.12 },
-        { x: 0.50, y: 0.49, bw: 0.04, bh: 0.16 },
-        { x: 0.54, y: 0.51, bw: 0.035, bh: 0.13 },
-        { x: 0.58, y: 0.50, bw: 0.04, bh: 0.14 },
-      ];
-      for (const b of bldgs) {
-        const bx = b.x * w;
-        const by = b.y * h;
-        const bw2 = b.bw * w;
-        const bh2 = b.bh * h;
-        // Irregular top
-        ctx.beginPath();
-        ctx.moveTo(bx, by + bh2);
-        ctx.lineTo(bx, by + bh2 * 0.15);
-        ctx.lineTo(bx + bw2 * 0.2, by);
-        ctx.lineTo(bx + bw2 * 0.5, by + bh2 * 0.08);
-        ctx.lineTo(bx + bw2 * 0.7, by - bh2 * 0.05);
-        ctx.lineTo(bx + bw2, by + bh2 * 0.1);
-        ctx.lineTo(bx + bw2, by + bh2);
-        ctx.closePath();
-        ctx.fillStyle = midColor(midAlpha * 0.9);
-        ctx.fill();
-      }
-
-      // Right tower with dome/cupola
-      ctx.beginPath();
-      ctx.moveTo(w * 0.70, h * 0.62);
-      ctx.lineTo(w * 0.70, h * 0.34);
-      ctx.lineTo(w * 0.71, h * 0.30);
-      // Dome
-      ctx.quadraticCurveTo(w * 0.725, h * 0.24, w * 0.74, h * 0.30);
-      ctx.lineTo(w * 0.75, h * 0.34);
-      ctx.lineTo(w * 0.75, h * 0.62);
-      ctx.closePath();
-      ctx.fillStyle = midColor(midAlpha);
-      ctx.fill();
-      // Dome highlight
-      ctx.beginPath();
-      ctx.arc(w * 0.725, h * 0.28, w * 0.012, -Math.PI, 0);
-      ctx.fillStyle = `rgba(200, 150, 60, ${0.07 * alphaScale})`;
-      ctx.fill();
-
-      // Small column fragments in mid-ground
-      const cols = [
-        { x: 0.33, y: 0.55, ch: 0.10 },
-        { x: 0.35, y: 0.56, ch: 0.07 },
-        { x: 0.62, y: 0.54, ch: 0.09 },
-        { x: 0.65, y: 0.55, ch: 0.06 },
-      ];
-      for (const c of cols) {
-        const cx2 = c.x * w;
-        const cy2 = c.y * h;
-        const ch2 = c.ch * h;
-        ctx.fillStyle = midColor(midAlpha * 0.8);
-        ctx.fillRect(cx2, cy2 - ch2, w * 0.005, ch2);
-        // Capital on top
-        ctx.fillRect(cx2 - w * 0.004, cy2 - ch2 - h * 0.008, w * 0.013, h * 0.008);
-      }
-
-      // --- Depth fog between mid and foreground ---
-      const fog1 = ctx.createLinearGradient(0, h * 0.50, 0, h * 0.72);
-      fog1.addColorStop(0, `rgba(160, 120, 60, ${0.04 * alphaScale})`);
-      fog1.addColorStop(0.5, `rgba(120, 90, 45, ${0.12 * alphaScale})`);
-      fog1.addColorStop(1, `rgba(60, 40, 20, ${0.06 * alphaScale})`);
-      ctx.fillStyle = fog1;
-      ctx.fillRect(0, h * 0.50, w, h * 0.22);
-
-      // --- LAYER 2: Foreground rubble (large rocks framing bottom) ---
-      const nearAlpha = 0.80 * alphaScale;
-      const nearColor = (a) => `rgba(18, 12, 6, ${a})`;
-
-      // Left foreground rock mass — large, angular
-      ctx.beginPath();
-      ctx.moveTo(0, h);
-      ctx.lineTo(0, h * 0.55);
-      ctx.lineTo(w * 0.04, h * 0.50);
-      ctx.lineTo(w * 0.08, h * 0.52);
-      ctx.lineTo(w * 0.12, h * 0.48);
-      ctx.lineTo(w * 0.16, h * 0.54);
-      ctx.lineTo(w * 0.20, h * 0.58);
-      ctx.lineTo(w * 0.24, h * 0.62);
-      ctx.lineTo(w * 0.30, h * 0.68);
-      ctx.lineTo(w * 0.34, h * 0.72);
-      ctx.lineTo(w * 0.38, h * 0.78);
-      ctx.lineTo(w * 0.42, h * 0.82);
-      ctx.lineTo(w * 0.45, h * 0.88);
-      // Valley bottom center
-      ctx.lineTo(w * 0.50, h * 0.92);
-      ctx.lineTo(w * 0.50, h);
-      ctx.closePath();
-      ctx.fillStyle = nearColor(nearAlpha);
-      ctx.fill();
-
-      // Right foreground rock mass
-      ctx.beginPath();
-      ctx.moveTo(w, h);
-      ctx.lineTo(w, h * 0.52);
-      ctx.lineTo(w * 0.96, h * 0.48);
-      ctx.lineTo(w * 0.92, h * 0.50);
-      ctx.lineTo(w * 0.88, h * 0.46);
-      ctx.lineTo(w * 0.84, h * 0.52);
-      ctx.lineTo(w * 0.80, h * 0.56);
-      ctx.lineTo(w * 0.76, h * 0.60);
-      ctx.lineTo(w * 0.72, h * 0.65);
-      ctx.lineTo(w * 0.68, h * 0.70);
-      ctx.lineTo(w * 0.64, h * 0.76);
-      ctx.lineTo(w * 0.60, h * 0.82);
-      ctx.lineTo(w * 0.56, h * 0.88);
-      // Meet valley bottom
-      ctx.lineTo(w * 0.50, h * 0.92);
-      ctx.lineTo(w * 0.50, h);
-      ctx.closePath();
-      ctx.fillStyle = nearColor(nearAlpha);
-      ctx.fill();
-
-      // Individual rock chunks on top of foreground mass (for texture)
-      const rocks = [
-        { x: 0.08, y: 0.50, rw: 0.06, rh: 0.04, rot: -0.2 },
-        { x: 0.15, y: 0.52, rw: 0.05, rh: 0.035, rot: 0.15 },
-        { x: 0.22, y: 0.60, rw: 0.04, rh: 0.03, rot: -0.1 },
-        { x: 0.32, y: 0.70, rw: 0.05, rh: 0.04, rot: 0.25 },
-        { x: 0.40, y: 0.80, rw: 0.04, rh: 0.03, rot: -0.15 },
-        { x: 0.90, y: 0.48, rw: 0.06, rh: 0.04, rot: 0.2 },
-        { x: 0.84, y: 0.53, rw: 0.05, rh: 0.035, rot: -0.1 },
-        { x: 0.76, y: 0.58, rw: 0.045, rh: 0.03, rot: 0.1 },
-        { x: 0.68, y: 0.67, rw: 0.05, rh: 0.04, rot: -0.2 },
-        { x: 0.58, y: 0.80, rw: 0.04, rh: 0.03, rot: 0.15 },
-      ];
-      for (const r of rocks) {
-        ctx.save();
-        ctx.translate(r.x * w, r.y * h);
-        ctx.rotate(r.rot);
-        // Angular rock shape
-        const rw2 = r.rw * w;
-        const rh2 = r.rh * h;
-        ctx.beginPath();
-        ctx.moveTo(-rw2 * 0.4, rh2 * 0.3);
-        ctx.lineTo(-rw2 * 0.3, -rh2 * 0.4);
-        ctx.lineTo(rw2 * 0.1, -rh2 * 0.5);
-        ctx.lineTo(rw2 * 0.5, -rh2 * 0.2);
-        ctx.lineTo(rw2 * 0.4, rh2 * 0.4);
-        ctx.lineTo(-rw2 * 0.1, rh2 * 0.5);
-        ctx.closePath();
-        ctx.fillStyle = nearColor(nearAlpha * 0.95);
-        ctx.fill();
-        // Lit face (top-right)
-        ctx.fillStyle = `rgba(180, 130, 50, ${0.04 * alphaScale})`;
-        ctx.beginPath();
-        ctx.moveTo(rw2 * 0.1, -rh2 * 0.5);
-        ctx.lineTo(rw2 * 0.5, -rh2 * 0.2);
-        ctx.lineTo(rw2 * 0.4, rh2 * 0.1);
-        ctx.lineTo(rw2 * 0.05, -rh2 * 0.15);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // --- Bottom fog/dust (ground level haze) ---
-      const groundFog = ctx.createLinearGradient(0, h * 0.80, 0, h);
-      groundFog.addColorStop(0, `rgba(120, 90, 45, ${0.0 * alphaScale})`);
-      groundFog.addColorStop(0.4, `rgba(140, 105, 55, ${0.10 * alphaScale})`);
-      groundFog.addColorStop(1, `rgba(100, 75, 40, ${0.15 * alphaScale})`);
-      ctx.fillStyle = groundFog;
-      ctx.fillRect(0, h * 0.80, w, h * 0.20);
 
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
