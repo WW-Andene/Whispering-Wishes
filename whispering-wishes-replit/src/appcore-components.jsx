@@ -1394,10 +1394,10 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
-// LAYER ALT: Resonance Field — Orbiting ribbon/vortex of dots around an epicenter
-// Dots sit on concentric circular rings that orbit a center point. A gentle wave
-// displaces them in Y, creating an undulating ribbon/disc seen from an oblique angle.
-// The whole disc rotates slowly. Like the Wuthering Waves vortex reference.
+// LAYER ALT: Resonance Field — A single ribbon of dots forming a circular loop in 3D
+// The ribbon is a ring of dots with width (multiple rows), viewed from the side.
+// It undulates up/down like a sine wave as it goes around, and the whole thing rotates.
+// Think of it like a halo or ring seen nearly edge-on, rippling like a ribbon.
 const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -1421,168 +1421,127 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(3,4,12)';
 
     let w, h;
-    let fov, camY, camZ, pitchSin, pitchCos;
-
-    // Disc params
-    const RING_COUNT = 38;
-    const MAX_RADIUS = 700;
-    const MIN_RADIUS = 30;
-
-    // Wave function: strong ribbon displacement with real 3D depth
-    // Returns Y displacement for a given angle and radius at time t
-    const ribbonY = (angle, radius, time) => {
-      // Primary wave: big undulation that gives the ribbon real height
-      const wave1 = Math.sin(angle * 2 - time * 0.5) * 55;
-      // Secondary wave: adds depth and complexity like fabric folding
-      const wave2 = Math.sin(angle * 3 + radius * 0.01 + time * 0.35) * 25;
-      // Tertiary ripple for surface detail
-      const wave3 = Math.cos(angle * 5 - radius * 0.006 + time * 0.25) * 12;
-      // Amplitude grows with radius (outer rings wave more)
-      const amp = 0.25 + (radius / MAX_RADIUS) * 0.75;
-      return (wave1 + wave2 + wave3) * amp;
-    };
 
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-
-      // Camera: lower angle (more from the side) to see the ribbon's height
-      fov = Math.min(w, h) * 1.1;
-      camY = 260;
-      camZ = -280;
-      const pitch = -48 * Math.PI / 180; // less steep = more side view = more depth visible
-      pitchSin = Math.sin(pitch);
-      pitchCos = Math.cos(pitch);
     };
     init();
     window.addEventListener('resize', init);
 
-    // Project 3D → 2D
+    // Camera: nearly edge-on view of the ribbon ring
+    // We use a simple 3D→2D projection with tilt
     const project = (wx, wy, wz) => {
-      const ry = wy - camY;
-      const rz = wz - camZ;
-      const ey = ry * pitchCos - rz * pitchSin;
-      const ez = ry * pitchSin + rz * pitchCos;
+      // Camera is positioned to see the ring from the side
+      // Tilt: rotate around X axis by ~25° (mostly side view, slight top)
+      const tilt = -25 * Math.PI / 180;
+      const cosT = Math.cos(tilt);
+      const sinT = Math.sin(tilt);
+
+      // Camera offset: pull back in Z
+      const cz = wz + 600;
+      const ey = wy * cosT - cz * sinT;
+      const ez = wy * sinT + cz * cosT;
+
       if (ez < 10) return null;
+      const fov = Math.min(w, h) * 0.9;
       const scale = fov / ez;
-      return { sx: w * 0.5 + wx * scale, sy: h * 0.45 + ey * scale, scale, depth: ez };
+      return {
+        sx: w * 0.5 + wx * scale,
+        sy: h * 0.5 + ey * scale,
+        scale,
+        depth: ez
+      };
     };
 
     let lastFrame = 0;
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 50) return; // ~20fps
+      if (t - lastFrame < 50) return;
       lastFrame = t;
       const time = t * 0.001;
-
-      // Global slow rotation of the entire disc
-      const globalRotation = time * 0.08;
 
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
-      // --- Epicenter glow ---
+      // Slow global rotation
+      const rot = time * 0.1;
+
+      // --- Ambient glow at center ---
       const centerP = project(0, 0, 0);
       if (centerP) {
-        const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.5);
-        grd.addColorStop(0, `rgba(80, 100, 220, ${0.25 * alphaScale})`);
-        grd.addColorStop(0.1, `rgba(60, 70, 200, ${0.18 * alphaScale})`);
-        grd.addColorStop(0.3, `rgba(35, 40, 140, ${0.10 * alphaScale})`);
-        grd.addColorStop(0.6, `rgba(15, 15, 60, ${0.04 * alphaScale})`);
+        const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.45);
+        grd.addColorStop(0, `rgba(60, 60, 180, ${0.2 * alphaScale})`);
+        grd.addColorStop(0.2, `rgba(40, 40, 150, ${0.12 * alphaScale})`);
+        grd.addColorStop(0.5, `rgba(15, 15, 70, ${0.05 * alphaScale})`);
         grd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, w, h);
       }
 
-      // --- Concentric ring lines (the ribbon orbits) ---
-      // Draw these first as subtle guides, then dots on top
-      const LINE_RINGS = [4, 8, 13, 18, 23, 28, 33, 37];
-      for (let li = 0; li < LINE_RINGS.length; li++) {
-        const ri = LINE_RINGS[li];
-        const t_r = ri / (RING_COUNT - 1);
-        const radius = MIN_RADIUS + t_r * (MAX_RADIUS - MIN_RADIUS);
-        const hue = 220 + t_r * 25;
-        const lineAlpha = (0.06 + Math.sin(time * 0.25 + li * 0.7) * 0.03) * alphaScale;
-        // Fade inner rings slightly
-        const fade = 0.4 + t_r * 0.6;
+      // --- The ribbon: a ring with width, undulating in Y ---
+      // Ring params
+      const RADIUS = 350;          // radius of the circular ring
+      const RIBBON_WIDTH = 120;    // width of the ribbon (multiple rows of dots)
+      const ROWS = 12;             // number of dot-rows across ribbon width
+      const DOTS_AROUND = 120;     // dots around the circumference per row
+      const WAVE_AMP = 120;        // how high the ribbon waves up/down
+      const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        let started = false;
-        const steps = 80;
-
-        for (let s = 0; s <= steps; s++) {
-          const angle = (s / steps) * Math.PI * 2 + globalRotation;
-          const wx = Math.cos(angle) * radius;
-          const wz = Math.sin(angle) * radius;
-          const wy = ribbonY(angle, radius, time);
-
-          const p = project(wx, wy, wz);
-          if (!p) { started = false; continue; }
-
-          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-          else ctx.lineTo(p.sx, p.sy);
-        }
-
-        ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${lineAlpha * fade})`;
-        ctx.stroke();
-        // Soft glow
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${lineAlpha * fade * 0.2})`;
-        ctx.stroke();
-      }
-
-      // --- Dots on concentric rings ---
-      // Collect all dots, depth-sort, then draw
+      // Collect all dots for depth sorting
       const allDots = [];
-      const maxDepthRange = MAX_RADIUS * 2.5;
 
-      for (let ri = 0; ri < RING_COUNT; ri++) {
-        const t_r = ri / (RING_COUNT - 1);
-        const radius = MIN_RADIUS + t_r * (MAX_RADIUS - MIN_RADIUS);
-        // More dots on outer rings (proportional to circumference)
-        const dotsOnRing = Math.floor(16 + t_r * 55);
+      for (let row = 0; row < ROWS; row++) {
+        // Each row is at a different radius (ribbon has width)
+        const rowT = row / (ROWS - 1); // 0..1 across ribbon width
+        const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT * RIBBON_WIDTH;
 
-        for (let di = 0; di < dotsOnRing; di++) {
-          const baseAngle = (di / dotsOnRing) * Math.PI * 2;
-          const angle = baseAngle + globalRotation;
+        for (let i = 0; i < DOTS_AROUND; i++) {
+          const angleT = i / DOTS_AROUND; // 0..1 around the ring
+          const angle = angleT * Math.PI * 2 + rot;
 
-          const wx = Math.cos(angle) * radius;
-          const wz = Math.sin(angle) * radius;
-          const wy = ribbonY(angle, radius, time);
+          // Position on the ring (XZ plane)
+          const wx = Math.cos(angle) * r;
+          const wz = Math.sin(angle) * r;
+
+          // Ribbon wave: Y displacement — the key to the ribbon effect
+          // The wave depends on angle (position around ring) and time
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
 
           const p = project(wx, wy, wz);
           if (!p) continue;
           if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
 
-          allDots.push({ p, radius, wy, t_r, angle });
+          allDots.push({ p, wy, rowT, angleT, r });
         }
       }
 
-      // Sort back-to-front
+      // Sort back to front
       allDots.sort((a, b) => b.p.depth - a.p.depth);
 
+      // Draw dots
+      const maxDepth = 1200;
       for (let i = 0; i < allDots.length; i++) {
-        const { p, radius, wy, t_r } = allDots[i];
+        const { p, wy, rowT } = allDots[i];
 
-        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepthRange));
-        const dotSize = 0.5 + depthNorm * 2.5;
+        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
+        const dotSize = 0.6 + depthNorm * 2.8;
 
-        // Height of the ribbon wave → brighter on crests
-        const heightNorm = (wy + 45) / 90;
-        // Inner rings glow more (epicenter brightness)
-        const innerGlow = Math.max(0, 1 - t_r * 0.6);
-        const brightness = 0.08 + depthNorm * 0.42 + heightNorm * 0.28 + innerGlow * 0.2;
+        // Brighter on wave crests
+        const heightNorm = (wy + WAVE_AMP * 1.3) / (WAVE_AMP * 2.6);
+        // Brighter in center of ribbon
+        const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
+        const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
-        // Color: blue/indigo inner → purple/lavender outer, crests shift cyan
-        const hue = 225 + t_r * 30 + heightNorm * 20;
+        const hue = 220 + heightNorm * 30 + rowT * 15;
         const sat = 60 + heightNorm * 30;
-        const lit = 48 + brightness * 35;
+        const lit = 45 + brightness * 40;
 
-        const dotAlpha = brightness * 0.45 * alphaScale;
+        const dotAlpha = brightness * 0.5 * alphaScale;
         if (dotAlpha < 0.02) continue;
 
         ctx.beginPath();
@@ -1591,16 +1550,71 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fill();
       }
 
-      // --- Sparkle highlights on wave crests ---
-      for (let i = 0; i < 40; i++) {
-        const seed = i * 137.508;
-        const t_r = (seed * 0.73 % 1);
-        const radius = MIN_RADIUS + t_r * (MAX_RADIUS - MIN_RADIUS);
-        const angle = (seed * 2.31 % (Math.PI * 2)) + globalRotation;
+      // --- Ribbon edge lines (top and bottom edge of the ribbon) ---
+      for (let edge = 0; edge < 2; edge++) {
+        const r = edge === 0 ? RADIUS - RIBBON_WIDTH * 0.5 : RADIUS + RIBBON_WIDTH * 0.5;
+        const hue = edge === 0 ? 220 : 240;
+        const lineAlpha = 0.1 * alphaScale;
 
-        const wx = Math.cos(angle) * radius;
-        const wz = Math.sin(angle) * radius;
-        const wy = ribbonY(angle, radius, time);
+        ctx.beginPath();
+        ctx.lineWidth = 1.2;
+        let started = false;
+
+        for (let i = 0; i <= DOTS_AROUND; i++) {
+          const angle = (i / DOTS_AROUND) * Math.PI * 2 + rot;
+          const wx = Math.cos(angle) * r;
+          const wz = Math.sin(angle) * r;
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
+
+          const p = project(wx, wy, wz);
+          if (!p) { started = false; continue; }
+
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
+        }
+
+        ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${lineAlpha})`;
+        ctx.stroke();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${lineAlpha * 0.25})`;
+        ctx.stroke();
+      }
+
+      // --- Center line of ribbon ---
+      {
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        let started = false;
+        for (let i = 0; i <= DOTS_AROUND; i++) {
+          const angle = (i / DOTS_AROUND) * Math.PI * 2 + rot;
+          const wx = Math.cos(angle) * RADIUS;
+          const wz = Math.sin(angle) * RADIUS;
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
+
+          const p = project(wx, wy, wz);
+          if (!p) { started = false; continue; }
+
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
+        }
+        ctx.strokeStyle = `hsla(230, 85%, 75%, ${0.08 * alphaScale})`;
+        ctx.stroke();
+      }
+
+      // --- Sparkle highlights ---
+      for (let i = 0; i < 30; i++) {
+        const seed = i * 137.508;
+        const angleT = (seed * 1.73) % 1;
+        const rowT = (seed * 0.31) % 1;
+        const angle = angleT * Math.PI * 2 + rot;
+        const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT * RIBBON_WIDTH;
+
+        const wx = Math.cos(angle) * r;
+        const wz = Math.sin(angle) * r;
+        const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
+                 + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
 
         const p = project(wx, wy, wz);
         if (!p) continue;
@@ -1610,32 +1624,30 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const sparkAlpha = pulse * 0.5 * alphaScale;
         if (sparkAlpha < 0.05) continue;
 
-        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepthRange));
+        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
         const sparkSize = (1 + pulse * 1.5) * (0.4 + depthNorm * 0.6);
-        const hue = 200 + (i % 5) * 14;
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${hue}, 60%, 92%, ${sparkAlpha})`;
+        ctx.fillStyle = `hsla(200, 60%, 92%, ${sparkAlpha})`;
         ctx.fill();
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${sparkAlpha * 0.12})`;
+        ctx.fillStyle = `hsla(210, 80%, 65%, ${sparkAlpha * 0.12})`;
         ctx.fill();
       }
 
-      // --- Bright epicenter core ---
+      // --- Epicenter core ---
       if (centerP) {
         const pulse = 0.6 + Math.sin(time * 0.5) * 0.25;
-        // Core glow
-        const coreGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, 60 * pulse);
-        coreGrd.addColorStop(0, `rgba(160, 200, 255, ${0.18 * pulse * alphaScale})`);
-        coreGrd.addColorStop(0.4, `rgba(100, 130, 240, ${0.08 * pulse * alphaScale})`);
+        const coreGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, 55 * pulse);
+        coreGrd.addColorStop(0, `rgba(160, 200, 255, ${0.15 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0.4, `rgba(100, 130, 240, ${0.07 * pulse * alphaScale})`);
         coreGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = coreGrd;
         ctx.beginPath();
-        ctx.arc(centerP.sx, centerP.sy, 60 * pulse, 0, Math.PI * 2);
+        ctx.arc(centerP.sx, centerP.sy, 55 * pulse, 0, Math.PI * 2);
         ctx.fill();
       }
     };
