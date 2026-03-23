@@ -6267,8 +6267,8 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className={`p-2.5 rounded-lg border hover:border-white/15 transition-colors${rarity5 ? ' holo-5star' : ''}`}
-                                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10`, position: 'relative', overflow: 'hidden' }}>
+                                <div key={m.name} className="p-2.5 rounded-lg border hover:border-white/15 transition-colors"
+                                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
                                   {/* 2-col: Left=header+desc+focus+buffs, Right=stats+equipment */}
                                   <div className="flex flex-row gap-3">
                                     {/* LEFT: header + description + damage focus + buffs */}
@@ -6276,7 +6276,7 @@ function WhisperingWishesInner() {
                                   {/* Character header */}
                                   <div className="mb-2">
                                     <div className="flex items-start gap-2 mb-1.5">
-                                      <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
+                                      <div className={`w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
                                         style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                                         {collectionImages[m.name] ? (
                                           <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
