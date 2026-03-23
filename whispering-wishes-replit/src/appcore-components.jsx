@@ -911,12 +911,13 @@ class AppErrorBoundary extends React.Component {
   }
 }
 
-const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
+const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor }) => {
   const childArray = React.Children.toArray(children);
   const icon = childArray.find(child => React.isValidElement(child));
   const text = childArray.find(child => typeof child === 'string')?.trim();
   const btnRef = useRef(null);
-  
+  const accent = accentColor || null;
+
   useEffect(() => {
     let rafId = null;
     try {
@@ -929,17 +930,22 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
           if (indicator) {
             indicator.style.left = `${btn.offsetLeft + btn.offsetWidth * 0.2}px`;
             indicator.style.width = `${btn.offsetWidth * 0.6}px`;
-            indicator.style.background = `linear-gradient(90deg, rgba(237,175,24,0.6), rgba(237,175,24,1), rgba(237,175,24,0.6))`;
-            indicator.style.boxShadow = `0 0 12px rgba(237,175,24,0.5)`;
+            if (accent) {
+              indicator.style.background = `linear-gradient(90deg, ${accent}99, ${accent}, ${accent}99)`;
+              indicator.style.boxShadow = `0 0 12px ${accent}80`;
+            } else {
+              indicator.style.background = `linear-gradient(90deg, rgba(237,175,24,0.6), rgba(237,175,24,1), rgba(237,175,24,0.6))`;
+              indicator.style.boxShadow = `0 0 12px rgba(237,175,24,0.5)`;
+            }
           }
         });
       }
     } catch (e) { /* ignore indicator errors */ }
     return () => { if (rafId !== null) cancelAnimationFrame(rafId); };
-  }, [active, tabRef]);
-  
+  }, [active, tabRef, accent]);
+
   return (
-    <button 
+    <button
       ref={btnRef}
       onClick={() => { haptic.light(); onClick(); }}
       role="tab"
@@ -948,9 +954,10 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId }) => {
       aria-controls={tabId ? `tabpanel-${tabId}` : undefined}
       tabIndex={active ? 0 : -1}
       aria-label={`${text || 'Navigation'} tab`}
-      className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active ? 'text-yellow-400' : 'text-gray-500 hover:text-gray-300'}`}
+      className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 text-[10px] font-medium transition-all duration-300 whitespace-nowrap group ${active && !accent ? 'text-yellow-400' : !active ? 'text-gray-500 hover:text-gray-300' : ''}`}
+      style={active && accent ? { color: accent } : undefined}
     >
-      <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${active ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5'}`} style={active ? { filter: 'drop-shadow(0 0 5px rgba(237,175,24,0.5))' } : undefined}>
+      <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${active && !accent ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : !active ? 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5' : ''}`} style={active ? { filter: `drop-shadow(0 0 5px ${accent ? accent + '80' : 'rgba(237,175,24,0.5)'})`, ...(accent ? { background: accent + '1a', boxShadow: `0 10px 15px -3px ${accent}40` } : {}) } : undefined}>
         {icon}
       </div>
       <span className="relative z-10">{text}</span>
