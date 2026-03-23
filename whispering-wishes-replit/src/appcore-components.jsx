@@ -2468,7 +2468,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = `rgba(128, 0, 255, ${edgeAlpha * 0.7})`;
+        ctx.fillStyle = 'rgb(128, 0, 255)';
         ctx.fill();
 
         // Right wall
@@ -2478,7 +2478,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = `rgba(128, 0, 255, ${edgeAlpha * 0.7})`;
+        ctx.fillStyle = 'rgb(128, 0, 255)';
         ctx.fill();
 
         // Floor strip
@@ -2496,7 +2496,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
-          ctx.strokeStyle = `rgba(255, 165, 0, ${a})`;
+          ctx.strokeStyle = 'rgb(255, 165, 0)';
           ctx.lineWidth = 2;
           ctx.stroke();
         };
@@ -2550,7 +2550,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = `rgba(128, 0, 255, ${edgeAlpha * 0.7})`;
+        ctx.fillStyle = 'rgb(128, 0, 255)';
         ctx.fill();
 
         // Right wall
@@ -2560,7 +2560,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = `rgba(128, 0, 255, ${edgeAlpha * 0.7})`;
+        ctx.fillStyle = 'rgb(128, 0, 255)';
         ctx.fill();
 
         // Floor strip
@@ -2578,7 +2578,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
-          ctx.strokeStyle = `rgba(255, 165, 0, ${a})`;
+          ctx.strokeStyle = 'rgb(255, 165, 0)';
           ctx.lineWidth = 2;
           ctx.stroke();
         };
@@ -2608,7 +2608,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.fillStyle = `rgba(40, 40, 40, ${edgeAlpha * 0.8})`;
+          ctx.fillStyle = 'rgb(40, 40, 40)';
           ctx.fill();
           y = dY;
           if (y <= topY) break;
@@ -2624,7 +2624,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(w, lY);                 // top-right (narrower)
           ctx.lineTo(0, lY);                 // top-left (narrower)
           ctx.closePath();
-          ctx.fillStyle = `rgba(220, 20, 20, ${edgeAlpha * 0.7})`;
+          ctx.fillStyle = 'rgb(220, 20, 20)';
           ctx.fill();
           y = lY;
         }
