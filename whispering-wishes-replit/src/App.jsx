@@ -5190,7 +5190,7 @@ function WhisperingWishesInner() {
                   {/* Filter & Sort Controls */}
                   <div className="space-y-1.5">
                     {/* View Toggle */}
-                    <Card>
+                    <Card style={{ position: 'relative', zIndex: 20 }}>
                       <CardBody>
                         <div className="flex gap-1.5">
                           <button
