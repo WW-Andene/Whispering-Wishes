@@ -1788,9 +1788,9 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // --- Holographic Heart of Aemaeth (3D object in the scene) ---
-        // Heart lives in XY plane at Z=0, projected through the same
-        // camera as the ribbon. It IS an object in the 3D scene.
+        // --- Holographic Heart of Aemaeth (on the disc plane) ---
+        // Heart lies flat on the XZ plane (Y=0), like a hologram on water.
+        // Heart X → world X, heart "up" → world Z (depth).
         const HEART_SIZE = 80 + 15 * pulse;
         const HEART_PTS = 64;
         const heartPts = [];
@@ -1799,8 +1799,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const t = (hi / HEART_PTS) * Math.PI * 2;
           const hx = 16 * Math.pow(Math.sin(t), 3);
           const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-          // world X = heart horizontal, world Y = heart vertical (up), world Z = 0
-          const p = project(hx * HEART_SIZE / 16, -hy * HEART_SIZE / 17, 0);
+          // X = horizontal, Z = heart's vertical (tip toward camera, lobes away)
+          const p = project(hx * HEART_SIZE / 16, 0, -hy * HEART_SIZE / 17);
           if (!p) { heartOk = false; break; }
           heartPts.push(p);
         }
@@ -1845,20 +1845,20 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hexH = hexR * Math.sqrt(3);
           const gridAlpha = (0.12 + pulse * 0.08) * alphaScale;
           for (let gx = -HEART_SIZE; gx < HEART_SIZE; gx += hexR * 3) {
-            for (let gy = -HEART_SIZE; gy < HEART_SIZE; gy += hexH) {
-              const offX = (Math.round(gy / hexH) % 2) * hexR * 1.5;
+            for (let gz = -HEART_SIZE; gz < HEART_SIZE; gz += hexH) {
+              const offX = (Math.round(gz / hexH) % 2) * hexR * 1.5;
               const wx = gx + offX;
               ctx.beginPath();
               let ok = true;
               for (let c = 0; c < 6; c++) {
                 const a = Math.PI / 3 * c - Math.PI / 6;
-                const cp = project(wx + Math.cos(a) * hexR, -(gy + Math.sin(a) * hexR), 0);
+                const cp = project(wx + Math.cos(a) * hexR, 0, -(gz + Math.sin(a) * hexR));
                 if (!cp) { ok = false; break; }
                 if (c === 0) ctx.moveTo(cp.sx, cp.sy); else ctx.lineTo(cp.sx, cp.sy);
               }
               if (!ok) continue;
               ctx.closePath();
-              const shim = Math.sin(time * 1.5 + wx * 0.12 + gy * 0.1) * 0.5 + 0.5;
+              const shim = Math.sin(time * 1.5 + wx * 0.12 + gz * 0.1) * 0.5 + 0.5;
               ctx.strokeStyle = `rgba(150, 230, 255, ${gridAlpha * (0.5 + shim * 0.5)})`;
               ctx.lineWidth = 0.4 + shim * 0.4;
               ctx.stroke();
