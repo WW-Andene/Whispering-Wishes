@@ -1803,7 +1803,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hx = 16 * Math.pow(Math.sin(t), 3);
           const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
           const r = Math.abs(hx) * HEART_SIZE / 16;  // radial distance from center axis
-          const y = -hy * HEART_SIZE / 17;            // height (negative = up)
+          const y = -hy * HEART_SIZE / 17 - HEART_SIZE; // offset so tail (bottom tip) sits on disc (y=0)
           heartProfile.push({ r, y });
         }
 
