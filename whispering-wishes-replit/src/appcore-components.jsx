@@ -1394,9 +1394,9 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
-// LAYER ALT: Resonance Field — Flowing energy streams spiraling from a bright epicenter
-// Clean, elegant: a glowing cyan core with smooth curved streams (magenta/purple/blue)
-// sweeping outward, plus scattered cyan particle dots. Like a galaxy vortex from the side.
+// LAYER ALT: Resonance Field — 3D perspective wave veil with dot grid, energy lines & glow
+// A grid of dots lives on a plane in 3D (x, z) with y = wave displacement.
+// Camera looks down at ~55° angle. Dots are perspective-projected, sized & brightened by depth.
 const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -1420,207 +1420,223 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(3,4,12)';
 
     let w, h;
+    // Camera / projection params
+    let fov, camY, camZ, pitchSin, pitchCos;
 
-    // Stream definitions: each is a flowing curve from epicenter outward
-    // { hue, sat, startAngle, sweepDir, thickness, speed, length }
-    const STREAM_COUNT = 10;
-    let streams = [];
-    let particles = [];
+    const GRID_SPACING = 22;  // world-space spacing between dots
+    const GRID_COLS = 70;     // dots across x
+    const GRID_ROWS = 60;     // dots into depth (z)
 
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-
-      // Pre-define streams with varied properties
-      streams = [];
-      for (let i = 0; i < STREAM_COUNT; i++) {
-        const t = i / STREAM_COUNT;
-        streams.push({
-          baseAngle: t * Math.PI * 2 + (i % 2) * 0.3,  // spread around center
-          hue: [280, 300, 260, 310, 240, 290, 270, 320, 250, 305][i], // magenta/purple range
-          sat: 75 + (i % 3) * 10,
-          lit: 55 + (i % 4) * 8,
-          thickness: 1.2 + (i % 3) * 0.8,  // varied thickness
-          speed: 0.08 + (i % 4) * 0.02,     // rotation speed
-          waveAmp: 30 + (i % 3) * 20,       // how much the stream curves
-          waveFreq: 1.5 + (i % 3) * 0.5,    // curve frequency
-          maxRadius: 0.5 + (i % 3) * 0.2,   // how far it extends (fraction of screen)
-          opacity: 0.12 + (i % 3) * 0.06,
-        });
-      }
-
-      // Scattered cyan particles
-      particles = [];
-      for (let i = 0; i < 18; i++) {
-        particles.push({
-          angle: Math.random() * Math.PI * 2,
-          dist: 0.08 + Math.random() * 0.42,  // distance from center (fraction of screen diag)
-          size: 1.5 + Math.random() * 3,
-          pulseSpeed: 1.5 + Math.random() * 2,
-          pulseOffset: Math.random() * Math.PI * 2,
-        });
-      }
+      // Perspective camera: looking down at ~55° pitch
+      fov = Math.min(w, h) * 1.1;
+      camY = 280;   // camera height above plane
+      camZ = -320;  // camera z position (negative = behind the grid)
+      const pitch = -55 * Math.PI / 180; // tilt down
+      pitchSin = Math.sin(pitch);
+      pitchCos = Math.cos(pitch);
     };
     init();
     window.addEventListener('resize', init);
 
     let lastFrame = 0;
 
+    // Project 3D world point to 2D screen
+    const project = (wx, wy, wz) => {
+      // Translate relative to camera
+      const rx = wx;
+      const ry = wy - camY;
+      const rz = wz - camZ;
+      // Rotate by pitch (around x-axis)
+      const ey = ry * pitchCos - rz * pitchSin;
+      const ez = ry * pitchSin + rz * pitchCos;
+      if (ez < 10) return null; // behind camera
+      const scale = fov / ez;
+      return { sx: w * 0.5 + rx * scale, sy: h * 0.45 + ey * scale, scale, depth: ez };
+    };
+
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 40) return; // ~25fps
+      if (t - lastFrame < 50) return; // ~20fps
       lastFrame = t;
       const time = t * 0.001;
 
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
-      // Epicenter position (slightly above center, like your drawing)
-      const cx = w * 0.52;
-      const cy = h * 0.38;
-      const diag = Math.sqrt(w * w + h * h);
-
-      // --- Ambient background glow from epicenter ---
-      const bgGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, diag * 0.55);
-      bgGrd.addColorStop(0, `rgba(60, 40, 140, ${0.15 * alphaScale})`);
-      bgGrd.addColorStop(0.25, `rgba(40, 20, 100, ${0.08 * alphaScale})`);
-      bgGrd.addColorStop(0.6, `rgba(15, 10, 50, ${0.03 * alphaScale})`);
-      bgGrd.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = bgGrd;
+      // --- Ambient glow base ---
+      const grd = ctx.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, Math.max(w, h) * 0.7);
+      grd.addColorStop(0, `rgba(50, 35, 130, ${0.2 * alphaScale})`);
+      grd.addColorStop(0.3, `rgba(25, 45, 150, ${0.12 * alphaScale})`);
+      grd.addColorStop(0.6, `rgba(10, 20, 70, ${0.06 * alphaScale})`);
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
       ctx.fillRect(0, 0, w, h);
 
-      // --- Flowing energy streams ---
-      // Each stream is a smooth curve spiraling out from epicenter
-      for (let si = 0; si < streams.length; si++) {
-        const s = streams[si];
-        const angle = s.baseAngle + time * s.speed;
-        const maxR = diag * s.maxRadius;
-        const steps = 80;
+      // Grid origin offset (centered on x, extending into z)
+      const gridXOff = -(GRID_COLS * GRID_SPACING) * 0.5;
+      const gridZOff = -60; // start slightly in front
 
-        // Draw stream as a smooth path
+      // --- 3D dot-grid wave veil ---
+      // Iterate back-to-front (far z first) for natural depth ordering
+      for (let rz = GRID_ROWS - 1; rz >= 0; rz--) {
+        for (let rx = 0; rx < GRID_COLS; rx++) {
+          const worldX = gridXOff + rx * GRID_SPACING;
+          const worldZ = gridZOff + rz * GRID_SPACING;
+
+          // Wave displacement in Y (the undulating veil)
+          const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+          const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+          const wave3 = Math.cos(worldX * 0.018 + worldZ * 0.01 + time * 0.35 + 3.2) * 12;
+          const wave4 = Math.sin((worldX + worldZ) * 0.01 + time * 0.6) * 8;
+          const worldY = wave1 + wave2 + wave3 + wave4;
+
+          const p = project(worldX, worldY, worldZ);
+          if (!p) continue;
+          if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
+
+          // Depth-based sizing: closer = bigger
+          const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / (GRID_ROWS * GRID_SPACING * 1.2)));
+          const dotSize = 0.6 + depthNorm * 2.8;
+
+          // Brightness: closer + higher wave crests = brighter
+          const heightNorm = (worldY + 66) / 132;
+          const brightness = (0.1 + depthNorm * 0.5 + heightNorm * 0.4);
+
+          // Color: blue in center, purple at edges, cyan on crests
+          const xNorm = (worldX - gridXOff) / (GRID_COLS * GRID_SPACING);
+          const hue = 220 + Math.sin(worldX * 0.01 + time * 0.15) * 25
+                    + Math.abs(xNorm - 0.5) * 50
+                    + heightNorm * 15;
+          const sat = 65 + heightNorm * 25;
+          const lit = 45 + brightness * 40;
+
+          const dotAlpha = brightness * 0.4 * alphaScale;
+          if (dotAlpha < 0.02) continue;
+
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, dotSize, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
+          ctx.fill();
+        }
+      }
+
+      // --- 3D energy wave lines (rows of the grid connected, projected) ---
+      const WAVE_LINE_ROWS = [5, 12, 20, 28, 36, 44, 52];
+      for (let li = 0; li < WAVE_LINE_ROWS.length; li++) {
+        const rz = WAVE_LINE_ROWS[li];
+        const worldZ = gridZOff + rz * GRID_SPACING;
+        const hue = 210 + li * 10;
+        const lineAlpha = (0.10 + Math.sin(time * 0.3 + li * 0.9) * 0.05) * alphaScale;
+
         ctx.beginPath();
+        ctx.lineWidth = 1.2;
         let started = false;
 
-        for (let step = 0; step <= steps; step++) {
-          const t_s = step / steps; // 0 = center, 1 = outer edge
+        for (let rx = 0; rx < GRID_COLS; rx++) {
+          const worldX = gridXOff + rx * GRID_SPACING;
+          const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+          const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+          const wave3 = Math.cos(worldX * 0.018 + worldZ * 0.01 + time * 0.35 + 3.2) * 12;
+          const wave4 = Math.sin((worldX + worldZ) * 0.01 + time * 0.6) * 8;
+          const worldY = wave1 + wave2 + wave3 + wave4;
 
-          // Spiral outward: radius grows, angle winds
-          const radius = t_s * maxR;
-          const spiralAngle = angle + t_s * 2.8; // how tightly it spirals
+          const p = project(worldX, worldY, worldZ);
+          if (!p) continue;
+          if (p.sx < -20 || p.sx > w + 20) continue;
 
-          // Smooth wave perturbation perpendicular to the radial direction
-          const wave = Math.sin(t_s * s.waveFreq * Math.PI + time * 0.4 + si) * s.waveAmp * t_s;
-
-          // Convert polar + wave to cartesian
-          const baseX = cx + Math.cos(spiralAngle) * radius;
-          const baseY = cy + Math.sin(spiralAngle) * radius;
-          // Perpendicular offset for the wave
-          const perpX = -Math.sin(spiralAngle) * wave;
-          const perpY = Math.cos(spiralAngle) * wave;
-
-          const px = baseX + perpX;
-          const py = baseY + perpY;
-
-          if (!started) { ctx.moveTo(px, py); started = true; }
-          else ctx.lineTo(px, py);
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
         }
 
-        // Fade alpha from center to edge already baked in via gradient stroke
-        const streamAlpha = s.opacity * alphaScale * (0.7 + Math.sin(time * 0.3 + si * 1.1) * 0.3);
-        ctx.strokeStyle = `hsla(${s.hue}, ${s.sat}%, ${s.lit}%, ${streamAlpha})`;
-        ctx.lineWidth = s.thickness;
+        ctx.strokeStyle = `hsla(${hue}, 85%, 75%, ${lineAlpha})`;
         ctx.stroke();
 
-        // Soft glow pass
-        ctx.lineWidth = s.thickness * 4;
-        ctx.strokeStyle = `hsla(${s.hue}, ${s.sat}%, ${s.lit - 10}%, ${streamAlpha * 0.15})`;
-        ctx.stroke();
-      }
-
-      // --- Inner swirl near epicenter: tighter orbiting curves ---
-      for (let i = 0; i < 4; i++) {
-        const angle = time * 0.15 + i * Math.PI * 0.5;
-        const innerR = diag * 0.04;
-        const outerR = diag * 0.12;
-        const hue = [195, 285, 270, 200][i]; // mix of cyan and purple
-        const alpha = (0.15 + Math.sin(time * 0.5 + i * 1.5) * 0.08) * alphaScale;
-
-        ctx.beginPath();
-        const steps = 40;
-        for (let step = 0; step <= steps; step++) {
-          const t_s = step / steps;
-          const r = innerR + t_s * (outerR - innerR);
-          const a = angle + t_s * Math.PI * 1.8;
-          const wave = Math.sin(t_s * 3 + time * 0.6) * 12 * t_s;
-          const px = cx + Math.cos(a) * r + Math.cos(a + Math.PI / 2) * wave;
-          const py = cy + Math.sin(a) * r + Math.sin(a + Math.PI / 2) * wave;
-
-          if (step === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-
-        ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${alpha})`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        // Glow pass
         ctx.lineWidth = 6;
-        ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${alpha * 0.2})`;
+        ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${lineAlpha * 0.25})`;
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+
+      // --- 3D energy wave lines along X (columns connected, projected) ---
+      const WAVE_COL_LINES = [8, 18, 28, 35, 42, 52, 62];
+      for (let li = 0; li < WAVE_COL_LINES.length; li++) {
+        const rx = WAVE_COL_LINES[li];
+        const worldX = gridXOff + rx * GRID_SPACING;
+        const hue = 230 + li * 8;
+        const lineAlpha = (0.07 + Math.sin(time * 0.35 + li * 1.1) * 0.04) * alphaScale;
+
+        ctx.beginPath();
+        ctx.lineWidth = 0.8;
+        let started = false;
+
+        for (let rz = 0; rz < GRID_ROWS; rz++) {
+          const worldZ = gridZOff + rz * GRID_SPACING;
+          const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+          const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+          const wave3 = Math.cos(worldX * 0.018 + worldZ * 0.01 + time * 0.35 + 3.2) * 12;
+          const wave4 = Math.sin((worldX + worldZ) * 0.01 + time * 0.6) * 8;
+          const worldY = wave1 + wave2 + wave3 + wave4;
+
+          const p = project(worldX, worldY, worldZ);
+          if (!p) continue;
+
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
+        }
+
+        ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${lineAlpha})`;
         ctx.stroke();
       }
 
-      // --- Cyan epicenter core glow ---
-      const pulse = 0.7 + Math.sin(time * 0.6) * 0.3;
-      const coreSize = diag * 0.06;
+      // --- Sparkle highlights on wave crests ---
+      for (let i = 0; i < 45; i++) {
+        const seed = i * 137.508;
+        const gx = Math.floor((seed * 3.1) % GRID_COLS);
+        const gz = Math.floor((seed * 2.3) % GRID_ROWS);
+        const worldX = gridXOff + gx * GRID_SPACING;
+        const worldZ = gridZOff + gz * GRID_SPACING;
 
-      // Outer halo
-      const haloGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreSize * 2);
-      haloGrd.addColorStop(0, `rgba(100, 200, 255, ${0.08 * pulse * alphaScale})`);
-      haloGrd.addColorStop(0.5, `rgba(80, 140, 240, ${0.03 * pulse * alphaScale})`);
-      haloGrd.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = haloGrd;
-      ctx.beginPath();
-      ctx.arc(cx, cy, coreSize * 2, 0, Math.PI * 2);
-      ctx.fill();
+        const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+        const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+        const worldY = wave1 + wave2;
 
-      // Bright core
-      const coreGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreSize);
-      coreGrd.addColorStop(0, `rgba(160, 230, 255, ${0.25 * pulse * alphaScale})`);
-      coreGrd.addColorStop(0.3, `rgba(100, 180, 255, ${0.15 * pulse * alphaScale})`);
-      coreGrd.addColorStop(0.7, `rgba(120, 80, 220, ${0.06 * pulse * alphaScale})`);
-      coreGrd.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = coreGrd;
-      ctx.beginPath();
-      ctx.arc(cx, cy, coreSize, 0, Math.PI * 2);
-      ctx.fill();
+        const p = project(worldX, worldY, worldZ);
+        if (!p) continue;
+        if (p.sx < -5 || p.sx > w + 5 || p.sy < -5 || p.sy > h + 5) continue;
 
-      // --- Scattered cyan particle dots ---
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        // Slowly orbit around epicenter
-        const angle = p.angle + time * 0.03;
-        const dist = p.dist * diag;
-        const px = cx + Math.cos(angle) * dist;
-        const py = cy + Math.sin(angle) * dist;
+        const pulse = Math.sin(time * (2 + i * 0.12) + seed) * 0.5 + 0.5;
+        const sparkAlpha = pulse * 0.55 * alphaScale;
+        if (sparkAlpha < 0.05) continue;
 
-        if (px < -10 || px > w + 10 || py < -10 || py > h + 10) continue;
+        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / (GRID_ROWS * GRID_SPACING)));
+        const sparkSize = (1 + pulse * 1.8) * (0.5 + depthNorm);
+        const hue = 200 + (i % 6) * 12;
 
-        const pulse_p = Math.sin(time * p.pulseSpeed + p.pulseOffset) * 0.5 + 0.5;
-        const dotAlpha = (0.3 + pulse_p * 0.5) * alphaScale;
-        const size = p.size * (0.7 + pulse_p * 0.3);
-
-        // Bright cyan dot
         ctx.beginPath();
-        ctx.arc(px, py, size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(195, 90%, 70%, ${dotAlpha})`;
+        ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 60%, 95%, ${sparkAlpha})`;
         ctx.fill();
 
-        // Soft glow around dot
         ctx.beginPath();
-        ctx.arc(px, py, size * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(195, 85%, 60%, ${dotAlpha * 0.1})`;
+        ctx.arc(p.sx, p.sy, sparkSize * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${sparkAlpha * 0.12})`;
         ctx.fill();
       }
+
+      // --- Ambient glow pulse overlay ---
+      const glowPulse = 0.5 + Math.sin(time * 0.4) * 0.15;
+      const ambGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.55);
+      ambGrad.addColorStop(0, `rgba(70, 90, 210, ${0.05 * glowPulse * alphaScale})`);
+      ambGrad.addColorStop(0.4, `rgba(90, 50, 190, ${0.025 * glowPulse * alphaScale})`);
+      ambGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = ambGrad;
+      ctx.fillRect(0, 0, w, h);
     };
     animId = requestAnimationFrame(draw);
 
