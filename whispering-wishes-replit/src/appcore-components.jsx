@@ -3315,7 +3315,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
 ));
 CalcResultsCard.displayName = 'CalcResultsCard';
 
-// Standard banner particle overlay — subtle silver/white floating motes with soft shimmer
+// Standard banner overlay — cool silver twinkling stars (distinct from Sigrika's warm golden sparkle)
 const StandardBannerOverlay = memo(() => {
   const canvasRef = useRef(null);
 
@@ -3332,23 +3332,24 @@ const StandardBannerOverlay = memo(() => {
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
 
-    // Floating silver-white motes
-    const motes = Array.from({ length: 30 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.2,
-      vy: -0.12 - Math.random() * 0.2,
-      size: 1.5 + Math.random() * 2.5,
+    // Twinkling 6-point stars (Sigrika uses 4-point golden — these are 6-point silver)
+    const stars = Array.from({ length: 22 }, () => ({
+      x: Math.random() * w, y: h * 0.08 + Math.random() * h * 0.88,
+      size: 1.8 + Math.random() * 3,
       phase: Math.random() * Math.PI * 2,
-      speed: 0.4 + Math.random() * 0.8,
-      alpha: 0.6 + Math.random() * 0.4,
+      speed: 0.6 + Math.random() * 1.2,
+      // Staggered blink: each star fades in and out independently
+      blinkOffset: Math.random() * 6,
     }));
 
-    // Horizontal light streaks
-    const streaks = Array.from({ length: 4 }, () => ({
-      y: h * 0.15 + Math.random() * h * 0.7,
+    // Small drifting dust motes
+    const dust = Array.from({ length: 12 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vy: -0.1 - Math.random() * 0.15,
+      vx: (Math.random() - 0.5) * 0.12,
+      size: 0.8 + Math.random() * 1.2,
       phase: Math.random() * Math.PI * 2,
-      width: w * (0.35 + Math.random() * 0.45),
-      x: w * 0.1 + Math.random() * w * 0.8,
+      alpha: 0.4 + Math.random() * 0.3,
     }));
 
     let animId, t = 0;
@@ -3356,53 +3357,59 @@ const StandardBannerOverlay = memo(() => {
       ctx.clearRect(0, 0, w, h);
       t += 0.016;
 
-      // Soft ambient glow — cool center light
-      const gPulse = 0.6 + Math.sin(t * 0.15) * 0.2;
-      ctx.save();
-      ctx.globalAlpha = 0.12 * gPulse;
-      const ag = ctx.createRadialGradient(w * 0.5, h * 0.4, 0, w * 0.5, h * 0.4, w * 0.5);
-      ag.addColorStop(0, 'rgba(180,210,255,0.5)');
-      ag.addColorStop(0.5, 'rgba(160,200,255,0.2)');
-      ag.addColorStop(1, 'rgba(140,180,255,0)');
-      ctx.fillStyle = ag;
-      ctx.beginPath(); ctx.arc(w * 0.5, h * 0.4, w * 0.5, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
+      // 6-point twinkling stars
+      for (const s of stars) {
+        // Blink pattern: fully bright for a moment, then fade out
+        const cycle = (t * s.speed + s.blinkOffset) % 4;
+        let a;
+        if (cycle < 0.8) a = Math.sin(cycle / 0.8 * Math.PI); // fade in and out
+        else a = 0; // dark
+        a *= 0.9;
+        if (a < 0.05) continue;
 
-      // Horizontal light streaks
-      for (const s of streaks) {
-        const a = (0.08 + Math.sin(t * 0.5 + s.phase) * 0.06) * (0.5 + Math.sin(t * 0.2 + s.phase * 2) * 0.5);
-        if (a < 0.01) continue;
+        const sz = s.size * (0.7 + a * 0.3);
         ctx.save();
         ctx.globalAlpha = a;
-        const g = ctx.createLinearGradient(s.x - s.width / 2, 0, s.x + s.width / 2, 0);
-        g.addColorStop(0, 'rgba(255,255,255,0)');
-        g.addColorStop(0.3, 'rgba(200,220,255,0.7)');
-        g.addColorStop(0.5, 'rgba(255,255,255,0.9)');
-        g.addColorStop(0.7, 'rgba(200,220,255,0.7)');
-        g.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(s.x - s.width / 2, s.y - 1, s.width, 2);
+        ctx.fillStyle = 'rgba(220,235,255,1)';
+        ctx.shadowColor = 'rgba(180,210,255,0.8)';
+        ctx.shadowBlur = 10;
+
+        // 6-point star shape
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+          const innerAngle = ((i + 0.5) / 6) * Math.PI * 2 - Math.PI / 2;
+          ctx.lineTo(s.x + Math.cos(angle) * sz * 1.8, s.y + Math.sin(angle) * sz * 1.8);
+          ctx.lineTo(s.x + Math.cos(innerAngle) * sz * 0.4, s.y + Math.sin(innerAngle) * sz * 0.4);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Bright center dot
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = a * 0.8;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, sz * 0.35, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       }
 
-      // Floating silver motes
-      for (const m of motes) {
-        m.x += m.vx + Math.sin(t * 0.4 + m.phase) * 0.15;
-        m.y += m.vy;
-        if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
-        if (m.x < -5) m.x = w + 5;
-        if (m.x > w + 5) m.x = -5;
+      // Drifting dust
+      for (const d of dust) {
+        d.x += d.vx + Math.sin(t * 0.3 + d.phase) * 0.08;
+        d.y += d.vy;
+        if (d.y < -5) { d.y = h + 5; d.x = Math.random() * w; }
 
-        const pulse = m.alpha * (0.4 + Math.sin(t * m.speed + m.phase) * 0.6);
-        if (pulse < 0.08) continue;
+        const pulse = d.alpha * (0.5 + Math.sin(t * 0.8 + d.phase) * 0.5);
+        if (pulse < 0.06) continue;
 
         ctx.save();
         ctx.globalAlpha = pulse;
-        ctx.fillStyle = 'rgba(220,235,255,1)';
-        ctx.shadowColor = 'rgba(180,210,255,0.9)';
-        ctx.shadowBlur = 14;
+        ctx.fillStyle = 'rgba(210,225,250,1)';
+        ctx.shadowColor = 'rgba(180,200,240,0.5)';
+        ctx.shadowBlur = 6;
         ctx.beginPath();
-        ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+        ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
