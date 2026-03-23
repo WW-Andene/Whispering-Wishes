@@ -1791,7 +1791,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // --- Holographic Heart of Aemaeth (vertical 3D object) ---
         // Heart stands upright at center. X = horizontal, Y = vertical.
         // Every point goes through project() — same 3D camera as ribbon.
-        const HEART_SIZE = 80 + 15 * pulse;
+        const HEART_SIZE = 30 + 5 * pulse;
         const HEART_PTS = 64;
         const heartPts = [];
         let heartOk = true;
