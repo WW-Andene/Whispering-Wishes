@@ -2583,6 +2583,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
+        // Alternating light/dark horizontal lines inside the rectangle
+        // Clip to the trapezoid interior
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(botL, botY);
+        ctx.lineTo(topL, topY);
+        ctx.lineTo(topR, topY);
+        ctx.lineTo(botR, botY);
+        ctx.closePath();
+        ctx.clip();
+
+        const STRIPES = 20;
+        const stripeH = (botY - topY) / STRIPES;
+        for (let i = 0; i < STRIPES; i++) {
+          const y = topY + i * stripeH;
+          const isLight = i % 2 === 0;
+          ctx.beginPath();
+          ctx.rect(0, y, w, stripeH);
+          ctx.fillStyle = isLight
+            ? `rgba(200, 140, 60, ${edgeAlpha * 0.15})`
+            : `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
+          ctx.fill();
+        }
+        ctx.restore();
+
         drawEdge(botL, botY, topL, topY, edgeAlpha);
         drawEdge(botR, botY, topR, topY, edgeAlpha);
         drawEdge(botL + thkBot, botY, topL + thkTop, topY, edgeAlpha * 0.4);
