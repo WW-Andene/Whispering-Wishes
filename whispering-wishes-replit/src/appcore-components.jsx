@@ -1795,22 +1795,46 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const HEART_PTS = 64;
 
         // Helper: generate projected heart points at a given scale (0..1) and offset
+        // Heart shape defined with cubic bezier curves to match the reference:
+        // wide flat lobes, shallow cleft, short pointed tail, wider-than-tall.
+        const bezier = (p0, p1, p2, p3, t) => {
+          const u = 1 - t;
+          return {
+            x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
+            y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y,
+          };
+        };
+        // 6 bezier segments forming the full heart outline (clockwise from tail)
+        const heartSegs = [
+          // Seg 1: tail → right side
+          [{x:0,y:0.45},{x:0.32,y:0.35},{x:0.62,y:0.05},{x:0.62,y:-0.18}],
+          // Seg 2: right side → right lobe top
+          [{x:0.62,y:-0.18},{x:0.62,y:-0.50},{x:0.50,y:-0.70},{x:0.28,y:-0.70}],
+          // Seg 3: right lobe → center cleft
+          [{x:0.28,y:-0.70},{x:0.14,y:-0.70},{x:0.06,y:-0.60},{x:0,y:-0.52}],
+          // Seg 4: cleft → left lobe (mirror of seg 3)
+          [{x:0,y:-0.52},{x:-0.06,y:-0.60},{x:-0.14,y:-0.70},{x:-0.28,y:-0.70}],
+          // Seg 5: left lobe top → left side (mirror of seg 2)
+          [{x:-0.28,y:-0.70},{x:-0.50,y:-0.70},{x:-0.62,y:-0.50},{x:-0.62,y:-0.18}],
+          // Seg 6: left side → tail (mirror of seg 1)
+          [{x:-0.62,y:-0.18},{x:-0.62,y:0.05},{x:-0.32,y:0.35},{x:0,y:0.45}],
+        ];
+        const SAMPLES_PER_SEG = Math.ceil(HEART_PTS / 6);
+
         const makeHeart = (scale, oxW, oyW) => {
           const pts = [];
-          for (let hi = 0; hi <= HEART_PTS; hi++) {
-            const t = (hi / HEART_PTS) * Math.PI * 2;
-            let hx = 16 * Math.pow(Math.sin(t), 3);
-            let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            // Squarify: push coordinates outward to make shape wider/blockier
-            const nx = hx / 16; // normalize to -1..1
-            const ny = hy / 17;
-            hx = Math.sign(nx) * Math.pow(Math.abs(nx), 0.75) * 17.5; // widen + square-ify x
-            hy = Math.sign(ny) * Math.pow(Math.abs(ny), 0.85) * 17;   // flatten y slightly
-            const wx = hx * HEART_SIZE * scale / 16 + (oxW || 0);
-            const wy = -hy * HEART_SIZE * scale / 17 - HEART_SIZE + (oyW || 0);
-            const p = project(wx, wy, 0);
-            if (!p) return null;
-            pts.push(p);
+          for (let si = 0; si < heartSegs.length; si++) {
+            const [p0,p1,p2,p3] = heartSegs[si];
+            const count = (si === heartSegs.length - 1) ? SAMPLES_PER_SEG + 1 : SAMPLES_PER_SEG;
+            for (let i = 0; i < count; i++) {
+              const t = i / SAMPLES_PER_SEG;
+              const bp = bezier(p0, p1, p2, p3, t);
+              const wx = bp.x * HEART_SIZE * scale + (oxW || 0);
+              const wy = bp.y * HEART_SIZE * scale - HEART_SIZE + (oyW || 0);
+              const p = project(wx, wy, 0);
+              if (!p) return null;
+              pts.push(p);
+            }
           }
           return pts;
         };
@@ -1920,8 +1944,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.clip();
 
           // Vertical center line (from top cleft to tail)
-          const topP = project(0, -HEART_SIZE * 1.3, 0);   // top of heart (cleft area)
-          const botP = project(0, -HEART_SIZE * 0.05, 0);   // near tail
+          const topP = project(0, -0.52 * HEART_SIZE - HEART_SIZE, 0);  // cleft
+          const botP = project(0, 0.45 * HEART_SIZE - HEART_SIZE, 0);   // tail tip
           if (topP && botP) {
             ctx.beginPath();
             const segments = 20;
