@@ -2518,15 +2518,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         };
         for (let py = 0; py < sz; py++) {
           for (let px = 0; px < sz; px++) {
-            // Layered noise for rock-like feel
-            const n = smooth(px * 0.08, py * 0.08) * 0.5
-                    + smooth(px * 0.17, py * 0.17) * 0.3
-                    + smooth(px * 0.35, py * 0.35) * 0.2;
-            const v = 100 + n * 155; // range ~100-255, bright stone
+            // Large blobs (low freq, stretched horizontally for layered look)
+            const n1 = smooth(px * 0.04, py * 0.08) * 0.45;
+            // Medium patches
+            const n2 = smooth(px * 0.09, py * 0.15) * 0.3;
+            // Horizontal striations (stretched heavily on x)
+            const stria = smooth(px * 0.02, py * 0.25) * 0.15;
+            // Fine detail
+            const n3 = smooth(px * 0.3, py * 0.3) * 0.1;
+            const n = n1 + n2 + stria + n3;
+            // High contrast: deep shadows to bright highlights
+            const v = 40 + n * 220;
+            // Warm color shift per region
+            const warm = smooth(px * 0.05 + 99, py * 0.05 + 99);
             const i = (py * sz + px) * 4;
-            d[i]     = v;              // R
-            d[i + 1] = v * 0.8;       // G
-            d[i + 2] = v * 0.6;       // B — warm
+            d[i]     = Math.min(255, v * (0.95 + warm * 0.15));  // R — warm tan
+            d[i + 1] = Math.min(255, v * (0.78 + warm * 0.08));  // G
+            d[i + 2] = Math.min(255, v * (0.5 + warm * 0.12));   // B — brown
             d[i + 3] = 255;
           }
         }
