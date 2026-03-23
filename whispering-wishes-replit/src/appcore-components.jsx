@@ -1523,15 +1523,15 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const jitter = (hash - Math.floor(hash)) * 2 - 1; // -1..1
 
           // Position on the ring with slight radius jitter (less stiff)
-          const radiusJitter = jitter * 4;
+          const radiusJitter = jitter * 1.5;
           const wx = Math.cos(angle) * (r + radiusJitter);
           const wz = Math.sin(angle) * (r + radiusJitter);
 
           // Ribbon wave + per-square Y float offset
           const ribbonWave = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
                            + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
-          const squareFloat = jitter * 12; // up to ±12 off ribbon surface
-          const drift = Math.sin(time * 0.2 + row * 0.5 + i * 0.3) * 6;
+          const squareFloat = jitter * 3; // very subtle ±3 off ribbon surface
+          const drift = Math.sin(time * 0.2 + row * 0.5 + i * 0.3) * 1.5;
           const wy = ribbonWave + squareFloat + drift;
 
           const p = project(wx, wy, wz);
@@ -1573,7 +1573,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION + jitter * 0.15); // tangent + slight random tilt
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION + jitter * 0.05); // tangent + very slight tilt
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
