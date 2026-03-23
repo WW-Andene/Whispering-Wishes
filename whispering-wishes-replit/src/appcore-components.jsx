@@ -1787,16 +1787,16 @@ const BANNER_THEMES = {
     }));
     const moonR = 38;
     return (ctx, t) => {
-      // Pulsating glow — 4s cycle, clear breathing effect
-      const pulse = (Math.sin(t * (Math.PI * 2 / 4)) + 1) / 2; // 0→1→0 over 4s
-      const glowSize = moonR * (1.5 + pulse * 1.0); // pulses between 1.5x and 2.5x radius
+      // Pulsating glow — 5s cycle
+      const pulse = (Math.sin(t * (Math.PI * 2 / 5)) + 1) / 2; // 0→1→0 over 5s
+      const glowSize = moonR * (1.2 + pulse * 1.3);
 
-      // Single soft glow that visibly pulses in size and brightness
+      // Glow pulses from nearly invisible to bright
       ctx.save();
-      ctx.globalAlpha = 0.2 + pulse * 0.45;
+      ctx.globalAlpha = 0.05 + pulse * 0.7;
       const g = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, glowSize);
-      g.addColorStop(0, 'rgba(220,235,255,0.5)');
-      g.addColorStop(0.5, 'rgba(190,215,248,0.2)');
+      g.addColorStop(0, 'rgba(220,235,255,0.7)');
+      g.addColorStop(0.4, 'rgba(190,215,248,0.3)');
       g.addColorStop(1, 'rgba(150,185,220,0)');
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(moonX, moonY, glowSize, 0, Math.PI * 2); ctx.fill();
