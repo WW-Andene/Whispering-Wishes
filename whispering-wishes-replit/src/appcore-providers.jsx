@@ -1168,7 +1168,6 @@ const KuroStyles = memo(({ oledMode }) => (
       cursor: pointer;
       transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), color var(--transition-fast);
       text-align: center;
-      overflow: hidden;
       box-shadow: var(--shadow-md);
       backdrop-filter: blur(var(--blur-md));
       -webkit-backdrop-filter: blur(var(--blur-md));
@@ -1179,6 +1178,7 @@ const KuroStyles = memo(({ oledMode }) => (
       content: '';
       position: absolute;
       inset: 0;
+      border-radius: inherit;
       background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
       opacity: 0;
       transition: opacity var(--transition-normal);
