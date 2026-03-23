@@ -1475,7 +1475,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       animId = requestAnimationFrame(draw);
       if (t - lastFrame < 50) return;
       lastFrame = t;
-      const time = t * 0.001;
+      const time = t * 0.00075; // 25% slower globally
 
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
