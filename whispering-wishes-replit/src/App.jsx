@@ -3403,16 +3403,16 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div style={{ background: 'rgba(15,20,28,0.2)', borderRadius: '12px', padding: '6px 12px' }}>
+              <div style={{ background: 'rgba(15,20,28,0.3)', borderRadius: '12px', padding: '6px 12px' }}>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
                 <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? themeAccent : '#facc15' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
-              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={{ ...headerControlBg, borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)' }}>
+              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={{ background: 'rgba(15,20,28,0.3)', borderRadius: '12px' }}>
                 {state.server} <ChevronDown size={10} />
               </button>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border text-gray-400 active:scale-95 transition-all" style={{ ...headerControlBg, borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)' }}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={{ background: 'rgba(15,20,28,0.3)', borderRadius: '12px' }}>
                 <Download size={14} />
               </button>
             </div>
