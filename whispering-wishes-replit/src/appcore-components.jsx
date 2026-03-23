@@ -1428,18 +1428,18 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const MAX_RADIUS = 700;
     const MIN_RADIUS = 30;
 
-    // Wave function: gentle ribbon displacement (simple & clean, not chaotic)
+    // Wave function: strong ribbon displacement with real 3D depth
     // Returns Y displacement for a given angle and radius at time t
     const ribbonY = (angle, radius, time) => {
-      // Single dominant wave: creates the ribbon undulation
-      // The wave travels around the circle, so different parts of the ring
-      // are at different heights — like a ribbon twisting in a circle
-      const wave = Math.sin(angle * 2 - time * 0.5) * 35;
-      // Subtle secondary ripple for organic feel
-      const ripple = Math.sin(angle * 4 + radius * 0.008 + time * 0.3) * 10;
+      // Primary wave: big undulation that gives the ribbon real height
+      const wave1 = Math.sin(angle * 2 - time * 0.5) * 55;
+      // Secondary wave: adds depth and complexity like fabric folding
+      const wave2 = Math.sin(angle * 3 + radius * 0.01 + time * 0.35) * 25;
+      // Tertiary ripple for surface detail
+      const wave3 = Math.cos(angle * 5 - radius * 0.006 + time * 0.25) * 12;
       // Amplitude grows with radius (outer rings wave more)
-      const amp = 0.3 + (radius / MAX_RADIUS) * 0.7;
-      return (wave + ripple) * amp;
+      const amp = 0.25 + (radius / MAX_RADIUS) * 0.75;
+      return (wave1 + wave2 + wave3) * amp;
     };
 
     const init = () => {
@@ -1448,10 +1448,11 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       canvas.width = w;
       canvas.height = h;
 
+      // Camera: lower angle (more from the side) to see the ribbon's height
       fov = Math.min(w, h) * 1.1;
-      camY = 300;
-      camZ = -350;
-      const pitch = -55 * Math.PI / 180;
+      camY = 260;
+      camZ = -280;
+      const pitch = -48 * Math.PI / 180; // less steep = more side view = more depth visible
       pitchSin = Math.sin(pitch);
       pitchCos = Math.cos(pitch);
     };
