@@ -3376,8 +3376,8 @@ function WhisperingWishesInner() {
         {/* Theme banner art background */}
         {activeTheme && (
           <>
-            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.15, filter: 'blur(1px)', pointerEvents: 'none' }} loading="eager" />
-            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent}08, rgba(8,12,18,0.95))`, pointerEvents: 'none' }} aria-hidden="true" />
+            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none' }} loading="eager" />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent}15 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />
           </>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
