@@ -3089,7 +3089,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillStyle = grad;
           ctx.fillRect(cx - glowR, cy - glowR, glowR * 2, glowR * 2);
 
-          // Lightning bolts — short intense flashes between shards
+          // Lightning — thin branching bolts that spread organically
           for (let gi = 0; gi < group.length - 1; gi++) {
             const a = group[gi], b = group[gi + 1];
             const dx = b.x - a.x, dy = b.y - a.y;
@@ -3097,48 +3097,82 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (dist < 1) continue;
 
             const arcSeed = a.idx * 31 + b.idx * 17;
-            // Lightning strike: mostly off, brief intense flash
-            // Changes state every ~0.4s, only fires ~15% of the time
             const strikeFrame = Math.floor(time * 2.5 + arcSeed * 0.7);
             const strikeChance = sHash(arcSeed, strikeFrame);
-            if (strikeChance < 0.85) continue; // off 85% of the time
+            if (strikeChance < 0.85) continue;
 
-            // When it fires, it's BRIGHT and SHORT
-            // Sub-frame flicker for that snappy lightning feel
             const subFrame = (time * 2.5 + arcSeed * 0.7) % 1;
             const flash = subFrame < 0.3 ? 1.0 : (subFrame < 0.5 ? 0.4 : 0);
             if (flash === 0) continue;
 
-            const alpha = (0.6 + flash * 0.4) * Math.min(1, 0.22 / (dist / h + 0.01));
+            const alpha = (0.5 + flash * 0.5) * Math.min(1, 0.22 / (dist / h + 0.01));
 
-            // Sharp jagged bolt: 3-5 segments with harsh angular jitter
-            const nSeg = 3 + Math.floor(sHash(arcSeed, 200) * 3);
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            for (let si = 1; si < nSeg; si++) {
-              const t = si / nSeg;
-              const mx = a.x + dx * t;
-              const my = a.y + dy * t;
-              const perpX = -dy / dist;
-              const perpY = dx / dist;
-              // Harsh angular jitter — new shape each strike
-              const jitter = (sHash(arcSeed + si, strikeFrame) - 0.5) * dist * 0.55;
-              ctx.lineTo(mx + perpX * jitter, my + perpY * jitter);
+            // Recursive branching bolt
+            const branches = []; // collect {points, depth} for drawing
+            const buildBolt = (x0, y0, x1, y1, depth, seed) => {
+              if (depth > 3) return;
+              const pts = [{ x: x0, y: y0 }];
+              const segDx = x1 - x0, segDy = y1 - y0;
+              const segDist = Math.sqrt(segDx * segDx + segDy * segDy);
+              if (segDist < 2) return;
+              const perpX = -segDy / segDist, perpY = segDx / segDist;
+
+              // More segments for main bolt, fewer for branches
+              const nSeg = depth === 0 ? (6 + Math.floor(sHash(seed, 200) * 4))
+                         : (3 + Math.floor(sHash(seed, 201) * 2));
+
+              for (let si = 1; si < nSeg; si++) {
+                const t = si / nSeg;
+                const mx = x0 + segDx * t;
+                const my = y0 + segDy * t;
+                // Organic jitter — varies in magnitude along the bolt
+                const jScale = Math.sin(t * Math.PI) * 0.7 + 0.3; // stronger in middle
+                const jit = (sHash(seed + si * 13, strikeFrame) - 0.5) * segDist * 0.4 * jScale;
+                const px = mx + perpX * jit;
+                const py = my + perpY * jit;
+                pts.push({ x: px, y: py });
+
+                // Branch chance: ~30% at depth 0, ~20% at depth 1, none deeper
+                if (depth < 2 && sHash(seed + si * 7, strikeFrame + 50) > (depth === 0 ? 0.7 : 0.8)) {
+                  // Branch forks off at an angle from current point
+                  const brAngle = (sHash(seed + si, strikeFrame + 80) - 0.5) * 1.8;
+                  const brLen = segDist * (0.2 + sHash(seed + si, strikeFrame + 90) * 0.3);
+                  const baseAngle = Math.atan2(segDy, segDx) + brAngle;
+                  const bx1 = px + Math.cos(baseAngle) * brLen;
+                  const by1 = py + Math.sin(baseAngle) * brLen;
+                  buildBolt(px, py, bx1, by1, depth + 1, seed + si * 100 + 7);
+                }
+              }
+              pts.push({ x: x1, y: y1 });
+              branches.push({ pts, depth });
+            };
+
+            buildBolt(a.x, a.y, b.x, b.y, 0, arcSeed);
+
+            // Draw all branches, thinner for deeper branches
+            for (const br of branches) {
+              const d = br.depth;
+              const bAlpha = alpha * (d === 0 ? 1 : d === 1 ? 0.5 : 0.25);
+              ctx.beginPath();
+              ctx.moveTo(br.pts[0].x, br.pts[0].y);
+              for (let pi = 1; pi < br.pts.length; pi++) {
+                ctx.lineTo(br.pts[pi].x, br.pts[pi].y);
+              }
+              // Soft glow
+              ctx.strokeStyle = `rgba(255, 100, 30, ${bAlpha * 0.35 * flash})`;
+              ctx.lineWidth = d === 0 ? 1.8 : d === 1 ? 0.8 : 0.4;
+              ctx.stroke();
+              // Main bolt
+              ctx.strokeStyle = `rgba(255, 180, 80, ${bAlpha * flash})`;
+              ctx.lineWidth = d === 0 ? 0.7 : d === 1 ? 0.35 : 0.2;
+              ctx.stroke();
+              // Hot core (main bolt only)
+              if (d === 0) {
+                ctx.strokeStyle = `rgba(255, 245, 210, ${bAlpha * 0.6 * flash})`;
+                ctx.lineWidth = 0.25;
+                ctx.stroke();
+              }
             }
-            ctx.lineTo(b.x, b.y);
-
-            // Bright flash glow
-            ctx.strokeStyle = `rgba(255, 100, 30, ${alpha * 0.5 * flash})`;
-            ctx.lineWidth = 3.5;
-            ctx.stroke();
-            // Strong bolt
-            ctx.strokeStyle = `rgba(255, 180, 80, ${alpha * flash})`;
-            ctx.lineWidth = 1.2;
-            ctx.stroke();
-            // Hot white core
-            ctx.strokeStyle = `rgba(255, 245, 200, ${alpha * 0.7 * flash})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
           }
         }
 
