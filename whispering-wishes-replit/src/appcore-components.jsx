@@ -2600,11 +2600,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         while (y > topY) {
           const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
 
-          // Dark stripe
+          // Dark stripe (riser) — rectangle, width matches trapezoid at top edge
           const darkH = Math.max(1, h * 0.0175 * scale);
           const dY = Math.max(topY, y - darkH);
+          const hwAtTop = hwBot * (dY - vpY) / dBot;
+          const rL = vpX - hwAtTop;
+          const rR = vpX + hwAtTop;
           ctx.beginPath();
-          ctx.rect(0, dY, w, y - dY);
+          ctx.rect(rL, dY, rR - rL, y - dY);
           ctx.fillStyle = `rgba(10, 60, 10, ${edgeAlpha * 0.3})`;
           ctx.fill();
           y = dY;
