@@ -1436,7 +1436,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
 
     // Screen-space diagonal: rotate the entire output ~30° on screen
-    const SCREEN_ROTATION = -30 * Math.PI / 180;
+    const SCREEN_ROTATION = 30 * Math.PI / 180;
 
     const project = (wx, wy, wz) => {
       // Camera pull-back (closer to fill the screen)
@@ -1493,10 +1493,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- The ribbon: a ring with width, undulating in Y ---
       // Ring params
-      const RADIUS = 350;          // radius of the circular ring
-      const RIBBON_WIDTH = 120;    // width of the ribbon (multiple rows of dots)
-      const ROWS = 20;             // number of dot-rows across ribbon width
-      const DOTS_AROUND = 200;     // dots around the circumference per row
+      const RADIUS = 250;          // radius of the circular ring (smaller, less big)
+      const RIBBON_WIDTH = 90;     // width of the ribbon
+      const ROWS = 24;             // more rows across ribbon width
+      const DOTS_AROUND = 280;     // more dots around the circumference
       const WAVE_AMP = 60;         // how high the ribbon waves up/down
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
@@ -1539,10 +1539,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
 
-        // Flat rectangle: wide and thin (like dashes/tiles)
-        const baseSize = (1 + depthNorm * 3) * p.scale * 0.45;
-        const rectW = baseSize * 2.2;  // wide
-        const rectH = baseSize * 0.5;  // thin/flat
+        // Square tiles
+        const sqSize = (0.8 + depthNorm * 2.5) * p.scale * 0.4;
+        const rectW = sqSize;
+        const rectH = sqSize;
 
         // Brighter on wave crests
         const heightNorm = (wy + WAVE_AMP * 1.3) / (WAVE_AMP * 2.6);
@@ -1560,7 +1560,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION); // tangent + screen diagonal
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION); // tangent aligned to screen diagonal
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
