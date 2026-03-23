@@ -1787,18 +1787,7 @@ const BANNER_THEMES = {
     }));
     const moonR = 38;
     return (ctx, t) => {
-      // Pulsating glow — 5s cycle using shadowBlur for real glow
-      const pulse = (Math.sin(t * (Math.PI * 2 / 5)) + 1) / 2;
-
-      ctx.save();
-      ctx.globalAlpha = 0.15 + pulse * 0.65;
-      ctx.fillStyle = 'rgba(200,220,255,0.6)';
-      ctx.shadowColor = 'rgba(180,210,255,0.9)';
-      ctx.shadowBlur = moonR * (1 + pulse * 2);
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.3, 0, Math.PI * 2); ctx.fill();
-      // Double draw for stronger glow
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.3, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
+      // Moon glow handled by CSS-animated div in BannerParticleOverlay
       // Brume
       for (const b of brume) {
         b.x += b.vx + Math.sin(t * 0.15 + b.phase) * 0.08;
@@ -1894,13 +1883,24 @@ const BannerParticleOverlay = memo(({ characterName, element }) => {
     return () => cancelAnimationFrame(animId);
   }, [characterName, element]);
 
+  const isQiuyuan = characterName === 'Qiuyuan';
+
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ zIndex: 2, width: '100%', height: '100%' }}
-      aria-hidden="true"
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 2, width: '100%', height: '100%' }}
+        aria-hidden="true"
+      />
+      {isQiuyuan && (
+        <div
+          className="absolute pointer-events-none moon-glow-pulse"
+          style={{ left: '63%', top: '11%', width: '76px', height: '76px', transform: 'translate(-50%, -50%)', zIndex: 2 }}
+          aria-hidden="true"
+        />
+      )}
+    </>
   );
 });
 BannerParticleOverlay.displayName = 'BannerParticleOverlay';
