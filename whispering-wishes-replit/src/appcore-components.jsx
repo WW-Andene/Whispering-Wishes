@@ -1765,7 +1765,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // --- Water ripple: bold concentric rings like stone dropped in water ---
         // Dense filled bands with specular crests and dark troughs
-        const WAVE_MAX_R = Math.max(W, H) * 0.85; // spread across most of canvas
+        const WAVE_MAX_R = Math.max(w, h) * 0.85; // spread across most of canvas
         const WAVE_RINGS = 90;
         const WAVE_SPACING = WAVE_MAX_R / WAVE_RINGS;
         const WAVELENGTH = 90; // wider spacing between rings
