@@ -1578,10 +1578,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
         const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
-        // Aemeath colors: cyan inner → purple mid → pink/magenta outer edges
-        const hue = 190 + rowT * 110 + heightNorm * 15; // 190 cyan → 300 pink
-        const sat = 60 + heightNorm * 30;
-        const lit = 50 + brightness * 38;
+        // Aemeath colors: lavender inner → pink outer (matches heart palette)
+        const hue = 260 + rowT * 60 + heightNorm * 15; // 260 lavender → 320 pink
+        const sat = 55 + heightNorm * 30;
+        const lit = 55 + brightness * 35;
 
         const dotAlpha = brightness * 0.5 * alphaScale;
         if (dotAlpha < 0.02) continue;
@@ -1610,11 +1610,11 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         if (spP.sx < -5 || spP.sx > w + 5 || spP.sy < -5 || spP.sy > h + 5) continue;
         const twinkle = Math.sin(time * 2.5 + sp * 5.3) * 0.5 + 0.5;
         const spAlpha = twinkle * 0.35 * alphaScale;
-        const spHue = 190 + spRand * 120;
+        const spHue = 250 + spRand * 80; // lavender → pink
         const spSize = (1 + twinkle * 2.5) * spP.scale * 0.3;
-        ctx.fillStyle = `hsla(${spHue}, 80%, 85%, ${spAlpha})`;
+        ctx.fillStyle = `hsla(${spHue}, 75%, 85%, ${spAlpha})`;
         ctx.fillRect(spP.sx - spSize * 0.5, spP.sy - spSize * 0.5, spSize, spSize);
-        ctx.fillStyle = `hsla(${spHue}, 70%, 75%, ${spAlpha * 0.25})`;
+        ctx.fillStyle = `hsla(${spHue}, 65%, 75%, ${spAlpha * 0.25})`;
         const glowS = spSize * 3;
         ctx.fillRect(spP.sx - glowS * 0.5, spP.sy - glowS * 0.5, glowS, glowS);
       }
@@ -1646,12 +1646,12 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           else ctx.lineTo(p.sx, p.sy);
         }
 
-        const lineHue = 190 + rowT_l * 110; // cyan → pink across width
-        ctx.strokeStyle = `hsla(${lineHue}, 80%, 70%, ${lineAlpha})`;
+        const lineHue = 255 + rowT_l * 65; // lavender → pink across width
+        ctx.strokeStyle = `hsla(${lineHue}, 75%, 72%, ${lineAlpha})`;
         ctx.stroke();
         if (li === 0 || li === LINE_ROWS.length - 1) {
           ctx.lineWidth = 5;
-          ctx.strokeStyle = `hsla(${lineHue}, 75%, 55%, ${lineAlpha * 0.2})`;
+          ctx.strokeStyle = `hsla(${lineHue}, 70%, 58%, ${lineAlpha * 0.2})`;
           ctx.stroke();
         }
       }
@@ -1660,7 +1660,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       for (let fl = 0; fl < 10; fl++) {
         const flRadius = RADIUS + RIBBON_WIDTH * (0.5 + fl * 0.12);
         const flYOff = (fl - 5) * 12; // spread above/below
-        const flHue = 210 + fl * 15; // blue → purple → pink
+        const flHue = 260 + fl * 10; // lavender → pink
         const flAlpha = (0.06 + Math.sin(time * 0.2 + fl * 1.3) * 0.03) * alphaScale;
 
         ctx.beginPath();
@@ -1715,7 +1715,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const barAlpha = (0.12 + depthNorm * 0.28) * alphaScale;
 
         // Vertical bars on screen (not rotated)
-        const barHue = 200 + barSeed * 100; // cyan → pink range
+        const barHue = 255 + barSeed * 65; // lavender → pink range
         ctx.fillStyle = `hsla(${barHue}, 75%, 65%, ${barAlpha})`;
         ctx.fillRect(p.sx - barW * 0.5, p.sy - barH, barW, barH);
       }
@@ -1746,12 +1746,12 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180, 230, 255, ${sparkAlpha})`;
+        ctx.fillStyle = `rgba(230, 200, 255, ${sparkAlpha})`;
         ctx.fill();
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(100, 200, 240, ${sparkAlpha * 0.12})`;
+        ctx.fillStyle = `rgba(210, 170, 250, ${sparkAlpha * 0.12})`;
         ctx.fill();
       }
 
@@ -1778,12 +1778,12 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Large disc glow
         const discSize = Math.max(w, h) * (0.5 + pulse * 0.1);
         const discGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, discSize);
-        discGrd.addColorStop(0, `rgba(200, 240, 255, ${0.35 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.08, `rgba(140, 210, 250, ${0.25 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.2, `rgba(90, 150, 230, ${0.15 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.4, `rgba(130, 90, 210, ${0.08 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.6, `rgba(190, 70, 190, ${0.04 * pulse * alphaScale})`);
-        discGrd.addColorStop(0.8, `rgba(210, 60, 140, ${0.02 * pulse * alphaScale})`);
+        discGrd.addColorStop(0, `rgba(240, 210, 255, ${0.35 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.08, `rgba(220, 190, 255, ${0.25 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.2, `rgba(200, 170, 250, ${0.15 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.4, `rgba(210, 150, 240, ${0.08 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.6, `rgba(220, 140, 220, ${0.04 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.8, `rgba(230, 150, 200, ${0.02 * pulse * alphaScale})`);
         discGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
@@ -1971,8 +1971,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const alpha = fade * 0.14 * alphaScale;
           if (alpha < 0.005) continue;
 
-          // Hue shifts with radius: blue(210) center → purple(270) mid → pink/magenta(310) edge
-          const hue = 210 + phase * 100;
+          // Hue shifts with radius: lavender(265) center → pink(320) edge
+          const hue = 265 + phase * 55;
           const wy = -RIPPLE_AMP * fade;
 
           const rOuter = r + BAND_W * 0.5 * fade;
