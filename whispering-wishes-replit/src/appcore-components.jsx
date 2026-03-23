@@ -1763,32 +1763,39 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // --- Ripple rings: "stone in a puddle" expanding from center ---
-        // Multiple rings at different phases, continuously spawning outward
+        // --- Ripple rings: "stone in a puddle" expanding from center in 3D ---
         const RIPPLE_COUNT = 5;
-        const RIPPLE_MAX = Math.max(w, h) * 0.6;
-        const RIPPLE_SPEED = 0.12; // how fast they expand
-        const RIPPLE_LIFE = 1 / RIPPLE_SPEED; // time for one ripple to reach max
+        const RIPPLE_MAX_R = 500; // world-space max radius
+        const RIPPLE_SPEED = 0.12;
 
         for (let ri = 0; ri < RIPPLE_COUNT; ri++) {
-          // Each ripple is offset in time so they stagger
-          const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1; // 0→1 lifecycle
-          const radius = phase * RIPPLE_MAX;
-          // Fade in then out: peak at ~0.2, gone by 1.0
+          const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1;
+          const rippleR = phase * RIPPLE_MAX_R;
           const fade = Math.sin(phase * Math.PI) * (1 - phase * 0.5);
-          const rippleAlpha = fade * 0.12 * alphaScale;
+          const rippleAlpha = fade * 0.14 * alphaScale;
           if (rippleAlpha < 0.005) continue;
 
-          const thickness = 1.5 + (1 - phase) * 2; // thicker when young
-          const hue = 200 + phase * 80; // cyan → purple as it expands
+          const thickness = 1.5 + (1 - phase) * 2;
+          const hue = 200 + phase * 80;
 
+          // Draw ring as 3D-projected circle on the Y=0 plane
           ctx.beginPath();
-          ctx.arc(centerP.sx, centerP.sy, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${rippleAlpha})`;
           ctx.lineWidth = thickness;
-          ctx.stroke();
+          let started = false;
+          const steps = 100;
 
-          // Soft glow on the ripple
+          for (let s = 0; s <= steps; s++) {
+            const a = (s / steps) * Math.PI * 2;
+            const wx = Math.cos(a) * rippleR;
+            const wz = Math.sin(a) * rippleR;
+            const p = project(wx, 0, wz);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+
+          ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${rippleAlpha})`;
+          ctx.stroke();
           ctx.lineWidth = thickness * 4;
           ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${rippleAlpha * 0.2})`;
           ctx.stroke();
