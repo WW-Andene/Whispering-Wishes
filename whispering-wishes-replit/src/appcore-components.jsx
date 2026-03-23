@@ -1782,21 +1782,32 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const outerR = rippleR + bandWidth * 0.5;
           const steps = 100;
 
-          // Draw as filled band between two 3D-projected rings
+          // Draw as filled band between two 3D-projected rings with ribbon wave
           // Outer edge
           ctx.beginPath();
           let started = false;
           for (let s = 0; s <= steps; s++) {
-            const a = (s / steps) * Math.PI * 2;
-            const p = project(Math.cos(a) * outerR, 0, Math.sin(a) * outerR);
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const wx = Math.cos(a) * outerR;
+            const wz = Math.sin(a) * outerR;
+            // Same ribbon wave + veil as the main ribbon
+            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                     + Math.sin(a * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3
+                     + Math.sin(0.5 * Math.PI * 3 + a * 4 + time * 0.25) * 5;
+            const p = project(wx, wy, wz);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
           // Inner edge (reverse direction to create a filled ring shape)
           for (let s = steps; s >= 0; s--) {
-            const a = (s / steps) * Math.PI * 2;
-            const p = project(Math.cos(a) * innerR, 0, Math.sin(a) * innerR);
+            const a = (s / steps) * Math.PI * 2 + rot;
+            const wx = Math.cos(a) * innerR;
+            const wz = Math.sin(a) * innerR;
+            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                     + Math.sin(a * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3
+                     + Math.sin(0.5 * Math.PI * 3 + a * 4 + time * 0.25) * 5;
+            const p = project(wx, wy, wz);
             if (!p) continue;
             ctx.lineTo(p.sx, p.sy);
           }
