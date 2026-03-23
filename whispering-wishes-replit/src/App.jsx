@@ -6267,184 +6267,141 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className="p-2.5 rounded-lg border hover:border-white/15 transition-colors"
+                                <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2.5"
                                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
-                                  {/* 2-col: Left=header+desc+focus+buffs, Right=stats+equipment */}
-                                  <div className="flex flex-row gap-3">
-                                    {/* LEFT: header + description + damage focus + buffs */}
-                                    <div className="flex-1 min-w-0">
-                                  {/* Character header */}
-                                  <div className="mb-2">
-                                    <div className="flex items-start gap-2 mb-1.5">
-                                      <div className={`w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
-                                        style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
-                                        {collectionImages[m.name] ? (
-                                          <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">{m.name[0]}</div>
-                                        )}
-                                      </div>
-                                      <div>
-                                        <div className="flex items-center gap-1.5">
-                                          <span className="text-white text-xs font-semibold">{m.name}</span>
-                                          <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                        </div>
-                                        <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
-                                          <span className={`text-[10px] px-2 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
-                                          <span className="text-[10px] px-2 py-0.5 rounded font-medium"
-                                            style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                                            {m.d.element}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <span className="text-[10px] text-gray-400">{m.d.weapon}</span>
-                                  </div>
-                                  {/* Damage Focus */}
-                                  <div className="mb-1.5">
-                                    <div className="kuro-label">Damage Focus</div>
-                                    <div className="flex flex-wrap gap-1">
-                                      <span className="text-[10px] px-2 py-0.5 rounded font-medium"
-                                        style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                                        {m.d.element} DMG
-                                      </span>
-                                      {(m.d.dmgFocus || []).map((df, di) => (
-                                        <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.12)" }}>{df}</span>
-                                      ))}
-                                      {m.d.statScaling && (
-                                        <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400" style={{ boxShadow: "0 0 6px rgba(139,92,246,0.12)" }}>{m.d.statScaling} Scaling</span>
+
+                                  {/* ── Section 1: Character Header ── */}
+                                  <div className="flex items-center gap-2.5">
+                                    <div className={`w-11 h-12 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
+                                      style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
+                                      {collectionImages[m.name] ? (
+                                        <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">{m.name[0]}</div>
                                       )}
                                     </div>
-                                  </div>
-                                  {/* Buffs */}
-                                  {m.d.buffs?.length > 0 && (
-                                    <div className="mb-1.5">
-                                      <div className="kuro-label">Buffs</div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {m.d.buffs.map((b, bi) => (
-                                          <span key={bi} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 6px rgba(34,197,94,0.12)" }}>{b}</span>
-                                        ))}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-white text-sm font-semibold">{m.name}</span>
+                                        <span className={`text-[9px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                       </div>
-                                    </div>
-                                  )}
-                                  {/* Debuffs */}
-                                  {m.d.debuffs?.length > 0 && (
-                                    <div className="mb-1.5">
-                                      <div className="kuro-label">Debuffs</div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {m.d.debuffs.map((db, di) => (
-                                          <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 6px rgba(239,68,68,0.12)" }}>{db}</span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {/* Main DPS: expanded damage stats */}
-                                  {isMain && (
-                                    <div className="mb-1.5">
-                                      <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
-                                      <div className="flex flex-wrap gap-1">
-                                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400" style={{ boxShadow: "0 0 8px rgba(234,179,8,0.15)" }}>Eff.ATK {effAtk.toLocaleString()}</span>
-                                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CR {cr.toFixed(1)}%</span>
-                                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400" style={{ boxShadow: "0 0 8px rgba(6,182,212,0.15)" }}>CD {cd.toFixed(1)}%</span>
-                                        <span className="text-[8px] px-2 py-0.5 rounded font-medium"
+                                      <div className="flex items-center flex-wrap gap-1 mt-1">
+                                        <span className={`text-[10px] px-2 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
                                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                                          {m.d.element} +{elemDmg.toFixed(0)}%
+                                          {m.d.element}
                                         </span>
-                                        {skillDmg > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 8px rgba(245,158,11,0.15)" }}>Skill +{skillDmg.toFixed(0)}%</span>}
-                                        {atkPct > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400" style={{ boxShadow: "0 0 8px rgba(34,197,94,0.15)" }}>ATK% +{atkPct.toFixed(0)}%</span>}
-                                        {deepen > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400" style={{ boxShadow: "0 0 8px rgba(168,85,247,0.15)" }}>Deepen +{deepen.toFixed(0)}%</span>}
-                                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Shred {defShred}%</span>}
-                                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>RES Shred {resShred}%</span>}
-                                        {defIgnore > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400" style={{ boxShadow: "0 0 8px rgba(239,68,68,0.15)" }}>DEF Ignore {defIgnore}%</span>}
+                                        <span className="text-[10px] text-gray-500">{m.d.weapon}</span>
                                       </div>
                                     </div>
-                                  )}
-                                    </div>{/* end LEFT */}
-                                    {/* RIGHT: base stats + equipment grid */}
-                                    <div className="flex-shrink-0">
-                                  {/* Base Stats */}
-                                  <div className="mb-1.5">
+                                  </div>
+
+                                  {/* ── Section 2: Base Stats ── */}
+                                  <div>
                                     <div className="kuro-label">Base Stats (Lv.90)</div>
                                     <div className="flex flex-wrap gap-1">
-                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>HP {(m.d.baseHp || 0).toLocaleString()}</span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>ATK {m.charAtk}</span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300" style={{ boxShadow: "0 0 6px rgba(255,255,255,0.05)" }}>DEF {(m.d.baseDef || 0).toLocaleString()}</span>
-                                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400" style={{ boxShadow: "0 0 6px rgba(245,158,11,0.15)" }}>+Weapon {m.weapAtk}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">ATK {m.charAtk}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
                                     </div>
                                   </div>
-                                  {/* Equipment slots: 1 weapon + 5 echoes */}
+
+                                  {/* ── Section 3: Equipment & Build ── */}
                                   {(() => {
                                     const eqKey = state.activeTeamIndex + ':' + m.name;
                                     const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
                                     const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
                                     const slotStyle = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center relative overflow-hidden';
                                     return (
-                                      <div className="space-y-1.5">
-                                        {/* 3x2 equipment grid */}
-                                        <div className="grid grid-cols-3 gap-1">
-                                          {/* Weapon slot */}
-                                          <div
-                                            className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8 holo-5star' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
-                                            onClick={() => {
-                                              setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
-                                              setWeaponSearch('');
-                                              setWeaponSelectorOpen(true);
-                                              haptic.light();
-                                            }}
-                                            title={eq.weapon || 'Select weapon'}
-                                          >
-                                            {equippedWeap && collectionImages[eq.weapon] ? (
-                                              <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
-                                            ) : equippedWeap ? (
-                                              <>
-                                                <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
-                                                <span className="text-[10px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <Sword size={14} className="text-gray-500" />
-                                                <span className="text-[10px] text-gray-500">Weapon</span>
-                                              </>
-                                            )}
-                                          </div>
-                                          {/* 5 Echo slots (placeholder) */}
-                                          {[0, 1, 2, 3, 4].map(ei => (
-                                            <div key={ei}
-                                              className={`${slotStyle} border-dashed border-[var(--border-medium)] opacity-60 cursor-default`}
-                                              title={'Echo slot ' + (ei + 1) + ' — coming soon'}
-                                            >
-                                              <Diamond size={12} className="text-gray-600" />
-                                              <span className="text-[10px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                        {/* S0-S6 toggle */}
-                                        {/* P6-FIX: Increased sequence button size for touch targets (F-P6-055) */}
+                                      <div className="space-y-2">
+                                        {/* Equipment grid + Weapon info */}
                                         <div>
-                                          <div className="text-[10px] text-gray-400 mb-0.5">Sequence</div>
-                                          <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
-                                            {[0,1,2,3,4,5,6].map(s => {
-                                              const isActive = (eq.sequence || 0) === s;
-                                              return (
-                                                <button key={s}
-                                                  role="radio"
-                                                  aria-checked={isActive}
-                                                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
-                                                  onClick={() => {
-                                                    setTeamEquipment(prev => {
-                                                      const n = { ...prev };
-                                                      n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                      try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                                      return n;
-                                                    });
-                                                    haptic.light();
-                                                  }}
-                                                >S{s}</button>
-                                              );
-                                            })}
+                                          <div className="kuro-label">Equipment</div>
+                                          <div className="flex items-start gap-2">
+                                            <div className="grid grid-cols-3 gap-1 flex-shrink-0">
+                                              {/* Weapon slot */}
+                                              <div
+                                                className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8 holo-5star' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                                onClick={() => {
+                                                  setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
+                                                  setWeaponSearch('');
+                                                  setWeaponSelectorOpen(true);
+                                                  haptic.light();
+                                                }}
+                                                title={eq.weapon || 'Select weapon'}
+                                              >
+                                                {equippedWeap && collectionImages[eq.weapon] ? (
+                                                  <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                                ) : equippedWeap ? (
+                                                  <>
+                                                    <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                                    <span className="text-[10px] text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <Sword size={14} className="text-gray-500" />
+                                                    <span className="text-[10px] text-gray-500">Weapon</span>
+                                                  </>
+                                                )}
+                                              </div>
+                                              {/* 5 Echo slots */}
+                                              {[0, 1, 2, 3, 4].map(ei => (
+                                                <div key={ei}
+                                                  className={`${slotStyle} border-dashed border-[var(--border-medium)] opacity-60 cursor-default`}
+                                                  title={'Echo slot ' + (ei + 1) + ' — coming soon'}
+                                                >
+                                                  <Diamond size={12} className="text-gray-600" />
+                                                  <span className="text-[10px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                            {/* Weapon info beside grid */}
+                                            <div className="flex-1 min-w-0 pt-0.5">
+                                              {equippedWeap ? (
+                                                <div className="text-[10px] space-y-0.5">
+                                                  <div className="text-yellow-400/80 font-medium truncate">{eq.weapon}</div>
+                                                  <div className="text-gray-500">{equippedWeap.stat} {equippedWeap.subStatValue}</div>
+                                                </div>
+                                              ) : m.d.bestWeapon ? (
+                                                <div className="text-[10px] space-y-0.5">
+                                                  <div><span className="text-gray-500">Rec: </span><span className="text-yellow-400/50">{m.d.bestWeapon}</span></div>
+                                                  {m.d.bestEchoes && <div className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</div>}
+                                                </div>
+                                              ) : null}
+                                            </div>
                                           </div>
                                         </div>
-                                        {/* Sonata Set selector */}
+
+                                        {/* Sequence + Sonata side by side */}
+                                        <div className="flex gap-2">
+                                          <div className="flex-1">
+                                            <div className="text-[10px] text-gray-400 mb-0.5">Sequence</div>
+                                            <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
+                                              {[0,1,2,3,4,5,6].map(s => {
+                                                const isActive = (eq.sequence || 0) === s;
+                                                return (
+                                                  <button key={s}
+                                                    role="radio"
+                                                    aria-checked={isActive}
+                                                    className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    onClick={() => {
+                                                      setTeamEquipment(prev => {
+                                                        const n = { ...prev };
+                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                        return n;
+                                                      });
+                                                      haptic.light();
+                                                    }}
+                                                  >S{s}</button>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Sonata Set */}
                                         <div>
                                           <div className="text-[10px] text-gray-400 mb-0.5">Sonata Set</div>
                                           <KuroSelect
@@ -6467,31 +6424,74 @@ function WhisperingWishesInner() {
                                             small
                                           />
                                         </div>
-                                        {/* Weapon info */}
-                                        {equippedWeap && (
-                                          <div className="text-[10px]">
-                                            <span className="text-gray-500">Weapon: </span>
-                                            <span className="text-yellow-400/80">{eq.weapon}</span>
-                                            <span className="text-gray-500"> ({equippedWeap.stat} {equippedWeap.subStatValue})</span>
-                                          </div>
-                                        )}
-                                        {!equippedWeap && m.d.bestWeapon && (
-                                          <div className="text-[10px]">
-                                            <span className="text-gray-500">Rec: </span>
-                                            <span className="text-yellow-400/50">{m.d.bestWeapon}</span>
-                                            {m.d.bestEchoes && (
-                                              <span className="text-gray-500"> · </span>
-                                            )}
-                                            {m.d.bestEchoes && (
-                                              <span className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</span>
-                                            )}
-                                          </div>
-                                        )}
                                       </div>
                                     );
                                   })()}
-                                    </div>{/* end RIGHT */}
-                                  </div>{/* end flex row */}
+
+                                  {/* ── Section 4: Combat Info ── */}
+                                  <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                                    {/* Damage Focus */}
+                                    <div className="min-w-0">
+                                      <div className="kuro-label">Damage Focus</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                          {m.d.element} DMG
+                                        </span>
+                                        {(m.d.dmgFocus || []).map((df, di) => (
+                                          <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                                        ))}
+                                        {m.d.statScaling && (
+                                          <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{m.d.statScaling} Scaling</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {/* Buffs */}
+                                    {m.d.buffs?.length > 0 && (
+                                      <div className="min-w-0">
+                                        <div className="kuro-label">Buffs</div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {m.d.buffs.map((b, bi) => (
+                                            <span key={bi} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {/* Debuffs */}
+                                    {m.d.debuffs?.length > 0 && (
+                                      <div className="min-w-0">
+                                        <div className="kuro-label">Debuffs</div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {m.d.debuffs.map((db, di) => (
+                                            <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* ── Section 5: Damage Stats (Main DPS only) ── */}
+                                  {isMain && (
+                                    <div>
+                                      <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                                          {m.d.element} +{elemDmg.toFixed(0)}%
+                                        </span>
+                                        {skillDmg > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
+                                        {atkPct > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
+                                        {deepen > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
+                                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {defShred}%</span>}
+                                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {resShred}%</span>}
+                                        {defIgnore > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
+                                      </div>
+                                    </div>
+                                  )}
+
                                 </div>
                               );
                             })}
