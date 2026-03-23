@@ -2626,132 +2626,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
-      // --- Staircase side faces (stone panels between outer frame and inner stairway) ---
-      {
-        const vpX = sunX;
-        const vpY = sunY;
-        const botY = h * 0.625;
-        const topY = vpY + h * 0.04;
-        const dBot = botY - vpY;
-
-        // Outer edges (frame)
-        const hwOBot = w * 0.5;
-        const hwOTop = hwOBot * (topY - vpY) / dBot;
-        const obl = vpX - hwOBot, obr = vpX + hwOBot;
-        const otl = vpX - hwOTop, otr = vpX + hwOTop;
-
-        // Inner edges (stairway)
-        const hwIBot = w * 0.39;
-        const hwITop = hwIBot * (topY - vpY) / dBot;
-        const ibl = vpX - hwIBot, ibr = vpX + hwIBot;
-        const itl = vpX - hwITop, itr = vpX + hwITop;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, topY, w, botY - topY);
-        ctx.clip();
-
-        // Left side face — trapezoid between outer-left and inner-left
-        ctx.beginPath();
-        ctx.moveTo(obl, botY);
-        ctx.lineTo(otl, topY);
-        ctx.lineTo(itl, topY);
-        ctx.lineTo(ibl, botY);
-        ctx.closePath();
-        // Use a cached rock pattern if available, otherwise dark fill
-        if (canvas._rockPat2) {
-          ctx.fillStyle = canvas._rockPat2;
-          ctx.fill();
-        }
-        // Dark overlay — left side is in shadow
-        ctx.fillStyle = `rgba(6, 4, 2, 0.72)`;
-        ctx.fill();
-        // Subtle warm light on the inner edge (facing the steps/sun)
-        {
-          const grd = ctx.createLinearGradient(obl, botY, ibl, botY);
-          grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
-          grd.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
-          grd.addColorStop(1, `rgba(180, 110, 40, ${0.12 * alphaScale})`);
-          ctx.fillStyle = grd;
-          ctx.fill();
-        }
-
-        // Right side face — trapezoid between inner-right and outer-right
-        ctx.beginPath();
-        ctx.moveTo(ibr, botY);
-        ctx.lineTo(itr, topY);
-        ctx.lineTo(otr, topY);
-        ctx.lineTo(obr, botY);
-        ctx.closePath();
-        if (canvas._rockPat2) {
-          ctx.fillStyle = canvas._rockPat2;
-          ctx.fill();
-        }
-        // Right side gets a bit more light (facing slight angle)
-        ctx.fillStyle = `rgba(6, 4, 2, 0.65)`;
-        ctx.fill();
-        {
-          const grd = ctx.createLinearGradient(obr, botY, ibr, botY);
-          grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
-          grd.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
-          grd.addColorStop(1, `rgba(180, 110, 40, ${0.12 * alphaScale})`);
-          ctx.fillStyle = grd;
-          ctx.fill();
-        }
-
-        // Stone block lines on sides — horizontal courses
-        const courseCount = 18;
-        for (let ci = 0; ci <= courseCount; ci++) {
-          const t = ci / courseCount;
-          const cy = botY + (topY - botY) * t;
-          // Left side course line
-          const lx0 = obl + (otl - obl) * t;
-          const lx1 = ibl + (itl - ibl) * t;
-          ctx.beginPath();
-          ctx.moveTo(lx0, cy);
-          ctx.lineTo(lx1, cy);
-          ctx.strokeStyle = `rgba(0, 0, 0, ${0.25 + t * 0.15})`;
-          ctx.lineWidth = Math.max(0.5, 1.2 * (1 - t));
-          ctx.stroke();
-          // Right side course line
-          const rx0 = ibr + (itr - ibr) * t;
-          const rx1 = obr + (otr - obr) * t;
-          ctx.beginPath();
-          ctx.moveTo(rx0, cy);
-          ctx.lineTo(rx1, cy);
-          ctx.strokeStyle = `rgba(0, 0, 0, ${0.25 + t * 0.15})`;
-          ctx.lineWidth = Math.max(0.5, 1.2 * (1 - t));
-          ctx.stroke();
-        }
-
-        // Vertical joints on sides — perspective-correct
-        const jointCountL = 6, jointCountR = 6;
-        for (let ji = 1; ji < jointCountL; ji++) {
-          const frac = ji / jointCountL;
-          const bx = obl + (ibl - obl) * frac;
-          const tx = otl + (itl - otl) * frac;
-          ctx.beginPath();
-          ctx.moveTo(bx, botY);
-          ctx.lineTo(tx, topY);
-          ctx.strokeStyle = `rgba(0, 0, 0, 0.18)`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-        for (let ji = 1; ji < jointCountR; ji++) {
-          const frac = ji / jointCountR;
-          const bx = ibr + (obr - ibr) * frac;
-          const tx = itr + (otr - itr) * frac;
-          ctx.beginPath();
-          ctx.moveTo(bx, botY);
-          ctx.lineTo(tx, topY);
-          ctx.strokeStyle = `rgba(0, 0, 0, 0.18)`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-
-        ctx.restore();
-      }
-
       // Rock texture pattern (cached, tiles in canvas coords so it flows across faces)
       if (!canvas._rockPat2) {
         const sz = 128;
@@ -2905,6 +2779,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         let stepIdx = 0;
         const rubble = [];
         const shards = []; // floating stone shards near broken steps
+        const stepYs = [botY]; // collect step Y boundaries for side faces
         while (y > topY) {
           const scale = (y - vpY) / dBot;
           const s = (a) => sHash(stepIdx, a);
@@ -3138,6 +3013,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           y = lY;
+          stepYs.push(lY);
           stepIdx++;
         }
 
@@ -3352,6 +3228,94 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
 
         ctx.restore();
+
+        // --- Side faces: step-aligned stone blocks between outer frame and stairway ---
+        {
+          // Outer frame edges
+          const hwOBot = w * 0.5;
+          const hwOTop = hwOBot * (topY - vpY) / dBot;
+          const outerL = (py) => (vpX - hwOBot) + ((vpX - hwOTop) - (vpX - hwOBot)) * (botY - py) / (botY - topY);
+          const outerR = (py) => (vpX + hwOBot) + ((vpX + hwOTop) - (vpX + hwOBot)) * (botY - py) / (botY - topY);
+          // Inner stairway edges (same as diagL/diagR)
+          const innerL = (py) => botL + (topL - botL) * (botY - py) / (botY - topY);
+          const innerR = (py) => botR + (topR - botR) * (botY - py) / (botY - topY);
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(0, topY, w, botY - topY);
+          ctx.clip();
+
+          // Draw each step block on both sides
+          for (let si = 0; si < stepYs.length - 1; si++) {
+            const yBot = stepYs[si];
+            const yTop = stepYs[si + 1];
+            if (yBot - yTop < 1) continue;
+            const ss = sHash(si, 30); // per-block seed
+
+            // LEFT side block
+            ctx.beginPath();
+            ctx.moveTo(outerL(yBot), yBot);
+            ctx.lineTo(outerL(yTop), yTop);
+            ctx.lineTo(innerL(yTop), yTop);
+            ctx.lineTo(innerL(yBot), yBot);
+            ctx.closePath();
+            ctx.fillStyle = rockPat;
+            ctx.fill();
+            // Shadow — darker toward outer edge, slightly varies per block
+            const lShade = 0.62 + ss * 0.12;
+            ctx.fillStyle = `rgba(4, 3, 1, ${lShade})`;
+            ctx.fill();
+            // Warm inner edge highlight
+            {
+              const grd = ctx.createLinearGradient(
+                outerL(yBot), yBot, innerL(yBot), yBot
+              );
+              grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
+              grd.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
+              grd.addColorStop(1, `rgba(160, 100, 35, ${(0.08 + ss * 0.06) * alphaScale})`);
+              ctx.fillStyle = grd;
+              ctx.fill();
+            }
+            // Bottom edge line (mortar joint)
+            ctx.beginPath();
+            ctx.moveTo(outerL(yBot), yBot);
+            ctx.lineTo(innerL(yBot), yBot);
+            ctx.strokeStyle = `rgba(0, 0, 0, ${0.3 + ss * 0.15})`;
+            ctx.lineWidth = Math.max(0.4, 1.0 * (yBot - vpY) / dBot);
+            ctx.stroke();
+
+            // RIGHT side block
+            ctx.beginPath();
+            ctx.moveTo(innerR(yBot), yBot);
+            ctx.lineTo(innerR(yTop), yTop);
+            ctx.lineTo(outerR(yTop), yTop);
+            ctx.lineTo(outerR(yBot), yBot);
+            ctx.closePath();
+            ctx.fillStyle = rockPat;
+            ctx.fill();
+            const rShade = 0.55 + sHash(si, 31) * 0.12;
+            ctx.fillStyle = `rgba(4, 3, 1, ${rShade})`;
+            ctx.fill();
+            {
+              const grd = ctx.createLinearGradient(
+                outerR(yBot), yBot, innerR(yBot), yBot
+              );
+              grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
+              grd.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
+              grd.addColorStop(1, `rgba(160, 100, 35, ${(0.08 + sHash(si, 31) * 0.06) * alphaScale})`);
+              ctx.fillStyle = grd;
+              ctx.fill();
+            }
+            ctx.beginPath();
+            ctx.moveTo(innerR(yBot), yBot);
+            ctx.lineTo(outerR(yBot), yBot);
+            ctx.strokeStyle = `rgba(0, 0, 0, ${0.3 + sHash(si, 31) * 0.15})`;
+            ctx.lineWidth = Math.max(0.4, 1.0 * (yBot - vpY) / dBot);
+            ctx.stroke();
+          }
+
+          ctx.restore();
+        }
       }
 
       // --- Atmospheric lightning (sky to ground) ---
