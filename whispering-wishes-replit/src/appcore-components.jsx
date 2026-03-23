@@ -1501,9 +1501,9 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // Ring params
       const RADIUS = 250;          // radius of the circular ring (smaller, less big)
       const RIBBON_WIDTH = 90;     // width of the ribbon
-      const ROWS = 24;             // more rows across ribbon width
-      const DOTS_AROUND = 280;     // more dots around the circumference
-      const WAVE_AMP = 60;         // how high the ribbon waves up/down
+      const ROWS = 32;             // more rows across ribbon width
+      const DOTS_AROUND = 400;     // doubled squares around the circumference
+      const WAVE_AMP = 35;         // reduced wave amplitude
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
       // Collect all dots for depth sorting
@@ -1518,20 +1518,27 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const angleT = i / DOTS_AROUND; // 0..1 around the ring
           const angle = angleT * Math.PI * 2 + rot;
 
-          // Position on the ring (XZ plane)
-          const wx = Math.cos(angle) * r;
-          const wz = Math.sin(angle) * r;
+          // Per-square variation: pseudo-random hash for organic feel
+          const hash = Math.sin(row * 127.1 + i * 311.7) * 43758.5453;
+          const jitter = (hash - Math.floor(hash)) * 2 - 1; // -1..1
 
-          // Ribbon wave: Y displacement — the key to the ribbon effect
-          // The wave depends on angle (position around ring) and time
-          const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
-                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
+          // Position on the ring with slight radius jitter (less stiff)
+          const radiusJitter = jitter * 4;
+          const wx = Math.cos(angle) * (r + radiusJitter);
+          const wz = Math.sin(angle) * (r + radiusJitter);
+
+          // Ribbon wave + per-square Y float offset
+          const ribbonWave = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                           + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
+          const squareFloat = jitter * 12; // up to ±12 off ribbon surface
+          const drift = Math.sin(time * 0.2 + row * 0.5 + i * 0.3) * 6;
+          const wy = ribbonWave + squareFloat + drift;
 
           const p = project(wx, wy, wz);
           if (!p) continue;
           if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
 
-          allDots.push({ p, wy, rowT, angleT, r, angle });
+          allDots.push({ p, wy, rowT, angleT, r, angle, jitter });
         }
       }
 
@@ -1541,7 +1548,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // Draw flat rectangles (dashes tangent to the ring)
       const maxDepth = 1200;
       for (let i = 0; i < allDots.length; i++) {
-        const { p, wy, rowT, angle } = allDots[i];
+        const { p, wy, rowT, angle, jitter } = allDots[i];
 
         const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
 
@@ -1566,7 +1573,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION); // tangent aligned to screen diagonal
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION + jitter * 0.15); // tangent + slight random tilt
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
         ctx.restore();
