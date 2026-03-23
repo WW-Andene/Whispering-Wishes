@@ -5883,7 +5883,7 @@ function WhisperingWishesInner() {
 
                       // ── Parse weapon passive for real values ──
                       const parsePassive = (passive, element) => {
-                        const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0 };
+                        const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0 };
                         if (!passive) return r;
                         const p = passive.toLowerCase();
                         // ATK% from passive
@@ -5894,23 +5894,35 @@ function WhisperingWishesInner() {
                           const elLow = element.toLowerCase();
                           const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
                           if (elMatch) r.elemDmg += parseInt(elMatch[1]);
-                          // Also "attribute dmg"
-                          const attrMatch = p.match(/attribute\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
+                          // Also "attribute dmg" / "all-attr dmg"
+                          const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
                           if (attrMatch) r.elemDmg += parseInt(attrMatch[1]);
                         }
                         // Skill DMG variants
-                        const skillMatch = p.match(/(?:resonance\s*)?skill\s*dmg\s*\+?(\d+)%/);
+                        const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);
                         if (skillMatch) r.skillDmg += parseInt(skillMatch[1]);
-                        const libMatch = p.match(/liberation\s*dmg\s*\+?(\d+)%/);
-                        if (libMatch) r.skillDmg += parseInt(libMatch[1]);
-                        // Crit from passive
+                        const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/);
+                        if (libMatch) r.libDmg += parseInt(libMatch[1]);
+                        // Basic ATK DMG
+                        const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
+                        if (basicMatch) r.basicDmg += parseInt(basicMatch[1]);
+                        // Heavy ATK DMG
+                        const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
+                        if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1]);
+                        // Echo Skill DMG
+                        const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
+                        if (echoMatch) r.echoDmg += parseInt(echoMatch[1]);
+                        // Crit Rate from passive
                         const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
                         if (crMatch) r.critRate += parseInt(crMatch[1]);
+                        // Crit DMG from passive
+                        const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);
+                        if (cdMatch) r.critDmg += parseInt(cdMatch[1]);
                         // DEF Ignore
                         const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
                         if (defMatch) r.defIgnore += parseInt(defMatch[1]);
                         // RES Shred
-                        const resMatch = p.match(/res\s*-(\d+)%/);
+                        const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);
                         if (resMatch) r.resShred += parseInt(resMatch[1]);
                         return r;
                       };
@@ -5926,10 +5938,12 @@ function WhisperingWishesInner() {
                       if (mainDps.weapSubstat === 'HP%') {} // HP scaling chars — simplified
 
                       // Weapon passive (real parsed values)
+                      let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
                       if (mainDps.weapon?.passive) {
                         const wp = parsePassive(mainDps.weapon.passive, mainDps.d.element);
                         atkPct += wp.atkPct; elemDmg += wp.elemDmg; skillDmg += wp.skillDmg;
                         cr += wp.critRate; cd += wp.critDmg; defIgnore += wp.defIgnore; resShred += wp.resShred;
+                        wpBasicDmg = wp.basicDmg; wpHeavyDmg = wp.heavyDmg; wpLibDmg = wp.libDmg; wpEchoDmg = wp.echoDmg;
                       }
 
                       // Echo set bonuses (2pc + 5pc)
@@ -5986,8 +6000,16 @@ function WhisperingWishesInner() {
                         });
                       }
 
+                      // ── Element Resonance: 2+ characters of same element = +10% element DMG ──
+                      {
+                        const elCounts = {};
+                        mems.forEach(m => { const el = m.d.element; if (el) elCounts[el] = (elCounts[el] || 0) + 1; });
+                        const mainEl = mainDps.d.element;
+                        if (mainEl && elCounts[mainEl] >= 2) elemDmg += 10;
+                      }
+
                       // ── Team buff contributions from CHAR_BUFF_TABLE (exact per-character values) ──
-                      let basicDmg = 0, heavyDmg = 0, libDmg = 0, echoDmg = 0;
+                      let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg;
                       mems.forEach(m => {
                         const bt = CHAR_BUFF_TABLE[m.name];
                         if (!bt) return;
@@ -6072,13 +6094,37 @@ function WhisperingWishesInner() {
                       else if (libDmg > 0) skillDmg += libDmg * 0.3; // partial — some rotation damage is Lib
                       if (focus.includes('Echo')) skillDmg += echoDmg;
 
-                      // Support echo set contributions
+                      // Support echo set contributions + weapon team buffs
+                      const mainDpsEl = (mainDps.d.element || '').toLowerCase();
                       mems.forEach(m => {
                         if (m.name === mainDps.name) return;
-                        if (m.echoSetName === 'Rejuvenating Glow') atkPct += 15;
-                        if (m.echoSetName === 'Moonlit Clouds') atkPct += 22.5;
-                        if (m.echoSetName === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
-                        if (m.echoSetName === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; } // assumes ≥250% ER
+                        const sn = m.echoSetName;
+                        // Healing/Support sets — team ATK buffs
+                        if (sn === 'Rejuvenating Glow') atkPct += 15;
+                        if (sn === 'Moonlit Clouds') atkPct += 22.5;
+                        if (sn === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
+                        if (sn === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; } // assumes ≥250% ER
+                        if (sn === 'Halo of Starry Radiance') atkPct += 20; // up to 25%, assume avg 20%
+                        if (sn === 'Pact of Neonlight Leap') atkPct += 22; // outro: +15% ATK + Tune Break Boost bonus, avg ~22%
+                        // Element-specific team buff sets — only benefit if main DPS matches
+                        if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 25; // +15% Aero team + extra 15% (assume partial)
+                        if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
+                        if (sn === 'Flaming Clawprint' && mainDpsEl === 'fusion') elemDmg += 15;
+                        // Outro → next character buff sets
+                        if (sn === 'Midnight Veil' && mainDpsEl === 'havoc') elemDmg += 15;
+                        if (sn === 'Chromatic Foam' && mainDpsEl === 'fusion') elemDmg += 25; // +10% personal + 25% next
+                        // Weapon team buffs from CHAR_BUFF_TABLE
+                        const bt = CHAR_BUFF_TABLE[m.name];
+                        (bt?.weaponBuffs || []).forEach(wb => {
+                          if (wb.target !== 'team') return;
+                          const teamRotTime = mainDps.d.rotTime || 25;
+                          const uptime = Math.min(1, (wb.duration || 10) / teamRotTime);
+                          const val = wb.value * uptime;
+                          if (wb.stat === 'atkPct') atkPct += val;
+                          else if (wb.stat === 'critRate') cr += val;
+                          else if (wb.stat === 'critDmg') cd += val;
+                          else if (wb.stat === 'allDmg') elemDmg += val;
+                        });
                       });
 
                       // ── Resonance Chain (S1-S6) buffs ──

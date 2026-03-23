@@ -837,6 +837,7 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 14 }],
     libBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 20 }],
     selfBuffs: [],
+    weaponBuffs: [{ stat: 'critDmg', value: 40, target: 'team', duration: 10, condition: 'Sig weapon: team Crit DMG +40% on heal' }],
     debuffs: [{ stat: 'offTune', value: 15, duration: 20, condition: 'Off-Tune buildup' }],
     tuneBreak: {
       boostToTeam: 0,
@@ -900,7 +901,10 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Aero DMG Bonus' }],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' }],
+    debuffs: [
+      { stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' },
+      { stat: 'resShred', value: 16, duration: 20, condition: 'Weapon: Aero RES -16%' },
+    ],
     note: 'Aero Erosion applier (3 stacks DOT). Outro: 20% Aero DMG. Weapon: Aero RES -16%.',
   },
   'Lupa': {
@@ -1102,9 +1106,12 @@ const CHAR_BUFF_TABLE = {
   'Cartethyia': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 20, target: 'self', duration: 20, condition: 'Erosion stacks on target: Aero DMG amp' }],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'self', duration: 20, condition: 'Erosion stacks on target: Aero DMG amp' },
+      { stat: 'defIgnore', value: 16, target: 'self', duration: 8, condition: 'Weapon: DEF Ignore +16% on Aero Eroded targets' },
+    ],
     debuffs: [{ stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' }],
-    note: 'Top-tier Aero DPS. HP-scaling. Self-sufficient Erosion duo with Ciaccona.',
+    note: 'Top-tier Aero DPS. HP-scaling. Self-sufficient Erosion duo with Ciaccona. Weapon: DEF Ignore +16%.',
   },
   'Brant': {
     outroBuffs: [],
@@ -1130,9 +1137,13 @@ const CHAR_BUFF_TABLE = {
   'Luuk Herssen': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [
+      { stat: 'basicDmg', value: 20, target: 'self', duration: 99, condition: 'Weapon: Basic ATK DMG Amp +20%' },
+      { stat: 'elemDmg', value: 20, target: 'self', duration: 99, condition: 'Weapon: Spectro DMG +20%' },
+      { stat: 'defIgnore', value: 10, target: 'self', duration: 99, condition: 'Weapon: DEF Ignore +10%' },
+    ],
     debuffs: [],
-    note: 'Spectro Gauntlets DPS. Tune Strain focused.',
+    note: 'Spectro Gauntlets DPS. Tune Strain focused. Weapon: Basic ATK +20%, Spectro +20%, DEF Ignore +10%.',
   },
   'Sigrika': {
     outroBuffs: [],
