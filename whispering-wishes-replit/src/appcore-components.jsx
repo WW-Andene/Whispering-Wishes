@@ -2613,16 +2613,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           y = dY;
           if (y <= topY) break;
 
-          // Light stripe (proportion shrinks with scale²)
-          // Drawn as a trapezoid — ~3° inward slant on each side
+          // Light stripe (tread) — trapezoid connecting riser corners
           const lightH = Math.max(1, h * 0.0075 * scale * scale);
           const lY = Math.max(topY, y - lightH);
-          const slant = (y - lY) * Math.tan(3 * Math.PI / 180); // 3° offset
+          // Bottom corners = current riser's top corners
+          const tBotL = rL;
+          const tBotR = rR;
+          // Top corners = next riser's bottom corners (rectangle width at its top)
+          const nextScale = (lY - vpY) / dBot;
+          const nextDarkH = Math.max(1, h * 0.0175 * nextScale);
+          const nextDY = Math.max(topY, lY - nextDarkH);
+          const nextHw = hwBot * (nextDY - vpY) / dBot;
+          const tTopL = vpX - nextHw;
+          const tTopR = vpX + nextHw;
           ctx.beginPath();
-          ctx.moveTo(0 - slant, y);          // bottom-left (wider)
-          ctx.lineTo(w + slant, y);          // bottom-right (wider)
-          ctx.lineTo(w, lY);                 // top-right (narrower)
-          ctx.lineTo(0, lY);                 // top-left (narrower)
+          ctx.moveTo(tBotL, y);              // bottom-left
+          ctx.lineTo(tBotR, y);              // bottom-right
+          ctx.lineTo(tTopR, lY);             // top-right
+          ctx.lineTo(tTopL, lY);             // top-left
           ctx.closePath();
           ctx.fillStyle = 'rgb(220, 20, 20)';
           ctx.fill();
