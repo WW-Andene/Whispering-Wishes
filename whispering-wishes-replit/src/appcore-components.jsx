@@ -2427,98 +2427,133 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
-      // --- LAYER 1: Far ground (50%–75%) — rocky terrain with boulders ---
-      // Solid ground fill first
-      const L1_groundY = h * 0.58;
-      const L1_alpha = 0.30 * alphaScale;
+      // --- LAYERS 0–1: Rubble field of broken stone slabs ---
+      // Like the reference: angular masonry blocks piled up, tilted,
+      // leaning. The ground IS the rocks. V-shape: higher on edges,
+      // lower in the center to frame the view.
+
+      // Helper: draw a single angular stone slab
+      const drawSlab = (cx, cy, sw, sh, tilt, shade, alpha) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(tilt);
+        // Flat-topped angular block (rectangular-ish, not round)
+        ctx.beginPath();
+        ctx.moveTo(-sw * 0.5, sh * 0.1);   // bottom-left
+        ctx.lineTo(-sw * 0.45, -sh * 0.4);  // top-left
+        ctx.lineTo(-sw * 0.1, -sh * 0.5);   // top edge
+        ctx.lineTo(sw * 0.35, -sh * 0.45);  // top-right
+        ctx.lineTo(sw * 0.5, -sh * 0.1);    // right face
+        ctx.lineTo(sw * 0.45, sh * 0.3);    // bottom-right
+        ctx.lineTo(sw * 0.1, sh * 0.5);     // bottom edge
+        ctx.lineTo(-sw * 0.35, sh * 0.45);  // bottom-left
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${shade}, ${Math.round(shade * 0.72)}, ${Math.round(shade * 0.4)}, ${alpha})`;
+        ctx.fill();
+        // Top face — lighter (catches light)
+        ctx.beginPath();
+        ctx.moveTo(-sw * 0.45, -sh * 0.4);
+        ctx.lineTo(-sw * 0.1, -sh * 0.5);
+        ctx.lineTo(sw * 0.35, -sh * 0.45);
+        ctx.lineTo(sw * 0.05, -sh * 0.3);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${shade + 30}, ${Math.round((shade + 30) * 0.72)}, ${Math.round((shade + 30) * 0.38)}, ${alpha * 0.5})`;
+        ctx.fill();
+        // Right face — darker (shadow side)
+        ctx.beginPath();
+        ctx.moveTo(sw * 0.35, -sh * 0.45);
+        ctx.lineTo(sw * 0.5, -sh * 0.1);
+        ctx.lineTo(sw * 0.45, sh * 0.3);
+        ctx.lineTo(sw * 0.15, sh * 0.1);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${Math.round(shade * 0.6)}, ${Math.round(shade * 0.4)}, ${Math.round(shade * 0.2)}, ${alpha * 0.6})`;
+        ctx.fill();
+        ctx.restore();
+      };
+
+      // V-shape envelope: edges high, center low
+      const vShape = (xNorm) => {
+        const d = Math.abs(xNorm - 0.5) * 2; // 0 at center, 1 at edges
+        return d * d; // quadratic — steep sides, flat center
+      };
+
+      // LAYER 1 slabs (far, 50%–75%, smaller, lighter)
+      const L1_slabs = [
+        { x: 0.04, sz: 0.035, tilt: -0.3 },  { x: 0.10, sz: 0.030, tilt: 0.15 },
+        { x: 0.16, sz: 0.038, tilt: -0.2 },   { x: 0.23, sz: 0.032, tilt: 0.25 },
+        { x: 0.30, sz: 0.028, tilt: -0.1 },   { x: 0.37, sz: 0.025, tilt: 0.12 },
+        { x: 0.44, sz: 0.022, tilt: -0.18 },  { x: 0.50, sz: 0.020, tilt: 0.08 },
+        { x: 0.56, sz: 0.022, tilt: -0.15 },  { x: 0.63, sz: 0.025, tilt: 0.2 },
+        { x: 0.70, sz: 0.030, tilt: -0.12 },  { x: 0.77, sz: 0.033, tilt: 0.22 },
+        { x: 0.84, sz: 0.036, tilt: -0.25 },  { x: 0.91, sz: 0.032, tilt: 0.18 },
+        { x: 0.97, sz: 0.038, tilt: -0.3 },
+      ];
+      for (const s of L1_slabs) {
+        const rise = vShape(s.x) * h * 0.18;
+        const baseY = h * 0.68 - rise;
+        const sw2 = s.sz * w;
+        const sh2 = s.sz * w * 0.7;
+        drawSlab(s.x * w, baseY, sw2, sh2, s.tilt, 50, 0.28 * alphaScale);
+      }
+
+      // Fill between L1 slabs — solid rubble mass
       ctx.beginPath();
       ctx.moveTo(0, h * 0.75);
-      for (let x = 0; x <= w; x += 4) {
-        const n = Math.sin(x * 0.012) * 8
-                + Math.sin(x * 0.025 + 2.1) * 5
-                + Math.sin(x * 0.005 + 0.7) * 14;
-        ctx.lineTo(x, L1_groundY + n);
+      for (let x = 0; x <= w; x += 3) {
+        const xn = x / w;
+        const rise = vShape(xn) * h * 0.18;
+        const jag = Math.sin(x * 0.04) * 6 + Math.sin(x * 0.09 + 1.5) * 4;
+        ctx.lineTo(x, h * 0.70 - rise + jag);
       }
       ctx.lineTo(w, h * 0.75);
       ctx.closePath();
-      ctx.fillStyle = `rgba(50, 36, 20, ${L1_alpha})`;
+      ctx.fillStyle = `rgba(42, 30, 16, ${0.25 * alphaScale})`;
       ctx.fill();
 
-      // Boulders sitting on layer 1 ground
-      const L1_boulders = [
-        { x: 0.10, sz: 0.035 }, { x: 0.22, sz: 0.028 }, { x: 0.35, sz: 0.040 },
-        { x: 0.48, sz: 0.032 }, { x: 0.60, sz: 0.038 }, { x: 0.72, sz: 0.030 },
-        { x: 0.85, sz: 0.036 }, { x: 0.95, sz: 0.025 },
+      // LAYER 0 slabs (near, 75%–100%, bigger, darker, more tilted)
+      const L0_slabs = [
+        { x: 0.02, sz: 0.08, tilt: -0.35 },  { x: 0.09, sz: 0.07, tilt: 0.2 },
+        { x: 0.16, sz: 0.09, tilt: -0.15 },   { x: 0.23, sz: 0.075, tilt: 0.3 },
+        { x: 0.30, sz: 0.06, tilt: -0.25 },   { x: 0.37, sz: 0.05, tilt: 0.1 },
+        { x: 0.43, sz: 0.045, tilt: -0.2 },   { x: 0.50, sz: 0.04, tilt: 0.05 },
+        { x: 0.57, sz: 0.045, tilt: -0.12 },  { x: 0.63, sz: 0.05, tilt: 0.22 },
+        { x: 0.70, sz: 0.065, tilt: -0.18 },  { x: 0.77, sz: 0.075, tilt: 0.28 },
+        { x: 0.84, sz: 0.085, tilt: -0.3 },   { x: 0.91, sz: 0.07, tilt: 0.2 },
+        { x: 0.98, sz: 0.08, tilt: -0.35 },
       ];
-      for (const b of L1_boulders) {
-        const bx = b.x * w;
-        const groundAtX = L1_groundY + Math.sin(bx * 0.012) * 8
-                        + Math.sin(bx * 0.025 + 2.1) * 5
-                        + Math.sin(bx * 0.005 + 0.7) * 14;
-        const bsz = b.sz * w;
-        // Boulder: rounded-ish shape sitting on ground
-        ctx.beginPath();
-        ctx.moveTo(bx - bsz * 0.5, groundAtX);
-        ctx.quadraticCurveTo(bx - bsz * 0.55, groundAtX - bsz * 0.6, bx - bsz * 0.1, groundAtX - bsz * 0.85);
-        ctx.quadraticCurveTo(bx + bsz * 0.3, groundAtX - bsz * 0.95, bx + bsz * 0.5, groundAtX - bsz * 0.4);
-        ctx.quadraticCurveTo(bx + bsz * 0.55, groundAtX - bsz * 0.1, bx + bsz * 0.5, groundAtX);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(45, 32, 18, ${L1_alpha * 1.2})`;
-        ctx.fill();
-        // Lit top edge
-        ctx.beginPath();
-        ctx.moveTo(bx - bsz * 0.1, groundAtX - bsz * 0.85);
-        ctx.quadraticCurveTo(bx + bsz * 0.3, groundAtX - bsz * 0.95, bx + bsz * 0.5, groundAtX - bsz * 0.4);
-        ctx.strokeStyle = `rgba(170, 125, 55, ${0.04 * alphaScale})`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
+      for (const s of L0_slabs) {
+        const rise = vShape(s.x) * h * 0.22;
+        const baseY = h * 0.88 - rise;
+        const sw2 = s.sz * w;
+        const sh2 = s.sz * w * 0.7;
+        drawSlab(s.x * w, baseY, sw2, sh2, s.tilt, 22, 0.65 * alphaScale);
       }
 
-      // --- LAYER 0: Near ground (75%–100%) — closer, darker, bigger boulders ---
-      const L0_groundY = h * 0.76;
-      const L0_alpha = 0.70 * alphaScale;
+      // Fill between L0 slabs — solid dark rubble mass
       ctx.beginPath();
       ctx.moveTo(0, h);
-      for (let x = 0; x <= w; x += 4) {
-        const n = Math.sin(x * 0.009 + 1.3) * 10
-                + Math.sin(x * 0.022 + 4.5) * 7
-                + Math.sin(x * 0.004 + 2.0) * 18;
-        ctx.lineTo(x, L0_groundY + n);
+      for (let x = 0; x <= w; x += 3) {
+        const xn = x / w;
+        const rise = vShape(xn) * h * 0.22;
+        const jag = Math.sin(x * 0.03 + 0.8) * 8 + Math.sin(x * 0.07 + 3.1) * 5;
+        ctx.lineTo(x, h * 0.90 - rise + jag);
       }
       ctx.lineTo(w, h);
       ctx.closePath();
-      ctx.fillStyle = `rgba(20, 14, 8, ${L0_alpha})`;
+      ctx.fillStyle = `rgba(16, 11, 6, ${0.70 * alphaScale})`;
       ctx.fill();
 
-      // Large boulders on layer 0 ground
-      const L0_boulders = [
-        { x: 0.06, sz: 0.07 }, { x: 0.18, sz: 0.06 }, { x: 0.30, sz: 0.08 },
-        { x: 0.44, sz: 0.065 }, { x: 0.56, sz: 0.075 }, { x: 0.68, sz: 0.06 },
-        { x: 0.80, sz: 0.07 }, { x: 0.92, sz: 0.055 },
-      ];
-      for (const b of L0_boulders) {
-        const bx = b.x * w;
-        const groundAtX = L0_groundY + Math.sin(bx * 0.009 + 1.3) * 10
-                        + Math.sin(bx * 0.022 + 4.5) * 7
-                        + Math.sin(bx * 0.004 + 2.0) * 18;
-        const bsz = b.sz * w;
-        // Boulder sitting on ground
-        ctx.beginPath();
-        ctx.moveTo(bx - bsz * 0.55, groundAtX);
-        ctx.quadraticCurveTo(bx - bsz * 0.6, groundAtX - bsz * 0.55, bx - bsz * 0.15, groundAtX - bsz * 0.8);
-        ctx.quadraticCurveTo(bx + bsz * 0.25, groundAtX - bsz * 0.9, bx + bsz * 0.55, groundAtX - bsz * 0.35);
-        ctx.quadraticCurveTo(bx + bsz * 0.6, groundAtX - bsz * 0.05, bx + bsz * 0.55, groundAtX);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(16, 10, 5, ${L0_alpha * 1.1})`;
-        ctx.fill();
-        // Lit top edge
-        ctx.beginPath();
-        ctx.moveTo(bx - bsz * 0.15, groundAtX - bsz * 0.8);
-        ctx.quadraticCurveTo(bx + bsz * 0.25, groundAtX - bsz * 0.9, bx + bsz * 0.55, groundAtX - bsz * 0.35);
-        ctx.strokeStyle = `rgba(150, 110, 45, ${0.05 * alphaScale})`;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-      }
+      // Mist swirling at the base of the rubble
+      ctx.save();
+      ctx.filter = 'blur(8px)';
+      const mistBaseY = h * 0.88;
+      const mistGrd = ctx.createLinearGradient(0, mistBaseY - h * 0.06, 0, h);
+      mistGrd.addColorStop(0, 'rgba(120,90,50,0)');
+      mistGrd.addColorStop(0.4, `rgba(130, 100, 55, ${0.10 * alphaScale})`);
+      mistGrd.addColorStop(1, `rgba(100, 75, 40, ${0.14 * alphaScale})`);
+      ctx.fillStyle = mistGrd;
+      ctx.fillRect(0, mistBaseY - h * 0.06, w, h * 0.18);
+      ctx.restore();
 
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
