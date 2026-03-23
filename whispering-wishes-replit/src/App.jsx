@@ -6377,7 +6377,7 @@ function WhisperingWishesInner() {
                                     const eqKey = state.activeTeamIndex + ':' + m.name;
                                     const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
                                     const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
-                                    const slotStyle = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center';
+                                    const slotStyle = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center relative overflow-hidden';
                                     return (
                                       <div className="space-y-1.5">
                                         {/* 3x2 equipment grid */}
