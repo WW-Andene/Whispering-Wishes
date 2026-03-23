@@ -1795,14 +1795,19 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const HEART_PTS = 64;
 
         // Helper: generate projected heart points at a given scale and offset.
-        // Standard parametric heart, widened ~12% on x to be slightly squarish.
+        // Modified parametric heart to match reference: fatter lobes (sin^2.3 vs sin^3),
+        // shorter tail (compress negative y by 0.7), slightly wider (1.1x).
         const makeHeart = (scale, oxW, oyW) => {
           const pts = [];
           for (let hi = 0; hi <= HEART_PTS; hi++) {
             const t = (hi / HEART_PTS) * Math.PI * 2;
-            const hx = 16 * Math.pow(Math.sin(t), 3);
-            const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            const wx = hx * HEART_SIZE * scale * 1.12 / 16 + (oxW || 0);
+            // sin^2.3 instead of sin^3 → fatter, rounder lobes
+            const sinT = Math.sin(t);
+            const hx = 16 * Math.sign(sinT) * Math.pow(Math.abs(sinT), 2.3);
+            let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+            // Shorten the tail: compress the bottom portion (negative hy = tail)
+            if (hy < 0) hy *= 0.7;
+            const wx = hx * HEART_SIZE * scale * 1.1 / 16 + (oxW || 0);
             const wy = -hy * HEART_SIZE * scale / 17 - HEART_SIZE + (oyW || 0);
             const p = project(wx, wy, 0);
             if (!p) return null;
