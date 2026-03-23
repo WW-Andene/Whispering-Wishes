@@ -933,7 +933,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .moon-glow-pulse {
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(200,220,255,0.6) 0%, rgba(180,210,250,0.3) 30%, rgba(150,185,220,0.1) 60%, transparent 100%);
+      background: radial-gradient(circle, rgba(255,50,50,0.6) 0%, rgba(255,30,30,0.3) 30%, rgba(255,0,0,0.1) 60%, transparent 100%);
       animation: moonGlowPulse 8s ease-in-out infinite !important;
     }
     @keyframes moonGlowPulse {
