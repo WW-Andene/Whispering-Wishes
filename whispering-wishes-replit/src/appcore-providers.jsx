@@ -933,19 +933,17 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .moon-glow-pulse {
       border-radius: 50%;
-      background: rgba(200,220,255,0.5);
-      -webkit-mask-image: radial-gradient(circle, black 0%, black 20%, transparent 70%);
-      mask-image: radial-gradient(circle, black 0%, black 20%, transparent 70%);
+      background: rgba(200,220,255,0.35);
       animation: moonGlowPulse 8s ease-in-out infinite !important;
     }
     @keyframes moonGlowPulse {
       0%, 100% {
-        opacity: 0.2;
-        transform: translate(-50%, -50%) scale(0.85);
+        opacity: 0.15;
+        transform: translate(-50%, -50%) scale(0.9);
       }
       50% {
-        opacity: 0.9;
-        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(1.15);
       }
     }
     .luck-badge-inner {
