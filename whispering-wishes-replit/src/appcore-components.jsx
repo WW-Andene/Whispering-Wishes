@@ -1790,10 +1790,9 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const a = (s / steps) * Math.PI * 2 + rot;
             const wx = Math.cos(a) * outerR;
             const wz = Math.sin(a) * outerR;
-            // Same ribbon wave + veil as the main ribbon
-            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * WAVE_AMP
-                     + Math.sin(a * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3
-                     + Math.sin(0.5 * Math.PI * 3 + a * 4 + time * 0.25) * 5;
+            // Gentle water-like wave: very low amplitude, slow
+            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * 8
+                     + Math.sin(a * 3 + time * 0.08) * 4;
             const p = project(wx, wy, wz);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
@@ -1804,9 +1803,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const a = (s / steps) * Math.PI * 2 + rot;
             const wx = Math.cos(a) * innerR;
             const wz = Math.sin(a) * innerR;
-            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * WAVE_AMP
-                     + Math.sin(a * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3
-                     + Math.sin(0.5 * Math.PI * 3 + a * 4 + time * 0.25) * 5;
+            const wy = Math.sin(a * WAVE_FREQ + time * 0.15) * 8
+                     + Math.sin(a * 3 + time * 0.08) * 4;
             const p = project(wx, wy, wz);
             if (!p) continue;
             ctx.lineTo(p.sx, p.sy);
