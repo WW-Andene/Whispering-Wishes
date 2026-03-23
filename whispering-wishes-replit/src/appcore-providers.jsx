@@ -933,17 +933,16 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .moon-glow-pulse {
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(200,220,255,0.5) 0%, rgba(180,210,250,0.25) 30%, rgba(150,185,220,0.08) 60%, transparent 100%);
-      filter: blur(4px);
+      background: radial-gradient(circle, rgba(200,220,255,0.7) 0%, rgba(180,210,250,0.4) 30%, rgba(150,185,220,0.15) 60%, transparent 100%);
       animation: moonGlowPulse 8s ease-in-out infinite !important;
     }
     @keyframes moonGlowPulse {
       0%, 100% {
-        opacity: 0.25;
+        opacity: 0.3;
         transform: translate(-50%, -50%) scale(0.9);
       }
       50% {
-        opacity: 0.8;
+        opacity: 1;
         transform: translate(-50%, -50%) scale(1.15);
       }
     }
