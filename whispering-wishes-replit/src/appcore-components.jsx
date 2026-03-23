@@ -1438,30 +1438,31 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     // Screen-space diagonal: rotate the entire output ~30° on screen
     const SCREEN_ROTATION = 30 * Math.PI / 180;
 
-    const project = (wx, wy, wz) => {
-      // Camera pull-back (closer to fill the screen)
+    // Pre-compute center offset: project origin (0,0,0) to find where center lands,
+    // then offset everything so the ring center sits at screen center
+    let centerOffX = 0, centerOffY = 0;
+
+    const projectRaw = (wx, wy, wz) => {
       const cz = wz + 400;
       const ey = wy * cosT - cz * sinT;
       const ez = wy * sinT + cz * cosT;
-
       if (ez < 10) return null;
       const fov = Math.min(w, h) * 1.1;
       const scale = fov / ez;
-
-      // Project to screen center
       const sx = wx * scale;
       const sy = ey * scale;
-
-      // Rotate on screen for diagonal appearance
       const cosR = Math.cos(SCREEN_ROTATION), sinR = Math.sin(SCREEN_ROTATION);
-      const rsx = sx * cosR - sy * sinR;
-      const rsy = sx * sinR + sy * cosR;
+      return { sx: sx * cosR - sy * sinR, sy: sx * sinR + sy * cosR, scale, depth: ez };
+    };
 
+    const project = (wx, wy, wz) => {
+      const p = projectRaw(wx, wy, wz);
+      if (!p) return null;
       return {
-        sx: w * 0.5 + rsx,
-        sy: h * 0.5 + rsy,
-        scale,
-        depth: ez
+        sx: w * 0.5 + p.sx - centerOffX,
+        sy: h * 0.5 + p.sy - centerOffY,
+        scale: p.scale,
+        depth: p.depth
       };
     };
 
@@ -1478,6 +1479,11 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // Slow global rotation (very gentle)
       const rot = time * 0.035;
+
+      // Compute center offset so ring center maps to screen center
+      const rawCenter = projectRaw(0, 0, 0);
+      centerOffX = rawCenter ? rawCenter.sx : 0;
+      centerOffY = rawCenter ? rawCenter.sy : 0;
 
       // --- Ambient glow at center ---
       const centerP = project(0, 0, 0);
