@@ -1763,28 +1763,40 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // --- Water ripple: concentric rings pulsating from center ---
-        const WAVE_MAX_R = Math.max(w, h) * 0.8;
-        const WAVE_RINGS = 18;
-        const WAVELENGTH = 75;
-        const WAVE_AMP = 4;
-        const WAVE_SPEED = 0.25;
+        // --- Water ripple: expanding rings from center, like the previous filled version ---
+        const WAVE_MAX_R = RADIUS + RIBBON_WIDTH; // stay within disc
+        const WAVE_RINGS = 40;
+        const WAVE_SPACING = WAVE_MAX_R / WAVE_RINGS;
+        const WAVELENGTH = 120; // fewer, wider waves
+        const WAVE_AMP = 8;
+        const WAVE_SPEED = 0.12; // slower
         const STEPS = 80;
 
-        for (let ri = 1; ri <= WAVE_RINGS; ri++) {
-          const r = ri * (WAVE_MAX_R / WAVE_RINGS);
+        for (let ri = WAVE_RINGS; ri >= 1; ri--) {
+          const r = ri * WAVE_SPACING;
           const phase = (r / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
           const sinVal = Math.sin(phase);
+          const cosVal = Math.cos(phase);
+
+          const centerFade = Math.min(1, r / 40);
+          const edgeFade = Math.max(0, 1 - Math.pow(r / WAVE_MAX_R, 2));
+          const amp = WAVE_AMP * centerFade * edgeFade;
+          const wy = sinVal * amp;
+
+          const slopeLight = cosVal * 0.5 + 0.5;
           const peakGlint = Math.max(0, sinVal);
 
-          const centerFade = Math.min(1, r / 50);
-          const edgeFade = Math.max(0, 1 - Math.pow(r / WAVE_MAX_R, 2));
-          const wy = sinVal * WAVE_AMP * centerFade * edgeFade;
-
-          // Bright on crests, dark on troughs
-          const lightness = 25 + peakGlint * 60;
-          const alpha = (0.04 + peakGlint * 0.12) * alphaScale * edgeFade;
+          const lightness = 12 + slopeLight * 48 + peakGlint * 25;
+          const sat = 50 + (1 - Math.abs(sinVal)) * 30;
+          const hue = 205 + peakGlint * 15;
+          const alpha = (0.06 + slopeLight * 0.08 + peakGlint * 0.06) * alphaScale * edgeFade;
           if (alpha < 0.005) continue;
+
+          // Filled band between this ring and next inner
+          const rInner = Math.max(0, r - WAVE_SPACING);
+          const phaseInner = (rInner / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
+          const ampInner = WAVE_AMP * Math.min(1, rInner / 40) * Math.max(0, 1 - Math.pow(rInner / WAVE_MAX_R, 2));
+          const wyInner = Math.sin(phaseInner) * ampInner;
 
           ctx.beginPath();
           let started = false;
@@ -1795,9 +1807,32 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
-          ctx.strokeStyle = `hsla(210, 65%, ${lightness}%, ${alpha})`;
-          ctx.lineWidth = 1.5 + peakGlint * 2.5;
-          ctx.stroke();
+          for (let s = STEPS; s >= 0; s--) {
+            const a = (s / STEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rInner, wyInner, Math.sin(a) * rInner);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lightness}%, ${alpha})`;
+          ctx.fill();
+
+          // Specular crest highlight
+          if (peakGlint > 0.7) {
+            ctx.beginPath();
+            started = false;
+            for (let s = 0; s <= STEPS; s++) {
+              const a = (s / STEPS) * Math.PI * 2 + rot;
+              const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
+              if (!p) { started = false; continue; }
+              if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+              else ctx.lineTo(p.sx, p.sy);
+            }
+            const ga = ((peakGlint - 0.7) / 0.3) * 0.15 * alphaScale * edgeFade;
+            ctx.strokeStyle = `hsla(195, 85%, 90%, ${ga})`;
+            ctx.lineWidth = 1.5 + peakGlint * 2;
+            ctx.stroke();
+          }
         }
       }
     };
