@@ -1489,9 +1489,9 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       const centerP = project(0, 0, 0);
       if (centerP) {
         const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.45);
-        grd.addColorStop(0, `rgba(60, 60, 180, ${0.2 * alphaScale})`);
-        grd.addColorStop(0.2, `rgba(40, 40, 150, ${0.12 * alphaScale})`);
-        grd.addColorStop(0.5, `rgba(15, 15, 70, ${0.05 * alphaScale})`);
+        grd.addColorStop(0, `rgba(60, 140, 180, ${0.18 * alphaScale})`);
+        grd.addColorStop(0.2, `rgba(40, 100, 160, ${0.10 * alphaScale})`);
+        grd.addColorStop(0.5, `rgba(15, 40, 80, ${0.04 * alphaScale})`);
         grd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, w, h);
@@ -1501,8 +1501,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // Ring params
       const RADIUS = 250;          // radius of the circular ring (smaller, less big)
       const RIBBON_WIDTH = 90;     // width of the ribbon
-      const ROWS = 32;             // more rows across ribbon width
-      const DOTS_AROUND = 400;     // doubled squares around the circumference
+      const ROWS = 40;             // more rows across ribbon width
+      const DOTS_AROUND = 600;     // doubled again
       const WAVE_AMP = 35;         // reduced wave amplitude
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
@@ -1565,9 +1565,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
         const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
-        const hue = 220 + heightNorm * 30 + rowT * 15;
-        const sat = 60 + heightNorm * 30;
-        const lit = 45 + brightness * 40;
+        // Aemeath frost/ice colors: cyan → icy blue → cold white on crests
+        const hue = 190 + heightNorm * 20 + rowT * 10;
+        const sat = 55 + heightNorm * 35;
+        const lit = 50 + brightness * 40;
 
         const dotAlpha = brightness * 0.5 * alphaScale;
         if (dotAlpha < 0.02) continue;
@@ -1582,22 +1583,25 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore();
       }
 
-      // --- Ribbon edge lines (top and bottom edge of the ribbon) ---
-      for (let edge = 0; edge < 2; edge++) {
-        const r = edge === 0 ? RADIUS - RIBBON_WIDTH * 0.5 : RADIUS + RIBBON_WIDTH * 0.5;
-        const hue = edge === 0 ? 220 : 240;
-        const lineAlpha = 0.1 * alphaScale;
+      // --- Ribbon ring lines (multiple across the width) ---
+      const LINE_ROWS = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+      for (let li = 0; li < LINE_ROWS.length; li++) {
+        const rowT_l = LINE_ROWS[li];
+        const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT_l * RIBBON_WIDTH;
+        const lineAlpha = (li === 0 || li === LINE_ROWS.length - 1 ? 0.1 : 0.05) * alphaScale;
 
         ctx.beginPath();
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = li === 0 || li === LINE_ROWS.length - 1 ? 1.2 : 0.6;
         let started = false;
 
-        for (let i = 0; i <= DOTS_AROUND; i++) {
-          const angle = (i / DOTS_AROUND) * Math.PI * 2 + rot;
+        for (let i = 0; i <= 200; i++) {
+          const angle = (i / 200) * Math.PI * 2 + rot;
           const wx = Math.cos(angle) * r;
           const wz = Math.sin(angle) * r;
+          const veil_l = Math.sin(rowT_l * Math.PI * 3 + angle * 4 + time * 0.25) * 5
+                       + Math.sin(rowT_l * Math.PI * 5 - angle * 2 + time * 0.18) * 3;
           const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
-                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3 + veil_l;
 
           const p = project(wx, wy, wz);
           if (!p) { started = false; continue; }
@@ -1606,42 +1610,55 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           else ctx.lineTo(p.sx, p.sy);
         }
 
-        ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${lineAlpha})`;
+        ctx.strokeStyle = `hsla(195, 80%, 70%, ${lineAlpha})`;
         ctx.stroke();
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${lineAlpha * 0.25})`;
-        ctx.stroke();
-      }
-
-      // --- Center line of ribbon ---
-      {
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        let started = false;
-        for (let i = 0; i <= DOTS_AROUND; i++) {
-          const angle = (i / DOTS_AROUND) * Math.PI * 2 + rot;
-          const wx = Math.cos(angle) * RADIUS;
-          const wz = Math.sin(angle) * RADIUS;
-          const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
-                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
-
-          const p = project(wx, wy, wz);
-          if (!p) { started = false; continue; }
-
-          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-          else ctx.lineTo(p.sx, p.sy);
+        if (li === 0 || li === LINE_ROWS.length - 1) {
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = `hsla(195, 75%, 55%, ${lineAlpha * 0.2})`;
+          ctx.stroke();
         }
-        ctx.strokeStyle = `hsla(230, 85%, 75%, ${0.08 * alphaScale})`;
-        ctx.stroke();
       }
 
-      // --- Sparkle highlights ---
-      for (let i = 0; i < 30; i++) {
+      // --- Inner ribbon: vertical mixer bars (not rotating, just moving up/down) ---
+      const INNER_RADIUS = RADIUS * 0.55;
+      const INNER_BARS = 80;
+      for (let i = 0; i < INNER_BARS; i++) {
+        const angleT_b = i / INNER_BARS;
+        const angle = angleT_b * Math.PI * 2 + rot;
+
+        const wx = Math.cos(angle) * INNER_RADIUS;
+        const wz = Math.sin(angle) * INNER_RADIUS;
+
+        // Base Y follows the ribbon wave
+        const baseY = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP * 0.5;
+
+        // Each bar has a different height that pulses like a sound mixer
+        const hash = Math.sin(i * 173.7) * 43758.5453;
+        const barSeed = hash - Math.floor(hash);
+        const barHeight = 8 + barSeed * 20 + Math.sin(time * 0.4 + i * 0.8) * 10;
+
+        // Project the bar center
+        const p = project(wx, baseY, wz);
+        if (!p) continue;
+        if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
+
+        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
+        const barW = (1 + depthNorm * 2) * p.scale * 0.3;
+        const barH = barHeight * p.scale * 0.15;
+        const barAlpha = (0.15 + depthNorm * 0.3) * alphaScale;
+
+        // Vertical bars: no rotation, just straight up/down on screen
+        ctx.fillStyle = `rgba(140, 220, 240, ${barAlpha})`;
+        ctx.fillRect(p.sx - barW * 0.5, p.sy - barH * 0.5, barW, barH);
+      }
+
+      // --- Sparkle highlights (frost colors) ---
+      for (let i = 0; i < 35; i++) {
         const seed = i * 137.508;
-        const angleT = (seed * 1.73) % 1;
-        const rowT = (seed * 0.31) % 1;
-        const angle = angleT * Math.PI * 2 + rot;
-        const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT * RIBBON_WIDTH;
+        const angleT_s = (seed * 1.73) % 1;
+        const rowT_s = (seed * 0.31) % 1;
+        const angle = angleT_s * Math.PI * 2 + rot;
+        const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT_s * RIBBON_WIDTH;
 
         const wx = Math.cos(angle) * r;
         const wz = Math.sin(angle) * r;
@@ -1661,21 +1678,21 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(200, 60%, 92%, ${sparkAlpha})`;
+        ctx.fillStyle = `rgba(180, 230, 255, ${sparkAlpha})`;
         ctx.fill();
 
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sparkSize * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(210, 80%, 65%, ${sparkAlpha * 0.12})`;
+        ctx.fillStyle = `rgba(100, 200, 240, ${sparkAlpha * 0.12})`;
         ctx.fill();
       }
 
-      // --- Epicenter core ---
+      // --- Epicenter core (frost glow) ---
       if (centerP) {
         const pulse = 0.6 + Math.sin(time * 0.5) * 0.25;
         const coreGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, 55 * pulse);
-        coreGrd.addColorStop(0, `rgba(160, 200, 255, ${0.15 * pulse * alphaScale})`);
-        coreGrd.addColorStop(0.4, `rgba(100, 130, 240, ${0.07 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0, `rgba(180, 230, 255, ${0.15 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0.4, `rgba(100, 200, 240, ${0.07 * pulse * alphaScale})`);
         coreGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = coreGrd;
         ctx.beginPath();
