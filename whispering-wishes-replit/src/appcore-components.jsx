@@ -1763,43 +1763,100 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // --- Ripple rings: "stone in a puddle" expanding from center in 3D ---
-        // --- Puddle wave: continuous sine wave radiating from center ---
-        // Like dropping a stone: concentric sine ripples on the disc plane
-        // Every point on the disc gets a Y displacement based on distance from center
-        const PUDDLE_RINGS = 30;
-        const PUDDLE_MAX_R = RADIUS + RIBBON_WIDTH;
-        const PUDDLE_WAVELENGTH = 80; // distance between wave peaks
-        const PUDDLE_AMP = 12; // wave height
-        const PUDDLE_SPEED = 0.3; // how fast waves travel outward
+        // --- Water ripple: bold concentric rings like stone dropped in water ---
+        // Dense filled bands with specular crests and dark troughs
+        const WAVE_RINGS = 70;
+        const WAVE_MAX_R = RADIUS + RIBBON_WIDTH;
+        const WAVE_SPACING = WAVE_MAX_R / WAVE_RINGS;
+        const WAVELENGTH = 55;
+        const WAVE_AMP = 20;
+        const WAVE_SPEED = 0.25;
+        const STEPS = 90;
 
-        for (let ri = 0; ri < PUDDLE_RINGS; ri++) {
-          const r = (ri / PUDDLE_RINGS) * PUDDLE_MAX_R;
-          if (r < 10) continue;
+        // Draw from outside in so inner (closer) rings layer on top
+        for (let ri = WAVE_RINGS; ri >= 1; ri--) {
+          const r = ri * WAVE_SPACING;
+          const phase = (r / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
+          const sinVal = Math.sin(phase);
+          const cosVal = Math.cos(phase); // slope direction
 
-          // Y = sine wave based on distance from center, moving outward over time
-          const wy = Math.sin(r / PUDDLE_WAVELENGTH * Math.PI * 2 - time * PUDDLE_SPEED) * PUDDLE_AMP
-                   * Math.max(0, 1 - r / PUDDLE_MAX_R); // fade amplitude at edges
+          // Amplitude: fade at center and edge
+          const centerFade = Math.min(1, r / 40);
+          const edgeFade = Math.max(0, 1 - (r / WAVE_MAX_R) * 0.8);
+          const amp = WAVE_AMP * centerFade * edgeFade;
+          const wy = sinVal * amp;
 
-          const steps = 80;
+          // Light model: cosVal>0 = slope facing light = bright, cosVal<0 = shadow
+          const slopeLight = cosVal * 0.5 + 0.5; // 0..1
+          const peakGlint = Math.max(0, sinVal); // bright at peaks
+          const troughDepth = Math.max(0, -sinVal); // dark at troughs
+
+          const lightness = 12 + slopeLight * 48 + peakGlint * 25;
+          const sat = 50 + (1 - Math.abs(sinVal)) * 30;
+          const hue = 205 + peakGlint * 15;
+          const alpha = (0.06 + slopeLight * 0.08 + peakGlint * 0.06) * alphaScale * edgeFade;
+
+          if (alpha < 0.005) continue;
+
+          // Inner ring for filled band
+          const rInner = Math.max(0, r - WAVE_SPACING);
+          const phaseInner = (rInner / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
+          const ampInner = WAVE_AMP * Math.min(1, rInner / 40) * Math.max(0, 1 - (rInner / WAVE_MAX_R) * 0.8);
+          const wyInner = Math.sin(phaseInner) * ampInner;
+
+          // Draw filled band between outer and inner ring
           ctx.beginPath();
           let started = false;
-          for (let s = 0; s <= steps; s++) {
-            const a = (s / steps) * Math.PI * 2 + rot;
+          for (let s = 0; s <= STEPS; s++) {
+            const a = (s / STEPS) * Math.PI * 2 + rot;
             const p = project(Math.cos(a) * r, wy, Math.sin(a) * r);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
+          for (let s = STEPS; s >= 0; s--) {
+            const a = (s / STEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rInner, wyInner, Math.sin(a) * rInner);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lightness}%, ${alpha})`;
+          ctx.fill();
 
-          // Brighter on wave crests, dimmer in troughs
-          const crestNorm = (wy / PUDDLE_AMP + 1) * 0.5; // 0=trough, 1=crest
-          const hue = 200 + crestNorm * 60;
-          const alpha = (0.02 + crestNorm * 0.06) * alphaScale;
+          // Bright specular highlight on wave crests
+          if (peakGlint > 0.65) {
+            ctx.beginPath();
+            started = false;
+            for (let s = 0; s <= STEPS; s++) {
+              const a = (s / STEPS) * Math.PI * 2 + rot;
+              const p = project(Math.cos(a) * r, wy - 1.5, Math.sin(a) * r);
+              if (!p) { started = false; continue; }
+              if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+              else ctx.lineTo(p.sx, p.sy);
+            }
+            const ga = ((peakGlint - 0.65) / 0.35) * 0.18 * alphaScale * edgeFade;
+            ctx.strokeStyle = `hsla(195, 85%, 90%, ${ga})`;
+            ctx.lineWidth = 1.5 + peakGlint * 2;
+            ctx.stroke();
+          }
 
-          ctx.strokeStyle = `hsla(${hue}, 70%, ${55 + crestNorm * 30}%, ${alpha})`;
-          ctx.lineWidth = 0.8 + crestNorm * 1.5;
-          ctx.stroke();
+          // Dark shadow line in troughs
+          if (troughDepth > 0.6) {
+            ctx.beginPath();
+            started = false;
+            for (let s = 0; s <= STEPS; s++) {
+              const a = (s / STEPS) * Math.PI * 2 + rot;
+              const p = project(Math.cos(a) * r, wy + 1.5, Math.sin(a) * r);
+              if (!p) { started = false; continue; }
+              if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+              else ctx.lineTo(p.sx, p.sy);
+            }
+            const ta = ((troughDepth - 0.6) / 0.4) * 0.12 * alphaScale * edgeFade;
+            ctx.strokeStyle = `hsla(220, 70%, 6%, ${ta})`;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+          }
         }
       }
     };
