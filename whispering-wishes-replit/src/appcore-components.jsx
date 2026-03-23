@@ -1766,32 +1766,49 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // --- Water ripple: discrete rings expanding outward from center ---
         // Each ring spawns at center, expands to edge, fades out, respawns
         const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
-        const RIPPLE_COUNT = 5; // number of rings cycling
-        const RIPPLE_CYCLE = 12; // seconds for full cycle (slow)
-        const RIPPLE_AMP = 6;
+        const RIPPLE_COUNT = 5;
+        const RIPPLE_CYCLE = 20; // much slower: 20 seconds per cycle
+        const RIPPLE_AMP = 18; // taller for more 3D depth
         const STEPS = 80;
-        const BAND_W = 12; // width of each ring band
+        const BAND_W = 18; // wider bands
 
         for (let i = 0; i < RIPPLE_COUNT; i++) {
-          // Each ring is staggered evenly across the cycle
           const phase = ((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1;
           const r = phase * RIPPLE_MAX_R;
           if (r < 5) continue;
 
-          // Fade: ramp up quickly from center, fade out at edge
-          const fade = Math.sin(phase * Math.PI); // 0 at center, peak at middle, 0 at edge
+          const fade = Math.sin(phase * Math.PI);
           const alpha = fade * 0.14 * alphaScale;
           if (alpha < 0.005) continue;
 
-          const wy = -RIPPLE_AMP * fade; // slight 3D lift at peak visibility
+          const wy = -RIPPLE_AMP * fade; // 3D height of the wave crest
 
-          // Outer filled band
           const rOuter = r + BAND_W * 0.5 * fade;
           const rInner = Math.max(0, r - BAND_W * 0.5 * fade);
 
-          // Fill the band
+          // Dark underside of wave (inner slope, sits lower)
           ctx.beginPath();
           let started = false;
+          for (let s = 0; s <= STEPS; s++) {
+            const a = (s / STEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rOuter, wy * 0.3, Math.sin(a) * rOuter);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+          for (let s = STEPS; s >= 0; s--) {
+            const a = (s / STEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rInner, 0, Math.sin(a) * rInner);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(215, 55%, 18%, ${alpha * 0.6})`;
+          ctx.fill();
+
+          // Bright top face of wave (crest, sits higher)
+          ctx.beginPath();
+          started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
             const p = project(Math.cos(a) * rOuter, wy, Math.sin(a) * rOuter);
@@ -1801,26 +1818,26 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
           for (let s = STEPS; s >= 0; s--) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rInner, wy * 0.5, Math.sin(a) * rInner);
+            const p = project(Math.cos(a) * rInner, wy * 0.7, Math.sin(a) * rInner);
             if (!p) continue;
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(210, 60%, 45%, ${alpha * 0.5})`;
+          ctx.fillStyle = `hsla(210, 60%, 50%, ${alpha * 0.5})`;
           ctx.fill();
 
-          // Bright crest line on top of band
+          // Specular highlight line at the very top of crest
           ctx.beginPath();
           started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
+            const p = project(Math.cos(a) * r, wy - 2, Math.sin(a) * r);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
-          ctx.strokeStyle = `hsla(200, 80%, 82%, ${alpha})`;
-          ctx.lineWidth = 1.5 + fade * 2;
+          ctx.strokeStyle = `hsla(195, 85%, 88%, ${alpha * 1.2})`;
+          ctx.lineWidth = 1.5 + fade * 2.5;
           ctx.stroke();
         }
       }
