@@ -81,6 +81,7 @@ import {
   TabBackground,
   BackgroundGlow,
   TriangleMirrorWave,
+  ResonanceField,
   KuroSelect,
   CollectionGridSection,
   CharacterDetailModal,
@@ -187,6 +188,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   oledMode: false,
   swipeNavigation: false,
   animationsEnabled: 'on', // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
+  bgStyle: 'waves', // 'waves' | 'resonance' — background animation style
   theme: 'default' // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
 });
 const TRACKER_CATEGORIES = Object.freeze([
@@ -3381,8 +3383,14 @@ function WhisperingWishesInner() {
 
   return (
     <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
-      <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-      <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+      {visualSettings.bgStyle === 'resonance' ? (
+        <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+      ) : (
+        <>
+          <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+          <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+        </>
+      )}
       <KuroStyles oledMode={visualSettings.oledMode} />
 
       {/* Onboarding Modal */}
@@ -7222,6 +7230,33 @@ function WhisperingWishesInner() {
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
                   <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                )}
+
+                {/* Background Style Selector */}
+                {visualSettings.animationsEnabled !== 'off' && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle !== 'resonance' ? { background: 'var(--bg-btn)' } : undefined}>
+                        <Diamond size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Background Style</div>
+                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Resonance — Holographic rings & energy' : 'Waves — Triangle mirror wave'}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'waves' })}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'waves' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                        style={visualSettings.bgStyle !== 'waves' ? { background: 'var(--bg-btn)' } : undefined}
+                      >Waves</button>
+                      <button
+                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'resonance' })}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                        style={visualSettings.bgStyle !== 'resonance' ? { background: 'var(--bg-btn)' } : undefined}
+                      >Resonance</button>
+                    </div>
+                  </div>
                 )}
 
                 {/* Theme Selector */}

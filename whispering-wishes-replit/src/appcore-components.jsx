@@ -1394,6 +1394,266 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
+// LAYER ALT: Resonance Field — holographic concentric rings, energy streaks & sparkle particles
+// Inspired by Honkai-style digital energy fields: swirling dotted rings, flowing wave lines, scattered sparks
+const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    if (animationsEnabled === 'off' || animationsEnabled === false) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let animId;
+
+    const isFull = animationsEnabled === 'full';
+    const alphaScale = isFull ? 1.4 : 1.0;
+    const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,8)';
+
+    let w, h;
+    // Concentric rings config
+    const RING_COUNT = 7;
+    const rings = [];
+    // Energy streaks
+    const STREAK_COUNT = 18;
+    const streaks = [];
+    // Sparkle particles
+    const SPARK_COUNT = 80;
+    const sparks = [];
+
+    const init = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+
+      // Init rings — centered slightly below middle, varying radii
+      rings.length = 0;
+      const cx = w * 0.5, cy = h * 0.55;
+      for (let i = 0; i < RING_COUNT; i++) {
+        const baseR = (Math.min(w, h) * 0.12) + i * (Math.min(w, h) * 0.09);
+        rings.push({
+          cx, cy, baseR,
+          speed: (0.15 + i * 0.04) * (i % 2 === 0 ? 1 : -1), // alternate spin direction
+          dashLen: 3 + i * 1.5,
+          gapLen: 8 + i * 3,
+          wobbleAmp: 0.03 + i * 0.008,
+          wobbleFreq: 0.4 + i * 0.1,
+          hue: 220 + i * 12, // blue → purple range
+          thickness: 1.2 + (RING_COUNT - i) * 0.15,
+          eccentricity: 0.65 + i * 0.03, // ellipse flattening (perspective tilt)
+          tiltPhase: i * 0.9,
+        });
+      }
+
+      // Init energy streaks — flowing wave lines across screen
+      streaks.length = 0;
+      for (let i = 0; i < STREAK_COUNT; i++) {
+        streaks.push({
+          yBase: Math.random() * h,
+          amplitude: 30 + Math.random() * 80,
+          frequency: 0.002 + Math.random() * 0.004,
+          speed: 0.3 + Math.random() * 0.5,
+          phase: Math.random() * Math.PI * 2,
+          hue: 200 + Math.random() * 60, // blue to violet
+          alpha: 0.06 + Math.random() * 0.12,
+          width: 0.5 + Math.random() * 1.5,
+          length: w * (0.3 + Math.random() * 0.5),
+          xOffset: Math.random() * w,
+        });
+      }
+
+      // Init sparkle particles
+      sparks.length = 0;
+      for (let i = 0; i < SPARK_COUNT; i++) {
+        sparks.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: -0.1 - Math.random() * 0.4,
+          size: 0.8 + Math.random() * 2,
+          hue: 190 + Math.random() * 70,
+          phase: Math.random() * Math.PI * 2,
+          pulseSpeed: 1.5 + Math.random() * 2,
+          life: Math.random(),
+        });
+      }
+    };
+    init();
+    window.addEventListener('resize', init);
+
+    let lastFrame = 0;
+
+    const draw = (t) => {
+      animId = requestAnimationFrame(draw);
+      if (t - lastFrame < 50) return; // ~20fps
+      lastFrame = t;
+      const time = t * 0.001;
+
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, w, h);
+
+      // --- Draw concentric rings (perspective-tilted ellipses with dashed dotted lines) ---
+      for (let i = 0; i < rings.length; i++) {
+        const ring = rings[i];
+        const angle = time * ring.speed;
+        const wobble = Math.sin(time * ring.wobbleFreq + ring.tiltPhase) * ring.wobbleAmp;
+        const rx = ring.baseR + Math.sin(time * 0.3 + i) * 10;
+        const ry = rx * (ring.eccentricity + wobble);
+
+        ctx.save();
+        ctx.translate(ring.cx, ring.cy);
+        ctx.rotate(angle * 0.1 + wobble);
+
+        // Draw dashed ellipse
+        ctx.beginPath();
+        ctx.setLineDash([ring.dashLen, ring.gapLen]);
+        ctx.lineDashOffset = -time * ring.speed * 40;
+        ctx.ellipse(0, 0, rx, ry, angle, 0, Math.PI * 2);
+        const ringAlpha = (0.15 + Math.sin(time * 0.5 + i * 0.7) * 0.08) * alphaScale;
+        ctx.strokeStyle = `hsla(${ring.hue}, 80%, 65%, ${ringAlpha})`;
+        ctx.lineWidth = ring.thickness;
+        ctx.stroke();
+
+        // Inner glow ring (softer, wider)
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.ellipse(0, 0, rx, ry, angle, 0, Math.PI * 2);
+        ctx.strokeStyle = `hsla(${ring.hue}, 90%, 70%, ${ringAlpha * 0.25})`;
+        ctx.lineWidth = ring.thickness * 4;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // --- Draw dotted grid points along rings (holographic dot matrix) ---
+      for (let i = 0; i < Math.min(rings.length, 5); i++) {
+        const ring = rings[i];
+        const angle = time * ring.speed;
+        const rx = ring.baseR + Math.sin(time * 0.3 + i) * 10;
+        const ry = rx * ring.eccentricity;
+        const dotCount = Math.floor(rx * 0.18);
+
+        for (let d = 0; d < dotCount; d++) {
+          const theta = (d / dotCount) * Math.PI * 2 + angle;
+          const px = ring.cx + Math.cos(theta) * rx * Math.cos(angle * 0.1);
+          const py = ring.cy + Math.sin(theta) * ry;
+          // Rotate around ring center
+          const cosA = Math.cos(angle * 0.1);
+          const sinA = Math.sin(angle * 0.1);
+          const dx = px - ring.cx, dy = py - ring.cy;
+          const fx = ring.cx + dx * cosA - dy * sinA;
+          const fy = ring.cy + dx * sinA + dy * cosA;
+
+          if (fx < -10 || fx > w + 10 || fy < -10 || fy > h + 10) continue;
+
+          const dotAlpha = (0.2 + Math.sin(time * 2 + d * 0.5) * 0.15) * alphaScale;
+          const dotSize = 1 + Math.sin(time * 1.5 + d) * 0.5;
+          ctx.beginPath();
+          ctx.arc(fx, fy, dotSize, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${ring.hue + 20}, 85%, 75%, ${dotAlpha})`;
+          ctx.fill();
+        }
+      }
+
+      // --- Draw energy streaks (flowing sine wave lines) ---
+      for (let i = 0; i < streaks.length; i++) {
+        const s = streaks[i];
+        ctx.beginPath();
+        const xStart = ((s.xOffset - time * s.speed * 60) % (w + s.length)) - s.length * 0.3;
+
+        for (let x = 0; x < s.length; x += 4) {
+          const px = xStart + x;
+          if (px < -20 || px > w + 20) continue;
+          const py = s.yBase + Math.sin((px * s.frequency) + time * s.speed + s.phase) * s.amplitude
+                     + Math.sin((px * s.frequency * 0.5) + time * s.speed * 0.7) * s.amplitude * 0.4;
+          if (x === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+
+        // Fade at edges
+        const grad = ctx.createLinearGradient(xStart, 0, xStart + s.length, 0);
+        grad.addColorStop(0, `hsla(${s.hue}, 85%, 70%, 0)`);
+        grad.addColorStop(0.15, `hsla(${s.hue}, 85%, 70%, ${s.alpha * alphaScale})`);
+        grad.addColorStop(0.5, `hsla(${s.hue}, 90%, 80%, ${s.alpha * 1.3 * alphaScale})`);
+        grad.addColorStop(0.85, `hsla(${s.hue}, 85%, 70%, ${s.alpha * alphaScale})`);
+        grad.addColorStop(1, `hsla(${s.hue}, 85%, 70%, 0)`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = s.width;
+        ctx.stroke();
+      }
+
+      // --- Draw sparkle particles ---
+      for (let i = 0; i < sparks.length; i++) {
+        const sp = sparks[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.life += 0.003;
+
+        // Wrap around
+        if (sp.y < -10) { sp.y = h + 10; sp.x = Math.random() * w; sp.life = 0; }
+        if (sp.x < -10) sp.x = w + 10;
+        if (sp.x > w + 10) sp.x = -10;
+
+        const pulse = 0.3 + Math.sin(time * sp.pulseSpeed + sp.phase) * 0.7;
+        const sparkAlpha = pulse * 0.4 * alphaScale;
+        if (sparkAlpha < 0.02) continue;
+
+        // 4-point star shape
+        const sz = sp.size * (0.8 + pulse * 0.4);
+        ctx.save();
+        ctx.translate(sp.x, sp.y);
+        ctx.rotate(time * 0.5 + sp.phase);
+        ctx.beginPath();
+        ctx.moveTo(0, -sz * 2);
+        ctx.lineTo(sz * 0.3, -sz * 0.3);
+        ctx.lineTo(sz * 2, 0);
+        ctx.lineTo(sz * 0.3, sz * 0.3);
+        ctx.lineTo(0, sz * 2);
+        ctx.lineTo(-sz * 0.3, sz * 0.3);
+        ctx.lineTo(-sz * 2, 0);
+        ctx.lineTo(-sz * 0.3, -sz * 0.3);
+        ctx.closePath();
+        ctx.fillStyle = `hsla(${sp.hue}, 80%, 80%, ${sparkAlpha})`;
+        ctx.fill();
+
+        // Core glow
+        ctx.beginPath();
+        ctx.arc(0, 0, sz * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${sp.hue}, 60%, 95%, ${sparkAlpha * 0.6})`;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // --- Center glow pulse (holographic core light) ---
+      const glowPulse = 0.4 + Math.sin(time * 0.6) * 0.15;
+      const coreGrad = ctx.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, Math.min(w, h) * 0.45);
+      coreGrad.addColorStop(0, `hsla(240, 70%, 60%, ${0.08 * glowPulse * alphaScale})`);
+      coreGrad.addColorStop(0.3, `hsla(260, 60%, 50%, ${0.04 * glowPulse * alphaScale})`);
+      coreGrad.addColorStop(1, 'hsla(240, 50%, 30%, 0)');
+      ctx.fillStyle = coreGrad;
+      ctx.fillRect(0, 0, w, h);
+    };
+    animId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', init);
+    };
+  }, [oledMode, animationsEnabled]);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
+});
+ResonanceField.displayName = 'ResonanceField';
+
 // §BANNER_PARTICLES: Theme-driven particle overlay — each banner gets a fitting visual personality
 // Character-specific theme overrides (matched to their banner art mood)
 const CHARACTER_THEME_MAP = {
@@ -2645,7 +2905,7 @@ export {
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
   AppErrorBoundary, TabErrorBoundary,
-  BackgroundGlow, TriangleMirrorWave,
+  BackgroundGlow, TriangleMirrorWave, ResonanceField,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
