@@ -2583,16 +2583,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Alternating light/dark horizontal lines inside the rectangle
-        // Clip to the trapezoid interior
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(botL, botY);
-        ctx.lineTo(topL, topY);
-        ctx.lineTo(topR, topY);
-        ctx.lineTo(botR, botY);
-        ctx.closePath();
-        ctx.clip();
+        // Alternating light/dark staircase stripes (no clip — shapes are explicit)
 
         // Stripes bottom→top: dark then light, light shrinks toward top
         // Halved base heights for twice the total count
@@ -2628,7 +2619,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           y = lY;
         }
-        ctx.restore();
 
         drawEdge(botL, botY, topL, topY, edgeAlpha);
         drawEdge(botR, botY, topR, topY, edgeAlpha);
