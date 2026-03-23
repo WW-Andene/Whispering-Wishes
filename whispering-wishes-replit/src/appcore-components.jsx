@@ -2784,10 +2784,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
                 const sa = sHash(stepIdx, 110 + si);
                 const sb = sHash(stepIdx, 115 + si);
                 const sc = sHash(stepIdx, 120 + si);
-                // Scatter near the break edge
+                // Scatter near the break edge, elevated above step
                 const shX = brkCenterX + (sa - 0.5) * breakW * 1.5;
-                const shY = brkCenterY + (sb - 0.5) * darkH * 1.8;
-                const shSz = stepW * (0.01 + sc * 0.02);
+                const shY = brkCenterY - darkH * (0.5 + sb * 1.5);
+                const shSz = stepW * (0.006 + sc * 0.028); // wide size range
                 shards.push({
                   x: shX, y: shY, sz: shSz,
                   seed: stepIdx * 10 + si,
@@ -2937,48 +2937,66 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           shardsByStep[stepKey].push({ x: bobX, y: bobY, idx: si });
         }
 
-        // Static electricity arcs between shards in same group
+        // Static electricity arcs between shards + ambient glow
         for (const key in shardsByStep) {
           const group = shardsByStep[key];
           if (group.length < 2) continue;
-          // Draw arcs between consecutive pairs
+
+          // Tiny ambient glow around the shard cluster
+          let cx = 0, cy = 0;
+          for (const g of group) { cx += g.x; cy += g.y; }
+          cx /= group.length; cy /= group.length;
+          const glowR = h * 0.02;
+          const glowFlicker = 0.5 + Math.sin(time * 2.5 + cx * 0.1) * 0.3
+                            + Math.sin(time * 4.1 + cy * 0.1) * 0.2;
+          const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+          grad.addColorStop(0, `rgba(255, 110, 40, ${0.06 * glowFlicker})`);
+          grad.addColorStop(0.5, `rgba(255, 80, 30, ${0.025 * glowFlicker})`);
+          grad.addColorStop(1, 'rgba(255, 60, 20, 0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(cx - glowR, cy - glowR, glowR * 2, glowR * 2);
+
+          // Arcs between consecutive pairs
           for (let gi = 0; gi < group.length - 1; gi++) {
             const a = group[gi], b = group[gi + 1];
             const dx = b.x - a.x, dy = b.y - a.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < 1) continue;
 
-            // Flickering intensity — each arc has its own flicker
+            // Flickering — subtle, mostly off
             const arcSeed = a.idx * 31 + b.idx * 17;
-            const flicker = sHash(arcSeed, Math.floor(time * 8)) * 0.7 +
-                            sHash(arcSeed, Math.floor(time * 12) + 100) * 0.3;
-            if (flicker < 0.3) continue; // arc sometimes disappears
+            const flicker = sHash(arcSeed, Math.floor(time * 6)) * 0.5 +
+                            sHash(arcSeed, Math.floor(time * 14) + 100) * 0.5;
+            if (flicker < 0.45) continue; // off more often
 
-            const alpha = (0.3 + flicker * 0.5) * Math.min(1, 0.15 / (dist / h + 0.01));
+            const alpha = (0.12 + flicker * 0.25) * Math.min(1, 0.12 / (dist / h + 0.01));
 
-            // Jagged arc: 3-5 segments with random offsets
-            const nSeg = 3 + Math.floor(sHash(arcSeed, 200) * 3);
+            // Jagged arc: 3-4 segments
+            const nSeg = 3 + Math.floor(sHash(arcSeed, 200) * 2);
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             for (let si = 1; si < nSeg; si++) {
               const t = si / nSeg;
               const mx = a.x + dx * t;
               const my = a.y + dy * t;
-              // Perpendicular offset for jagged look — changes with time
               const perpX = -dy / dist;
               const perpY = dx / dist;
-              const jitter = (sHash(arcSeed + si, Math.floor(time * 10)) - 0.5) * dist * 0.3;
+              const jitter = (sHash(arcSeed + si, Math.floor(time * 10)) - 0.5) * dist * 0.25;
               ctx.lineTo(mx + perpX * jitter, my + perpY * jitter);
             }
             ctx.lineTo(b.x, b.y);
 
-            // Orange-red glow
-            ctx.strokeStyle = `rgba(255, 130, 50, ${alpha})`;
-            ctx.lineWidth = 0.8;
+            // Soft outer glow
+            ctx.strokeStyle = `rgba(255, 100, 40, ${alpha * 0.5})`;
+            ctx.lineWidth = 1.5;
             ctx.stroke();
-            // Bright core
-            ctx.strokeStyle = `rgba(255, 200, 100, ${alpha * 0.6})`;
-            ctx.lineWidth = 0.3;
+            // Orange-red arc
+            ctx.strokeStyle = `rgba(255, 130, 50, ${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+            // Bright thin core
+            ctx.strokeStyle = `rgba(255, 210, 120, ${alpha * 0.4})`;
+            ctx.lineWidth = 0.2;
             ctx.stroke();
           }
         }
