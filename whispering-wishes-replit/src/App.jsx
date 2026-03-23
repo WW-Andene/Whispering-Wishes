@@ -6267,8 +6267,8 @@ function WhisperingWishesInner() {
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className={`p-2.5 rounded-lg border hover:border-white/15 transition-colors${rarity5 ? ' holo-5star' : ''}`}
-                                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10`, position: 'relative', overflow: 'hidden' }}>
+                                <div key={m.name} className="p-2.5 rounded-lg border hover:border-white/15 transition-colors"
+                                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
                                   {/* 2-col: Left=header+desc+focus+buffs, Right=stats+equipment */}
                                   <div className="flex flex-row gap-3">
                                     {/* LEFT: header + description + damage focus + buffs */}
