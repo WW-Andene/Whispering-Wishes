@@ -2598,7 +2598,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const stripeH = (botY - topY) / STRIPES;
         for (let i = 0; i < STRIPES; i++) {
           const y = topY + i * stripeH;
-          const isLight = i % 2 === 0;
+          const isLight = i % 2 === 1;
           ctx.beginPath();
           ctx.rect(0, y, w, stripeH);
           ctx.fillStyle = isLight
