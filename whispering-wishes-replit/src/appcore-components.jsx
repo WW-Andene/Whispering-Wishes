@@ -1491,11 +1491,12 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // --- Ambient glow at center ---
       const centerP = project(0, 0, 0);
       if (centerP) {
-        const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.55);
-        grd.addColorStop(0, `rgba(70, 150, 200, ${0.22 * alphaScale})`);
-        grd.addColorStop(0.15, `rgba(60, 100, 180, ${0.14 * alphaScale})`);
-        grd.addColorStop(0.35, `rgba(80, 60, 160, ${0.08 * alphaScale})`);
-        grd.addColorStop(0.55, `rgba(120, 40, 140, ${0.04 * alphaScale})`);
+        const grd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, Math.max(w, h) * 0.6);
+        grd.addColorStop(0, `rgba(120, 180, 240, ${0.45 * alphaScale})`);
+        grd.addColorStop(0.1, `rgba(90, 150, 220, ${0.30 * alphaScale})`);
+        grd.addColorStop(0.25, `rgba(70, 100, 200, ${0.18 * alphaScale})`);
+        grd.addColorStop(0.4, `rgba(100, 70, 180, ${0.10 * alphaScale})`);
+        grd.addColorStop(0.6, `rgba(140, 50, 160, ${0.05 * alphaScale})`);
         grd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, w, h);
@@ -1726,35 +1727,36 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       if (centerP) {
         const pulse = 0.7 + Math.sin(time * 0.4) * 0.2;
 
-        // Large disc glow radiating from center (the "light pool" on the ground)
-        const discSize = Math.max(w, h) * 0.5;
+        // Large disc glow radiating from center (the "light pool")
+        const discSize = Math.max(w, h) * 0.55;
         const discGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, discSize);
-        discGrd.addColorStop(0, `rgba(180, 230, 255, ${0.12 * pulse * alphaScale})`);    // bright white-cyan core
-        discGrd.addColorStop(0.1, `rgba(100, 200, 240, ${0.10 * pulse * alphaScale})`);  // cyan
-        discGrd.addColorStop(0.25, `rgba(80, 120, 220, ${0.07 * pulse * alphaScale})`);  // blue
-        discGrd.addColorStop(0.45, `rgba(120, 80, 200, ${0.05 * pulse * alphaScale})`);  // purple
-        discGrd.addColorStop(0.65, `rgba(180, 60, 180, ${0.03 * pulse * alphaScale})`);  // magenta
-        discGrd.addColorStop(0.85, `rgba(200, 50, 130, ${0.015 * pulse * alphaScale})`); // pink
+        discGrd.addColorStop(0, `rgba(200, 240, 255, ${0.35 * pulse * alphaScale})`);    // bright white-cyan
+        discGrd.addColorStop(0.08, `rgba(140, 210, 250, ${0.25 * pulse * alphaScale})`); // cyan
+        discGrd.addColorStop(0.2, `rgba(90, 150, 230, ${0.15 * pulse * alphaScale})`);   // blue
+        discGrd.addColorStop(0.4, `rgba(130, 90, 210, ${0.08 * pulse * alphaScale})`);   // purple
+        discGrd.addColorStop(0.6, `rgba(190, 70, 190, ${0.04 * pulse * alphaScale})`);   // magenta
+        discGrd.addColorStop(0.8, `rgba(210, 60, 140, ${0.02 * pulse * alphaScale})`);   // pink
         discGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // Bright core glow (intense center point)
-        const coreSize = 70 * pulse;
+        // Bright core glow (intense white center like the reference)
+        const coreSize = 90 * pulse;
         const coreGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, coreSize);
-        coreGrd.addColorStop(0, `rgba(220, 240, 255, ${0.25 * pulse * alphaScale})`);
-        coreGrd.addColorStop(0.2, `rgba(160, 220, 255, ${0.18 * pulse * alphaScale})`);
-        coreGrd.addColorStop(0.5, `rgba(100, 160, 240, ${0.08 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0, `rgba(240, 250, 255, ${0.5 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0.15, `rgba(200, 235, 255, ${0.35 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0.4, `rgba(130, 190, 250, ${0.15 * pulse * alphaScale})`);
+        coreGrd.addColorStop(0.7, `rgba(80, 130, 220, ${0.05 * pulse * alphaScale})`);
         coreGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = coreGrd;
         ctx.beginPath();
         ctx.arc(centerP.sx, centerP.sy, coreSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Secondary pulsing ring glow (the halo around the core)
-        const haloSize = 120 * pulse;
-        const haloGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, haloSize * 0.6, centerP.sx, centerP.sy, haloSize);
-        haloGrd.addColorStop(0, `rgba(140, 180, 255, ${0.06 * pulse * alphaScale})`);
+        // Halo ring around core
+        const haloSize = 150 * pulse;
+        const haloGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, haloSize * 0.5, centerP.sx, centerP.sy, haloSize);
+        haloGrd.addColorStop(0, `rgba(160, 200, 255, ${0.1 * pulse * alphaScale})`);
         haloGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = haloGrd;
         ctx.beginPath();
