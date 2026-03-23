@@ -2527,7 +2527,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             d[i]     = v * 1.0;       // R — warm
             d[i + 1] = v * 0.85;      // G
             d[i + 2] = v * 0.7;       // B — brownish
-            d[i + 3] = 255;
+            d[i + 3] = 90;
           }
         }
         oc.putImageData(imgData, 0, 0);
