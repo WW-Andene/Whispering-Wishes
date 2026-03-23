@@ -1394,8 +1394,9 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
-// LAYER ALT: Resonance Field — holographic concentric rings, energy streaks & sparkle particles
-// Inspired by Honkai-style digital energy fields: swirling dotted rings, flowing wave lines, scattered sparks
+// LAYER ALT: Resonance Field — flowing digital wave field with particle grid, energy streaks & glow
+// Inspired by Honkai-style holographic wave planes: dense dotted wave grids flowing across
+// the screen, bright blue/purple/cyan energy lines, ambient glow — viewed from a slight angle
 const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -1415,77 +1416,16 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let animId;
 
     const isFull = animationsEnabled === 'full';
-    const alphaScale = isFull ? 1.4 : 1.0;
-    const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,8)';
+    const alphaScale = isFull ? 1.5 : 1.0;
+    const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(3,4,12)';
 
     let w, h;
-    // Concentric rings config
-    const RING_COUNT = 7;
-    const rings = [];
-    // Energy streaks
-    const STREAK_COUNT = 18;
-    const streaks = [];
-    // Sparkle particles
-    const SPARK_COUNT = 80;
-    const sparks = [];
 
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
-
-      // Init rings — centered slightly below middle, varying radii
-      rings.length = 0;
-      const cx = w * 0.5, cy = h * 0.55;
-      for (let i = 0; i < RING_COUNT; i++) {
-        const baseR = (Math.min(w, h) * 0.12) + i * (Math.min(w, h) * 0.09);
-        rings.push({
-          cx, cy, baseR,
-          speed: (0.15 + i * 0.04) * (i % 2 === 0 ? 1 : -1), // alternate spin direction
-          dashLen: 3 + i * 1.5,
-          gapLen: 8 + i * 3,
-          wobbleAmp: 0.03 + i * 0.008,
-          wobbleFreq: 0.4 + i * 0.1,
-          hue: 220 + i * 12, // blue → purple range
-          thickness: 1.2 + (RING_COUNT - i) * 0.15,
-          eccentricity: 0.65 + i * 0.03, // ellipse flattening (perspective tilt)
-          tiltPhase: i * 0.9,
-        });
-      }
-
-      // Init energy streaks — flowing wave lines across screen
-      streaks.length = 0;
-      for (let i = 0; i < STREAK_COUNT; i++) {
-        streaks.push({
-          yBase: Math.random() * h,
-          amplitude: 30 + Math.random() * 80,
-          frequency: 0.002 + Math.random() * 0.004,
-          speed: 0.3 + Math.random() * 0.5,
-          phase: Math.random() * Math.PI * 2,
-          hue: 200 + Math.random() * 60, // blue to violet
-          alpha: 0.06 + Math.random() * 0.12,
-          width: 0.5 + Math.random() * 1.5,
-          length: w * (0.3 + Math.random() * 0.5),
-          xOffset: Math.random() * w,
-        });
-      }
-
-      // Init sparkle particles
-      sparks.length = 0;
-      for (let i = 0; i < SPARK_COUNT; i++) {
-        sparks.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: -0.1 - Math.random() * 0.4,
-          size: 0.8 + Math.random() * 2,
-          hue: 190 + Math.random() * 70,
-          phase: Math.random() * Math.PI * 2,
-          pulseSpeed: 1.5 + Math.random() * 2,
-          life: Math.random(),
-        });
-      }
     };
     init();
     window.addEventListener('resize', init);
@@ -1501,145 +1441,173 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
-      // --- Draw concentric rings (perspective-tilted ellipses with dashed dotted lines) ---
-      for (let i = 0; i < rings.length; i++) {
-        const ring = rings[i];
-        const angle = time * ring.speed;
-        const wobble = Math.sin(time * ring.wobbleFreq + ring.tiltPhase) * ring.wobbleAmp;
-        const rx = ring.baseR + Math.sin(time * 0.3 + i) * 10;
-        const ry = rx * (ring.eccentricity + wobble);
+      // --- Ambient glow base (deep blue/purple wash) ---
+      const grd = ctx.createRadialGradient(w * 0.5, h * 0.6, 0, w * 0.5, h * 0.6, Math.max(w, h) * 0.7);
+      grd.addColorStop(0, `rgba(60, 40, 140, ${0.18 * alphaScale})`);
+      grd.addColorStop(0.3, `rgba(30, 50, 160, ${0.12 * alphaScale})`);
+      grd.addColorStop(0.6, `rgba(15, 25, 80, ${0.06 * alphaScale})`);
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
 
-        ctx.save();
-        ctx.translate(ring.cx, ring.cy);
-        ctx.rotate(angle * 0.1 + wobble);
+      // --- Flowing dot-grid wave field ---
+      // Dense grid of dots that undulate in 3D-perspective waves
+      const GRID_X = 28; // spacing between dots horizontally
+      const GRID_Y = 22; // spacing between rows
+      const cols = Math.ceil(w / GRID_X) + 2;
+      const rows = Math.ceil(h / GRID_Y) + 6;
+      const yOffset = -GRID_Y * 3; // start above screen
 
-        // Draw dashed ellipse
-        ctx.beginPath();
-        ctx.setLineDash([ring.dashLen, ring.gapLen]);
-        ctx.lineDashOffset = -time * ring.speed * 40;
-        ctx.ellipse(0, 0, rx, ry, angle, 0, Math.PI * 2);
-        const ringAlpha = (0.15 + Math.sin(time * 0.5 + i * 0.7) * 0.08) * alphaScale;
-        ctx.strokeStyle = `hsla(${ring.hue}, 80%, 65%, ${ringAlpha})`;
-        ctx.lineWidth = ring.thickness;
-        ctx.stroke();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const baseX = c * GRID_X;
+          const baseY = yOffset + r * GRID_Y;
 
-        // Inner glow ring (softer, wider)
-        ctx.beginPath();
-        ctx.setLineDash([]);
-        ctx.ellipse(0, 0, rx, ry, angle, 0, Math.PI * 2);
-        ctx.strokeStyle = `hsla(${ring.hue}, 90%, 70%, ${ringAlpha * 0.25})`;
-        ctx.lineWidth = ring.thickness * 4;
-        ctx.stroke();
+          // Multiple wave layers for complex flowing motion
+          const wave1 = Math.sin(baseX * 0.008 + baseY * 0.004 + time * 0.6) * 18;
+          const wave2 = Math.sin(baseX * 0.004 - baseY * 0.006 + time * 0.4 + 1.5) * 12;
+          const wave3 = Math.cos(baseX * 0.006 + baseY * 0.003 + time * 0.3 + 3.0) * 8;
+          const wave4 = Math.sin((baseX + baseY) * 0.003 + time * 0.5) * 6;
 
-        ctx.restore();
-      }
+          const totalWave = wave1 + wave2 + wave3 + wave4;
+          const px = baseX + Math.sin(baseY * 0.005 + time * 0.3) * 8;
+          const py = baseY + totalWave;
 
-      // --- Draw dotted grid points along rings (holographic dot matrix) ---
-      for (let i = 0; i < Math.min(rings.length, 5); i++) {
-        const ring = rings[i];
-        const angle = time * ring.speed;
-        const rx = ring.baseR + Math.sin(time * 0.3 + i) * 10;
-        const ry = rx * ring.eccentricity;
-        const dotCount = Math.floor(rx * 0.18);
+          if (px < -5 || px > w + 5 || py < -5 || py > h + 5) continue;
 
-        for (let d = 0; d < dotCount; d++) {
-          const theta = (d / dotCount) * Math.PI * 2 + angle;
-          const px = ring.cx + Math.cos(theta) * rx * Math.cos(angle * 0.1);
-          const py = ring.cy + Math.sin(theta) * ry;
-          // Rotate around ring center
-          const cosA = Math.cos(angle * 0.1);
-          const sinA = Math.sin(angle * 0.1);
-          const dx = px - ring.cx, dy = py - ring.cy;
-          const fx = ring.cx + dx * cosA - dy * sinA;
-          const fy = ring.cy + dx * sinA + dy * cosA;
+          // Brightness based on wave height (crests glow brighter)
+          const heightNorm = (totalWave + 44) / 88; // normalize to 0-1
+          const brightness = 0.15 + heightNorm * 0.6;
 
-          if (fx < -10 || fx > w + 10 || fy < -10 || fy > h + 10) continue;
+          // Color shifts across the field — blue center, purple edges, cyan highlights
+          const distFromCenter = Math.sqrt(Math.pow((px - w * 0.5) / w, 2) + Math.pow((py - h * 0.5) / h, 2));
+          const hue = 220 + Math.sin(baseX * 0.003 + time * 0.2) * 30 + distFromCenter * 40;
+          const saturation = 70 + heightNorm * 20;
+          const lightness = 50 + brightness * 30;
 
-          const dotAlpha = (0.2 + Math.sin(time * 2 + d * 0.5) * 0.15) * alphaScale;
-          const dotSize = 1 + Math.sin(time * 1.5 + d) * 0.5;
+          const dotAlpha = brightness * 0.35 * alphaScale;
+          if (dotAlpha < 0.03) continue;
+
+          // Dot size varies with wave height
+          const dotSize = 1.0 + heightNorm * 1.8;
+
           ctx.beginPath();
-          ctx.arc(fx, fy, dotSize, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${ring.hue + 20}, 85%, 75%, ${dotAlpha})`;
+          ctx.arc(px, py, dotSize, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${dotAlpha})`;
           ctx.fill();
         }
       }
 
-      // --- Draw energy streaks (flowing sine wave lines) ---
-      for (let i = 0; i < streaks.length; i++) {
-        const s = streaks[i];
-        ctx.beginPath();
-        const xStart = ((s.xOffset - time * s.speed * 60) % (w + s.length)) - s.length * 0.3;
+      // --- Flowing energy wave lines (bright streaks across the field) ---
+      const WAVE_LINE_COUNT = 12;
+      for (let i = 0; i < WAVE_LINE_COUNT; i++) {
+        const yBase = (h * 0.1) + (i / WAVE_LINE_COUNT) * h * 0.85;
+        const hue = 210 + i * 8;
+        const lineAlpha = (0.12 + Math.sin(time * 0.4 + i * 0.8) * 0.06) * alphaScale;
+        const lineWidth = 1.0 + Math.sin(time * 0.3 + i * 1.2) * 0.5;
 
-        for (let x = 0; x < s.length; x += 4) {
-          const px = xStart + x;
-          if (px < -20 || px > w + 20) continue;
-          const py = s.yBase + Math.sin((px * s.frequency) + time * s.speed + s.phase) * s.amplitude
-                     + Math.sin((px * s.frequency * 0.5) + time * s.speed * 0.7) * s.amplitude * 0.4;
-          if (x === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
+        ctx.beginPath();
+        ctx.lineWidth = lineWidth;
+
+        for (let x = 0; x <= w; x += 3) {
+          const wave = Math.sin(x * 0.006 + time * 0.5 + i * 0.7) * 25
+                     + Math.sin(x * 0.003 + time * 0.3 + i * 1.5) * 15
+                     + Math.cos(x * 0.009 + time * 0.7 + i * 0.3) * 10;
+          const y = yBase + wave;
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
 
-        // Fade at edges
-        const grad = ctx.createLinearGradient(xStart, 0, xStart + s.length, 0);
-        grad.addColorStop(0, `hsla(${s.hue}, 85%, 70%, 0)`);
-        grad.addColorStop(0.15, `hsla(${s.hue}, 85%, 70%, ${s.alpha * alphaScale})`);
-        grad.addColorStop(0.5, `hsla(${s.hue}, 90%, 80%, ${s.alpha * 1.3 * alphaScale})`);
-        grad.addColorStop(0.85, `hsla(${s.hue}, 85%, 70%, ${s.alpha * alphaScale})`);
-        grad.addColorStop(1, `hsla(${s.hue}, 85%, 70%, 0)`);
+        // Gradient stroke with edge fade
+        const grad = ctx.createLinearGradient(0, 0, w, 0);
+        grad.addColorStop(0, `hsla(${hue}, 85%, 70%, 0)`);
+        grad.addColorStop(0.1, `hsla(${hue}, 85%, 70%, ${lineAlpha})`);
+        grad.addColorStop(0.3, `hsla(${hue}, 90%, 80%, ${lineAlpha * 1.5})`);
+        grad.addColorStop(0.5, `hsla(${hue + 20}, 80%, 85%, ${lineAlpha * 1.8})`);
+        grad.addColorStop(0.7, `hsla(${hue}, 90%, 80%, ${lineAlpha * 1.5})`);
+        grad.addColorStop(0.9, `hsla(${hue}, 85%, 70%, ${lineAlpha})`);
+        grad.addColorStop(1, `hsla(${hue}, 85%, 70%, 0)`);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = s.width;
         ctx.stroke();
       }
 
-      // --- Draw sparkle particles ---
-      for (let i = 0; i < sparks.length; i++) {
-        const sp = sparks[i];
-        sp.x += sp.vx;
-        sp.y += sp.vy;
-        sp.life += 0.003;
+      // --- Bright accent streaks (fewer, brighter, wider — the "hero" energy lines) ---
+      const ACCENT_COUNT = 5;
+      for (let i = 0; i < ACCENT_COUNT; i++) {
+        const yBase = h * 0.2 + (i / ACCENT_COUNT) * h * 0.6;
+        const phase = time * (0.4 + i * 0.08) + i * 2.1;
+        const hue = 200 + i * 15;
+        const accentAlpha = (0.08 + Math.sin(time * 0.25 + i * 1.5) * 0.04) * alphaScale;
 
-        // Wrap around
-        if (sp.y < -10) { sp.y = h + 10; sp.x = Math.random() * w; sp.life = 0; }
-        if (sp.x < -10) sp.x = w + 10;
-        if (sp.x > w + 10) sp.x = -10;
-
-        const pulse = 0.3 + Math.sin(time * sp.pulseSpeed + sp.phase) * 0.7;
-        const sparkAlpha = pulse * 0.4 * alphaScale;
-        if (sparkAlpha < 0.02) continue;
-
-        // 4-point star shape
-        const sz = sp.size * (0.8 + pulse * 0.4);
-        ctx.save();
-        ctx.translate(sp.x, sp.y);
-        ctx.rotate(time * 0.5 + sp.phase);
         ctx.beginPath();
-        ctx.moveTo(0, -sz * 2);
-        ctx.lineTo(sz * 0.3, -sz * 0.3);
-        ctx.lineTo(sz * 2, 0);
-        ctx.lineTo(sz * 0.3, sz * 0.3);
-        ctx.lineTo(0, sz * 2);
-        ctx.lineTo(-sz * 0.3, sz * 0.3);
-        ctx.lineTo(-sz * 2, 0);
-        ctx.lineTo(-sz * 0.3, -sz * 0.3);
-        ctx.closePath();
-        ctx.fillStyle = `hsla(${sp.hue}, 80%, 80%, ${sparkAlpha})`;
-        ctx.fill();
+        ctx.lineWidth = 3 + Math.sin(time * 0.2 + i) * 1;
 
-        // Core glow
-        ctx.beginPath();
-        ctx.arc(0, 0, sz * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${sp.hue}, 60%, 95%, ${sparkAlpha * 0.6})`;
-        ctx.fill();
-        ctx.restore();
+        for (let x = 0; x <= w; x += 4) {
+          const wave = Math.sin(x * 0.004 + phase) * 40
+                     + Math.sin(x * 0.002 + phase * 0.6) * 25
+                     + Math.cos(x * 0.007 + phase * 1.2) * 15;
+          const y = yBase + wave;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+
+        const grad2 = ctx.createLinearGradient(0, 0, w, 0);
+        grad2.addColorStop(0, `hsla(${hue}, 70%, 80%, 0)`);
+        grad2.addColorStop(0.2, `hsla(${hue}, 70%, 85%, ${accentAlpha})`);
+        grad2.addColorStop(0.5, `hsla(${hue + 30}, 60%, 92%, ${accentAlpha * 1.6})`);
+        grad2.addColorStop(0.8, `hsla(${hue}, 70%, 85%, ${accentAlpha})`);
+        grad2.addColorStop(1, `hsla(${hue}, 70%, 80%, 0)`);
+        ctx.strokeStyle = grad2;
+        ctx.stroke();
+
+        // Glow layer (wider, more transparent)
+        ctx.lineWidth = 12 + Math.sin(time * 0.2 + i) * 4;
+        ctx.globalAlpha = 0.3;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 1;
       }
 
-      // --- Center glow pulse (holographic core light) ---
-      const glowPulse = 0.4 + Math.sin(time * 0.6) * 0.15;
-      const coreGrad = ctx.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, Math.min(w, h) * 0.45);
-      coreGrad.addColorStop(0, `hsla(240, 70%, 60%, ${0.08 * glowPulse * alphaScale})`);
-      coreGrad.addColorStop(0.3, `hsla(260, 60%, 50%, ${0.04 * glowPulse * alphaScale})`);
-      coreGrad.addColorStop(1, 'hsla(240, 50%, 30%, 0)');
-      ctx.fillStyle = coreGrad;
+      // --- Sparkle highlights (bright dots scattered on wave crests) ---
+      const SPARKLE_COUNT = 40;
+      for (let i = 0; i < SPARKLE_COUNT; i++) {
+        const seed = i * 137.508; // golden angle for distribution
+        const sx = ((seed * 7.3 + time * 15 * (0.5 + (i % 3) * 0.3)) % (w + 40)) - 20;
+        const sy_base = ((seed * 3.7) % h);
+        const sy_wave = Math.sin(sx * 0.006 + time * 0.5 + i * 0.4) * 20
+                       + Math.sin(sx * 0.003 + time * 0.3) * 12;
+        const sy = sy_base + sy_wave;
+
+        if (sy < -5 || sy > h + 5) continue;
+
+        const pulse = Math.sin(time * (2 + i * 0.1) + seed) * 0.5 + 0.5;
+        const sparkAlpha = pulse * 0.5 * alphaScale;
+        if (sparkAlpha < 0.05) continue;
+
+        const sparkSize = 1.2 + pulse * 1.5;
+        const hue = 200 + (i % 5) * 15;
+
+        // Core bright dot
+        ctx.beginPath();
+        ctx.arc(sx, sy, sparkSize, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 60%, 95%, ${sparkAlpha})`;
+        ctx.fill();
+
+        // Soft glow
+        ctx.beginPath();
+        ctx.arc(sx, sy, sparkSize * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${sparkAlpha * 0.15})`;
+        ctx.fill();
+      }
+
+      // --- Top-level ambient glow pulse ---
+      const glowPulse = 0.5 + Math.sin(time * 0.4) * 0.15;
+      const ambGrad = ctx.createRadialGradient(w * 0.45, h * 0.45, 0, w * 0.45, h * 0.45, Math.max(w, h) * 0.55);
+      ambGrad.addColorStop(0, `rgba(80, 100, 220, ${0.06 * glowPulse * alphaScale})`);
+      ambGrad.addColorStop(0.4, `rgba(100, 60, 200, ${0.03 * glowPulse * alphaScale})`);
+      ambGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = ambGrad;
       ctx.fillRect(0, 0, w, h);
     };
     animId = requestAnimationFrame(draw);
