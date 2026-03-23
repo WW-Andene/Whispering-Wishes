@@ -5942,6 +5942,50 @@ function WhisperingWishesInner() {
                         if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
                       }
 
+                      // Echo individual stats (main stats + substats from equipped echoes)
+                      // Track echo-sourced type-specific DMG bonuses to feed into basicDmg/heavyDmg/libDmg later
+                      let echoBasicDmg = 0, echoHeavyDmg = 0, echoSkillDmg = 0, echoLibDmg = 0;
+                      {
+                        const mainEqKey = teamIdx + ':' + mainDps.name;
+                        const mainEq = teamEquipment[mainEqKey];
+                        const echoes = mainEq?.echoes || [];
+                        const mainEl = (mainDps.d.element || '').toLowerCase();
+                        const elDmgKey = mainEl ? mainEl.charAt(0).toUpperCase() + mainEl.slice(1) + ' DMG' : '';
+                        // Main stat values by cost tier (max level 25)
+                        const mainStatVals = {
+                          4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+                          3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+                          1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+                        };
+                        // Substat assumed values (average roll per occurrence)
+                        const subVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Basic ATK DMG': 9, 'Heavy ATK DMG': 9, 'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9 };
+                        const applyStat = (stat, val) => {
+                          if (stat === 'ATK%') atkPct += val;
+                          else if (stat === 'Crit Rate') cr += val;
+                          else if (stat === 'Crit DMG') cd += val;
+                          else if (stat === elDmgKey) elemDmg += val;
+                          else if (stat === 'Basic ATK DMG') echoBasicDmg += val;
+                          else if (stat === 'Heavy ATK DMG') echoHeavyDmg += val;
+                          else if (stat === 'Resonance Skill DMG') echoSkillDmg += val;
+                          else if (stat === 'Resonance Liberation DMG') echoLibDmg += val;
+                          // Energy Regen, HP%, DEF%, flat ATK/HP/DEF, Healing Bonus — not directly in DPS formula
+                        };
+                        echoes.forEach((echo, i) => {
+                          if (!echo || typeof echo !== 'object') return;
+                          const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
+                          // Main stat
+                          if (echo.mainStat) {
+                            const val = mainStatVals[cost]?.[echo.mainStat] || 0;
+                            applyStat(echo.mainStat, val);
+                          }
+                          // Substats
+                          (echo.substats || []).forEach(sub => {
+                            const val = subVals[sub];
+                            if (val) applyStat(sub, val);
+                          });
+                        });
+                      }
+
                       // ── Team buff contributions from CHAR_BUFF_TABLE (exact per-character values) ──
                       let basicDmg = 0, heavyDmg = 0, libDmg = 0, echoDmg = 0;
                       mems.forEach(m => {
@@ -6013,6 +6057,10 @@ function WhisperingWishesInner() {
                           else if (db.stat === 'havocBane') defShred += db.value * 2; // 2% DEF reduction per stack
                         });
                       });
+
+                      // Add echo substat type-specific DMG bonuses
+                      basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
+                      skillDmg += echoSkillDmg; // Resonance Skill DMG applies directly
 
                       // Map DPS's dmgFocus to the right skill DMG bonus
                       const focus = mainDps.d.dmgFocus || [];
