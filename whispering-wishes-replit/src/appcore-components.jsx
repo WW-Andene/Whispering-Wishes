@@ -1765,16 +1765,17 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // --- Ripple rings: "stone in a puddle" expanding from center in 3D ---
         // --- Puddle waves: soft filled bands expanding from center in 3D ---
-        const RIPPLE_COUNT = 6;
-        const RIPPLE_MAX_R = 550;
-        const RIPPLE_SPEED = 0.015; // very slow, calm water
+        const RIPPLE_COUNT = 3;
+        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH; // stay within the disc
+        const RIPPLE_SPEED = 0.02;
 
         for (let ri = 0; ri < RIPPLE_COUNT; ri++) {
           const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1;
           const rippleR = phase * RIPPLE_MAX_R;
-          const bandWidth = 25 + (1 - phase) * 35; // wider when young
-          const fade = Math.sin(phase * Math.PI) * (1 - phase * 0.4);
-          const rippleAlpha = fade * 0.07 * alphaScale;
+          const bandWidth = 15 + (1 - phase) * 20;
+          // Fade in quickly, fade out well before reaching edge
+          const fade = Math.sin(phase * Math.PI) * Math.max(0, 1 - phase * 1.2);
+          const rippleAlpha = fade * 0.04 * alphaScale;
           if (rippleAlpha < 0.003 || rippleR < 5) continue;
 
           const hue = 200 + phase * 80;
