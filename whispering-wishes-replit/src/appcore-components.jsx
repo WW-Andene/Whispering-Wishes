@@ -1758,8 +1758,11 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // --- Disc light: center is a light source radiating outward ---
       // Like the reference: bright white-cyan core → blue → purple → pink at edges
       if (centerP) {
-        // Layered pulsation: slow breath + gentle secondary beat
-        const pulse = 0.5 + Math.sin(time * 0.3) * 0.3 + Math.sin(time * 0.7) * 0.15;
+        // Pulse synced with ripple spawns: brighten each time a ring leaves center
+        // Ripples spawn every RIPPLE_CYCLE/RIPPLE_COUNT = 4s
+        const rippleSpawnPhase = ((time / 20) * 5) % 1; // 0..1 per spawn cycle
+        const spawnPulse = Math.pow(Math.max(0, 1 - rippleSpawnPhase * 3), 2); // sharp bright flash at spawn, quick decay
+        const pulse = 0.45 + spawnPulse * 0.5 + Math.sin(time * 0.3) * 0.08;
 
         // Large disc glow radiating from center (the "light pool")
         const discSize = Math.max(w, h) * (0.5 + pulse * 0.1);
