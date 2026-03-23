@@ -2522,12 +2522,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const n = smooth(px * 0.08, py * 0.08) * 0.5
                     + smooth(px * 0.17, py * 0.17) * 0.3
                     + smooth(px * 0.35, py * 0.35) * 0.2;
-            const v = 35 + n * 60; // range ~35-95, dark stone
+            const v = 100 + n * 155; // range ~100-255, bright stone
             const i = (py * sz + px) * 4;
-            d[i]     = v * 1.0;       // R — warm
-            d[i + 1] = v * 0.85;      // G
-            d[i + 2] = v * 0.7;       // B — brownish
-            d[i + 3] = 90;
+            d[i]     = v;              // R
+            d[i + 1] = v * 0.8;       // G
+            d[i + 2] = v * 0.6;       // B — warm
+            d[i + 3] = 255;
           }
         }
         oc.putImageData(imgData, 0, 0);
@@ -2570,10 +2570,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.globalAlpha = 0.7;
         ctx.fillStyle = rockPat;
         ctx.fill();
-        ctx.globalAlpha = 1;
 
         // Right wall
         ctx.beginPath();
@@ -2582,10 +2580,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.globalAlpha = 0.7;
         ctx.fillStyle = rockPat;
         ctx.fill();
-        ctx.globalAlpha = 1;
 
         // Floor strip
         ctx.beginPath();
@@ -2632,10 +2628,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.globalAlpha = 0.85;
           ctx.fillStyle = rockPat;
           ctx.fill();
-          ctx.globalAlpha = 1;
           y = dY;
           if (y <= topY) break;
 
@@ -2658,10 +2652,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);             // top-right
           ctx.lineTo(tTopL, lY);             // top-left
           ctx.closePath();
-          ctx.globalAlpha = 0.5;
           ctx.fillStyle = rockPat;
           ctx.fill();
-          ctx.globalAlpha = 1;
           y = lY;
         }
         ctx.restore();
