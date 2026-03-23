@@ -2626,20 +2626,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hwAtTop = hwBot * (dY - vpY) / dBot;
           const rL = vpX - hwAtTop;
           const rR = vpX + hwAtTop;
+          // Riser (front face — in shadow): rock + dark overlay
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
           ctx.fillStyle = rockPat;
           ctx.fill();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+          ctx.fill();
           y = dY;
           if (y <= topY) break;
 
-          // Light stripe (tread) — trapezoid connecting riser corners
+          // Tread (top face — lit): rock + light overlay
           const lightH = Math.max(1, h * 0.003 * scale * scale);
           const lY = Math.max(topY, y - lightH);
-          // Bottom corners = current riser's top corners
           const tBotL = rL;
           const tBotR = rR;
-          // Top corners = next riser's bottom corners (rectangle width at its top)
           const nextScale = (lY - vpY) / dBot;
           const nextDarkH = Math.max(1, h * 0.0175 * nextScale);
           const nextDY = Math.max(topY, lY - nextDarkH);
@@ -2647,12 +2648,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tTopL = vpX - nextHw;
           const tTopR = vpX + nextHw;
           ctx.beginPath();
-          ctx.moveTo(tBotL, y);              // bottom-left
-          ctx.lineTo(tBotR, y);              // bottom-right
-          ctx.lineTo(tTopR, lY);             // top-right
-          ctx.lineTo(tTopL, lY);             // top-left
+          ctx.moveTo(tBotL, y);
+          ctx.lineTo(tBotR, y);
+          ctx.lineTo(tTopR, lY);
+          ctx.lineTo(tTopL, lY);
           ctx.closePath();
           ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255, 220, 160, 0.3)';
           ctx.fill();
           y = lY;
         }
