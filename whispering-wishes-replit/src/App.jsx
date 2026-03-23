@@ -3383,7 +3383,7 @@ function WhisperingWishesInner() {
 
   return (
     <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
-      {visualSettings.bgStyle === 'resonance' || (visualSettings.theme === 'aemeath' && visualSettings.animationsEnabled === 'full') ? (
+      {visualSettings.bgStyle === 'resonance' ? (
         <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       ) : (
         <>
