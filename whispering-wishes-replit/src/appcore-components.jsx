@@ -2494,70 +2494,39 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
-      // Generate a rich rock texture pattern (once, cached)
+      // Generate a rock texture pattern (once, cached on canvas element)
       if (!canvas._rockPattern) {
-        const sz = 256;
+        const sz = 128;
         const offC = document.createElement('canvas');
         offC.width = sz; offC.height = sz;
         const oc = offC.getContext('2d');
         const imgData = oc.createImageData(sz, sz);
         const d = imgData.data;
-        // Hash for pseudo-random
+        // Simple value noise for continuous stone look
         const hash = (x, y) => {
           let n = x * 374761393 + y * 668265263;
           n = (n ^ (n >> 13)) * 1274126177;
           return ((n ^ (n >> 16)) >>> 0) / 4294967296;
         };
-        // Smooth interpolated noise
         const smooth = (x, y) => {
           const ix = x | 0, iy = y | 0;
           const fx = x - ix, fy = y - iy;
-          // Hermite smoothing for less blocky look
-          const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
           const a = hash(ix, iy), b = hash(ix + 1, iy);
-          const c = hash(ix, iy + 1), dd = hash(ix + 1, iy + 1);
-          const top = a + (b - a) * sx, bot = c + (dd - c) * sx;
-          return top + (bot - top) * sy;
-        };
-        // Fractal brownian motion — 6 octaves for rich detail
-        const fbm = (x, y) => {
-          let v = 0, amp = 0.4, freq = 1;
-          for (let i = 0; i < 6; i++) {
-            v += smooth(x * freq, y * freq) * amp;
-            amp *= 0.5; freq *= 2.1;
-          }
-          return v;
-        };
-        // Turbulence for veins/cracks
-        const turb = (x, y) => {
-          let v = 0, amp = 0.5, freq = 1;
-          for (let i = 0; i < 5; i++) {
-            v += Math.abs(smooth(x * freq, y * freq) * 2 - 1) * amp;
-            amp *= 0.5; freq *= 2.0;
-          }
-          return v;
+          const c = hash(ix, iy + 1), d2 = hash(ix + 1, iy + 1);
+          const top = a + (b - a) * fx, bot = c + (d2 - c) * fx;
+          return top + (bot - top) * fy;
         };
         for (let py = 0; py < sz; py++) {
           for (let px = 0; px < sz; px++) {
-            // Large-scale shape
-            const n1 = fbm(px * 0.025, py * 0.025);
-            // Medium grain
-            const n2 = fbm(px * 0.06 + 50, py * 0.06 + 50);
-            // Fine grain
-            const n3 = smooth(px * 0.2, py * 0.2);
-            // Veins / cracks
-            const vein = turb(px * 0.04 + 100, py * 0.04 + 100);
-            // Dark pits
-            const pit = hash(px * 3, py * 3) > 0.92 ? 0.7 : 1.0;
-
-            const base = n1 * 0.45 + n2 * 0.25 + n3 * 0.1 + vein * 0.2;
-            const v = (60 + base * 180) * pit; // range ~40-240
-            // Color variation: warm browns/tans with some cooler grays
-            const warmth = smooth(px * 0.03 + 200, py * 0.03 + 200);
+            // Layered noise for rock-like feel
+            const n = smooth(px * 0.08, py * 0.08) * 0.5
+                    + smooth(px * 0.17, py * 0.17) * 0.3
+                    + smooth(px * 0.35, py * 0.35) * 0.2;
+            const v = 100 + n * 155; // range ~100-255, bright stone
             const i = (py * sz + px) * 4;
-            d[i]     = Math.min(255, v * (0.9 + warmth * 0.2));   // R
-            d[i + 1] = Math.min(255, v * (0.75 + warmth * 0.1));  // G
-            d[i + 2] = Math.min(255, v * (0.55 + warmth * 0.15)); // B
+            d[i]     = v;              // R
+            d[i + 1] = v * 0.8;       // G
+            d[i + 2] = v * 0.6;       // B — warm
             d[i + 3] = 255;
           }
         }
