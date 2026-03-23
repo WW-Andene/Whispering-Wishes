@@ -2420,67 +2420,131 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.restore();
 
       // ============================================================
-      // LAYER 0 ONLY: Far background cliff walls + arches
+      // LAYER 0: Far arched stone structures
+      //   Left: large arch (two pillars + arch span) — dominates left third
+      //   Right: smaller arch structure — frames right side
+      //   Both sit on a subtle horizon line
       // ============================================================
-      const farAlpha = 0.30 * alphaScale;
-      const farColor = (a) => `rgba(45, 32, 18, ${a})`;
+      const L0 = 0.30 * alphaScale;  // base opacity
+      const stoneD = `rgba(40, 28, 16, ${L0})`;       // dark stone fill
+      const stoneM = `rgba(50, 36, 20, ${L0 * 0.8})`; // mid stone
+      const edgeGold = `rgba(200, 150, 60, ${0.05 * alphaScale})`; // sun-lit edge
 
-      // Left cliff wall — massive, reaches high
+      // ---- LEFT ARCH: two thick pillars + arch curve ----
+      // Left pillar (runs off-screen left, very thick)
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(0, h);
-      ctx.lineTo(w * 0.18, h);
-      ctx.lineTo(w * 0.22, h * 0.55);
-      ctx.lineTo(w * 0.20, h * 0.42);
-      ctx.lineTo(w * 0.24, h * 0.32);
-      ctx.lineTo(w * 0.18, h * 0.22);
-      ctx.lineTo(w * 0.15, h * 0.15);
-      ctx.lineTo(w * 0.12, h * 0.08);
-      ctx.lineTo(w * 0.08, h * 0.05);
-      ctx.lineTo(0, 0);
+      ctx.moveTo(0, h * 0.02);           // top-left corner
+      ctx.lineTo(w * 0.12, h * 0.02);    // pillar right edge top
+      ctx.lineTo(w * 0.13, h * 0.04);    // slight capital overhang
+      ctx.lineTo(w * 0.11, h * 0.06);    // capital underside
+      ctx.lineTo(w * 0.11, h);           // pillar right edge bottom
+      ctx.lineTo(0, h);                   // off-screen left bottom
       ctx.closePath();
-      ctx.fillStyle = farColor(farAlpha);
+      ctx.fillStyle = stoneD;
       ctx.fill();
+      // Lit inner edge
+      ctx.fillStyle = edgeGold;
+      ctx.fillRect(w * 0.095, h * 0.06, w * 0.015, h * 0.94);
 
-      // Right cliff wall — slightly shorter
+      // Right pillar of left arch (free-standing, narrower)
       ctx.beginPath();
-      ctx.moveTo(w, 0);
+      ctx.moveTo(w * 0.30, h * 0.10);    // top
+      ctx.lineTo(w * 0.36, h * 0.10);
+      ctx.lineTo(w * 0.37, h * 0.12);    // capital
+      ctx.lineTo(w * 0.35, h * 0.14);
+      ctx.lineTo(w * 0.35, h);           // base
+      ctx.lineTo(w * 0.31, h);
+      ctx.lineTo(w * 0.31, h * 0.14);
+      ctx.lineTo(w * 0.29, h * 0.12);    // capital left
+      ctx.closePath();
+      ctx.fillStyle = stoneD;
+      ctx.fill();
+      // Lit left edge (facing sun)
+      ctx.fillStyle = edgeGold;
+      ctx.fillRect(w * 0.31, h * 0.14, w * 0.012, h * 0.86);
+
+      // Arch curve connecting the two left pillars
+      // Outer arch curve
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, h * 0.03);
+      ctx.quadraticCurveTo(w * 0.21, h * -0.08, w * 0.30, h * 0.10);
+      // Inner arch curve (back toward start, lower)
+      ctx.lineTo(w * 0.29, h * 0.12);
+      ctx.quadraticCurveTo(w * 0.21, h * 0.01, w * 0.11, h * 0.06);
+      ctx.closePath();
+      ctx.fillStyle = stoneD;
+      ctx.fill();
+      // Arch underside highlight (golden glow on inner curve)
+      ctx.beginPath();
+      ctx.moveTo(w * 0.13, h * 0.055);
+      ctx.quadraticCurveTo(w * 0.21, h * 0.015, w * 0.29, h * 0.115);
+      ctx.strokeStyle = `rgba(180, 130, 50, ${0.04 * alphaScale})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // ---- RIGHT ARCH: slightly smaller, broken top ----
+      // Right pillar (runs off-screen right)
+      ctx.beginPath();
+      ctx.moveTo(w, h * 0.06);
+      ctx.lineTo(w * 0.88, h * 0.06);
+      ctx.lineTo(w * 0.87, h * 0.08);    // capital
+      ctx.lineTo(w * 0.89, h * 0.10);
+      ctx.lineTo(w * 0.89, h);
       ctx.lineTo(w, h);
-      ctx.lineTo(w * 0.82, h);
-      ctx.lineTo(w * 0.78, h * 0.50);
-      ctx.lineTo(w * 0.80, h * 0.38);
-      ctx.lineTo(w * 0.76, h * 0.28);
-      ctx.lineTo(w * 0.82, h * 0.18);
-      ctx.lineTo(w * 0.88, h * 0.10);
-      ctx.lineTo(w * 0.92, h * 0.06);
-      ctx.lineTo(w, 0);
       ctx.closePath();
-      ctx.fillStyle = farColor(farAlpha);
+      ctx.fillStyle = stoneD;
       ctx.fill();
+      // Lit inner edge
+      ctx.fillStyle = edgeGold;
+      ctx.fillRect(w * 0.89, h * 0.10, w * 0.015, h * 0.90);
 
-      // Giant arch on the left side (spanning from left wall)
+      // Left pillar of right arch (free-standing)
       ctx.beginPath();
-      ctx.moveTo(w * 0.08, h * 0.05);
-      ctx.quadraticCurveTo(w * 0.12, h * 0.02, w * 0.20, h * 0.08);
-      ctx.lineTo(w * 0.22, h * 0.12);
-      ctx.quadraticCurveTo(w * 0.35, h * 0.06, w * 0.42, h * 0.20);
-      ctx.lineTo(w * 0.40, h * 0.28);
-      ctx.quadraticCurveTo(w * 0.32, h * 0.15, w * 0.22, h * 0.22);
-      ctx.lineTo(w * 0.15, h * 0.15);
+      ctx.moveTo(w * 0.68, h * 0.16);
+      ctx.lineTo(w * 0.73, h * 0.16);
+      ctx.lineTo(w * 0.74, h * 0.18);    // capital
+      ctx.lineTo(w * 0.72, h * 0.20);
+      ctx.lineTo(w * 0.72, h);
+      ctx.lineTo(w * 0.69, h);
+      ctx.lineTo(w * 0.69, h * 0.20);
+      ctx.lineTo(w * 0.67, h * 0.18);    // capital left
       ctx.closePath();
-      ctx.fillStyle = farColor(farAlpha * 0.9);
+      ctx.fillStyle = stoneM;
       ctx.fill();
+      // Lit right edge
+      ctx.fillStyle = edgeGold;
+      ctx.fillRect(w * 0.715, h * 0.20, w * 0.01, h * 0.80);
 
-      // Smaller arch fragment on right
+      // Right arch curve (broken — doesn't fully connect)
       ctx.beginPath();
-      ctx.moveTo(w * 0.88, h * 0.10);
-      ctx.quadraticCurveTo(w * 0.78, h * 0.05, w * 0.68, h * 0.18);
-      ctx.lineTo(w * 0.70, h * 0.25);
-      ctx.quadraticCurveTo(w * 0.78, h * 0.14, w * 0.84, h * 0.16);
-      ctx.lineTo(w * 0.82, h * 0.18);
+      ctx.moveTo(w * 0.88, h * 0.07);
+      ctx.quadraticCurveTo(w * 0.82, h * 0.0, w * 0.73, h * 0.16);
+      ctx.lineTo(w * 0.72, h * 0.18);
+      // Inner curve
+      ctx.quadraticCurveTo(w * 0.81, h * 0.06, w * 0.87, h * 0.09);
       ctx.closePath();
-      ctx.fillStyle = farColor(farAlpha * 0.7);
+      ctx.fillStyle = stoneM;
       ctx.fill();
+      // Broken chunk missing from arch top (cut a notch)
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.moveTo(w * 0.78, h * 0.04);
+      ctx.lineTo(w * 0.81, h * 0.02);
+      ctx.lineTo(w * 0.83, h * 0.06);
+      ctx.lineTo(w * 0.80, h * 0.07);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0,0,0,1)';
+      ctx.fill();
+      ctx.restore();
+
+      // Arch underside highlight
+      ctx.beginPath();
+      ctx.moveTo(w * 0.87, h * 0.085);
+      ctx.quadraticCurveTo(w * 0.81, h * 0.055, w * 0.73, h * 0.175);
+      ctx.strokeStyle = `rgba(180, 130, 50, ${0.03 * alphaScale})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
