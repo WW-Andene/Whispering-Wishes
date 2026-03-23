@@ -3403,7 +3403,7 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div className="rounded-xl p-1.5" style={{ background: 'rgba(255,255,255,0.10)' }}>
+              <div className="rounded-xl p-1.5" style={{ background: 'rgba(255,255,255,0.01)' }}>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
                 <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
