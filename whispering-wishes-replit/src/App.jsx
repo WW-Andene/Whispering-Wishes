@@ -1108,6 +1108,10 @@ function WhisperingWishesInner() {
   const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false);
   const [weaponSelectorTarget, setWeaponSelectorTarget] = useState({ teamIdx: 0, charName: '' });
   const [weaponSearch, setWeaponSearch] = useState('');
+  const [echoSelectorOpen, setEchoSelectorOpen] = useState(false);
+  const [echoSelectorTarget, setEchoSelectorTarget] = useState({ teamIdx: 0, charName: '', slotIdx: 0 }); // slotIdx: 0=4cost, 1-2=3cost, 3-4=1cost
+  const [echoSearch, setEchoSearch] = useState('');
+  const [echoStatPanel, setEchoStatPanel] = useState(null); // { teamIdx, charName, slotIdx, echoName } — open stat config
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
@@ -6353,17 +6357,48 @@ function WhisperingWishesInner() {
                                                 )}
                                               </div>
                                               {/* 5 Echo slots */}
-                                              {[0, 1, 2, 3, 4].map(ei => (
-                                                <div key={ei}
-                                                  className={`${slotStyle} border-dashed border-[var(--border-medium)] opacity-60 cursor-default`}
-                                                  title={'Echo slot ' + (ei + 1) + ' — coming soon'}
-                                                >
-                                                  <Diamond size={12} className="text-gray-600" />
-                                                  <span className="text-[10px] text-gray-600">{ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost'}</span>
-                                                </div>
-                                              ))}
+                                              {[0, 1, 2, 3, 4].map(ei => {
+                                                const echoEntry = eq.echoes?.[ei];
+                                                const echoName = typeof echoEntry === 'object' && echoEntry ? echoEntry.name : (typeof echoEntry === 'string' ? echoEntry : null);
+                                                const echoData = echoName ? ECHO_DATA[echoName] : null;
+                                                const costLabel = ei === 0 ? '4-cost' : ei < 3 ? '3-cost' : '1-cost';
+                                                const costNum = ei === 0 ? 4 : ei < 3 ? 3 : 1;
+                                                const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
+                                                return (
+                                                  <div key={ei}
+                                                    className={`${slotStyle} ${echoName ? `border-${costColor}-500/40 bg-${costColor}-500/8` : 'border-dashed border-white/15 hover:border-' + costColor + '-500/40'}`}
+                                                    title={echoName || `Select ${costLabel} echo`}
+                                                    onClick={() => {
+                                                      if (echoName) {
+                                                        // Open stat config panel for equipped echo
+                                                        setEchoStatPanel({ teamIdx: state.activeTeamIndex, charName: m.name, slotIdx: ei, echoName });
+                                                      } else {
+                                                        // Open echo selector
+                                                        setEchoSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name, slotIdx: ei });
+                                                        setEchoSearch('');
+                                                        setEchoSelectorOpen(true);
+                                                      }
+                                                      haptic.light();
+                                                    }}
+                                                  >
+                                                    {echoName && collectionImages[echoName] ? (
+                                                      <img src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                                    ) : echoName ? (
+                                                      <>
+                                                        <Diamond size={12} className={`text-${costColor}-400`} />
+                                                        <span className={`text-[10px] text-${costColor}-400 truncate w-full px-0.5 leading-tight`}>{echoName.split(' ').slice(0, 2).join(' ')}</span>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <Diamond size={12} className="text-gray-500" />
+                                                        <span className="text-[10px] text-gray-500">{costLabel}</span>
+                                                      </>
+                                                    )}
+                                                  </div>
+                                                );
+                                              })}
                                             </div>
-                                            {/* Weapon info beside grid */}
+                                            {/* Weapon & Echo info beside grid */}
                                             <div className="flex-1 min-w-0 pt-0.5">
                                               {equippedWeap ? (
                                                 <div className="text-[10px] space-y-0.5">
@@ -6376,6 +6411,27 @@ function WhisperingWishesInner() {
                                                   {m.d.bestEchoes && <div className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</div>}
                                                 </div>
                                               ) : null}
+                                              {/* Echo summary */}
+                                              {(() => {
+                                                const equipped = (eq.echoes || []).filter(e => e != null);
+                                                if (equipped.length === 0) return null;
+                                                const echoNames = equipped.map(e => typeof e === 'object' ? e.name : e).filter(Boolean);
+                                                // Count sonata sets
+                                                const setCounts = {};
+                                                echoNames.forEach(n => {
+                                                  const ed = ECHO_DATA[n];
+                                                  if (ed?.sets) ed.sets.forEach(s => { setCounts[s] = (setCounts[s] || 0) + 1; });
+                                                });
+                                                const activeSets = Object.entries(setCounts).filter(([, c]) => c >= 2);
+                                                return (
+                                                  <div className="text-[10px] mt-1 space-y-0.5">
+                                                    <div className="text-cyan-400/70">{equipped.length}/5 echoes</div>
+                                                    {activeSets.map(([setName, count]) => (
+                                                      <div key={setName} className="text-gray-500">{setName} <span className="text-emerald-400/70">×{count}</span></div>
+                                                    ))}
+                                                  </div>
+                                                );
+                                              })()}
                                             </div>
                                           </div>
                                         </div>
@@ -7074,6 +7130,265 @@ function WhisperingWishesInner() {
                         </div>
                       </div>
                   </FocusTrapModal>
+
+                  {/* Echo Selector Modal */}
+                  <FocusTrapModal isOpen={echoSelectorOpen} onClose={() => setEchoSelectorOpen(false)} className="" onClick={() => setEchoSelectorOpen(false)} centered>
+                    <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                      {(() => {
+                        const slotIdx = echoSelectorTarget.slotIdx;
+                        const costNum = slotIdx === 0 ? 4 : slotIdx < 3 ? 3 : 1;
+                        const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
+                        const echoList = costNum === 4 ? ALL_4COST_ECHOES : costNum === 3 ? ALL_3COST_ECHOES : ALL_1COST_ECHOES;
+                        const charData = CHARACTER_DATA[echoSelectorTarget.charName];
+                        const recommendedEchoes = new Set(charData?.bestEchoes?.flatMap(e => {
+                          // bestEchoes can contain echo names or set names like "Eternal Radiance 5pc"
+                          const echoMatch = echoList.filter(en => e.toLowerCase().includes(en.toLowerCase()));
+                          return echoMatch;
+                        }) || []);
+                        return (
+                          <>
+                            <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                              <div>
+                                <h3 className="text-white font-semibold text-sm">Select Echo</h3>
+                                <p className="text-gray-400 text-[10px]">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
+                              </div>
+                              <button onClick={() => setEchoSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
+                            </div>
+                            <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
+                              <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+                            </div>
+                            <div className="overflow-y-auto flex-1 p-2">
+                              <div className="space-y-1">
+                                {/* Unequip option */}
+                                <button
+                                  onClick={() => {
+                                    const eqKey = echoSelectorTarget.teamIdx + ':' + echoSelectorTarget.charName;
+                                    setTeamEquipment(prev => {
+                                      const n = { ...prev };
+                                      const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                                      const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                                      newEchoes[slotIdx] = null;
+                                      n[eqKey] = { ...existing, echoes: newEchoes };
+                                      try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                      return n;
+                                    });
+                                    setEchoSelectorOpen(false);
+                                    haptic.light();
+                                  }}
+                                  className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                                  style={{ background: 'var(--bg-btn)' }}
+                                >
+                                  ✕ Unequip echo
+                                </button>
+                                {/* Echo list */}
+                                {echoList
+                                  .filter(name => !echoSearch || name.toLowerCase().includes(echoSearch.toLowerCase()))
+                                  .sort((a, b) => {
+                                    const aRec = recommendedEchoes.has(a) ? 0 : 1;
+                                    const bRec = recommendedEchoes.has(b) ? 0 : 1;
+                                    return aRec - bRec;
+                                  })
+                                  .map(name => {
+                                    const ed = ECHO_DATA[name];
+                                    const isRec = recommendedEchoes.has(name);
+                                    const buffs = ed ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
+                                    return (
+                                      <button
+                                        key={name}
+                                        onClick={() => {
+                                          const eqKey = echoSelectorTarget.teamIdx + ':' + echoSelectorTarget.charName;
+                                          setTeamEquipment(prev => {
+                                            const n = { ...prev };
+                                            const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                                            const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                                            newEchoes[slotIdx] = { name, mainStat: null, substats: [] };
+                                            n[eqKey] = { ...existing, echoes: newEchoes };
+                                            try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                            return n;
+                                          });
+                                          setEchoSelectorOpen(false);
+                                          // Open stat config immediately
+                                          setEchoStatPanel({ teamIdx: echoSelectorTarget.teamIdx, charName: echoSelectorTarget.charName, slotIdx, echoName: name });
+                                          haptic.success();
+                                        }}
+                                        className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] border-${costColor}-500/30 bg-${costColor}-500/5 hover:bg-${costColor}-500/10`}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          {collectionImages[name] ? (
+                                            <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
+                                              <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                            </div>
+                                          ) : (
+                                            <Diamond size={14} className={`text-${costColor}-400`} />
+                                          )}
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-1.5">
+                                              <span className="text-white text-xs font-semibold truncate">{name}</span>
+                                              {isRec && <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">Rec</span>}
+                                            </div>
+                                            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                              {buffs.map(b => <span key={b} className="text-[10px] text-gray-400">{b}</span>)}
+                                              {ed?.sets && <span className="text-[10px] text-gray-500">· {ed.sets.join(', ')}</span>}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </FocusTrapModal>
+
+                  {/* Echo Stat Configuration Panel */}
+                  <FocusTrapModal isOpen={!!echoStatPanel} onClose={() => setEchoStatPanel(null)} className="" onClick={() => setEchoStatPanel(null)} centered>
+                    <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                      {echoStatPanel && (() => {
+                        const { teamIdx, charName, slotIdx, echoName } = echoStatPanel;
+                        const eqKey = teamIdx + ':' + charName;
+                        const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                        const echoEntry = eq.echoes?.[slotIdx];
+                        const currentMainStat = (typeof echoEntry === 'object' && echoEntry) ? echoEntry.mainStat : null;
+                        const currentSubstats = (typeof echoEntry === 'object' && echoEntry) ? (echoEntry.substats || []) : [];
+                        const costNum = slotIdx === 0 ? 4 : slotIdx < 3 ? 3 : 1;
+                        const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
+                        const echoData = ECHO_DATA[echoName];
+                        const mainStatOptions = costNum === 4
+                          ? ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen']
+                          : costNum === 3
+                          ? ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen']
+                          : ['ATK%', 'HP%', 'DEF%'];
+                        const substatOptions = ['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'];
+                        const updateEchoData = (updates) => {
+                          setTeamEquipment(prev => {
+                            const n = { ...prev };
+                            const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                            const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                            const cur = (typeof newEchoes[slotIdx] === 'object' && newEchoes[slotIdx]) ? newEchoes[slotIdx] : { name: echoName, mainStat: null, substats: [] };
+                            newEchoes[slotIdx] = { ...cur, ...updates };
+                            n[eqKey] = { ...existing, echoes: newEchoes };
+                            try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                            return n;
+                          });
+                        };
+                        return (
+                          <>
+                            <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                              <div className="flex items-center gap-2 min-w-0">
+                                {collectionImages[echoName] ? (
+                                  <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
+                                    <img src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain" onError={hideOnError} />
+                                  </div>
+                                ) : (
+                                  <Diamond size={16} className={`text-${costColor}-400`} />
+                                )}
+                                <div className="min-w-0">
+                                  <h3 className="text-white font-semibold text-sm truncate">{echoName}</h3>
+                                  <p className="text-gray-400 text-[10px]">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
+                                </div>
+                              </div>
+                              <button onClick={() => setEchoStatPanel(null)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>
+                            </div>
+                            <div className="overflow-y-auto flex-1 p-3 space-y-4">
+                              {/* Sonata sets */}
+                              {echoData?.sets && (
+                                <div>
+                                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sonata Sets</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {echoData.sets.map(s => <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">{s}</span>)}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Main Stat Selection */}
+                              <div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat</div>
+                                <div className="grid grid-cols-2 gap-1">
+                                  {mainStatOptions.map(stat => {
+                                    const isActive = currentMainStat === stat;
+                                    return (
+                                      <button key={stat}
+                                        className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                                        onClick={() => { updateEchoData({ mainStat: isActive ? null : stat }); haptic.light(); }}
+                                      >
+                                        {stat}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Sub Stats Selection */}
+                              <div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sub Stats <span className="text-gray-600">(select up to 5)</span></div>
+                                <div className="grid grid-cols-2 gap-1">
+                                  {substatOptions.map(stat => {
+                                    const isActive = currentSubstats.includes(stat);
+                                    const atMax = currentSubstats.length >= 5 && !isActive;
+                                    return (
+                                      <button key={stat}
+                                        disabled={atMax}
+                                        className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                                        onClick={() => {
+                                          if (atMax) return;
+                                          const newSubs = isActive ? currentSubstats.filter(s => s !== stat) : [...currentSubstats, stat];
+                                          updateEchoData({ substats: newSubs });
+                                          haptic.light();
+                                        }}
+                                      >
+                                        {stat}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    // Change echo — open selector
+                                    setEchoStatPanel(null);
+                                    setEchoSelectorTarget({ teamIdx, charName, slotIdx });
+                                    setEchoSearch('');
+                                    setEchoSelectorOpen(true);
+                                    haptic.light();
+                                  }}
+                                  className="flex-1 py-2 rounded-lg text-xs border border-[var(--border-medium)] text-gray-400 hover:text-white hover:border-white/20 transition-all"
+                                >
+                                  Change Echo
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    // Unequip
+                                    const eqKeyInner = teamIdx + ':' + charName;
+                                    setTeamEquipment(prev => {
+                                      const n = { ...prev };
+                                      const existing = n[eqKeyInner] || { weapon: null, echoes: [null, null, null, null, null] };
+                                      const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                                      newEchoes[slotIdx] = null;
+                                      n[eqKeyInner] = { ...existing, echoes: newEchoes };
+                                      try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                      return n;
+                                    });
+                                    setEchoStatPanel(null);
+                                    haptic.light();
+                                  }}
+                                  className="px-4 py-2 rounded-lg text-xs border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all"
+                                >
+                                  Unequip
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </FocusTrapModal>
+
                 </div>
               );
             })()}
