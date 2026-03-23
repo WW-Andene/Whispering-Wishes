@@ -2427,6 +2427,80 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
+      // --- 3D rectangle with perspective converging toward the sun ---
+      // Bottom edge at 100% h (screen bottom), top edge at 50% h.
+      // Edges converge toward sun (vanishing point) as they go up.
+      {
+        const vpX = sunX;           // vanishing point = sun center
+        const vpY = sunY;
+
+        // Bottom corners (full width at screen bottom)
+        const botY = h;
+        const botL = 0;
+        const botR = w;
+
+        // Top corners: lerp from bottom corners toward vanishing point
+        // at 50% height. t = how far from bottom toward VP.
+        const topY = h * 0.50;
+        const t = (botY - topY) / (botY - vpY);   // interpolation factor
+        const topL = botL + (vpX - botL) * t;
+        const topR = botR + (vpX - botR) * t;
+
+        const edgeAlpha = 0.55 * alphaScale;
+
+        // Left face (darker)
+        ctx.beginPath();
+        ctx.moveTo(botL, botY);
+        ctx.lineTo(topL, topY);
+        ctx.lineTo(topL + (topR - topL) * 0.08, topY);
+        ctx.lineTo(botL + w * 0.08, botY);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
+        ctx.fill();
+
+        // Right face (darker)
+        ctx.beginPath();
+        ctx.moveTo(botR, botY);
+        ctx.lineTo(topR, topY);
+        ctx.lineTo(topR - (topR - topL) * 0.08, topY);
+        ctx.lineTo(botR - w * 0.08, botY);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
+        ctx.fill();
+
+        // Bottom face (floor, darkest)
+        ctx.beginPath();
+        ctx.moveTo(botL + w * 0.08, botY);
+        ctx.lineTo(botR - w * 0.08, botY);
+        ctx.lineTo(botR - w * 0.08, botY - h * 0.03);
+        ctx.lineTo(botL + w * 0.08, botY - h * 0.03);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.9})`;
+        ctx.fill();
+
+        // Edge outlines — warm highlight
+        const drawEdge = (x1, y1, x2, y2, a) => {
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = `rgba(200, 140, 60, ${a})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        };
+
+        // 4 vertical (converging) edges
+        drawEdge(botL, botY, topL, topY, edgeAlpha);
+        drawEdge(botR, botY, topR, topY, edgeAlpha);
+        drawEdge(botL + w * 0.08, botY, topL + (topR - topL) * 0.08, topY, edgeAlpha * 0.4);
+        drawEdge(botR - w * 0.08, botY, topR - (topR - topL) * 0.08, topY, edgeAlpha * 0.4);
+
+        // Top horizontal edge
+        drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
+
+        // Bottom horizontal edge
+        drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
+      }
+
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
       if (lightningActive) {
