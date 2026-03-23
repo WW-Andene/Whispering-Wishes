@@ -5857,35 +5857,6 @@ function WhisperingWishesInner() {
                     </CardBody>
                   </Card>
 
-                  {/* Quick Collection Navigation */}
-                  <Card>
-                    <CardBody>
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => { setCollectionView('items'); setActiveTab('gathering'); }}
-                          className="kuro-btn flex-1"
-                          aria-label="Browse characters"
-                        >
-                          <Crown size={12} className="inline mr-1" />Characters
-                        </button>
-                        <button
-                          onClick={() => { setCollectionView('weapons'); setActiveTab('gathering'); }}
-                          className="kuro-btn flex-1"
-                          aria-label="Browse weapons"
-                        >
-                          <Sword size={12} className="inline mr-1" />Weapons
-                        </button>
-                        <button
-                          onClick={() => { setCollectionView('echoes'); setActiveTab('gathering'); }}
-                          className="kuro-btn flex-1"
-                          aria-label="Browse echoes"
-                        >
-                          <Sparkles size={12} className="inline mr-1" />Echoes
-                        </button>
-                      </div>
-                    </CardBody>
-                  </Card>
-
                   {/* Team Overview + Damage Analysis (merged) */}
                   {(() => {
                     // ── Reusable calculator with proper WuWa damage formula ──
