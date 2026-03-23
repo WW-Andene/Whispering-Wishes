@@ -1069,24 +1069,24 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
       {time.days > 0 && (
         <>
-          <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
+          <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
             <div className="text-white kuro-scoreboard">{time.days}</div>
             <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">{time.days === 1 ? 'Day' : 'Days'}</div>
           </div>
           <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
         </>
       )}
-      <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
+      <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.hours).padStart(2, '0')}</div>
         <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Hr</div>
       </div>
       <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
-      <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
+      <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.minutes).padStart(2, '0')}</div>
         <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Min</div>
       </div>
       <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
-      <div className="rounded-lg px-2.5 py-1.5 text-center border border-[var(--border-medium)]" style={TIMER_BOX_STYLE}>
+      <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
         <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Sec</div>
       </div>
@@ -1096,7 +1096,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
 CountdownTimer.displayName = 'CountdownTimer';
 
 // P11-FIX: Hoisted constant style objects outside components to prevent recreation on every render (Step 7 audit — NIT-3c)
-const TIMER_BOX_STYLE = Object.freeze({ backgroundColor: 'rgba(12,16,24,0.7)', backdropFilter: 'blur(8px)' });
+const TIMER_BOX_STYLE = Object.freeze({ backgroundColor: 'rgba(15,20,28,0.3)', borderRadius: '12px' });
 const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 
