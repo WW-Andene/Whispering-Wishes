@@ -2350,6 +2350,9 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     /* ── Holographic shimmer sweep on 5★ owned ── */
+    .holo-5star {
+      overflow: hidden;
+    }
     .animations-full .collection-card.glow-gold::after,
     .animations-full .holo-5star::after {
       content: '' !important;
