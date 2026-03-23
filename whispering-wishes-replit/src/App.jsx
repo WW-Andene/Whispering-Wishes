@@ -3611,7 +3611,7 @@ function WhisperingWishesInner() {
                               ) : <div className="flex-1" />}
                               {w ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {wImg ? (
                                       <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
@@ -3681,7 +3681,7 @@ function WhisperingWishesInner() {
                               ) : <div className="flex-1" />}
                               {w ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {wImg ? (
                                       <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
@@ -4548,7 +4548,7 @@ function WhisperingWishesInner() {
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
                                           <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-[28px] h-[28px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                          {imgUrl && <div className="w-[28px] h-[28px] rounded-md overflow-hidden bg-neutral-800 flex-shrink-0 holo-5star" style={{ position: 'relative' }}><img src={imgUrl} alt={name} className="w-full h-full object-cover" loading="lazy" onError={hideOnError} /></div>}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-xs text-gray-200 truncate">{name}</span>
@@ -6384,7 +6384,7 @@ function WhisperingWishesInner() {
                                         <div className="grid grid-cols-3 gap-1">
                                           {/* Weapon slot */}
                                           <div
-                                            className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                            className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8 holo-5star' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
                                             onClick={() => {
                                               setWeaponSelectorTarget({ teamIdx: state.activeTeamIndex, charName: m.name });
                                               setWeaponSearch('');
@@ -7028,7 +7028,7 @@ function WhisperingWishesInner() {
                                     >
                                       <div className="flex items-center gap-2">
                                         {collectionImages[name] ? (
-                                          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border" style={{ borderColor: rarity5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)', background: rarity5 ? 'rgba(234,179,8,0.08)' : 'rgba(168,85,247,0.08)' }}>
+                                          <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border${rarity5 ? ' holo-5star' : ''}`} style={{ borderColor: rarity5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)', background: rarity5 ? 'rgba(234,179,8,0.08)' : 'rgba(168,85,247,0.08)', position: 'relative' }}>
                                             <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
                                           </div>
                                         ) : (

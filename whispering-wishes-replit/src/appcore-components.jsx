@@ -347,7 +347,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
             <div className="flex items-center gap-3">
               {weaponImg && (
-                <img src={weaponImg} alt={data.bestWeapon} className="w-14 h-14 rounded-lg object-cover bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0" onError={hideOnError} />
+                <div className={`w-14 h-14 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${weaponData?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative' }}>
+                  <img src={weaponImg} alt={data.bestWeapon} className="w-full h-full object-cover" onError={hideOnError} />
+                </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
@@ -519,7 +521,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
       >
        <div className="overflow-y-auto max-h-[90vh]">
         {/* Header */}
-        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''}`} style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {imageUrl && (
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
