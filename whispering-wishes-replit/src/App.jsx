@@ -3403,8 +3403,9 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div style={activeTheme ? { background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', borderRadius: '8px', padding: '4px 10px' } : undefined}>
-                <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
+              <div className="relative">
+                {activeTheme && <div className="absolute inset-0 rounded-xl blur-md opacity-50" style={{ background: `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` }} aria-hidden="true" />}
+                <h1 className="relative text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
                 <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
