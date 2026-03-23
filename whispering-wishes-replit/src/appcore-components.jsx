@@ -1432,8 +1432,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     window.addEventListener('resize', init);
 
     // Camera: diagonal view — tilt around X for side view, plus yaw around Y for diagonal
-    const tilt = -25 * Math.PI / 180;   // X-axis tilt (side view)
-    const yaw = 25 * Math.PI / 180;     // Y-axis rotation (diagonal view)
+    const tilt = -35 * Math.PI / 180;   // X-axis tilt (more top-down = more diagonal)
+    const yaw = 30 * Math.PI / 180;     // Y-axis rotation (stronger diagonal)
     const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
     const cosY = Math.cos(yaw), sinY = Math.sin(yaw);
 
@@ -1490,7 +1490,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       const RIBBON_WIDTH = 120;    // width of the ribbon (multiple rows of dots)
       const ROWS = 12;             // number of dot-rows across ribbon width
       const DOTS_AROUND = 120;     // dots around the circumference per row
-      const WAVE_AMP = 120;        // how high the ribbon waves up/down
+      const WAVE_AMP = 60;         // how high the ribbon waves up/down
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
       // Collect all dots for depth sorting
@@ -1532,9 +1532,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
 
-        // Rectangle size scales with depth (perspective)
-        const rectW = (2 + depthNorm * 5) * p.scale * 0.8; // width (tangent direction)
-        const rectH = (0.6 + depthNorm * 1.8) * p.scale * 0.5; // height (thin/flat)
+        // Square size scales with depth (perspective)
+        const sqSize = (1.2 + depthNorm * 3.5) * p.scale * 0.5;
+        const rectW = sqSize;
+        const rectH = sqSize;
 
         // Brighter on wave crests
         const heightNorm = (wy + WAVE_AMP * 1.3) / (WAVE_AMP * 2.6);
