@@ -2696,6 +2696,87 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.stroke();
       }
 
+      // --- Floating 3D rock ---
+      {
+        const rockCx = w * 0.5;
+        const rockCy = h * 0.35 + Math.sin(time * 0.8) * h * 0.015; // gentle bob
+        const rockSz = w * 0.06;
+        const rot = time * 0.15; // slow rotation
+
+        // 3D vertices of a rough rock shape (irregular polyhedron)
+        const verts3d = [
+          [0, -1.2, 0],     // 0 top peak
+          [-0.9, -0.3, 0.7],  // 1 upper left front
+          [1.0, -0.2, 0.6],   // 2 upper right front
+          [0.7, -0.1, -0.8],  // 3 upper right back
+          [-0.8, -0.1, -0.7], // 4 upper left back
+          [-1.1, 0.7, 0.4],   // 5 lower left front
+          [0.9, 0.8, 0.5],    // 6 lower right front
+          [0.6, 0.9, -0.6],   // 7 lower right back
+          [-0.7, 0.8, -0.5],  // 8 lower left back
+          [0.1, 1.3, 0],      // 9 bottom peak
+        ];
+
+        // Rotate around Y axis
+        const cosR = Math.cos(rot), sinR = Math.sin(rot);
+        const projected = verts3d.map(([x, y, z]) => {
+          const rx = x * cosR - z * sinR;
+          const rz = x * sinR + z * cosR;
+          return { x: rockCx + rx * rockSz, y: rockCy + y * rockSz, z: rz };
+        });
+
+        // Faces (vertex indices) + approximate normal Y for lighting
+        const faces = [
+          // Top faces (lit)
+          { verts: [0, 1, 2], shade: 0.85 },
+          { verts: [0, 2, 3], shade: 0.7 },
+          { verts: [0, 3, 4], shade: 0.5 },
+          { verts: [0, 4, 1], shade: 0.65 },
+          // Middle band
+          { verts: [1, 5, 6, 2], shade: 0.55 },
+          { verts: [2, 6, 7, 3], shade: 0.4 },
+          { verts: [3, 7, 8, 4], shade: 0.3 },
+          { verts: [4, 8, 5, 1], shade: 0.45 },
+          // Bottom faces (dark)
+          { verts: [9, 6, 5], shade: 0.15 },
+          { verts: [9, 7, 6], shade: 0.12 },
+          { verts: [9, 8, 7], shade: 0.1 },
+          { verts: [9, 5, 8], shade: 0.13 },
+        ];
+
+        // Sort faces by average z (back to front)
+        faces.sort((a, b) => {
+          const az = a.verts.reduce((s, i) => s + projected[i].z, 0) / a.verts.length;
+          const bz = b.verts.reduce((s, i) => s + projected[i].z, 0) / b.verts.length;
+          return az - bz;
+        });
+
+        for (const face of faces) {
+          ctx.beginPath();
+          const p0 = projected[face.verts[0]];
+          ctx.moveTo(p0.x, p0.y);
+          for (let fi = 1; fi < face.verts.length; fi++) {
+            const p = projected[face.verts[fi]];
+            ctx.lineTo(p.x, p.y);
+          }
+          ctx.closePath();
+          // Rock texture base
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          // Lighting overlay
+          if (face.shade > 0.5) {
+            ctx.fillStyle = `rgba(255, 200, 120, ${(face.shade - 0.5) * 0.5})`;
+          } else {
+            ctx.fillStyle = `rgba(0, 0, 0, ${(0.5 - face.shade) * 1.2})`;
+          }
+          ctx.fill();
+          // Subtle edge
+          ctx.strokeStyle = `rgba(180, 130, 60, ${face.shade * 0.3})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+
       // --- Atmospheric mist layers ---
       for (const m of mistLayers) {
         const my = m.yNorm * h;
