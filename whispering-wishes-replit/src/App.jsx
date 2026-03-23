@@ -3363,8 +3363,8 @@ function WhisperingWishesInner() {
       el.style.setProperty('--border-default', `${themeAccent}20`);
       el.style.setProperty('--border-hover', `${themeAccent}40`);
       el.style.setProperty('--border-bright', `${themeAccent}50`);
-      el.style.setProperty('--shimmer-color', `${themeAccent}99`);
-      el.style.setProperty('--shimmer-color-bright', `${themeAccent}cc`);
+      el.style.removeProperty('--shimmer-color');
+      el.style.removeProperty('--shimmer-color-bright');
       el.style.setProperty('--card-outline', `${themeAccent}60`);
       el.style.setProperty('--card-outline-hover', `${themeAccent}90`);
       el.style.setProperty('--card-glow', `${themeAccent}50`);
