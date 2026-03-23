@@ -2763,12 +2763,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Bias: more breaks on left side near top and bottom of staircase
           let breakSide = 0, breakW = 0;
           const posRatio = (botY - y) / (botY - topY); // 0=bottom, 1=top
-          const edgeBias = posRatio < 0.15 || posRatio > 0.85; // near top or bottom
-          const breakThresh = edgeBias ? 0.45 : 0.75; // ~55% vs ~25%
+          const nearBottom = posRatio < 0.15;
+          const nearTop = posRatio > 0.85;
+          const edgeBias = nearBottom || nearTop;
+          // Top-left: a bit less aggressive than bottom-left
+          const breakThresh = nearTop ? 0.55 : (nearBottom ? 0.45 : 0.75);
           if (s(8) > breakThresh) {
-            // Near edges, strongly prefer left side (-1)
             breakSide = edgeBias ? (s(9) > 0.8 ? 1 : -1) : (s(9) > 0.5 ? 1 : -1);
-            breakW = stepW * (edgeBias ? (0.18 + s(10) * 0.22) : (0.13 + s(10) * 0.18));
+            const edgeW = nearTop ? (0.15 + s(10) * 0.18) : (0.18 + s(10) * 0.22);
+            breakW = stepW * (edgeBias ? edgeW : (0.13 + s(10) * 0.18));
           }
 
           // Riser left/right after break
@@ -3059,7 +3062,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillStyle = grad;
           ctx.fillRect(cx - glowR, cy - glowR, glowR * 2, glowR * 2);
 
-          // Arcs between consecutive pairs — slower, more erratic, bolder
+          // Lightning bolts — short intense flashes between shards
           for (let gi = 0; gi < group.length - 1; gi++) {
             const a = group[gi], b = group[gi + 1];
             const dx = b.x - a.x, dy = b.y - a.y;
@@ -3067,17 +3070,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (dist < 1) continue;
 
             const arcSeed = a.idx * 31 + b.idx * 17;
-            // Slow base flicker + erratic bursts
-            const slowWave = Math.sin(time * 0.8 + arcSeed * 0.3) * 0.5 + 0.5;
-            const erratic = sHash(arcSeed, Math.floor(time * 3)) > 0.6 ? 1 : 0;
-            const burst = sHash(arcSeed, Math.floor(time * 1.5) + 50);
-            const flicker = slowWave * 0.4 + erratic * 0.4 + burst * 0.2;
-            if (flicker < 0.25) continue;
+            // Lightning strike: mostly off, brief intense flash
+            // Changes state every ~0.4s, only fires ~15% of the time
+            const strikeFrame = Math.floor(time * 2.5 + arcSeed * 0.7);
+            const strikeChance = sHash(arcSeed, strikeFrame);
+            if (strikeChance < 0.85) continue; // off 85% of the time
 
-            const alpha = (0.25 + flicker * 0.55) * Math.min(1, 0.18 / (dist / h + 0.01));
+            // When it fires, it's BRIGHT and SHORT
+            // Sub-frame flicker for that snappy lightning feel
+            const subFrame = (time * 2.5 + arcSeed * 0.7) % 1;
+            const flash = subFrame < 0.3 ? 1.0 : (subFrame < 0.5 ? 0.4 : 0);
+            if (flash === 0) continue;
 
-            // Erratic jagged arc: 4-7 segments with large, uneven jitter
-            const nSeg = 4 + Math.floor(sHash(arcSeed, 200) * 4);
+            const alpha = (0.6 + flash * 0.4) * Math.min(1, 0.22 / (dist / h + 0.01));
+
+            // Sharp jagged bolt: 3-5 segments with harsh angular jitter
+            const nSeg = 3 + Math.floor(sHash(arcSeed, 200) * 3);
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             for (let si = 1; si < nSeg; si++) {
@@ -3086,26 +3094,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const my = a.y + dy * t;
               const perpX = -dy / dist;
               const perpY = dx / dist;
-              // Large erratic jitter that changes shape unpredictably
-              const jBase = (sHash(arcSeed + si, Math.floor(time * 3)) - 0.5);
-              const jSpike = sHash(arcSeed + si * 7, Math.floor(time * 1.2)) > 0.7
-                ? (sHash(arcSeed + si, 300) - 0.5) * 1.8 : 0;
-              const jitter = (jBase + jSpike) * dist * 0.4;
+              // Harsh angular jitter — new shape each strike
+              const jitter = (sHash(arcSeed + si, strikeFrame) - 0.5) * dist * 0.55;
               ctx.lineTo(mx + perpX * jitter, my + perpY * jitter);
             }
             ctx.lineTo(b.x, b.y);
 
-            // Bold outer glow
-            ctx.strokeStyle = `rgba(255, 90, 30, ${alpha * 0.45})`;
-            ctx.lineWidth = 2.5;
+            // Bright flash glow
+            ctx.strokeStyle = `rgba(255, 100, 30, ${alpha * 0.5 * flash})`;
+            ctx.lineWidth = 3.5;
             ctx.stroke();
-            // Orange-red arc
-            ctx.strokeStyle = `rgba(255, 130, 50, ${alpha})`;
-            ctx.lineWidth = 1.0;
+            // Strong bolt
+            ctx.strokeStyle = `rgba(255, 180, 80, ${alpha * flash})`;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
-            // Bright core
-            ctx.strokeStyle = `rgba(255, 220, 140, ${alpha * 0.5})`;
-            ctx.lineWidth = 0.4;
+            // Hot white core
+            ctx.strokeStyle = `rgba(255, 245, 200, ${alpha * 0.7 * flash})`;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
