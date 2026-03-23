@@ -2495,7 +2495,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       }
 
       // Generate a rock texture pattern (once, cached on canvas element)
-      if (!canvasEl._rockPattern) {
+      if (!canvas._rockPattern) {
         const sz = 128;
         const offC = document.createElement('canvas');
         offC.width = sz; offC.height = sz;
@@ -2531,9 +2531,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
         }
         oc.putImageData(imgData, 0, 0);
-        canvasEl._rockPattern = ctx.createPattern(offC, 'repeat');
+        canvas._rockPattern = ctx.createPattern(offC, 'repeat');
       }
-      const rockPat = canvasEl._rockPattern;
+      const rockPat = canvas._rockPattern;
 
       // --- Second narrower rectangle (inner step) ---
       {
