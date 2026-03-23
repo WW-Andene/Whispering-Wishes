@@ -1765,17 +1765,21 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fill();
       }
 
-      // --- Flat cyan particles drifting across the field ---
+      // --- Flat cyan particles around the ribbon ---
       for (let i = 0; i < 40; i++) {
         const seed = i * 97.31 + 42;
         const aT = ((seed * 2.17) % 1 + time * 0.02 * (0.5 + (seed % 3) * 0.3)) % 1;
         const rT = (seed * 0.47) % 1;
-        const r = INNER_RADIUS * 0.3 + rT * RADIUS * 0.9;
+        // Constrain radius to ribbon band with slight scatter outside
+        const r = RADIUS - RIBBON_WIDTH * 0.6 + rT * RIBBON_WIDTH * 1.2;
         const angle = aT * Math.PI * 2 + rot;
 
         const wx = Math.cos(angle) * r;
         const wz = Math.sin(angle) * r;
-        const wy = Math.sin(angle * 2 + time * 0.3 + i) * 5;
+        // Follow the ribbon wave + slight vertical scatter
+        const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                 + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3
+                 + Math.sin(time * 0.8 + i * 1.3) * 8 - 4;
 
         const p = project(wx, wy, wz);
         if (!p) continue;
