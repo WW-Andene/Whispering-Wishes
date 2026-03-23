@@ -2428,52 +2428,60 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ============================================================
 
       // --- 3D rectangle with perspective converging toward the sun ---
-      // Bottom edge at 50% L4 (87.5% h), top edge at 50% L1 (12.5% h).
-      // Edges converge toward sun (vanishing point) as they go up.
+      // Bottom at 50% of L1 = 62.5% h, top at 50% of L3 = 12.5% h.
+      // Vanishing point = sun. Wider at bottom, narrower at top.
       {
         const vpX = sunX;           // vanishing point = sun center
-        const vpY = sunY;
+        const vpY = sunY;           // h * 0.18
 
-        // Bottom corners (full width at 62.5% h = 50% of L1)
-        const botY = h * 0.625;
-        const botL = 0;
-        const botR = w;
+        const botY = h * 0.625;     // 50% of L1
+        const topY = h * 0.125;     // 50% of L3
 
-        // Top corners: lerp from bottom corners toward vanishing point
-        // at 12.5% height (50% of L3).
-        const topY = h * 0.125;
-        const t = (botY - topY) / (botY - vpY);   // interpolation factor
-        const topL = botL + (vpX - botL) * t;
-        const topR = botR + (vpX - botR) * t;
+        // Lerp helper: given a y, find how much to shrink x toward VP
+        const lerpAtY = (y) => (botY - y) / (botY - vpY);
+
+        // Bottom edge corners (lerped from full-width toward VP)
+        const tBot = lerpAtY(botY); // = 0 → full width
+        const botL = 0   + (vpX - 0) * tBot;
+        const botR = w   + (vpX - w) * tBot;
+
+        // Top edge corners
+        const tTop = lerpAtY(topY);
+        const topL = 0   + (vpX - 0) * tTop;
+        const topR = w   + (vpX - w) * tTop;
 
         const edgeAlpha = 0.55 * alphaScale;
 
-        // Left face (darker)
+        // Depth thickness for the 3D box sides (in perspective-space)
+        const depthBot = w * 0.08;
+        const depthTop = (topR - topL) * 0.08;
+
+        // Left face
         ctx.beginPath();
         ctx.moveTo(botL, botY);
         ctx.lineTo(topL, topY);
-        ctx.lineTo(topL + (topR - topL) * 0.08, topY);
-        ctx.lineTo(botL + w * 0.08, botY);
+        ctx.lineTo(topL + depthTop, topY);
+        ctx.lineTo(botL + depthBot, botY);
         ctx.closePath();
         ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
         ctx.fill();
 
-        // Right face (darker)
+        // Right face
         ctx.beginPath();
         ctx.moveTo(botR, botY);
         ctx.lineTo(topR, topY);
-        ctx.lineTo(topR - (topR - topL) * 0.08, topY);
-        ctx.lineTo(botR - w * 0.08, botY);
+        ctx.lineTo(topR - depthTop, topY);
+        ctx.lineTo(botR - depthBot, botY);
         ctx.closePath();
         ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
         ctx.fill();
 
-        // Bottom face (floor, darkest)
+        // Bottom face (floor)
         ctx.beginPath();
-        ctx.moveTo(botL + w * 0.08, botY);
-        ctx.lineTo(botR - w * 0.08, botY);
-        ctx.lineTo(botR - w * 0.08, botY - h * 0.03);
-        ctx.lineTo(botL + w * 0.08, botY - h * 0.03);
+        ctx.moveTo(botL + depthBot, botY);
+        ctx.lineTo(botR - depthBot, botY);
+        ctx.lineTo(botR - depthBot, botY - h * 0.02);
+        ctx.lineTo(botL + depthBot, botY - h * 0.02);
         ctx.closePath();
         ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.9})`;
         ctx.fill();
@@ -2488,16 +2496,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // 4 vertical (converging) edges
+        // Outer converging edges
         drawEdge(botL, botY, topL, topY, edgeAlpha);
         drawEdge(botR, botY, topR, topY, edgeAlpha);
-        drawEdge(botL + w * 0.08, botY, topL + (topR - topL) * 0.08, topY, edgeAlpha * 0.4);
-        drawEdge(botR - w * 0.08, botY, topR - (topR - topL) * 0.08, topY, edgeAlpha * 0.4);
-
-        // Top horizontal edge
+        // Inner converging edges
+        drawEdge(botL + depthBot, botY, topL + depthTop, topY, edgeAlpha * 0.4);
+        drawEdge(botR - depthBot, botY, topR - depthTop, topY, edgeAlpha * 0.4);
+        // Top horizontal
         drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
-
-        // Bottom horizontal edge
+        // Bottom horizontal
         drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
       }
 
