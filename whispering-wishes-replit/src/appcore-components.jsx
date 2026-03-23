@@ -2461,26 +2461,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const thkBot = hwBot * 0.08;
         const thkTop = hwTop * 0.08;
 
-        // Left wall
-        ctx.beginPath();
-        ctx.moveTo(botL, botY);
-        ctx.lineTo(topL, topY);
-        ctx.lineTo(topL + thkTop, topY);
-        ctx.lineTo(botL + thkBot, botY);
-        ctx.closePath();
-        ctx.fillStyle = 'rgb(128, 0, 255)';
-        ctx.fill();
-
-        // Right wall
-        ctx.beginPath();
-        ctx.moveTo(botR, botY);
-        ctx.lineTo(topR, topY);
-        ctx.lineTo(topR - thkTop, topY);
-        ctx.lineTo(botR - thkBot, botY);
-        ctx.closePath();
-        ctx.fillStyle = 'rgb(128, 0, 255)';
-        ctx.fill();
-
         // Floor strip
         ctx.beginPath();
         ctx.moveTo(botL + thkBot, botY);
