@@ -2594,48 +2594,30 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Double stripes bottom→top: dark+light pair, repeated twice per cycle
-        // Light proportion shrinks toward the top (scale²)
+        // Stripes bottom→top: dark then light, light shrinks toward top
+        // Halved base heights for twice the total count
         let y = botY;
         while (y > topY) {
           const scale = (y - vpY) / dBot; // 1 at bottom, ~0 at top
 
-          // --- First pair: dark then light ---
-          const darkH1 = Math.max(1, h * 0.025 * scale);
-          const d1Y = Math.max(topY, y - darkH1);
+          // Dark stripe
+          const darkH = Math.max(1, h * 0.0175 * scale);
+          const dY = Math.max(topY, y - darkH);
           ctx.beginPath();
-          ctx.rect(0, d1Y, w, y - d1Y);
+          ctx.rect(0, dY, w, y - dY);
           ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
           ctx.fill();
-          y = d1Y;
+          y = dY;
           if (y <= topY) break;
 
-          const lightH1 = Math.max(1, h * 0.015 * scale * scale);
-          const l1Y = Math.max(topY, y - lightH1);
+          // Light stripe (proportion shrinks with scale²)
+          const lightH = Math.max(1, h * 0.0075 * scale * scale);
+          const lY = Math.max(topY, y - lightH);
           ctx.beginPath();
-          ctx.rect(0, l1Y, w, y - l1Y);
+          ctx.rect(0, lY, w, y - lY);
           ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
           ctx.fill();
-          y = l1Y;
-          if (y <= topY) break;
-
-          // --- Second pair: dark then light ---
-          const darkH2 = Math.max(1, h * 0.025 * scale);
-          const d2Y = Math.max(topY, y - darkH2);
-          ctx.beginPath();
-          ctx.rect(0, d2Y, w, y - d2Y);
-          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
-          ctx.fill();
-          y = d2Y;
-          if (y <= topY) break;
-
-          const lightH2 = Math.max(1, h * 0.015 * scale * scale);
-          const l2Y = Math.max(topY, y - lightH2);
-          ctx.beginPath();
-          ctx.rect(0, l2Y, w, y - l2Y);
-          ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
-          ctx.fill();
-          y = l2Y;
+          y = lY;
         }
         ctx.restore();
 
