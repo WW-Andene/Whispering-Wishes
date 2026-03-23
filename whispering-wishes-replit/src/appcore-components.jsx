@@ -2427,71 +2427,33 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
-      // --- 3D rectangle with perspective pointing toward the sun ---
-      // Bottom at 50% of L1 = 62.5% h, top just above the sun VP.
-      // Width at each Y scales with distance from VP (sun).
+      // --- 3D staircase with perspective pointing toward the sun ---
+      // Steps ascend from botY (62.5% h) toward the sun VP.
+      // Each step gets narrower following perspective convergence.
       {
         const vpX = sunX;           // w * 0.5
         const vpY = sunY;           // h * 0.18
 
-        const botY = h * 0.625;     // 50% of L1
-        // Top must stay below VP for correct perspective convergence
-        const topY = vpY + h * 0.04; // below the sun
+        const botY = h * 0.625;     // bottom of staircase
+        const topY = vpY + h * 0.04; // top of staircase (below sun)
 
-        // Clip so nothing renders outside the intended bounds
         ctx.save();
         ctx.beginPath();
         ctx.rect(0, topY, w, botY - topY);
         ctx.clip();
 
-        // Half-width scales with distance from the sun VP
-        const dBot = botY - vpY;    // distance bottom→VP
-        const dTop = topY - vpY;    // distance top→VP (positive, top is below VP)
-        const hwBot = w * 0.5;              // full width at bottom
-        const hwTop = hwBot * dTop / dBot;  // narrow at top
-
-        const botL = vpX - hwBot;
-        const botR = vpX + hwBot;
-        const topL = vpX - hwTop;
-        const topR = vpX + hwTop;
-
         const edgeAlpha = 0.55 * alphaScale;
+        const STEPS = 8;
+        const totalH = botY - topY;
+        const stepH = totalH / STEPS;
 
-        // Wall thickness (3D depth)
-        const thkBot = hwBot * 0.08;
-        const thkTop = hwTop * 0.08;
+        const dBot = botY - vpY;
+        const hwBot = w * 0.5;
 
-        // Left wall
-        ctx.beginPath();
-        ctx.moveTo(botL, botY);
-        ctx.lineTo(topL, topY);
-        ctx.lineTo(topL + thkTop, topY);
-        ctx.lineTo(botL + thkBot, botY);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
-        ctx.fill();
+        // Helper: half-width at a given Y based on perspective
+        const hwAt = (y) => hwBot * (y - vpY) / dBot;
 
-        // Right wall
-        ctx.beginPath();
-        ctx.moveTo(botR, botY);
-        ctx.lineTo(topR, topY);
-        ctx.lineTo(topR - thkTop, topY);
-        ctx.lineTo(botR - thkBot, botY);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
-        ctx.fill();
-
-        // Floor strip
-        ctx.beginPath();
-        ctx.moveTo(botL + thkBot, botY);
-        ctx.lineTo(botR - thkBot, botY);
-        ctx.lineTo(botR - thkBot, botY - h * 0.015);
-        ctx.lineTo(botL + thkBot, botY - h * 0.015);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.9})`;
-        ctx.fill();
-
-        // Edge outlines
+        // Edge drawing helper
         const drawEdge = (x1, y1, x2, y2, a) => {
           ctx.beginPath();
           ctx.moveTo(x1, y1);
@@ -2501,16 +2463,84 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Outer edges
-        drawEdge(botL, botY, topL, topY, edgeAlpha);
-        drawEdge(botR, botY, topR, topY, edgeAlpha);
-        // Inner edges
-        drawEdge(botL + thkBot, botY, topL + thkTop, topY, edgeAlpha * 0.4);
-        drawEdge(botR - thkBot, botY, topR - thkTop, topY, edgeAlpha * 0.4);
-        // Top horizontal
-        drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
-        // Bottom horizontal
-        drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
+        for (let i = 0; i < STEPS; i++) {
+          const sBot = botY - i * stepH;       // bottom of this step
+          const sTop = sBot - stepH;            // top of this step
+
+          const hwSBot = hwAt(sBot);
+          const hwSTop = hwAt(sTop);
+
+          const sL = vpX - hwSBot;   // left at step bottom
+          const sR = vpX + hwSBot;   // right at step bottom
+          const tL = vpX - hwSTop;   // left at step top
+          const tR = vpX + hwSTop;   // right at step top
+
+          // Wall thickness scales with perspective
+          const thkBot = hwSBot * 0.08;
+          const thkTop = hwSTop * 0.08;
+
+          // --- Riser (front face of step) ---
+          ctx.beginPath();
+          ctx.moveTo(sL, sBot);
+          ctx.lineTo(sR, sBot);
+          ctx.lineTo(tR, sTop);
+          ctx.lineTo(tL, sTop);
+          ctx.closePath();
+          const riserBright = 0.3 + 0.15 * (i / STEPS);
+          ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * riserBright})`;
+          ctx.fill();
+
+          // --- Tread (top face of step) — horizontal strip ---
+          const treadH = stepH * 0.25;
+          const treadTopY = sTop - treadH;
+          // At treadTopY the width is slightly narrower
+          const hwTreadTop = hwAt(sTop); // same width as step top
+          const trL = vpX - hwTreadTop;
+          const trR = vpX + hwTreadTop;
+          // Use next step's width for the back edge of tread
+          const hwTreadBack = hwAt(treadTopY);
+          const tbL = vpX - hwTreadBack;
+          const tbR = vpX + hwTreadBack;
+
+          ctx.beginPath();
+          ctx.moveTo(tL, sTop);
+          ctx.lineTo(tR, sTop);
+          ctx.lineTo(tbR, treadTopY);
+          ctx.lineTo(tbL, treadTopY);
+          ctx.closePath();
+          const treadBright = 0.5 + 0.2 * (i / STEPS);
+          ctx.fillStyle = `rgba(30, 20, 10, ${edgeAlpha * treadBright})`;
+          ctx.fill();
+
+          // --- Left wall ---
+          ctx.beginPath();
+          ctx.moveTo(sL, sBot);
+          ctx.lineTo(tL, sTop);
+          ctx.lineTo(tL + thkTop, sTop);
+          ctx.lineTo(sL + thkBot, sBot);
+          ctx.closePath();
+          ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
+          ctx.fill();
+
+          // --- Right wall ---
+          ctx.beginPath();
+          ctx.moveTo(sR, sBot);
+          ctx.lineTo(tR, sTop);
+          ctx.lineTo(tR - thkTop, sTop);
+          ctx.lineTo(sR - thkBot, sBot);
+          ctx.closePath();
+          ctx.fillStyle = `rgba(18, 12, 6, ${edgeAlpha * 0.7})`;
+          ctx.fill();
+
+          // --- Edge outlines ---
+          // Bottom horizontal
+          drawEdge(sL, sBot, sR, sBot, edgeAlpha * 0.3);
+          // Top horizontal (front of tread)
+          drawEdge(tL, sTop, tR, sTop, edgeAlpha * 0.6);
+          // Left/right outer diagonals
+          drawEdge(sL, sBot, tL, sTop, edgeAlpha * 0.5);
+          drawEdge(sR, sBot, tR, sTop, edgeAlpha * 0.5);
+        }
 
         ctx.restore(); // remove clip
       }
