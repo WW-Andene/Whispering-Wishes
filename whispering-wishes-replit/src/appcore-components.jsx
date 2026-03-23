@@ -1502,10 +1502,99 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillRect(0, 0, w, h);
       }
 
+      // Ring params (defined early so disc/ripple can reference them)
+      const RADIUS = 250;
+      const RIBBON_WIDTH = 90;
+
+      // --- Water ripple: discrete rings expanding outward from center ---
+      // Drawn BEFORE ribbon so ribbon renders on top
+      {
+        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
+        const RIPPLE_COUNT = 5;
+        const RIPPLE_CYCLE = 20;
+        const RIPPLE_AMP = 10;
+        const RSTEPS = 80;
+        const BAND_W = 14;
+
+        for (let i = 0; i < RIPPLE_COUNT; i++) {
+          const phase = ((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1;
+          const r = phase * RIPPLE_MAX_R;
+          if (r < 5) continue;
+
+          const fade = Math.sin(phase * Math.PI);
+          const alpha = fade * 0.14 * alphaScale;
+          if (alpha < 0.005) continue;
+
+          const hue = 210 + phase * 100;
+          const wy = -RIPPLE_AMP * fade;
+
+          // Dark underside
+          const darkBandW = BAND_W * 0.35 * fade;
+          const rDarkOuter = r + darkBandW;
+          const rDarkInner = Math.max(0, r - darkBandW * 0.3);
+          ctx.beginPath();
+          let started = false;
+          for (let s = 0; s <= RSTEPS; s++) {
+            const a = (s / RSTEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rDarkOuter, wy * 0.3, Math.sin(a) * rDarkOuter);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+          for (let s = RSTEPS; s >= 0; s--) {
+            const a = (s / RSTEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rDarkInner, 0, Math.sin(a) * rDarkInner);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue + 10}, 50%, 12%, ${alpha * 0.3})`;
+          ctx.fill();
+
+          // Bright top face
+          const topBandW = BAND_W * 0.4 * fade;
+          const rTopOuter = r + topBandW;
+          const rTopInner = Math.max(0, r - topBandW * 0.5);
+          ctx.beginPath();
+          started = false;
+          for (let s = 0; s <= RSTEPS; s++) {
+            const a = (s / RSTEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rTopOuter, wy, Math.sin(a) * rTopOuter);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+          for (let s = RSTEPS; s >= 0; s--) {
+            const a = (s / RSTEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * rTopInner, wy * 0.7, Math.sin(a) * rTopInner);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue}, 60%, 48%, ${alpha * 0.4})`;
+          ctx.fill();
+
+          // Specular highlight
+          ctx.save();
+          ctx.shadowColor = `hsla(${hue - 15}, 80%, 80%, ${alpha * 0.5})`;
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          started = false;
+          for (let s = 0; s <= RSTEPS; s++) {
+            const a = (s / RSTEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.strokeStyle = `hsla(${hue - 15}, 75%, 88%, ${alpha * 0.7})`;
+          ctx.lineWidth = 0.8 + fade * 1.2;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
       // --- The ribbon: a ring with width, undulating in Y ---
-      // Ring params
-      const RADIUS = 250;          // radius of the circular ring (smaller, less big)
-      const RIBBON_WIDTH = 90;     // width of the ribbon
       const ROWS = 45;             // more rows across ribbon width
       const DOTS_AROUND = 700;     // denser squares
       const WAVE_AMP = 35;         // reduced wave amplitude
@@ -1796,96 +1885,6 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.beginPath();
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
-
-        // --- Water ripple: discrete rings expanding outward from center ---
-        // Each ring spawns at center, expands to edge, fades out, respawns
-        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
-        const RIPPLE_COUNT = 5;
-        const RIPPLE_CYCLE = 20;
-        const RIPPLE_AMP = 10; // tighter, less height
-        const STEPS = 80;
-        const BAND_W = 14;
-
-        for (let i = 0; i < RIPPLE_COUNT; i++) {
-          const phase = ((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1;
-          const r = phase * RIPPLE_MAX_R;
-          if (r < 5) continue;
-
-          const fade = Math.sin(phase * Math.PI);
-          const alpha = fade * 0.14 * alphaScale;
-          if (alpha < 0.005) continue;
-
-          // Hue shifts with radius: blue(210) center → purple(270) mid → pink/magenta(310) edge
-          const hue = 210 + phase * 100;
-          const wy = -RIPPLE_AMP * fade;
-
-          const rOuter = r + BAND_W * 0.5 * fade;
-          const rInner = Math.max(0, r - BAND_W * 0.5 * fade);
-
-          // Dark underside — tighter, softer (no shadowBlur to avoid covering ribbon)
-          const darkBandW = BAND_W * 0.35 * fade;
-          const rDarkOuter = r + darkBandW;
-          const rDarkInner = Math.max(0, r - darkBandW * 0.3);
-          ctx.beginPath();
-          let started = false;
-          for (let s = 0; s <= STEPS; s++) {
-            const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rDarkOuter, wy * 0.3, Math.sin(a) * rDarkOuter);
-            if (!p) { started = false; continue; }
-            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          }
-          for (let s = STEPS; s >= 0; s--) {
-            const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rDarkInner, 0, Math.sin(a) * rDarkInner);
-            if (!p) continue;
-            ctx.lineTo(p.sx, p.sy);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `hsla(${hue + 10}, 50%, 12%, ${alpha * 0.3})`;
-          ctx.fill();
-
-          // Bright top face — tighter band
-          const topBandW = BAND_W * 0.4 * fade;
-          const rTopOuter = r + topBandW;
-          const rTopInner = Math.max(0, r - topBandW * 0.5);
-          ctx.beginPath();
-          started = false;
-          for (let s = 0; s <= STEPS; s++) {
-            const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rTopOuter, wy, Math.sin(a) * rTopOuter);
-            if (!p) { started = false; continue; }
-            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          }
-          for (let s = STEPS; s >= 0; s--) {
-            const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rTopInner, wy * 0.7, Math.sin(a) * rTopInner);
-            if (!p) continue;
-            ctx.lineTo(p.sx, p.sy);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `hsla(${hue}, 60%, 48%, ${alpha * 0.4})`;
-          ctx.fill();
-
-          // Specular highlight — tighter, softer, blurred
-          ctx.save();
-          ctx.shadowColor = `hsla(${hue - 15}, 80%, 80%, ${alpha * 0.5})`;
-          ctx.shadowBlur = 5;
-          ctx.beginPath();
-          started = false;
-          for (let s = 0; s <= STEPS; s++) {
-            const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
-            if (!p) { started = false; continue; }
-            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          }
-          ctx.strokeStyle = `hsla(${hue - 15}, 75%, 88%, ${alpha * 0.7})`;
-          ctx.lineWidth = 0.8 + fade * 1.2;
-          ctx.stroke();
-          ctx.restore();
-        }
       }
     };
     animId = requestAnimationFrame(draw);
