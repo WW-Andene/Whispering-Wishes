@@ -1506,8 +1506,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // Ring params
       const RADIUS = 250;          // radius of the circular ring (smaller, less big)
       const RIBBON_WIDTH = 90;     // width of the ribbon
-      const ROWS = 40;             // more rows across ribbon width
-      const DOTS_AROUND = 600;     // doubled again
+      const ROWS = 45;             // more rows across ribbon width
+      const DOTS_AROUND = 700;     // denser squares
       const WAVE_AMP = 35;         // reduced wave amplitude
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
@@ -1568,22 +1568,56 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
         const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
-        // Aemeath colors: cyan inner → purple mid → pink/magenta outer edges
-        const hue = 190 + rowT * 110 + heightNorm * 15; // 190 cyan → 300 pink
-        const sat = 60 + heightNorm * 30;
-        const lit = 50 + brightness * 38;
+        // Per-square reflection variation
+        const hash2 = Math.sin(jitter * 9999.1 + angleT * 7777.7) * 43758.5453;
+        const reflectVar = (hash2 - Math.floor(hash2));
+        const shimmer = Math.sin(time * 0.8 + angleT * 40 + rowT * 20) * 0.5 + 0.5;
+        const reflectBoost = reflectVar > 0.82 ? shimmer * 0.6 : 0;
 
-        const dotAlpha = brightness * 0.5 * alphaScale;
+        // Aemeath colors: cyan inner → purple mid → pink/magenta outer edges
+        const hue = 190 + rowT * 110 + heightNorm * 15 + reflectVar * 20;
+        const sat = 55 + heightNorm * 30 + reflectBoost * 20;
+        const lit = 48 + (brightness + reflectBoost) * 40;
+
+        const dotAlpha = (brightness + reflectBoost * 0.4) * 0.5 * alphaScale;
         if (dotAlpha < 0.02) continue;
 
-        // Rotate rectangle to be tangent to the ring (perpendicular to radius)
-        // The tangent direction in screen space approximation
         ctx.save();
         ctx.translate(p.sx, p.sy);
-        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION); // tangent aligned, no random tilt
+        ctx.rotate(angle + Math.PI * 0.5 + SCREEN_ROTATION);
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
         ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
+
+        // Bright specular glint on some squares
+        if (reflectBoost > 0.2) {
+          const gs = sqSize * 0.4 * reflectBoost;
+          ctx.fillStyle = `hsla(${hue - 20}, 70%, 92%, ${reflectBoost * 0.5 * alphaScale})`;
+          ctx.fillRect(-gs * 0.5, -gs * 0.5, gs, gs);
+        }
         ctx.restore();
+      }
+
+      // --- Sparkle particles floating above the ribbon ---
+      for (let sp = 0; sp < 50; sp++) {
+        const spHash = Math.sin(sp * 191.7) * 43758.5453;
+        const spRand = spHash - Math.floor(spHash);
+        const spHash2 = Math.sin(sp * 337.3) * 29871.2;
+        const spRand2 = spHash2 - Math.floor(spHash2);
+        const spAngle = spRand * Math.PI * 2 + rot + time * (0.02 + spRand2 * 0.03);
+        const spR = RADIUS - RIBBON_WIDTH * 0.3 + spRand2 * RIBBON_WIDTH * 0.6;
+        const spWy = Math.sin(spAngle * WAVE_FREQ + time * 0.15) * WAVE_AMP - 8 - spRand * 20;
+        const spP = project(Math.cos(spAngle) * spR, spWy, Math.sin(spAngle) * spR);
+        if (!spP) continue;
+        const twinkle = Math.sin(time * 2.5 + sp * 5.3) * 0.5 + 0.5;
+        const spAlpha = twinkle * 0.35 * alphaScale;
+        const spHue = 190 + spRand * 120; // cyan to pink
+        const spSize = (1 + twinkle * 2.5) * spP.scale * 0.3;
+        ctx.fillStyle = `hsla(${spHue}, 80%, 85%, ${spAlpha})`;
+        ctx.fillRect(spP.sx - spSize * 0.5, spP.sy - spSize * 0.5, spSize, spSize);
+        // Soft glow
+        ctx.fillStyle = `hsla(${spHue}, 70%, 75%, ${spAlpha * 0.3})`;
+        const glowS = spSize * 3;
+        ctx.fillRect(spP.sx - glowS * 0.5, spP.sy - glowS * 0.5, glowS, glowS);
       }
 
       // --- Ribbon ring lines (multiple across the width) ---
