@@ -1432,7 +1432,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     window.addEventListener('resize', init);
 
     // Camera: side view with slight top-down, no yaw — diagonal comes from canvas rotation
-    const tilt = -55 * Math.PI / 180;   // X-axis tilt (looking down from the top)
+    const tilt = -65 * Math.PI / 180;   // X-axis tilt (looking down from the top)
     const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
 
     // Screen-space diagonal: rotate the entire output ~30° on screen
