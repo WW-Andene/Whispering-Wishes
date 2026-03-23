@@ -3172,15 +3172,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // nearest neighbors, creating a chain of connected bolts
           for (let ni = 0; ni < lightningNodes.length; ni++) {
             const startSeed = ni * 47 + 13;
-            // Per-node time offset desynchronizes strike rhythms
-            const nodeOffset = hash(startSeed * 173.7) * 3.0; // 0-3s offset
-            const nodeSpeed = 1.8 + hash(startSeed * 311.3) * 0.9; // 1.8-2.7 rate
-            const t0 = time * nodeSpeed + nodeOffset;
-            const strikeFrame = Math.floor(t0);
+            const strikeFrame = Math.floor(time * 2.2 + startSeed * 0.5);
             // Only ~12% of nodes initiate a chain per frame
             if (sHash(startSeed, strikeFrame) < 0.88) continue;
 
-            const subFrame = t0 % 1;
+            const subFrame = (time * 2.2 + startSeed * 0.5) % 1;
             const flash = subFrame < 0.25 ? 1.0 : (subFrame < 0.45 ? 0.35 : 0);
             if (flash === 0) continue;
 
