@@ -1785,48 +1785,48 @@ const BANNER_THEMES = {
       phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.5,
       size: 1.2 + Math.random() * 2,
     }));
-    const moonR = 16;
+    const moonR = 32;
     return (ctx, t) => {
-      // Animated glow pulse — slow breathe with layered harmonics
-      const pulse1 = Math.sin(t * 0.08);
-      const pulse2 = Math.sin(t * 0.19 + 1.2);
-      const pulse3 = Math.sin(t * 0.042 + 2.5);
-      const glowStrength = 0.85 + pulse1 * 0.15;
-      const haloScale = 1 + pulse1 * 0.12 + pulse3 * 0.08;
+      // Animated glow pulse — very slow breathe with layered harmonics
+      const pulse1 = Math.sin(t * 0.025);
+      const pulse2 = Math.sin(t * 0.06 + 1.2);
+      const pulse3 = Math.sin(t * 0.014 + 2.5);
+      const glowStrength = 0.5 + pulse1 * 0.2 + pulse2 * 0.08;
+      const haloScale = 1 + pulse1 * 0.15 + pulse3 * 0.1;
 
-      // Moon outer glow — wide atmospheric bloom
+      // Moon outer glow — wide soft atmospheric bloom
       ctx.save();
-      ctx.globalAlpha = 0.5 + pulse1 * 0.15;
+      ctx.globalAlpha = 0.25 + pulse1 * 0.1;
       const og = ctx.createRadialGradient(moonX, moonY, moonR * 0.5, moonX, moonY, moonR * 8 * haloScale);
-      og.addColorStop(0, 'rgba(210,225,255,0.5)');
-      og.addColorStop(0.25, 'rgba(180,205,240,0.25)');
-      og.addColorStop(0.5, 'rgba(150,185,220,0.1)');
+      og.addColorStop(0, 'rgba(210,225,255,0.3)');
+      og.addColorStop(0.25, 'rgba(180,205,240,0.15)');
+      og.addColorStop(0.5, 'rgba(150,185,220,0.05)');
       og.addColorStop(1, 'rgba(120,155,190,0)');
       ctx.fillStyle = og;
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 8 * haloScale, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
-      // Moon halo — brighter inner glow
+      // Moon halo — soft inner glow
       ctx.save();
-      ctx.globalAlpha = 0.6 + pulse1 * 0.15;
+      ctx.globalAlpha = 0.35 + pulse1 * 0.1;
       const mg = ctx.createRadialGradient(moonX, moonY, moonR * 0.2, moonX, moonY, moonR * 3.5 * haloScale);
-      mg.addColorStop(0, 'rgba(230,240,255,0.7)');
-      mg.addColorStop(0.35, 'rgba(200,220,245,0.35)');
-      mg.addColorStop(0.7, 'rgba(170,195,225,0.1)');
+      mg.addColorStop(0, 'rgba(230,240,255,0.45)');
+      mg.addColorStop(0.35, 'rgba(200,220,245,0.2)');
+      mg.addColorStop(0.7, 'rgba(170,195,225,0.06)');
       mg.addColorStop(1, 'rgba(140,165,200,0)');
       ctx.fillStyle = mg;
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 3.5 * haloScale, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
-      // Moon disc — solid bright core
+      // Moon disc — soft bright core
       ctx.save();
       ctx.globalAlpha = glowStrength;
-      ctx.fillStyle = 'rgba(240,245,255,0.95)';
+      ctx.fillStyle = 'rgba(240,245,255,0.6)';
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 0.6, 0, Math.PI * 2); ctx.fill();
       // Softer edge
       const disc = ctx.createRadialGradient(moonX, moonY, moonR * 0.4, moonX, moonY, moonR * 1.4);
-      disc.addColorStop(0, 'rgba(245,250,255,0.9)');
-      disc.addColorStop(0.4, 'rgba(225,238,255,0.5)');
+      disc.addColorStop(0, 'rgba(245,250,255,0.55)');
+      disc.addColorStop(0.4, 'rgba(225,238,255,0.25)');
       disc.addColorStop(1, 'rgba(190,210,240,0)');
       ctx.fillStyle = disc;
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 1.4, 0, Math.PI * 2); ctx.fill();
