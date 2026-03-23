@@ -6427,7 +6427,8 @@ function WhisperingWishesInner() {
                                     const aeqKey = state.activeTeamIndex + ':' + m.name;
                                     return (
                                       <button
-                                        className="absolute top-2 right-2 kuro-btn text-[10px] px-2 py-0.5 z-10"
+                                        className="kuro-btn text-[10px] px-2 py-0.5"
+                                        style={{ position: 'absolute', top: '8px', right: '8px', zIndex: 10 }}
                                         aria-label={`Auto equip best build for ${m.name}`}
                                         onClick={() => {
                                           const d = m.d;
