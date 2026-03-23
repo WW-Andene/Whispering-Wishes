@@ -2481,9 +2481,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Outer edges
-        drawEdge(botL, botY, topL, topY, edgeAlpha);
-        drawEdge(botR, botY, topR, topY, edgeAlpha);
+        // Outer edges — cut below lowest dark stripe
+        const cutY = botY - h * 0.02;
+        const cutHw = hwBot * (cutY - vpY) / dBot;
+        const cutL = vpX - cutHw;
+        const cutR = vpX + cutHw;
+        drawEdge(cutL, cutY, topL, topY, edgeAlpha);
+        drawEdge(cutR, cutY, topR, topY, edgeAlpha);
         // Top horizontal
         drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
 
@@ -2613,12 +2617,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
         ctx.restore();
 
-        drawEdge(botL, botY, topL, topY, edgeAlpha);
-        drawEdge(botR, botY, topR, topY, edgeAlpha);
-        // drawEdge(botL + thkBot, botY, topL + thkTop, topY, edgeAlpha * 0.4);
-        // drawEdge(botR - thkBot, botY, topR - thkTop, topY, edgeAlpha * 0.4);
+        // Diagonals start at bottom of lowest dark stripe, not at botY
+        const cutY = botY - h * 0.02;
+        const cutHw = hwBot * (cutY - vpY) / dBot;
+        const cutL = vpX - cutHw;
+        const cutR = vpX + cutHw;
+        drawEdge(cutL, cutY, topL, topY, edgeAlpha);
+        drawEdge(cutR, cutY, topR, topY, edgeAlpha);
         drawEdge(topL, topY, topR, topY, edgeAlpha * 0.8);
-        drawEdge(botL, botY, botR, botY, edgeAlpha * 0.3);
 
         ctx.restore();
       }
