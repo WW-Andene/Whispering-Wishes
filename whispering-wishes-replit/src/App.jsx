@@ -118,6 +118,7 @@ import {
   MEDAL_COLORS,
   getElementColor, getElementBg, getElementBorder,
   hideOnError,
+  CHARACTER_THEMES,
 } from './AppCore';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
@@ -185,7 +186,8 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   collectionZoom: 120,
   oledMode: false,
   swipeNavigation: false,
-  animationsEnabled: 'on' // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
+  animationsEnabled: 'on', // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
+  theme: 'default' // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
 });
 const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'character', label: 'Resonators', color: 'yellow' }),
@@ -3347,6 +3349,12 @@ function WhisperingWishesInner() {
     }
   }, [adminPassword, toast, hashPasswordPBKDF2, hashPasswordSHA256]);
 
+  const activeTheme = useMemo(() => {
+    if (visualSettings.theme === 'default') return null;
+    return CHARACTER_THEMES.find(t => t.id === visualSettings.theme) || null;
+  }, [visualSettings.theme]);
+  const themeAccent = activeTheme ? getElementColor(activeTheme.element) : null;
+
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
   return (
@@ -3364,8 +3372,15 @@ function WhisperingWishesInner() {
       </a>
       
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-[var(--border-medium)]" style={{backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)'}}>
-        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3">
+      <header className="sticky top-0 z-50 border-b" style={{borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)', position: 'sticky', overflow: 'hidden'}}>
+        {/* Theme banner art background */}
+        {activeTheme && (
+          <>
+            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.15, filter: 'blur(1px)', pointerEvents: 'none' }} loading="eager" />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent}08, rgba(8,12,18,0.95))`, pointerEvents: 'none' }} aria-hidden="true" />
+          </>
+        )}
+        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
           <div className="header-top flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer" onClick={async () => {
@@ -3378,26 +3393,26 @@ function WhisperingWishesInner() {
                   toast?.addToast?.('Use your browser menu to add to home screen', 'info');
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" aria-hidden="true" />
+                <div className="absolute inset-0 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
                 <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
                 {pwa?.canInstall && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center shadow-md" aria-hidden="true">
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-md" style={{ background: themeAccent || '#eab308' }} aria-hidden="true">
                     <Download size={9} className="text-black" />
                   </div>
                 )}
               </div>
               <div>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-yellow-400/50 text-[10px] tracking-wider uppercase">Wuthering Waves - Companion</p>
+                <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
-              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={headerControlBg}>
+              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg border focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={{ ...headerControlBg, borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)' }}>
                 {state.server} <ChevronDown size={10} />
               </button>
-              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-[var(--border-medium)] text-gray-400 hover:text-yellow-400 hover:border-yellow-500/30 hover:bg-yellow-500/10 active:scale-95 transition-all" style={headerControlBg}>
+              <button onClick={handleExport} aria-label="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border text-gray-400 active:scale-95 transition-all" style={{ ...headerControlBg, borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)' }}>
                 <Download size={14} />
               </button>
             </div>
@@ -7186,6 +7201,54 @@ function WhisperingWishesInner() {
                 {visualSettings.animationsEnabled === 'full' && (
                   <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
                 )}
+
+                {/* Theme Selector */}
+                <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : '#9ca3af' }}>
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Header Theme</div>
+                      <div className="text-gray-400 text-[10px]">Character banner art & accent colors</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                    {/* Default theme */}
+                    <button
+                      onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })}
+                      className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === 'default' ? 'border-yellow-500 ring-1 ring-yellow-500/50' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                      style={{ aspectRatio: '16/9' }}
+                      aria-pressed={visualSettings.theme === 'default'}
+                      aria-label="Default theme"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#080c14] to-[#0f141c] flex items-center justify-center">
+                        <span className="text-gray-400 text-[10px] font-medium">Default</span>
+                      </div>
+                      {visualSettings.theme === 'default' && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                    </button>
+                    {/* Character themes */}
+                    {CHARACTER_THEMES.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => saveVisualSettings({ ...visualSettings, theme: t.id })}
+                        className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === t.id ? `ring-1` : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                        style={{ aspectRatio: '16/9', borderColor: visualSettings.theme === t.id ? getElementColor(t.element) : undefined, boxShadow: visualSettings.theme === t.id ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
+                        aria-pressed={visualSettings.theme === t.id}
+                        aria-label={`${t.name} theme`}
+                      >
+                        <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        <span className="absolute bottom-0.5 left-1 text-white text-[9px] font-medium drop-shadow-lg">{t.name}</span>
+                        {visualSettings.theme === t.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                      </button>
+                    ))}
+                  </div>
+                  {visualSettings.theme !== 'default' && (() => {
+                    const t = CHARACTER_THEMES.find(th => th.id === visualSettings.theme);
+                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} — {t.element} theme active</p> : null;
+                  })()}
+                </div>
 
                 {/* Install App on Device */}
                 {pwa?.canInstall && (

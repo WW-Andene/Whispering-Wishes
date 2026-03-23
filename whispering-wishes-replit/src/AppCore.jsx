@@ -19,6 +19,7 @@ export {
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   TAB_ORDER, MEDAL_COLORS,
   ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder,
+  CHARACTER_THEMES,
 } from './appcore-data.js';
 
 // --- appcore-engine.js ---

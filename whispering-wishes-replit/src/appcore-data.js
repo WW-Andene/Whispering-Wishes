@@ -2669,6 +2669,22 @@ const getBuffElementColor = (buff) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CHARACTER THEMES — Curated theme presets based on character banner art & element
+// ═══════════════════════════════════════════════════════════════════════════════
+const CHARACTER_THEMES = [
+  { id: 'sigrika',       name: 'Sigrika',       element: 'Aero',    bannerArt: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg' },
+  { id: 'qiuyuan',       name: 'Qiuyuan',       element: 'Aero',    bannerArt: 'https://i.ibb.co/yndZmfvB/Qiuyuan-Banner-Art.jpg' },
+  { id: 'luuk-herssen',  name: 'Luuk Herssen',  element: 'Spectro', bannerArt: 'https://i.ibb.co/DPcdf0RY/Luuk-Hersen-Banner-Art.jpg' },
+  { id: 'aemeath',       name: 'Aemeath',       element: 'Fusion',  bannerArt: 'https://i.ibb.co/YFQBgJ8W/Aemaeth-Banner-Art.jpg' },
+  { id: 'mornye',        name: 'Mornye',        element: 'Fusion',  bannerArt: 'https://i.ibb.co/cKY4dY6W/Mornye-Banner-Art.png' },
+  { id: 'chisa',         name: 'Chisa',         element: 'Havoc',   bannerArt: 'https://i.ibb.co/p6gwfsWC/Chisa-Banner-Art.jpg' },
+  { id: 'galbrena',      name: 'Galbrena',      element: 'Fusion',  bannerArt: 'https://i.ibb.co/0jJLjwws/Galbrena-Banner-Art.jpg' },
+  { id: 'iuno',          name: 'Iuno',          element: 'Aero',    bannerArt: 'https://i.ibb.co/xtdnyxRH/Iuno-Banner-Art.png' },
+  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/Hfx3kqG0/Augusta-Banner-Art.jpg' },
+  { id: 'lupa',          name: 'Lupa',          element: 'Fusion',  bannerArt: 'https://i.ibb.co/bjTy2MYT/Lupa-Banner-Art.jpg' },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTS - Used by App.jsx (WhisperingWishesInner)
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -2691,4 +2707,5 @@ export {
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
   TAB_ORDER, MEDAL_COLORS,
   ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder, getSetElementColor, getEchoSetColors, getBuffElementColor,
+  CHARACTER_THEMES,
 };
