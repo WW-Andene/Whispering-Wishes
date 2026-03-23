@@ -2905,14 +2905,18 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore();
 
         // Floating stone shards near broken steps — drawn outside clip
-        for (const sh of shards) {
+        // Compute bobbed positions for shards and group by parent step
+        const shardPos = []; // { bx, by, stepKey }
+        const shardsByStep = {};
+        for (let si = 0; si < shards.length; si++) {
+          const sh = shards[si];
           const sa = sHash(sh.seed, 130), sb = sHash(sh.seed, 131);
           const sc = sHash(sh.seed, 132), sd = sHash(sh.seed, 133);
-          // Gentle bob up and down
           const bobY = sh.y + Math.sin(time * sh.speed + sh.phase) * h * 0.005;
           const bobX = sh.x + Math.sin(time * sh.speed * 0.6 + sh.phase + 1.5) * h * 0.002;
           const sz = sh.sz;
-          // Tiny irregular triangle/quad shard
+
+          // Draw shard
           ctx.beginPath();
           ctx.moveTo(bobX, bobY - sz * (0.6 + sa * 0.4));
           ctx.lineTo(bobX + sz * (0.5 + sb * 0.4), bobY + sz * (sc * 0.4));
@@ -2923,10 +2927,60 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           ctx.fillStyle = `rgba(8, 5, 2, ${0.25 + sa * 0.25})`;
           ctx.fill();
-          // Subtle lit edge
           ctx.strokeStyle = `rgba(180, 150, 110, ${0.12 + sb * 0.12})`;
           ctx.lineWidth = 0.5;
           ctx.stroke();
+
+          // Group by parent step for arcs
+          const stepKey = Math.floor(sh.seed / 10);
+          if (!shardsByStep[stepKey]) shardsByStep[stepKey] = [];
+          shardsByStep[stepKey].push({ x: bobX, y: bobY, idx: si });
+        }
+
+        // Static electricity arcs between shards in same group
+        for (const key in shardsByStep) {
+          const group = shardsByStep[key];
+          if (group.length < 2) continue;
+          // Draw arcs between consecutive pairs
+          for (let gi = 0; gi < group.length - 1; gi++) {
+            const a = group[gi], b = group[gi + 1];
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 1) continue;
+
+            // Flickering intensity — each arc has its own flicker
+            const arcSeed = a.idx * 31 + b.idx * 17;
+            const flicker = sHash(arcSeed, Math.floor(time * 8)) * 0.7 +
+                            sHash(arcSeed, Math.floor(time * 12) + 100) * 0.3;
+            if (flicker < 0.3) continue; // arc sometimes disappears
+
+            const alpha = (0.3 + flicker * 0.5) * Math.min(1, 0.15 / (dist / h + 0.01));
+
+            // Jagged arc: 3-5 segments with random offsets
+            const nSeg = 3 + Math.floor(sHash(arcSeed, 200) * 3);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            for (let si = 1; si < nSeg; si++) {
+              const t = si / nSeg;
+              const mx = a.x + dx * t;
+              const my = a.y + dy * t;
+              // Perpendicular offset for jagged look — changes with time
+              const perpX = -dy / dist;
+              const perpY = dx / dist;
+              const jitter = (sHash(arcSeed + si, Math.floor(time * 10)) - 0.5) * dist * 0.3;
+              ctx.lineTo(mx + perpX * jitter, my + perpY * jitter);
+            }
+            ctx.lineTo(b.x, b.y);
+
+            // Orange-red glow
+            ctx.strokeStyle = `rgba(255, 130, 50, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            // Bright core
+            ctx.strokeStyle = `rgba(255, 200, 100, ${alpha * 0.6})`;
+            ctx.lineWidth = 0.3;
+            ctx.stroke();
+          }
         }
 
         // Diagonals start at bottom of lowest dark stripe, not at botY
