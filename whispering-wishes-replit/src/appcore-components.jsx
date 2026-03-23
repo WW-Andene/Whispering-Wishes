@@ -2520,12 +2520,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const n = smooth(px * 0.06, py * 0.1) * 0.5
                     + smooth(px * 0.13, py * 0.2) * 0.3
                     + smooth(px * 0.3, py * 0.3) * 0.2;
-            const v = 80 + n * 175;
+            const v = 50 + n * 130; // darker range
             const warm = smooth(px * 0.04 + 99, py * 0.04 + 99);
             const i = (py * sz + px) * 4;
-            dd[i]     = Math.min(255, v * (0.95 + warm * 0.15));
-            dd[i + 1] = Math.min(255, v * (0.78 + warm * 0.1));
-            dd[i + 2] = Math.min(255, v * (0.5 + warm * 0.12));
+            dd[i]     = Math.min(255, v * (0.7 + warm * 0.12));   // R — muted
+            dd[i + 1] = Math.min(255, v * (0.65 + warm * 0.08));  // G — close to R
+            dd[i + 2] = Math.min(255, v * (0.6 + warm * 0.15));   // B — blue-ish
             dd[i + 3] = 255;
           }
         }
@@ -2616,27 +2616,75 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Stair steps — geometry creates the stone texture
+        // Seeded hash for deterministic per-step randomness
+        const sHash = (a, b) => {
+          let n = a * 374761393 + b * 668265263;
+          n = (n ^ (n >> 13)) * 1274126177;
+          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
+        };
+
+        // Stair steps with irregularities
         let y = botY;
+        let stepIdx = 0;
+        const shards = []; // collect shard positions to draw after
         while (y > topY) {
           const scale = (y - vpY) / dBot;
+          const jitter = h * 0.003 * scale; // irregularity amount scales with perspective
 
-          // Riser (front face — dark shadow)
+          // Per-step random seeds
+          const s0 = sHash(stepIdx, 0), s1 = sHash(stepIdx, 1);
+          const s2 = sHash(stepIdx, 2), s3 = sHash(stepIdx, 3);
+          const s4 = sHash(stepIdx, 4), s5 = sHash(stepIdx, 5);
+          const s6 = sHash(stepIdx, 6), s7 = sHash(stepIdx, 7);
+
+          // Riser (front face) — jagged top/bottom edges
           const darkH = Math.max(1, h * 0.012 * scale);
           const dY = Math.max(topY, y - darkH);
           const hwAtTop = hwBot * (dY - vpY) / dBot;
           const rL = vpX - hwAtTop;
           const rR = vpX + hwAtTop;
+
+          // Draw riser with irregular top edge
           ctx.beginPath();
-          ctx.rect(rL, dY, rR - rL, y - dY);
+          const rSteps = 6; // segments along top edge
+          ctx.moveTo(rL + (s0 - 0.5) * jitter, y + (s1 - 0.5) * jitter * 0.5);
+          // Jagged top edge (left to right)
+          for (let si = 0; si <= rSteps; si++) {
+            const t = si / rSteps;
+            const jx = rL + (rR - rL) * t + (sHash(stepIdx, 10 + si) - 0.5) * jitter;
+            const jy = dY + (sHash(stepIdx, 20 + si) - 0.5) * jitter;
+            ctx.lineTo(jx, jy);
+          }
+          // Straight-ish bottom edge back
+          ctx.lineTo(rR + (s2 - 0.5) * jitter * 0.5, y);
+          ctx.lineTo(rL + (s0 - 0.5) * jitter, y + (s1 - 0.5) * jitter * 0.5);
+          ctx.closePath();
           ctx.fillStyle = rockPat;
           ctx.fill();
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+          // Per-step shade variation (darker blue-brown)
+          const darkVar = 0.35 + s3 * 0.2;
+          const darkB = s4 > 0.6 ? 15 : 0; // occasional blue tint
+          ctx.fillStyle = `rgba(${darkB}, ${darkB}, ${darkB + 10}, ${darkVar})`;
           ctx.fill();
+
+          // Broken bit: occasionally chip a corner
+          if (s5 > 0.75) {
+            const chipSide = s6 > 0.5 ? rR : rL;
+            const chipW = jitter * (1 + s7 * 2);
+            const chipDir = chipSide === rR ? -1 : 1;
+            ctx.beginPath();
+            ctx.moveTo(chipSide, dY);
+            ctx.lineTo(chipSide + chipDir * chipW, dY + jitter * 0.5);
+            ctx.lineTo(chipSide, dY + jitter * 1.5);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fill();
+          }
+
           y = dY;
           if (y <= topY) break;
 
-          // Tread (top face — warm lit stone)
+          // Tread (top face — lit) with jagged edges
           const lightH = Math.max(1, h * 0.003 * scale * scale);
           const lY = Math.max(topY, y - lightH);
           const tBotL = rL;
@@ -2648,17 +2696,48 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tTopL = vpX - nextHw;
           const tTopR = vpX + nextHw;
           ctx.beginPath();
-          ctx.moveTo(tBotL, y);
-          ctx.lineTo(tBotR, y);
-          ctx.lineTo(tTopR, lY);
-          ctx.lineTo(tTopL, lY);
+          ctx.moveTo(tBotL + (s0 - 0.5) * jitter * 0.5, y);
+          ctx.lineTo(tBotR + (s2 - 0.5) * jitter * 0.5, y);
+          ctx.lineTo(tTopR + (sHash(stepIdx, 30) - 0.5) * jitter, lY);
+          ctx.lineTo(tTopL + (sHash(stepIdx, 31) - 0.5) * jitter, lY);
           ctx.closePath();
           ctx.fillStyle = rockPat;
           ctx.fill();
-          ctx.fillStyle = 'rgba(255, 220, 160, 0.2)';
+          // Light variation: mix of warm and cool
+          const litR = 180 + s3 * 40;
+          const litG = 170 + s4 * 30;
+          const litB = 140 + s5 * 50; // more blue variation
+          ctx.fillStyle = `rgba(${litR|0}, ${litG|0}, ${litB|0}, ${0.12 + s6 * 0.12})`;
           ctx.fill();
+
+          // Floating shard: occasionally spawn one near a step
+          if (s7 > 0.8 && scale > 0.3) {
+            const shX = (s0 > 0.5 ? rR + jitter * 2 : rL - jitter * 2);
+            const shY = y - darkH * 0.5;
+            const shSz = jitter * (0.5 + s1);
+            shards.push({ x: shX, y: shY, sz: shSz, seed: stepIdx });
+          }
+
           y = lY;
+          stepIdx++;
         }
+
+        // Draw floating shards
+        for (const sh of shards) {
+          const sa = sHash(sh.seed, 50), sb = sHash(sh.seed, 51);
+          const sc = sHash(sh.seed, 52);
+          const floatY = sh.y + Math.sin(time * 1.5 + sh.seed) * h * 0.004;
+          ctx.beginPath();
+          ctx.moveTo(sh.x, floatY - sh.sz);
+          ctx.lineTo(sh.x + sh.sz * (0.5 + sa * 0.5), floatY + sh.sz * sb);
+          ctx.lineTo(sh.x - sh.sz * (0.3 + sc * 0.4), floatY + sh.sz * 0.8);
+          ctx.closePath();
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.fillStyle = `rgba(0, 0, 5, ${0.2 + sa * 0.2})`;
+          ctx.fill();
+        }
+
         ctx.restore();
 
         // Diagonals start at bottom of lowest dark stripe, not at botY
