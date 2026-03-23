@@ -2494,27 +2494,46 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
-      // Stone grain helper — scatters small specks for rock texture
-      // Uses a seeded pseudo-random for deterministic grain per frame
-      const stoneGrain = (ctx, x, y, w2, h2, baseR, baseG, baseB, baseA, density) => {
-        // Fill base color first
-        ctx.fillStyle = `rgba(${baseR}, ${baseG}, ${baseB}, ${baseA})`;
-        ctx.fill();
-        // Scatter grain specks within the bounding box
-        const step = Math.max(2, Math.round(4 / density));
-        for (let gy = y; gy < y + h2; gy += step) {
-          for (let gx = x; gx < x + w2; gx += step) {
-            // Simple hash for pseudo-random per pixel
-            const hash = ((gx * 2654435761 ^ gy * 2246822519) >>> 0) / 4294967296;
-            if (hash > 0.6) {
-              const bright = 30 + hash * 50;
-              const a2 = baseA * (0.3 + hash * 0.4);
-              ctx.fillStyle = `rgba(${bright|0}, ${bright * 0.85|0}, ${bright * 0.7|0}, ${a2})`;
-              ctx.fillRect(gx, gy, step * 0.7, step * 0.7);
-            }
+      // Generate a rock texture pattern (once, cached on canvas element)
+      if (!canvasEl._rockPattern) {
+        const sz = 128;
+        const offC = document.createElement('canvas');
+        offC.width = sz; offC.height = sz;
+        const oc = offC.getContext('2d');
+        const imgData = oc.createImageData(sz, sz);
+        const d = imgData.data;
+        // Simple value noise for continuous stone look
+        const hash = (x, y) => {
+          let n = x * 374761393 + y * 668265263;
+          n = (n ^ (n >> 13)) * 1274126177;
+          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
+        };
+        const smooth = (x, y) => {
+          const ix = x | 0, iy = y | 0;
+          const fx = x - ix, fy = y - iy;
+          const a = hash(ix, iy), b = hash(ix + 1, iy);
+          const c = hash(ix, iy + 1), d2 = hash(ix + 1, iy + 1);
+          const top = a + (b - a) * fx, bot = c + (d2 - c) * fx;
+          return top + (bot - top) * fy;
+        };
+        for (let py = 0; py < sz; py++) {
+          for (let px = 0; px < sz; px++) {
+            // Layered noise for rock-like feel
+            const n = smooth(px * 0.08, py * 0.08) * 0.5
+                    + smooth(px * 0.17, py * 0.17) * 0.3
+                    + smooth(px * 0.35, py * 0.35) * 0.2;
+            const v = 35 + n * 60; // range ~35-95, dark stone
+            const i = (py * sz + px) * 4;
+            d[i]     = v * 1.0;       // R — warm
+            d[i + 1] = v * 0.85;      // G
+            d[i + 2] = v * 0.7;       // B — brownish
+            d[i + 3] = 255;
           }
         }
-      };
+        oc.putImageData(imgData, 0, 0);
+        canvasEl._rockPattern = ctx.createPattern(offC, 'repeat');
+      }
+      const rockPat = canvasEl._rockPattern;
 
       // --- Second narrower rectangle (inner step) ---
       {
@@ -2551,7 +2570,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        stoneGrain(ctx, topL, topY, thkBot, botY - topY, 20, 15, 10, 0.7, 0.8);
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = rockPat;
+        ctx.fill();
+        ctx.globalAlpha = 1;
 
         // Right wall
         ctx.beginPath();
@@ -2560,7 +2582,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        stoneGrain(ctx, topR - thkTop, topY, thkBot, botY - topY, 20, 15, 10, 0.7, 0.8);
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = rockPat;
+        ctx.fill();
+        ctx.globalAlpha = 1;
 
         // Floor strip
         ctx.beginPath();
@@ -2607,7 +2632,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          stoneGrain(ctx, rL, dY, rR - rL, y - dY, 30, 25, 20, 0.85, 1);
+          ctx.globalAlpha = 0.85;
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.globalAlpha = 1;
           y = dY;
           if (y <= topY) break;
 
@@ -2630,7 +2658,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);             // top-right
           ctx.lineTo(tTopL, lY);             // top-left
           ctx.closePath();
-          stoneGrain(ctx, tTopL, lY, tBotR - tTopL, y - lY, 140, 110, 75, 0.6, 1);
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.globalAlpha = 1;
           y = lY;
         }
         ctx.restore();
