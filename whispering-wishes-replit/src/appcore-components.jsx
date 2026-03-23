@@ -2494,6 +2494,28 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
+      // Stone grain helper — scatters small specks for rock texture
+      // Uses a seeded pseudo-random for deterministic grain per frame
+      const stoneGrain = (ctx, x, y, w2, h2, baseR, baseG, baseB, baseA, density) => {
+        // Fill base color first
+        ctx.fillStyle = `rgba(${baseR}, ${baseG}, ${baseB}, ${baseA})`;
+        ctx.fill();
+        // Scatter grain specks within the bounding box
+        const step = Math.max(2, Math.round(4 / density));
+        for (let gy = y; gy < y + h2; gy += step) {
+          for (let gx = x; gx < x + w2; gx += step) {
+            // Simple hash for pseudo-random per pixel
+            const hash = ((gx * 2654435761 ^ gy * 2246822519) >>> 0) / 4294967296;
+            if (hash > 0.6) {
+              const bright = 30 + hash * 50;
+              const a2 = baseA * (0.3 + hash * 0.4);
+              ctx.fillStyle = `rgba(${bright|0}, ${bright * 0.85|0}, ${bright * 0.7|0}, ${a2})`;
+              ctx.fillRect(gx, gy, step * 0.7, step * 0.7);
+            }
+          }
+        }
+      };
+
       // --- Second narrower rectangle (inner step) ---
       {
         const vpX = sunX;
@@ -2529,8 +2551,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = 'rgb(128, 0, 255)';
-        ctx.fill();
+        stoneGrain(ctx, topL, topY, thkBot, botY - topY, 20, 15, 10, 0.7, 0.8);
 
         // Right wall
         ctx.beginPath();
@@ -2539,8 +2560,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = 'rgb(128, 0, 255)';
-        ctx.fill();
+        stoneGrain(ctx, topR - thkTop, topY, thkBot, botY - topY, 20, 15, 10, 0.7, 0.8);
 
         // Floor strip
         ctx.beginPath();
@@ -2587,8 +2607,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.fillStyle = 'rgb(40, 40, 40)';
-          ctx.fill();
+          stoneGrain(ctx, rL, dY, rR - rL, y - dY, 30, 25, 20, 0.85, 1);
           y = dY;
           if (y <= topY) break;
 
@@ -2611,8 +2630,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);             // top-right
           ctx.lineTo(tTopL, lY);             // top-left
           ctx.closePath();
-          ctx.fillStyle = 'rgb(220, 20, 20)';
-          ctx.fill();
+          stoneGrain(ctx, tTopL, lY, tBotR - tTopL, y - lY, 140, 110, 75, 0.6, 1);
           y = lY;
         }
         ctx.restore();
