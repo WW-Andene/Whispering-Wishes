@@ -1788,25 +1788,20 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // --- Holographic Heart of Aemaeth (3D projected) ---
-        // Heart defined in world XZ plane (Y=0), then projected
-        // Parametric heart: x(t), z(t) for t in [0, 2π]
+        // --- Holographic Heart of Aemaeth (3D projected, vertical) ---
+        // Heart in world XY plane (standing upright), Z=0 at center
         const HEART_SIZE = 55 + 15 * pulse;
         const HEART_PTS = 60;
-        const heartWorldPts = []; // {wx, wz} in world space
-        for (let hi = 0; hi <= HEART_PTS; hi++) {
-          const t = (hi / HEART_PTS) * Math.PI * 2;
-          // Heart curve parametric (x = horizontal, z = depth/forward)
-          const hx3 = 16 * Math.pow(Math.sin(t), 3);
-          const hz3 = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-          heartWorldPts.push({ wx: hx3 * HEART_SIZE / 16, wz: -hz3 * HEART_SIZE / 16 });
-        }
-
-        // Project heart outline to screen (sitting on Y=0 plane at center)
         const heartScreenPts = [];
         let heartVisible = true;
-        for (const hp of heartWorldPts) {
-          const p = project(hp.wx, -HEART_SIZE * 0.3, hp.wz); // float slightly above plane
+        for (let hi = 0; hi <= HEART_PTS; hi++) {
+          const t = (hi / HEART_PTS) * Math.PI * 2;
+          const hx3 = 16 * Math.pow(Math.sin(t), 3);
+          const hy3 = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+          // X = horizontal, Y = vertical (negative = up), Z = 0
+          const wx = hx3 * HEART_SIZE / 16;
+          const wy = -hy3 * HEART_SIZE / 16; // flip so top of heart points up
+          const p = project(wx, wy, 0);
           if (!p) { heartVisible = false; break; }
           heartScreenPts.push(p);
         }
@@ -1854,25 +1849,26 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hexH3D = hexR3D * Math.sqrt(3);
           const gridAlpha = (0.12 + pulse * 0.08) * alphaScale;
           for (let gx = -HEART_SIZE; gx < HEART_SIZE; gx += hexR3D * 3) {
-            for (let gz = -HEART_SIZE; gz < HEART_SIZE; gz += hexH3D) {
-              const offsetX = (Math.round(gz / hexH3D) % 2) * hexR3D * 1.5;
+            for (let gy = -HEART_SIZE; gy < HEART_SIZE; gy += hexH3D) {
+              const offsetX = (Math.round(gy / hexH3D) % 2) * hexR3D * 1.5;
               const hwx = gx + offsetX;
-              // Project hex center
-              const hcp = project(hwx, -HEART_SIZE * 0.3, gz);
+              const hwy = gy;
+              // Project hex center (XY plane, Z=0)
+              const hcp = project(hwx, hwy, 0);
               if (!hcp) continue;
-              // Project hex corners
+              // Project hex corners in XY plane
               ctx.beginPath();
               let hexOk = true;
               for (let corner = 0; corner < 6; corner++) {
                 const a = Math.PI / 3 * corner - Math.PI / 6;
-                const cp = project(hwx + Math.cos(a) * hexR3D, -HEART_SIZE * 0.3, gz + Math.sin(a) * hexR3D);
+                const cp = project(hwx + Math.cos(a) * hexR3D, hwy + Math.sin(a) * hexR3D, 0);
                 if (!cp) { hexOk = false; break; }
                 if (corner === 0) ctx.moveTo(cp.sx, cp.sy);
                 else ctx.lineTo(cp.sx, cp.sy);
               }
               if (!hexOk) continue;
               ctx.closePath();
-              const hexShimmer = Math.sin(time * 1.5 + hwx * 0.12 + gz * 0.1) * 0.5 + 0.5;
+              const hexShimmer = Math.sin(time * 1.5 + hwx * 0.12 + hwy * 0.1) * 0.5 + 0.5;
               ctx.strokeStyle = `rgba(150, 230, 255, ${gridAlpha * (0.5 + hexShimmer * 0.5)})`;
               ctx.lineWidth = 0.4 + hexShimmer * 0.4;
               ctx.stroke();
