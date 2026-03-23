@@ -2494,7 +2494,45 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
-      // No pattern — stair geometry itself creates the stone texture
+      // Rock texture pattern (cached, tiles in canvas coords so it flows across faces)
+      if (!canvas._rockPat2) {
+        const sz = 128;
+        const offC = document.createElement('canvas');
+        offC.width = sz; offC.height = sz;
+        const oc = offC.getContext('2d');
+        const imgData = oc.createImageData(sz, sz);
+        const dd = imgData.data;
+        const hash = (x, y) => {
+          let n = x * 374761393 + y * 668265263;
+          n = (n ^ (n >> 13)) * 1274126177;
+          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
+        };
+        const smooth = (x, y) => {
+          const ix = x | 0, iy = y | 0;
+          const fx = x - ix, fy = y - iy;
+          const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+          const a = hash(ix, iy), b = hash(ix + 1, iy);
+          const c = hash(ix, iy + 1), e = hash(ix + 1, iy + 1);
+          return (a + (b - a) * sx) + ((c + (e - c) * sx) - (a + (b - a) * sx)) * sy;
+        };
+        for (let py = 0; py < sz; py++) {
+          for (let px = 0; px < sz; px++) {
+            const n = smooth(px * 0.06, py * 0.1) * 0.5
+                    + smooth(px * 0.13, py * 0.2) * 0.3
+                    + smooth(px * 0.3, py * 0.3) * 0.2;
+            const v = 80 + n * 175;
+            const warm = smooth(px * 0.04 + 99, py * 0.04 + 99);
+            const i = (py * sz + px) * 4;
+            dd[i]     = Math.min(255, v * (0.95 + warm * 0.15));
+            dd[i + 1] = Math.min(255, v * (0.78 + warm * 0.1));
+            dd[i + 2] = Math.min(255, v * (0.5 + warm * 0.12));
+            dd[i + 3] = 255;
+          }
+        }
+        oc.putImageData(imgData, 0, 0);
+        canvas._rockPat2 = ctx.createPattern(offC, 'repeat');
+      }
+      const rockPat = canvas._rockPat2;
 
       // --- Second narrower rectangle (inner step) ---
       {
@@ -2531,7 +2569,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = `rgba(15, 10, 5, ${edgeAlpha * 0.7})`;
+        ctx.fillStyle = rockPat;
+        ctx.fill();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
         ctx.fill();
 
         // Right wall
@@ -2541,7 +2581,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = `rgba(15, 10, 5, ${edgeAlpha * 0.7})`;
+        ctx.fillStyle = rockPat;
+        ctx.fill();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
         ctx.fill();
 
         // Floor strip
@@ -2587,7 +2629,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.4})`;
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
           ctx.fill();
           y = dY;
           if (y <= topY) break;
@@ -2609,7 +2653,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);
           ctx.lineTo(tTopL, lY);
           ctx.closePath();
-          ctx.fillStyle = `rgba(200, 150, 80, ${edgeAlpha * 0.2})`;
+          ctx.fillStyle = rockPat;
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255, 220, 160, 0.2)';
           ctx.fill();
           y = lY;
         }
