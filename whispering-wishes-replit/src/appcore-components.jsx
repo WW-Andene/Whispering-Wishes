@@ -2012,6 +2012,88 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             }
           }
           ctx.restore();
+
+          // --- Glitch animated effects ---
+          ctx.save();
+          drawPath(heartPts);
+          ctx.clip();
+
+          // Glitch burst trigger — periodic spikes of intensity
+          const glitchCycle = Math.sin(time * 1.7) * Math.sin(time * 3.1) * Math.sin(time * 0.6);
+          const glitchActive = glitchCycle > 0.3;
+          const glitchIntensity = glitchActive ? (glitchCycle - 0.3) / 0.7 : 0;
+
+          // Horizontal slice displacement — shifts rows of pixels sideways
+          if (glitchActive) {
+            const sliceCount = 3 + Math.floor(glitchIntensity * 5);
+            for (let si = 0; si < sliceCount; si++) {
+              const sliceY = bds.y0 + ((Math.sin(si * 47.3 + time * 8) * 0.5 + 0.5)) * (bds.y1 - bds.y0);
+              const sliceH = 1 + Math.random() * 3 * glitchIntensity;
+              const shiftX = (Math.sin(si * 91.7 + time * 12) * 4 + Math.cos(si * 31.3 + time * 7) * 3) * glitchIntensity;
+              const sliceAlpha = (0.3 + glitchIntensity * 0.4) * alphaScale;
+
+              // Cyan displaced slice
+              ctx.fillStyle = `rgba(80, 230, 255, ${sliceAlpha * 0.5})`;
+              ctx.fillRect(bds.x0 + shiftX, sliceY, bds.x1 - bds.x0, sliceH);
+
+              // Pink displaced slice (opposite direction)
+              ctx.fillStyle = `rgba(255, 140, 200, ${sliceAlpha * 0.35})`;
+              ctx.fillRect(bds.x0 - shiftX * 0.7, sliceY + sliceH, bds.x1 - bds.x0, sliceH * 0.6);
+            }
+          }
+
+          // RGB chromatic split — offset colored outlines
+          const splitAmt = glitchActive ? glitchIntensity * 3 : Math.sin(time * 0.8) * 0.5;
+          if (splitAmt > 0.2) {
+            // Cyan ghost shifted right
+            ctx.beginPath();
+            for (let i = 0; i <= HEART_PTS; i++) {
+              const p = heartPts[i % heartPts.length];
+              if (i === 0) ctx.moveTo(p.sx + splitAmt, p.sy - splitAmt * 0.3);
+              else ctx.lineTo(p.sx + splitAmt, p.sy - splitAmt * 0.3);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(80, 230, 255, ${0.25 * alphaScale * Math.min(splitAmt, 1)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Pink ghost shifted left
+            ctx.beginPath();
+            for (let i = 0; i <= HEART_PTS; i++) {
+              const p = heartPts[i % heartPts.length];
+              if (i === 0) ctx.moveTo(p.sx - splitAmt, p.sy + splitAmt * 0.3);
+              else ctx.lineTo(p.sx - splitAmt, p.sy + splitAmt * 0.3);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(255, 120, 200, ${0.2 * alphaScale * Math.min(splitAmt, 1)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+
+          // Scanlines — thin horizontal lines across the heart
+          const scanSpeed = time * 2;
+          const scanCount = 12;
+          for (let si = 0; si < scanCount; si++) {
+            const frac = ((si / scanCount + scanSpeed * 0.02) % 1);
+            const sy = bds.y0 + frac * (bds.y1 - bds.y0);
+            const scanAlpha = (0.04 + glitchIntensity * 0.12) * Math.sin(frac * Math.PI) * alphaScale;
+            if (scanAlpha < 0.01) continue;
+            ctx.beginPath();
+            ctx.moveTo(bds.x0, sy);
+            ctx.lineTo(bds.x1, sy);
+            ctx.strokeStyle = `rgba(180, 240, 255, ${scanAlpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+
+          // Bright flash on glitch peak
+          if (glitchIntensity > 0.7) {
+            const flashAlpha = (glitchIntensity - 0.7) / 0.3 * 0.15 * alphaScale;
+            ctx.fillStyle = `rgba(180, 240, 255, ${flashAlpha})`;
+            ctx.fillRect(bds.x0, bds.y0, bds.x1 - bds.x0, bds.y1 - bds.y0);
+          }
+
+          ctx.restore();
         }
 
         // Draw ripple rings using the same phases
