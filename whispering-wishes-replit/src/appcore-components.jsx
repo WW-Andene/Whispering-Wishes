@@ -3058,12 +3058,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           shardsByStep[stepKey].push({ x: bobX, y: bobY, idx: si });
         }
 
-        // Static electricity arcs between shards + ambient glow
+        // Collect all nearby objects for lightning propagation:
+        // shards (floating) + rubble (on treads)
+        const lightningNodes = [];
+        for (const key in shardsByStep) {
+          for (const sh of shardsByStep[key]) {
+            lightningNodes.push({ x: sh.x, y: sh.y, id: sh.idx * 3 + 1 });
+          }
+        }
+        for (let ri = 0; ri < rubble.length; ri++) {
+          lightningNodes.push({ x: rubble[ri].x, y: rubble[ri].y, id: ri * 3 + 2 });
+        }
+
+        // Ambient glow around shard clusters
         for (const key in shardsByStep) {
           const group = shardsByStep[key];
           if (group.length < 2) continue;
-
-          // Tiny ambient glow around the shard cluster
           let cx = 0, cy = 0;
           for (const g of group) { cx += g.x; cy += g.y; }
           cx /= group.length; cy /= group.length;
@@ -3076,90 +3086,113 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           grad.addColorStop(1, 'rgba(255, 60, 20, 0)');
           ctx.fillStyle = grad;
           ctx.fillRect(cx - glowR, cy - glowR, glowR * 2, glowR * 2);
+        }
 
-          // Lightning — thin branching bolts that spread organically
-          for (let gi = 0; gi < group.length - 1; gi++) {
-            const a = group[gi], b = group[gi + 1];
-            const dx = b.x - a.x, dy = b.y - a.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 1) continue;
-
-            const arcSeed = a.idx * 31 + b.idx * 17;
-            const strikeFrame = Math.floor(time * 2.5 + arcSeed * 0.7);
-            const strikeChance = sHash(arcSeed, strikeFrame);
-            if (strikeChance < 0.85) continue;
-
-            const subFrame = (time * 2.5 + arcSeed * 0.7) % 1;
-            const flash = subFrame < 0.3 ? 1.0 : (subFrame < 0.5 ? 0.4 : 0);
-            if (flash === 0) continue;
-
-            const alpha = (0.5 + flash * 0.5) * Math.min(1, 0.22 / (dist / h + 0.01));
-
-            // Recursive branching bolt
-            const branches = []; // collect {points, depth} for drawing
-            const buildBolt = (x0, y0, x1, y1, depth, seed) => {
-              if (depth > 3) return;
-              const pts = [{ x: x0, y: y0 }];
-              const segDx = x1 - x0, segDy = y1 - y0;
-              const segDist = Math.sqrt(segDx * segDx + segDy * segDy);
-              if (segDist < 2) return;
-              const perpX = -segDy / segDist, perpY = segDx / segDist;
-
-              // More segments for main bolt, fewer for branches
-              const nSeg = depth === 0 ? (6 + Math.floor(sHash(seed, 200) * 4))
-                         : (3 + Math.floor(sHash(seed, 201) * 2));
-
+        // Lightning propagation — bolts hop between nearby nodes
+        // Build neighbor map: for each node, find nearby nodes within range
+        const maxRange = h * 0.08;
+        if (lightningNodes.length > 1) {
+          // Helper: build a branching bolt path between two points
+          const buildBolt = (x0, y0, x1, y1, depth, seed, strikeFrame) => {
+            const branches = [];
+            const inner = (ax, ay, bx, by, d, s) => {
+              if (d > 2) return;
+              const pts = [{ x: ax, y: ay }];
+              const sdx = bx - ax, sdy = by - ay;
+              const sDist = Math.sqrt(sdx * sdx + sdy * sdy);
+              if (sDist < 2) return;
+              const px = -sdy / sDist, py = sdx / sDist;
+              const nSeg = d === 0 ? (5 + Math.floor(sHash(s, 200) * 3))
+                         : (3 + Math.floor(sHash(s, 201) * 2));
               for (let si = 1; si < nSeg; si++) {
                 const t = si / nSeg;
-                const mx = x0 + segDx * t;
-                const my = y0 + segDy * t;
-                // Organic jitter — varies in magnitude along the bolt
-                const jScale = Math.sin(t * Math.PI) * 0.7 + 0.3; // stronger in middle
-                const jit = (sHash(seed + si * 13, strikeFrame) - 0.5) * segDist * 0.4 * jScale;
-                const px = mx + perpX * jit;
-                const py = my + perpY * jit;
-                pts.push({ x: px, y: py });
-
-                // Branch chance: ~30% at depth 0, ~20% at depth 1, none deeper
-                if (depth < 2 && sHash(seed + si * 7, strikeFrame + 50) > (depth === 0 ? 0.7 : 0.8)) {
-                  // Branch forks off at an angle from current point
-                  const brAngle = (sHash(seed + si, strikeFrame + 80) - 0.5) * 1.8;
-                  const brLen = segDist * (0.2 + sHash(seed + si, strikeFrame + 90) * 0.3);
-                  const baseAngle = Math.atan2(segDy, segDx) + brAngle;
-                  const bx1 = px + Math.cos(baseAngle) * brLen;
-                  const by1 = py + Math.sin(baseAngle) * brLen;
-                  buildBolt(px, py, bx1, by1, depth + 1, seed + si * 100 + 7);
+                const mx = ax + sdx * t, my = ay + sdy * t;
+                const jScale = Math.sin(t * Math.PI) * 0.7 + 0.3;
+                const jit = (sHash(s + si * 13, strikeFrame) - 0.5) * sDist * 0.4 * jScale;
+                const ptx = mx + px * jit, pty = my + py * jit;
+                pts.push({ x: ptx, y: pty });
+                if (d < 2 && sHash(s + si * 7, strikeFrame + 50) > (d === 0 ? 0.75 : 0.85)) {
+                  const brA = (sHash(s + si, strikeFrame + 80) - 0.5) * 1.6;
+                  const brL = sDist * (0.15 + sHash(s + si, strikeFrame + 90) * 0.25);
+                  const bA = Math.atan2(sdy, sdx) + brA;
+                  inner(ptx, pty, ptx + Math.cos(bA) * brL, pty + Math.sin(bA) * brL, d + 1, s + si * 100);
                 }
               }
-              pts.push({ x: x1, y: y1 });
-              branches.push({ pts, depth });
+              pts.push({ x: bx, y: by });
+              branches.push({ pts, depth: d });
             };
+            inner(x0, y0, x1, y1, depth, seed);
+            return branches;
+          };
 
-            buildBolt(a.x, a.y, b.x, b.y, 0, arcSeed);
-
-            // Draw all branches, thinner for deeper branches
+          // Draw a set of branches
+          const drawBranches = (branches, alpha, flash) => {
             for (const br of branches) {
               const d = br.depth;
-              const bAlpha = alpha * (d === 0 ? 1 : d === 1 ? 0.5 : 0.25);
+              const bAlpha = alpha * (d === 0 ? 1 : d === 1 ? 0.45 : 0.2);
               ctx.beginPath();
               ctx.moveTo(br.pts[0].x, br.pts[0].y);
               for (let pi = 1; pi < br.pts.length; pi++) {
                 ctx.lineTo(br.pts[pi].x, br.pts[pi].y);
               }
-              // Soft glow
               ctx.strokeStyle = `rgba(255, 100, 30, ${bAlpha * 0.35 * flash})`;
-              ctx.lineWidth = d === 0 ? 1.8 : d === 1 ? 0.8 : 0.4;
+              ctx.lineWidth = d === 0 ? 1.6 : d === 1 ? 0.7 : 0.3;
               ctx.stroke();
-              // Main bolt
               ctx.strokeStyle = `rgba(255, 180, 80, ${bAlpha * flash})`;
-              ctx.lineWidth = d === 0 ? 0.7 : d === 1 ? 0.35 : 0.2;
+              ctx.lineWidth = d === 0 ? 0.6 : d === 1 ? 0.3 : 0.15;
               ctx.stroke();
-              // Hot core (main bolt only)
               if (d === 0) {
-                ctx.strokeStyle = `rgba(255, 245, 210, ${bAlpha * 0.6 * flash})`;
-                ctx.lineWidth = 0.25;
+                ctx.strokeStyle = `rgba(255, 245, 210, ${bAlpha * 0.55 * flash})`;
+                ctx.lineWidth = 0.2;
                 ctx.stroke();
               }
+            }
+          };
+
+          // Propagating lightning chains: pick a starting node, hop to
+          // nearest neighbors, creating a chain of connected bolts
+          for (let ni = 0; ni < lightningNodes.length; ni++) {
+            const startSeed = ni * 47 + 13;
+            const strikeFrame = Math.floor(time * 2.2 + startSeed * 0.5);
+            // Only ~12% of nodes initiate a chain per frame
+            if (sHash(startSeed, strikeFrame) < 0.88) continue;
+
+            const subFrame = (time * 2.2 + startSeed * 0.5) % 1;
+            const flash = subFrame < 0.25 ? 1.0 : (subFrame < 0.45 ? 0.35 : 0);
+            if (flash === 0) continue;
+
+            // Chain: hop from current node to nearest unvisited neighbors
+            const visited = new Set();
+            visited.add(ni);
+            let cur = lightningNodes[ni];
+            const maxHops = 2 + Math.floor(sHash(startSeed, strikeFrame + 200) * 3); // 2-4 hops
+
+            for (let hop = 0; hop < maxHops; hop++) {
+              // Find nearest unvisited node within range
+              let bestIdx = -1, bestDist = maxRange;
+              for (let nj = 0; nj < lightningNodes.length; nj++) {
+                if (visited.has(nj)) continue;
+                const ddx = lightningNodes[nj].x - cur.x;
+                const ddy = lightningNodes[nj].y - cur.y;
+                const dd = Math.sqrt(ddx * ddx + ddy * ddy);
+                if (dd < bestDist) {
+                  bestDist = dd;
+                  bestIdx = nj;
+                }
+              }
+              if (bestIdx < 0) break;
+              visited.add(bestIdx);
+              const next = lightningNodes[bestIdx];
+
+              const hopSeed = startSeed * 100 + hop * 31 + bestIdx;
+              const alpha = (0.45 + flash * 0.45) * Math.min(1, 0.20 / (bestDist / h + 0.01));
+              // Subsequent hops are dimmer
+              const hopFade = 1 - hop * 0.25;
+
+              const branches = buildBolt(cur.x, cur.y, next.x, next.y, 0, hopSeed, strikeFrame);
+              drawBranches(branches, alpha * hopFade, flash);
+
+              cur = next;
             }
           }
         }
