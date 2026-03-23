@@ -1422,6 +1422,13 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     let w, h;
 
+    // Preload center sprite image
+    const centerSprite = new Image();
+    centerSprite.crossOrigin = 'anonymous';
+    let spriteReady = false;
+    centerSprite.onload = () => { spriteReady = true; };
+    centerSprite.src = 'https://i.ibb.co/HkD4HZS/443p07hyq4jg1.png';
+
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
@@ -1797,177 +1804,41 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // --- Holographic Heart of Aemaeth ---
-        // Matches reference: soft pink-lavender fill, cyan outline, inner concentric
-        // hearts with white/pink strokes, center vertical line with glitch marks.
-        const HEART_SIZE = 30 + 5 * pulse;
-        const HEART_PTS = 64;
-
-        // Helper: generate projected heart points at a given scale and offset.
-        // Modified parametric heart to match reference: fatter lobes (sin^2.3 vs sin^3),
-        // shorter tail (compress negative y by 0.7), slightly wider (1.1x).
-        const makeHeart = (scale, oxW, oyW) => {
-          const pts = [];
-          for (let hi = 0; hi <= HEART_PTS; hi++) {
-            const t = (hi / HEART_PTS) * Math.PI * 2;
-            // sin^2.3 instead of sin^3 → fatter, rounder lobes
-            const sinT = Math.sin(t);
-            const hx = 16 * Math.sign(sinT) * Math.pow(Math.abs(sinT), 2.3);
-            let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            // Shorten the tail: compress the bottom portion (negative hy = tail)
-            if (hy < 0) hy *= 0.7;
-            const wx = hx * HEART_SIZE * scale * 1.1 / 16 + (oxW || 0);
-            const wy = -hy * HEART_SIZE * scale / 17 - HEART_SIZE + (oyW || 0);
-            const p = project(wx, wy, 0);
-            if (!p) return null;
-            pts.push(p);
-          }
-          return pts;
-        };
-
-        const drawPath = (pts) => {
-          ctx.beginPath();
-          ctx.moveTo(pts[0].sx, pts[0].sy);
-          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].sx, pts[i].sy);
-          ctx.closePath();
-        };
-
-        const heartPts = makeHeart(1, 0, 0);
-
-        if (heartPts) {
-          const iridShift = Math.sin(time * 0.5) * 0.5 + 0.5;
-
-          // --- Outer glow (soft cyan bloom) ---
-          ctx.save();
-          ctx.shadowColor = `rgba(100, 230, 255, ${0.7 * pulse * alphaScale})`;
-          ctx.shadowBlur = 30 + pulse * 18;
-          drawPath(heartPts);
-          ctx.strokeStyle = `rgba(80, 220, 255, ${0.3 * alphaScale})`;
-          ctx.lineWidth = 4 + pulse * 2;
-          ctx.stroke();
-          ctx.restore();
-
-          // --- Soft pink-lavender-blue gradient fill ---
-          const bds = heartPts.reduce((b, p) => ({
-            x0: Math.min(b.x0, p.sx), x1: Math.max(b.x1, p.sx),
-            y0: Math.min(b.y0, p.sy), y1: Math.max(b.y1, p.sy)
-          }), { x0: 9999, x1: -9999, y0: 9999, y1: -9999 });
-
-          // Diagonal gradient: top-left pink → bottom-right lavender/blue
-          const fillGrd = ctx.createLinearGradient(bds.x0, bds.y0, bds.x1, bds.y1);
-          const pA = (0.55 + pulse * 0.15) * alphaScale;
-          fillGrd.addColorStop(0, `rgba(${220 + iridShift * 20}, ${180 + iridShift * 30}, ${230 + iridShift * 20}, ${pA})`);
-          fillGrd.addColorStop(0.35, `rgba(${230 + iridShift * 15}, ${190 + iridShift * 20}, 255, ${pA * 0.9})`);
-          fillGrd.addColorStop(0.65, `rgba(${190 - iridShift * 20}, ${195 + iridShift * 30}, ${255}, ${pA * 0.85})`);
-          fillGrd.addColorStop(1, `rgba(${180 + iridShift * 10}, ${190 + iridShift * 20}, ${240 + iridShift * 15}, ${pA * 0.8})`);
-          drawPath(heartPts);
-          ctx.fillStyle = fillGrd;
-          ctx.fill();
-
-          // --- Cyan outline (slightly rough/glitchy) ---
-          ctx.save();
-          ctx.shadowColor = `rgba(80, 240, 255, ${0.5 * pulse * alphaScale})`;
-          ctx.shadowBlur = 10 + pulse * 6;
-          // Draw outline with tiny random offsets for glitch texture
-          ctx.beginPath();
-          for (let i = 0; i <= HEART_PTS; i++) {
-            const p = heartPts[i % heartPts.length];
-            const glitchX = (Math.sin(i * 73.1 + time * 3) * 0.8);
-            const glitchY = (Math.cos(i * 47.7 + time * 2.5) * 0.6);
-            if (i === 0) ctx.moveTo(p.sx + glitchX, p.sy + glitchY);
-            else ctx.lineTo(p.sx + glitchX, p.sy + glitchY);
-          }
-          ctx.closePath();
-          ctx.strokeStyle = `rgba(${80 + iridShift * 40}, ${230 + iridShift * 20}, 255, ${(0.6 + pulse * 0.3) * alphaScale})`;
-          ctx.lineWidth = 2 + pulse * 0.8;
-          ctx.stroke();
-          ctx.restore();
-
-          // --- Inner concentric hearts (3 layers, progressively smaller) ---
-          const innerScales = [0.72, 0.48, 0.28];
-          const innerColors = [
-            { r: 240, g: 210, b: 255, a: 0.45 }, // light pink-white
-            { r: 255, g: 240, b: 255, a: 0.55 }, // brighter white-pink
-            { r: 255, g: 255, b: 255, a: 0.6 },  // white core
-          ];
-
-          for (let li = 0; li < innerScales.length; li++) {
-            const s = innerScales[li];
-            // Offset slightly toward center (the heart center is at y = -HEART_SIZE * 0.4 roughly)
-            const oyShift = HEART_SIZE * (1 - s) * 0.15;
-            const innerH = makeHeart(s, 0, oyShift);
-            if (!innerH) continue;
+        // --- Center sprite (replaces heart) ---
+        if (spriteReady) {
+          const cp = project(0, -30, 0);
+          if (cp) {
+            const spriteScale = (0.38 + pulse * 0.03) * (550 / (550 + cp.d));
+            const drawW = centerSprite.width * spriteScale;
+            const drawH = centerSprite.height * spriteScale;
 
             ctx.save();
-            drawPath(heartPts);
-            ctx.clip();
 
-            ctx.shadowColor = `rgba(220, 200, 255, ${0.4 * pulse * alphaScale})`;
-            ctx.shadowBlur = 6 + pulse * 4;
+            // Holographic glow behind sprite
+            ctx.shadowColor = `rgba(100, 230, 255, ${0.6 * pulse * alphaScale})`;
+            ctx.shadowBlur = 25 + pulse * 15;
 
-            // Draw with slight glitch
-            ctx.beginPath();
-            for (let i = 0; i <= HEART_PTS; i++) {
-              const p = innerH[i % innerH.length];
-              const gx = Math.sin(i * 53 + time * 2 + li * 2) * 0.5;
-              const gy = Math.cos(i * 37 + time * 1.8 + li * 3) * 0.4;
-              if (i === 0) ctx.moveTo(p.sx + gx, p.sy + gy);
-              else ctx.lineTo(p.sx + gx, p.sy + gy);
-            }
-            ctx.closePath();
+            // Gentle float
+            const floatY = Math.sin(time * 0.8) * 3;
 
-            const c = innerColors[li];
-            const shimmer = Math.sin(time * 1.2 + li * 1.5) * 0.15 + 0.85;
-            ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a * shimmer * alphaScale})`;
-            ctx.lineWidth = 1.5 - li * 0.3 + pulse * 0.5;
-            ctx.stroke();
+            // Slight holographic color shift via compositing
+            ctx.globalAlpha = (0.85 + pulse * 0.1) * Math.min(alphaScale, 1);
+            ctx.drawImage(
+              centerSprite,
+              cp.sx - drawW / 2,
+              cp.sy - drawH / 2 + floatY,
+              drawW,
+              drawH
+            );
+
+            // Cyan holographic overlay on the sprite (subtle)
+            ctx.globalCompositeOperation = 'screen';
+            ctx.globalAlpha = (0.08 + pulse * 0.04) * alphaScale;
+            ctx.fillStyle = `rgba(100, 230, 255, 1)`;
+            ctx.fillRect(cp.sx - drawW / 2, cp.sy - drawH / 2 + floatY, drawW, drawH);
+
             ctx.restore();
           }
-
-          // --- Center vertical line with glitch marks ---
-          ctx.save();
-          drawPath(heartPts);
-          ctx.clip();
-
-          // Vertical center line (from top cleft to tail)
-          const topP = project(0, -HEART_SIZE * 1.3, 0);   // cleft area
-          const botP = project(0, -HEART_SIZE * 0.05, 0); // near tail
-          if (topP && botP) {
-            ctx.beginPath();
-            const segments = 20;
-            for (let si = 0; si <= segments; si++) {
-              const frac = si / segments;
-              const sx = topP.sx + (botP.sx - topP.sx) * frac;
-              const sy = topP.sy + (botP.sy - topP.sy) * frac;
-              // Slight jitter
-              const jx = Math.sin(si * 11 + time * 4) * 0.6;
-              if (si === 0) ctx.moveTo(sx + jx, sy);
-              else ctx.lineTo(sx + jx, sy);
-            }
-            ctx.strokeStyle = `rgba(200, 230, 255, ${0.4 * pulse * alphaScale})`;
-            ctx.lineWidth = 1 + pulse * 0.5;
-            ctx.shadowColor = `rgba(180, 240, 255, ${0.3 * alphaScale})`;
-            ctx.shadowBlur = 5;
-            ctx.stroke();
-
-            // Horizontal glitch marks along the line (especially near tail)
-            const glitchCount = 6;
-            for (let gi = 0; gi < glitchCount; gi++) {
-              const gFrac = 0.5 + gi * 0.08 + Math.sin(time * 2.5 + gi) * 0.03;
-              if (gFrac > 1) continue;
-              const gx = topP.sx + (botP.sx - topP.sx) * gFrac;
-              const gy = topP.sy + (botP.sy - topP.sy) * gFrac;
-              const gw = 3 + Math.sin(time * 3 + gi * 5) * 2;
-              ctx.beginPath();
-              ctx.moveTo(gx - gw, gy);
-              ctx.lineTo(gx + gw, gy);
-              const gAlpha = (0.25 + Math.sin(time * 4 + gi * 3) * 0.15) * alphaScale;
-              ctx.strokeStyle = `rgba(120, 240, 255, ${gAlpha})`;
-              ctx.lineWidth = 0.8;
-              ctx.stroke();
-            }
-          }
-          ctx.restore();
         }
 
         // Draw ripple rings using the same phases
