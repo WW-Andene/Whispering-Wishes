@@ -1787,35 +1787,30 @@ const BANNER_THEMES = {
     }));
     const moonR = 38;
     return (ctx, t) => {
-      // Animated glow pulse — very slow breathe with layered harmonics
-      const pulse1 = Math.sin(t * 0.025);
-      const pulse2 = Math.sin(t * 0.06 + 1.2);
-      const pulse3 = Math.sin(t * 0.014 + 2.5);
-      const glowStrength = 0.5 + pulse1 * 0.2 + pulse2 * 0.08;
-      const haloScale = 1 + pulse1 * 0.15 + pulse3 * 0.1;
+      // Pulsating glow — 7s cycle matching banner card glow
+      const pulse = (Math.sin(t * (Math.PI * 2 / 7)) + 1) / 2; // 0→1→0 over 7s
 
-      // Moon outer glow — wide soft pulsating bloom
+      // Outer bloom — pulses between subtle and bright
       ctx.save();
-      ctx.globalAlpha = 0.2 + pulse1 * 0.1;
-      const og = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 8 * haloScale);
-      og.addColorStop(0, 'rgba(210,225,255,0.25)');
-      og.addColorStop(0.2, 'rgba(190,215,248,0.15)');
-      og.addColorStop(0.5, 'rgba(150,185,220,0.05)');
+      ctx.globalAlpha = 0.12 + pulse * 0.25;
+      const og = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 6);
+      og.addColorStop(0, 'rgba(210,225,255,0.35)');
+      og.addColorStop(0.3, 'rgba(190,215,248,0.18)');
+      og.addColorStop(0.6, 'rgba(150,185,220,0.06)');
       og.addColorStop(1, 'rgba(120,155,190,0)');
       ctx.fillStyle = og;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 8 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 6, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
 
-      // Moon inner glow — soft pulsating halo, no hard edge
+      // Inner glow — pulses more intensely
       ctx.save();
-      ctx.globalAlpha = 0.25 + pulse1 * 0.12;
-      const mg = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 3 * haloScale);
-      mg.addColorStop(0, 'rgba(230,240,255,0.3)');
-      mg.addColorStop(0.3, 'rgba(210,228,250,0.15)');
-      mg.addColorStop(0.7, 'rgba(170,195,225,0.04)');
-      mg.addColorStop(1, 'rgba(140,165,200,0)');
+      ctx.globalAlpha = 0.15 + pulse * 0.3;
+      const mg = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 2.5);
+      mg.addColorStop(0, 'rgba(230,240,255,0.4)');
+      mg.addColorStop(0.4, 'rgba(210,228,250,0.15)');
+      mg.addColorStop(1, 'rgba(170,195,225,0)');
       ctx.fillStyle = mg;
-      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 3 * haloScale, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 2.5, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
       // Brume
       for (const b of brume) {
