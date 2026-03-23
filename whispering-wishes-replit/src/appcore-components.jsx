@@ -2611,10 +2611,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (y <= topY) break;
 
           // Light stripe (proportion shrinks with scale²)
+          // Drawn as a trapezoid — ~3° inward slant on each side
           const lightH = Math.max(1, h * 0.0075 * scale * scale);
           const lY = Math.max(topY, y - lightH);
+          const slant = (y - lY) * Math.tan(3 * Math.PI / 180); // 3° offset
           ctx.beginPath();
-          ctx.rect(0, lY, w, y - lY);
+          ctx.moveTo(0 - slant, y);          // bottom-left (wider)
+          ctx.lineTo(w + slant, y);          // bottom-right (wider)
+          ctx.lineTo(w, lY);                 // top-right (narrower)
+          ctx.lineTo(0, lY);                 // top-left (narrower)
+          ctx.closePath();
           ctx.fillStyle = `rgba(200, 140, 60, ${edgeAlpha * 0.15})`;
           ctx.fill();
           y = lY;
