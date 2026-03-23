@@ -2560,20 +2560,30 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ============================================================
 
       // --- 3D rectangle with perspective pointing toward the sun ---
-      // Bottom at 50% of L1 = 62.5% h, top just above the sun VP.
-      // Width at each Y scales with distance from VP (sun).
+      // Rotated 2° left and sinking 2° from left corner via canvas transform
       {
-        const vpX = sunX;           // w * 0.5
-        const vpY = sunY;           // h * 0.18
+        const vpX = sunX;
+        const vpY = sunY;
 
         const botY = h * 0.68;
         // Top must stay below VP for correct perspective convergence
         const topY = vpY + h * 0.04; // below the sun
 
-        // Clip so nothing renders outside the intended bounds
+        // Apply staircase transforms: rotate 2° left around VP, sink 2° from left
         ctx.save();
+        // Rotate around VP center — 2° clockwise tilts left side down
+        const sinkDeg = 2;
+        const sinkRad = sinkDeg * Math.PI / 180;
+        ctx.translate(vpX, vpY);
+        ctx.rotate(sinkRad);
+        // Shift VP left for 2° yaw rotation
+        const yawDeg = 2;
+        const yawShift = -Math.tan(yawDeg * Math.PI / 180) * (botY - vpY) * 0.5;
+        ctx.translate(-vpX + yawShift, -vpY);
+
+        // Clip
         ctx.beginPath();
-        ctx.rect(0, topY, w, botY - topY);
+        ctx.rect(-w, topY, w * 3, botY - topY + h * 0.05);
         ctx.clip();
 
         // Half-width scales with distance from the sun VP
@@ -2674,9 +2684,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const botY = h * 0.68;
         const topY = vpY + h * 0.04;
 
+        // Same transform as outer rectangle
         ctx.save();
+        const sinkRad2 = 2 * Math.PI / 180;
+        ctx.translate(vpX, vpY);
+        ctx.rotate(sinkRad2);
+        const yawShift2 = -Math.tan(2 * Math.PI / 180) * (botY - vpY) * 0.5;
+        ctx.translate(-vpX + yawShift2, -vpY);
+
         ctx.beginPath();
-        ctx.rect(0, topY, w, botY - topY);
+        ctx.rect(-w, topY, w * 3, botY - topY + h * 0.05);
         ctx.clip();
 
         const dBot = botY - vpY;
@@ -3240,9 +3257,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const innerL = (py) => botL + (topL - botL) * (botY - py) / (botY - topY);
           const innerR = (py) => botR + (topR - botR) * (botY - py) / (botY - topY);
 
+          // Same transform as staircase
           ctx.save();
+          const sinkRad3 = 2 * Math.PI / 180;
+          ctx.translate(vpX, vpY);
+          ctx.rotate(sinkRad3);
+          const yawShift3 = -Math.tan(2 * Math.PI / 180) * (botY - vpY) * 0.5;
+          ctx.translate(-vpX + yawShift3, -vpY);
+
           ctx.beginPath();
-          ctx.rect(0, topY, w, botY - topY);
+          ctx.rect(-w, topY, w * 3, botY - topY + h * 0.05);
           ctx.clip();
 
           // Draw each step block on both sides
