@@ -1765,13 +1765,13 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // --- Water ripple: bold concentric rings like stone dropped in water ---
         // Dense filled bands with specular crests and dark troughs
-        const WAVE_RINGS = 70;
-        const WAVE_MAX_R = RADIUS + RIBBON_WIDTH;
+        const WAVE_MAX_R = Math.max(W, H) * 0.85; // spread across most of canvas
+        const WAVE_RINGS = 90;
         const WAVE_SPACING = WAVE_MAX_R / WAVE_RINGS;
-        const WAVELENGTH = 55;
-        const WAVE_AMP = 20;
+        const WAVELENGTH = 90; // wider spacing between rings
+        const WAVE_AMP = 5; // subtle height — flat water, not a bowl
         const WAVE_SPEED = 0.25;
-        const STEPS = 90;
+        const STEPS = 100;
 
         // Draw from outside in so inner (closer) rings layer on top
         for (let ri = WAVE_RINGS; ri >= 1; ri--) {
@@ -1780,9 +1780,9 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const sinVal = Math.sin(phase);
           const cosVal = Math.cos(phase); // slope direction
 
-          // Amplitude: fade at center and edge
-          const centerFade = Math.min(1, r / 40);
-          const edgeFade = Math.max(0, 1 - (r / WAVE_MAX_R) * 0.8);
+          // Amplitude: fade at center and gentle fade at far edge
+          const centerFade = Math.min(1, r / 60);
+          const edgeFade = Math.max(0, 1 - Math.pow(r / WAVE_MAX_R, 2));
           const amp = WAVE_AMP * centerFade * edgeFade;
           const wy = sinVal * amp;
 
@@ -1801,7 +1801,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Inner ring for filled band
           const rInner = Math.max(0, r - WAVE_SPACING);
           const phaseInner = (rInner / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
-          const ampInner = WAVE_AMP * Math.min(1, rInner / 40) * Math.max(0, 1 - (rInner / WAVE_MAX_R) * 0.8);
+          const ampInner = WAVE_AMP * Math.min(1, rInner / 60) * Math.max(0, 1 - Math.pow(rInner / WAVE_MAX_R, 2));
           const wyInner = Math.sin(phaseInner) * ampInner;
 
           // Draw filled band between outer and inner ring
