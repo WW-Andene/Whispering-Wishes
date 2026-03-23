@@ -2420,10 +2420,129 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.restore();
 
       // ============================================================
-      // LAYER 0: (empty — building step by step)
-      // NOTE: canvas top is behind the header, so visible area
-      //       starts around y ≈ h * 0.12 depending on header height
+      // 4 horizontal layers (each 25% of h):
+      //   Layer 3 (top):    0%–25%    — sky / sun area
+      //   Layer 2:          25%–50%   — mid sky / structures
+      //   Layer 1:          50%–75%   — rocks (far, smaller, lighter)
+      //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
+
+      // --- ROCKS: Layer 1 (far depth, y 50%–75%) ---
+      // Smaller, lighter, more spaced — gives depth
+      const farRocks = [
+        { x: 0.08, y: 0.56, rw: 0.05, rh: 0.03, rot: -0.1 },
+        { x: 0.18, y: 0.58, rw: 0.06, rh: 0.025, rot: 0.12 },
+        { x: 0.30, y: 0.54, rw: 0.04, rh: 0.02, rot: -0.05 },
+        { x: 0.40, y: 0.57, rw: 0.05, rh: 0.028, rot: 0.08 },
+        { x: 0.52, y: 0.55, rw: 0.045, rh: 0.022, rot: -0.15 },
+        { x: 0.62, y: 0.58, rw: 0.055, rh: 0.03, rot: 0.06 },
+        { x: 0.74, y: 0.54, rw: 0.04, rh: 0.025, rot: -0.1 },
+        { x: 0.85, y: 0.57, rw: 0.05, rh: 0.028, rot: 0.14 },
+        { x: 0.94, y: 0.55, rw: 0.045, rh: 0.02, rot: -0.08 },
+        // Second row deeper
+        { x: 0.12, y: 0.62, rw: 0.06, rh: 0.035, rot: 0.1 },
+        { x: 0.25, y: 0.60, rw: 0.055, rh: 0.03, rot: -0.12 },
+        { x: 0.36, y: 0.63, rw: 0.05, rh: 0.032, rot: 0.07 },
+        { x: 0.48, y: 0.61, rw: 0.06, rh: 0.035, rot: -0.05 },
+        { x: 0.58, y: 0.64, rw: 0.055, rh: 0.03, rot: 0.11 },
+        { x: 0.70, y: 0.62, rw: 0.05, rh: 0.028, rot: -0.09 },
+        { x: 0.82, y: 0.63, rw: 0.06, rh: 0.032, rot: 0.06 },
+        { x: 0.92, y: 0.61, rw: 0.04, rh: 0.025, rot: -0.13 },
+        // Third row
+        { x: 0.05, y: 0.68, rw: 0.07, rh: 0.04, rot: 0.08 },
+        { x: 0.20, y: 0.66, rw: 0.06, rh: 0.035, rot: -0.06 },
+        { x: 0.33, y: 0.69, rw: 0.065, rh: 0.038, rot: 0.1 },
+        { x: 0.45, y: 0.67, rw: 0.055, rh: 0.032, rot: -0.11 },
+        { x: 0.56, y: 0.70, rw: 0.07, rh: 0.04, rot: 0.05 },
+        { x: 0.68, y: 0.68, rw: 0.06, rh: 0.035, rot: -0.07 },
+        { x: 0.78, y: 0.71, rw: 0.065, rh: 0.038, rot: 0.09 },
+        { x: 0.90, y: 0.69, rw: 0.055, rh: 0.032, rot: -0.04 },
+      ];
+      const farRockAlpha = 0.25 * alphaScale;
+      for (const r of farRocks) {
+        ctx.save();
+        ctx.translate(r.x * w, r.y * h);
+        ctx.rotate(r.rot);
+        const rw2 = r.rw * w;
+        const rh2 = r.rh * h;
+        // Angular rock silhouette
+        ctx.beginPath();
+        ctx.moveTo(-rw2 * 0.45, rh2 * 0.3);
+        ctx.lineTo(-rw2 * 0.35, -rh2 * 0.35);
+        ctx.lineTo(-rw2 * 0.05, -rh2 * 0.5);
+        ctx.lineTo(rw2 * 0.25, -rh2 * 0.4);
+        ctx.lineTo(rw2 * 0.5, -rh2 * 0.15);
+        ctx.lineTo(rw2 * 0.4, rh2 * 0.35);
+        ctx.lineTo(rw2 * 0.05, rh2 * 0.5);
+        ctx.lineTo(-rw2 * 0.3, rh2 * 0.45);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(55, 40, 22, ${farRockAlpha})`;
+        ctx.fill();
+        // Lit top face
+        ctx.fillStyle = `rgba(160, 120, 50, ${0.03 * alphaScale})`;
+        ctx.beginPath();
+        ctx.moveTo(-rw2 * 0.35, -rh2 * 0.35);
+        ctx.lineTo(-rw2 * 0.05, -rh2 * 0.5);
+        ctx.lineTo(rw2 * 0.25, -rh2 * 0.4);
+        ctx.lineTo(rw2 * 0.05, -rh2 * 0.15);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // --- ROCKS: Layer 0 (near depth, y 75%–100%) ---
+      // Bigger, darker, overlapping — foreground weight
+      const nearRocks = [
+        { x: 0.04, y: 0.78, rw: 0.10, rh: 0.06, rot: -0.08 },
+        { x: 0.16, y: 0.80, rw: 0.09, rh: 0.055, rot: 0.12 },
+        { x: 0.28, y: 0.77, rw: 0.11, rh: 0.065, rot: -0.06 },
+        { x: 0.40, y: 0.82, rw: 0.10, rh: 0.058, rot: 0.1 },
+        { x: 0.52, y: 0.79, rw: 0.09, rh: 0.055, rot: -0.14 },
+        { x: 0.64, y: 0.81, rw: 0.11, rh: 0.06, rot: 0.07 },
+        { x: 0.76, y: 0.78, rw: 0.10, rh: 0.058, rot: -0.1 },
+        { x: 0.88, y: 0.80, rw: 0.09, rh: 0.055, rot: 0.13 },
+        { x: 0.96, y: 0.77, rw: 0.08, rh: 0.05, rot: -0.05 },
+        // Larger bottom row — fills the very bottom
+        { x: 0.08, y: 0.88, rw: 0.14, rh: 0.08, rot: 0.06 },
+        { x: 0.24, y: 0.90, rw: 0.13, rh: 0.075, rot: -0.1 },
+        { x: 0.38, y: 0.92, rw: 0.15, rh: 0.085, rot: 0.04 },
+        { x: 0.54, y: 0.89, rw: 0.13, rh: 0.07, rot: -0.08 },
+        { x: 0.68, y: 0.91, rw: 0.14, rh: 0.08, rot: 0.09 },
+        { x: 0.84, y: 0.88, rw: 0.12, rh: 0.07, rot: -0.06 },
+        { x: 0.96, y: 0.90, rw: 0.10, rh: 0.065, rot: 0.11 },
+      ];
+      const nearRockAlpha = 0.65 * alphaScale;
+      for (const r of nearRocks) {
+        ctx.save();
+        ctx.translate(r.x * w, r.y * h);
+        ctx.rotate(r.rot);
+        const rw2 = r.rw * w;
+        const rh2 = r.rh * h;
+        // Chunkier angular shape
+        ctx.beginPath();
+        ctx.moveTo(-rw2 * 0.5, rh2 * 0.2);
+        ctx.lineTo(-rw2 * 0.4, -rh2 * 0.3);
+        ctx.lineTo(-rw2 * 0.15, -rh2 * 0.5);
+        ctx.lineTo(rw2 * 0.2, -rh2 * 0.45);
+        ctx.lineTo(rw2 * 0.45, -rh2 * 0.2);
+        ctx.lineTo(rw2 * 0.5, rh2 * 0.15);
+        ctx.lineTo(rw2 * 0.3, rh2 * 0.5);
+        ctx.lineTo(-rw2 * 0.1, rh2 * 0.48);
+        ctx.lineTo(-rw2 * 0.45, rh2 * 0.35);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(22, 15, 8, ${nearRockAlpha})`;
+        ctx.fill();
+        // Lit top-right face
+        ctx.fillStyle = `rgba(140, 100, 40, ${0.04 * alphaScale})`;
+        ctx.beginPath();
+        ctx.moveTo(-rw2 * 0.15, -rh2 * 0.5);
+        ctx.lineTo(rw2 * 0.2, -rh2 * 0.45);
+        ctx.lineTo(rw2 * 0.45, -rh2 * 0.2);
+        ctx.lineTo(rw2 * 0.1, -rh2 * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
 
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
