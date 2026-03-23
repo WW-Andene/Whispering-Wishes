@@ -6276,7 +6276,7 @@ function WhisperingWishesInner() {
                                   {/* Character header */}
                                   <div className="mb-2">
                                     <div className="flex items-start gap-2 mb-1.5">
-                                      <div className={`w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
+                                      <div className="w-9 h-10 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
                                         style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                                         {collectionImages[m.name] ? (
                                           <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
