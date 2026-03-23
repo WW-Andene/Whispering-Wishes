@@ -1764,41 +1764,45 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fill();
 
         // --- Ripple rings: "stone in a puddle" expanding from center in 3D ---
-        const RIPPLE_COUNT = 5;
-        const RIPPLE_MAX_R = 500; // world-space max radius
-        const RIPPLE_SPEED = 0.12;
+        // --- Puddle waves: soft filled bands expanding from center in 3D ---
+        const RIPPLE_COUNT = 6;
+        const RIPPLE_MAX_R = 550;
+        const RIPPLE_SPEED = 0.04; // much slower
 
         for (let ri = 0; ri < RIPPLE_COUNT; ri++) {
           const phase = (time * RIPPLE_SPEED + ri / RIPPLE_COUNT) % 1;
           const rippleR = phase * RIPPLE_MAX_R;
-          const fade = Math.sin(phase * Math.PI) * (1 - phase * 0.5);
-          const rippleAlpha = fade * 0.14 * alphaScale;
-          if (rippleAlpha < 0.005) continue;
+          const bandWidth = 25 + (1 - phase) * 35; // wider when young
+          const fade = Math.sin(phase * Math.PI) * (1 - phase * 0.4);
+          const rippleAlpha = fade * 0.07 * alphaScale;
+          if (rippleAlpha < 0.003 || rippleR < 5) continue;
 
-          const thickness = 1.5 + (1 - phase) * 2;
           const hue = 200 + phase * 80;
-
-          // Draw ring as 3D-projected circle on the Y=0 plane
-          ctx.beginPath();
-          ctx.lineWidth = thickness;
-          let started = false;
+          const innerR = Math.max(0, rippleR - bandWidth * 0.5);
+          const outerR = rippleR + bandWidth * 0.5;
           const steps = 100;
 
+          // Draw as filled band between two 3D-projected rings
+          // Outer edge
+          ctx.beginPath();
+          let started = false;
           for (let s = 0; s <= steps; s++) {
             const a = (s / steps) * Math.PI * 2;
-            const wx = Math.cos(a) * rippleR;
-            const wz = Math.sin(a) * rippleR;
-            const p = project(wx, 0, wz);
+            const p = project(Math.cos(a) * outerR, 0, Math.sin(a) * outerR);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
-
-          ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${rippleAlpha})`;
-          ctx.stroke();
-          ctx.lineWidth = thickness * 4;
-          ctx.strokeStyle = `hsla(${hue}, 75%, 55%, ${rippleAlpha * 0.2})`;
-          ctx.stroke();
+          // Inner edge (reverse direction to create a filled ring shape)
+          for (let s = steps; s >= 0; s--) {
+            const a = (s / steps) * Math.PI * 2;
+            const p = project(Math.cos(a) * innerR, 0, Math.sin(a) * innerR);
+            if (!p) continue;
+            ctx.lineTo(p.sx, p.sy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `hsla(${hue}, 75%, 60%, ${rippleAlpha})`;
+          ctx.fill();
         }
       }
     };
