@@ -1394,9 +1394,9 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 });
 TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 
-// LAYER ALT: Resonance Field — flowing digital wave field with particle grid, energy streaks & glow
-// Inspired by Honkai-style holographic wave planes: dense dotted wave grids flowing across
-// the screen, bright blue/purple/cyan energy lines, ambient glow — viewed from a slight angle
+// LAYER ALT: Resonance Field — 3D perspective wave veil with dot grid, energy lines & glow
+// A grid of dots lives on a plane in 3D (x, z) with y = wave displacement.
+// Camera looks down at ~55° angle. Dots are perspective-projected, sized & brightened by depth.
 const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -1420,17 +1420,44 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(3,4,12)';
 
     let w, h;
+    // Camera / projection params
+    let fov, camY, camZ, pitchSin, pitchCos;
+
+    const GRID_SPACING = 22;  // world-space spacing between dots
+    const GRID_COLS = 70;     // dots across x
+    const GRID_ROWS = 60;     // dots into depth (z)
 
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
       canvas.width = w;
       canvas.height = h;
+      // Perspective camera: looking down at ~55° pitch
+      fov = Math.min(w, h) * 1.1;
+      camY = 280;   // camera height above plane
+      camZ = -320;  // camera z position (negative = behind the grid)
+      const pitch = -55 * Math.PI / 180; // tilt down
+      pitchSin = Math.sin(pitch);
+      pitchCos = Math.cos(pitch);
     };
     init();
     window.addEventListener('resize', init);
 
     let lastFrame = 0;
+
+    // Project 3D world point to 2D screen
+    const project = (wx, wy, wz) => {
+      // Translate relative to camera
+      const rx = wx;
+      const ry = wy - camY;
+      const rz = wz - camZ;
+      // Rotate by pitch (around x-axis)
+      const ey = ry * pitchCos - rz * pitchSin;
+      const ez = ry * pitchSin + rz * pitchCos;
+      if (ez < 10) return null; // behind camera
+      const scale = fov / ez;
+      return { sx: w * 0.5 + rx * scale, sy: h * 0.45 + ey * scale, scale, depth: ez };
+    };
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -1441,171 +1468,172 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
-      // --- Ambient glow base (deep blue/purple wash) ---
-      const grd = ctx.createRadialGradient(w * 0.5, h * 0.6, 0, w * 0.5, h * 0.6, Math.max(w, h) * 0.7);
-      grd.addColorStop(0, `rgba(60, 40, 140, ${0.18 * alphaScale})`);
-      grd.addColorStop(0.3, `rgba(30, 50, 160, ${0.12 * alphaScale})`);
-      grd.addColorStop(0.6, `rgba(15, 25, 80, ${0.06 * alphaScale})`);
+      // --- Ambient glow base ---
+      const grd = ctx.createRadialGradient(w * 0.5, h * 0.55, 0, w * 0.5, h * 0.55, Math.max(w, h) * 0.7);
+      grd.addColorStop(0, `rgba(50, 35, 130, ${0.2 * alphaScale})`);
+      grd.addColorStop(0.3, `rgba(25, 45, 150, ${0.12 * alphaScale})`);
+      grd.addColorStop(0.6, `rgba(10, 20, 70, ${0.06 * alphaScale})`);
       grd.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, w, h);
 
-      // --- Flowing dot-grid wave field ---
-      // Dense grid of dots that undulate in 3D-perspective waves
-      const GRID_X = 28; // spacing between dots horizontally
-      const GRID_Y = 22; // spacing between rows
-      const cols = Math.ceil(w / GRID_X) + 2;
-      const rows = Math.ceil(h / GRID_Y) + 6;
-      const yOffset = -GRID_Y * 3; // start above screen
+      // Grid origin offset (centered on x, extending into z)
+      const gridXOff = -(GRID_COLS * GRID_SPACING) * 0.5;
+      const gridZOff = -60; // start slightly in front
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const baseX = c * GRID_X;
-          const baseY = yOffset + r * GRID_Y;
+      // --- 3D dot-grid wave veil ---
+      // Iterate back-to-front (far z first) for natural depth ordering
+      for (let rz = GRID_ROWS - 1; rz >= 0; rz--) {
+        for (let rx = 0; rx < GRID_COLS; rx++) {
+          const worldX = gridXOff + rx * GRID_SPACING;
+          const worldZ = gridZOff + rz * GRID_SPACING;
 
-          // Multiple wave layers for complex flowing motion
-          const wave1 = Math.sin(baseX * 0.008 + baseY * 0.004 + time * 0.6) * 18;
-          const wave2 = Math.sin(baseX * 0.004 - baseY * 0.006 + time * 0.4 + 1.5) * 12;
-          const wave3 = Math.cos(baseX * 0.006 + baseY * 0.003 + time * 0.3 + 3.0) * 8;
-          const wave4 = Math.sin((baseX + baseY) * 0.003 + time * 0.5) * 6;
+          // Wave displacement in Y (the undulating veil)
+          const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+          const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+          const wave3 = Math.cos(worldX * 0.018 + worldZ * 0.01 + time * 0.35 + 3.2) * 12;
+          const wave4 = Math.sin((worldX + worldZ) * 0.01 + time * 0.6) * 8;
+          const worldY = wave1 + wave2 + wave3 + wave4;
 
-          const totalWave = wave1 + wave2 + wave3 + wave4;
-          const px = baseX + Math.sin(baseY * 0.005 + time * 0.3) * 8;
-          const py = baseY + totalWave;
+          const p = project(worldX, worldY, worldZ);
+          if (!p) continue;
+          if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
 
-          if (px < -5 || px > w + 5 || py < -5 || py > h + 5) continue;
+          // Depth-based sizing: closer = bigger
+          const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / (GRID_ROWS * GRID_SPACING * 1.2)));
+          const dotSize = 0.6 + depthNorm * 2.8;
 
-          // Brightness based on wave height (crests glow brighter)
-          const heightNorm = (totalWave + 44) / 88; // normalize to 0-1
-          const brightness = 0.15 + heightNorm * 0.6;
+          // Brightness: closer + higher wave crests = brighter
+          const heightNorm = (worldY + 66) / 132;
+          const brightness = (0.1 + depthNorm * 0.5 + heightNorm * 0.4);
 
-          // Color shifts across the field — blue center, purple edges, cyan highlights
-          const distFromCenter = Math.sqrt(Math.pow((px - w * 0.5) / w, 2) + Math.pow((py - h * 0.5) / h, 2));
-          const hue = 220 + Math.sin(baseX * 0.003 + time * 0.2) * 30 + distFromCenter * 40;
-          const saturation = 70 + heightNorm * 20;
-          const lightness = 50 + brightness * 30;
+          // Color: blue in center, purple at edges, cyan on crests
+          const xNorm = (worldX - gridXOff) / (GRID_COLS * GRID_SPACING);
+          const hue = 220 + Math.sin(worldX * 0.01 + time * 0.15) * 25
+                    + Math.abs(xNorm - 0.5) * 50
+                    + heightNorm * 15;
+          const sat = 65 + heightNorm * 25;
+          const lit = 45 + brightness * 40;
 
-          const dotAlpha = brightness * 0.35 * alphaScale;
-          if (dotAlpha < 0.03) continue;
-
-          // Dot size varies with wave height
-          const dotSize = 1.0 + heightNorm * 1.8;
+          const dotAlpha = brightness * 0.4 * alphaScale;
+          if (dotAlpha < 0.02) continue;
 
           ctx.beginPath();
-          ctx.arc(px, py, dotSize, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${dotAlpha})`;
+          ctx.arc(p.sx, p.sy, dotSize, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
           ctx.fill();
         }
       }
 
-      // --- Flowing energy wave lines (bright streaks across the field) ---
-      const WAVE_LINE_COUNT = 12;
-      for (let i = 0; i < WAVE_LINE_COUNT; i++) {
-        const yBase = (h * 0.1) + (i / WAVE_LINE_COUNT) * h * 0.85;
-        const hue = 210 + i * 8;
-        const lineAlpha = (0.12 + Math.sin(time * 0.4 + i * 0.8) * 0.06) * alphaScale;
-        const lineWidth = 1.0 + Math.sin(time * 0.3 + i * 1.2) * 0.5;
+      // --- 3D energy wave lines (rows of the grid connected, projected) ---
+      const WAVE_LINE_ROWS = [5, 12, 20, 28, 36, 44, 52];
+      for (let li = 0; li < WAVE_LINE_ROWS.length; li++) {
+        const rz = WAVE_LINE_ROWS[li];
+        const worldZ = gridZOff + rz * GRID_SPACING;
+        const hue = 210 + li * 10;
+        const lineAlpha = (0.10 + Math.sin(time * 0.3 + li * 0.9) * 0.05) * alphaScale;
 
         ctx.beginPath();
-        ctx.lineWidth = lineWidth;
+        ctx.lineWidth = 1.2;
+        let started = false;
 
-        for (let x = 0; x <= w; x += 3) {
-          const wave = Math.sin(x * 0.006 + time * 0.5 + i * 0.7) * 25
-                     + Math.sin(x * 0.003 + time * 0.3 + i * 1.5) * 15
-                     + Math.cos(x * 0.009 + time * 0.7 + i * 0.3) * 10;
-          const y = yBase + wave;
+        for (let rx = 0; rx < GRID_COLS; rx++) {
+          const worldX = gridXOff + rx * GRID_SPACING;
+          const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+          const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+          const wave3 = Math.cos(worldX * 0.018 + worldZ * 0.01 + time * 0.35 + 3.2) * 12;
+          const wave4 = Math.sin((worldX + worldZ) * 0.01 + time * 0.6) * 8;
+          const worldY = wave1 + wave2 + wave3 + wave4;
 
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+          const p = project(worldX, worldY, worldZ);
+          if (!p) continue;
+          if (p.sx < -20 || p.sx > w + 20) continue;
+
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
         }
 
-        // Gradient stroke with edge fade
-        const grad = ctx.createLinearGradient(0, 0, w, 0);
-        grad.addColorStop(0, `hsla(${hue}, 85%, 70%, 0)`);
-        grad.addColorStop(0.1, `hsla(${hue}, 85%, 70%, ${lineAlpha})`);
-        grad.addColorStop(0.3, `hsla(${hue}, 90%, 80%, ${lineAlpha * 1.5})`);
-        grad.addColorStop(0.5, `hsla(${hue + 20}, 80%, 85%, ${lineAlpha * 1.8})`);
-        grad.addColorStop(0.7, `hsla(${hue}, 90%, 80%, ${lineAlpha * 1.5})`);
-        grad.addColorStop(0.9, `hsla(${hue}, 85%, 70%, ${lineAlpha})`);
-        grad.addColorStop(1, `hsla(${hue}, 85%, 70%, 0)`);
-        ctx.strokeStyle = grad;
-        ctx.stroke();
-      }
-
-      // --- Bright accent streaks (fewer, brighter, wider — the "hero" energy lines) ---
-      const ACCENT_COUNT = 5;
-      for (let i = 0; i < ACCENT_COUNT; i++) {
-        const yBase = h * 0.2 + (i / ACCENT_COUNT) * h * 0.6;
-        const phase = time * (0.4 + i * 0.08) + i * 2.1;
-        const hue = 200 + i * 15;
-        const accentAlpha = (0.08 + Math.sin(time * 0.25 + i * 1.5) * 0.04) * alphaScale;
-
-        ctx.beginPath();
-        ctx.lineWidth = 3 + Math.sin(time * 0.2 + i) * 1;
-
-        for (let x = 0; x <= w; x += 4) {
-          const wave = Math.sin(x * 0.004 + phase) * 40
-                     + Math.sin(x * 0.002 + phase * 0.6) * 25
-                     + Math.cos(x * 0.007 + phase * 1.2) * 15;
-          const y = yBase + wave;
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-
-        const grad2 = ctx.createLinearGradient(0, 0, w, 0);
-        grad2.addColorStop(0, `hsla(${hue}, 70%, 80%, 0)`);
-        grad2.addColorStop(0.2, `hsla(${hue}, 70%, 85%, ${accentAlpha})`);
-        grad2.addColorStop(0.5, `hsla(${hue + 30}, 60%, 92%, ${accentAlpha * 1.6})`);
-        grad2.addColorStop(0.8, `hsla(${hue}, 70%, 85%, ${accentAlpha})`);
-        grad2.addColorStop(1, `hsla(${hue}, 70%, 80%, 0)`);
-        ctx.strokeStyle = grad2;
+        ctx.strokeStyle = `hsla(${hue}, 85%, 75%, ${lineAlpha})`;
         ctx.stroke();
 
-        // Glow layer (wider, more transparent)
-        ctx.lineWidth = 12 + Math.sin(time * 0.2 + i) * 4;
-        ctx.globalAlpha = 0.3;
+        // Glow pass
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${lineAlpha * 0.25})`;
         ctx.stroke();
-        ctx.globalAlpha = 1;
         ctx.lineWidth = 1;
       }
 
-      // --- Sparkle highlights (bright dots scattered on wave crests) ---
-      const SPARKLE_COUNT = 40;
-      for (let i = 0; i < SPARKLE_COUNT; i++) {
-        const seed = i * 137.508; // golden angle for distribution
-        const sx = ((seed * 7.3 + time * 15 * (0.5 + (i % 3) * 0.3)) % (w + 40)) - 20;
-        const sy_base = ((seed * 3.7) % h);
-        const sy_wave = Math.sin(sx * 0.006 + time * 0.5 + i * 0.4) * 20
-                       + Math.sin(sx * 0.003 + time * 0.3) * 12;
-        const sy = sy_base + sy_wave;
+      // --- 3D energy wave lines along X (columns connected, projected) ---
+      const WAVE_COL_LINES = [8, 18, 28, 35, 42, 52, 62];
+      for (let li = 0; li < WAVE_COL_LINES.length; li++) {
+        const rx = WAVE_COL_LINES[li];
+        const worldX = gridXOff + rx * GRID_SPACING;
+        const hue = 230 + li * 8;
+        const lineAlpha = (0.07 + Math.sin(time * 0.35 + li * 1.1) * 0.04) * alphaScale;
 
-        if (sy < -5 || sy > h + 5) continue;
+        ctx.beginPath();
+        ctx.lineWidth = 0.8;
+        let started = false;
 
-        const pulse = Math.sin(time * (2 + i * 0.1) + seed) * 0.5 + 0.5;
-        const sparkAlpha = pulse * 0.5 * alphaScale;
+        for (let rz = 0; rz < GRID_ROWS; rz++) {
+          const worldZ = gridZOff + rz * GRID_SPACING;
+          const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+          const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+          const wave3 = Math.cos(worldX * 0.018 + worldZ * 0.01 + time * 0.35 + 3.2) * 12;
+          const wave4 = Math.sin((worldX + worldZ) * 0.01 + time * 0.6) * 8;
+          const worldY = wave1 + wave2 + wave3 + wave4;
+
+          const p = project(worldX, worldY, worldZ);
+          if (!p) continue;
+
+          if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+          else ctx.lineTo(p.sx, p.sy);
+        }
+
+        ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${lineAlpha})`;
+        ctx.stroke();
+      }
+
+      // --- Sparkle highlights on wave crests ---
+      for (let i = 0; i < 45; i++) {
+        const seed = i * 137.508;
+        const gx = Math.floor((seed * 3.1) % GRID_COLS);
+        const gz = Math.floor((seed * 2.3) % GRID_ROWS);
+        const worldX = gridXOff + gx * GRID_SPACING;
+        const worldZ = gridZOff + gz * GRID_SPACING;
+
+        const wave1 = Math.sin(worldX * 0.025 + worldZ * 0.015 + time * 0.7) * 28;
+        const wave2 = Math.sin(worldX * 0.012 - worldZ * 0.02 + time * 0.5 + 1.8) * 18;
+        const worldY = wave1 + wave2;
+
+        const p = project(worldX, worldY, worldZ);
+        if (!p) continue;
+        if (p.sx < -5 || p.sx > w + 5 || p.sy < -5 || p.sy > h + 5) continue;
+
+        const pulse = Math.sin(time * (2 + i * 0.12) + seed) * 0.5 + 0.5;
+        const sparkAlpha = pulse * 0.55 * alphaScale;
         if (sparkAlpha < 0.05) continue;
 
-        const sparkSize = 1.2 + pulse * 1.5;
-        const hue = 200 + (i % 5) * 15;
+        const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / (GRID_ROWS * GRID_SPACING)));
+        const sparkSize = (1 + pulse * 1.8) * (0.5 + depthNorm);
+        const hue = 200 + (i % 6) * 12;
 
-        // Core bright dot
         ctx.beginPath();
-        ctx.arc(sx, sy, sparkSize, 0, Math.PI * 2);
+        ctx.arc(p.sx, p.sy, sparkSize, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${hue}, 60%, 95%, ${sparkAlpha})`;
         ctx.fill();
 
-        // Soft glow
         ctx.beginPath();
-        ctx.arc(sx, sy, sparkSize * 3, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${sparkAlpha * 0.15})`;
+        ctx.arc(p.sx, p.sy, sparkSize * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 80%, 70%, ${sparkAlpha * 0.12})`;
         ctx.fill();
       }
 
-      // --- Top-level ambient glow pulse ---
+      // --- Ambient glow pulse overlay ---
       const glowPulse = 0.5 + Math.sin(time * 0.4) * 0.15;
-      const ambGrad = ctx.createRadialGradient(w * 0.45, h * 0.45, 0, w * 0.45, h * 0.45, Math.max(w, h) * 0.55);
-      ambGrad.addColorStop(0, `rgba(80, 100, 220, ${0.06 * glowPulse * alphaScale})`);
-      ambGrad.addColorStop(0.4, `rgba(100, 60, 200, ${0.03 * glowPulse * alphaScale})`);
+      const ambGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.55);
+      ambGrad.addColorStop(0, `rgba(70, 90, 210, ${0.05 * glowPulse * alphaScale})`);
+      ambGrad.addColorStop(0.4, `rgba(90, 50, 190, ${0.025 * glowPulse * alphaScale})`);
       ambGrad.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = ambGrad;
       ctx.fillRect(0, 0, w, h);
