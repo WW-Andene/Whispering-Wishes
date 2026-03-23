@@ -1788,24 +1788,21 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // --- Holographic Heart of Aemaeth (3D projected, vertical + tilted) ---
-        // Heart stands upright but leans back so it has Z depth for perspective
-        const HEART_SIZE = 55 + 15 * pulse;
+        // --- Holographic Heart of Aemaeth (3D, vertical at center) ---
+        // Heart stands fully upright in XY plane at the epicenter
+        // The 3D camera tilt + perspective naturally foreshortens it
+        const HEART_SIZE = 70 + 15 * pulse;
         const HEART_PTS = 60;
-        const HEART_LEAN = 0.5; // how much the heart leans back (0=vertical, 1=flat)
         const heartScreenPts = [];
         let heartVisible = true;
         for (let hi = 0; hi <= HEART_PTS; hi++) {
           const t = (hi / HEART_PTS) * Math.PI * 2;
           const hx3 = 16 * Math.pow(Math.sin(t), 3);
           const hy3 = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-          const localX = hx3 * HEART_SIZE / 16;
-          const localUp = hy3 * HEART_SIZE / 16; // up direction in heart's local space
-          // Lean the heart: top tilts back into Z, bottom comes forward
-          const wx = localX;
-          const wy = -localUp * (1 - HEART_LEAN); // vertical component
-          const wz = -localUp * HEART_LEAN;        // depth component (top → back, bottom → front)
-          const p = project(wx, wy, wz);
+          // X = horizontal, Y = vertical (lobes up, tip down), Z = 0
+          const wx = hx3 * HEART_SIZE / 16;
+          const wy = -hy3 * HEART_SIZE / 16;
+          const p = project(wx, wy, 0);
           if (!p) { heartVisible = false; break; }
           heartScreenPts.push(p);
         }
@@ -1853,28 +1850,24 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hexH3D = hexR3D * Math.sqrt(3);
           const gridAlpha = (0.12 + pulse * 0.08) * alphaScale;
           for (let gx = -HEART_SIZE; gx < HEART_SIZE; gx += hexR3D * 3) {
-            for (let gup = -HEART_SIZE; gup < HEART_SIZE; gup += hexH3D) {
-              const offsetX = (Math.round(gup / hexH3D) % 2) * hexR3D * 1.5;
+            for (let gy = -HEART_SIZE; gy < HEART_SIZE; gy += hexH3D) {
+              const offsetX = (Math.round(gy / hexH3D) % 2) * hexR3D * 1.5;
               const hwx = gx + offsetX;
-              // Same lean transform as heart outline
-              const hwy = -gup * (1 - HEART_LEAN);
-              const hwz = -gup * HEART_LEAN;
-              const hcp = project(hwx, hwy, hwz);
+              const hwy = gy;
+              const hcp = project(hwx, hwy, 0);
               if (!hcp) continue;
               ctx.beginPath();
               let hexOk = true;
               for (let corner = 0; corner < 6; corner++) {
                 const a = Math.PI / 3 * corner - Math.PI / 6;
-                const cx3 = hwx + Math.cos(a) * hexR3D;
-                const cup = gup + Math.sin(a) * hexR3D;
-                const cp = project(cx3, -cup * (1 - HEART_LEAN), -cup * HEART_LEAN);
+                const cp = project(hwx + Math.cos(a) * hexR3D, hwy + Math.sin(a) * hexR3D, 0);
                 if (!cp) { hexOk = false; break; }
                 if (corner === 0) ctx.moveTo(cp.sx, cp.sy);
                 else ctx.lineTo(cp.sx, cp.sy);
               }
               if (!hexOk) continue;
               ctx.closePath();
-              const hexShimmer = Math.sin(time * 1.5 + hwx * 0.12 + gup * 0.1) * 0.5 + 0.5;
+              const hexShimmer = Math.sin(time * 1.5 + hwx * 0.12 + gy * 0.1) * 0.5 + 0.5;
               ctx.strokeStyle = `rgba(150, 230, 255, ${gridAlpha * (0.5 + hexShimmer * 0.5)})`;
               ctx.lineWidth = 0.4 + hexShimmer * 0.4;
               ctx.stroke();
