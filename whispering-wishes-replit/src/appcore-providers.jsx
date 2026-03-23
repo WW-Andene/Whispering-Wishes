@@ -1050,6 +1050,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     .kuro-card-inner {
       position: relative;
+      overflow: hidden;
       border-radius: 15px;
     }
     
@@ -1316,45 +1317,45 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
-      background: rgba(237, 175, 24, 0.15);
+      background: linear-gradient(180deg, rgba(237, 175, 24, 0.18) 0%, rgba(237, 175, 24, 0.10) 100%);
       border-color: rgba(237, 175, 24, 0.7);
       color: #fef08a;
-      box-shadow: 0 0 25px rgba(237, 175, 24, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(237, 175, 24, 0.08);
+      box-shadow: 0 0 20px rgba(237, 175, 24, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
       animation: borderGlow 2s ease-in-out infinite;
     }
-    
+
     .kuro-btn.active-pink {
-      background: rgba(236, 72, 153, 0.15);
+      background: linear-gradient(180deg, rgba(236, 72, 153, 0.18) 0%, rgba(236, 72, 153, 0.10) 100%);
       border-color: rgba(236, 72, 153, 0.7);
       color: #fbcfe8;
-      box-shadow: 0 0 25px rgba(236, 72, 153, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(236, 72, 153, 0.08);
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
     }
-    
+
     /* Blue for Standard banners */
     .kuro-btn.active-cyan {
-      background: rgba(56, 189, 248, 0.15);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0.10) 100%);
       border-color: rgba(56, 189, 248, 0.7);
       color: #bae6fd;
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(56, 189, 248, 0.08);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
     }
-    
+
     .kuro-btn.active-purple {
-      background: rgba(168, 85, 247, 0.15);
+      background: linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(168, 85, 247, 0.10) 100%);
       border-color: rgba(168, 85, 247, 0.7);
       color: #e9d5ff;
-      box-shadow: 0 0 25px rgba(168, 85, 247, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(168, 85, 247, 0.08);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
     }
-    
+
     /* Muted green for Both options */
     .kuro-btn.active-emerald {
-      background: rgba(34, 197, 94, 0.15);
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.10) 100%);
       border-color: rgba(34, 197, 94, 0.7);
       color: #86efac;
-      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(34, 197, 94, 0.08);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.20), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
     }
     
@@ -2350,11 +2351,6 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     /* ── Holographic shimmer sweep on 5★ owned ── */
-    .holo-5star {
-      position: relative;
-      overflow: hidden;
-      isolation: isolate;
-    }
     .animations-full .collection-card.glow-gold::after,
     .animations-full .holo-5star::after {
       content: '' !important;
@@ -2362,11 +2358,10 @@ const KuroStyles = memo(({ oledMode }) => (
       top: 0; left: -100%;
       width: 80%;
       height: 100%;
-      border-radius: inherit;
       background: linear-gradient(105deg, transparent 25%, rgba(255,220,100,0.18) 40%, rgba(255,255,255,0.3) 50%, rgba(255,220,100,0.18) 60%, transparent 75%);
       animation: holoSweep 6s ease-in-out infinite !important;
       pointer-events: none;
-      z-index: 1;
+      z-index: 15;
     }
     @keyframes holoSweep {
       0% { left: -100%; }
