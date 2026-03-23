@@ -2605,7 +2605,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const dY = Math.max(topY, y - darkH);
           ctx.beginPath();
           ctx.rect(0, dY, w, y - dY);
-          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.3})`;
+          ctx.fillStyle = `rgba(10, 60, 10, ${edgeAlpha * 0.3})`;
           ctx.fill();
           y = dY;
           if (y <= topY) break;
