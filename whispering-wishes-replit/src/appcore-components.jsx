@@ -1767,10 +1767,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Each ring spawns at center, expands to edge, fades out, respawns
         const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
         const RIPPLE_COUNT = 5;
-        const RIPPLE_CYCLE = 20; // much slower: 20 seconds per cycle
-        const RIPPLE_AMP = 18; // taller for more 3D depth
+        const RIPPLE_CYCLE = 20;
+        const RIPPLE_AMP = 10; // tighter, less height
         const STEPS = 80;
-        const BAND_W = 18; // wider bands
+        const BAND_W = 14;
 
         for (let i = 0; i < RIPPLE_COUNT; i++) {
           const phase = ((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1;
@@ -1781,12 +1781,14 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const alpha = fade * 0.14 * alphaScale;
           if (alpha < 0.005) continue;
 
-          const wy = -RIPPLE_AMP * fade; // 3D height of the wave crest
+          // Hue shifts with radius: blue(210) center → purple(270) mid → pink/magenta(310) edge
+          const hue = 210 + phase * 100;
+          const wy = -RIPPLE_AMP * fade;
 
           const rOuter = r + BAND_W * 0.5 * fade;
           const rInner = Math.max(0, r - BAND_W * 0.5 * fade);
 
-          // Dark underside of wave (inner slope, sits lower)
+          // Dark underside
           ctx.beginPath();
           let started = false;
           for (let s = 0; s <= STEPS; s++) {
@@ -1803,10 +1805,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(215, 55%, 18%, ${alpha * 0.6})`;
+          ctx.fillStyle = `hsla(${hue + 10}, 50%, 15%, ${alpha * 0.6})`;
           ctx.fill();
 
-          // Bright top face of wave (crest, sits higher)
+          // Bright top face
           ctx.beginPath();
           started = false;
           for (let s = 0; s <= STEPS; s++) {
@@ -1823,21 +1825,21 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(210, 60%, 50%, ${alpha * 0.5})`;
+          ctx.fillStyle = `hsla(${hue}, 60%, 48%, ${alpha * 0.5})`;
           ctx.fill();
 
-          // Specular highlight line at the very top of crest
+          // Specular highlight
           ctx.beginPath();
           started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * r, wy - 2, Math.sin(a) * r);
+            const p = project(Math.cos(a) * r, wy - 1.5, Math.sin(a) * r);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
-          ctx.strokeStyle = `hsla(195, 85%, 88%, ${alpha * 1.2})`;
-          ctx.lineWidth = 1.5 + fade * 2.5;
+          ctx.strokeStyle = `hsla(${hue - 15}, 80%, 85%, ${alpha * 1.2})`;
+          ctx.lineWidth = 1.5 + fade * 2;
           ctx.stroke();
         }
       }
