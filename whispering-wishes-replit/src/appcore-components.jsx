@@ -2433,6 +2433,90 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // End blur for all light
       ctx.restore();
 
+      // --- Dramatic volumetric clouds ---
+      // Large cloud masses flanking the sun, lit on edges facing sun
+      {
+        const cloudDefs = [
+          // Left clouds — large mass
+          { cx: 0.08, cy: 0.14, rx: 0.18, ry: 0.09, rot: 0.15 },
+          { cx: 0.02, cy: 0.22, rx: 0.16, ry: 0.07, rot: -0.1 },
+          { cx: 0.15, cy: 0.28, rx: 0.14, ry: 0.06, rot: 0.08 },
+          { cx: -0.02, cy: 0.32, rx: 0.15, ry: 0.065, rot: -0.05 },
+          // Right clouds — large mass
+          { cx: 0.92, cy: 0.13, rx: 0.17, ry: 0.085, rot: -0.12 },
+          { cx: 0.98, cy: 0.21, rx: 0.15, ry: 0.07, rot: 0.1 },
+          { cx: 0.85, cy: 0.27, rx: 0.13, ry: 0.06, rot: -0.06 },
+          { cx: 1.02, cy: 0.31, rx: 0.14, ry: 0.06, rot: 0.04 },
+          // Middle-ish wisps near vortex
+          { cx: 0.28, cy: 0.10, rx: 0.10, ry: 0.04, rot: 0.2 },
+          { cx: 0.72, cy: 0.09, rx: 0.09, ry: 0.035, rot: -0.18 },
+          { cx: 0.22, cy: 0.18, rx: 0.08, ry: 0.03, rot: 0.1 },
+          { cx: 0.78, cy: 0.17, rx: 0.08, ry: 0.03, rot: -0.1 },
+          // Lower flanks
+          { cx: 0.10, cy: 0.38, rx: 0.13, ry: 0.05, rot: 0.06 },
+          { cx: 0.90, cy: 0.37, rx: 0.12, ry: 0.05, rot: -0.08 },
+        ];
+
+        for (let ci = 0; ci < cloudDefs.length; ci++) {
+          const cd = cloudDefs[ci];
+          // Slow drift
+          const drift = Math.sin(time * 0.06 + ci * 2.3) * 0.012;
+          const cxP = (cd.cx + drift) * w;
+          const cyP = cd.cy * h;
+          const rxP = cd.rx * w;
+          const ryP = cd.ry * h;
+
+          // Direction from sun to cloud center for lit-edge effect
+          const dxS = cxP - sunX, dyS = cyP - sunY;
+          const distS = Math.sqrt(dxS * dxS + dyS * dyS) || 1;
+          // Offset the gradient toward sun for lit inner edge
+          const litOffX = -dxS / distS * rxP * 0.35;
+          const litOffY = -dyS / distS * ryP * 0.35;
+
+          ctx.save();
+          ctx.translate(cxP, cyP);
+          ctx.rotate(cd.rot + Math.sin(time * 0.04 + ci) * 0.02);
+
+          // Build multi-layer cloud puff using overlapping radial gradients
+          const puffCount = 4 + Math.floor(hash(ci * 137.3) * 3);
+          for (let pi = 0; pi < puffCount; pi++) {
+            const pH = hash(ci * 100 + pi * 71.3);
+            const pH2 = hash(ci * 100 + pi * 91.7);
+            const pH3 = hash(ci * 100 + pi * 53.1);
+            const pOx = (pH - 0.5) * rxP * 1.4;
+            const pOy = (pH2 - 0.5) * ryP * 1.2;
+            const pR = (0.35 + pH3 * 0.65) * Math.min(rxP, ryP) * 1.3;
+
+            // Dark cloud body
+            const cGrd = ctx.createRadialGradient(
+              pOx + litOffX * 0.3, pOy + litOffY * 0.3, pR * 0.1,
+              pOx, pOy, pR
+            );
+            cGrd.addColorStop(0, `rgba(35, 25, 18, ${0.35 * alphaScale})`);
+            cGrd.addColorStop(0.4, `rgba(25, 18, 12, ${0.28 * alphaScale})`);
+            cGrd.addColorStop(0.75, `rgba(15, 10, 6, ${0.15 * alphaScale})`);
+            cGrd.addColorStop(1, 'rgba(10, 6, 3, 0)');
+            ctx.fillStyle = cGrd;
+            ctx.fillRect(pOx - pR, pOy - pR, pR * 2, pR * 2);
+          }
+
+          // Sun-lit edge highlight — warm golden rim on the side facing the sun
+          const litGrd = ctx.createRadialGradient(
+            litOffX * 0.8, litOffY * 0.8, rxP * 0.05,
+            litOffX * 0.2, litOffY * 0.2, rxP * 0.9
+          );
+          const litStr = Math.max(0, 1 - distS / (w * 0.5)); // stronger near sun
+          litGrd.addColorStop(0, `rgba(255, 200, 100, ${0.18 * litStr * alphaScale})`);
+          litGrd.addColorStop(0.3, `rgba(255, 160, 60, ${0.10 * litStr * alphaScale})`);
+          litGrd.addColorStop(0.6, `rgba(200, 100, 30, ${0.04 * litStr * alphaScale})`);
+          litGrd.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = litGrd;
+          ctx.fillRect(-rxP, -ryP, rxP * 2, ryP * 2);
+
+          ctx.restore();
+        }
+      }
+
       // ============================================================
       // 4 horizontal layers (each 25% of h):
       //   Layer 3 (top):    0%–25%    — sky / sun area
