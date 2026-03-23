@@ -3172,14 +3172,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // nearest neighbors, creating a chain of connected bolts
           for (let ni = 0; ni < lightningNodes.length; ni++) {
             const startSeed = ni * 47 + 13;
-            // Small per-node phase so nearby clumps don't all fire together
-            const phase = hash(startSeed * 173.7) * 1.5;
-            const t0 = time * 2.2 + startSeed * 0.5 + phase;
-            const strikeFrame = Math.floor(t0);
+            const strikeFrame = Math.floor(time * 2.2 + startSeed * 0.5);
             // Only ~12% of nodes initiate a chain per frame
             if (sHash(startSeed, strikeFrame) < 0.88) continue;
 
-            const subFrame = t0 % 1;
+            const subFrame = (time * 2.2 + startSeed * 0.5) % 1;
             const flash = subFrame < 0.25 ? 1.0 : (subFrame < 0.45 ? 0.35 : 0);
             if (flash === 0) continue;
 
