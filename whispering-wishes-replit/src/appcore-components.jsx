@@ -1790,13 +1790,13 @@ const BANNER_THEMES = {
       // Pulsating glow — 7s cycle matching banner card glow
       const pulse = (Math.sin(t * (Math.PI * 2 / 7)) + 1) / 2; // 0→1→0 over 7s
 
-      // Outer bloom — pulses between subtle and bright
+      // Outer bloom — pulses between dim and bright
       ctx.save();
-      ctx.globalAlpha = 0.12 + pulse * 0.25;
+      ctx.globalAlpha = 0.3 + pulse * 0.5;
       const og = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 6);
-      og.addColorStop(0, 'rgba(210,225,255,0.35)');
-      og.addColorStop(0.3, 'rgba(190,215,248,0.18)');
-      og.addColorStop(0.6, 'rgba(150,185,220,0.06)');
+      og.addColorStop(0, 'rgba(210,225,255,0.5)');
+      og.addColorStop(0.3, 'rgba(190,215,248,0.25)');
+      og.addColorStop(0.6, 'rgba(150,185,220,0.1)');
       og.addColorStop(1, 'rgba(120,155,190,0)');
       ctx.fillStyle = og;
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 6, 0, Math.PI * 2); ctx.fill();
@@ -1804,10 +1804,10 @@ const BANNER_THEMES = {
 
       // Inner glow — pulses more intensely
       ctx.save();
-      ctx.globalAlpha = 0.15 + pulse * 0.3;
+      ctx.globalAlpha = 0.4 + pulse * 0.5;
       const mg = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonR * 2.5);
-      mg.addColorStop(0, 'rgba(230,240,255,0.4)');
-      mg.addColorStop(0.4, 'rgba(210,228,250,0.15)');
+      mg.addColorStop(0, 'rgba(230,240,255,0.6)');
+      mg.addColorStop(0.4, 'rgba(210,228,250,0.25)');
       mg.addColorStop(1, 'rgba(170,195,225,0)');
       ctx.fillStyle = mg;
       ctx.beginPath(); ctx.arc(moonX, moonY, moonR * 2.5, 0, Math.PI * 2); ctx.fill();
