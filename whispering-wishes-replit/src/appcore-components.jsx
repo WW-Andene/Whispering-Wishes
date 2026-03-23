@@ -2606,11 +2606,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Seeded hash for deterministic per-step randomness
+        // Seeded hash for deterministic per-step randomness (0.0 – 1.0)
         const sHash = (a, b) => {
-          let n = a * 374761393 + b * 668265263;
-          n = (n ^ (n >> 13)) * 1274126177;
-          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
+          let n = ((a * 2654435761) ^ (b * 2246822519)) | 0;
+          n = Math.imul(n ^ (n >>> 13), 1274126177) | 0;
+          n = n ^ (n >>> 16);
+          return (n & 0x7fffffff) / 0x7fffffff;
         };
 
         // x on left/right diagonal edge at given y
@@ -2915,119 +2916,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.stroke();
       }
 
-      // --- Floating 3D rock ---
-      {
-        const rockCx = w * 0.5;
-        const rockCy = h * 0.35 + Math.sin(time * 0.8) * h * 0.015;
-        const rockSz = w * 0.07;
-        const rotY = time * 0.15;
-        const rotX = time * 0.07; // slight tumble
-
-        // Complex irregular rock — 26 vertices across 5 layers
-        const V = [
-          // 0: top spike
-          [0.0, -1.4, 0.1],
-          // 1-6: upper crown (jagged)
-          [-0.5, -0.9, 0.8], [0.6, -1.0, 0.6], [1.0, -0.8, -0.1],
-          [0.4, -0.9, -0.8], [-0.7, -0.85, -0.6], [-1.0, -0.85, 0.2],
-          // 7-14: upper-mid ring (wider, rough)
-          [-0.7, -0.3, 1.1], [0.5, -0.25, 1.0], [1.2, -0.2, 0.4],
-          [1.1, -0.15, -0.5], [0.3, -0.2, -1.1], [-0.6, -0.25, -1.0],
-          [-1.2, -0.3, -0.3], [-1.15, -0.35, 0.5],
-          // 15-22: lower-mid ring (bulging)
-          [-0.8, 0.4, 1.0], [0.6, 0.35, 0.95], [1.15, 0.45, 0.3],
-          [1.0, 0.5, -0.6], [0.2, 0.45, -1.05], [-0.7, 0.4, -0.9],
-          [-1.2, 0.35, -0.2], [-1.1, 0.3, 0.6],
-          // 23-25: bottom cluster
-          [-0.3, 1.0, 0.4], [0.5, 1.1, -0.2], [-0.4, 1.05, -0.5],
-          // 26: bottom spike
-          [0.05, 1.5, 0.05],
-        ];
-
-        // Rotate Y then X
-        const cy = Math.cos(rotY), sy = Math.sin(rotY);
-        const cx = Math.cos(rotX), sx = Math.sin(rotX);
-        const proj = V.map(([x, y, z]) => {
-          // Y rotation
-          let rx = x * cy - z * sy, rz = x * sy + z * cy;
-          // X rotation (tumble)
-          let ry = y * cx - rz * sx;
-          rz = y * sx + rz * cx;
-          return { x: rockCx + rx * rockSz, y: rockCy + ry * rockSz, z: rz };
-        });
-
-        // Compute face normal for lighting (light from top-front: 0,-1,0.5)
-        const lightDir = { x: 0, y: -0.8, z: 0.5 };
-        const lLen = Math.sqrt(lightDir.x ** 2 + lightDir.y ** 2 + lightDir.z ** 2);
-        lightDir.x /= lLen; lightDir.y /= lLen; lightDir.z /= lLen;
-
-        const faceNormal = (idxs) => {
-          const a = V[idxs[0]], b = V[idxs[1]], c = V[idxs[2]];
-          // Apply same rotation to get world-space normal
-          const e1 = [b[0]-a[0], b[1]-a[1], b[2]-a[2]];
-          const e2 = [c[0]-a[0], c[1]-a[1], c[2]-a[2]];
-          let nx = e1[1]*e2[2] - e1[2]*e2[1];
-          let ny = e1[2]*e2[0] - e1[0]*e2[2];
-          let nz = e1[0]*e2[1] - e1[1]*e2[0];
-          // Rotate normal same as vertices
-          let rx2 = nx*cy - nz*sy, rz2 = nx*sy + nz*cy;
-          let ry2 = ny*cx - rz2*sx; rz2 = ny*sx + rz2*cx;
-          const len = Math.sqrt(rx2**2 + ry2**2 + rz2**2) || 1;
-          return (rx2*lightDir.x + ry2*lightDir.y + rz2*lightDir.z) / len;
-        };
-
-        // All faces (triangles)
-        const F = [
-          // Top cap → crown
-          [0,1,2],[0,2,3],[0,3,4],[0,4,5],[0,5,6],[0,6,1],
-          // Crown → upper-mid
-          [1,7,8,2],[2,8,9,3],[3,9,10,4],[4,10,11,5],[5,11,12,6],[6,12,7,1],
-          // Subdivide crown→mid quads: extra triangles
-          [1,7,14],[6,14,7],[3,10,11],[4,11,12],[5,12,13],[6,13,14],
-          // Upper-mid → lower-mid
-          [7,15,16,8],[8,16,17,9],[9,17,18,10],[10,18,19,11],
-          [11,19,20,12],[12,20,21,13],[13,21,22,14],[14,22,15,7],
-          // Lower-mid → bottom cluster
-          [15,23,16],[16,23,24,17],[17,24,18],[18,24,25,19],
-          [19,25,20],[20,25,23,21],[21,23,22],[22,23,15],
-          // Bottom cluster → spike
-          [26,24,23],[26,25,24],[26,23,25],
-        ];
-
-        // Build face objects with computed shading
-        const faces = F.map(idxs => {
-          const dot = faceNormal(idxs);
-          const shade = Math.max(0, Math.min(1, dot * 0.5 + 0.5)); // remap -1..1 → 0..1
-          const avgZ = idxs.reduce((s, i) => s + proj[i].z, 0) / idxs.length;
-          return { idxs, shade, avgZ };
-        });
-
-        // Back-to-front
-        faces.sort((a, b) => a.avgZ - b.avgZ);
-
-        for (const face of faces) {
-          ctx.beginPath();
-          ctx.moveTo(proj[face.idxs[0]].x, proj[face.idxs[0]].y);
-          for (let fi = 1; fi < face.idxs.length; fi++) {
-            ctx.lineTo(proj[face.idxs[fi]].x, proj[face.idxs[fi]].y);
-          }
-          ctx.closePath();
-          // Rock texture
-          ctx.fillStyle = rockPat;
-          ctx.fill();
-          // Lighting
-          if (face.shade > 0.5) {
-            ctx.fillStyle = `rgba(255, 200, 120, ${(face.shade - 0.5) * 0.6})`;
-          } else {
-            ctx.fillStyle = `rgba(0, 0, 0, ${(0.5 - face.shade) * 1.0})`;
-          }
-          ctx.fill();
-          // Edge lines for faceted look
-          ctx.strokeStyle = `rgba(40, 30, 15, ${0.15 + face.shade * 0.15})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      }
+      // (Floating 3D rock removed)
 
       // --- Atmospheric mist layers ---
       for (const m of mistLayers) {
