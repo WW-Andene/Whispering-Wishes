@@ -1460,7 +1460,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       if (!p) return null;
       return {
         sx: w * 0.5 + p.sx - centerOffX,
-        sy: h * 0.5 + p.sy - centerOffY,
+        sy: h * 0.55 + p.sy - centerOffY,
         scale: p.scale,
         depth: p.depth
       };
