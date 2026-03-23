@@ -3320,8 +3320,9 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
   const hasStats = profileData?.history?.length > 0;
+  const isFull = visualSettings?.animationsEnabled === 'full';
   return (
-    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 holo-5star" style={{ height: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {bannerImage && (
         <img
           src={bannerImage}
@@ -3332,6 +3333,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           onError={hideOnError}
         />
       )}
+      {bannerImage && isFull && <BannerParticleOverlay characterName="" element="Spectro" />}
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
