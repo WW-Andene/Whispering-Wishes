@@ -2436,7 +2436,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const botY = h * 0.625;     // 50% of L1
         // Top must stay below VP for correct perspective convergence
-        const topY = vpY + h * 0.02; // just below the sun
+        const topY = vpY + h * 0.04; // below the sun
 
         // Clip so nothing renders outside the intended bounds
         ctx.save();
