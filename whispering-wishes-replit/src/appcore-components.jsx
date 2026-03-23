@@ -1431,17 +1431,19 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     init();
     window.addEventListener('resize', init);
 
-    // Camera: nearly edge-on view of the ribbon ring
-    // We use a simple 3D→2D projection with tilt
-    const project = (wx, wy, wz) => {
-      // Camera is positioned to see the ring from the side
-      // Tilt: rotate around X axis by ~25° (mostly side view, slight top)
-      const tilt = -25 * Math.PI / 180;
-      const cosT = Math.cos(tilt);
-      const sinT = Math.sin(tilt);
+    // Camera: diagonal view — tilt around X for side view, plus yaw around Y for diagonal
+    const tilt = -25 * Math.PI / 180;   // X-axis tilt (side view)
+    const yaw = 25 * Math.PI / 180;     // Y-axis rotation (diagonal view)
+    const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
+    const cosY = Math.cos(yaw), sinY = Math.sin(yaw);
 
-      // Camera offset: pull back in Z
-      const cz = wz + 600;
+    const project = (wx, wy, wz) => {
+      // Rotate around Y axis first (yaw — makes it diagonal)
+      const rx = wx * cosY - wz * sinY;
+      const rz = wx * sinY + wz * cosY;
+
+      // Then tilt around X axis (pitch — side view)
+      const cz = rz + 600;
       const ey = wy * cosT - cz * sinT;
       const ez = wy * sinT + cz * cosT;
 
@@ -1449,7 +1451,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       const fov = Math.min(w, h) * 0.9;
       const scale = fov / ez;
       return {
-        sx: w * 0.5 + wx * scale,
+        sx: w * 0.5 + rx * scale,
         sy: h * 0.5 + ey * scale,
         scale,
         depth: ez
@@ -1467,8 +1469,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
-      // Slow global rotation
-      const rot = time * 0.1;
+      // Slow global rotation (very gentle)
+      const rot = time * 0.035;
 
       // --- Ambient glow at center ---
       const centerP = project(0, 0, 0);
@@ -1509,31 +1511,33 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Ribbon wave: Y displacement — the key to the ribbon effect
           // The wave depends on angle (position around ring) and time
-          const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
-                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
 
           const p = project(wx, wy, wz);
           if (!p) continue;
           if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
 
-          allDots.push({ p, wy, rowT, angleT, r });
+          allDots.push({ p, wy, rowT, angleT, r, angle });
         }
       }
 
       // Sort back to front
       allDots.sort((a, b) => b.p.depth - a.p.depth);
 
-      // Draw dots
+      // Draw flat rectangles (dashes tangent to the ring)
       const maxDepth = 1200;
       for (let i = 0; i < allDots.length; i++) {
-        const { p, wy, rowT } = allDots[i];
+        const { p, wy, rowT, angle } = allDots[i];
 
         const depthNorm = Math.max(0, Math.min(1, 1 - (p.depth - 10) / maxDepth));
-        const dotSize = 0.6 + depthNorm * 2.8;
+
+        // Rectangle size scales with depth (perspective)
+        const rectW = (2 + depthNorm * 5) * p.scale * 0.8; // width (tangent direction)
+        const rectH = (0.6 + depthNorm * 1.8) * p.scale * 0.5; // height (thin/flat)
 
         // Brighter on wave crests
         const heightNorm = (wy + WAVE_AMP * 1.3) / (WAVE_AMP * 2.6);
-        // Brighter in center of ribbon
         const centerBright = 1 - Math.abs(rowT - 0.5) * 1.2;
         const brightness = 0.05 + depthNorm * 0.45 + heightNorm * 0.3 + centerBright * 0.15;
 
@@ -1544,10 +1548,14 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const dotAlpha = brightness * 0.5 * alphaScale;
         if (dotAlpha < 0.02) continue;
 
-        ctx.beginPath();
-        ctx.arc(p.sx, p.sy, dotSize, 0, Math.PI * 2);
+        // Rotate rectangle to be tangent to the ring (perpendicular to radius)
+        // The tangent direction in screen space approximation
+        ctx.save();
+        ctx.translate(p.sx, p.sy);
+        ctx.rotate(angle + Math.PI * 0.5); // tangent = angle + 90°
         ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lit}%, ${dotAlpha})`;
-        ctx.fill();
+        ctx.fillRect(-rectW * 0.5, -rectH * 0.5, rectW, rectH);
+        ctx.restore();
       }
 
       // --- Ribbon edge lines (top and bottom edge of the ribbon) ---
@@ -1564,8 +1572,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const angle = (i / DOTS_AROUND) * Math.PI * 2 + rot;
           const wx = Math.cos(angle) * r;
           const wz = Math.sin(angle) * r;
-          const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
-                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
 
           const p = project(wx, wy, wz);
           if (!p) { started = false; continue; }
@@ -1590,8 +1598,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const angle = (i / DOTS_AROUND) * Math.PI * 2 + rot;
           const wx = Math.cos(angle) * RADIUS;
           const wz = Math.sin(angle) * RADIUS;
-          const wy = Math.sin(angle * WAVE_FREQ + time * 0.5) * WAVE_AMP
-                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.3) * WAVE_AMP * 0.3;
+          const wy = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                   + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
 
           const p = project(wx, wy, wz);
           if (!p) { started = false; continue; }
