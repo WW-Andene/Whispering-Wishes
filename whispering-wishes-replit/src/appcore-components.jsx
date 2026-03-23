@@ -1763,76 +1763,65 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // --- Water ripple: expanding rings from center, like the previous filled version ---
-        const WAVE_MAX_R = RADIUS + RIBBON_WIDTH; // stay within disc
-        const WAVE_RINGS = 40;
-        const WAVE_SPACING = WAVE_MAX_R / WAVE_RINGS;
-        const WAVELENGTH = 120; // fewer, wider waves
-        const WAVE_AMP = 8;
-        const WAVE_SPEED = 0.12; // slower
+        // --- Water ripple: discrete rings expanding outward from center ---
+        // Each ring spawns at center, expands to edge, fades out, respawns
+        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
+        const RIPPLE_COUNT = 5; // number of rings cycling
+        const RIPPLE_CYCLE = 12; // seconds for full cycle (slow)
+        const RIPPLE_AMP = 6;
         const STEPS = 80;
+        const BAND_W = 12; // width of each ring band
 
-        for (let ri = WAVE_RINGS; ri >= 1; ri--) {
-          const r = ri * WAVE_SPACING;
-          const phase = (r / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
-          const sinVal = Math.sin(phase);
-          const cosVal = Math.cos(phase);
+        for (let i = 0; i < RIPPLE_COUNT; i++) {
+          // Each ring is staggered evenly across the cycle
+          const phase = ((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1;
+          const r = phase * RIPPLE_MAX_R;
+          if (r < 5) continue;
 
-          const centerFade = Math.min(1, r / 40);
-          const edgeFade = Math.max(0, 1 - Math.pow(r / WAVE_MAX_R, 2));
-          const amp = WAVE_AMP * centerFade * edgeFade;
-          const wy = sinVal * amp;
-
-          const slopeLight = cosVal * 0.5 + 0.5;
-          const peakGlint = Math.max(0, sinVal);
-
-          const lightness = 12 + slopeLight * 48 + peakGlint * 25;
-          const sat = 50 + (1 - Math.abs(sinVal)) * 30;
-          const hue = 205 + peakGlint * 15;
-          const alpha = (0.06 + slopeLight * 0.08 + peakGlint * 0.06) * alphaScale * edgeFade;
+          // Fade: ramp up quickly from center, fade out at edge
+          const fade = Math.sin(phase * Math.PI); // 0 at center, peak at middle, 0 at edge
+          const alpha = fade * 0.14 * alphaScale;
           if (alpha < 0.005) continue;
 
-          // Filled band between this ring and next inner
-          const rInner = Math.max(0, r - WAVE_SPACING);
-          const phaseInner = (rInner / WAVELENGTH) * Math.PI * 2 - time * WAVE_SPEED;
-          const ampInner = WAVE_AMP * Math.min(1, rInner / 40) * Math.max(0, 1 - Math.pow(rInner / WAVE_MAX_R, 2));
-          const wyInner = Math.sin(phaseInner) * ampInner;
+          const wy = -RIPPLE_AMP * fade; // slight 3D lift at peak visibility
 
+          // Outer filled band
+          const rOuter = r + BAND_W * 0.5 * fade;
+          const rInner = Math.max(0, r - BAND_W * 0.5 * fade);
+
+          // Fill the band
           ctx.beginPath();
           let started = false;
           for (let s = 0; s <= STEPS; s++) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * r, wy, Math.sin(a) * r);
+            const p = project(Math.cos(a) * rOuter, wy, Math.sin(a) * rOuter);
             if (!p) { started = false; continue; }
             if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
             else ctx.lineTo(p.sx, p.sy);
           }
           for (let s = STEPS; s >= 0; s--) {
             const a = (s / STEPS) * Math.PI * 2 + rot;
-            const p = project(Math.cos(a) * rInner, wyInner, Math.sin(a) * rInner);
+            const p = project(Math.cos(a) * rInner, wy * 0.5, Math.sin(a) * rInner);
             if (!p) continue;
             ctx.lineTo(p.sx, p.sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${lightness}%, ${alpha})`;
+          ctx.fillStyle = `hsla(210, 60%, 45%, ${alpha * 0.5})`;
           ctx.fill();
 
-          // Specular crest highlight
-          if (peakGlint > 0.7) {
-            ctx.beginPath();
-            started = false;
-            for (let s = 0; s <= STEPS; s++) {
-              const a = (s / STEPS) * Math.PI * 2 + rot;
-              const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
-              if (!p) { started = false; continue; }
-              if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
-              else ctx.lineTo(p.sx, p.sy);
-            }
-            const ga = ((peakGlint - 0.7) / 0.3) * 0.15 * alphaScale * edgeFade;
-            ctx.strokeStyle = `hsla(195, 85%, 90%, ${ga})`;
-            ctx.lineWidth = 1.5 + peakGlint * 2;
-            ctx.stroke();
+          // Bright crest line on top of band
+          ctx.beginPath();
+          started = false;
+          for (let s = 0; s <= STEPS; s++) {
+            const a = (s / STEPS) * Math.PI * 2 + rot;
+            const p = project(Math.cos(a) * r, wy - 1, Math.sin(a) * r);
+            if (!p) { started = false; continue; }
+            if (!started) { ctx.moveTo(p.sx, p.sy); started = true; }
+            else ctx.lineTo(p.sx, p.sy);
           }
+          ctx.strokeStyle = `hsla(200, 80%, 82%, ${alpha})`;
+          ctx.lineWidth = 1.5 + fade * 2;
+          ctx.stroke();
         }
       }
     };
