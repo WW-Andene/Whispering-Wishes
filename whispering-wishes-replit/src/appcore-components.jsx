@@ -2427,132 +2427,105 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
-      // --- LAYERS 0–1: Rubble field of broken stone slabs ---
-      // Like the reference: angular masonry blocks piled up, tilted,
-      // leaning. The ground IS the rocks. V-shape: higher on edges,
-      // lower in the center to frame the view.
+      // --- LAYERS 0–1: Rocky ground made of packed stone blocks ---
+      // The blocks themselves ARE the ground. Each row of blocks
+      // tiles edge-to-edge, filling from their top down to the
+      // bottom of the canvas. V-shape: higher at edges, lower center.
 
-      // Helper: draw a single angular stone slab
-      const drawSlab = (cx, cy, sw, sh, tilt, shade, alpha) => {
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(tilt);
-        // Flat-topped angular block (rectangular-ish, not round)
-        ctx.beginPath();
-        ctx.moveTo(-sw * 0.5, sh * 0.1);   // bottom-left
-        ctx.lineTo(-sw * 0.45, -sh * 0.4);  // top-left
-        ctx.lineTo(-sw * 0.1, -sh * 0.5);   // top edge
-        ctx.lineTo(sw * 0.35, -sh * 0.45);  // top-right
-        ctx.lineTo(sw * 0.5, -sh * 0.1);    // right face
-        ctx.lineTo(sw * 0.45, sh * 0.3);    // bottom-right
-        ctx.lineTo(sw * 0.1, sh * 0.5);     // bottom edge
-        ctx.lineTo(-sw * 0.35, sh * 0.45);  // bottom-left
-        ctx.closePath();
-        ctx.fillStyle = `rgba(${shade}, ${Math.round(shade * 0.72)}, ${Math.round(shade * 0.4)}, ${alpha})`;
-        ctx.fill();
-        // Top face — lighter (catches light)
-        ctx.beginPath();
-        ctx.moveTo(-sw * 0.45, -sh * 0.4);
-        ctx.lineTo(-sw * 0.1, -sh * 0.5);
-        ctx.lineTo(sw * 0.35, -sh * 0.45);
-        ctx.lineTo(sw * 0.05, -sh * 0.3);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(${shade + 30}, ${Math.round((shade + 30) * 0.72)}, ${Math.round((shade + 30) * 0.38)}, ${alpha * 0.5})`;
-        ctx.fill();
-        // Right face — darker (shadow side)
-        ctx.beginPath();
-        ctx.moveTo(sw * 0.35, -sh * 0.45);
-        ctx.lineTo(sw * 0.5, -sh * 0.1);
-        ctx.lineTo(sw * 0.45, sh * 0.3);
-        ctx.lineTo(sw * 0.15, sh * 0.1);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(${Math.round(shade * 0.6)}, ${Math.round(shade * 0.4)}, ${Math.round(shade * 0.2)}, ${alpha * 0.6})`;
-        ctx.fill();
-        ctx.restore();
-      };
-
-      // V-shape envelope: edges high, center low
       const vShape = (xNorm) => {
-        const d = Math.abs(xNorm - 0.5) * 2; // 0 at center, 1 at edges
-        return d * d; // quadratic — steep sides, flat center
+        const d = Math.abs(xNorm - 0.5) * 2;
+        return d * d;
       };
 
-      // LAYER 1 slabs (far, 50%–75%, smaller, lighter)
-      const L1_slabs = [
-        { x: 0.04, sz: 0.035, tilt: -0.3 },  { x: 0.10, sz: 0.030, tilt: 0.15 },
-        { x: 0.16, sz: 0.038, tilt: -0.2 },   { x: 0.23, sz: 0.032, tilt: 0.25 },
-        { x: 0.30, sz: 0.028, tilt: -0.1 },   { x: 0.37, sz: 0.025, tilt: 0.12 },
-        { x: 0.44, sz: 0.022, tilt: -0.18 },  { x: 0.50, sz: 0.020, tilt: 0.08 },
-        { x: 0.56, sz: 0.022, tilt: -0.15 },  { x: 0.63, sz: 0.025, tilt: 0.2 },
-        { x: 0.70, sz: 0.030, tilt: -0.12 },  { x: 0.77, sz: 0.033, tilt: 0.22 },
-        { x: 0.84, sz: 0.036, tilt: -0.25 },  { x: 0.91, sz: 0.032, tilt: 0.18 },
-        { x: 0.97, sz: 0.038, tilt: -0.3 },
-      ];
-      for (const s of L1_slabs) {
-        const rise = vShape(s.x) * h * 0.18;
-        const baseY = h * 0.68 - rise;
-        const sw2 = s.sz * w;
-        const sh2 = s.sz * w * 0.7;
-        drawSlab(s.x * w, baseY, sw2, sh2, s.tilt, 50, 0.28 * alphaScale);
-      }
+      // Draw one row of packed blocks that form a ground surface.
+      // Each block: top edge is the visible "ground line", bottom fills to screenBottom.
+      const drawBlockRow = (blocks, screenBottom, shade, alpha) => {
+        for (let i = 0; i < blocks.length; i++) {
+          const b = blocks[i];
+          const x1 = b.x * w;
+          const x2 = (i < blocks.length - 1) ? blocks[i + 1].x * w : w;
+          const rise1 = vShape(b.x) * b.vAmp;
+          const rise2 = (i < blocks.length - 1) ? vShape(blocks[i + 1].x) * blocks[i + 1].vAmp : rise1;
+          const topL = b.baseY - rise1 + b.jag;
+          const topR = (i < blocks.length - 1)
+            ? blocks[i + 1].baseY - rise2 + blocks[i + 1].jag
+            : topL + b.jag * 0.5;
+          // Vary shade per block
+          const s = shade + b.shadeDelta;
+          const sR = s;
+          const sG = Math.round(s * 0.72);
+          const sB = Math.round(s * 0.40);
 
-      // Fill between L1 slabs — solid rubble mass
-      ctx.beginPath();
-      ctx.moveTo(0, h * 0.75);
-      for (let x = 0; x <= w; x += 3) {
-        const xn = x / w;
-        const rise = vShape(xn) * h * 0.18;
-        const jag = Math.sin(x * 0.04) * 6 + Math.sin(x * 0.09 + 1.5) * 4;
-        ctx.lineTo(x, h * 0.70 - rise + jag);
-      }
-      ctx.lineTo(w, h * 0.75);
-      ctx.closePath();
-      ctx.fillStyle = `rgba(42, 30, 16, ${0.25 * alphaScale})`;
-      ctx.fill();
+          // Main block face (fills to bottom)
+          ctx.beginPath();
+          ctx.moveTo(x1, topL);
+          ctx.lineTo(x2, topR);
+          ctx.lineTo(x2, screenBottom);
+          ctx.lineTo(x1, screenBottom);
+          ctx.closePath();
+          ctx.fillStyle = `rgba(${sR}, ${sG}, ${sB}, ${alpha})`;
+          ctx.fill();
 
-      // LAYER 0 slabs (near, 75%–100%, bigger, darker, more tilted)
-      const L0_slabs = [
-        { x: 0.02, sz: 0.08, tilt: -0.35 },  { x: 0.09, sz: 0.07, tilt: 0.2 },
-        { x: 0.16, sz: 0.09, tilt: -0.15 },   { x: 0.23, sz: 0.075, tilt: 0.3 },
-        { x: 0.30, sz: 0.06, tilt: -0.25 },   { x: 0.37, sz: 0.05, tilt: 0.1 },
-        { x: 0.43, sz: 0.045, tilt: -0.2 },   { x: 0.50, sz: 0.04, tilt: 0.05 },
-        { x: 0.57, sz: 0.045, tilt: -0.12 },  { x: 0.63, sz: 0.05, tilt: 0.22 },
-        { x: 0.70, sz: 0.065, tilt: -0.18 },  { x: 0.77, sz: 0.075, tilt: 0.28 },
-        { x: 0.84, sz: 0.085, tilt: -0.3 },   { x: 0.91, sz: 0.07, tilt: 0.2 },
-        { x: 0.98, sz: 0.08, tilt: -0.35 },
-      ];
-      for (const s of L0_slabs) {
-        const rise = vShape(s.x) * h * 0.22;
-        const baseY = h * 0.88 - rise;
-        const sw2 = s.sz * w;
-        const sh2 = s.sz * w * 0.7;
-        drawSlab(s.x * w, baseY, sw2, sh2, s.tilt, 22, 0.65 * alphaScale);
-      }
+          // Top edge strip — lighter, catches sun
+          const stripH = (x2 - x1) * 0.12;
+          ctx.beginPath();
+          ctx.moveTo(x1, topL);
+          ctx.lineTo(x2, topR);
+          ctx.lineTo(x2, topR + stripH);
+          ctx.lineTo(x1, topL + stripH);
+          ctx.closePath();
+          ctx.fillStyle = `rgba(${s + 35}, ${Math.round((s + 35) * 0.70)}, ${Math.round((s + 35) * 0.35)}, ${alpha * 0.45})`;
+          ctx.fill();
 
-      // Fill between L0 slabs — solid dark rubble mass
-      ctx.beginPath();
-      ctx.moveTo(0, h);
-      for (let x = 0; x <= w; x += 3) {
-        const xn = x / w;
-        const rise = vShape(xn) * h * 0.22;
-        const jag = Math.sin(x * 0.03 + 0.8) * 8 + Math.sin(x * 0.07 + 3.1) * 5;
-        ctx.lineTo(x, h * 0.90 - rise + jag);
-      }
-      ctx.lineTo(w, h);
-      ctx.closePath();
-      ctx.fillStyle = `rgba(16, 11, 6, ${0.70 * alphaScale})`;
-      ctx.fill();
+          // Vertical crack line between blocks
+          if (i > 0) {
+            ctx.beginPath();
+            ctx.moveTo(x1, topL);
+            ctx.lineTo(x1 + 1, screenBottom);
+            ctx.strokeStyle = `rgba(${Math.round(s * 0.4)}, ${Math.round(s * 0.28)}, ${Math.round(s * 0.15)}, ${alpha * 0.5})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+        }
+      };
 
-      // Mist swirling at the base of the rubble
+      // LAYER 1 (far): smaller blocks, lighter, top edges around 55%–70%
+      const L1_blocks = [];
+      for (let i = 0; i < 20; i++) {
+        const xn = i / 19;
+        L1_blocks.push({
+          x: xn,
+          baseY: h * 0.66,
+          vAmp: h * 0.16,
+          jag: Math.sin(i * 2.3 + 0.5) * h * 0.012 + Math.sin(i * 5.1) * h * 0.006,
+          shadeDelta: Math.round(Math.sin(i * 3.7) * 8),
+        });
+      }
+      drawBlockRow(L1_blocks, h, 48, 0.28 * alphaScale);
+
+      // LAYER 0 (near): bigger blocks, darker, top edges around 72%–90%
+      const L0_blocks = [];
+      for (let i = 0; i < 14; i++) {
+        const xn = i / 13;
+        L0_blocks.push({
+          x: xn,
+          baseY: h * 0.84,
+          vAmp: h * 0.20,
+          jag: Math.sin(i * 1.9 + 2.7) * h * 0.018 + Math.sin(i * 4.3 + 1.0) * h * 0.008,
+          shadeDelta: Math.round(Math.sin(i * 2.9 + 0.3) * 6),
+        });
+      }
+      drawBlockRow(L0_blocks, h, 20, 0.68 * alphaScale);
+
+      // Mist at rubble base
       ctx.save();
       ctx.filter = 'blur(8px)';
-      const mistBaseY = h * 0.88;
-      const mistGrd = ctx.createLinearGradient(0, mistBaseY - h * 0.06, 0, h);
+      const mistGrd = ctx.createLinearGradient(0, h * 0.84, 0, h);
       mistGrd.addColorStop(0, 'rgba(120,90,50,0)');
-      mistGrd.addColorStop(0.4, `rgba(130, 100, 55, ${0.10 * alphaScale})`);
+      mistGrd.addColorStop(0.5, `rgba(130, 100, 55, ${0.10 * alphaScale})`);
       mistGrd.addColorStop(1, `rgba(100, 75, 40, ${0.14 * alphaScale})`);
       ctx.fillStyle = mistGrd;
-      ctx.fillRect(0, mistBaseY - h * 0.06, w, h * 0.18);
+      ctx.fillRect(0, h * 0.84, w, h * 0.16);
       ctx.restore();
 
       // --- Atmospheric lightning (sky to ground) ---
