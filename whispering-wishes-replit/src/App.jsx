@@ -3365,13 +3365,17 @@ function WhisperingWishesInner() {
       el.style.setProperty('--border-bright', `${themeAccent}50`);
       el.style.setProperty('--shimmer-color', `${themeAccent}4d`);
       el.style.setProperty('--shimmer-color-bright', `${themeAccent}80`);
+      el.style.setProperty('--card-outline', `${themeAccent}0d`);
+      el.style.setProperty('--card-outline-hover', `${themeAccent}1a`);
+      el.style.setProperty('--card-top-reflect', `${themeAccent}15`);
+      el.style.setProperty('--card-top-reflect-hover', `${themeAccent}25`);
+      el.style.setProperty('--card-glow', `${themeAccent}0d`);
     } else {
       el.style.removeProperty('--theme-accent');
       el.style.setProperty('--border-default', 'rgba(255,255,255,0.08)');
       el.style.setProperty('--border-hover', 'rgba(255,255,255,0.15)');
       el.style.setProperty('--border-bright', 'rgba(255,255,255,0.2)');
-      el.style.removeProperty('--shimmer-color');
-      el.style.removeProperty('--shimmer-color-bright');
+      ['--shimmer-color','--shimmer-color-bright','--card-outline','--card-outline-hover','--card-top-reflect','--card-top-reflect-hover','--card-glow'].forEach(v => el.style.removeProperty(v));
     }
   }, [themeAccent]);
 
