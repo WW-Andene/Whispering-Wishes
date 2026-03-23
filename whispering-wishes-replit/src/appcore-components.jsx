@@ -2482,11 +2482,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       ctx.fillStyle = farColor(farAlpha * 0.7);
       ctx.fill();
 
-      // --- Atmospheric lightning (sky to ground, blurred) ---
+      // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
       if (lightningActive) {
-        ctx.save();
-        ctx.filter = 'blur(4px)';
         const lightA = (0.12 + Math.sin(time * 8) * 0.08) * alphaScale;
         ctx.strokeStyle = `rgba(255, 150, 70, ${lightA})`;
         ctx.lineWidth = 1.5;
@@ -2505,7 +2503,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.strokeStyle = `rgba(255, 100, 50, ${lightA * 0.25})`;
         ctx.lineWidth = 6;
         ctx.stroke();
-        ctx.restore();
       }
 
       // --- Atmospheric mist layers ---
