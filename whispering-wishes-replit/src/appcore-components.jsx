@@ -1622,10 +1622,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       }
 
       // --- Floating lines: loose curves drifting near the ribbon ---
-      for (let fl = 0; fl < 5; fl++) {
-        const flRadius = RADIUS + RIBBON_WIDTH * (0.6 + fl * 0.15);
-        const flYOff = (fl - 2) * 15; // spread above/below
-        const flHue = 220 + fl * 25; // blue → purple → pink
+      for (let fl = 0; fl < 10; fl++) {
+        const flRadius = RADIUS + RIBBON_WIDTH * (0.5 + fl * 0.12);
+        const flYOff = (fl - 5) * 12; // spread above/below
+        const flHue = 210 + fl * 15; // blue → purple → pink
         const flAlpha = (0.06 + Math.sin(time * 0.2 + fl * 1.3) * 0.03) * alphaScale;
 
         ctx.beginPath();
@@ -1656,7 +1656,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Inner ribbon: vertical mixer bars (flat on Y=0 plane, no wave) ---
       const INNER_RADIUS = RADIUS * 0.55;
-      const INNER_BARS = 180;
+      const INNER_BARS = 540;
       for (let i = 0; i < INNER_BARS; i++) {
         const angleT_b = i / INNER_BARS;
         const angle = angleT_b * Math.PI * 2 + rot;
