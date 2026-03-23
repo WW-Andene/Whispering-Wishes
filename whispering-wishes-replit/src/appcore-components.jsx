@@ -1755,34 +1755,40 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fill();
       }
 
-      // --- Disc light: center is a light source radiating outward ---
-      // Like the reference: bright white-cyan core → blue → purple → pink at edges
+      // --- Disc light + Water ripple (linked together) ---
       if (centerP) {
-        // Pulse synced with ripple waves — use same phase as nearest ripple at r=0
-        // Ripple phase for ring i at center: ((time/20) + i/5) % 1
-        // Find the ripple closest to center (smallest phase) and pulse with it
-        let minPhase = 1;
-        for (let i = 0; i < 5; i++) {
-          const ph = ((time / 20) + i / 5) % 1;
-          if (ph < minPhase) minPhase = ph;
-        }
-        // Smooth pulse: bright when ripple is near center, dim as it expands out
-        const pulse = 0.4 + (1 - minPhase) * 0.2 + Math.cos(minPhase * Math.PI) * 0.25;
+        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
+        const RIPPLE_COUNT = 5;
+        const RIPPLE_CYCLE = 20;
+        const RIPPLE_AMP = 10;
+        const STEPS = 80;
+        const BAND_W = 14;
 
-        // Large disc glow radiating from center (the "light pool")
+        // Compute all ripple phases first so pulse can read them
+        const ripplePhases = [];
+        for (let i = 0; i < RIPPLE_COUNT; i++) {
+          ripplePhases.push(((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1);
+        }
+
+        // Pulse = driven by the ripple closest to center
+        // phase 0 = at center (bright), phase 1 = at edge (dim)
+        const nearest = Math.min(...ripplePhases);
+        const pulse = 0.4 + 0.45 * Math.cos(nearest * Math.PI * 0.5); // smooth 0.85 at center → 0.4 at edge
+
+        // Large disc glow
         const discSize = Math.max(w, h) * (0.5 + pulse * 0.1);
         const discGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, discSize);
-        discGrd.addColorStop(0, `rgba(200, 240, 255, ${0.35 * pulse * alphaScale})`);    // bright white-cyan
-        discGrd.addColorStop(0.08, `rgba(140, 210, 250, ${0.25 * pulse * alphaScale})`); // cyan
-        discGrd.addColorStop(0.2, `rgba(90, 150, 230, ${0.15 * pulse * alphaScale})`);   // blue
-        discGrd.addColorStop(0.4, `rgba(130, 90, 210, ${0.08 * pulse * alphaScale})`);   // purple
-        discGrd.addColorStop(0.6, `rgba(190, 70, 190, ${0.04 * pulse * alphaScale})`);   // magenta
-        discGrd.addColorStop(0.8, `rgba(210, 60, 140, ${0.02 * pulse * alphaScale})`);   // pink
+        discGrd.addColorStop(0, `rgba(200, 240, 255, ${0.35 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.08, `rgba(140, 210, 250, ${0.25 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.2, `rgba(90, 150, 230, ${0.15 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.4, `rgba(130, 90, 210, ${0.08 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.6, `rgba(190, 70, 190, ${0.04 * pulse * alphaScale})`);
+        discGrd.addColorStop(0.8, `rgba(210, 60, 140, ${0.02 * pulse * alphaScale})`);
         discGrd.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = discGrd;
         ctx.fillRect(0, 0, w, h);
 
-        // Bright core glow — pulsates in size and intensity
+        // Core glow
         const coreSize = 60 + 50 * pulse;
         const coreGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, 0, centerP.sx, centerP.sy, coreSize);
         coreGrd.addColorStop(0, `rgba(240, 250, 255, ${0.5 * pulse * alphaScale})`);
@@ -1795,7 +1801,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, coreSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // Halo ring around core — breathes with pulse
+        // Halo ring
         const haloSize = 110 + 60 * pulse;
         const haloGrd = ctx.createRadialGradient(centerP.sx, centerP.sy, haloSize * 0.5, centerP.sx, centerP.sy, haloSize);
         haloGrd.addColorStop(0, `rgba(160, 200, 255, ${0.1 * pulse * alphaScale})`);
@@ -1805,17 +1811,9 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.arc(centerP.sx, centerP.sy, haloSize, 0, Math.PI * 2);
         ctx.fill();
 
-        // --- Water ripple: discrete rings expanding outward from center ---
-        // Each ring spawns at center, expands to edge, fades out, respawns
-        const RIPPLE_MAX_R = RADIUS + RIBBON_WIDTH;
-        const RIPPLE_COUNT = 5;
-        const RIPPLE_CYCLE = 20;
-        const RIPPLE_AMP = 10; // tighter, less height
-        const STEPS = 80;
-        const BAND_W = 14;
-
+        // Draw ripple rings using the same phases
         for (let i = 0; i < RIPPLE_COUNT; i++) {
-          const phase = ((time / RIPPLE_CYCLE) + i / RIPPLE_COUNT) % 1;
+          const phase = ripplePhases[i];
           const r = phase * RIPPLE_MAX_R;
           if (r < 5) continue;
 
