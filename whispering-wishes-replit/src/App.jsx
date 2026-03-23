@@ -3403,9 +3403,9 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div style={{ background: 'rgba(15,20,28,0.2)', borderRadius: '12px', padding: '6px 12px' }}>
+              <div style={{ background: 'rgba(15,20,28,0.5)', borderRadius: '12px', padding: '6px 12px' }}>
                 <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? `${themeAccent}80` : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
+                <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? themeAccent : '#facc15' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
