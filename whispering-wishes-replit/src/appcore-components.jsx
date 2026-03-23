@@ -2494,54 +2494,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore(); // remove clip
       }
 
-      // Generate a rock texture pattern (once, cached on canvas element)
-      if (!canvas._rockPattern) {
-        const sz = 128;
-        const offC = document.createElement('canvas');
-        offC.width = sz; offC.height = sz;
-        const oc = offC.getContext('2d');
-        const imgData = oc.createImageData(sz, sz);
-        const d = imgData.data;
-        // Simple value noise for continuous stone look
-        const hash = (x, y) => {
-          let n = x * 374761393 + y * 668265263;
-          n = (n ^ (n >> 13)) * 1274126177;
-          return ((n ^ (n >> 16)) >>> 0) / 4294967296;
-        };
-        const smooth = (x, y) => {
-          const ix = x | 0, iy = y | 0;
-          const fx = x - ix, fy = y - iy;
-          const a = hash(ix, iy), b = hash(ix + 1, iy);
-          const c = hash(ix, iy + 1), d2 = hash(ix + 1, iy + 1);
-          const top = a + (b - a) * fx, bot = c + (d2 - c) * fx;
-          return top + (bot - top) * fy;
-        };
-        for (let py = 0; py < sz; py++) {
-          for (let px = 0; px < sz; px++) {
-            // Large blobs (low freq, stretched horizontally for layered look)
-            const n1 = smooth(px * 0.04, py * 0.08) * 0.45;
-            // Medium patches
-            const n2 = smooth(px * 0.09, py * 0.15) * 0.3;
-            // Horizontal striations (stretched heavily on x)
-            const stria = smooth(px * 0.02, py * 0.25) * 0.15;
-            // Fine detail
-            const n3 = smooth(px * 0.3, py * 0.3) * 0.1;
-            const n = n1 + n2 + stria + n3;
-            // High contrast: deep shadows to bright highlights
-            const v = 40 + n * 220;
-            // Warm color shift per region
-            const warm = smooth(px * 0.05 + 99, py * 0.05 + 99);
-            const i = (py * sz + px) * 4;
-            d[i]     = Math.min(255, v * (0.95 + warm * 0.15));  // R — warm tan
-            d[i + 1] = Math.min(255, v * (0.78 + warm * 0.08));  // G
-            d[i + 2] = Math.min(255, v * (0.5 + warm * 0.12));   // B — brown
-            d[i + 3] = 255;
-          }
-        }
-        oc.putImageData(imgData, 0, 0);
-        canvas._rockPattern = ctx.createPattern(offC, 'repeat');
-      }
-      const rockPat = canvas._rockPattern;
+      // No pattern — stair geometry itself creates the stone texture
 
       // --- Second narrower rectangle (inner step) ---
       {
@@ -2578,7 +2531,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topL + thkTop, topY);
         ctx.lineTo(botL + thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = rockPat;
+        ctx.fillStyle = `rgba(15, 10, 5, ${edgeAlpha * 0.7})`;
         ctx.fill();
 
         // Right wall
@@ -2588,7 +2541,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(topR - thkTop, topY);
         ctx.lineTo(botR - thkBot, botY);
         ctx.closePath();
-        ctx.fillStyle = rockPat;
+        ctx.fillStyle = `rgba(15, 10, 5, ${edgeAlpha * 0.7})`;
         ctx.fill();
 
         // Floor strip
@@ -2611,7 +2564,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
         };
 
-        // Clip to trapezoid, fill entire surface with rock texture first
+        // Clip to trapezoid
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(botL, botY);
@@ -2621,16 +2574,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.closePath();
         ctx.clip();
 
-        // Continuous rock texture across the whole face
-        ctx.fillStyle = rockPat;
-        ctx.fillRect(topL, topY, botR - topL, botY - topY);
-
-        // Stair geometry: shadow/light overlays on top
+        // Stair steps — geometry creates the stone texture
         let y = botY;
         while (y > topY) {
           const scale = (y - vpY) / dBot;
 
-          // Riser (front face — in shadow)
+          // Riser (front face — dark shadow)
           const darkH = Math.max(1, h * 0.012 * scale);
           const dY = Math.max(topY, y - darkH);
           const hwAtTop = hwBot * (dY - vpY) / dBot;
@@ -2638,12 +2587,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rR = vpX + hwAtTop;
           ctx.beginPath();
           ctx.rect(rL, dY, rR - rL, y - dY);
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+          ctx.fillStyle = `rgba(10, 7, 3, ${edgeAlpha * 0.4})`;
           ctx.fill();
           y = dY;
           if (y <= topY) break;
 
-          // Tread (top face — lit)
+          // Tread (top face — warm lit stone)
           const lightH = Math.max(1, h * 0.003 * scale * scale);
           const lY = Math.max(topY, y - lightH);
           const tBotL = rL;
@@ -2660,7 +2609,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(tTopR, lY);
           ctx.lineTo(tTopL, lY);
           ctx.closePath();
-          ctx.fillStyle = 'rgba(255, 220, 160, 0.25)';
+          ctx.fillStyle = `rgba(200, 150, 80, ${edgeAlpha * 0.2})`;
           ctx.fill();
           y = lY;
         }
