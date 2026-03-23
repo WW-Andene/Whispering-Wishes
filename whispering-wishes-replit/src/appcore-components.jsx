@@ -2013,7 +2013,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
           ctx.restore();
 
-          // --- Glitch animated effects (horizontal rect blocks perpendicular to heart Y axis) ---
+          // --- Glitch animated effects (horizontal blocks perpendicular to heart's Y axis) ---
           // Glitch burst trigger — periodic spikes of intensity
           const glitchCycle = Math.sin(time * 1.7) * Math.sin(time * 3.1) * Math.sin(time * 0.6);
           const glitchActive = glitchCycle > 0.3;
@@ -2031,7 +2031,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             return x - Math.floor(x);
           };
 
-          // Always draw some subtle glitch blocks, more during bursts
+          // Glitch blocks: horizontal bands across heart, extending left/right
           const baseBlockCount = 4;
           const burstBlockCount = glitchActive ? Math.floor(6 + glitchIntensity * 8) : 0;
           const totalBlocks = baseBlockCount + burstBlockCount;
@@ -2041,27 +2041,27 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const isBurst = gi >= baseBlockCount;
             const intensity = isBurst ? glitchIntensity : 0.25 + Math.sin(time * 0.5 + gi) * 0.15;
 
-            // Animated seed so blocks move over time
+            // Animated seed so blocks shift over time
             const seed = gi * 73.7 + Math.floor(time * (isBurst ? 6 : 1.5)) * 13.1;
 
-            // X position: distributed across heart width, centered on heart
-            const xFrac = pseudoRand(seed + 1.1);
-            const blockX = bds.x0 + xFrac * hW;
+            // Y position: distributed along heart's Y axis (vertical)
+            const yFrac = pseudoRand(seed + 1.1);
+            const blockY = bds.y0 + yFrac * hH;
 
-            // Block width: thin vertical strips (perpendicular to Y axis = horizontal rectangles rotated)
-            const blockW = (1.5 + pseudoRand(seed + 2.2) * 3.5) * (isBurst ? (1 + glitchIntensity) : 1);
+            // Block height: thin horizontal bands
+            const blockH = (1.5 + pseudoRand(seed + 2.2) * 3.5) * (isBurst ? (1 + glitchIntensity) : 1);
 
-            // Vertical offset: blocks extend beyond the heart top/bottom
+            // Horizontal: blocks extend beyond left or right edge of heart
             const side = pseudoRand(seed + 3.3) > 0.5 ? 1 : -1;
-            const overshoot = hH * (0.15 + pseudoRand(seed + 4.4) * 0.5) * intensity;
-            const blockH = hH * (0.15 + pseudoRand(seed + 5.5) * 0.35);
-            const blockY = side > 0
-              ? hCy + pseudoRand(seed + 6.6) * hH * 0.3 - blockH * 0.3 + overshoot * 0.3
-              : hCy - pseudoRand(seed + 6.6) * hH * 0.3 - blockH * 0.7 - overshoot * 0.3;
+            const overshoot = hW * (0.15 + pseudoRand(seed + 4.4) * 0.5) * intensity;
+            const blockW = hW * (0.15 + pseudoRand(seed + 5.5) * 0.35);
+            const blockX = side > 0
+              ? hCx + pseudoRand(seed + 6.6) * hW * 0.3 - blockW * 0.3 + overshoot * 0.3
+              : hCx - pseudoRand(seed + 6.6) * hW * 0.3 - blockW * 0.7 - overshoot * 0.3;
 
-            // Cyan or pink only
+            // Cyan or lavender-pink (matching heart fill)
             const isCyan = pseudoRand(seed + 7.7) > 0.5;
-            const col = isCyan ? [80, 230, 255] : [255, 50, 150];
+            const col = isCyan ? [80, 230, 255] : [230, 190, 255];
 
             const blockAlpha = (isBurst ? (0.35 + glitchIntensity * 0.4) : (0.15 + Math.sin(time * 0.8 + gi * 2) * 0.1)) * alphaScale;
 
@@ -2070,37 +2070,37 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Sometimes draw a second thinner block offset slightly
             if (pseudoRand(seed + 8.8) > 0.5) {
-              const col2 = isCyan ? [255, 50, 150] : [80, 230, 255];
-              const offsetY = (pseudoRand(seed + 9.9) - 0.5) * 6 * intensity;
+              const col2 = isCyan ? [230, 190, 255] : [80, 230, 255];
+              const offsetX = (pseudoRand(seed + 9.9) - 0.5) * 6 * intensity;
               ctx.fillStyle = `rgba(${col2[0]}, ${col2[1]}, ${col2[2]}, ${blockAlpha * 0.6})`;
-              ctx.fillRect(blockX + blockW + 1, blockY + offsetY, blockW * 0.5, blockH * 0.7);
+              ctx.fillRect(blockX + offsetX, blockY + blockH + 1, blockW * 0.7, blockH * 0.5);
             }
           }
 
-          // RGB chromatic split — shifted copies of heart outline (vertical shift, perpendicular to Y)
+          // Chromatic split — shifted heart outlines along heart's X axis (horizontal)
           const splitAmt = glitchActive ? 2 + glitchIntensity * 5 : 0.8 + Math.sin(time * 0.8) * 0.5;
 
-          // Cyan heart shifted up
+          // Cyan heart shifted right
           ctx.beginPath();
           for (let i = 0; i <= HEART_PTS; i++) {
             const p = heartPts[i % heartPts.length];
-            if (i === 0) ctx.moveTo(p.sx, p.sy - splitAmt);
-            else ctx.lineTo(p.sx, p.sy - splitAmt);
+            if (i === 0) ctx.moveTo(p.sx + splitAmt, p.sy);
+            else ctx.lineTo(p.sx + splitAmt, p.sy);
           }
           ctx.closePath();
           ctx.strokeStyle = `rgba(80, 230, 255, ${(0.2 + glitchIntensity * 0.3) * alphaScale})`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
-          // Pink heart shifted down
+          // Lavender-pink heart shifted left (matching heart fill)
           ctx.beginPath();
           for (let i = 0; i <= HEART_PTS; i++) {
             const p = heartPts[i % heartPts.length];
-            if (i === 0) ctx.moveTo(p.sx, p.sy + splitAmt);
-            else ctx.lineTo(p.sx, p.sy + splitAmt);
+            if (i === 0) ctx.moveTo(p.sx - splitAmt, p.sy);
+            else ctx.lineTo(p.sx - splitAmt, p.sy);
           }
           ctx.closePath();
-          ctx.strokeStyle = `rgba(255, 50, 150, ${(0.15 + glitchIntensity * 0.25) * alphaScale})`;
+          ctx.strokeStyle = `rgba(230, 190, 255, ${(0.15 + glitchIntensity * 0.25) * alphaScale})`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
