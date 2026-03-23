@@ -2433,114 +2433,102 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // End blur for all light
       ctx.restore();
 
-      // --- Dramatic volumetric clouds in perspective skybox ---
-      // VP = sun position. Clouds flatten vertically as they get further
-      // from VP (toward horizon/edges), simulating looking up at a sky dome.
+      // --- Dramatic clouds — always horizontal, perspective via squash only ---
       {
-        // Skybox perspective: clouds defined in "sky angle" space,
-        // then projected so that distance from VP = flattening
-        const vpXn = 0.5, vpYn = 0.18; // normalized VP (sun)
-
+        // Cloud banks: wide horizontal masses, no rotation
+        // Perspective: clouds lower on screen (further from sun) get flatter
         const cloudDefs = [
-          // Left cloud bank
-          { cx: 0.06, cy: 0.12, sz: 0.16, seed: 1 },
-          { cx: 0.0,  cy: 0.22, sz: 0.15, seed: 2 },
-          { cx: 0.14, cy: 0.29, sz: 0.13, seed: 3 },
-          { cx: -0.03, cy: 0.34, sz: 0.14, seed: 4 },
-          { cx: 0.08, cy: 0.40, sz: 0.11, seed: 5 },
-          // Right cloud bank
-          { cx: 0.94, cy: 0.11, sz: 0.15, seed: 6 },
-          { cx: 1.0,  cy: 0.20, sz: 0.14, seed: 7 },
-          { cx: 0.86, cy: 0.28, sz: 0.12, seed: 8 },
-          { cx: 1.03, cy: 0.33, sz: 0.13, seed: 9 },
-          { cx: 0.92, cy: 0.39, sz: 0.10, seed: 10 },
-          // Wisps near vortex
-          { cx: 0.30, cy: 0.09, sz: 0.08, seed: 11 },
-          { cx: 0.70, cy: 0.08, sz: 0.07, seed: 12 },
-          { cx: 0.24, cy: 0.17, sz: 0.07, seed: 13 },
-          { cx: 0.76, cy: 0.16, sz: 0.07, seed: 14 },
+          // { cx, cy (normalized), widthN, heightN } — always horizontal
+          // Left bank
+          { cx: 0.05, cy: 0.10, wN: 0.22, hN: 0.06 },
+          { cx: -0.02, cy: 0.20, wN: 0.20, hN: 0.05 },
+          { cx: 0.12, cy: 0.28, wN: 0.18, hN: 0.04 },
+          { cx: -0.04, cy: 0.35, wN: 0.19, hN: 0.035 },
+          { cx: 0.08, cy: 0.42, wN: 0.16, hN: 0.03 },
+          // Right bank
+          { cx: 0.95, cy: 0.09, wN: 0.21, hN: 0.06 },
+          { cx: 1.02, cy: 0.19, wN: 0.19, hN: 0.05 },
+          { cx: 0.88, cy: 0.27, wN: 0.17, hN: 0.04 },
+          { cx: 1.04, cy: 0.34, wN: 0.18, hN: 0.035 },
+          { cx: 0.92, cy: 0.41, wN: 0.15, hN: 0.03 },
+          // Wisps near vortex (smaller, thinner)
+          { cx: 0.28, cy: 0.08, wN: 0.12, hN: 0.03 },
+          { cx: 0.72, cy: 0.07, wN: 0.11, hN: 0.025 },
+          { cx: 0.22, cy: 0.16, wN: 0.10, hN: 0.025 },
+          { cx: 0.78, cy: 0.15, wN: 0.10, hN: 0.025 },
         ];
 
         for (let ci = 0; ci < cloudDefs.length; ci++) {
           const cd = cloudDefs[ci];
-          const drift = Math.sin(time * 0.05 + ci * 2.3) * 0.01;
-          const cxN = cd.cx + drift;
-          const cyN = cd.cy;
+          const drift = Math.sin(time * 0.05 + ci * 2.3) * 0.008;
+          const cxP = (cd.cx + drift) * w;
+          const cyP = cd.cy * h;
 
-          // Distance from VP in normalized space
-          const ddx = cxN - vpXn, ddy = cyN - vpYn;
-          const vpDist = Math.sqrt(ddx * ddx + ddy * ddy);
+          // Perspective: further from sun → squash height, stretch width
+          const vpDist = Math.abs(cd.cy - 0.18);
+          const perspSquash = Math.max(0.3, 1 - vpDist * 1.5);
+          const rxP = cd.wN * w * (1 + vpDist * 0.6);
+          const ryP = cd.hN * h * perspSquash;
 
-          // Perspective squash: clouds flatten TOWARD the VP direction
-          // The further from VP, the more horizontally stretched & vertically squashed
-          const squash = Math.max(0.15, 1 - vpDist * 1.6); // 1 near VP → 0.15 far
-          // Clouds also get wider further from center (perspective stretch)
-          const hStretch = 1 + vpDist * 1.2;
-
-          const cxP = cxN * w;
-          const cyP = cyN * h;
-          const baseR = cd.sz * Math.min(w, h);
-          const rxP = baseR * hStretch;  // wide
-          const ryP = baseR * squash;    // squashed by perspective
-
-          // Rotation: clouds align tangentially to VP direction
-          const angleToVP = Math.atan2(ddy, ddx);
-          const rot = angleToVP + Math.PI * 0.5 + Math.sin(time * 0.04 + ci) * 0.03;
-
-          // Direction from sun for lit-edge
+          // Sun-lit direction
           const dxS = cxP - sunX, dyS = cyP - sunY;
           const distS = Math.sqrt(dxS * dxS + dyS * dyS) || 1;
-          const litOffX = -dxS / distS * rxP * 0.3;
-          const litOffY = -dyS / distS * ryP * 0.3;
+          const litDirX = -dxS / distS;
+          const litDirY = -dyS / distS;
 
-          ctx.save();
-          ctx.translate(cxP, cyP);
-          ctx.rotate(rot);
-
-          // Cloud puffs — elliptical, following the perspective shape
-          const puffCount = 5 + Math.floor(hash(ci * 137.3) * 3);
+          // Build cloud from many overlapping horizontal puffs
+          // More puffs along the top edge for billowy cauliflower shape
+          const puffCount = 8 + Math.floor(hash(ci * 137.3) * 5);
           for (let pi = 0; pi < puffCount; pi++) {
             const pH = hash(ci * 100 + pi * 71.3);
             const pH2 = hash(ci * 100 + pi * 91.7);
             const pH3 = hash(ci * 100 + pi * 53.1);
-            const pOx = (pH - 0.5) * rxP * 1.2;
-            const pOy = (pH2 - 0.5) * ryP * 1.0;
-            // Elliptical puff radius — wider than tall
-            const pRx = (0.3 + pH3 * 0.7) * rxP * 0.55;
-            const pRy = (0.3 + pH3 * 0.7) * ryP * 0.8;
-            const pR = Math.max(pRx, pRy);
+            const pH4 = hash(ci * 100 + pi * 41.9);
 
+            // Puffs spread horizontally, clustered toward top
+            const pOx = (pH - 0.5) * rxP * 1.6;
+            // Bias upward: top-heavy billowy shape
+            const yBias = -0.3 + pH2 * 0.9; // range -0.3 to 0.6 (more above center)
+            const pOy = yBias * ryP;
+
+            // Puff size: wider than tall, larger puffs near the top
+            const topBonus = (1 - yBias) * 0.3; // bigger near top
+            const pW = rxP * (0.25 + pH3 * 0.25 + topBonus);
+            const pH_ = ryP * (0.5 + pH4 * 0.5);
+
+            // Use ellipse scaling for flat horizontal puffs
+            const pR = Math.max(pW, pH_);
             ctx.save();
-            ctx.translate(pOx, pOy);
-            ctx.scale(pRx / pR, pRy / pR);
+            ctx.translate(cxP + pOx, cyP + pOy);
+            ctx.scale(pW / pR, pH_ / pR);
 
             const cGrd = ctx.createRadialGradient(0, 0, pR * 0.05, 0, 0, pR);
-            cGrd.addColorStop(0, `rgba(40, 30, 22, ${0.38 * alphaScale})`);
-            cGrd.addColorStop(0.35, `rgba(28, 20, 14, ${0.30 * alphaScale})`);
-            cGrd.addColorStop(0.7, `rgba(16, 11, 7, ${0.16 * alphaScale})`);
+            cGrd.addColorStop(0, `rgba(42, 32, 24, ${0.35 * alphaScale})`);
+            cGrd.addColorStop(0.3, `rgba(30, 22, 15, ${0.28 * alphaScale})`);
+            cGrd.addColorStop(0.65, `rgba(18, 12, 8, ${0.14 * alphaScale})`);
             cGrd.addColorStop(1, 'rgba(10, 6, 3, 0)');
             ctx.fillStyle = cGrd;
             ctx.fillRect(-pR, -pR, pR * 2, pR * 2);
-
             ctx.restore();
           }
 
-          // Sun-lit edge — golden rim facing the sun, in rotated space
-          const litLocal = ctx.createRadialGradient(
-            litOffX * Math.cos(-rot) + litOffY * Math.sin(-rot),
-            -litOffX * Math.sin(-rot) + litOffY * Math.cos(-rot),
-            rxP * 0.05,
-            0, 0, rxP * 0.85
-          );
-          const litStr = Math.max(0, 1 - distS / (w * 0.45));
-          litLocal.addColorStop(0, `rgba(255, 200, 100, ${0.20 * litStr * alphaScale})`);
-          litLocal.addColorStop(0.3, `rgba(255, 160, 60, ${0.12 * litStr * alphaScale})`);
-          litLocal.addColorStop(0.6, `rgba(200, 100, 30, ${0.04 * litStr * alphaScale})`);
-          litLocal.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = litLocal;
-          ctx.fillRect(-rxP, -ryP, rxP * 2, ryP * 2);
-
-          ctx.restore();
+          // Sun-lit highlight on edge facing sun
+          const litStr = Math.max(0, 1 - distS / (w * 0.5));
+          if (litStr > 0.01) {
+            const litGrd = ctx.createRadialGradient(
+              cxP + litDirX * rxP * 0.25,
+              cyP + litDirY * ryP * 0.25,
+              rxP * 0.05,
+              cxP, cyP,
+              rxP * 0.8
+            );
+            litGrd.addColorStop(0, `rgba(255, 200, 100, ${0.18 * litStr * alphaScale})`);
+            litGrd.addColorStop(0.25, `rgba(255, 160, 60, ${0.10 * litStr * alphaScale})`);
+            litGrd.addColorStop(0.55, `rgba(200, 100, 30, ${0.04 * litStr * alphaScale})`);
+            litGrd.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = litGrd;
+            ctx.fillRect(cxP - rxP, cyP - ryP, rxP * 2, ryP * 2);
+          }
         }
       }
 
