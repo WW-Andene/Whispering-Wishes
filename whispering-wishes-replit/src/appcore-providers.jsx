@@ -938,12 +938,12 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     @keyframes moonGlowPulse {
       0%, 100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.2;
+        transform: translate(-50%, -50%) scale(0.85);
       }
       50% {
-        opacity: 3;
-        transform: translate(-50%, -50%) scale(1.15);
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1.2);
       }
     }
     .luck-badge-inner {
