@@ -2642,30 +2642,30 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = gndLight;
         ctx.fillRect(0, horizonY, W, H - horizonY);
 
-        // --- MOUNTAINS (dark silhouettes at horizon) ---
-        ctx.fillStyle = 'rgba(30,18,22,' + (0.90 * alphaScale) + ')';
+        // --- MOUNTAINS (subtle low silhouettes at horizon) ---
+        ctx.fillStyle = 'rgba(30,18,22,' + (0.85 * alphaScale) + ')';
         ctx.beginPath();
         ctx.moveTo(0, horizonY);
-        // Left mountain range
-        ctx.lineTo(W * 0.05, horizonY - H * 0.03);
-        ctx.lineTo(W * 0.10, horizonY - H * 0.055);
-        ctx.lineTo(W * 0.16, horizonY - H * 0.04);
-        ctx.lineTo(W * 0.22, horizonY - H * 0.065);
-        ctx.lineTo(W * 0.28, horizonY - H * 0.048);
-        ctx.lineTo(W * 0.34, horizonY - H * 0.035);
+        // Left mountain range (subtle)
+        ctx.lineTo(W * 0.05, horizonY - H * 0.015);
+        ctx.lineTo(W * 0.10, horizonY - H * 0.028);
+        ctx.lineTo(W * 0.16, horizonY - H * 0.020);
+        ctx.lineTo(W * 0.22, horizonY - H * 0.035);
+        ctx.lineTo(W * 0.28, horizonY - H * 0.025);
+        ctx.lineTo(W * 0.34, horizonY - H * 0.018);
         // Center dip (where sun sits)
-        ctx.lineTo(W * 0.40, horizonY - H * 0.025);
-        ctx.lineTo(W * 0.45, horizonY - H * 0.018);
-        ctx.lineTo(W * 0.50, horizonY - H * 0.012);
-        ctx.lineTo(W * 0.55, horizonY - H * 0.015);
-        ctx.lineTo(W * 0.60, horizonY - H * 0.022);
-        // Right mountain range
-        ctx.lineTo(W * 0.66, horizonY - H * 0.038);
-        ctx.lineTo(W * 0.72, horizonY - H * 0.058);
-        ctx.lineTo(W * 0.78, horizonY - H * 0.042);
-        ctx.lineTo(W * 0.84, horizonY - H * 0.06);
-        ctx.lineTo(W * 0.90, horizonY - H * 0.045);
-        ctx.lineTo(W * 0.95, horizonY - H * 0.03);
+        ctx.lineTo(W * 0.40, horizonY - H * 0.012);
+        ctx.lineTo(W * 0.45, horizonY - H * 0.008);
+        ctx.lineTo(W * 0.50, horizonY - H * 0.005);
+        ctx.lineTo(W * 0.55, horizonY - H * 0.008);
+        ctx.lineTo(W * 0.60, horizonY - H * 0.012);
+        // Right mountain range (subtle)
+        ctx.lineTo(W * 0.66, horizonY - H * 0.020);
+        ctx.lineTo(W * 0.72, horizonY - H * 0.032);
+        ctx.lineTo(W * 0.78, horizonY - H * 0.022);
+        ctx.lineTo(W * 0.84, horizonY - H * 0.030);
+        ctx.lineTo(W * 0.90, horizonY - H * 0.022);
+        ctx.lineTo(W * 0.95, horizonY - H * 0.015);
         ctx.lineTo(W, horizonY);
         ctx.closePath();
         ctx.fill();
@@ -2690,9 +2690,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripH   = sH * 0.20;
           const pommelH = sH * 0.05;
 
-          const guardW  = bW * 2.8;  // guard wider than blade
-          const gripW   = bW * 0.45; // grip thinner than blade
-          const pommelW = bW * 0.7;
+          const guardW  = bW * 2.0;  // guard wider than blade but not chunky
+          const gripW   = bW * 0.35; // grip thinner than blade
+          const pommelW = bW * 0.5;
 
           // Base silhouette color (dark)
           const baseR = 20, baseG = 14, baseB = 16;
@@ -2748,32 +2748,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // === CROSSGUARD at y = -bladeH ===
           const gy = -bladeH;
+          const ght = Math.max(1.5, guardH);
           ctx.beginPath();
           if (detail >= 2) {
-            // Ornate guard: curved quillons with ball ends
-            ctx.moveTo(-guardW, gy - guardH * 0.3);
-            ctx.quadraticCurveTo(-guardW * 0.7, gy - guardH * 1.5, -bW * 0.3, gy - guardH * 0.5);
-            ctx.lineTo(-bW * 0.3, gy + guardH * 0.5);
-            ctx.quadraticCurveTo(-guardW * 0.7, gy + guardH * 1.2, -guardW, gy + guardH * 0.3);
+            // Ornate guard: slightly curved thin bar with small tips
+            ctx.moveTo(-guardW, gy - ght * 0.4);
+            ctx.quadraticCurveTo(0, gy - ght * 1.2, guardW, gy - ght * 0.4);
+            ctx.lineTo(guardW, gy + ght * 0.4);
+            ctx.quadraticCurveTo(0, gy + ght * 0.8, -guardW, gy + ght * 0.4);
             ctx.closePath();
             ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
             ctx.fill();
-            // Right quillon
+            // Small knobs at quillon ends
             ctx.beginPath();
-            ctx.moveTo(guardW, gy - guardH * 0.3);
-            ctx.quadraticCurveTo(guardW * 0.7, gy - guardH * 1.5, bW * 0.3, gy - guardH * 0.5);
-            ctx.lineTo(bW * 0.3, gy + guardH * 0.5);
-            ctx.quadraticCurveTo(guardW * 0.7, gy + guardH * 1.2, guardW, gy + guardH * 0.3);
-            ctx.closePath();
-            ctx.fill();
-            // Quillon balls
-            ctx.beginPath();
-            ctx.arc(-guardW, gy, guardH * 0.8, 0, Math.PI * 2);
-            ctx.arc(guardW, gy, guardH * 0.8, 0, Math.PI * 2);
+            ctx.arc(-guardW, gy, ght * 0.6, 0, Math.PI * 2);
+            ctx.arc(guardW, gy, ght * 0.6, 0, Math.PI * 2);
             ctx.fill();
           } else {
-            // Simple guard: horizontal bar
-            const ght = Math.max(1.5, guardH);
+            // Simple guard: thin horizontal bar
             ctx.rect(-guardW, gy - ght * 0.5, guardW * 2, ght);
             ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
             ctx.fill();
@@ -2858,84 +2850,130 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const swords = [
           // ---- FAR LEFT FOREGROUND (massive, partially cropped) ----
-          // S1: leftmost hero sword, partially off-screen left
-          [-0.03, 0.68, 0.72, 2,   0.028, 2],
-          // S2: second from left, tall ornate
-          [0.07,  0.63, 0.60, -3,  0.022, 2],
-          // S3: third, ornate with pointed pommel
-          [0.13,  0.60, 0.58, 4,   0.020, 2],
+          [-0.04, 0.70, 0.75, 2,   0.026, 2],
+          [-0.01, 0.68, 0.68, -5,  0.024, 2],
+          [0.06,  0.65, 0.62, -3,  0.020, 2],
+          [0.12,  0.62, 0.58, 5,   0.018, 2],
+          [0.03,  0.67, 0.55, 8,   0.017, 2],
 
           // ---- LEFT FOREGROUND ----
-          [0.05,  0.66, 0.48, -7,  0.016, 1],
-          [0.10,  0.64, 0.42, 5,   0.015, 1],
-          [0.16,  0.61, 0.45, -4,  0.014, 1],
-          [0.19,  0.62, 0.38, 8,   0.013, 1],
+          [0.09,  0.64, 0.50, -8,  0.015, 1],
+          [0.15,  0.62, 0.48, 4,   0.014, 1],
+          [0.18,  0.63, 0.44, -6,  0.013, 1],
+          [0.04,  0.66, 0.42, 12,  0.014, 1],
+          [0.11,  0.64, 0.40, -10, 0.012, 1],
+          [0.20,  0.62, 0.46, 3,   0.013, 1],
+          [0.07,  0.65, 0.38, -15, 0.012, 1],
 
           // ---- LEFT MIDGROUND ----
-          [0.22,  0.59, 0.35, 6,   0.011, 1],
-          [0.25,  0.58, 0.32, -5,  0.010, 1],
-          [0.20,  0.61, 0.28, 18,  0.009, 1],  // steep lean
-          [0.28,  0.58, 0.30, -3,  0.010, 1],
-          [0.24,  0.59, 0.26, -12, 0.008, 1],
-          [0.17,  0.60, 0.33, 10,  0.011, 1],
+          [0.22,  0.60, 0.36, 7,   0.010, 1],
+          [0.25,  0.59, 0.33, -5,  0.009, 1],
+          [0.19,  0.61, 0.30, 20,  0.008, 1],
+          [0.28,  0.59, 0.32, -4,  0.009, 1],
+          [0.24,  0.60, 0.28, -14, 0.008, 1],
+          [0.16,  0.61, 0.34, 11,  0.010, 1],
+          [0.26,  0.59, 0.27, 8,   0.008, 1],
+          [0.21,  0.60, 0.31, -9,  0.009, 1],
+          [0.23,  0.60, 0.25, 16,  0.007, 1],
+          [0.27,  0.59, 0.29, -7,  0.008, 1],
 
-          // ---- LEFT BACKGROUND (smaller, thinner) ----
-          [0.30,  0.57, 0.22, 3,   0.006, 0],
-          [0.32,  0.57, 0.20, -4,  0.005, 0],
-          [0.34,  0.56, 0.18, 2,   0.005, 0],
-          [0.36,  0.56, 0.16, -6,  0.004, 0],
-          [0.38,  0.56, 0.15, 4,   0.004, 0],
-          [0.31,  0.57, 0.17, -8,  0.005, 0],
-          [0.35,  0.56, 0.14, 5,   0.004, 0],
-          [0.33,  0.57, 0.19, -2,  0.005, 0],
+          // ---- LEFT BACKGROUND (dense field) ----
+          [0.29,  0.58, 0.24, 3,   0.006, 0],
+          [0.30,  0.58, 0.22, -5,  0.006, 0],
+          [0.31,  0.57, 0.20, 6,   0.005, 0],
+          [0.32,  0.57, 0.19, -3,  0.005, 0],
+          [0.33,  0.57, 0.21, 4,   0.005, 0],
+          [0.34,  0.57, 0.18, -7,  0.005, 0],
+          [0.35,  0.56, 0.17, 2,   0.004, 0],
+          [0.36,  0.56, 0.16, -4,  0.004, 0],
+          [0.37,  0.56, 0.15, 5,   0.004, 0],
+          [0.30,  0.58, 0.18, -10, 0.005, 0],
+          [0.32,  0.57, 0.16, 8,   0.004, 0],
+          [0.34,  0.57, 0.14, -6,  0.004, 0],
+          [0.29,  0.58, 0.20, 12,  0.005, 0],
+          [0.36,  0.56, 0.13, -3,  0.004, 0],
+          [0.31,  0.57, 0.23, 5,   0.006, 0],
+          [0.35,  0.56, 0.19, -8,  0.005, 0],
 
           // ---- CENTER-LEFT DISTANT ----
-          [0.40,  0.56, 0.12, 2,   0.003, 0],
-          [0.42,  0.56, 0.10, -3,  0.003, 0],
-          [0.44,  0.55, 0.09, 5,   0.003, 0],
-          [0.41,  0.56, 0.11, -5,  0.003, 0],
-          [0.43,  0.56, 0.08, 3,   0.002, 0],
+          [0.38,  0.56, 0.14, 3,   0.003, 0],
+          [0.39,  0.56, 0.12, -4,  0.003, 0],
+          [0.40,  0.56, 0.11, 5,   0.003, 0],
+          [0.41,  0.56, 0.10, -3,  0.003, 0],
+          [0.42,  0.55, 0.09, 2,   0.003, 0],
+          [0.43,  0.55, 0.10, -5,  0.003, 0],
+          [0.44,  0.55, 0.08, 4,   0.002, 0],
+          [0.39,  0.56, 0.13, -6,  0.003, 0],
+          [0.41,  0.56, 0.11, 7,   0.003, 0],
+          [0.43,  0.55, 0.09, -2,  0.002, 0],
 
-          // ---- CENTER (sparse - the "corridor" opening) ----
-          [0.47,  0.55, 0.07, -2,  0.002, 0],
-          [0.50,  0.55, 0.06, 3,   0.002, 0],
-          [0.53,  0.55, 0.07, -4,  0.002, 0],
+          // ---- CENTER (corridor - sparser but not empty) ----
+          [0.46,  0.55, 0.07, -2,  0.002, 0],
+          [0.48,  0.55, 0.06, 3,   0.002, 0],
+          [0.50,  0.55, 0.05, -1,  0.002, 0],
+          [0.52,  0.55, 0.06, 2,   0.002, 0],
+          [0.54,  0.55, 0.07, -3,  0.002, 0],
+          [0.47,  0.55, 0.08, 4,   0.002, 0],
+          [0.51,  0.55, 0.07, -2,  0.002, 0],
+          [0.53,  0.55, 0.06, 3,   0.002, 0],
 
           // ---- CENTER-RIGHT DISTANT ----
-          [0.56,  0.55, 0.09, 3,   0.003, 0],
+          [0.56,  0.55, 0.08, -3,  0.002, 0],
+          [0.57,  0.55, 0.09, 4,   0.003, 0],
           [0.58,  0.56, 0.10, -2,  0.003, 0],
-          [0.57,  0.56, 0.11, -5,  0.003, 0],
-          [0.60,  0.56, 0.12, 4,   0.003, 0],
-          [0.59,  0.56, 0.08, -3,  0.002, 0],
+          [0.59,  0.56, 0.11, 5,   0.003, 0],
+          [0.60,  0.56, 0.12, -4,  0.003, 0],
+          [0.61,  0.56, 0.10, 3,   0.003, 0],
+          [0.57,  0.56, 0.11, -6,  0.003, 0],
+          [0.59,  0.56, 0.09, 2,   0.002, 0],
+          [0.61,  0.56, 0.13, -3,  0.003, 0],
+          [0.58,  0.56, 0.08, 5,   0.002, 0],
 
-          // ---- RIGHT BACKGROUND ----
-          [0.62,  0.56, 0.14, -3,  0.004, 0],
-          [0.64,  0.56, 0.16, 5,   0.004, 0],
-          [0.66,  0.57, 0.18, -4,  0.005, 0],
-          [0.68,  0.57, 0.20, 2,   0.005, 0],
-          [0.70,  0.57, 0.22, -6,  0.006, 0],
-          [0.65,  0.56, 0.15, 7,   0.004, 0],
-          [0.67,  0.57, 0.17, -2,  0.005, 0],
-          [0.69,  0.57, 0.19, 4,   0.005, 0],
+          // ---- RIGHT BACKGROUND (dense field) ----
+          [0.62,  0.56, 0.13, -2,  0.004, 0],
+          [0.63,  0.56, 0.15, 4,   0.004, 0],
+          [0.64,  0.56, 0.14, -5,  0.004, 0],
+          [0.65,  0.57, 0.16, 3,   0.004, 0],
+          [0.66,  0.57, 0.17, -6,  0.005, 0],
+          [0.67,  0.57, 0.18, 2,   0.005, 0],
+          [0.68,  0.57, 0.19, -4,  0.005, 0],
+          [0.69,  0.57, 0.20, 5,   0.005, 0],
+          [0.70,  0.57, 0.22, -3,  0.006, 0],
+          [0.71,  0.58, 0.21, 6,   0.006, 0],
+          [0.63,  0.57, 0.16, -8,  0.004, 0],
+          [0.65,  0.57, 0.14, 7,   0.004, 0],
+          [0.67,  0.57, 0.20, -5,  0.005, 0],
+          [0.69,  0.57, 0.17, 10,  0.005, 0],
+          [0.71,  0.58, 0.23, -4,  0.006, 0],
+          [0.64,  0.57, 0.19, 3,   0.005, 0],
 
           // ---- RIGHT MIDGROUND ----
-          [0.72,  0.58, 0.28, -5,  0.009, 1],
-          [0.75,  0.58, 0.32, 4,   0.010, 1],
-          [0.78,  0.59, 0.30, -3,  0.010, 1],
-          [0.80,  0.60, 0.26, 15,  0.008, 1],  // steep lean
-          [0.76,  0.59, 0.25, -10, 0.008, 1],
-          [0.82,  0.60, 0.33, -6,  0.011, 1],
+          [0.72,  0.58, 0.27, -6,  0.008, 1],
+          [0.74,  0.59, 0.30, 5,   0.009, 1],
+          [0.76,  0.59, 0.28, -4,  0.008, 1],
+          [0.78,  0.59, 0.32, 3,   0.009, 1],
+          [0.80,  0.60, 0.26, 16,  0.007, 1],
+          [0.75,  0.59, 0.25, -12, 0.008, 1],
+          [0.82,  0.60, 0.34, -7,  0.010, 1],
+          [0.73,  0.59, 0.29, 9,   0.008, 1],
+          [0.77,  0.59, 0.31, -8,  0.009, 1],
+          [0.79,  0.60, 0.27, 13,  0.008, 1],
 
           // ---- RIGHT FOREGROUND ----
-          [0.81,  0.62, 0.38, -5,  0.013, 1],
-          [0.84,  0.61, 0.42, 3,   0.014, 1],
-          [0.87,  0.63, 0.45, -4,  0.015, 1],
-          [0.90,  0.62, 0.48, 7,   0.016, 1],
+          [0.80,  0.62, 0.38, -5,  0.012, 1],
+          [0.83,  0.62, 0.42, 4,   0.013, 1],
+          [0.86,  0.63, 0.44, -7,  0.014, 1],
+          [0.89,  0.63, 0.46, 6,   0.014, 1],
+          [0.84,  0.62, 0.40, -10, 0.013, 1],
+          [0.91,  0.64, 0.48, 3,   0.015, 1],
+          [0.81,  0.63, 0.36, 12,  0.011, 1],
 
           // ---- FAR RIGHT FOREGROUND (massive, partially cropped) ----
-          [0.88,  0.61, 0.58, -4,  0.020, 2],
-          [0.93,  0.63, 0.62, 3,   0.022, 2],
-          [1.03,  0.68, 0.72, -2,  0.028, 2],  // partially off-screen right
+          [0.88,  0.63, 0.55, -4,  0.017, 2],
+          [0.93,  0.65, 0.62, 5,   0.020, 2],
+          [0.97,  0.67, 0.68, -3,  0.024, 2],
+          [1.01,  0.68, 0.72, 3,   0.026, 2],
+          [1.04,  0.70, 0.75, -2,  0.026, 2],
         ];
 
         // --- RENDER ALL SWORDS (back to front: distant first, close last) ---
