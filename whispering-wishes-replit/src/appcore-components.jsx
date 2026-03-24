@@ -2581,7 +2581,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillRect(0, 0, W, hY + 1);
 
         // === SUN DISC with bright core ===
-        const sunX = W * 0.5, sunY = hY * 0.88;
+        const sunX = W * 0.5, sunY = H * 0.3;
         const sunR = H * 0.08;
         // Outer glow halo
         const sunHalo = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
@@ -2626,56 +2626,73 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // === DARK CLOUDS (80% opacity) with orange volumetric inner glow ===
-        const darkClouds = [
-          // { cx, cy (normalized 0-1 in sky), w, h, opacity, orangeGlow }
-          { cx: 0.12, cy: 0.08, w: 0.30, h: 0.09, op: 0.8, glow: 0.25 },
-          { cx: 0.82, cy: 0.06, w: 0.28, h: 0.08, op: 0.75, glow: 0.20 },
-          { cx: 0.45, cy: 0.15, w: 0.35, h: 0.10, op: 0.78, glow: 0.30 },
-          { cx: 0.05, cy: 0.22, w: 0.25, h: 0.07, op: 0.72, glow: 0.22 },
-          { cx: 0.70, cy: 0.20, w: 0.32, h: 0.09, op: 0.80, glow: 0.28 },
-          { cx: 0.30, cy: 0.30, w: 0.28, h: 0.08, op: 0.76, glow: 0.32 },
-          { cx: 0.90, cy: 0.28, w: 0.22, h: 0.07, op: 0.70, glow: 0.20 },
-          { cx: 0.55, cy: 0.38, w: 0.30, h: 0.09, op: 0.74, glow: 0.35 },
-          { cx: 0.15, cy: 0.42, w: 0.26, h: 0.08, op: 0.68, glow: 0.30 },
-          { cx: 0.78, cy: 0.45, w: 0.24, h: 0.07, op: 0.65, glow: 0.28 },
-          { cx: 0.40, cy: 0.52, w: 0.32, h: 0.10, op: 0.60, glow: 0.40 },
-          { cx: 0.60, cy: 0.58, w: 0.28, h: 0.08, op: 0.55, glow: 0.42 },
-          { cx: 0.20, cy: 0.62, w: 0.30, h: 0.09, op: 0.50, glow: 0.45 },
-          { cx: 0.85, cy: 0.60, w: 0.22, h: 0.07, op: 0.52, glow: 0.38 },
-          { cx: 0.50, cy: 0.70, w: 0.35, h: 0.10, op: 0.45, glow: 0.50 },
-          { cx: 0.10, cy: 0.75, w: 0.28, h: 0.08, op: 0.40, glow: 0.48 },
-          { cx: 0.72, cy: 0.72, w: 0.26, h: 0.08, op: 0.42, glow: 0.45 },
-        ];
-        for (const dc of darkClouds) {
-          const cx = dc.cx * W, cy = dc.cy * hY;
-          const cw = dc.w * W, ch = dc.h * hY;
-          // Build cloud from overlapping puffs
-          const puffCount = 5 + Math.floor(rng(darkClouds.indexOf(dc), 210) * 4);
-          for (let pi = 0; pi < puffCount; pi++) {
-            const px = cx + (rng(pi + darkClouds.indexOf(dc) * 10, 211) - 0.5) * cw * 0.8;
-            const py = cy + (rng(pi + darkClouds.indexOf(dc) * 10, 212) - 0.5) * ch * 0.6;
-            const pr = cw * (0.15 + rng(pi + darkClouds.indexOf(dc) * 10, 213) * 0.15);
+        // === DARK STORM CLOUDS — reference style: massive, dark, swirling ===
+        // Clouds frame the sun opening — thick dark banks with orange fire underglow
+        // Like the reference: dark ominous masses covering most of sky, lit from below
+        {
+          // Large cloud banks — arranged to frame sun opening in center
+          const stormClouds = [
+            // Top edge — very dark, massive
+            { cx: 0.15, cy: 0.04, w: 0.50, h: 0.12, op: 0.88, glow: 0.15 },
+            { cx: 0.75, cy: 0.03, w: 0.55, h: 0.13, op: 0.90, glow: 0.12 },
+            { cx: 0.50, cy: 0.02, w: 0.60, h: 0.10, op: 0.92, glow: 0.08 },
+            // Upper banks — thick dark masses
+            { cx: 0.08, cy: 0.12, w: 0.45, h: 0.14, op: 0.85, glow: 0.18 },
+            { cx: 0.88, cy: 0.10, w: 0.40, h: 0.13, op: 0.86, glow: 0.16 },
+            { cx: 0.35, cy: 0.08, w: 0.38, h: 0.11, op: 0.82, glow: 0.14 },
+            { cx: 0.65, cy: 0.09, w: 0.42, h: 0.12, op: 0.84, glow: 0.15 },
+            // Mid sky — swirling masses framing the sun gap
+            { cx: 0.05, cy: 0.22, w: 0.38, h: 0.16, op: 0.80, glow: 0.25 },
+            { cx: 0.92, cy: 0.20, w: 0.35, h: 0.15, op: 0.78, glow: 0.22 },
+            { cx: 0.22, cy: 0.18, w: 0.30, h: 0.12, op: 0.75, glow: 0.28 },
+            { cx: 0.78, cy: 0.17, w: 0.32, h: 0.13, op: 0.76, glow: 0.26 },
+            // Around sun — thinner, more orange glow, framing the opening
+            { cx: 0.15, cy: 0.32, w: 0.28, h: 0.14, op: 0.65, glow: 0.40 },
+            { cx: 0.85, cy: 0.30, w: 0.30, h: 0.13, op: 0.68, glow: 0.38 },
+            { cx: 0.30, cy: 0.28, w: 0.22, h: 0.10, op: 0.55, glow: 0.45 },
+            { cx: 0.70, cy: 0.27, w: 0.24, h: 0.11, op: 0.58, glow: 0.42 },
+            // Lower wisps near horizon — orange-lit from below
+            { cx: 0.10, cy: 0.50, w: 0.35, h: 0.10, op: 0.45, glow: 0.55 },
+            { cx: 0.90, cy: 0.48, w: 0.30, h: 0.09, op: 0.42, glow: 0.52 },
+            { cx: 0.40, cy: 0.55, w: 0.25, h: 0.08, op: 0.35, glow: 0.58 },
+            { cx: 0.60, cy: 0.52, w: 0.28, h: 0.09, op: 0.38, glow: 0.55 },
+            { cx: 0.20, cy: 0.65, w: 0.30, h: 0.08, op: 0.30, glow: 0.60 },
+            { cx: 0.80, cy: 0.62, w: 0.25, h: 0.07, op: 0.28, glow: 0.58 },
+          ];
+          for (let dci = 0; dci < stormClouds.length; dci++) {
+            const dc = stormClouds[dci];
+            const cx = dc.cx * W, cy = dc.cy * hY;
+            const cw = dc.w * W, ch = dc.h * hY;
+            // Many overlapping puffs for thick, volumetric look
+            const puffCount = 7 + Math.floor(rng(dci, 210) * 5);
+            for (let pi = 0; pi < puffCount; pi++) {
+              const px = cx + (rng(pi + dci * 13, 211) - 0.5) * cw * 0.9;
+              const py = cy + (rng(pi + dci * 13, 212) - 0.5) * ch * 0.7;
+              const pr = cw * (0.12 + rng(pi + dci * 13, 213) * 0.18);
 
-            // Dark cloud body
-            const dg = ctx.createRadialGradient(px, py, 0, px, py, pr);
-            dg.addColorStop(0, 'rgba(18,12,22,' + dc.op.toFixed(3) + ')');
-            dg.addColorStop(0.5, 'rgba(25,16,28,' + (dc.op * 0.6).toFixed(3) + ')');
-            dg.addColorStop(1, 'rgba(30,18,32,0)');
-            ctx.fillStyle = dg;
-            ctx.save(); ctx.translate(px, py); ctx.scale(1, ch / cw * 1.8);
-            ctx.beginPath(); ctx.arc(0, 0, pr, 0, Math.PI * 2); ctx.fill();
-            ctx.restore();
+              // Dark cloud body — very dark grey-black
+              const dg = ctx.createRadialGradient(px, py, 0, px, py, pr);
+              dg.addColorStop(0, 'rgba(12,10,16,' + dc.op.toFixed(3) + ')');
+              dg.addColorStop(0.35, 'rgba(18,14,22,' + (dc.op * 0.7).toFixed(3) + ')');
+              dg.addColorStop(0.7, 'rgba(22,18,26,' + (dc.op * 0.3).toFixed(3) + ')');
+              dg.addColorStop(1, 'rgba(25,20,30,0)');
+              ctx.fillStyle = dg;
+              ctx.save(); ctx.translate(px, py); ctx.scale(1, ch / cw * 2.2);
+              ctx.beginPath(); ctx.arc(0, 0, pr, 0, Math.PI * 2); ctx.fill();
+              ctx.restore();
 
-            // Orange volumetric shadow inside (lit from below by sun)
-            const og = ctx.createRadialGradient(px, py + pr * 0.3, 0, px, py + pr * 0.3, pr * 0.8);
-            og.addColorStop(0, 'rgba(255,140,40,' + (dc.glow * 0.35).toFixed(3) + ')');
-            og.addColorStop(0.4, 'rgba(255,100,30,' + (dc.glow * 0.15).toFixed(3) + ')');
-            og.addColorStop(1, 'rgba(200,60,20,0)');
-            ctx.fillStyle = og;
-            ctx.save(); ctx.translate(px, py + pr * 0.3); ctx.scale(1, ch / cw * 1.5);
-            ctx.beginPath(); ctx.arc(0, 0, pr * 0.8, 0, Math.PI * 2); ctx.fill();
-            ctx.restore();
+              // Orange/fire volumetric underglow — lit from sun below
+              const glowY = py + pr * 0.4;
+              const og = ctx.createRadialGradient(px, glowY, 0, px, glowY, pr * 0.7);
+              og.addColorStop(0, 'rgba(255,120,30,' + (dc.glow * 0.4).toFixed(3) + ')');
+              og.addColorStop(0.3, 'rgba(255,80,20,' + (dc.glow * 0.2).toFixed(3) + ')');
+              og.addColorStop(0.6, 'rgba(200,50,10,' + (dc.glow * 0.08).toFixed(3) + ')');
+              og.addColorStop(1, 'rgba(150,30,5,0)');
+              ctx.fillStyle = og;
+              ctx.save(); ctx.translate(px, glowY); ctx.scale(1, ch / cw * 1.8);
+              ctx.beginPath(); ctx.arc(0, 0, pr * 0.7, 0, Math.PI * 2); ctx.fill();
+              ctx.restore();
+            }
           }
         }
 
@@ -4041,6 +4058,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             { wx: -1.8, wz: 0.90, tiltO: -5 }, { wx: 1.5, wz: 0.88, tiltO: 11 },
             { wx: -2.8, wz: 0.95, tiltO: 6 }, { wx: 3.0, wz: 0.92, tiltO: -8 },
             { wx: -5.0, wz: 1.0, tiltO: -3 }, { wx: 5.2, wz: 1.05, tiltO: 9 },
+            // Extra close right sword
+            { wx: 1.8, wz: 0.27, tiltO: -6 },
+            // Extra middle-left cluster
+            { wx: -2.0, wz: 0.65, tiltO: -8 }, { wx: -2.6, wz: 0.72, tiltO: 10 },
+            { wx: -3.2, wz: 0.68, tiltO: -4 }, { wx: -1.7, wz: 0.78, tiltO: 13 },
+            { wx: -3.8, wz: 0.82, tiltO: -11 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
@@ -4231,6 +4254,36 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         ctx.restore();
+      }
+
+      // === BARREL LENS DISTORTION — post-process warp ===
+      // Read the current canvas, then redraw with radial distortion
+      {
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const src = imgData.data;
+        const outData = ctx.createImageData(w, h);
+        const dst = outData.data;
+        const cx = w * 0.5, cy = h * 0.5;
+        const maxR = Math.sqrt(cx * cx + cy * cy);
+        const k = -0.15; // barrel distortion (negative = barrel, like wide-angle lens)
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            // Normalize coords to [-1, 1]
+            const nx = (x - cx) / maxR;
+            const ny = (y - cy) / maxR;
+            const r2 = nx * nx + ny * ny;
+            const distort = 1 + k * r2;
+            // Source pixel (undistorted position)
+            const sx = cx + nx * distort * maxR;
+            const sy = cy + ny * distort * maxR;
+            const si = (Math.round(sy) * w + Math.round(sx)) * 4;
+            const di = (y * w + x) * 4;
+            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+              dst[di] = src[si]; dst[di+1] = src[si+1]; dst[di+2] = src[si+2]; dst[di+3] = src[si+3];
+            }
+          }
+        }
+        ctx.putImageData(outData, 0, 0);
       }
 
       // --- Vignette darkening at edges ---
