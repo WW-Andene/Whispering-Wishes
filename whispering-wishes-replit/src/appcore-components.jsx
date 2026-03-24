@@ -2878,11 +2878,35 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Tip width: pointed (narrow) vs slightly broad
           const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
 
-          // === DRAW BLADE ===
-          // Z-rotation makes one edge face the light more — gradient across width
-          const zSin = Math.sin(zRot); // -1..1, indicates rotation direction
-          const edgeBright = 1 + zSin * 0.35; // brighter edge
-          const edgeDark = 1 - zSin * 0.35;   // darker edge
+          // === DRAW BLADE WITH 3D ROTATION ===
+          // When a sword rotates around its vertical axis:
+          // - Front face narrows by cos(zRot)  (effBW already does this)
+          // - Side edge/thickness appears on one side: thickness * |sin(zRot)|
+          const zSin = Math.sin(zRot);
+          const absZSin = Math.abs(zSin);
+          const bladeThickness = sbw * wt.bwM * 0.18; // blade is ~18% as thick as it is wide
+          const sideW = bladeThickness * absZSin; // visible side strip width
+          const sideSgn = zSin > 0 ? 1 : -1; // which side the edge appears on
+
+          // Side edge color — darker than front face (it's the flat edge)
+          const sideR = Math.round(blR * 0.35);
+          const sideG = Math.round(blG * 0.35);
+          const sideB = Math.round(blB * 0.35);
+
+          // Draw side edge first (behind the front face)
+          if (sideW > 0.3) {
+            const edgeX = sideSgn * effBW; // outer edge of front face
+            ctx.beginPath();
+            ctx.moveTo(edgeX + bSkew * 0.6, 0);
+            ctx.lineTo(edgeX + sideSgn * sideW + bSkew * 0.6, 0);
+            ctx.lineTo(edgeX + sideSgn * sideW + bSkew * 0.3, -bladeH);
+            ctx.lineTo(edgeX + bSkew * 0.3, -bladeH);
+            ctx.closePath();
+            ctx.fillStyle = 'rgb(' + sideR + ',' + sideG + ',' + sideB + ')';
+            ctx.fill();
+          }
+
+          // Front face (narrowed by cos(zRot))
           ctx.beginPath();
           ctx.moveTo(bSkew, 0);
           ctx.lineTo(-tipW + bSkew * 0.6, -1);
@@ -2890,31 +2914,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
           ctx.lineTo(tipW + bSkew * 0.6, -1);
           ctx.closePath();
-          if (Math.abs(zRot) > 0.08 && effBW > 1) {
-            // Gradient across blade shows rotation
-            const blGrad = ctx.createLinearGradient(-effBW, -bladeH * 0.5, effBW, -bladeH * 0.5);
-            blGrad.addColorStop(0, 'rgb(' + Math.round(blR * edgeDark) + ',' + Math.round(blG * edgeDark) + ',' + Math.round(blB * edgeDark) + ')');
-            blGrad.addColorStop(1, 'rgb(' + Math.min(255, Math.round(blR * edgeBright)) + ',' + Math.min(255, Math.round(blG * edgeBright)) + ',' + Math.min(255, Math.round(blB * edgeBright)) + ')');
-            ctx.fillStyle = blGrad;
-          } else {
-            ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
-          }
+          ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
           ctx.fill();
-
-          // Edge catch — bright line on the edge catching light when blade is rotated
-          if (Math.abs(zRot) > 0.15 && effBW > 1 && bladeH > 4) {
-            const catchSide = zSin > 0 ? effBW : -effBW;
-            const catchAlpha = Math.min(0.6, Math.abs(zSin) * 0.8) * dkMul;
-            ctx.beginPath();
-            ctx.moveTo(catchSide * 0.8 + bSkew * 0.6, -1);
-            ctx.lineTo(catchSide * 0.85 + bSkew * 0.3, -bladeH);
-            ctx.strokeStyle = 'rgba(255,230,180,' + catchAlpha.toFixed(3) + ')';
-            ctx.lineWidth = Math.max(0.5, effBW * 0.12);
-            ctx.stroke();
-          }
 
           // === DRAW GUARD (if present) ===
           if (wt.gwM > 0.1) {
+            // Guard also has thickness visible when rotated
+            const guardSideW = gThk * 1.2 * absZSin; // guard is thicker than blade
+            if (guardSideW > 0.3) {
+              const gEdgeX = sideSgn * gHW;
+              ctx.beginPath();
+              ctx.rect(gEdgeX, -bladeH - gThk, sideSgn * guardSideW, gThk);
+              ctx.fillStyle = 'rgb(' + sideR + ',' + sideG + ',' + sideB + ')';
+              ctx.fill();
+            }
             ctx.beginPath();
             ctx.rect(-gHW, -bladeH, gHW * 2, -gThk);
             ctx.fillStyle = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
@@ -2922,6 +2935,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // === DRAW GRIP ===
+          // Grip is roughly cylindrical — width doesn't change much, but show side
+          const gripSideW = gripHW * 0.6 * absZSin;
+          if (gripSideW > 0.2) {
+            const grEdgeX = sideSgn * gripHW;
+            ctx.beginPath();
+            ctx.rect(grEdgeX, -bladeH - gThk - gripH, sideSgn * gripSideW, gripH);
+            ctx.fillStyle = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
+            ctx.fill();
+          }
           ctx.beginPath();
           ctx.rect(-gripHW, -bladeH - gThk, gripHW * 2, -gripH);
           ctx.fillStyle = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
