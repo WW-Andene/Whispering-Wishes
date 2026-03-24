@@ -2652,164 +2652,191 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore();
 
         // === SWORD DRAWING FUNCTION ===
-        // Draws a single sword: blade UP, grip/pommel buried in ground.
+        // Blade DOWN into ground. Hilt UP. From ground going UP:
+        //   ground → blade (partially visible) → crossguard → grip → pommel (top)
         // (x, y) = ground insertion point. visH = total visible height above ground.
-        // Composition: ground → pommel(buried) → grip(partially visible) → crossguard → blade → tip(top)
         const drawSword = (x, y, visH, tilt, type, depth, seeds) => {
           ctx.save();
           ctx.translate(x, y);
           ctx.rotate(tilt);
 
+          // All Y coordinates go NEGATIVE (upward from ground at y=0)
           const H = visH;
           const s = seeds;
-          // Proportions
           const bW = H * (0.016 + s[0] * 0.010); // blade half-width
-          const guardW = H * (0.055 + s[1] * 0.045); // crossguard half-length
-          const guardThk = Math.max(1.5, H * 0.016);
-          const gripVis = H * (0.06 + s[2] * 0.04); // visible grip above ground
-          const bladeLen = H - gripVis - guardThk * 2; // blade length above guard
+          const guardW = H * (0.055 + s[1] * 0.045);
+          const guardThk = Math.max(1.5, H * 0.018);
+          const gripLen = H * (0.15 + s[2] * 0.06);
+          const pommelR = bW * (1.4 + s[3] * 1.0);
+          // Blade visible above ground = total height minus grip minus guard minus pommel
+          const bladeVis = H - gripLen - guardThk - pommelR * 2;
 
-          // Darkness
           const silA = (0.85 + (1 - depth) * 0.15) * aS;
           const dk = `rgba(10, 6, 3, ${silA})`;
           const rimA = (0.08 + depth * 0.25) * aS;
           const litSide = x < w * 0.5 ? 1 : -1;
 
-          // --- Grip stub (visible just above ground, going down) ---
-          ctx.beginPath();
-          ctx.rect(-bW * 0.45, 0, bW * 0.9, gripVis);
-          ctx.fillStyle = dk;
-          ctx.fill();
-
-          // --- Crossguard at top of grip ---
-          const gY = -guardThk; // guard bottom
-          ctx.beginPath();
-          if (type === 0) {
-            // Longsword: straight cross with slight droop at ends
-            ctx.moveTo(-guardW, gY + guardThk * 0.7);
-            ctx.lineTo(-guardW * 0.8, gY);
-            ctx.lineTo(guardW * 0.8, gY);
-            ctx.lineTo(guardW, gY + guardThk * 0.7);
-            ctx.lineTo(guardW, gY + guardThk * 1.5);
-            ctx.lineTo(-guardW, gY + guardThk * 1.5);
-            ctx.closePath();
-          } else if (type === 1) {
-            // Greatsword: long curved quillons curving upward at tips
-            ctx.moveTo(-guardW * 1.15, gY - guardThk * 0.8);
-            ctx.quadraticCurveTo(-guardW * 0.6, gY + guardThk * 0.5, 0, gY + guardThk * 0.3);
-            ctx.quadraticCurveTo(guardW * 0.6, gY + guardThk * 0.5, guardW * 1.15, gY - guardThk * 0.8);
-            ctx.lineTo(guardW * 1.15, gY + guardThk * 0.3);
-            ctx.quadraticCurveTo(guardW * 0.5, gY + guardThk * 1.5, 0, gY + guardThk * 1.0);
-            ctx.quadraticCurveTo(-guardW * 0.5, gY + guardThk * 1.5, -guardW * 1.15, gY + guardThk * 0.3);
-            ctx.closePath();
-          } else if (type === 2) {
-            // Katana: oval tsuba
-            ctx.ellipse(0, gY + guardThk * 0.5, guardW * 0.45, guardW * 0.35, 0, 0, Math.PI * 2);
-          } else if (type === 3) {
-            // Broadsword: thick bar with round ends
-            ctx.moveTo(-guardW, gY);
-            ctx.lineTo(guardW, gY);
-            ctx.lineTo(guardW, gY + guardThk * 1.5);
-            ctx.lineTo(-guardW, gY + guardThk * 1.5);
-            ctx.closePath();
-            ctx.fillStyle = dk;
-            ctx.fill();
-            // Round finials
-            ctx.beginPath();
-            ctx.arc(-guardW, gY + guardThk * 0.75, guardThk * 1.0, 0, Math.PI * 2);
-            ctx.fillStyle = dk;
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(guardW, gY + guardThk * 0.75, guardThk * 1.0, 0, Math.PI * 2);
-          } else {
-            // Bastard/hand-and-half: angular S-guard
-            ctx.moveTo(-guardW * 0.9, gY + guardThk * 1.2);
-            ctx.lineTo(-guardW, gY);
-            ctx.lineTo(-guardW * 0.15, gY + guardThk * 0.3);
-            ctx.lineTo(guardW * 0.15, gY + guardThk * 0.3);
-            ctx.lineTo(guardW, gY);
-            ctx.lineTo(guardW * 0.9, gY + guardThk * 1.2);
-            ctx.closePath();
-          }
-          ctx.fillStyle = dk;
-          ctx.fill();
-
-          // --- Blade (going UP from crossguard to tip) ---
-          const bladeBot = gY; // starts at guard top
-          const bladeTip = gY - bladeLen;
+          // --- BLADE: from ground (y=0) going UP to crossguard ---
+          // Blade tip is buried in the ground; we see the upper portion
+          // Blade is wider near ground, narrows toward crossguard
+          const bladeTop = -bladeVis; // top of visible blade (where guard sits)
           ctx.beginPath();
           if (type === 2) {
             // Katana: curved single-edge
-            const curve = bW * 4;
-            ctx.moveTo(-bW * 0.3, bladeBot);
-            ctx.lineTo(bW * 0.6, bladeBot);
-            ctx.quadraticCurveTo(bW * 0.5 + curve * 0.25, bladeBot + (bladeTip - bladeBot) * 0.5, bW * 0.15, bladeTip + bladeLen * 0.03);
-            ctx.lineTo(0, bladeTip); // tip
-            ctx.quadraticCurveTo(-bW * 0.3 - curve * 0.1, bladeBot + (bladeTip - bladeBot) * 0.5, -bW * 0.3, bladeBot);
+            const c = bW * 3.5;
+            ctx.moveTo(bW * 0.5, 0);
+            ctx.quadraticCurveTo(bW * 0.6 + c * 0.2, -bladeVis * 0.5, bW * 0.25, bladeTop);
+            ctx.lineTo(-bW * 0.2, bladeTop);
+            ctx.quadraticCurveTo(-bW * 0.15 - c * 0.05, -bladeVis * 0.5, -bW * 0.2, 0);
+            ctx.closePath();
           } else if (type === 1) {
-            // Greatsword: wide blade, slight taper
+            // Greatsword: wide
             const bw = bW * 1.5;
-            ctx.moveTo(-bw, bladeBot);
-            ctx.lineTo(-bw * 0.95, bladeBot + (bladeTip - bladeBot) * 0.6);
-            ctx.lineTo(-bw * 0.2, bladeBot + (bladeTip - bladeBot) * 0.93);
-            ctx.lineTo(0, bladeTip);
-            ctx.lineTo(bw * 0.2, bladeBot + (bladeTip - bladeBot) * 0.93);
-            ctx.lineTo(bw * 0.95, bladeBot + (bladeTip - bladeBot) * 0.6);
-            ctx.lineTo(bw, bladeBot);
+            ctx.moveTo(-bw, 0);
+            ctx.lineTo(-bw * 0.9, bladeTop);
+            ctx.lineTo(bw * 0.9, bladeTop);
+            ctx.lineTo(bw, 0);
+            ctx.closePath();
           } else if (type === 3) {
-            // Broadsword: wider, parallel edges, rounded tip
+            // Broadsword: wide parallel edges
             const bw = bW * 1.3;
-            ctx.moveTo(-bw, bladeBot);
-            ctx.lineTo(-bw, bladeBot + (bladeTip - bladeBot) * 0.7);
-            ctx.quadraticCurveTo(-bw, bladeTip, 0, bladeTip);
-            ctx.quadraticCurveTo(bw, bladeTip, bw, bladeBot + (bladeTip - bladeBot) * 0.7);
-            ctx.lineTo(bw, bladeBot);
+            ctx.moveTo(-bw, 0);
+            ctx.lineTo(-bw * 0.95, bladeTop);
+            ctx.lineTo(bw * 0.95, bladeTop);
+            ctx.lineTo(bw, 0);
+            ctx.closePath();
           } else {
-            // Longsword / bastard: straight taper to point
-            const bw = type === 4 ? bW * 1.15 : bW;
-            ctx.moveTo(-bw, bladeBot);
-            ctx.lineTo(-bw * 0.18, bladeBot + (bladeTip - bladeBot) * 0.92);
-            ctx.lineTo(0, bladeTip);
-            ctx.lineTo(bw * 0.18, bladeBot + (bladeTip - bladeBot) * 0.92);
-            ctx.lineTo(bw, bladeBot);
+            // Longsword / bastard: slight taper
+            const bw = type === 4 ? bW * 1.1 : bW;
+            ctx.moveTo(-bw, 0);
+            ctx.lineTo(-bw * 0.8, bladeTop);
+            ctx.lineTo(bw * 0.8, bladeTop);
+            ctx.lineTo(bw, 0);
+            ctx.closePath();
           }
-          ctx.closePath();
           ctx.fillStyle = dk;
           ctx.fill();
 
-          // --- Sunset rim light on blade edge ---
+          // Blade rim light
           ctx.beginPath();
-          ctx.moveTo(litSide * bW * (type === 1 ? 1.5 : type === 3 ? 1.3 : 1.0), bladeBot);
-          ctx.lineTo(0, bladeTip);
+          ctx.moveTo(litSide * bW * (type === 1 ? 1.5 : type === 3 ? 1.3 : 1.0), 0);
+          ctx.lineTo(litSide * bW * 0.8, bladeTop);
           ctx.strokeStyle = `rgba(255, 150, 55, ${rimA})`;
-          ctx.lineWidth = Math.max(0.4, bW * 0.2);
+          ctx.lineWidth = Math.max(0.4, bW * 0.22);
           ctx.stroke();
-
-          // Secondary softer glow line
+          // Softer glow
           ctx.beginPath();
-          ctx.moveTo(litSide * bW * 0.6, bladeBot);
-          ctx.lineTo(0, bladeTip);
-          ctx.strokeStyle = `rgba(200, 100, 40, ${rimA * 0.3})`;
-          ctx.lineWidth = Math.max(0.3, bW * 0.6);
+          ctx.moveTo(litSide * bW * 0.5, 0);
+          ctx.lineTo(litSide * bW * 0.4, bladeTop);
+          ctx.strokeStyle = `rgba(200, 100, 40, ${rimA * 0.25})`;
+          ctx.lineWidth = Math.max(0.3, bW * 0.7);
           ctx.stroke();
 
-          // Guard rim highlight
-          ctx.beginPath();
-          ctx.moveTo(litSide * guardW * (type === 1 ? 1.15 : 1.0), gY + guardThk * 0.5);
-          ctx.lineTo(0, gY + guardThk * 0.5);
-          ctx.strokeStyle = `rgba(255, 160, 60, ${rimA * 0.7})`;
-          ctx.lineWidth = Math.max(0.3, guardThk * 0.4);
-          ctx.stroke();
-
-          // Fuller groove on nearer swords
+          // Fuller groove on near swords
           if (depth > 0.3 && type !== 2) {
             ctx.beginPath();
-            ctx.moveTo(0, bladeBot + (bladeTip - bladeBot) * 0.05);
-            ctx.lineTo(0, bladeBot + (bladeTip - bladeBot) * 0.75);
+            ctx.moveTo(0, -bladeVis * 0.05);
+            ctx.lineTo(0, bladeTop + bladeVis * 0.1);
             ctx.strokeStyle = `rgba(30, 18, 8, ${depth * 0.2 * aS})`;
             ctx.lineWidth = Math.max(0.3, bW * 0.3);
             ctx.stroke();
           }
+
+          // --- CROSSGUARD: at top of blade ---
+          const gCY = bladeTop - guardThk * 0.5; // guard center Y
+          ctx.beginPath();
+          if (type === 0) {
+            // Longsword: straight cross, ends droop slightly
+            ctx.moveTo(-guardW, gCY + guardThk * 0.6);
+            ctx.lineTo(-guardW * 0.85, gCY - guardThk * 0.5);
+            ctx.lineTo(guardW * 0.85, gCY - guardThk * 0.5);
+            ctx.lineTo(guardW, gCY + guardThk * 0.6);
+            ctx.lineTo(guardW, gCY + guardThk * 0.5);
+            ctx.lineTo(-guardW, gCY + guardThk * 0.5);
+            ctx.closePath();
+          } else if (type === 1) {
+            // Greatsword: curved quillons sweeping downward
+            ctx.moveTo(-guardW * 1.15, gCY + guardThk);
+            ctx.quadraticCurveTo(-guardW * 0.5, gCY - guardThk * 1.2, 0, gCY - guardThk * 0.3);
+            ctx.quadraticCurveTo(guardW * 0.5, gCY - guardThk * 1.2, guardW * 1.15, gCY + guardThk);
+            ctx.lineTo(guardW * 1.15, gCY + guardThk * 0.3);
+            ctx.quadraticCurveTo(guardW * 0.5, gCY + guardThk * 0.8, 0, gCY + guardThk * 0.5);
+            ctx.quadraticCurveTo(-guardW * 0.5, gCY + guardThk * 0.8, -guardW * 1.15, gCY + guardThk * 0.3);
+            ctx.closePath();
+          } else if (type === 2) {
+            // Katana: oval tsuba
+            ctx.ellipse(0, gCY, guardW * 0.45, guardW * 0.35, 0, 0, Math.PI * 2);
+          } else if (type === 3) {
+            // Broadsword: thick bar with round finials
+            ctx.rect(-guardW, gCY - guardThk * 0.5, guardW * 2, guardThk);
+            ctx.fillStyle = dk;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-guardW, gCY, guardThk * 0.9, 0, Math.PI * 2);
+            ctx.fillStyle = dk;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(guardW, gCY, guardThk * 0.9, 0, Math.PI * 2);
+          } else {
+            // Bastard: angular guard
+            ctx.moveTo(-guardW * 0.9, gCY + guardThk * 0.7);
+            ctx.lineTo(-guardW, gCY - guardThk * 0.3);
+            ctx.lineTo(guardW, gCY - guardThk * 0.3);
+            ctx.lineTo(guardW * 0.9, gCY + guardThk * 0.7);
+            ctx.closePath();
+          }
+          ctx.fillStyle = dk;
+          ctx.fill();
+
+          // Guard rim highlight
+          ctx.beginPath();
+          ctx.moveTo(litSide * guardW * (type === 1 ? 1.15 : 1.0), gCY);
+          ctx.lineTo(0, gCY);
+          ctx.strokeStyle = `rgba(255, 160, 60, ${rimA * 0.6})`;
+          ctx.lineWidth = Math.max(0.3, guardThk * 0.35);
+          ctx.stroke();
+
+          // --- GRIP: above crossguard going up ---
+          const gripBot = gCY - guardThk * 0.5;
+          const gripTop = gripBot - gripLen;
+          const gripW = bW * 0.45;
+          ctx.beginPath();
+          ctx.rect(-gripW, gripTop, gripW * 2, gripLen);
+          ctx.fillStyle = dk;
+          ctx.fill();
+
+          // Leather wrapping on near swords
+          if (depth > 0.35) {
+            const wraps = 3 + Math.floor(s[4] * 4);
+            for (let wi = 0; wi < wraps; wi++) {
+              const wy = gripTop + gripLen * (wi + 0.5) / wraps;
+              ctx.beginPath();
+              ctx.moveTo(-gripW * 1.15, wy);
+              ctx.lineTo(gripW * 1.15, wy);
+              ctx.strokeStyle = `rgba(50, 30, 12, ${depth * 0.15 * aS})`;
+              ctx.lineWidth = Math.max(0.3, gripW * 0.25);
+              ctx.stroke();
+            }
+          }
+
+          // --- POMMEL: at the very top ---
+          const pomY = gripTop - pommelR * 0.8;
+          ctx.beginPath();
+          if (type === 1) {
+            // Greatsword: large round
+            ctx.arc(0, pomY, pommelR * 1.4, 0, Math.PI * 2);
+          } else if (type === 2) {
+            // Katana: small flat cap (kashira)
+            ctx.rect(-gripW * 1.3, pomY - pommelR * 0.4, gripW * 2.6, pommelR * 0.8);
+          } else if (type === 3) {
+            // Broadsword: wheel pommel
+            ctx.arc(0, pomY, pommelR * 1.2, 0, Math.PI * 2);
+          } else {
+            // Longsword/bastard: teardrop
+            ctx.ellipse(0, pomY, pommelR, pommelR * 1.3, 0, 0, Math.PI * 2);
+          }
+          ctx.fillStyle = dk;
+          ctx.fill();
 
           ctx.restore();
         };
