@@ -2302,7 +2302,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Sun/Vortex glow (top center) ---
       const sunX = w * 0.5;
-      const sunY = h * 0.28;
+      const sunY = h * 0.16;
       const sunPulse = 1 + Math.sin(time * 0.3) * 0.08;
 
       // Outer atmospheric haze
@@ -2437,7 +2437,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         // Cloud banks: wide horizontal masses, no rotation
         // Perspective: clouds lower on screen (further from sun) get flatter
-        const sunYn = 0.28; // match sunY
+        const sunYn = 0.16; // match sunY
         const cloudDefs = [
           // { cx, cy (normalized), widthN, heightN } — always horizontal
           // Left bank — large masses
@@ -2566,7 +2566,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;           // w * 0.5
         const vpY = sunY;           // h * 0.18
 
-        const botY = h * 0.704;
+        const botY = h * 0.742;
         const topY = h * 0.32;
 
         // Clip so nothing renders outside the intended bounds
@@ -2578,7 +2578,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Half-width scales with distance from the sun VP
         const dBot = botY - vpY;    // distance bottom→VP
         const dTop = topY - vpY;    // distance top→VP (positive, top is below VP)
-        const hwBot = w * 0.377;
+        const hwBot = w * 0.302;
         const hwTop = hwBot * dTop / dBot;  // narrow at top
 
         const botL = vpX - hwBot;
@@ -2670,7 +2670,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.704;
+        const botY = h * 0.742;
         const topY = h * 0.32;
 
         ctx.save();
@@ -2680,7 +2680,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const dBot = botY - vpY;
         const dTop = topY - vpY;
-        const hwBot = w * 0.293;
+        const hwBot = w * 0.234;
         const hwTop = hwBot * dTop / dBot;
 
         const botL = vpX - hwBot;
@@ -3231,7 +3231,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // --- Side faces: step-aligned stone blocks between outer frame and stairway ---
         {
           // Outer frame edges
-          const hwOBot = w * 0.377;
+          const hwOBot = w * 0.302;
           const hwOTop = hwOBot * (topY - vpY) / dBot;
           const outerL = (py) => (vpX - hwOBot) + ((vpX - hwOTop) - (vpX - hwOBot)) * (botY - py) / (botY - topY);
           const outerR = (py) => (vpX + hwOBot) + ((vpX + hwOTop) - (vpX + hwOBot)) * (botY - py) / (botY - topY);
