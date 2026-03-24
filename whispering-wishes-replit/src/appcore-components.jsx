@@ -2827,34 +2827,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hdG = Math.round(handleLight.g * (1 - dk * 0.85));
           const hdB = Math.round(handleLight.b * (1 - dk * 0.85));
 
-          // Tip width depends on weapon type
-          const tipW = wt.tipS === 1 ? effBW * 0.8 : (wt.tipS === 2 ? effBW * 1.2 : effBW * 0.22);
+          // Tip width: pointed (narrow) vs slightly broad
+          const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
 
           // === DRAW BLADE ===
           ctx.beginPath();
-          if (wt.tipS === 2) {
-            // Hooked tip (halberd/axe): wider on one side
-            ctx.moveTo(bSkew + effBW * 0.3, 0);
-            ctx.lineTo(-effBW * 0.5 + bSkew, -bladeH * 0.15);
-            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(effBW * 1.2 + bSkew * 0.3, -bladeH);
-            ctx.lineTo(effBW * 0.8 + bSkew * 0.3, -bladeH * 0.6);
-            ctx.lineTo(effBW * 0.3, -1);
-          } else if (wt.tipS === 1) {
-            // Broad tip (broadsword/mace head)
-            ctx.moveTo(bSkew, 0);
-            ctx.lineTo(-tipW + bSkew * 0.6, -1);
-            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(tipW + bSkew * 0.6, -1);
-          } else {
-            // Pointed tip (sword/spear)
-            ctx.moveTo(bSkew, 0);
-            ctx.lineTo(-tipW + bSkew * 0.6, -1);
-            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(tipW + bSkew * 0.6, -1);
-          }
+          ctx.moveTo(bSkew, 0);
+          ctx.lineTo(-tipW + bSkew * 0.6, -1);
+          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
+          ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
+          ctx.lineTo(tipW + bSkew * 0.6, -1);
           ctx.closePath();
           ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
           ctx.fill();
