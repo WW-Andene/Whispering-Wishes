@@ -4038,53 +4038,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldZfar = 80;
           const fieldXrange = 30;
 
-          // Scattered placement — organic, with natural clearing in center
-          // First: explicit foreground swords at edges (framing the scene)
-          // Layout from sketch: 2 dominant close swords (left-center + right),
-          // medium sword near left group, small cluster far-left, few far-right,
-          // scattered tiny along horizon
-          const fgSwords = [
-            // === BIG left-center sword (dominant, tilted left) ===
-            { wx: -0.15, wz: 0.40, tiltO: -15 },
-            // === BIG right sword (dominant, tilted right) ===
-            { wx: 0.22, wz: 0.35, tiltO: 14 },
-            // === Medium sword near left group ===
-            { wx: -0.12, wz: 0.55, tiltO: -8 },
-            // === Far-left edge — big, partially cropped ===
-            { wx: -0.35, wz: 0.32, tiltO: -18 },
-
-            // Small cluster far-left along ground line
-            { wx: -4.0, wz: 1.8, tiltO: -10 }, { wx: -3.5, wz: 2.0, tiltO: 6 },
-            { wx: -5.0, wz: 2.2, tiltO: -8 }, { wx: -3.0, wz: 2.5, tiltO: 12 },
-            { wx: -4.5, wz: 1.6, tiltO: -5 }, { wx: -6.0, wz: 2.8, tiltO: 7 },
-            { wx: -3.8, wz: 3.0, tiltO: -11 },
-
-            // Couple small swords far-right along ground
-            { wx: 3.5, wz: 2.5, tiltO: 8 }, { wx: 4.0, wz: 3.0, tiltO: -6 },
-
-            // Scattered tiny swords along horizon center
-            { wx: 0.5, wz: 4.0, tiltO: -4 }, { wx: -0.3, wz: 5.0, tiltO: 7 },
-            { wx: 1.2, wz: 4.5, tiltO: -9 }, { wx: -0.8, wz: 5.5, tiltO: 5 },
-            { wx: 0.1, wz: 6.0, tiltO: -3 }, { wx: -1.5, wz: 4.2, tiltO: 8 },
-            { wx: 2.0, wz: 5.0, tiltO: -6 }, { wx: -2.0, wz: 5.8, tiltO: 4 },
-          ];
-          for (let fi = 0; fi < fgSwords.length; fi++) {
-            const fg = fgSwords[fi];
-            const wy = terrH(fg.wx, fg.wz);
-            const scrX = W * 0.5 + fg.wx * focal / fg.wz;
-            const scrY = hY + (camH - wy) * focal / fg.wz;
-            const appSize = 1.8 * focal / fg.wz;
-            const typeIdx = Math.floor(rng(fi + 500, 102) * weaponTypes.length);
-            const zRot = rng(fi + 500, 103) * Math.PI * 2;
-            swords.push({
-              wx: fg.wx, wy, wz: fg.wz, scrX, scrY, appSize,
-              wType: weaponTypes[typeIdx], zRot, tilt: fg.tiltO,
-              darkness: 0
-            });
-          }
-
-          // Then: scatter field swords with linear distribution (not quadratic)
-          // === LAY OUT BATTLEFIELD FIRST, THEN CAMERA VIEWS IT ===
+          // === LAY OUT ENTIRE BATTLEFIELD, THEN CAMERA VIEWS IT ===
+          // No hardcoded foreground — all swords from uniform world-space distribution
           // Uniform world-space density: constant swords per unit area
           const swordCount = 1200;
           const battlefieldW = 60; // total X width of battlefield
