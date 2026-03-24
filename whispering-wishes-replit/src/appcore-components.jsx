@@ -2697,78 +2697,217 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const camH = 1.3;            // camera height in world units
         const focal = W * 0.7;       // focal length → controls FOV
-        const swordRealH = 4.0;      // sword total visible height (world units)
-        const swordRealBW = 0.12;    // blade half-width (world units)
         const gridSpacing = 3.8;     // average gap between swords on the plan
         const sunScreenX = W * 0.5;
 
-        // Draw one sword silhouette at screen coords
-        // irr = irregularity object, darkness = 0(near/lit) to 1(far/dark)
-        function drawSword(sx, sy, sh, sbw, tilt, irr, darkness) {
+        // === 3D LIGHT SOURCE ===
+        // Sun at horizon center, slightly above ground
+        const lightPos = { x: 0, y: 3.0, z: 80 }; // world-space sun position
+        const lightIntensity = 1.2;
+        const lightColor = { r: 255, g: 190, b: 90 }; // warm sunset
+        const ambientLight = 0.08; // minimum light level
+
+        // === MATERIAL SYSTEM ===
+        // Each material has: base color, specularity (0-1), roughness (0-1), metallic (0-1)
+        const materials = {
+          steel:    { r: 180, g: 185, b: 195, spec: 0.7, rough: 0.25, metal: 0.9 },
+          iron:     { r: 110, g: 100, b:  95, spec: 0.3, rough: 0.6,  metal: 0.7 },
+          bronze:   { r: 175, g: 135, b:  70, spec: 0.5, rough: 0.35, metal: 0.85 },
+          darkIron: { r:  55, g:  50, b:  48, spec: 0.15, rough: 0.8, metal: 0.6 },
+          bone:     { r: 200, g: 185, b: 160, spec: 0.1, rough: 0.7,  metal: 0.0 },
+          wood:     { r: 100, g:  65, b:  35, spec: 0.05, rough: 0.9, metal: 0.0 }
+        };
+        const matKeys = Object.keys(materials);
+
+        // === WEAPON TYPES ===
+        // Each defines proportions: bladeH%, guardH%, gripH%, bladeW mult, guardW mult, tipShape
+        // tipShape: 0=pointed, 1=broad, 2=hooked
+        const weaponTypes = [
+          { name: 'longsword',  bladeP: 0.72, guardP: 0.02, gripP: 0.21, bwM: 1.0, gwM: 1.5, tipS: 0, pomM: 1.0, hM: 1.0, wM: 1.0, bladeMat: 'steel', handleMat: 'wood' },
+          { name: 'greatsword', bladeP: 0.68, guardP: 0.025, gripP: 0.26, bwM: 1.3, gwM: 1.8, tipS: 0, pomM: 1.3, hM: 1.25, wM: 1.15, bladeMat: 'steel', handleMat: 'wood' },
+          { name: 'shortsword', bladeP: 0.65, guardP: 0.02, gripP: 0.18, bwM: 0.9, gwM: 1.3, tipS: 0, pomM: 0.8, hM: 0.7, wM: 0.85, bladeMat: 'steel', handleMat: 'wood' },
+          { name: 'broadsword', bladeP: 0.70, guardP: 0.02, gripP: 0.20, bwM: 1.5, gwM: 1.6, tipS: 1, pomM: 1.0, hM: 0.95, wM: 1.3, bladeMat: 'iron', handleMat: 'wood' },
+          { name: 'spear',      bladeP: 0.25, guardP: 0.0, gripP: 0.72, bwM: 0.6, gwM: 0.0, tipS: 0, pomM: 0.4, hM: 1.5, wM: 0.35, bladeMat: 'iron', handleMat: 'wood' },
+          { name: 'halberd',    bladeP: 0.30, guardP: 0.01, gripP: 0.65, bwM: 1.8, gwM: 0.3, tipS: 2, pomM: 0.5, hM: 1.4, wM: 0.4, bladeMat: 'darkIron', handleMat: 'wood' },
+          { name: 'battleaxe',  bladeP: 0.28, guardP: 0.0, gripP: 0.68, bwM: 2.5, gwM: 0.0, tipS: 2, pomM: 0.6, hM: 1.1, wM: 0.4, bladeMat: 'iron', handleMat: 'wood' },
+          { name: 'katana',     bladeP: 0.76, guardP: 0.012, gripP: 0.20, bwM: 0.7, gwM: 0.9, tipS: 0, pomM: 0.6, hM: 1.05, wM: 0.75, bladeMat: 'steel', handleMat: 'bone' },
+          { name: 'mace',       bladeP: 0.22, guardP: 0.0, gripP: 0.65, bwM: 2.0, gwM: 0.0, tipS: 1, pomM: 1.8, hM: 0.85, wM: 0.4, bladeMat: 'bronze', handleMat: 'wood' },
+        ];
+
+        // 3D lighting calculation
+        function calcLight(worldX, worldY, worldZ, normalX, normalY, normalZ, mat) {
+          // Vector from surface to light
+          const lx = lightPos.x - worldX, ly = lightPos.y - worldY, lz = lightPos.z - worldZ;
+          const ld = Math.sqrt(lx * lx + ly * ly + lz * lz);
+          const lnx = lx / ld, lny = ly / ld, lnz = lz / ld;
+
+          // Distance attenuation (inverse square, clamped)
+          const atten = Math.min(1, lightIntensity / (1 + ld * ld * 0.0008));
+
+          // Diffuse: dot(normal, lightDir)
+          const ndotl = Math.max(0, normalX * lnx + normalY * lny + normalZ * lnz);
+          // Roughness dampens diffuse slightly
+          const diffuse = ndotl * (1 - mat.rough * 0.3) * atten;
+
+          // Specular: simplified Blinn-Phong
+          // View dir roughly (0, -0.3, -1) normalized
+          const vl = Math.sqrt(0.09 + 1); const vnx = 0, vny = -0.3 / vl, vnz = -1 / vl;
+          const hx = lnx + vnx, hy = lny + vny, hz = lnz + vnz;
+          const hd = Math.sqrt(hx * hx + hy * hy + hz * hz) || 1;
+          const ndoth = Math.max(0, normalX * hx / hd + normalY * hy / hd + normalZ * hz / hd);
+          const specPow = 4 + (1 - mat.rough) * 60;
+          const specular = Math.pow(ndoth, specPow) * mat.spec * atten;
+
+          // Final color mix
+          const totalLight = ambientLight + diffuse;
+          // Metallic materials tint specular with base color, non-metallic use light color
+          const sr = mat.metal > 0.5 ? mat.r : lightColor.r;
+          const sg = mat.metal > 0.5 ? mat.g : lightColor.g;
+          const sb = mat.metal > 0.5 ? mat.b : lightColor.b;
+
+          return {
+            r: Math.min(255, mat.r * totalLight + sr * specular),
+            g: Math.min(255, mat.g * totalLight + sg * specular),
+            b: Math.min(255, mat.b * totalLight + sb * specular),
+            rimAtten: atten // pass attenuation for rim light
+          };
+        }
+
+        // Draw one weapon at screen coords with full 3D treatment
+        // wp = weapon props: { type, zRot, irr, wx, wy, wz }
+        function drawWeapon(sx, sy, sh, sbw, tilt, wp) {
           if (sh < 1.5 || sbw < 0.2) return;
+          const wt = wp.type || weaponTypes[0];
+          const ir = wp.irr || {};
+          const zRot = wp.zRot || 0; // 0=facing camera, ±PI/2=edge-on
+
+          // Z-rotation foreshortens width: apparent width = width * cos(zRot)
+          const zCos = Math.abs(Math.cos(zRot));
+          const effBW = sbw * wt.bwM * zCos; // foreshortened blade width
+          if (effBW < 0.15) return; // edge-on = nearly invisible
+
           ctx.save();
 
-          // Clip everything below ground line (sy) so buried blade is hidden
+          // Clip below ground
           ctx.beginPath();
           ctx.rect(sx - sh * 2, 0, sh * 4, sy);
           ctx.clip();
 
-          // Sword is buried 15% into the ground (blade-first)
           ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
 
-          const ir = irr || {};
-          const dk = darkness || 0;
-          const bladeH = sh * (0.74 + (ir.bladeHVar || 0));
-          const gThk = Math.max(0.8, sh * 0.006) * (1 + (ir.guardVar || 0));
-          const gHW = sbw * (1.5 + (ir.guardVar || 0) * 0.5);
-          const gripH = sh * (0.21 + (ir.gripVar || 0));
-          const gripHW = sbw * 0.2;
-          const tipW = sbw * 0.22;
-          const pomR = Math.max(0.3, sbw * (0.25 + (ir.pomVar || 0)));
-          const bSkew = (ir.bladeSkew || 0) * sbw;
+          // Dimensions with weapon type + irregularities
+          const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
+          const gThk = Math.max(0.6, sh * 0.006) * (1 + (ir.guardVar || 0));
+          const gHW = effBW * (wt.gwM + (ir.guardVar || 0) * 0.3);
+          const gripH = sh * (wt.gripP + (ir.gripVar || 0));
+          const gripHW = effBW * 0.18;
+          const pomR = Math.max(0.2, effBW * (0.25 * wt.pomM + (ir.pomVar || 0)));
+          const bSkew = (ir.bladeSkew || 0) * effBW;
 
-          // Darken sword with distance: near=rgb(16,10,8), far→rgb(4,3,2)
-          const baseR = 16 - dk * 12, baseG = 10 - dk * 7, baseB = 8 - dk * 6;
+          // 3D surface normal (blade faces roughly toward camera, rotated by zRot)
+          // Normal points outward from blade face
+          const nx = Math.sin(zRot) * 0.3;
+          const ny = 0;
+          const nz = -Math.cos(zRot);
+          const nd = Math.sqrt(nx * nx + nz * nz) || 1;
 
-          // Single silhouette path (with asymmetry via bSkew)
+          // Get material lighting
+          const bladeMat = materials[wt.bladeMat] || materials.steel;
+          const handleMat = materials[wt.handleMat] || materials.wood;
+          const bladeLight = calcLight(wp.wx, 2.0, wp.wz, nx / nd, ny, nz / nd, bladeMat);
+          const handleLight = calcLight(wp.wx, 3.5, wp.wz, nx / nd, ny, nz / nd, handleMat);
+
+          // Distance darkness overlay
+          const dk = wp.darkness || 0;
+
+          // Blade color from lighting (darkened by distance)
+          const blR = Math.round(bladeLight.r * (1 - dk * 0.8));
+          const blG = Math.round(bladeLight.g * (1 - dk * 0.8));
+          const blB = Math.round(bladeLight.b * (1 - dk * 0.8));
+          const hdR = Math.round(handleLight.r * (1 - dk * 0.85));
+          const hdG = Math.round(handleLight.g * (1 - dk * 0.85));
+          const hdB = Math.round(handleLight.b * (1 - dk * 0.85));
+
+          // Tip width depends on weapon type
+          const tipW = wt.tipS === 1 ? effBW * 0.8 : (wt.tipS === 2 ? effBW * 1.2 : effBW * 0.22);
+
+          // === DRAW BLADE ===
           ctx.beginPath();
-          ctx.moveTo(bSkew, 0);
-          ctx.lineTo(-tipW + bSkew * 0.6, -1);
-          ctx.lineTo(-sbw + bSkew * 0.3, -bladeH);
-          ctx.lineTo(-gHW, -bladeH);
-          ctx.lineTo(-gHW, -bladeH - gThk);
-          ctx.lineTo(-gripHW, -bladeH - gThk);
-          ctx.lineTo(-gripHW, -bladeH - gThk - gripH);
-          ctx.arc(0, -bladeH - gThk - gripH - pomR, pomR, Math.PI * 0.85, Math.PI * 0.15);
-          ctx.lineTo(gripHW, -bladeH - gThk - gripH);
-          ctx.lineTo(gripHW, -bladeH - gThk);
-          ctx.lineTo(gHW, -bladeH - gThk);
-          ctx.lineTo(gHW, -bladeH);
-          ctx.lineTo(sbw + bSkew * 0.3, -bladeH);
-          ctx.lineTo(tipW + bSkew * 0.6, -1);
+          if (wt.tipS === 2) {
+            // Hooked tip (halberd/axe): wider on one side
+            ctx.moveTo(bSkew + effBW * 0.3, 0);
+            ctx.lineTo(-effBW * 0.5 + bSkew, -bladeH * 0.15);
+            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
+            ctx.lineTo(effBW * 1.2 + bSkew * 0.3, -bladeH);
+            ctx.lineTo(effBW * 0.8 + bSkew * 0.3, -bladeH * 0.6);
+            ctx.lineTo(effBW * 0.3, -1);
+          } else if (wt.tipS === 1) {
+            // Broad tip (broadsword/mace head)
+            ctx.moveTo(bSkew, 0);
+            ctx.lineTo(-tipW + bSkew * 0.6, -1);
+            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
+            ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
+            ctx.lineTo(tipW + bSkew * 0.6, -1);
+          } else {
+            // Pointed tip (sword/spear)
+            ctx.moveTo(bSkew, 0);
+            ctx.lineTo(-tipW + bSkew * 0.6, -1);
+            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
+            ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
+            ctx.lineTo(tipW + bSkew * 0.6, -1);
+          }
           ctx.closePath();
-          ctx.fillStyle = 'rgba(' + Math.round(baseR) + ',' + Math.round(baseG) + ',' + Math.round(baseB) + ',0.96)';
+          ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
           ctx.fill();
 
-          // Rim light — fades out with distance (far swords lose rim unless near light)
-          const rimSide = sx < sunScreenX ? 1 : -1;
-          const rimBase = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45)) * 0.4;
-          const rimStr = rimBase * (1 - dk * 0.7); // far swords get much less rim
-          if (rimStr > 0.03 && sbw > 1) {
-            const ew = Math.max(0.4, sbw * 0.08);
+          // === DRAW GUARD (if present) ===
+          if (wt.gwM > 0.1) {
             ctx.beginPath();
-            if (rimSide > 0) {
-              ctx.moveTo(tipW + bSkew * 0.6, -1); ctx.lineTo(sbw + bSkew * 0.3, -bladeH);
-              ctx.lineTo(sbw + bSkew * 0.3 - ew, -bladeH); ctx.lineTo(tipW + bSkew * 0.6 - ew * 0.3, -1);
-            } else {
-              ctx.moveTo(-tipW + bSkew * 0.6, -1); ctx.lineTo(-sbw + bSkew * 0.3, -bladeH);
-              ctx.lineTo(-sbw + bSkew * 0.3 + ew, -bladeH); ctx.lineTo(-tipW + bSkew * 0.6 + ew * 0.3, -1);
-            }
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(215,135,55,' + rimStr.toFixed(3) + ')';
+            ctx.rect(-gHW, -bladeH, gHW * 2, -gThk);
+            ctx.fillStyle = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
             ctx.fill();
           }
+
+          // === DRAW GRIP ===
+          ctx.beginPath();
+          ctx.rect(-gripHW, -bladeH - gThk, gripHW * 2, -gripH);
+          ctx.fillStyle = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
+          ctx.fill();
+
+          // === DRAW POMMEL ===
+          if (pomR > 0.3) {
+            ctx.beginPath();
+            ctx.arc(0, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgb(' + Math.round(blR * 0.8) + ',' + Math.round(blG * 0.8) + ',' + Math.round(blB * 0.8) + ')';
+            ctx.fill();
+          }
+
+          // === RIM LIGHT ===
+          // Sun-side edge highlight — metallic materials get stronger rims
+          const rimSide = sx < sunScreenX ? 1 : -1;
+          const rimBase = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45));
+          const rimMat = 0.15 + bladeMat.metal * 0.35 + bladeMat.spec * 0.2;
+          const rimStr = rimBase * rimMat * bladeLight.rimAtten * (1 - dk * 0.7);
+          if (rimStr > 0.02 && effBW > 0.8) {
+            const ew = Math.max(0.3, effBW * 0.1);
+            ctx.beginPath();
+            if (rimSide > 0) {
+              ctx.moveTo(tipW + bSkew * 0.6, -1); ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
+              ctx.lineTo(effBW + bSkew * 0.3 - ew, -bladeH); ctx.lineTo(tipW + bSkew * 0.6 - ew * 0.3, -1);
+            } else {
+              ctx.moveTo(-tipW + bSkew * 0.6, -1); ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
+              ctx.lineTo(-effBW + bSkew * 0.3 + ew, -bladeH); ctx.lineTo(-tipW + bSkew * 0.6 + ew * 0.3, -1);
+            }
+            ctx.closePath();
+            // Rim color tinted by material
+            const rr = Math.round(lightColor.r * 0.6 + bladeMat.r * 0.4);
+            const rg = Math.round(lightColor.g * 0.6 + bladeMat.g * 0.4);
+            const rb = Math.round(lightColor.b * 0.6 + bladeMat.b * 0.4);
+            ctx.fillStyle = 'rgba(' + rr + ',' + rg + ',' + rb + ',' + rimStr.toFixed(3) + ')';
+            ctx.fill();
+          }
+
           ctx.restore();
         }
 
@@ -2786,34 +2925,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === PLACE SWORDS ON THE GROUND PLAN ===
-        // Near = few, spread apart. Far = many, grouped tightly.
-        // Swords shrink with distance. Far swords darken unless near the light.
+        // === PLACE WEAPONS ON THE GROUND PLAN (3D) ===
         const zNear = 1.6, zFar = 120;
-        const numRows = 34; // more rows for denser far field + more near objects
+        const numRows = 34;
         let sIdx = 0;
-
-        // Collect all swords for depth sorting
-        const allSwords = [];
-
-        // Sun position in world space (center, at horizon)
-        const sunWX = 0;
+        const allWeapons = [];
+        const baseRealH = 4.0;
+        const baseRealBW = 0.12;
 
         for (let row = 0; row < numRows; row++) {
-          // Cubic spacing: near rows are spread out, far rows pack together
           const t = row / (numRows - 1);
-          const z = zNear + (zFar - zNear) * t * t * t; // cubic → slow near, fast far
-
-          // Depth ratio 0(near)→1(far) for density/size/darkness
+          const z = zNear + (zFar - zNear) * t * t * t;
           const depthRatio = Math.min(1, (z - zNear) / (zFar - zNear));
-
-          // Grid spacing: wide near (6.0), tight far (1.8) → more packed at distance
           const spacing = 6.0 - depthRatio * 4.2;
-
-          // Visible half-width at this depth (plus overflow)
           const visHW = z * W * 1.3 / (2 * focal);
-
-          // Number of swords across this row — naturally more at distance
           const count = Math.max(1, Math.round(visHW * 2 / spacing));
           const xStep = visHW * 2 / count;
 
@@ -2822,14 +2947,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const wz = z + (rng(sIdx, 2) - 0.5) * spacing * 0.4;
             if (wz < 1.3) { sIdx++; continue; }
 
-            // Minimal size variation: 0.92–1.08 (subtle, not cartoonish)
-            const sizeVar = 0.92 + rng(sIdx, 3) * 0.16;
-            // Swords shrink slightly with distance (world-space reduction)
-            const distShrink = 1 - depthRatio * 0.25; // 25% smaller at max distance
+            // Pick weapon type deterministically per sword
+            const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
+            const wt = weaponTypes[wtIdx];
 
-            // Rotation variation
+            // Size: minimal variation + distance shrink + weapon type multiplier
+            const sizeVar = 0.92 + rng(sIdx, 3) * 0.16;
+            const distShrink = 1 - depthRatio * 0.25;
+
+            // Tilt (lean left/right in 2D)
             const tiltVal = (rng(sIdx, 4) - 0.5) * 26;
             const steep = rng(sIdx, 5) > 0.88 ? 2.5 : (rng(sIdx, 5) > 0.75 ? 1.6 : 1);
+
+            // Z-axis rotation: how much the blade faces toward/away from camera
+            // Range: -PI/3 to PI/3 (±60°). At 0 = flat toward camera (widest)
+            const zRot = (rng(sIdx, 16) - 0.5) * Math.PI * 0.65;
 
             // Organic irregularities
             const irr = {
@@ -2840,35 +2972,35 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               pomVar:    (rng(sIdx, 10) - 0.5) * 0.15
             };
 
-            // Darkness: far swords get darker, BUT proximity to sun (center) reduces darkness
-            const distToSun = Math.sqrt((wx - sunWX) * (wx - sunWX) + wz * wz * 0.01);
-            const lightReach = Math.max(0, 1 - distToSun / 25); // sun illuminates ~25 world units
-            const baseDarkness = depthRatio * 0.85; // far = 85% dark
-            const darkness = Math.max(0, baseDarkness - lightReach * 0.5);
+            // Distance darkness (still used as overlay)
+            const distToSun = Math.sqrt(wx * wx + (wz - lightPos.z) * (wz - lightPos.z) * 0.3);
+            const lightReach = Math.max(0, 1 - distToSun / 35);
+            const darkness = Math.max(0, depthRatio * 0.85 - lightReach * 0.5);
 
             // Project to screen
-            const realH = swordRealH * sizeVar * distShrink;
-            const realBW = swordRealBW * sizeVar * distShrink;
+            const realH = baseRealH * sizeVar * distShrink * wt.hM;
+            const realBW = baseRealBW * sizeVar * distShrink * wt.wM;
             let scrX = W * 0.5 + wx * focal / wz;
             let scrY = hY + camH * focal / wz;
             const scrH = realH * focal / wz;
             const scrBW = realBW * focal / wz;
 
-            // Apply barrel lens distortion
             const distorted = lensDistort(scrX, scrY);
             scrX = distorted.x;
             scrY = distorted.y;
 
-            allSwords.push({ x: scrX, y: scrY, h: scrH, bw: scrBW, t: tiltVal * steep, z: wz, irr, dk: darkness });
+            allWeapons.push({
+              x: scrX, y: scrY, h: scrH, bw: scrBW,
+              t: tiltVal * steep, z: wz,
+              wp: { type: wt, zRot, irr, wx, wy: 0, wz, darkness }
+            });
             sIdx++;
           }
         }
 
-        // Sort far→near (draw back to front)
-        allSwords.sort((a, b) => b.z - a.z);
-
-        for (const s of allSwords) {
-          drawSword(s.x, s.y, s.h, s.bw, s.t, s.irr, s.dk);
+        allWeapons.sort((a, b) => b.z - a.z);
+        for (const s of allWeapons) {
+          drawWeapon(s.x, s.y, s.h, s.bw, s.t, s.wp);
         }
 
         // --- EMBERS ---
