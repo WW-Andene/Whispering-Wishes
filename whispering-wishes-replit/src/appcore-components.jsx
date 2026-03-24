@@ -4038,17 +4038,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldZfar = 80;
           const fieldXrange = 30;
 
-          // === LAY OUT ENTIRE BATTLEFIELD, THEN CAMERA VIEWS IT ===
-          // No hardcoded foreground — all swords from uniform world-space distribution
-          // Uniform world-space density: constant swords per unit area
-          const swordCount = 1200;
-          const battlefieldW = 60; // total X width of battlefield
-          const battlefieldZmin = 0.5;
-          const battlefieldZmax = 80;
+          // === SCREEN-SPACE PLACEMENT — even coverage guaranteed ===
+          // Place swords evenly across the VISIBLE ground, then back-project
+          // to world coords. This fills foreground to horizon uniformly.
+          const swordCount = 800;
           for (let i = 0; i < swordCount; i++) {
-            // Uniform random position on the ground plane
-            const wzJ = battlefieldZmin + rng(i, 100) * (battlefieldZmax - battlefieldZmin);
-            let wx = (rng(i, 101) * 2 - 1) * battlefieldW * 0.5;
+            // Random screen position on visible ground (hY to H)
+            const randScrY = hY + rng(i, 100) * (H - hY) * 0.98 + 1;
+            const randScrX = rng(i, 101) * W;
+
+            // Back-project screen → world
+            // scrY = hY + camH * focal / wz  →  wz = camH * focal / (scrY - hY)
+            const wzJ = camH * focal / (randScrY - hY);
+            if (wzJ < 0.3 || wzJ > 200) continue;
+            // scrX = W/2 + wx * focal / wz  →  wx = (scrX - W/2) * wz / focal
+            let wx = (randScrX - W * 0.5) * wzJ / focal;
 
             // Gentle center clearing
             const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
@@ -4058,13 +4062,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             }
             const wy = terrH(wx, wzJ);
 
-            // Screen projection
+            // Re-project to screen (with terrain height)
             const scrX = W * 0.5 + wx * focal / wzJ;
             const scrY = hY + (camH - wy) * focal / wzJ;
             const appSize = 1.8 * focal / wzJ;
 
-            // Allow swords partially off-screen at edges (foreground ones)
-            if (scrX < -W * 0.5 || scrX > W * 1.5) continue;
+            if (scrX < -W * 0.3 || scrX > W * 1.3) continue;
 
             // Weapon type
             const typeIdx = Math.floor(rng(i, 102) * weaponTypes.length);
