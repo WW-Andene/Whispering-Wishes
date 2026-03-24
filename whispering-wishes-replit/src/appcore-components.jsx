@@ -2628,6 +2628,54 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = gl;
         ctx.fillRect(0, hY, W, H * 0.12);
 
+        // --- GROUND TEXTURE: uneven soil patches, shadows, warm spots ---
+        for (let gi = 0; gi < 120; gi++) {
+          const gpx = rng(gi, 20) * W;
+          const gpy = hY + (H - hY) * (rng(gi, 21) * 0.95 + 0.01);
+          const gpr = 6 + rng(gi, 22) * 40;
+          // Depth: patches near horizon are smaller, near camera bigger
+          const depthT = (gpy - hY) / (H - hY);
+          const pr = gpr * (0.3 + depthT * 1.5);
+          // Mix between dark shadow patches and warm lit patches
+          const warm = rng(gi, 23);
+          let r, g, b, a;
+          if (warm < 0.4) {
+            // Dark shadow patches
+            r = 6 + rng(gi, 24) * 10; g = 4 + rng(gi, 25) * 6; b = 3 + rng(gi, 26) * 5;
+            a = 0.12 + rng(gi, 27) * 0.15;
+          } else if (warm < 0.7) {
+            // Warm earth-tone patches (near horizon get warmer)
+            const horizonProx = 1 - depthT;
+            r = 35 + horizonProx * 50; g = 20 + horizonProx * 25; b = 10 + horizonProx * 8;
+            a = 0.04 + horizonProx * 0.06;
+          } else {
+            // Subtle color variation patches (slight reddish-brown / grey)
+            r = 18 + rng(gi, 28) * 20; g = 12 + rng(gi, 29) * 10; b = 8 + rng(gi, 30) * 8;
+            a = 0.06 + rng(gi, 31) * 0.08;
+          }
+          const tg = ctx.createRadialGradient(gpx, gpy, 0, gpx, gpy, pr);
+          tg.addColorStop(0, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + a.toFixed(3) + ')');
+          tg.addColorStop(1, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',0)');
+          ctx.fillStyle = tg;
+          ctx.beginPath(); ctx.arc(gpx, gpy, pr, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // --- Elongated ground shadows (cast by swords, implied) ---
+        for (let si = 0; si < 40; si++) {
+          const sx2 = rng(si, 40) * W;
+          const sy2 = hY + (H - hY) * (rng(si, 41) * 0.6 + 0.02);
+          const sLen = 10 + rng(si, 42) * 30;
+          const sWid = 1 + rng(si, 43) * 3;
+          ctx.save();
+          ctx.translate(sx2, sy2);
+          ctx.rotate((rng(si, 44) - 0.3) * 0.4); // slight angle
+          ctx.fillStyle = 'rgba(4,2,2,' + (0.08 + rng(si, 45) * 0.1).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, sLen, sWid, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
         // Mountains
         ctx.fillStyle = 'rgba(22,14,16,0.8)';
         ctx.beginPath(); ctx.moveTo(0, hY);
@@ -2655,8 +2703,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const sunScreenX = W * 0.5;
 
         // Draw one sword silhouette at screen coords
-        // irr = irregularity object: { bladeSkew, bladeHVar, guardVar, gripVar, pomVar }
-        function drawSword(sx, sy, sh, sbw, tilt, irr) {
+        // irr = irregularity object, darkness = 0(near/lit) to 1(far/dark)
+        function drawSword(sx, sy, sh, sbw, tilt, irr, darkness) {
           if (sh < 1.5 || sbw < 0.2) return;
           ctx.save();
 
@@ -2670,6 +2718,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.rotate(tilt * Math.PI / 180);
 
           const ir = irr || {};
+          const dk = darkness || 0;
           const bladeH = sh * (0.74 + (ir.bladeHVar || 0));
           const gThk = Math.max(0.8, sh * 0.006) * (1 + (ir.guardVar || 0));
           const gHW = sbw * (1.5 + (ir.guardVar || 0) * 0.5);
@@ -2677,7 +2726,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripHW = sbw * 0.2;
           const tipW = sbw * 0.22;
           const pomR = Math.max(0.3, sbw * (0.25 + (ir.pomVar || 0)));
-          const bSkew = (ir.bladeSkew || 0) * sbw; // asymmetric blade lean
+          const bSkew = (ir.bladeSkew || 0) * sbw;
+
+          // Darken sword with distance: near=rgb(16,10,8), far→rgb(4,3,2)
+          const baseR = 16 - dk * 12, baseG = 10 - dk * 7, baseB = 8 - dk * 6;
 
           // Single silhouette path (with asymmetry via bSkew)
           ctx.beginPath();
@@ -2696,12 +2748,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(sbw + bSkew * 0.3, -bladeH);
           ctx.lineTo(tipW + bSkew * 0.6, -1);
           ctx.closePath();
-          ctx.fillStyle = 'rgba(16,10,8,0.96)';
+          ctx.fillStyle = 'rgba(' + Math.round(baseR) + ',' + Math.round(baseG) + ',' + Math.round(baseB) + ',0.96)';
           ctx.fill();
 
-          // Rim light
+          // Rim light — fades out with distance (far swords lose rim unless near light)
           const rimSide = sx < sunScreenX ? 1 : -1;
-          const rimStr = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45)) * 0.4;
+          const rimBase = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45)) * 0.4;
+          const rimStr = rimBase * (1 - dk * 0.7); // far swords get much less rim
           if (rimStr > 0.03 && sbw > 1) {
             const ew = Math.max(0.4, sbw * 0.08);
             ctx.beginPath();
@@ -2713,7 +2766,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               ctx.lineTo(-sbw + bSkew * 0.3 + ew, -bladeH); ctx.lineTo(-tipW + bSkew * 0.6 + ew * 0.3, -1);
             }
             ctx.closePath();
-            ctx.fillStyle = 'rgba(215,135,55,' + rimStr + ')';
+            ctx.fillStyle = 'rgba(215,135,55,' + rimStr.toFixed(3) + ')';
             ctx.fill();
           }
           ctx.restore();
@@ -2734,60 +2787,79 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // === PLACE SWORDS ON THE GROUND PLAN ===
-        // Z goes from zNear (close to camera) to zFar (horizon).
-        // At each Z, visible X range = ±(Z * W) / (2 * focal).
-        // Place swords across that range at ~gridSpacing intervals.
-        const zNear = 2.0, zFar = 120;
-        const numRows = 28;
+        // Near = few, spread apart. Far = many, grouped tightly.
+        // Swords shrink with distance. Far swords darken unless near the light.
+        const zNear = 1.6, zFar = 120;
+        const numRows = 34; // more rows for denser far field + more near objects
         let sIdx = 0;
 
         // Collect all swords for depth sorting
         const allSwords = [];
 
-        for (let row = 0; row < numRows; row++) {
-          // Quadratic spacing: more rows packed near camera, fewer far away
-          const t = row / (numRows - 1);
-          const z = zNear + (zFar - zNear) * t * t;
+        // Sun position in world space (center, at horizon)
+        const sunWX = 0;
 
-          // Visible half-width at this depth (plus 30% overflow for edge swords)
+        for (let row = 0; row < numRows; row++) {
+          // Cubic spacing: near rows are spread out, far rows pack together
+          const t = row / (numRows - 1);
+          const z = zNear + (zFar - zNear) * t * t * t; // cubic → slow near, fast far
+
+          // Depth ratio 0(near)→1(far) for density/size/darkness
+          const depthRatio = Math.min(1, (z - zNear) / (zFar - zNear));
+
+          // Grid spacing: wide near (6.0), tight far (1.8) → more packed at distance
+          const spacing = 6.0 - depthRatio * 4.2;
+
+          // Visible half-width at this depth (plus overflow)
           const visHW = z * W * 1.3 / (2 * focal);
 
-          // Number of swords across this row
-          const count = Math.max(1, Math.round(visHW * 2 / gridSpacing));
+          // Number of swords across this row — naturally more at distance
+          const count = Math.max(1, Math.round(visHW * 2 / spacing));
           const xStep = visHW * 2 / count;
 
           for (let j = 0; j < count; j++) {
-            // Evenly spaced base position + jitter
             const wx = -visHW + xStep * (j + 0.5) + (rng(sIdx, 1) - 0.5) * xStep * 0.6;
-            const wz = z + (rng(sIdx, 2) - 0.5) * gridSpacing * 0.4;
-            if (wz < 1.5) { sIdx++; continue; }
+            const wz = z + (rng(sIdx, 2) - 0.5) * spacing * 0.4;
+            if (wz < 1.3) { sIdx++; continue; }
 
-            const sizeVar = 0.8 + rng(sIdx, 3) * 0.4; // 0.8-1.2x size variation
-            // More rotation variation: wider base tilt + occasional steep lean
-            const tiltVal = (rng(sIdx, 4) - 0.5) * 26; // wider range (was 16)
+            // Minimal size variation: 0.92–1.08 (subtle, not cartoonish)
+            const sizeVar = 0.92 + rng(sIdx, 3) * 0.16;
+            // Swords shrink slightly with distance (world-space reduction)
+            const distShrink = 1 - depthRatio * 0.25; // 25% smaller at max distance
+
+            // Rotation variation
+            const tiltVal = (rng(sIdx, 4) - 0.5) * 26;
             const steep = rng(sIdx, 5) > 0.88 ? 2.5 : (rng(sIdx, 5) > 0.75 ? 1.6 : 1);
 
-            // Organic irregularities — each sword is slightly different
+            // Organic irregularities
             const irr = {
-              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.3,    // asymmetric blade lean
-              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.08,    // blade height ±4%
-              guardVar:  (rng(sIdx, 8) - 0.5) * 0.3,      // guard size variation
-              gripVar:   (rng(sIdx, 9) - 0.5) * 0.06,     // grip length ±3%
-              pomVar:    (rng(sIdx, 10) - 0.5) * 0.15      // pommel size variation
+              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.3,
+              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.08,
+              guardVar:  (rng(sIdx, 8) - 0.5) * 0.3,
+              gripVar:   (rng(sIdx, 9) - 0.5) * 0.06,
+              pomVar:    (rng(sIdx, 10) - 0.5) * 0.15
             };
 
+            // Darkness: far swords get darker, BUT proximity to sun (center) reduces darkness
+            const distToSun = Math.sqrt((wx - sunWX) * (wx - sunWX) + wz * wz * 0.01);
+            const lightReach = Math.max(0, 1 - distToSun / 25); // sun illuminates ~25 world units
+            const baseDarkness = depthRatio * 0.85; // far = 85% dark
+            const darkness = Math.max(0, baseDarkness - lightReach * 0.5);
+
             // Project to screen
+            const realH = swordRealH * sizeVar * distShrink;
+            const realBW = swordRealBW * sizeVar * distShrink;
             let scrX = W * 0.5 + wx * focal / wz;
             let scrY = hY + camH * focal / wz;
-            const scrH = swordRealH * sizeVar * focal / wz;
-            const scrBW = swordRealBW * sizeVar * focal / wz;
+            const scrH = realH * focal / wz;
+            const scrBW = realBW * focal / wz;
 
             // Apply barrel lens distortion
             const distorted = lensDistort(scrX, scrY);
             scrX = distorted.x;
             scrY = distorted.y;
 
-            allSwords.push({ x: scrX, y: scrY, h: scrH, bw: scrBW, t: tiltVal * steep, z: wz, irr });
+            allSwords.push({ x: scrX, y: scrY, h: scrH, bw: scrBW, t: tiltVal * steep, z: wz, irr, dk: darkness });
             sIdx++;
           }
         }
@@ -2796,7 +2868,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         allSwords.sort((a, b) => b.z - a.z);
 
         for (const s of allSwords) {
-          drawSword(s.x, s.y, s.h, s.bw, s.t, s.irr);
+          drawSword(s.x, s.y, s.h, s.bw, s.t, s.irr, s.dk);
         }
 
         // --- EMBERS ---
