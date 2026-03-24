@@ -2563,7 +2563,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ===== BATTLEGROUND — ground-plan projected sword field =====
       {
         const W = canvas.width, H = canvas.height;
-        const hY = H * 0.52;
+        const hY = H * 0.35; // camera shifted toward ground
         const rng = (i, off) => { const s = Math.sin(i * 127.1 + off * 311.7) * 43758.5; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (pink/salmon) ---
@@ -2762,7 +2762,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tZfar = 90;      // farthest Z row
 
           // Camera/projection (reuse existing system params)
-          const tCamH = 1.3;
+          const tCamH = 0.6; // low camera, ground-level view
           const tFocal = W * 0.7;
 
           // Sun direction for terrain lighting (toward horizon center, from above)
@@ -2906,7 +2906,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         //          screenY = hY + camH * focal / worldZ
         //          apparent size = realSize * focal / worldZ
 
-        const camH = 1.3;            // camera height in world units
+        const camH = 0.6;            // low camera, ground-level
         const focal = W * 0.7;       // focal length → controls FOV
         const gridSpacing = 3.8;     // average gap between swords on the plan
         const sunScreenX = W * 0.5;
@@ -3936,8 +3936,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === SINGLE TEST SWORD — rotating 3D ===
-        drawWeapon(W * 0.5, H * 0.65, H * 0.5, H * 0.5 * 0.025, 0, {
+        // === SINGLE TEST SWORD — rotating 3D, slight diagonal tilt ===
+        drawWeapon(W * 0.5, H * 0.55, H * 0.5, H * 0.5 * 0.025, 8, {
           type: weaponTypes[0], zRot: time * 1.5, irr: {},
           wx: 0, wy: 0, wz: 3, darkness: 0
         });
