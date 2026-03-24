@@ -2951,25 +2951,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
             const wt = weaponTypes[wtIdx];
 
-            // Size: minimal variation + distance shrink + weapon type multiplier
-            const sizeVar = 0.92 + rng(sIdx, 3) * 0.16;
-            const distShrink = 1 - depthRatio * 0.25;
+            // Size: very subtle variation + distance shrink + weapon type multiplier
+            const sizeVar = 0.96 + rng(sIdx, 3) * 0.08; // ±4% only
+            const distShrink = 1 - depthRatio * 0.18; // 18% smaller at max distance
 
-            // Tilt (lean left/right in 2D)
-            const tiltVal = (rng(sIdx, 4) - 0.5) * 26;
-            const steep = rng(sIdx, 5) > 0.88 ? 2.5 : (rng(sIdx, 5) > 0.75 ? 1.6 : 1);
+            // Tilt: gentle lean, most swords nearly upright
+            const tiltVal = (rng(sIdx, 4) - 0.5) * 12; // ±6° base
+            const steep = rng(sIdx, 5) > 0.93 ? 1.8 : 1; // rare 1.8x lean
 
-            // Z-axis rotation: how much the blade faces toward/away from camera
-            // Range: -PI/3 to PI/3 (±60°). At 0 = flat toward camera (widest)
-            const zRot = (rng(sIdx, 16) - 0.5) * Math.PI * 0.65;
+            // Z-axis rotation: subtle facing variation ±25°
+            const zRot = (rng(sIdx, 16) - 0.5) * Math.PI * 0.28;
 
-            // Organic irregularities
+            // Organic irregularities — very subtle, not cartoonish
             const irr = {
-              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.3,
-              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.08,
-              guardVar:  (rng(sIdx, 8) - 0.5) * 0.3,
-              gripVar:   (rng(sIdx, 9) - 0.5) * 0.06,
-              pomVar:    (rng(sIdx, 10) - 0.5) * 0.15
+              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.1,     // barely noticeable asymmetry
+              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.03,     // blade height ±1.5%
+              guardVar:  (rng(sIdx, 8) - 0.5) * 0.12,     // guard size ±6%
+              gripVar:   (rng(sIdx, 9) - 0.5) * 0.025,    // grip length ±1.2%
+              pomVar:    (rng(sIdx, 10) - 0.5) * 0.06      // pommel ±3%
             };
 
             // Distance darkness (still used as overlay)
