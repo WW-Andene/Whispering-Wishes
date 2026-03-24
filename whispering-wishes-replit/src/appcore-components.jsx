@@ -2612,11 +2612,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // --- OPAQUE GROUND ---
         const gd = ctx.createLinearGradient(0, hY, 0, H);
-        gd.addColorStop(0, 'rgb(38,26,20)');
-        gd.addColorStop(0.1, 'rgb(28,19,15)');
-        gd.addColorStop(0.3, 'rgb(18,12,10)');
-        gd.addColorStop(0.6, 'rgb(12,8,6)');
-        gd.addColorStop(1, 'rgb(6,4,3)');
+        gd.addColorStop(0, 'rgb(45,32,24)');
+        gd.addColorStop(0.1, 'rgb(38,26,19)');
+        gd.addColorStop(0.3, 'rgb(30,20,15)');
+        gd.addColorStop(0.6, 'rgb(22,14,10)');
+        gd.addColorStop(1, 'rgb(14,9,6)');
         ctx.fillStyle = gd;
         ctx.fillRect(0, hY, W, H - hY);
 
@@ -2748,17 +2748,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const lightPos = { x: 0, y: 3.0, z: 80 }; // world-space sun position
         const lightIntensity = 1.2;
         const lightColor = { r: 255, g: 190, b: 90 }; // warm sunset
-        const ambientLight = 0.08; // minimum light level
+        const ambientLight = 0.18; // minimum light level — enough to see materials
 
         // === MATERIAL SYSTEM ===
         // Each material has: base color, specularity (0-1), roughness (0-1), metallic (0-1)
         const materials = {
-          steel:    { r: 180, g: 185, b: 195, spec: 0.7, rough: 0.25, metal: 0.9 },
-          iron:     { r: 110, g: 100, b:  95, spec: 0.3, rough: 0.6,  metal: 0.7 },
-          bronze:   { r: 175, g: 135, b:  70, spec: 0.5, rough: 0.35, metal: 0.85 },
-          darkIron: { r:  55, g:  50, b:  48, spec: 0.15, rough: 0.8, metal: 0.6 },
-          bone:     { r: 200, g: 185, b: 160, spec: 0.1, rough: 0.7,  metal: 0.0 },
-          wood:     { r: 100, g:  65, b:  35, spec: 0.05, rough: 0.9, metal: 0.0 }
+          steel:    { r: 195, g: 200, b: 215, spec: 0.7, rough: 0.25, metal: 0.9 },  // cool blue-grey
+          iron:     { r: 130, g: 105, b:  90, spec: 0.3, rough: 0.6,  metal: 0.7 },  // warm brown-grey
+          bronze:   { r: 200, g: 150, b:  60, spec: 0.5, rough: 0.35, metal: 0.85 }, // distinctly warm gold
+          darkIron: { r:  70, g:  60, b:  55, spec: 0.15, rough: 0.8, metal: 0.6 },  // dark but visible
+          bone:     { r: 220, g: 200, b: 170, spec: 0.1, rough: 0.7,  metal: 0.0 },  // warm cream
+          wood:     { r: 120, g:  75, b:  35, spec: 0.05, rough: 0.9, metal: 0.0 }   // rich brown
         };
         const matKeys = Object.keys(materials);
 
