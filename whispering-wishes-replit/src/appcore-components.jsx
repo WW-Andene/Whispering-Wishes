@@ -2696,7 +2696,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
         }
 
-        // Ground is rendered entirely by the 3D terrain mesh below
+        // Fill ground area solid dark before terrain mesh paints over it
+        ctx.fillStyle = 'rgb(14,9,6)';
+        ctx.fillRect(0, hY, W, H - hY);
 
         // (Old ground layers, textures, cracks, mountains removed — terrain mesh handles all)
 
@@ -3924,8 +3926,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // === GRID OF SWORDS — evenly spaced, then camera projects ===
           // Spacing grows with distance (close rows dense, far rows sparse)
           // so ~equal number of visible swords per row on screen
-          const gridZmin = 0.15, gridZmax = 80;
-          const maxSwords = 750;
+          const gridZmin = 0.1, gridZmax = 80;
+          const maxSwords = 500;
           let swordIdx = 0;
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
             // Spacing scales with Z — constant screen density
