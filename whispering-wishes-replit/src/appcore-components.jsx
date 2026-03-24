@@ -4084,22 +4084,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // Then: scatter field swords with linear distribution (not quadratic)
-          const swordCount = 500;
+          const swordCount = 800;
           for (let i = 0; i < swordCount; i++) {
             const zRaw = rng(i, 100);
-            // Linear distribution — even spread from near to far
-            const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zRaw;
+            // Sqrt distribution — more even screen coverage (compensates perspective)
+            const wzJ = fieldZnear + (fieldZfar - fieldZnear) * Math.sqrt(zRaw);
 
             // X spread widens with distance (perspective cone)
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
             let wx = (rng(i, 101) * 2 - 1) * xSpread;
 
-            // Center clearing — keep open space in the middle (matching sketch)
-            // Wider clearing for close swords, narrower for far
-            const clearingHW = 3.0 * (1 + 4.0 / (wzJ + 2));
+            // Gentle center clearing — small gap in the middle
+            const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
             if (Math.abs(wx) < clearingHW) {
               const sign = wx >= 0 ? 1 : -1;
-              wx = sign * (clearingHW + rng(i, 110) * 2.0);
+              wx = sign * (clearingHW + rng(i, 110) * 1.5);
             }
             const wy = terrH(wx, wzJ);
 
