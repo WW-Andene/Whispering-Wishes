@@ -2757,7 +2757,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Scale by depth: tiny at horizon, huge near camera
           const scale = 0.05 + depth * 0.95;  // 0.05..1.0
           const swordH = H * (0.06 + sizeVar * 0.06) * scale * 8.0;
-          const bladeHW = Math.max(0.8, W * (0.004 + sizeVar * 0.005) * scale * 5.0);
+          const bladeHW = Math.max(0.6, W * (0.002 + sizeVar * 0.003) * scale * 4.5);
 
           // Tilt: slight random lean
           const tilt = (tiltH - 0.5) * 24;  // -12 to +12 degrees
@@ -2780,13 +2780,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.translate(x, y);
           ctx.rotate(tilt * Math.PI / 180);
 
-          // Proportions
-          const bladeH = sH * 0.72;
-          const guardH = Math.max(1, sH * 0.025);
+          // Proportions — thin elegant silhouettes
+          const bladeH = sH * 0.75;
+          const guardH = Math.max(1, sH * 0.008);   // very thin bar
           const gripH = sH * 0.20;
-          const pommelR = Math.max(0.8, sH * 0.02);
-          const guardW = bW * 1.8;
-          const gripW = bW * 0.35;
+          const pommelR = Math.max(0.5, sH * 0.006); // tiny pommel
+          const guardW = bW * 1.6;                    // not too wide
+          const gripW = bW * 0.25;                    // thin grip
 
           // Colors: dark charcoal-brown, fully opaque for silhouette
           const baseCol = 'rgba(18,12,10,' + Math.min(1, 0.97 * alphaScale) + ')';
@@ -2879,17 +2879,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             }
           }
 
-          // === POMMEL ===
-          ctx.beginPath();
-          ctx.arc(0, gripTop - pommelR, pommelR, 0, Math.PI * 2);
-          ctx.fillStyle = baseCol;
-          ctx.fill();
-
-          // Pommel rim
-          if (rimA > 0.12) {
+          // === POMMEL (tiny cap, only on close swords) ===
+          if (detail >= 1) {
             ctx.beginPath();
-            ctx.arc(rimSide * pommelR * 0.4, gripTop - pommelR, pommelR * 0.35, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(220,140,60,' + (rimA * 0.6 * alphaScale) + ')';
+            ctx.arc(0, gripTop - pommelR, pommelR, 0, Math.PI * 2);
+            ctx.fillStyle = baseCol;
             ctx.fill();
           }
 
