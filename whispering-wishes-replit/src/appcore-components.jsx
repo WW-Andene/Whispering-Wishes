@@ -3053,12 +3053,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Left outer tip
             gSamplesTop.push({ x: -tipOuterX, y: gCenterY - tipFlare });
             gSamplesTop.push({ x: -tipInnerX, y: gCenterY - tipFlare * 0.6 });
-            // Left arm: tip → V start (flat along arm height)
+            // Left arm: tip → V start (bowed outward)
+            const armBow = ghh * 0.45; // how much the arm bulges outward
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(cBez(
                 -tipInnerX, gCenterY - tipFlare * 0.6,
-                -tipInnerX * 0.7, gCenterY - ghh,
-                -vOuterX - gcHW * 0.2, gCenterY - ghh,
+                -tipInnerX * 0.7, gCenterY - ghh - armBow,
+                -vOuterX - gcHW * 0.2, gCenterY - ghh - armBow,
                 -vOuterX, gCenterY - ghh,
                 i / NS
               ));
@@ -3081,12 +3082,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
                 i / NS
               ));
             }
-            // Right arm: V end → tip
+            // Right arm: V end → tip (bowed outward)
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(cBez(
                 vOuterX, gCenterY - ghh,
-                vOuterX + gcHW * 0.2, gCenterY - ghh,
-                tipInnerX * 0.7, gCenterY - ghh,
+                vOuterX + gcHW * 0.2, gCenterY - ghh - armBow,
+                tipInnerX * 0.7, gCenterY - ghh - armBow,
                 tipInnerX, gCenterY - tipFlare * 0.6,
                 i / NS
               ));
