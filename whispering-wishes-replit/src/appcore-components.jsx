@@ -2855,15 +2855,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Dimensions
           const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
           const halfW = sbw * wt.bwM; // half blade width
-          const halfT = halfW * 0.20; // half thickness (~20% of width)
+          const halfT = Math.max(2, halfW * 0.45); // half thickness — 45% of width, min 2px
           const tipW = wt.tipS === 1 ? halfW * 0.45 : halfW * 0.22;
-          const tipT = halfT * 0.5; // tip is thinner
+          const tipT = Math.max(1, halfT * 0.4); // tip thinner but still visible
           const gThk = Math.max(0.6, sh * 0.006) * (1 + (ir.guardVar || 0));
           const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard half-width
-          const gHT = gThk * 0.6; // guard half-thickness (depth)
+          const gHT = Math.max(2, gHW * 0.5); // guard depth — 50% of width, min 2px
           const gripH = sh * (wt.gripP + (ir.gripVar || 0));
           const gripHW = halfW * 0.18;
-          const gripHT = gripHW * 0.8; // grip is roughly square
+          const gripHT = Math.max(1.5, gripHW); // grip is roughly square
           const pomR = Math.max(0.2, halfW * (0.25 * wt.pomM + (ir.pomVar || 0)));
 
           // Material lighting
@@ -2912,15 +2912,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const bBR = rotY(tipW, 0, -tipT, cosA, sinA);
           const bBL = rotY(-tipW, 0, -tipT, cosA, sinA);
 
-          // Determine face visibility by checking if normal faces camera (z > 0)
-          // Front face normal: (0, 0, +1) rotated → (sinA, 0, cosA) → visible if cosA > 0
-          const frontVis = cosA > 0;
-          // Back face: visible if cosA < 0
-          const backVis = cosA < 0;
-          // Right side: normal (1,0,0) rotated → (cosA, 0, -sinA) → visible if cosA > 0 when sinA < 0...
-          // Simpler: right side visible when the right edge turns toward camera
-          const rightVis = sinA > 0;
-          const leftVis = sinA < 0;
+          // Determine face visibility (with epsilon to avoid degenerate draws)
+          const eps = 0.01;
+          const frontVis = cosA > eps;
+          const backVis = cosA < -eps;
+          const rightVis = sinA > eps;
+          const leftVis = sinA < -eps;
 
           const frontCol = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
           const backCol = 'rgb(' + Math.round(blR * 0.6) + ',' + Math.round(blG * 0.6) + ',' + Math.round(blB * 0.6) + ')';
