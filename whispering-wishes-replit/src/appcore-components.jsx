@@ -2565,7 +2565,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.58;
+        const botY = h * 0.48;
         // Top must stay below VP for correct perspective convergence
         const topY = vpY + h * 0.04; // below the sun
 
@@ -2681,7 +2681,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.58;
+        const botY = h * 0.48;
         const topY = vpY + h * 0.04;
 
         // Same transform as outer rectangle
@@ -3367,7 +3367,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Devastated battleground (lower area beneath staircase) ---
       {
-        const groundY = h * 0.56; // just below staircase base
+        const groundY = h * 0.46; // just below staircase base
         const groundH = h - groundY;
 
         // Scorched earth mound — dark hill the staircase sits on
