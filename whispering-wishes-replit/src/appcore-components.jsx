@@ -2639,22 +2639,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const warm = rng(gi, 23);
           let r, g, b, a;
           if (warm < 0.35) {
-            // Dark depression / shadow
-            r = 4 + rng(gi, 24) * 8; g = 2 + rng(gi, 25) * 5; b = 1 + rng(gi, 26) * 4;
-            a = 0.18 + rng(gi, 27) * 0.22;
+            // Dark depression / shadow — clearly darker than base ground
+            r = 2 + rng(gi, 24) * 5; g = 1 + rng(gi, 25) * 3; b = 0;
+            a = 0.30 + rng(gi, 27) * 0.30;
           } else if (warm < 0.6) {
             // Warm lit ground near horizon, cooler near camera
             const horizP = 1 - depthT;
-            r = 40 + horizP * 65; g = 22 + horizP * 30; b = 10 + horizP * 10;
-            a = 0.08 + horizP * 0.12;
+            r = 50 + horizP * 80; g = 28 + horizP * 40; b = 12 + horizP * 15;
+            a = 0.12 + horizP * 0.18;
           } else if (warm < 0.8) {
-            // Rocky grey-brown patches
-            r = 22 + rng(gi, 28) * 15; g = 18 + rng(gi, 29) * 10; b = 14 + rng(gi, 30) * 8;
-            a = 0.10 + rng(gi, 31) * 0.14;
+            // Rocky grey-brown patches — visible contrast
+            r = 25 + rng(gi, 28) * 18; g = 20 + rng(gi, 29) * 12; b = 16 + rng(gi, 30) * 10;
+            a = 0.15 + rng(gi, 31) * 0.20;
           } else {
             // Reddish dried-blood earth
-            r = 35 + rng(gi, 28) * 25; g = 10 + rng(gi, 29) * 8; b = 6 + rng(gi, 30) * 5;
-            a = 0.06 + rng(gi, 31) * 0.10;
+            r = 45 + rng(gi, 28) * 30; g = 12 + rng(gi, 29) * 10; b = 5 + rng(gi, 30) * 5;
+            a = 0.10 + rng(gi, 31) * 0.15;
           }
           const tg = ctx.createRadialGradient(gpx, gpy, 0, gpx, gpy, pr);
           tg.addColorStop(0, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + a.toFixed(3) + ')');
@@ -2674,8 +2674,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.save();
           ctx.translate(cx1, cy1);
           ctx.rotate(cAngle);
-          ctx.strokeStyle = 'rgba(2,1,1,' + (0.10 + rng(ci, 54) * 0.15).toFixed(3) + ')';
-          ctx.lineWidth = 0.5 + rng(ci, 55) * 1.5 * depthT;
+          ctx.strokeStyle = 'rgba(2,1,1,' + (0.20 + rng(ci, 54) * 0.25).toFixed(3) + ')';
+          ctx.lineWidth = 0.8 + rng(ci, 55) * 2.5 * depthT;
           ctx.beginPath();
           ctx.moveTo(0, 0);
           // Jagged line
@@ -2700,7 +2700,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.save();
           ctx.translate(sx2, sy2);
           ctx.rotate((rng(si, 44) - 0.3) * 0.35);
-          ctx.fillStyle = 'rgba(3,1,1,' + (0.12 + rng(si, 45) * 0.15).toFixed(3) + ')';
+          ctx.fillStyle = 'rgba(3,1,1,' + (0.20 + rng(si, 45) * 0.20).toFixed(3) + ')';
           ctx.beginPath();
           ctx.ellipse(0, 0, sLen, sWid, 0, 0, Math.PI * 2);
           ctx.fill();
@@ -2713,8 +2713,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const ly = hY + (H - hY) * (rng(li, 61) * 0.15 + 0.01);
           const lr = 15 + rng(li, 62) * 30;
           const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, lr);
-          lg.addColorStop(0, 'rgba(120,70,25,0.08)');
-          lg.addColorStop(1, 'rgba(80,40,15,0)');
+          lg.addColorStop(0, 'rgba(130,75,30,0.16)');
+          lg.addColorStop(1, 'rgba(90,45,18,0)');
           ctx.fillStyle = lg;
           ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.fill();
         }
@@ -2765,15 +2765,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // === WEAPON TYPES ===
         // All sword variants — same basic silhouette, different proportions/materials.
         // Keeps the battlefield cohesive. tipShape: 0=pointed, 1=slightly broad
-        // All sword variants — tight hM/wM range (0.94–1.06) so size stays consistent
+        // Sword variants — hM/wM range ~0.88–1.12 for visible but cohesive variety
         const weaponTypes = [
-          { name: 'longsword',   bladeP: 0.72, guardP: 0.02,  gripP: 0.21, bwM: 1.0,  gwM: 1.5, tipS: 0, pomM: 1.0,  hM: 1.0,  wM: 1.0,  bladeMat: 'steel',    handleMat: 'wood' },
-          { name: 'greatsword',  bladeP: 0.70, guardP: 0.022, gripP: 0.23, bwM: 1.05, gwM: 1.6, tipS: 0, pomM: 1.05, hM: 1.06, wM: 1.03, bladeMat: 'steel',    handleMat: 'wood' },
-          { name: 'shortsword',  bladeP: 0.69, guardP: 0.02,  gripP: 0.20, bwM: 0.97, gwM: 1.3, tipS: 0, pomM: 0.95, hM: 0.94, wM: 0.97, bladeMat: 'iron',     handleMat: 'wood' },
-          { name: 'broadsword',  bladeP: 0.71, guardP: 0.02,  gripP: 0.20, bwM: 1.08, gwM: 1.5, tipS: 1, pomM: 1.0,  hM: 0.98, wM: 1.05, bladeMat: 'iron',     handleMat: 'wood' },
-          { name: 'arming',      bladeP: 0.71, guardP: 0.018, gripP: 0.20, bwM: 0.95, gwM: 1.4, tipS: 0, pomM: 0.97, hM: 0.96, wM: 0.98, bladeMat: 'steel',    handleMat: 'bone' },
-          { name: 'bastard',     bladeP: 0.71, guardP: 0.022, gripP: 0.22, bwM: 1.02, gwM: 1.55, tipS: 0, pomM: 1.03, hM: 1.04, wM: 1.01, bladeMat: 'darkIron', handleMat: 'wood' },
-          { name: 'falchion',    bladeP: 0.72, guardP: 0.015, gripP: 0.20, bwM: 1.04, gwM: 1.2, tipS: 1, pomM: 0.9,  hM: 0.97, wM: 1.02, bladeMat: 'bronze',   handleMat: 'wood' },
+          { name: 'longsword',   bladeP: 0.72, guardP: 0.02,  gripP: 0.21, bwM: 1.0,  gwM: 1.5,  tipS: 0, pomM: 1.0,  hM: 1.0,  wM: 1.0,  bladeMat: 'steel',    handleMat: 'wood' },
+          { name: 'greatsword',  bladeP: 0.68, guardP: 0.024, gripP: 0.25, bwM: 1.15, gwM: 1.7,  tipS: 0, pomM: 1.15, hM: 1.12, wM: 1.10, bladeMat: 'steel',    handleMat: 'wood' },
+          { name: 'shortsword',  bladeP: 0.67, guardP: 0.02,  gripP: 0.19, bwM: 0.92, gwM: 1.3,  tipS: 0, pomM: 0.88, hM: 0.88, wM: 0.90, bladeMat: 'iron',     handleMat: 'wood' },
+          { name: 'broadsword',  bladeP: 0.70, guardP: 0.02,  gripP: 0.20, bwM: 1.25, gwM: 1.5,  tipS: 1, pomM: 1.0,  hM: 0.96, wM: 1.15, bladeMat: 'iron',     handleMat: 'wood' },
+          { name: 'arming',      bladeP: 0.70, guardP: 0.018, gripP: 0.20, bwM: 0.90, gwM: 1.35, tipS: 0, pomM: 0.95, hM: 0.92, wM: 0.93, bladeMat: 'steel',    handleMat: 'bone' },
+          { name: 'bastard',     bladeP: 0.70, guardP: 0.022, gripP: 0.23, bwM: 1.05, gwM: 1.6,  tipS: 0, pomM: 1.1,  hM: 1.08, wM: 1.03, bladeMat: 'darkIron', handleMat: 'wood' },
+          { name: 'falchion',    bladeP: 0.73, guardP: 0.015, gripP: 0.19, bwM: 1.10, gwM: 1.1,  tipS: 1, pomM: 0.85, hM: 0.94, wM: 1.06, bladeMat: 'bronze',   handleMat: 'wood' },
         ];
 
         // 3D lighting calculation
@@ -2940,7 +2940,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // === BARREL LENS DISTORTION for depth illusion ===
-        const lensK = 0.12; // distortion strength (subtle)
+        const lensK = 0.18; // barrel distortion strength
         function lensDistort(px, py) {
           // Normalize to [-1,1] centered on screen
           const nx = (px - W * 0.5) / (W * 0.5);
@@ -2993,26 +2993,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
             const wt = weaponTypes[wtIdx];
 
-            // Size: subtle per-object variation. Perspective (focal/wz) handles
-            // apparent size reduction with distance naturally.
-            // distShrink is a small world-space reduction (worn/old swords far away).
-            const sizeVar = 0.97 + rng(sIdx, 3) * 0.06; // ±3% per-object
-            const distShrink = 1 - depthRatio * 0.08; // 8% world-space shrink at max depth
+            // Size: noticeable per-object variation + distance world-space shrink
+            const sizeVar = 0.90 + rng(sIdx, 3) * 0.20; // 0.90–1.10
+            const distShrink = 1 - depthRatio * 0.15; // 15% shrink at max depth
 
-            // Tilt: gentle lean, most swords nearly upright
-            const tiltVal = (rng(sIdx, 4) - 0.5) * 12; // ±6° base
-            const steep = rng(sIdx, 5) > 0.93 ? 1.8 : 1; // rare 1.8x lean
+            // Tilt: visible lean, most nearly upright but some clearly angled
+            const tiltVal = (rng(sIdx, 4) - 0.5) * 20; // ±10°
+            const steep = rng(sIdx, 5) > 0.90 ? 2.0 : 1; // 10% chance of double lean
 
-            // Z-axis rotation: subtle facing variation ±25°
-            const zRot = (rng(sIdx, 16) - 0.5) * Math.PI * 0.28;
+            // Z-axis rotation: visible facing variation ±40°
+            const zRot = (rng(sIdx, 16) - 0.5) * Math.PI * 0.45;
 
-            // Organic irregularities — very subtle, not cartoonish
+            // Organic irregularities — noticeable but natural
             const irr = {
-              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.1,     // barely noticeable asymmetry
-              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.03,     // blade height ±1.5%
-              guardVar:  (rng(sIdx, 8) - 0.5) * 0.12,     // guard size ±6%
-              gripVar:   (rng(sIdx, 9) - 0.5) * 0.025,    // grip length ±1.2%
-              pomVar:    (rng(sIdx, 10) - 0.5) * 0.06      // pommel ±3%
+              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.2,     // visible asymmetry
+              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.06,     // blade height ±3%
+              guardVar:  (rng(sIdx, 8) - 0.5) * 0.25,     // guard size ±12%
+              gripVar:   (rng(sIdx, 9) - 0.5) * 0.05,     // grip length ±2.5%
+              pomVar:    (rng(sIdx, 10) - 0.5) * 0.12      // pommel ±6%
             };
 
             // Distance darkness (still used as overlay)
