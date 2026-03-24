@@ -3056,7 +3056,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // === SINGLE TEST SWORD ===
-        drawWeapon(W * 0.5, H * 0.85, H * 0.5, H * 0.5 * 0.025, 0, {
+        drawWeapon(W * 0.5, H * 0.45, H * 0.5, H * 0.5 * 0.025, 0, {
           type: weaponTypes[0], zRot: 0, irr: {},
           wx: 0, wy: 0, wz: 3, darkness: 0
         });
