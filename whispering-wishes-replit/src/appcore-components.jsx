@@ -2853,24 +2853,25 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Dimensions
           const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
-          // --- Proportions derived from grip as reference unit ---
-          const halfW = sbw * wt.bwM; // half blade width (the wide flat dimension)
-          const gripHW = halfW / 1.5; // grip half-width: blade is 1.5x grip
-          const gripHT = gripHW; // grip is round/square: depth = width
+          // --- Sword proportions ---
+          const halfW = sbw * wt.bwM; // blade half-width (wide flat face)
+          const halfT = Math.max(0.5, halfW * 0.1); // blade half-thickness: ~10% of width (flat rectangle)
+
+          const tipW = wt.tipS === 1 ? halfW * 0.4 : halfW * 0.12;
+          const tipT = Math.max(0.3, halfT * 0.3);
+
+          // Grip: blade is 1.5x grip width. Grip is round (width ≈ depth).
+          const gripHW = halfW / 1.5;
+          const gripHT = gripHW;
           const gripH = sh * (wt.gripP + (ir.gripVar || 0));
 
-          // Blade thickness: thin flat shape, never more than grip diameter
-          const halfT = Math.min(gripHW, Math.max(1, halfW * 0.15));
-          const tipW = wt.tipS === 1 ? halfW * 0.45 : halfW * 0.15;
-          const tipT = Math.max(0.5, halfT * 0.3);
+          // Guard: cylindrical bar, same diameter as grip, perpendicular to blade
+          const gThk = gripHW; // guard bar height = grip diameter
+          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // arm length (how far it extends)
+          const gHT = gripHW; // guard bar depth = grip diameter
 
-          // Guard: bar with similar diameter to grip, extends perpendicular
-          const gThk = Math.max(1, gripHW * 0.7); // guard bar visual height ≈ grip diameter
-          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard arm length
-          const gHT = gripHW; // guard bar depth = grip diameter (round bar)
-
-          // Pommel: round, slightly wider than grip
-          const pomR = Math.max(0.5, gripHW * 1.2 * (wt.pomM + (ir.pomVar || 0)));
+          // Pommel: round, ~1.3x grip diameter
+          const pomR = Math.max(0.5, gripHW * 1.3 * (wt.pomM + (ir.pomVar || 0)));
 
           // Material lighting
           const bladeMat = materials[wt.bladeMat] || materials.steel;
@@ -3056,7 +3057,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         {
           const testWt = weaponTypes[0];
           const testH = H * 0.4;
-          const testBW = testH * 0.06;
+          const testBW = testH * 0.025; // blade half-width: thin rectangle
           const testY = H * 0.85;
           const angles = [0, Math.PI * 0.25, Math.PI * 0.45];
           const xPositions = [W * 0.2, W * 0.5, W * 0.8];
