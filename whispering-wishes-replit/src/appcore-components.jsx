@@ -3007,129 +3007,135 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // ================================================================
-          // GUARD — curved crossguard that sweeps downward with flared tips
+          // GUARD — curved crossguard with depth, sweeps down with flared tips
+          // Sampled as discrete points through rotY so it rotates properly
           // ================================================================
           const gy = bladeTop;
           const gBarDepth = gripHT;
-          const gFlareW = guardBarH * 2.5;  // flared tip width
-          const gFlareH = guardBarH * 1.8;  // how far tips droop
-          const gTipW = guardArmHW * 0.22;  // width of the flared end cap
+          const gFlareH = guardBarH * 1.8;
+          const gTipW = guardArmHW * 0.22;
+          const gcHW = halfW * 1.1;
 
-          // Draw guard as a 2D curved shape on front face, with depth faces
-          // Build guard silhouette points (front face)
-          // Center section (where blade passes through)
-          const gcHW = halfW * 1.1; // center half-width slightly wider than blade
-
-          // Guard front face — curved path drawn with bezier
-          if (backVis) {
-            // Back face of guard (simplified quad)
-            const gbC1 = rotY(-guardArmHW, gy - guardBarH * 0.5 + gFlareH * 0.3, -gBarDepth, cosA, sinA);
-            const gbC2 = rotY(guardArmHW, gy - guardBarH * 0.5 + gFlareH * 0.3, -gBarDepth, cosA, sinA);
-            const gbC3 = rotY(guardArmHW, gy + gFlareH * 0.3, -gBarDepth, cosA, sinA);
-            const gbC4 = rotY(-guardArmHW, gy + gFlareH * 0.3, -gBarDepth, cosA, sinA);
-            fillPoly([gbC1, gbC2, gbC3, gbC4], guardSideCol);
-          }
-
-          // Front face guard drawn as bezier curve
+          // Sample the guard silhouette as point pairs (top edge, bottom edge)
+          // so we can rotY every point and connect front/back with depth quads
           {
-            const drawGuardFace = (z, col) => {
-              const vis = z > 0 ? frontVis : backVis;
-              if (!vis) return;
-              // Transform key points
-              const p = (x, y) => rotY(x, y, z, cosA, sinA);
+            const earFlareG = gTipW;
+            // Build top-edge and bottom-edge sample points (X,Y) for guard
+            // We'll sample ~20 points along each edge from left tip to right tip
+            const gSamplesTop = []; // upper silhouette
+            const gSamplesBot = []; // lower silhouette
 
-              // Top-left tip (flared, drooping)
-              const tlOuter = p(-guardArmHW - gTipW, gy - guardBarH - gFlareH * 0.4);
-              const tlTop = p(-guardArmHW, gy - guardBarH - gFlareH * 0.15);
-              const tlBot = p(-guardArmHW, gy + gFlareH * 0.6);
-              const tlInner = p(-guardArmHW + gTipW * 0.5, gy + gFlareH * 0.2);
+            // Helper: quadratic bezier sample
+            const qBez = (ax, ay, cx, cy, bx, by, t) => ({
+              x: (1 - t) * (1 - t) * ax + 2 * (1 - t) * t * cx + t * t * bx,
+              y: (1 - t) * (1 - t) * ay + 2 * (1 - t) * t * cy + t * t * by
+            });
 
-              // Center top and bottom
-              const ctL = p(-gcHW, gy - guardBarH);
-              const ctR = p(gcHW, gy - guardBarH);
-              const cbL = p(-gcHW, gy);
-              const cbR = p(gcHW, gy);
+            // Guard profile key points (X, Y) — same as the bezier path
+            // Top edge: left-tip-outer → left-tip-top → center-top-left → center-top-right → right-tip-top → right-tip-outer
+            // Bottom edge: left-tip-bot → center-bot-left → center-bot-right → right-tip-bot
 
-              // Top-right tip (flared, drooping) — mirror of left
-              const trOuter = p(guardArmHW + gTipW, gy - guardBarH - gFlareH * 0.4);
-              const trTop = p(guardArmHW, gy - guardBarH - gFlareH * 0.15);
-              const trBot = p(guardArmHW, gy + gFlareH * 0.6);
-              const trInner = p(guardArmHW - gTipW * 0.5, gy + gFlareH * 0.2);
+            const N = 8; // samples per curve segment
 
-              ctx.beginPath();
-              // Start at center-top-left, go left
-              ctx.moveTo(ctL.x, ctL.y);
-              // Curve to left tip top
-              ctx.quadraticCurveTo(
-                (ctL.x + tlTop.x) * 0.5, ctL.y - guardBarH * 0.2,
-                tlTop.x, tlTop.y
-              );
-              // Left flared tip outer edge
-              ctx.lineTo(tlOuter.x, tlOuter.y);
-              // Curve around left tip bottom
-              ctx.quadraticCurveTo(
-                tlOuter.x + gTipW * 0.3, tlBot.y,
-                tlBot.x, tlBot.y
-              );
-              // Curve back to center along bottom
-              ctx.quadraticCurveTo(
-                (tlInner.x + cbL.x) * 0.5, gy + gFlareH * 0.15,
-                cbL.x, cbL.y
-              );
-              // Bottom center
-              ctx.lineTo(cbR.x, cbR.y);
-              // Curve to right tip bottom
-              ctx.quadraticCurveTo(
-                (cbR.x + trInner.x) * 0.5, gy + gFlareH * 0.15,
-                trBot.x, trBot.y
-              );
-              // Right flared tip outer
-              ctx.quadraticCurveTo(
-                trOuter.x - gTipW * 0.3, trBot.y,
-                trOuter.x, trOuter.y
-              );
-              // Right tip top
-              ctx.lineTo(trTop.x, trTop.y);
-              // Curve back to center-top-right
-              ctx.quadraticCurveTo(
-                (trTop.x + ctR.x) * 0.5, ctR.y - guardBarH * 0.2,
-                ctR.x, ctR.y
-              );
-              // Close top
-              ctx.closePath();
-              ctx.fillStyle = col;
-              ctx.fill();
-            };
+            // === TOP EDGE (going left to right) ===
+            // Left outer tip
+            const ltOX = -guardArmHW - gTipW, ltOY = gy - guardBarH - gFlareH * 0.4;
+            const ltTX = -guardArmHW, ltTY = gy - guardBarH - gFlareH * 0.15;
+            const ctLX = -gcHW, ctLY = gy - guardBarH;
+            const ctRX = gcHW, ctRY = gy - guardBarH;
+            const rtTX = guardArmHW, rtTY = gy - guardBarH - gFlareH * 0.15;
+            const rtOX = guardArmHW + gTipW, rtOY = gy - guardBarH - gFlareH * 0.4;
 
-            drawGuardFace(-gBarDepth, guardSideCol);
-            // Top/bottom depth strips
-            {
-              const pF = (x, y) => rotY(x, y, gBarDepth, cosA, sinA);
-              const pB = (x, y) => rotY(x, y, -gBarDepth, cosA, sinA);
-              // Top edge depth (center section)
-              fillPoly([
-                pF(-gcHW, gy - guardBarH), pF(gcHW, gy - guardBarH),
-                pB(gcHW, gy - guardBarH), pB(-gcHW, gy - guardBarH)
-              ], guardSideCol);
-              // Bottom edge depth
-              fillPoly([
-                pF(-gcHW, gy), pF(gcHW, gy),
-                pB(gcHW, gy), pB(-gcHW, gy)
-              ], guardSideCol);
-              // Right end cap depth
-              const rTipF = pF(guardArmHW + gTipW, gy - guardBarH - gFlareH * 0.4);
-              const rBotF = pF(guardArmHW, gy + gFlareH * 0.6);
-              const rTipB = pB(guardArmHW + gTipW, gy - guardBarH - gFlareH * 0.4);
-              const rBotB = pB(guardArmHW, gy + gFlareH * 0.6);
-              if (rightVis) fillPoly([rTipF, rBotF, rBotB, rTipB], guardSideCol);
-              // Left end cap depth
-              const lTipF = pF(-guardArmHW - gTipW, gy - guardBarH - gFlareH * 0.4);
-              const lBotF = pF(-guardArmHW, gy + gFlareH * 0.6);
-              const lTipB = pB(-guardArmHW - gTipW, gy - guardBarH - gFlareH * 0.4);
-              const lBotB = pB(-guardArmHW, gy + gFlareH * 0.6);
-              if (leftVis) fillPoly([lTipF, lBotF, lBotB, lTipB], guardSideCol);
+            // Left tip outer to left tip top (straight)
+            gSamplesTop.push({ x: ltOX, y: ltOY });
+            gSamplesTop.push({ x: ltTX, y: ltTY });
+            // Curve: left tip top → center top left
+            const cpLT_X = (ctLX + ltTX) * 0.5, cpLT_Y = ctLY - guardBarH * 0.2;
+            for (let i = 1; i <= N; i++) {
+              gSamplesTop.push(qBez(ltTX, ltTY, cpLT_X, cpLT_Y, ctLX, ctLY, i / N));
             }
-            drawGuardFace(gBarDepth, guardCol);
+            // Straight center top
+            gSamplesTop.push({ x: ctRX, y: ctRY });
+            // Curve: center top right → right tip top
+            const cpRT_X = (rtTX + ctRX) * 0.5, cpRT_Y = ctRY - guardBarH * 0.2;
+            for (let i = 1; i <= N; i++) {
+              gSamplesTop.push(qBez(ctRX, ctRY, cpRT_X, cpRT_Y, rtTX, rtTY, i / N));
+            }
+            // Right tip top to right tip outer (straight)
+            gSamplesTop.push({ x: rtOX, y: rtOY });
+
+            // === BOTTOM EDGE (going left to right) ===
+            const lbBX = -guardArmHW, lbBY = gy + gFlareH * 0.6;
+            const lbIX = -guardArmHW + gTipW * 0.5, lbIY = gy + gFlareH * 0.2;
+            const cbLX = -gcHW, cbLY = gy;
+            const cbRX = gcHW, cbRY = gy;
+            const rbIX = guardArmHW - gTipW * 0.5, rbIY = gy + gFlareH * 0.2;
+            const rbBX = guardArmHW, rbBY = gy + gFlareH * 0.6;
+
+            // Left tip outer bottom (curve from outer tip down to left bot)
+            const cpLBO_X = ltOX + gTipW * 0.3, cpLBO_Y = lbBY;
+            gSamplesBot.push({ x: ltOX, y: ltOY }); // starts at same X as top
+            for (let i = 1; i <= N; i++) {
+              gSamplesBot.push(qBez(ltOX, ltOY, cpLBO_X, cpLBO_Y, lbBX, lbBY, i / N));
+            }
+            // Curve: left bot → center bot left
+            const cpLBI_X = (lbIX + cbLX) * 0.5, cpLBI_Y = gy + gFlareH * 0.15;
+            for (let i = 1; i <= N; i++) {
+              gSamplesBot.push(qBez(lbBX, lbBY, cpLBI_X, cpLBI_Y, cbLX, cbLY, i / N));
+            }
+            // Straight center bottom
+            gSamplesBot.push({ x: cbRX, y: cbRY });
+            // Curve: center bot right → right bot
+            const cpRBI_X = (cbRX + rbIX) * 0.5, cpRBI_Y = gy + gFlareH * 0.15;
+            for (let i = 1; i <= N; i++) {
+              gSamplesBot.push(qBez(cbRX, cbRY, cpRBI_X, cpRBI_Y, rbBX, rbBY, i / N));
+            }
+            // Curve: right bot → right tip outer
+            const cpRBO_X = rtOX - gTipW * 0.3, cpRBO_Y = rbBY;
+            for (let i = 1; i <= N; i++) {
+              gSamplesBot.push(qBez(rbBX, rbBY, cpRBO_X, cpRBO_Y, rtOX, rtOY, i / N));
+            }
+
+            // Transform all points to front-Z and back-Z via rotY
+            const gTopF = gSamplesTop.map(p => rotY(p.x, p.y, gBarDepth, cosA, sinA));
+            const gTopB = gSamplesTop.map(p => rotY(p.x, p.y, -gBarDepth, cosA, sinA));
+            const gBotF = gSamplesBot.map(p => rotY(p.x, p.y, gBarDepth, cosA, sinA));
+            const gBotB = gSamplesBot.map(p => rotY(p.x, p.y, -gBarDepth, cosA, sinA));
+
+            // Draw back face (filled polygon: top-back + bottom-back reversed)
+            if (backVis) {
+              const backPoly = [...gTopB, ...gBotB.slice().reverse()];
+              ctx.beginPath();
+              ctx.moveTo(backPoly[0].x, backPoly[0].y);
+              for (let i = 1; i < backPoly.length; i++) ctx.lineTo(backPoly[i].x, backPoly[i].y);
+              ctx.closePath();
+              ctx.fillStyle = guardSideCol;
+              ctx.fill();
+            }
+
+            // Draw depth quads along top edge
+            for (let i = 0; i < gTopF.length - 1; i++) {
+              fillPoly([gTopF[i], gTopF[i + 1], gTopB[i + 1], gTopB[i]], guardSideCol);
+            }
+            // Draw depth quads along bottom edge
+            for (let i = 0; i < gBotF.length - 1; i++) {
+              fillPoly([gBotF[i], gBotF[i + 1], gBotB[i + 1], gBotB[i]], guardSideCol);
+            }
+            // Right end cap
+            if (rightVis) fillPoly([gTopF[gTopF.length - 1], gBotF[gBotF.length - 1], gBotB[gBotB.length - 1], gTopB[gTopB.length - 1]], guardSideCol);
+            // Left end cap
+            if (leftVis) fillPoly([gTopF[0], gBotF[0], gBotB[0], gTopB[0]], guardSideCol);
+
+            // Draw front face
+            if (frontVis) {
+              const frontPoly = [...gTopF, ...gBotF.slice().reverse()];
+              ctx.beginPath();
+              ctx.moveTo(frontPoly[0].x, frontPoly[0].y);
+              for (let i = 1; i < frontPoly.length; i++) ctx.lineTo(frontPoly[i].x, frontPoly[i].y);
+              ctx.closePath();
+              ctx.fillStyle = guardCol;
+              ctx.fill();
+            }
           }
 
           // ================================================================
@@ -3186,118 +3192,143 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // ================================================================
-          // POMMEL — fishtail/brazil-nut shape with teardrop cutout
+          // POMMEL — fishtail/brazil-nut with depth, rotates via rotY
+          // Sampled as discrete silhouette points for proper 3D rotation
           // ================================================================
           if (pomR > 0.3) {
             const pomCol = 'rgb(' + Math.round(hdR * 0.85) + ',' + Math.round(hdG * 0.85) + ',' + Math.round(hdB * 0.85) + ')';
-            const pomHiCol = 'rgb(' + Math.min(255, Math.round(hdR * 1.05)) + ',' + Math.min(255, Math.round(hdG * 1.05)) + ',' + Math.min(255, Math.round(hdB * 1.05)) + ')';
             const pomLoCol = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
+            const pomDepth = gripHT * 1.2; // Z half-depth of pommel
 
-            // Pommel dimensions
-            const pomHW = pomR * 1.6;        // half-width (wider than grip)
-            const pomH = pomR * 2.2;          // total height
-            const pomTopY = gripTop - pomH;   // top of pommel
-            const pomBotY = gripTop;          // bottom = grip top
-            const pomMidY = (pomTopY + pomBotY) * 0.5;
-            const neckHW = gripHW * 0.9;      // narrow neck where it meets grip
+            const pomHW = pomR * 1.6;
+            const pomH = pomR * 2.2;
+            const pomTopY = gripTop - pomH;
+            const pomBotY = gripTop;
+            const neckHW = gripHW * 0.9;
+            const earFlare = pomHW * 0.25;
+            const earH = pomH * 0.3;
+            const dip = pomH * 0.15;
 
-            // Fishtail shape: narrow at bottom (neck), flares wide at top,
-            // with concave top edge and flared ears
+            // Sample the pommel outline as discrete points (clockwise)
+            const qBez = (ax, ay, cx, cy, bx, by, t) => ({
+              x: (1 - t) * (1 - t) * ax + 2 * (1 - t) * t * cx + t * t * bx,
+              y: (1 - t) * (1 - t) * ay + 2 * (1 - t) * t * cy + t * t * by
+            });
+            const N = 6;
+            const pomOutline = []; // clockwise outline points
 
-            // Draw pommel as filled path
-            const drawPommelFace = (col) => {
-              const earFlare = pomHW * 0.25;  // how much the ears stick out
-              const earH = pomH * 0.3;        // ear height
-              const dip = pomH * 0.15;        // center top dip
+            // Bottom edge: left neck to right neck
+            pomOutline.push({ x: -neckHW, y: pomBotY });
+            pomOutline.push({ x: neckHW, y: pomBotY });
 
+            // Right side: neck → right ear
+            const rsCpX = pomHW * 0.9, rsCpY = pomBotY - pomH * 0.3;
+            const rsEndX = pomHW + earFlare, rsEndY = pomTopY + earH * 0.3;
+            for (let i = 1; i <= N; i++) pomOutline.push(qBez(neckHW, pomBotY, rsCpX, rsCpY, rsEndX, rsEndY, i / N));
+
+            // Right ear top curve
+            const reCpX = pomHW + earFlare * 0.5, reCpY = pomTopY - earH * 0.1;
+            const reEndX = pomHW * 0.6, reEndY = pomTopY + dip * 0.3;
+            for (let i = 1; i <= N; i++) pomOutline.push(qBez(rsEndX, rsEndY, reCpX, reCpY, reEndX, reEndY, i / N));
+
+            // Top concave dip: right ear → left ear
+            const dipCpX = 0, dipCpY = pomTopY + dip;
+            const dipEndX = -pomHW * 0.6, dipEndY = pomTopY + dip * 0.3;
+            for (let i = 1; i <= N; i++) pomOutline.push(qBez(reEndX, reEndY, dipCpX, dipCpY, dipEndX, dipEndY, i / N));
+
+            // Left ear top curve
+            const leCpX = -pomHW - earFlare * 0.5, leCpY = pomTopY - earH * 0.1;
+            const leEndX = -pomHW - earFlare, leEndY = pomTopY + earH * 0.3;
+            for (let i = 1; i <= N; i++) pomOutline.push(qBez(dipEndX, dipEndY, leCpX, leCpY, leEndX, leEndY, i / N));
+
+            // Left side: left ear → neck
+            const lsCpX = -pomHW * 0.9, lsCpY = pomBotY - pomH * 0.3;
+            for (let i = 1; i <= N; i++) pomOutline.push(qBez(leEndX, leEndY, lsCpX, lsCpY, -neckHW, pomBotY, i / N));
+
+            // Transform all outline points through rotY for front and back Z
+            const pomF = pomOutline.map(p => rotY(p.x, p.y, pomDepth, cosA, sinA));
+            const pomB = pomOutline.map(p => rotY(p.x, p.y, -pomDepth, cosA, sinA));
+
+            // Draw back face
+            if (backVis) {
               ctx.beginPath();
-              // Start at bottom-center-left (neck)
-              ctx.moveTo(-neckHW, pomBotY);
-              // Bottom edge
-              ctx.lineTo(neckHW, pomBotY);
-              // Right side curves outward going up
-              ctx.quadraticCurveTo(
-                pomHW * 0.9, pomBotY - pomH * 0.3,
-                pomHW + earFlare, pomTopY + earH * 0.3
-              );
-              // Right ear curves to top
-              ctx.quadraticCurveTo(
-                pomHW + earFlare * 0.5, pomTopY - earH * 0.1,
-                pomHW * 0.6, pomTopY + dip * 0.3
-              );
-              // Concave top dip to center
-              ctx.quadraticCurveTo(
-                0, pomTopY + dip,
-                -pomHW * 0.6, pomTopY + dip * 0.3
-              );
-              // Left ear
-              ctx.quadraticCurveTo(
-                -pomHW - earFlare * 0.5, pomTopY - earH * 0.1,
-                -pomHW - earFlare, pomTopY + earH * 0.3
-              );
-              // Left side curves back to neck
-              ctx.quadraticCurveTo(
-                -pomHW * 0.9, pomBotY - pomH * 0.3,
-                -neckHW, pomBotY
-              );
+              ctx.moveTo(pomB[0].x, pomB[0].y);
+              for (let i = 1; i < pomB.length; i++) ctx.lineTo(pomB[i].x, pomB[i].y);
               ctx.closePath();
-              ctx.fillStyle = col;
+              ctx.fillStyle = pomLoCol;
               ctx.fill();
-            };
-
-            // Draw back face, side strips, then front face
-            if (backVis) drawPommelFace(pomLoCol);
-
-            // Depth/side highlight
-            drawPommelFace(pomCol);
-
-            // Gradient overlay for 3D effect
-            const pomGrad = ctx.createLinearGradient(-pomHW, 0, pomHW, 0);
-            if (sinA > 0) {
-              pomGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
-              pomGrad.addColorStop(0.6, 'rgba(0,0,0,0)');
-              pomGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
-            } else {
-              pomGrad.addColorStop(0, 'rgba(0,0,0,0.15)');
-              pomGrad.addColorStop(0.4, 'rgba(0,0,0,0)');
-              pomGrad.addColorStop(1, 'rgba(255,255,255,0.12)');
             }
 
-            // Re-draw with gradient overlay using same path
-            {
-              const earFlare = pomHW * 0.25;
-              const earH = pomH * 0.3;
-              const dip = pomH * 0.15;
+            // Draw depth quads connecting front and back outlines
+            for (let i = 0; i < pomOutline.length; i++) {
+              const j = (i + 1) % pomOutline.length;
+              // Check if this edge faces the viewer (simplified: use edge midpoint X)
+              const midX = (pomOutline[i].x + pomOutline[j].x) * 0.5;
+              const midY = (pomOutline[i].y + pomOutline[j].y) * 0.5;
+              // Edge normal in XY (perpendicular to edge, pointing outward)
+              const dx = pomOutline[j].x - pomOutline[i].x;
+              const dy = pomOutline[j].y - pomOutline[i].y;
+              const nx = dy, ny = -dx; // outward normal (clockwise winding)
+              // This depth face is visible from right if nx > 0 (and sinA > 0) or from left
+              // Simplified: always draw depth strips, painter's algo handles overlap
+              fillPoly([pomF[i], pomF[j], pomB[j], pomB[i]], guardSideCol);
+            }
+
+            // Draw front face
+            if (frontVis) {
               ctx.beginPath();
-              ctx.moveTo(-neckHW, pomBotY);
-              ctx.lineTo(neckHW, pomBotY);
-              ctx.quadraticCurveTo(pomHW * 0.9, pomBotY - pomH * 0.3, pomHW + earFlare, pomTopY + earH * 0.3);
-              ctx.quadraticCurveTo(pomHW + earFlare * 0.5, pomTopY - earH * 0.1, pomHW * 0.6, pomTopY + dip * 0.3);
-              ctx.quadraticCurveTo(0, pomTopY + dip, -pomHW * 0.6, pomTopY + dip * 0.3);
-              ctx.quadraticCurveTo(-pomHW - earFlare * 0.5, pomTopY - earH * 0.1, -pomHW - earFlare, pomTopY + earH * 0.3);
-              ctx.quadraticCurveTo(-pomHW * 0.9, pomBotY - pomH * 0.3, -neckHW, pomBotY);
+              ctx.moveTo(pomF[0].x, pomF[0].y);
+              for (let i = 1; i < pomF.length; i++) ctx.lineTo(pomF[i].x, pomF[i].y);
+              ctx.closePath();
+              ctx.fillStyle = pomCol;
+              ctx.fill();
+            }
+
+            // Gradient overlay for 3D shading on front face
+            if (frontVis) {
+              const pomGrad = ctx.createLinearGradient(pomF[0].x - pomHW, 0, pomF[0].x + pomHW, 0);
+              if (sinA > 0) {
+                pomGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
+                pomGrad.addColorStop(0.6, 'rgba(0,0,0,0)');
+                pomGrad.addColorStop(1, 'rgba(0,0,0,0.12)');
+              } else {
+                pomGrad.addColorStop(0, 'rgba(0,0,0,0.12)');
+                pomGrad.addColorStop(0.4, 'rgba(0,0,0,0)');
+                pomGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
+              }
+              ctx.beginPath();
+              ctx.moveTo(pomF[0].x, pomF[0].y);
+              for (let i = 1; i < pomF.length; i++) ctx.lineTo(pomF[i].x, pomF[i].y);
               ctx.closePath();
               ctx.fillStyle = pomGrad;
               ctx.fill();
             }
 
-            // Teardrop cutout in upper portion
-            const cutW = pomHW * 0.35;
-            const cutH = pomH * 0.35;
-            const cutCY = pomTopY + pomH * 0.35;
-            ctx.beginPath();
-            // Teardrop: pointed at top, rounded at bottom
-            ctx.moveTo(0, cutCY - cutH * 0.5);
-            ctx.quadraticCurveTo(cutW, cutCY - cutH * 0.1, cutW * 0.7, cutCY + cutH * 0.3);
-            ctx.quadraticCurveTo(0, cutCY + cutH * 0.55, -cutW * 0.7, cutCY + cutH * 0.3);
-            ctx.quadraticCurveTo(-cutW, cutCY - cutH * 0.1, 0, cutCY - cutH * 0.5);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-            ctx.fill();
-            // Cutout inner rim highlight
-            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-            ctx.lineWidth = Math.max(0.3, pomR * 0.06);
-            ctx.stroke();
+            // Teardrop cutout on front face
+            if (frontVis) {
+              const cutW = pomHW * 0.35;
+              const cutH = pomH * 0.35;
+              const cutCY = pomTopY + pomH * 0.35;
+              // Transform cutout center and key points through rotY
+              const cc = rotY(0, cutCY, pomDepth + 0.1, cosA, sinA);
+              const cTop = rotY(0, cutCY - cutH * 0.5, pomDepth + 0.1, cosA, sinA);
+              const cR1 = rotY(cutW, cutCY - cutH * 0.1, pomDepth + 0.1, cosA, sinA);
+              const cR2 = rotY(cutW * 0.7, cutCY + cutH * 0.3, pomDepth + 0.1, cosA, sinA);
+              const cBot = rotY(0, cutCY + cutH * 0.55, pomDepth + 0.1, cosA, sinA);
+              const cL2 = rotY(-cutW * 0.7, cutCY + cutH * 0.3, pomDepth + 0.1, cosA, sinA);
+              const cL1 = rotY(-cutW, cutCY - cutH * 0.1, pomDepth + 0.1, cosA, sinA);
+              ctx.beginPath();
+              ctx.moveTo(cTop.x, cTop.y);
+              ctx.quadraticCurveTo(cR1.x, cR1.y, cR2.x, cR2.y);
+              ctx.quadraticCurveTo(cBot.x, cBot.y, cL2.x, cL2.y);
+              ctx.quadraticCurveTo(cL1.x, cL1.y, cTop.x, cTop.y);
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(0,0,0,0.7)';
+              ctx.fill();
+              ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+              ctx.lineWidth = Math.max(0.3, pomR * 0.06);
+              ctx.stroke();
+            }
           }
 
           // ================================================================
