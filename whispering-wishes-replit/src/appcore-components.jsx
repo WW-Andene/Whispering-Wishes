@@ -2859,8 +2859,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const halfT = Math.max(0.5, halfW * 0.10); // blade depth (thin flat rectangle)
 
           // Height breakdown (fractions of sh)
-          const bladeH = sh * 0.63;     // blade = 63% of total height
-          const guardBarH = Math.max(1, sh * 0.015); // guard bar thickness (Y)
+          const bladeH = sh * 0.68;     // blade = 68% of total height
+          const guardBarH = Math.max(2, sh * 0.025); // guard bar thickness (Y)
           const rainGuardH = sh * 0.03; // rain guard / chappe height
           const gripH = sh * 0.18;      // grip = 18%
           const pommelH = sh * 0.05;    // pommel height
@@ -2917,7 +2917,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           // BLADE — flat rectangle with parallel edges + short pointed tip
           // ================================================================
-          const taperY = -bladeH * 0.08; // taper starts 8% from tip
+          const taperY = -bladeH * 0.15; // taper starts 15% from tip (gentler angle)
           const tipT = Math.max(0.3, halfT * 0.3);
 
           const fTL = rotY(-halfW, bladeTop, halfT, cosA, sinA);
