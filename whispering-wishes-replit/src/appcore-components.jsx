@@ -2951,19 +2951,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // ================================================================
-          // GUARD — straight crossbar, perpendicular to blade face
-          // Guard arms extend along Z in local space (swap X and Z)
+          // GUARD — straight crossbar extending left-right (along X)
+          // Arms along X, bar depth along Z
           // ================================================================
           const gy = bladeTop;
-          const gBarW = Math.max(1, halfT * 0.6); // bar X-thickness (thin from front)
-          const gfTL = rotY(-gBarW, gy - guardBarH, guardArmHW, cosA, sinA);
-          const gfTR = rotY(gBarW, gy - guardBarH, guardArmHW, cosA, sinA);
-          const gfBR = rotY(gBarW, gy, guardArmHW, cosA, sinA);
-          const gfBL = rotY(-gBarW, gy, guardArmHW, cosA, sinA);
-          const gbTL = rotY(-gBarW, gy - guardBarH, -guardArmHW, cosA, sinA);
-          const gbTR = rotY(gBarW, gy - guardBarH, -guardArmHW, cosA, sinA);
-          const gbBR = rotY(gBarW, gy, -guardArmHW, cosA, sinA);
-          const gbBL = rotY(-gBarW, gy, -guardArmHW, cosA, sinA);
+          const gBarDepth = Math.max(1, gripHW * 0.5); // bar Z-depth (thin)
+          // Guard: X = arm length (wide), Z = bar depth (thin)
+          const gfTL = rotY(-guardArmHW, gy - guardBarH, gBarDepth, cosA, sinA);
+          const gfTR = rotY(guardArmHW, gy - guardBarH, gBarDepth, cosA, sinA);
+          const gfBR = rotY(guardArmHW, gy, gBarDepth, cosA, sinA);
+          const gfBL = rotY(-guardArmHW, gy, gBarDepth, cosA, sinA);
+          const gbTL = rotY(-guardArmHW, gy - guardBarH, -gBarDepth, cosA, sinA);
+          const gbTR = rotY(guardArmHW, gy - guardBarH, -gBarDepth, cosA, sinA);
+          const gbBR = rotY(guardArmHW, gy, -gBarDepth, cosA, sinA);
+          const gbBL = rotY(-guardArmHW, gy, -gBarDepth, cosA, sinA);
 
           if (backVis) fillPoly([gbTL, gbTR, gbBR, gbBL], guardSideCol);
           if (frontVis) fillPoly([gfTL, gfTR, gfBR, gfBL], guardCol);
