@@ -2920,73 +2920,32 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const leftVis = sinA < -eps;
 
           // ================================================================
-          // BLADE — razor cross-section: beveled edges meet at Z=0
-          // Each edge bevel is 1/7 of full blade width on each side
+          // BLADE — flat rectangle with parallel edges + short pointed tip
           // ================================================================
           const taperY = -bladeH * 0.15; // taper starts 15% from tip (gentler angle)
           const tipT = Math.max(0.3, halfT * 0.3);
-          const edgeW = halfW * 2 / 7;          // 1/7 of full width per edge
-          const innerHW = halfW - edgeW;         // flat face half-width (5/7)
 
-          // Front face inner vertices (at Z = halfT, X = ±innerHW)
-          const fTL = rotY(-innerHW, bladeTop, halfT, cosA, sinA);
-          const fTR = rotY(innerHW, bladeTop, halfT, cosA, sinA);
-          const fMR = rotY(innerHW, taperY, halfT, cosA, sinA);
+          const fTL = rotY(-halfW, bladeTop, halfT, cosA, sinA);
+          const fTR = rotY(halfW, bladeTop, halfT, cosA, sinA);
+          const fMR = rotY(halfW, taperY, halfT, cosA, sinA);
           const fTip = rotY(0, 0, tipT, cosA, sinA);
-          const fML = rotY(-innerHW, taperY, halfT, cosA, sinA);
+          const fML = rotY(-halfW, taperY, halfT, cosA, sinA);
 
-          // Back face inner vertices (at Z = -halfT, X = ±innerHW)
-          const bTL = rotY(-innerHW, bladeTop, -halfT, cosA, sinA);
-          const bTR = rotY(innerHW, bladeTop, -halfT, cosA, sinA);
-          const bMR = rotY(innerHW, taperY, -halfT, cosA, sinA);
+          const bTL = rotY(-halfW, bladeTop, -halfT, cosA, sinA);
+          const bTR = rotY(halfW, bladeTop, -halfT, cosA, sinA);
+          const bMR = rotY(halfW, taperY, -halfT, cosA, sinA);
           const bTip = rotY(0, 0, -tipT, cosA, sinA);
-          const bML = rotY(-innerHW, taperY, -halfT, cosA, sinA);
+          const bML = rotY(-halfW, taperY, -halfT, cosA, sinA);
 
-          // Razor edge vertices (at Z = 0, X = ±halfW)
-          const eTL = rotY(-halfW, bladeTop, 0, cosA, sinA);
-          const eTR = rotY(halfW, bladeTop, 0, cosA, sinA);
-          const eMR = rotY(halfW, taperY, 0, cosA, sinA);
-          const eML = rotY(-halfW, taperY, 0, cosA, sinA);
-          const eTip = rotY(0, 0, 0, cosA, sinA);
-
-          // Bevel colours — front bevel catches more light, back bevel less
-          const fBevelCol = 'rgb(' + Math.round(blR * 0.72) + ',' + Math.round(blG * 0.72) + ',' + Math.round(blB * 0.72) + ')';
-          const bBevelCol = 'rgb(' + Math.round(blR * 0.35) + ',' + Math.round(blG * 0.35) + ',' + Math.round(blB * 0.35) + ')';
-
-          // --- Draw back face ---
           if (backVis) fillPoly([bTL, bTR, bMR, bTip, bML], backCol);
-
-          // --- Draw right bevels (straight section + taper) ---
-          if (rightVis) {
-            // Right-front bevel (inner front edge → razor edge)
-            fillPoly([fTR, fMR, eMR, eTR], fBevelCol);          // straight
-            fillPoly([fMR, fTip, eTip, eMR], fBevelCol);        // taper
-            // Right-back bevel (razor edge → inner back edge)
-            fillPoly([eTR, eMR, bMR, bTR], bBevelCol);          // straight
-            fillPoly([eMR, eTip, bTip, bMR], bBevelCol);        // taper
-          }
-
-          // --- Draw left bevels (straight section + taper) ---
-          if (leftVis) {
-            // Left-front bevel (razor edge → inner front edge)
-            fillPoly([eTL, eML, fML, fTL], fBevelCol);          // straight
-            fillPoly([eML, eTip, fTip, fML], fBevelCol);        // taper
-            // Left-back bevel (inner back edge → razor edge)
-            fillPoly([bTL, bML, eML, eTL], bBevelCol);          // straight
-            fillPoly([bML, bTip, eTip, eML], bBevelCol);        // taper
-          }
-
-          // --- Draw front face ---
+          if (rightVis) fillPoly([fTR, bTR, bMR, bTip, fTip, fMR], sideCol);
+          if (leftVis) fillPoly([bTL, fTL, fML, fTip, bTip, bML], sideCol);
           if (frontVis) fillPoly([fTL, fTR, fMR, fTip, fML], frontCol);
 
-          // --- Top edge (bladeTop cap between front and back bevels) ---
-          if (rightVis) fillPoly([fTR, bTR, eTR], sideCol);
-          if (leftVis) fillPoly([bTL, fTL, eTL], sideCol);
-
           // Center ridge line (fuller) on front face
-          if (frontVis && innerHW > 1.5) {
+          if (frontVis && halfW > 1.5) {
             const ridgeCol = 'rgba(' + Math.min(255, blR + 25) + ',' + Math.min(255, blG + 25) + ',' + Math.min(255, blB + 25) + ',0.4)';
-            const rw = Math.max(0.3, innerHW * 0.06);
+            const rw = Math.max(0.3, halfW * 0.06);
             ctx.beginPath();
             ctx.moveTo(fTip.x, fTip.y);
             ctx.lineTo(fTL.x + (fTR.x - fTL.x) * 0.5 - rw, fTL.y);
