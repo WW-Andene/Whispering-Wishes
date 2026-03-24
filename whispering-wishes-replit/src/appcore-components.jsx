@@ -3947,17 +3947,26 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldZfar = 80;
           const fieldXrange = 30;
 
-          // Scattered placement — not a uniform grid, more organic
-          const swordCount = 120;
+          // Scattered placement — organic, with natural clearing in center
+          const swordCount = 250;
           for (let i = 0; i < swordCount; i++) {
-            // Distribute Z with bias toward mid-field (more density in mid-range)
+            // Distribute Z with bias toward mid-field
             const zRaw = rng(i, 100);
-            const zBiased = zRaw * zRaw; // quadratic bias: more swords further out
+            const zBiased = zRaw * zRaw;
             const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zBiased;
 
             // X spread widens with distance (perspective cone)
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
-            const wx = (rng(i, 101) * 2 - 1) * xSpread;
+            let wx = (rng(i, 101) * 2 - 1) * xSpread;
+
+            // Natural clearing in center — push swords away from X=0
+            // Clearing is wider near camera, narrower in distance
+            const clearingHW = 3.0 * (1 + 5.0 / (wzJ + 2)); // half-width of clearing
+            if (Math.abs(wx) < clearingHW) {
+              // Push outward: sign preserved, moved to clearing edge + jitter
+              const sign = wx >= 0 ? 1 : -1;
+              wx = sign * (clearingHW + rng(i, 110) * 2);
+            }
             const wy = terrH(wx, wzJ);
 
             // Screen projection
