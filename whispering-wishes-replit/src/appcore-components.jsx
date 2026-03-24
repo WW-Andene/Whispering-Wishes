@@ -4087,10 +4087,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const swordCount = 800;
           for (let i = 0; i < swordCount; i++) {
             const zRaw = rng(i, 100);
-            // Inverse-Z distribution — even SCREEN coverage
-            // Uniform in 1/Z so equal density at every screen depth
-            const invNear = 1 / fieldZnear, invFar = 1 / fieldZfar;
-            const wzJ = 1 / (invNear + (invFar - invNear) * zRaw);
+            // Log distribution — even visual spread from near to far
+            // zRaw=0 → near, zRaw=0.5 → ~4.5, zRaw=1 → 80
+            const wzJ = fieldZnear * Math.pow(fieldZfar / fieldZnear, zRaw);
 
             // X spread widens with distance (perspective cone)
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
