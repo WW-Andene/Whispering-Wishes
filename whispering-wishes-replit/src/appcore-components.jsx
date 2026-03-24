@@ -2592,6 +2592,169 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
+        // --- Weapons thrust into the earth (Unlimited Blade Works style) ---
+        // Swords, spears, halberds at various angles receding into depth
+        const weaponSeeds = [];
+        const nWeapons = 38;
+        for (let wi = 0; wi < nWeapons; wi++) {
+          const h0 = hash(wi * 173.7 + 7.1);
+          const h1 = hash(wi * 291.3 + 13.7);
+          const h2 = hash(wi * 431.1 + 29.3);
+          const h3 = hash(wi * 557.9 + 41.1);
+          const h4 = hash(wi * 673.3 + 53.7);
+          const h5 = hash(wi * 797.1 + 67.3);
+
+          // Spread weapons across the ground, avoiding center where staircase sits
+          let xn = h0;
+          // Push away from center (0.35-0.65 gap for staircase)
+          if (xn > 0.30 && xn < 0.70) {
+            xn = xn < 0.50 ? xn * 0.85 : 0.70 + (xn - 0.70) * 0.85 + 0.15;
+          }
+
+          const wx = xn * w;
+          const baseY = moundGetY(xn) + h1 * groundH * 0.04;
+
+          // Depth-based scaling: weapons near bottom (close) are bigger
+          const depthT = (baseY - groundY) / groundH; // 0=top of ground, 1=bottom
+          const depthScale = 0.3 + depthT * 0.7;
+
+          // Weapon height scales with depth
+          const wh = (30 + h2 * 80) * depthScale;
+
+          // Lean angle — slight random, biased outward from center
+          const centerDist = xn - 0.5;
+          const leanBias = centerDist * 0.3; // lean away from center
+          const lean = leanBias + (h3 - 0.5) * 0.6;
+
+          // Tip position
+          const tipX = wx + Math.sin(lean) * wh;
+          const tipY = baseY - Math.cos(lean) * wh;
+
+          // Type: sword, spear, or halberd
+          const type = h4 < 0.45 ? 'sword' : (h4 < 0.80 ? 'spear' : 'halberd');
+
+          // Thickness scales with depth
+          const thickness = (1.0 + h5 * 2.0) * depthScale;
+
+          // Alpha: closer = more opaque, further = faded into atmosphere
+          const alpha = (0.35 + depthT * 0.55) * alphaScale;
+
+          ctx.beginPath();
+
+          if (type === 'sword') {
+            // Blade shape: tapered from hilt to tip
+            const px = Math.cos(lean) * thickness;
+            const py = Math.sin(lean) * thickness;
+            // Blade body
+            ctx.moveTo(wx - px * 0.6, baseY - py * 0.6);
+            ctx.lineTo(tipX, tipY);
+            ctx.lineTo(wx + px * 0.6, baseY + py * 0.6);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(12, 8, 4, ${alpha * 0.9})`;
+            ctx.fill();
+            // Crossguard
+            const cgF = 0.12;
+            const cgX = wx + Math.sin(lean) * wh * cgF;
+            const cgY2 = baseY - Math.cos(lean) * wh * cgF;
+            ctx.beginPath();
+            ctx.moveTo(cgX - px * 3.5, cgY2 - py * 3.5);
+            ctx.lineTo(cgX + px * 3.5, cgY2 + py * 3.5);
+            ctx.strokeStyle = `rgba(12, 8, 4, ${alpha})`;
+            ctx.lineWidth = thickness * 0.8;
+            ctx.stroke();
+            // Pommel dot
+            ctx.beginPath();
+            ctx.arc(wx - Math.sin(lean) * wh * 0.03, baseY + Math.cos(lean) * wh * 0.03, thickness * 0.7, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(12, 8, 4, ${alpha * 0.7})`;
+            ctx.fill();
+          } else if (type === 'halberd') {
+            // Shaft
+            ctx.moveTo(wx, baseY);
+            ctx.lineTo(tipX, tipY);
+            ctx.strokeStyle = `rgba(10, 6, 3, ${alpha})`;
+            ctx.lineWidth = thickness;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            // Axe head near tip
+            const headT = 0.82;
+            const hx = wx + Math.sin(lean) * wh * headT;
+            const hy = baseY - Math.cos(lean) * wh * headT;
+            const perpX = Math.cos(lean);
+            const perpY = Math.sin(lean);
+            const headSz = wh * 0.12;
+            ctx.beginPath();
+            ctx.moveTo(hx - perpX * headSz, hy - perpY * headSz);
+            ctx.lineTo(hx + Math.sin(lean) * wh * 0.08, hy - Math.cos(lean) * wh * 0.08);
+            ctx.lineTo(hx + perpX * headSz * 0.5, hy + perpY * headSz * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(10, 6, 3, ${alpha * 0.95})`;
+            ctx.fill();
+          } else {
+            // Spear: simple shaft with pointed tip
+            ctx.moveTo(wx, baseY);
+            ctx.lineTo(tipX, tipY);
+            ctx.strokeStyle = `rgba(10, 6, 3, ${alpha})`;
+            ctx.lineWidth = thickness;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            // Spearhead
+            const headLen = wh * 0.08;
+            const headW = thickness * 1.5;
+            const perpX = Math.cos(lean) * headW;
+            const perpY = Math.sin(lean) * headW;
+            ctx.beginPath();
+            ctx.moveTo(tipX, tipY);
+            ctx.lineTo(tipX - Math.sin(lean) * headLen - perpX, tipY + Math.cos(lean) * headLen - perpY);
+            ctx.lineTo(tipX - Math.sin(lean) * headLen + perpX, tipY + Math.cos(lean) * headLen + perpY);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(10, 6, 3, ${alpha * 0.95})`;
+            ctx.fill();
+          }
+        }
+
+        // Glowing lava cracks in the earth
+        for (let ci = 0; ci < 12; ci++) {
+          const cx0 = hash(ci * 337.1 + 71) * w;
+          const cy0 = moundGetY(cx0 / w) + hash(ci * 411.3 + 83) * groundH * 0.15;
+          const cLen = 20 + hash(ci * 523.7 + 97) * 60;
+          const cDir = (hash(ci * 617.1 + 109) - 0.5) * 2;
+
+          ctx.beginPath();
+          ctx.moveTo(cx0, cy0);
+          let cx = cx0, cy = cy0;
+          for (let seg = 0; seg < 5; seg++) {
+            cx += cLen * 0.2 * cDir + (hash(ci * 100 + seg * 31) - 0.5) * 15;
+            cy += (hash(ci * 100 + seg * 47) - 0.3) * 8;
+            ctx.lineTo(cx, cy);
+          }
+          // Glow layer
+          const crackFlicker = 0.6 + Math.sin(time * 1.8 + ci * 2.1) * 0.3;
+          ctx.strokeStyle = `rgba(255, 80, 20, ${0.08 * crackFlicker * alphaScale})`;
+          ctx.lineWidth = 4;
+          ctx.stroke();
+          // Core
+          ctx.strokeStyle = `rgba(255, 160, 60, ${0.15 * crackFlicker * alphaScale})`;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          // Hot center
+          ctx.strokeStyle = `rgba(255, 220, 120, ${0.1 * crackFlicker * alphaScale})`;
+          ctx.lineWidth = 0.4;
+          ctx.stroke();
+        }
+
+        // Scattered embers rising from cracks
+        for (let ei = 0; ei < 15; ei++) {
+          const ex = hash(ei * 271.3 + 131) * w;
+          const eyBase = moundGetY(ex / w);
+          const rise = (time * (0.3 + hash(ei * 391.7) * 0.5) + hash(ei * 461.1) * 10) % 1;
+          const ey = eyBase - rise * h * 0.08;
+          const eSz = 1 + hash(ei * 541.3) * 2;
+          const eAlpha = (1 - rise) * 0.4 * alphaScale;
+          ctx.beginPath();
+          ctx.arc(ex + Math.sin(time * 2 + ei) * 3, ey, eSz, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, ${120 + hash(ei * 611.7) * 100 | 0}, 30, ${eAlpha})`;
+          ctx.fill();
+        }
       }
 
       // --- 3D rectangle with perspective pointing toward the sun ---
@@ -3284,7 +3447,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // --- Side faces: step-aligned stone blocks between outer frame and stairway ---
         {
           // Outer frame edges
-          const hwOBot = w * 0.5;
+          const hwOBot = w * 0.25;
           const hwOTop = hwOBot * (topY - vpY) / dBot;
           const outerL = (py) => (vpX - hwOBot) + ((vpX - hwOTop) - (vpX - hwOBot)) * (botY - py) / (botY - topY);
           const outerR = (py) => (vpX + hwOBot) + ((vpX + hwOTop) - (vpX + hwOBot)) * (botY - py) / (botY - topY);
