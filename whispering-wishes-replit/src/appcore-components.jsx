@@ -4037,33 +4037,35 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Scattered placement — organic, with natural clearing in center
           // First: explicit foreground swords at edges (framing the scene)
+          // wx must be proportional to wz for screen visibility:
+          // scrX = W/2 + wx * focal/wz, so wx ~= ±0.3*wz for edge of screen
           const fgSwords = [
-            // Very close — partially off-screen, framing edges
-            { wx: -1.0, wz: 0.28, tiltO: -12 }, { wx: 1.2, wz: 0.26, tiltO: 9 },
-            { wx: -0.6, wz: 0.32, tiltO: 5 }, { wx: 0.8, wz: 0.30, tiltO: -7 },
-            { wx: -1.8, wz: 0.35, tiltO: -15 }, { wx: 2.0, wz: 0.33, tiltO: 11 },
-            { wx: -0.3, wz: 0.38, tiltO: 3 }, { wx: 1.5, wz: 0.36, tiltO: -10 },
+            // Very close — huge, partially cropped at screen edges
+            { wx: -0.18, wz: 0.28, tiltO: -12 }, { wx: 0.20, wz: 0.26, tiltO: 9 },
+            { wx: -0.10, wz: 0.32, tiltO: 5 },   { wx: 0.14, wz: 0.30, tiltO: -7 },
+            { wx: -0.28, wz: 0.35, tiltO: -15 },  { wx: 0.30, wz: 0.33, tiltO: 11 },
+            { wx: -0.05, wz: 0.38, tiltO: 3 },    { wx: 0.22, wz: 0.36, tiltO: -10 },
+            // Close right sword (requested) — big, right side
+            { wx: 0.25, wz: 0.29, tiltO: -6 },
             // Close foreground
-            { wx: -2.2, wz: 0.42, tiltO: -8 }, { wx: 2.5, wz: 0.40, tiltO: 6 },
-            { wx: -1.3, wz: 0.45, tiltO: 14 }, { wx: 0.5, wz: 0.43, tiltO: -4 },
-            { wx: -3.0, wz: 0.50, tiltO: -11 }, { wx: 3.2, wz: 0.48, tiltO: 8 },
-            { wx: -0.8, wz: 0.55, tiltO: 7 }, { wx: 1.8, wz: 0.52, tiltO: -13 },
+            { wx: -0.35, wz: 0.45, tiltO: -8 },   { wx: 0.38, wz: 0.42, tiltO: 6 },
+            { wx: -0.18, wz: 0.48, tiltO: 14 },   { wx: 0.08, wz: 0.46, tiltO: -4 },
+            { wx: -0.42, wz: 0.52, tiltO: -11 },  { wx: 0.45, wz: 0.50, tiltO: 8 },
+            { wx: -0.12, wz: 0.55, tiltO: 7 },    { wx: 0.28, wz: 0.53, tiltO: -13 },
             // Mid foreground
-            { wx: -2.5, wz: 0.60, tiltO: -6 }, { wx: 2.8, wz: 0.58, tiltO: 10 },
-            { wx: -1.5, wz: 0.65, tiltO: 4 }, { wx: 1.0, wz: 0.62, tiltO: -9 },
-            { wx: -3.5, wz: 0.70, tiltO: -14 }, { wx: 3.8, wz: 0.68, tiltO: 5 },
-            { wx: -0.5, wz: 0.75, tiltO: 8 }, { wx: 2.2, wz: 0.72, tiltO: -7 },
+            { wx: -0.50, wz: 0.62, tiltO: -6 },   { wx: 0.55, wz: 0.60, tiltO: 10 },
+            { wx: -0.25, wz: 0.68, tiltO: 4 },    { wx: 0.18, wz: 0.65, tiltO: -9 },
+            { wx: -0.62, wz: 0.72, tiltO: -14 },  { wx: 0.65, wz: 0.70, tiltO: 5 },
+            { wx: -0.08, wz: 0.78, tiltO: 8 },    { wx: 0.40, wz: 0.75, tiltO: -7 },
+            // Middle-left cluster (requested)
+            { wx: -0.35, wz: 0.66, tiltO: -8 },   { wx: -0.48, wz: 0.72, tiltO: 10 },
+            { wx: -0.55, wz: 0.69, tiltO: -4 },   { wx: -0.30, wz: 0.80, tiltO: 13 },
+            { wx: -0.65, wz: 0.84, tiltO: -11 },
             // Near-mid
-            { wx: -4.0, wz: 0.85, tiltO: 12 }, { wx: 4.2, wz: 0.80, tiltO: -10 },
-            { wx: -1.8, wz: 0.90, tiltO: -5 }, { wx: 1.5, wz: 0.88, tiltO: 11 },
-            { wx: -2.8, wz: 0.95, tiltO: 6 }, { wx: 3.0, wz: 0.92, tiltO: -8 },
-            { wx: -5.0, wz: 1.0, tiltO: -3 }, { wx: 5.2, wz: 1.05, tiltO: 9 },
-            // Extra close right sword
-            { wx: 1.8, wz: 0.27, tiltO: -6 },
-            // Extra middle-left cluster
-            { wx: -2.0, wz: 0.65, tiltO: -8 }, { wx: -2.6, wz: 0.72, tiltO: 10 },
-            { wx: -3.2, wz: 0.68, tiltO: -4 }, { wx: -1.7, wz: 0.78, tiltO: 13 },
-            { wx: -3.8, wz: 0.82, tiltO: -11 },
+            { wx: -0.75, wz: 0.88, tiltO: 12 },   { wx: 0.80, wz: 0.85, tiltO: -10 },
+            { wx: -0.30, wz: 0.92, tiltO: -5 },   { wx: 0.28, wz: 0.90, tiltO: 11 },
+            { wx: -0.55, wz: 0.96, tiltO: 6 },    { wx: 0.58, wz: 0.94, tiltO: -8 },
+            { wx: -0.90, wz: 1.05, tiltO: -3 },   { wx: 0.95, wz: 1.08, tiltO: 9 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
@@ -4087,15 +4089,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Linear distribution — even spread from near to far
             const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zRaw;
 
-            // X spread widens with distance (perspective cone)
-            const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
+            // X spread proportional to Z (so screen projection stays on-screen)
+            // At any Z, max visible wx ≈ ±0.7*wz (for focal=0.7W)
+            const xSpread = wzJ * 0.75;
             let wx = (rng(i, 101) * 2 - 1) * xSpread;
 
-            // Subtle center thinning — gently nudge swords near X=0 outward
-            const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
+            // Subtle center thinning — scale with Z too
+            const clearingHW = 0.08 * wzJ;
             if (Math.abs(wx) < clearingHW) {
               const sign = wx >= 0 ? 1 : -1;
-              wx = sign * (Math.abs(wx) + clearingHW * 0.5 + rng(i, 110) * 1.5);
+              wx = sign * (Math.abs(wx) + clearingHW * 0.5 + rng(i, 110) * wzJ * 0.1);
             }
             const wy = terrH(wx, wzJ);
 
@@ -4265,7 +4268,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const dst = outData.data;
         const cx = w * 0.5, cy = h * 0.5;
         const maxR = Math.sqrt(cx * cx + cy * cy);
-        const k = -0.15; // barrel distortion (negative = barrel, like wide-angle lens)
+        const k = 0.15; // barrel distortion (positive = edges push outward)
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             // Normalize coords to [-1, 1]
