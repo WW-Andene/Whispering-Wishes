@@ -4265,16 +4265,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const src = imgData.data;
         const outData = ctx.createImageData(w, h);
         const dst = outData.data;
-        const cx = w * 0.5, cy = h * 0.4; // lens center slightly above middle
+        const cx = w * 0.5, cy = h * 0.4;
         const normR = Math.max(w, h) * 0.5;
-        const k = 0.15; // fisheye strength — bends frame outward
+        const k = 0.15;
+        // Pre-compute zoom to compensate: at the farthest corner, distort is largest
+        // so we scale down the lookup to keep everything inside bounds
+        const cornerNx = (w - cx) / normR, cornerNy = (h - cy) / normR;
+        const cornerR2 = cornerNx * cornerNx + cornerNy * cornerNy;
+        const maxDistort = 1 + k * cornerR2;
+        // Scale factor: shrink the distorted lookup so corners still map inside
+        const zoomCompensate = 1 / maxDistort;
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             const nx = (x - cx) / normR;
             const ny = (y - cy) / normR;
             const r2 = nx * nx + ny * ny;
             // Pincushion: horizon sags down in center, edges pull up
-            const distort = 1 + k * r2;
+            // Zoom-compensated so frame stays clean rectangle
+            const distort = (1 + k * r2) * zoomCompensate;
             const sx = cx + nx * distort * normR;
             const sy = cy + ny * distort * normR;
             const di = (y * w + x) * 4;
