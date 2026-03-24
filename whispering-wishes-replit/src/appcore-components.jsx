@@ -2853,17 +2853,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Dimensions
           const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
-          const halfW = sbw * wt.bwM; // half blade width
-          const halfT = Math.max(1, halfW * 0.12); // blade thickness ~12% of width (thin flat blade)
-          const tipW = wt.tipS === 1 ? halfW * 0.45 : halfW * 0.22;
-          const tipT = Math.max(0.5, halfT * 0.5);
-          const gThk = Math.max(0.8, sh * 0.008) * (1 + (ir.guardVar || 0)); // guard bar height
-          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard arm length
-          const gHT = Math.max(1, halfT * 1.0); // guard depth ≈ blade thickness (never more)
+          // --- Proportions derived from grip as reference unit ---
+          const halfW = sbw * wt.bwM; // half blade width (the wide flat dimension)
+          const gripHW = halfW / 1.5; // grip half-width: blade is 1.5x grip
+          const gripHT = gripHW; // grip is round/square: depth = width
           const gripH = sh * (wt.gripP + (ir.gripVar || 0));
-          const gripHW = halfW * 0.65; // grip width ~65% of blade width (blade ≈ 1.5x grip)
-          const gripHT = Math.max(1, gripHW * 0.8); // grip roughly round
-          const pomR = Math.max(0.3, gripHW * (0.6 * wt.pomM + (ir.pomVar || 0))); // pommel proportional to grip
+
+          // Blade thickness: thin flat shape, never more than grip diameter
+          const halfT = Math.min(gripHW, Math.max(1, halfW * 0.15));
+          const tipW = wt.tipS === 1 ? halfW * 0.45 : halfW * 0.15;
+          const tipT = Math.max(0.5, halfT * 0.3);
+
+          // Guard: bar with similar diameter to grip, extends perpendicular
+          const gThk = Math.max(1, gripHW * 0.7); // guard bar visual height ≈ grip diameter
+          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard arm length
+          const gHT = gripHW; // guard bar depth = grip diameter (round bar)
+
+          // Pommel: round, slightly wider than grip
+          const pomR = Math.max(0.5, gripHW * 1.2 * (wt.pomM + (ir.pomVar || 0)));
 
           // Material lighting
           const bladeMat = materials[wt.bladeMat] || materials.steel;
