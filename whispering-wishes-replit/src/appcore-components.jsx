@@ -3045,9 +3045,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const gSamplesTop = [];
             const NS = 12; // more samples for smoother curves
 
-            // V-notch: opens slightly wider than blade, meets at center Y = gap
+            // V-notch: points outward, slightly wider than blade
             const vOuterX = halfW * 1.15;   // V starts slightly wider than blade
             const vInnerX = halfW * 0.2;    // V apex near center
+            const vOver = ghh * 0.6;        // how far V extends beyond normal guard edge
 
             // Left outer tip
             gSamplesTop.push({ x: -tipOuterX, y: gCenterY - tipFlare });
@@ -3062,20 +3063,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
                 i / NS
               ));
             }
-            // Left V: arm edge → center (pinch to zero height = gap)
+            // Left V: arm edge → apex (extends OUTWARD, away from center)
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(qBez(
                 -vOuterX, gCenterY - ghh,
-                -vInnerX * 1.5, gCenterY,
-                -vInnerX, gCenterY,
+                -vInnerX * 1.5, gCenterY - ghh - vOver,
+                -vInnerX, gCenterY - ghh - vOver,
                 i / NS
               ));
             }
-            // Right V: center → arm edge
+            // Right V: apex → arm edge
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(qBez(
-                vInnerX, gCenterY,
-                vInnerX * 1.5, gCenterY,
+                vInnerX, gCenterY - ghh - vOver,
+                vInnerX * 1.5, gCenterY - ghh - vOver,
                 vOuterX, gCenterY - ghh,
                 i / NS
               ));
