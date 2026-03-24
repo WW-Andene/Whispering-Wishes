@@ -3007,79 +3007,297 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // ================================================================
-          // GUARD — straight crossbar extending left-right (along X)
-          // Arms along X, bar depth along Z
+          // GUARD — curved crossguard that sweeps downward with flared tips
           // ================================================================
           const gy = bladeTop;
-          const gBarDepth = gripHT; // bar Z-depth = grip depth (same thickness)
-          // Guard: X = arm length (wide), Z = bar depth (thin)
-          const gfTL = rotY(-guardArmHW, gy - guardBarH, gBarDepth, cosA, sinA);
-          const gfTR = rotY(guardArmHW, gy - guardBarH, gBarDepth, cosA, sinA);
-          const gfBR = rotY(guardArmHW, gy, gBarDepth, cosA, sinA);
-          const gfBL = rotY(-guardArmHW, gy, gBarDepth, cosA, sinA);
-          const gbTL = rotY(-guardArmHW, gy - guardBarH, -gBarDepth, cosA, sinA);
-          const gbTR = rotY(guardArmHW, gy - guardBarH, -gBarDepth, cosA, sinA);
-          const gbBR = rotY(guardArmHW, gy, -gBarDepth, cosA, sinA);
-          const gbBL = rotY(-guardArmHW, gy, -gBarDepth, cosA, sinA);
+          const gBarDepth = gripHT;
+          const gFlareW = guardBarH * 2.5;  // flared tip width
+          const gFlareH = guardBarH * 1.8;  // how far tips droop
+          const gTipW = guardArmHW * 0.22;  // width of the flared end cap
 
-          if (backVis) fillPoly([gbTL, gbTR, gbBR, gbBL], guardSideCol);
-          if (frontVis) fillPoly([gfTL, gfTR, gfBR, gfBL], guardCol);
-          fillPoly([gfTL, gfTR, gbTR, gbTL], guardSideCol); // top
-          fillPoly([gfTR, gbTR, gbBR, gfBR], guardSideCol); // right end
-          fillPoly([gbTL, gfTL, gfBL, gbBL], guardSideCol); // left end
+          // Draw guard as a 2D curved shape on front face, with depth faces
+          // Build guard silhouette points (front face)
+          // Center section (where blade passes through)
+          const gcHW = halfW * 1.1; // center half-width slightly wider than blade
 
-          // ================================================================
-          // GRIP — tapered rectangle (narrower in middle), perpendicular depth
-          // ================================================================
-          const gripMidHW = gripHW * 0.8; // narrower in the middle
-          const grMidY = (gripTop + gripBot) * 0.5;
-          // Grip as cylinder — draw as a rectangle whose width changes with rotation
-          // A cylinder seen from the front is always the same width (its diameter).
-          // The apparent width = sqrt(cos²θ * r² + sin²θ * r²) = r (constant!)
-          // So we just draw a rectangle of constant width = gripHW, shaded by angle.
-          // Back half (darker)
-          ctx.beginPath();
-          ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
-          ctx.fillStyle = gripSideCol;
-          ctx.fill();
-          // Front half (lighter, drawn as rounded rect to look cylindrical)
-          const cylShade = Math.abs(cosA); // 1 = facing camera, 0 = edge-on
-          const cylR = Math.round(hdR * (0.5 + cylShade * 0.5));
-          const cylG = Math.round(hdG * (0.5 + cylShade * 0.5));
-          const cylB = Math.round(hdB * (0.5 + cylShade * 0.5));
-          // Gradient across cylinder width for 3D roundness
-          const cylGrad = ctx.createLinearGradient(-gripHW, 0, gripHW, 0);
-          const cylHi = 'rgb(' + Math.min(255, cylR + 20) + ',' + Math.min(255, cylG + 20) + ',' + Math.min(255, cylB + 20) + ')';
-          const cylLo = 'rgb(' + Math.round(cylR * 0.6) + ',' + Math.round(cylG * 0.6) + ',' + Math.round(cylB * 0.6) + ')';
-          // Light comes from left based on rotation
-          if (sinA > 0) {
-            cylGrad.addColorStop(0, cylHi);
-            cylGrad.addColorStop(1, cylLo);
-          } else {
-            cylGrad.addColorStop(0, cylLo);
-            cylGrad.addColorStop(1, cylHi);
+          // Guard front face — curved path drawn with bezier
+          if (backVis) {
+            // Back face of guard (simplified quad)
+            const gbC1 = rotY(-guardArmHW, gy - guardBarH * 0.5 + gFlareH * 0.3, -gBarDepth, cosA, sinA);
+            const gbC2 = rotY(guardArmHW, gy - guardBarH * 0.5 + gFlareH * 0.3, -gBarDepth, cosA, sinA);
+            const gbC3 = rotY(guardArmHW, gy + gFlareH * 0.3, -gBarDepth, cosA, sinA);
+            const gbC4 = rotY(-guardArmHW, gy + gFlareH * 0.3, -gBarDepth, cosA, sinA);
+            fillPoly([gbC1, gbC2, gbC3, gbC4], guardSideCol);
           }
-          ctx.beginPath();
-          ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
-          ctx.fillStyle = cylGrad;
-          ctx.fill();
+
+          // Front face guard drawn as bezier curve
+          {
+            const drawGuardFace = (z, col) => {
+              const vis = z > 0 ? frontVis : backVis;
+              if (!vis) return;
+              // Transform key points
+              const p = (x, y) => rotY(x, y, z, cosA, sinA);
+
+              // Top-left tip (flared, drooping)
+              const tlOuter = p(-guardArmHW - gTipW, gy - guardBarH - gFlareH * 0.4);
+              const tlTop = p(-guardArmHW, gy - guardBarH - gFlareH * 0.15);
+              const tlBot = p(-guardArmHW, gy + gFlareH * 0.6);
+              const tlInner = p(-guardArmHW + gTipW * 0.5, gy + gFlareH * 0.2);
+
+              // Center top and bottom
+              const ctL = p(-gcHW, gy - guardBarH);
+              const ctR = p(gcHW, gy - guardBarH);
+              const cbL = p(-gcHW, gy);
+              const cbR = p(gcHW, gy);
+
+              // Top-right tip (flared, drooping) — mirror of left
+              const trOuter = p(guardArmHW + gTipW, gy - guardBarH - gFlareH * 0.4);
+              const trTop = p(guardArmHW, gy - guardBarH - gFlareH * 0.15);
+              const trBot = p(guardArmHW, gy + gFlareH * 0.6);
+              const trInner = p(guardArmHW - gTipW * 0.5, gy + gFlareH * 0.2);
+
+              ctx.beginPath();
+              // Start at center-top-left, go left
+              ctx.moveTo(ctL.x, ctL.y);
+              // Curve to left tip top
+              ctx.quadraticCurveTo(
+                (ctL.x + tlTop.x) * 0.5, ctL.y - guardBarH * 0.2,
+                tlTop.x, tlTop.y
+              );
+              // Left flared tip outer edge
+              ctx.lineTo(tlOuter.x, tlOuter.y);
+              // Curve around left tip bottom
+              ctx.quadraticCurveTo(
+                tlOuter.x + gTipW * 0.3, tlBot.y,
+                tlBot.x, tlBot.y
+              );
+              // Curve back to center along bottom
+              ctx.quadraticCurveTo(
+                (tlInner.x + cbL.x) * 0.5, gy + gFlareH * 0.15,
+                cbL.x, cbL.y
+              );
+              // Bottom center
+              ctx.lineTo(cbR.x, cbR.y);
+              // Curve to right tip bottom
+              ctx.quadraticCurveTo(
+                (cbR.x + trInner.x) * 0.5, gy + gFlareH * 0.15,
+                trBot.x, trBot.y
+              );
+              // Right flared tip outer
+              ctx.quadraticCurveTo(
+                trOuter.x - gTipW * 0.3, trBot.y,
+                trOuter.x, trOuter.y
+              );
+              // Right tip top
+              ctx.lineTo(trTop.x, trTop.y);
+              // Curve back to center-top-right
+              ctx.quadraticCurveTo(
+                (trTop.x + ctR.x) * 0.5, ctR.y - guardBarH * 0.2,
+                ctR.x, ctR.y
+              );
+              // Close top
+              ctx.closePath();
+              ctx.fillStyle = col;
+              ctx.fill();
+            };
+
+            drawGuardFace(-gBarDepth, guardSideCol);
+            // Top/bottom depth strips
+            {
+              const pF = (x, y) => rotY(x, y, gBarDepth, cosA, sinA);
+              const pB = (x, y) => rotY(x, y, -gBarDepth, cosA, sinA);
+              // Top edge depth (center section)
+              fillPoly([
+                pF(-gcHW, gy - guardBarH), pF(gcHW, gy - guardBarH),
+                pB(gcHW, gy - guardBarH), pB(-gcHW, gy - guardBarH)
+              ], guardSideCol);
+              // Bottom edge depth
+              fillPoly([
+                pF(-gcHW, gy), pF(gcHW, gy),
+                pB(gcHW, gy), pB(-gcHW, gy)
+              ], guardSideCol);
+              // Right end cap depth
+              const rTipF = pF(guardArmHW + gTipW, gy - guardBarH - gFlareH * 0.4);
+              const rBotF = pF(guardArmHW, gy + gFlareH * 0.6);
+              const rTipB = pB(guardArmHW + gTipW, gy - guardBarH - gFlareH * 0.4);
+              const rBotB = pB(guardArmHW, gy + gFlareH * 0.6);
+              if (rightVis) fillPoly([rTipF, rBotF, rBotB, rTipB], guardSideCol);
+              // Left end cap depth
+              const lTipF = pF(-guardArmHW - gTipW, gy - guardBarH - gFlareH * 0.4);
+              const lBotF = pF(-guardArmHW, gy + gFlareH * 0.6);
+              const lTipB = pB(-guardArmHW - gTipW, gy - guardBarH - gFlareH * 0.4);
+              const lBotB = pB(-guardArmHW, gy + gFlareH * 0.6);
+              if (leftVis) fillPoly([lTipF, lBotF, lBotB, lTipB], guardSideCol);
+            }
+            drawGuardFace(gBarDepth, guardCol);
+          }
 
           // ================================================================
-          // POMMEL — oval with small finial on top
+          // GRIP — leather-wrapped cylinder with horizontal wrap ridges
+          // ================================================================
+          {
+            // Back half (darker base)
+            ctx.beginPath();
+            ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+            ctx.fillStyle = gripSideCol;
+            ctx.fill();
+
+            // Front half with cylindrical gradient
+            const cylShade = Math.abs(cosA);
+            const cylR = Math.round(hdR * (0.35 + cylShade * 0.35));
+            const cylG = Math.round(hdG * (0.35 + cylShade * 0.35));
+            const cylB = Math.round(hdB * (0.35 + cylShade * 0.35));
+            const cylGrad = ctx.createLinearGradient(-gripHW, 0, gripHW, 0);
+            const cylHi = 'rgb(' + Math.min(255, cylR + 15) + ',' + Math.min(255, cylG + 10) + ',' + Math.min(255, cylB + 8) + ')';
+            const cylLo = 'rgb(' + Math.round(cylR * 0.5) + ',' + Math.round(cylG * 0.5) + ',' + Math.round(cylB * 0.5) + ')';
+            if (sinA > 0) {
+              cylGrad.addColorStop(0, cylHi);
+              cylGrad.addColorStop(0.45, cylHi);
+              cylGrad.addColorStop(1, cylLo);
+            } else {
+              cylGrad.addColorStop(0, cylLo);
+              cylGrad.addColorStop(0.55, cylHi);
+              cylGrad.addColorStop(1, cylHi);
+            }
+            ctx.beginPath();
+            ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+            ctx.fillStyle = cylGrad;
+            ctx.fill();
+
+            // Leather wrap ridges — horizontal lines across grip
+            const wrapCount = Math.max(4, Math.round(gripH / (gripHW * 0.7)));
+            const wrapSpacing = gripH / (wrapCount + 1);
+            const wrapH = wrapSpacing * 0.25;
+            ctx.fillStyle = 'rgba(0,0,0,0.18)';
+            for (let i = 1; i <= wrapCount; i++) {
+              const wy = gripTop + i * wrapSpacing;
+              ctx.beginPath();
+              ctx.rect(-gripHW, wy - wrapH * 0.5, gripHW * 2, wrapH);
+              ctx.fill();
+            }
+            // Subtle wrap edge highlights
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            for (let i = 1; i <= wrapCount; i++) {
+              const wy = gripTop + i * wrapSpacing;
+              ctx.beginPath();
+              ctx.rect(-gripHW, wy - wrapH * 0.5 - wrapH * 0.4, gripHW * 2, wrapH * 0.3);
+              ctx.fill();
+            }
+          }
+
+          // ================================================================
+          // POMMEL — fishtail/brazil-nut shape with teardrop cutout
           // ================================================================
           if (pomR > 0.3) {
-            // Pommel body (oval)
-            const pomCol = 'rgb(' + Math.round(hdR * 0.9) + ',' + Math.round(hdG * 0.9) + ',' + Math.round(hdB * 0.9) + ')';
+            const pomCol = 'rgb(' + Math.round(hdR * 0.85) + ',' + Math.round(hdG * 0.85) + ',' + Math.round(hdB * 0.85) + ')';
+            const pomHiCol = 'rgb(' + Math.min(255, Math.round(hdR * 1.05)) + ',' + Math.min(255, Math.round(hdG * 1.05)) + ',' + Math.min(255, Math.round(hdB * 1.05)) + ')';
+            const pomLoCol = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
+
+            // Pommel dimensions
+            const pomHW = pomR * 1.6;        // half-width (wider than grip)
+            const pomH = pomR * 2.2;          // total height
+            const pomTopY = gripTop - pomH;   // top of pommel
+            const pomBotY = gripTop;          // bottom = grip top
+            const pomMidY = (pomTopY + pomBotY) * 0.5;
+            const neckHW = gripHW * 0.9;      // narrow neck where it meets grip
+
+            // Fishtail shape: narrow at bottom (neck), flares wide at top,
+            // with concave top edge and flared ears
+
+            // Draw pommel as filled path
+            const drawPommelFace = (col) => {
+              const earFlare = pomHW * 0.25;  // how much the ears stick out
+              const earH = pomH * 0.3;        // ear height
+              const dip = pomH * 0.15;        // center top dip
+
+              ctx.beginPath();
+              // Start at bottom-center-left (neck)
+              ctx.moveTo(-neckHW, pomBotY);
+              // Bottom edge
+              ctx.lineTo(neckHW, pomBotY);
+              // Right side curves outward going up
+              ctx.quadraticCurveTo(
+                pomHW * 0.9, pomBotY - pomH * 0.3,
+                pomHW + earFlare, pomTopY + earH * 0.3
+              );
+              // Right ear curves to top
+              ctx.quadraticCurveTo(
+                pomHW + earFlare * 0.5, pomTopY - earH * 0.1,
+                pomHW * 0.6, pomTopY + dip * 0.3
+              );
+              // Concave top dip to center
+              ctx.quadraticCurveTo(
+                0, pomTopY + dip,
+                -pomHW * 0.6, pomTopY + dip * 0.3
+              );
+              // Left ear
+              ctx.quadraticCurveTo(
+                -pomHW - earFlare * 0.5, pomTopY - earH * 0.1,
+                -pomHW - earFlare, pomTopY + earH * 0.3
+              );
+              // Left side curves back to neck
+              ctx.quadraticCurveTo(
+                -pomHW * 0.9, pomBotY - pomH * 0.3,
+                -neckHW, pomBotY
+              );
+              ctx.closePath();
+              ctx.fillStyle = col;
+              ctx.fill();
+            };
+
+            // Draw back face, side strips, then front face
+            if (backVis) drawPommelFace(pomLoCol);
+
+            // Depth/side highlight
+            drawPommelFace(pomCol);
+
+            // Gradient overlay for 3D effect
+            const pomGrad = ctx.createLinearGradient(-pomHW, 0, pomHW, 0);
+            if (sinA > 0) {
+              pomGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
+              pomGrad.addColorStop(0.6, 'rgba(0,0,0,0)');
+              pomGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
+            } else {
+              pomGrad.addColorStop(0, 'rgba(0,0,0,0.15)');
+              pomGrad.addColorStop(0.4, 'rgba(0,0,0,0)');
+              pomGrad.addColorStop(1, 'rgba(255,255,255,0.12)');
+            }
+
+            // Re-draw with gradient overlay using same path
+            {
+              const earFlare = pomHW * 0.25;
+              const earH = pomH * 0.3;
+              const dip = pomH * 0.15;
+              ctx.beginPath();
+              ctx.moveTo(-neckHW, pomBotY);
+              ctx.lineTo(neckHW, pomBotY);
+              ctx.quadraticCurveTo(pomHW * 0.9, pomBotY - pomH * 0.3, pomHW + earFlare, pomTopY + earH * 0.3);
+              ctx.quadraticCurveTo(pomHW + earFlare * 0.5, pomTopY - earH * 0.1, pomHW * 0.6, pomTopY + dip * 0.3);
+              ctx.quadraticCurveTo(0, pomTopY + dip, -pomHW * 0.6, pomTopY + dip * 0.3);
+              ctx.quadraticCurveTo(-pomHW - earFlare * 0.5, pomTopY - earH * 0.1, -pomHW - earFlare, pomTopY + earH * 0.3);
+              ctx.quadraticCurveTo(-pomHW * 0.9, pomBotY - pomH * 0.3, -neckHW, pomBotY);
+              ctx.closePath();
+              ctx.fillStyle = pomGrad;
+              ctx.fill();
+            }
+
+            // Teardrop cutout in upper portion
+            const cutW = pomHW * 0.35;
+            const cutH = pomH * 0.35;
+            const cutCY = pomTopY + pomH * 0.35;
             ctx.beginPath();
-            ctx.ellipse(0, pomY, pomR, pomR * 1.2, 0, 0, Math.PI * 2);
-            ctx.fillStyle = pomCol;
+            // Teardrop: pointed at top, rounded at bottom
+            ctx.moveTo(0, cutCY - cutH * 0.5);
+            ctx.quadraticCurveTo(cutW, cutCY - cutH * 0.1, cutW * 0.7, cutCY + cutH * 0.3);
+            ctx.quadraticCurveTo(0, cutCY + cutH * 0.55, -cutW * 0.7, cutCY + cutH * 0.3);
+            ctx.quadraticCurveTo(-cutW, cutCY - cutH * 0.1, 0, cutCY - cutH * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
             ctx.fill();
-            // Small finial nub on top
-            const finR = pomR * 0.4;
-            ctx.beginPath();
-            ctx.arc(0, pomY - pomR * 1.2 - finR * 0.5, finR, 0, Math.PI * 2);
-            ctx.fillStyle = pomCol;
-            ctx.fill();
+            // Cutout inner rim highlight
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = Math.max(0.3, pomR * 0.06);
+            ctx.stroke();
           }
 
           // ================================================================
