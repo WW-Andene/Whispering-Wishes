@@ -2563,51 +2563,120 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ===== BATTLEGROUND — ground-plan projected sword field =====
       {
         const W = canvas.width, H = canvas.height;
-        const hY = H * 0.52; // horizon at ~half, big sky above
+        const hY = H * 0.68; // low horizon — big sky, low camera feel
         const rng = (i, off) => { const s = Math.sin(i * 127.1 + off * 311.7) * 43758.5; return s - Math.floor(s); };
 
-        // --- OPAQUE SKY (pink/salmon) ---
+        // --- OPAQUE SKY (lighter, more luminous) ---
         const sk = ctx.createLinearGradient(0, 0, 0, hY);
-        sk.addColorStop(0,    'rgb(15,10,28)');
-        sk.addColorStop(0.12, 'rgb(30,18,45)');
-        sk.addColorStop(0.28, 'rgb(65,35,58)');
-        sk.addColorStop(0.42, 'rgb(130,60,68)');
-        sk.addColorStop(0.58, 'rgb(185,90,72)');
-        sk.addColorStop(0.72, 'rgb(215,125,70)');
-        sk.addColorStop(0.85, 'rgb(240,165,72)');
-        sk.addColorStop(1,    'rgb(255,210,95)');
+        sk.addColorStop(0,    'rgb(35,25,55)');
+        sk.addColorStop(0.08, 'rgb(55,35,68)');
+        sk.addColorStop(0.18, 'rgb(95,55,78)');
+        sk.addColorStop(0.30, 'rgb(155,80,82)');
+        sk.addColorStop(0.45, 'rgb(210,120,85)');
+        sk.addColorStop(0.60, 'rgb(240,160,90)');
+        sk.addColorStop(0.75, 'rgb(252,195,100)');
+        sk.addColorStop(0.88, 'rgb(255,220,120)');
+        sk.addColorStop(1,    'rgb(255,240,160)');
         ctx.fillStyle = sk;
         ctx.fillRect(0, 0, W, hY + 1);
 
-        // Sun glow
-        const sg = ctx.createRadialGradient(W * 0.5, hY, 0, W * 0.5, hY, H * 0.22);
-        sg.addColorStop(0, 'rgba(255,225,120,0.4)');
-        sg.addColorStop(0.35, 'rgba(255,190,80,0.15)');
-        sg.addColorStop(1, 'rgba(255,150,60,0)');
-        ctx.fillStyle = sg;
-        ctx.fillRect(0, hY * 0.5, W, hY * 0.6);
+        // === SUN DISC with bright core ===
+        const sunX = W * 0.5, sunY = hY * 0.88;
+        const sunR = H * 0.08;
+        // Outer glow halo
+        const sunHalo = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
+        sunHalo.addColorStop(0, 'rgba(255,250,200,0.5)');
+        sunHalo.addColorStop(0.15, 'rgba(255,230,150,0.3)');
+        sunHalo.addColorStop(0.4, 'rgba(255,200,100,0.1)');
+        sunHalo.addColorStop(1, 'rgba(255,160,60,0)');
+        ctx.fillStyle = sunHalo;
+        ctx.fillRect(0, 0, W, hY + 1);
+        // Bright sun disc
+        const sunDisc = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+        sunDisc.addColorStop(0, 'rgba(255,255,240,0.95)');
+        sunDisc.addColorStop(0.3, 'rgba(255,245,200,0.85)');
+        sunDisc.addColorStop(0.7, 'rgba(255,225,140,0.5)');
+        sunDisc.addColorStop(1, 'rgba(255,200,100,0)');
+        ctx.fillStyle = sunDisc;
+        ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // Clouds
-        const clds = [
-          [0.08,0.06,0.28,0.035,0],[0.55,0.04,0.24,0.03,0],[0.85,0.08,0.22,0.03,0],
-          [0.20,0.14,0.32,0.04,0.15],[0.65,0.12,0.28,0.035,0.15],
-          [0.40,0.22,0.35,0.045,0.3],[0.75,0.20,0.30,0.04,0.3],[0.12,0.26,0.26,0.035,0.35],
-          [0.55,0.30,0.33,0.042,0.45],[0.22,0.34,0.28,0.04,0.45],[0.80,0.32,0.25,0.035,0.5],
-          [0.05,0.40,0.30,0.04,0.55],[0.45,0.42,0.35,0.045,0.6],[0.70,0.38,0.28,0.04,0.55],
-          [0.30,0.48,0.32,0.04,0.7],[0.60,0.50,0.28,0.035,0.7],
-          [0.50,0.58,0.30,0.035,0.78],[0.80,0.55,0.26,0.03,0.75],
+        // === SUN RAYS (god rays fanning out) ===
+        const rayCount = 14;
+        for (let ri = 0; ri < rayCount; ri++) {
+          const angle = (ri / rayCount) * Math.PI * 2 + Math.sin(time * 0.15 + ri) * 0.04;
+          const rayLen = H * (0.25 + rng(ri, 200) * 0.2);
+          const rayW = 0.035 + rng(ri, 201) * 0.025;
+          const rayAlpha = 0.06 + rng(ri, 202) * 0.06;
+          const cosR = Math.cos(angle), sinR = Math.sin(angle);
+          const ex = sunX + cosR * rayLen, ey = sunY + sinR * rayLen;
+          // Tapered ray
+          const perpX = -sinR * rayW * rayLen * 0.5;
+          const perpY = cosR * rayW * rayLen * 0.5;
+          const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
+          rayGrad.addColorStop(0, 'rgba(255,240,170,' + rayAlpha.toFixed(3) + ')');
+          rayGrad.addColorStop(0.5, 'rgba(255,210,120,' + (rayAlpha * 0.4).toFixed(3) + ')');
+          rayGrad.addColorStop(1, 'rgba(255,180,80,0)');
+          ctx.beginPath();
+          ctx.moveTo(sunX - perpX * 0.3, sunY - perpY * 0.3);
+          ctx.lineTo(sunX + perpX * 0.3, sunY + perpY * 0.3);
+          ctx.lineTo(ex + perpX, ey + perpY);
+          ctx.lineTo(ex - perpX, ey - perpY);
+          ctx.closePath();
+          ctx.fillStyle = rayGrad;
+          ctx.fill();
+        }
+
+        // === DARK CLOUDS (80% opacity) with orange volumetric inner glow ===
+        const darkClouds = [
+          // { cx, cy (normalized 0-1 in sky), w, h, opacity, orangeGlow }
+          { cx: 0.12, cy: 0.08, w: 0.30, h: 0.09, op: 0.8, glow: 0.25 },
+          { cx: 0.82, cy: 0.06, w: 0.28, h: 0.08, op: 0.75, glow: 0.20 },
+          { cx: 0.45, cy: 0.15, w: 0.35, h: 0.10, op: 0.78, glow: 0.30 },
+          { cx: 0.05, cy: 0.22, w: 0.25, h: 0.07, op: 0.72, glow: 0.22 },
+          { cx: 0.70, cy: 0.20, w: 0.32, h: 0.09, op: 0.80, glow: 0.28 },
+          { cx: 0.30, cy: 0.30, w: 0.28, h: 0.08, op: 0.76, glow: 0.32 },
+          { cx: 0.90, cy: 0.28, w: 0.22, h: 0.07, op: 0.70, glow: 0.20 },
+          { cx: 0.55, cy: 0.38, w: 0.30, h: 0.09, op: 0.74, glow: 0.35 },
+          { cx: 0.15, cy: 0.42, w: 0.26, h: 0.08, op: 0.68, glow: 0.30 },
+          { cx: 0.78, cy: 0.45, w: 0.24, h: 0.07, op: 0.65, glow: 0.28 },
+          { cx: 0.40, cy: 0.52, w: 0.32, h: 0.10, op: 0.60, glow: 0.40 },
+          { cx: 0.60, cy: 0.58, w: 0.28, h: 0.08, op: 0.55, glow: 0.42 },
+          { cx: 0.20, cy: 0.62, w: 0.30, h: 0.09, op: 0.50, glow: 0.45 },
+          { cx: 0.85, cy: 0.60, w: 0.22, h: 0.07, op: 0.52, glow: 0.38 },
+          { cx: 0.50, cy: 0.70, w: 0.35, h: 0.10, op: 0.45, glow: 0.50 },
+          { cx: 0.10, cy: 0.75, w: 0.28, h: 0.08, op: 0.40, glow: 0.48 },
+          { cx: 0.72, cy: 0.72, w: 0.26, h: 0.08, op: 0.42, glow: 0.45 },
         ];
-        for (const c of clds) {
-          const cx = c[0] * W, cy = c[1] * hY, cw = c[2] * W, ch = c[3] * hY, warm = c[4];
-          const r = Math.round(145 + warm * 75), g = Math.round(65 + warm * 55), b = Math.round(82 - warm * 18);
-          const a = 0.14 + warm * 0.10;
-          const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.5);
-          cg.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')');
-          cg.addColorStop(0.4, 'rgba(' + r + ',' + g + ',' + b + ',' + (a * 0.45) + ')');
-          cg.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
-          ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ch / (cw * 0.5));
-          ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, cw * 0.5, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
+        for (const dc of darkClouds) {
+          const cx = dc.cx * W, cy = dc.cy * hY;
+          const cw = dc.w * W, ch = dc.h * hY;
+          // Build cloud from overlapping puffs
+          const puffCount = 5 + Math.floor(rng(darkClouds.indexOf(dc), 210) * 4);
+          for (let pi = 0; pi < puffCount; pi++) {
+            const px = cx + (rng(pi + darkClouds.indexOf(dc) * 10, 211) - 0.5) * cw * 0.8;
+            const py = cy + (rng(pi + darkClouds.indexOf(dc) * 10, 212) - 0.5) * ch * 0.6;
+            const pr = cw * (0.15 + rng(pi + darkClouds.indexOf(dc) * 10, 213) * 0.15);
+
+            // Dark cloud body
+            const dg = ctx.createRadialGradient(px, py, 0, px, py, pr);
+            dg.addColorStop(0, 'rgba(18,12,22,' + dc.op.toFixed(3) + ')');
+            dg.addColorStop(0.5, 'rgba(25,16,28,' + (dc.op * 0.6).toFixed(3) + ')');
+            dg.addColorStop(1, 'rgba(30,18,32,0)');
+            ctx.fillStyle = dg;
+            ctx.save(); ctx.translate(px, py); ctx.scale(1, ch / cw * 1.8);
+            ctx.beginPath(); ctx.arc(0, 0, pr, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+
+            // Orange volumetric shadow inside (lit from below by sun)
+            const og = ctx.createRadialGradient(px, py + pr * 0.3, 0, px, py + pr * 0.3, pr * 0.8);
+            og.addColorStop(0, 'rgba(255,140,40,' + (dc.glow * 0.35).toFixed(3) + ')');
+            og.addColorStop(0.4, 'rgba(255,100,30,' + (dc.glow * 0.15).toFixed(3) + ')');
+            og.addColorStop(1, 'rgba(200,60,20,0)');
+            ctx.fillStyle = og;
+            ctx.save(); ctx.translate(px, py + pr * 0.3); ctx.scale(1, ch / cw * 1.5);
+            ctx.beginPath(); ctx.arc(0, 0, pr * 0.8, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+          }
         }
 
         // --- OPAQUE GROUND ---
@@ -2763,7 +2832,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tZfar = 90;      // farthest Z row
 
           // Camera/projection (reuse existing system params)
-          const tCamH = 0.6; // low camera, ground-level view
+          const tCamH = 0.3; // very low camera, ground-hugging
           const tFocal = W * 0.7;
 
           // Sun direction for terrain lighting (toward horizon center, from above)
@@ -2907,7 +2976,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         //          screenY = hY + camH * focal / worldZ
         //          apparent size = realSize * focal / worldZ
 
-        const camH = 0.6;            // low camera, ground-level
+        const camH = 0.3;            // very low camera, ground-hugging
         const focal = W * 0.7;       // focal length → controls FOV
         const gridSpacing = 3.8;     // average gap between swords on the plan
         const sunScreenX = W * 0.5;
@@ -3012,12 +3081,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.save();
 
-          // Clip below ground (extends slightly below sy to show tip)
+          // Clip below ground — bury lower 20% of sword into earth
           ctx.beginPath();
-          ctx.rect(sx - sh * 2, 0, sh * 4, sy + sh * 0.18);
+          ctx.rect(sx - sh * 2, 0, sh * 4, sy - sh * 0.05);
           ctx.clip();
 
-          ctx.translate(sx, sy + sh * 0.15);
+          ctx.translate(sx, sy - sh * 0.08);
           ctx.rotate(tilt * Math.PI / 180);
 
           // ================================================================
@@ -3943,21 +4012,33 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Matching reference: scattered across battlefield, various tilts
         {
           const swords = [];
-          const fieldZnear = 0.5;   // right at camera — swords fill the screen
+          const fieldZnear = 0.25;  // extremely close — swords dominate the screen
           const fieldZfar = 80;
           const fieldXrange = 30;
 
           // Scattered placement — organic, with natural clearing in center
           // First: explicit foreground swords at edges (framing the scene)
           const fgSwords = [
-            { wx: -2, wz: 0.6, tiltO: -10 }, { wx: 2.5, wz: 0.55, tiltO: 8 },
-            { wx: -1.5, wz: 0.8, tiltO: -6 }, { wx: 1.8, wz: 0.7, tiltO: 12 },
-            { wx: -3.5, wz: 0.9, tiltO: -14 }, { wx: 3, wz: 0.85, tiltO: 5 },
-            { wx: -1, wz: 1.2, tiltO: 7 }, { wx: 1.5, wz: 1.1, tiltO: -9 },
-            { wx: -2.8, wz: 0.7, tiltO: 4 }, { wx: 4, wz: 1.0, tiltO: -7 },
-            { wx: -4, wz: 1.3, tiltO: 10 }, { wx: 1, wz: 1.5, tiltO: -5 },
-            { wx: -0.5, wz: 0.5, tiltO: -3 }, { wx: 3.5, wz: 0.65, tiltO: 11 },
-            { wx: -5, wz: 1.1, tiltO: 6 }, { wx: 5, wz: 0.9, tiltO: -8 },
+            // Very close — partially off-screen, framing edges
+            { wx: -1.0, wz: 0.28, tiltO: -12 }, { wx: 1.2, wz: 0.26, tiltO: 9 },
+            { wx: -0.6, wz: 0.32, tiltO: 5 }, { wx: 0.8, wz: 0.30, tiltO: -7 },
+            { wx: -1.8, wz: 0.35, tiltO: -15 }, { wx: 2.0, wz: 0.33, tiltO: 11 },
+            { wx: -0.3, wz: 0.38, tiltO: 3 }, { wx: 1.5, wz: 0.36, tiltO: -10 },
+            // Close foreground
+            { wx: -2.2, wz: 0.42, tiltO: -8 }, { wx: 2.5, wz: 0.40, tiltO: 6 },
+            { wx: -1.3, wz: 0.45, tiltO: 14 }, { wx: 0.5, wz: 0.43, tiltO: -4 },
+            { wx: -3.0, wz: 0.50, tiltO: -11 }, { wx: 3.2, wz: 0.48, tiltO: 8 },
+            { wx: -0.8, wz: 0.55, tiltO: 7 }, { wx: 1.8, wz: 0.52, tiltO: -13 },
+            // Mid foreground
+            { wx: -2.5, wz: 0.60, tiltO: -6 }, { wx: 2.8, wz: 0.58, tiltO: 10 },
+            { wx: -1.5, wz: 0.65, tiltO: 4 }, { wx: 1.0, wz: 0.62, tiltO: -9 },
+            { wx: -3.5, wz: 0.70, tiltO: -14 }, { wx: 3.8, wz: 0.68, tiltO: 5 },
+            { wx: -0.5, wz: 0.75, tiltO: 8 }, { wx: 2.2, wz: 0.72, tiltO: -7 },
+            // Near-mid
+            { wx: -4.0, wz: 0.85, tiltO: 12 }, { wx: 4.2, wz: 0.80, tiltO: -10 },
+            { wx: -1.8, wz: 0.90, tiltO: -5 }, { wx: 1.5, wz: 0.88, tiltO: 11 },
+            { wx: -2.8, wz: 0.95, tiltO: 6 }, { wx: 3.0, wz: 0.92, tiltO: -8 },
+            { wx: -5.0, wz: 1.0, tiltO: -3 }, { wx: 5.2, wz: 1.05, tiltO: 9 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
@@ -3975,7 +4056,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // Then: scatter field swords with linear distribution (not quadratic)
-          const swordCount = 250;
+          const swordCount = 500;
           for (let i = 0; i < swordCount; i++) {
             const zRaw = rng(i, 100);
             // Linear distribution — even spread from near to far
