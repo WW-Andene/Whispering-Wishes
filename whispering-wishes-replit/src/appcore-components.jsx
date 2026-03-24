@@ -2843,9 +2843,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.save();
 
-          // Clip below ground
+          // Clip below ground (extends slightly below sy to show tip)
           ctx.beginPath();
-          ctx.rect(sx - sh * 2, 0, sh * 4, sy);
+          ctx.rect(sx - sh * 2, 0, sh * 4, sy + sh * 0.18);
           ctx.clip();
 
           ctx.translate(sx, sy + sh * 0.15);
@@ -3056,7 +3056,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // === SINGLE TEST SWORD ===
-        drawWeapon(W * 0.5, H * 0.45, H * 0.5, H * 0.5 * 0.025, 0, {
+        drawWeapon(W * 0.5, H * 0.65, H * 0.5, H * 0.5 * 0.025, 0, {
           type: weaponTypes[0], zRot: 0, irr: {},
           wx: 0, wy: 0, wz: 3, darkness: 0
         });
