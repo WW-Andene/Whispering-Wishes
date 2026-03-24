@@ -2572,12 +2572,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Apply staircase transforms: rotate 2° left around VP, sink 2° from left
         ctx.save();
         // Rotate around VP center — 2° clockwise tilts left side down
-        const sinkDeg = 2;
+        const sinkDeg = 1;
         const sinkRad = sinkDeg * Math.PI / 180;
         ctx.translate(vpX, vpY);
         ctx.rotate(sinkRad);
         // Shift VP right for 2° yaw rotation
-        const yawDeg = 2;
+        const yawDeg = 1;
         const yawShift = Math.tan(yawDeg * Math.PI / 180) * (botY - vpY) * 0.5;
         ctx.translate(-vpX + yawShift, -vpY);
 
@@ -2686,10 +2686,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Same transform as outer rectangle
         ctx.save();
-        const sinkRad2 = 2 * Math.PI / 180;
+        const sinkRad2 = 1 * Math.PI / 180;
         ctx.translate(vpX, vpY);
         ctx.rotate(sinkRad2);
-        const yawShift2 = Math.tan(2 * Math.PI / 180) * (botY - vpY) * 0.5;
+        const yawShift2 = Math.tan(1 * Math.PI / 180) * (botY - vpY) * 0.5;
         ctx.translate(-vpX + yawShift2, -vpY);
 
         ctx.beginPath();
@@ -3259,10 +3259,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Same transform as staircase
           ctx.save();
-          const sinkRad3 = 2 * Math.PI / 180;
+          const sinkRad3 = 1 * Math.PI / 180;
           ctx.translate(vpX, vpY);
           ctx.rotate(sinkRad3);
-          const yawShift3 = Math.tan(2 * Math.PI / 180) * (botY - vpY) * 0.5;
+          const yawShift3 = Math.tan(1 * Math.PI / 180) * (botY - vpY) * 0.5;
           ctx.translate(-vpX + yawShift3, -vpY);
 
           ctx.beginPath();
