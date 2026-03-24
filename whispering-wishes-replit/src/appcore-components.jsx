@@ -2934,35 +2934,44 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (frontVis) fillQuad(fTL, fTR, fBR, fBL, frontCol);
 
           // ================================================================
-          // 3D GUARD — crossbar is PERPENDICULAR to the blade
-          // Guard extends along X in blade-local space. When the blade
-          // rotates, the guard's width axis (X) rotates too.
-          // Key: guard width is along X, guard DEPTH is along Z.
-          // From front (θ=0): wide bar. From side (θ=90°): short nub.
+          // 3D GUARD — crossbar PERPENDICULAR to blade flat face
+          // The guard extends along Z-axis in blade-local space (depth axis).
+          // From front (θ=0): guard sticks out toward camera = thin line.
+          //   But we see its CROSS-SECTION: a thin horizontal bar.
+          // Actually: guard extends LEFT-RIGHT in world space, perpendicular
+          //   to the blade's facing direction. So:
+          //   - Guard long axis = blade's Z axis (the depth/thickness axis)
+          //   - Guard thin axis = blade's X axis (the width axis)
+          // This means: swap X and Z for the guard vertices!
           // ================================================================
           if (wt.gwM > 0.1) {
             const gy = -bladeH;
-            // Guard: X = half-width (long axis), Z = half-depth (thin axis)
-            const gfTL = rotY(-gHW, gy - gThk, gHT, cosA, sinA);
-            const gfTR = rotY(gHW, gy - gThk, gHT, cosA, sinA);
-            const gfBR = rotY(gHW, gy, gHT, cosA, sinA);
-            const gfBL = rotY(-gHW, gy, gHT, cosA, sinA);
-            const gbTL = rotY(-gHW, gy - gThk, -gHT, cosA, sinA);
-            const gbTR = rotY(gHW, gy - gThk, -gHT, cosA, sinA);
-            const gbBR = rotY(gHW, gy, -gHT, cosA, sinA);
-            const gbBL = rotY(-gHW, gy, -gHT, cosA, sinA);
+            // Guard long arm along Z, thin along X
+            // gHW = half-length of guard arm, halfT*0.5 = half-thickness of guard bar
+            const gArmLen = gHW; // how far the guard extends (the cross-arm)
+            const gBarThk = Math.max(1.5, halfT * 0.5); // thickness of the bar itself
+            // Guard vertices: X = thin (bar thickness), Z = long (arm length)
+            const gfTL = rotY(-gBarThk, gy - gThk, gArmLen, cosA, sinA);
+            const gfTR = rotY(gBarThk, gy - gThk, gArmLen, cosA, sinA);
+            const gfBR = rotY(gBarThk, gy, gArmLen, cosA, sinA);
+            const gfBL = rotY(-gBarThk, gy, gArmLen, cosA, sinA);
+            const gbTL = rotY(-gBarThk, gy - gThk, -gArmLen, cosA, sinA);
+            const gbTR = rotY(gBarThk, gy - gThk, -gArmLen, cosA, sinA);
+            const gbBR = rotY(gBarThk, gy, -gArmLen, cosA, sinA);
+            const gbBL = rotY(-gBarThk, gy, -gArmLen, cosA, sinA);
 
             const gFrontCol = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
             const gSideCol = 'rgb(' + Math.round(blR * 0.4) + ',' + Math.round(blG * 0.4) + ',' + Math.round(blB * 0.4) + ')';
-            // Top face of guard (visible since camera is above)
             const gTopCol = 'rgb(' + Math.round(blR * 0.55) + ',' + Math.round(blG * 0.55) + ',' + Math.round(blB * 0.55) + ')';
 
+            // Front/back of guard bar (the flat faces of the bar)
             if (backVis) fillQuad(gbTL, gbTR, gbBR, gbBL, gSideCol);
-            if (rightVis) fillQuad(gfTR, gbTR, gbBR, gfBR, gSideCol);
-            if (leftVis) fillQuad(gbTL, gfTL, gfBL, gbBL, gSideCol);
             if (frontVis) fillQuad(gfTL, gfTR, gfBR, gfBL, gFrontCol);
-            // Top face of guard
-            fillQuad(gfTL, gfTR, gbTR, gbTL, gTopCol);
+            // Side faces = the ENDS of the guard arms (the tips sticking out)
+            // Right end (positive Z side after rotation)
+            fillQuad(gfTL, gfTR, gbTR, gbTL, gTopCol); // top face
+            fillQuad(gfTR, gbTR, gbBR, gfBR, gSideCol); // right end
+            fillQuad(gbTL, gfTL, gfBL, gbBL, gSideCol); // left end
           }
 
           // ================================================================
