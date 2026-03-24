@@ -2854,22 +2854,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           // DIMENSIONS — matching reference sword proportions
           // ================================================================
-          // === GOLDEN RATIO HEIGHTS + proportional widths ===
+          // === JOHNSSON GEOMETRIC PROPORTIONS ===
           const halfW = sbw * wt.bwM; // blade half-width (from parameter)
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
 
-          // Heights: blade/handle = φ (1.618)
-          const bladeH = sh * 0.62;      // blade = 62%
-          const guardBarH = sh * 0.03;   // guard = 3%
-          const gripH = sh * 0.25;       // grip = 25%
-          const pommelH = sh * 0.10;     // pommel = 10%
+          // Heights (from Johnsson diagrams)
+          const bladeH = sh * 0.73;      // blade ≈ 73%
+          const guardBarH = sh * 0.02;   // guard bar = 2%
+          const gripH = sh * 0.18;       // grip = 18%
+          const pommelH = sh * 0.07;     // pommel = 7%
 
-          // Widths
+          // Key Johnsson proportion: guard total width ≈ grip length
           const gripHW = halfW * 0.4;    // grip = 40% of blade width
           const gripHT = gripHW;          // grip is round
-          const guardArmHW = bladeH / 7;  // each arm ≈ 1/7 blade
+          const guardArmHW = gripH / 2;   // each arm = half grip length (total span ≈ grip length)
           const guardBarHT = gripHT;      // guard depth = grip depth
-          const pomR = gripHW * 1.1 * wt.pomM; // pommel ≈ grip width
+          const pomR = gripHW * 1.2 * wt.pomM; // pommel slightly wider than grip
           const rainGuardH = 0;
 
           // Y positions (tip at y=0, everything else negative = up)
