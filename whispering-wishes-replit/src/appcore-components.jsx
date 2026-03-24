@@ -2575,7 +2575,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const sinkDeg = 2;
         const sinkRad = sinkDeg * Math.PI / 180;
         ctx.translate(vpX, vpY);
-        ctx.rotate(-sinkRad);
+        ctx.rotate(sinkRad);
         // Shift VP right for 2° yaw rotation
         const yawDeg = 2;
         const yawShift = Math.tan(yawDeg * Math.PI / 180) * (botY - vpY) * 0.5;
@@ -2688,7 +2688,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.save();
         const sinkRad2 = 2 * Math.PI / 180;
         ctx.translate(vpX, vpY);
-        ctx.rotate(-sinkRad2);
+        ctx.rotate(sinkRad2);
         const yawShift2 = Math.tan(2 * Math.PI / 180) * (botY - vpY) * 0.5;
         ctx.translate(-vpX + yawShift2, -vpY);
 
@@ -3261,7 +3261,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.save();
           const sinkRad3 = 2 * Math.PI / 180;
           ctx.translate(vpX, vpY);
-          ctx.rotate(-sinkRad3);
+          ctx.rotate(sinkRad3);
           const yawShift3 = Math.tan(2 * Math.PI / 180) * (botY - vpY) * 0.5;
           ctx.translate(-vpX + yawShift3, -vpY);
 
