@@ -2847,12 +2847,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const pomR = Math.max(0.2, effBW * (0.25 * wt.pomM + (ir.pomVar || 0)));
           const bSkew = (ir.bladeSkew || 0) * effBW;
 
-          // 3D surface normal (blade faces roughly toward camera, rotated by zRot)
-          // Normal points outward from blade face
-          const nx = Math.sin(zRot) * 0.3;
+          // 3D surface normal: blade flat face rotated by zRot around Y-axis.
+          // At zRot=0, normal points toward camera (-Z). As zRot increases,
+          // the blade turns and the normal swings sideways (X), changing how
+          // light hits the surface — swords facing the sun catch more light.
+          const nx = Math.sin(zRot);
           const ny = 0;
           const nz = -Math.cos(zRot);
-          const nd = Math.sqrt(nx * nx + nz * nz) || 1;
+          const nd = 1; // sin²+cos²=1, already normalized
 
           // Get material lighting
           const bladeMat = materials[wt.bladeMat] || materials.steel;
