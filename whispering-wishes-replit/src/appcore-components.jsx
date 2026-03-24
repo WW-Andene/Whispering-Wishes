@@ -2720,18 +2720,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const matKeys = Object.keys(materials);
 
         // === WEAPON TYPES ===
-        // Each defines proportions: bladeH%, guardH%, gripH%, bladeW mult, guardW mult, tipShape
-        // tipShape: 0=pointed, 1=broad, 2=hooked
+        // All sword variants — same basic silhouette, different proportions/materials.
+        // Keeps the battlefield cohesive. tipShape: 0=pointed, 1=slightly broad
         const weaponTypes = [
-          { name: 'longsword',  bladeP: 0.72, guardP: 0.02, gripP: 0.21, bwM: 1.0, gwM: 1.5, tipS: 0, pomM: 1.0, hM: 1.0, wM: 1.0, bladeMat: 'steel', handleMat: 'wood' },
-          { name: 'greatsword', bladeP: 0.68, guardP: 0.025, gripP: 0.26, bwM: 1.3, gwM: 1.8, tipS: 0, pomM: 1.3, hM: 1.25, wM: 1.15, bladeMat: 'steel', handleMat: 'wood' },
-          { name: 'shortsword', bladeP: 0.65, guardP: 0.02, gripP: 0.18, bwM: 0.9, gwM: 1.3, tipS: 0, pomM: 0.8, hM: 0.7, wM: 0.85, bladeMat: 'steel', handleMat: 'wood' },
-          { name: 'broadsword', bladeP: 0.70, guardP: 0.02, gripP: 0.20, bwM: 1.5, gwM: 1.6, tipS: 1, pomM: 1.0, hM: 0.95, wM: 1.3, bladeMat: 'iron', handleMat: 'wood' },
-          { name: 'spear',      bladeP: 0.25, guardP: 0.0, gripP: 0.72, bwM: 0.6, gwM: 0.0, tipS: 0, pomM: 0.4, hM: 1.5, wM: 0.35, bladeMat: 'iron', handleMat: 'wood' },
-          { name: 'halberd',    bladeP: 0.30, guardP: 0.01, gripP: 0.65, bwM: 1.8, gwM: 0.3, tipS: 2, pomM: 0.5, hM: 1.4, wM: 0.4, bladeMat: 'darkIron', handleMat: 'wood' },
-          { name: 'battleaxe',  bladeP: 0.28, guardP: 0.0, gripP: 0.68, bwM: 2.5, gwM: 0.0, tipS: 2, pomM: 0.6, hM: 1.1, wM: 0.4, bladeMat: 'iron', handleMat: 'wood' },
-          { name: 'katana',     bladeP: 0.76, guardP: 0.012, gripP: 0.20, bwM: 0.7, gwM: 0.9, tipS: 0, pomM: 0.6, hM: 1.05, wM: 0.75, bladeMat: 'steel', handleMat: 'bone' },
-          { name: 'mace',       bladeP: 0.22, guardP: 0.0, gripP: 0.65, bwM: 2.0, gwM: 0.0, tipS: 1, pomM: 1.8, hM: 0.85, wM: 0.4, bladeMat: 'bronze', handleMat: 'wood' },
+          { name: 'longsword',   bladeP: 0.72, guardP: 0.02, gripP: 0.21, bwM: 1.0,  gwM: 1.5, tipS: 0, pomM: 1.0,  hM: 1.0,  wM: 1.0,  bladeMat: 'steel',    handleMat: 'wood' },
+          { name: 'greatsword',  bladeP: 0.69, guardP: 0.022, gripP: 0.24, bwM: 1.15, gwM: 1.7, tipS: 0, pomM: 1.15, hM: 1.12, wM: 1.08, bladeMat: 'steel',    handleMat: 'wood' },
+          { name: 'shortsword',  bladeP: 0.68, guardP: 0.02, gripP: 0.19, bwM: 0.95, gwM: 1.3, tipS: 0, pomM: 0.9,  hM: 0.82, wM: 0.92, bladeMat: 'iron',     handleMat: 'wood' },
+          { name: 'broadsword',  bladeP: 0.71, guardP: 0.02, gripP: 0.20, bwM: 1.2,  gwM: 1.5, tipS: 1, pomM: 1.0,  hM: 0.97, wM: 1.12, bladeMat: 'iron',     handleMat: 'wood' },
+          { name: 'arming',      bladeP: 0.70, guardP: 0.018, gripP: 0.20, bwM: 0.9,  gwM: 1.4, tipS: 0, pomM: 0.95, hM: 0.90, wM: 0.95, bladeMat: 'steel',    handleMat: 'bone' },
+          { name: 'bastard',     bladeP: 0.70, guardP: 0.022, gripP: 0.23, bwM: 1.05, gwM: 1.6, tipS: 0, pomM: 1.1,  hM: 1.06, wM: 1.02, bladeMat: 'darkIron', handleMat: 'wood' },
+          { name: 'falchion',    bladeP: 0.73, guardP: 0.015, gripP: 0.19, bwM: 1.1,  gwM: 1.1, tipS: 1, pomM: 0.8,  hM: 0.94, wM: 1.05, bladeMat: 'bronze',   handleMat: 'wood' },
         ];
 
         // 3D lighting calculation
