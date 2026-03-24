@@ -2924,7 +2924,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // BLADE — razor cross-section with beveled edges meeting at Z=0
           // Each edge bevel is 1/7 of full blade width per side
           // ================================================================
-          const taperY = -bladeH * 0.15;
+          const taperY = -bladeH * 0.35;
           const tipT = Math.max(0.3, halfT * 0.3);
           const edgeW = halfW * 2 / 7;          // 1/7 of full width
           const innerHW = halfW - edgeW;         // inner flat face half-width
