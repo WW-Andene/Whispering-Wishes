@@ -2696,126 +2696,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
         }
 
-        // --- OPAQUE GROUND (darkest at bottom to hide lens warp edge) ---
-        const gd = ctx.createLinearGradient(0, hY, 0, H);
-        gd.addColorStop(0, 'rgb(45,32,24)');
-        gd.addColorStop(0.1, 'rgb(38,26,19)');
-        gd.addColorStop(0.3, 'rgb(30,20,15)');
-        gd.addColorStop(0.6, 'rgb(18,12,8)');
-        gd.addColorStop(1, 'rgb(8,5,3)');
-        ctx.fillStyle = gd;
-        ctx.fillRect(0, hY, W, H - hY);
-        // Extra dark band at very bottom to cover lens warp reveal
-        ctx.fillStyle = 'rgb(8,5,3)';
-        ctx.fillRect(0, H * 0.92, W, H * 0.08);
+        // Ground is rendered entirely by the 3D terrain mesh below
 
-        // Warm glow on ground near horizon
-        const gl = ctx.createRadialGradient(W * 0.5, hY, 0, W * 0.5, hY, W * 0.35);
-        gl.addColorStop(0, 'rgba(130,75,28,0.14)');
-        gl.addColorStop(0.6, 'rgba(70,40,15,0.05)');
-        gl.addColorStop(1, 'rgba(30,15,8,0)');
-        ctx.fillStyle = gl;
-        ctx.fillRect(0, hY, W, H * 0.12);
-
-        // --- GROUND TEXTURE: uneven terrain with visible depth ---
-        // Layer 1: Large terrain color variation (earth tones, mud, rock)
-        for (let gi = 0; gi < 80; gi++) {
-          const gpx = rng(gi, 20) * W;
-          const gpy = hY + (H - hY) * (rng(gi, 21) * 0.95 + 0.01);
-          const depthT = (gpy - hY) / (H - hY);
-          // Near horizon = small patches, near camera = large
-          const pr = (8 + rng(gi, 22) * 35) * (0.4 + depthT * 1.2);
-          const warm = rng(gi, 23);
-          let r, g, b, a;
-          if (warm < 0.35) {
-            // Dark depression / shadow — clearly darker than base ground
-            r = 2 + rng(gi, 24) * 5; g = 1 + rng(gi, 25) * 3; b = 0;
-            a = 0.30 + rng(gi, 27) * 0.30;
-          } else if (warm < 0.6) {
-            // Warm lit ground near horizon, cooler near camera
-            const horizP = 1 - depthT;
-            r = 50 + horizP * 80; g = 28 + horizP * 40; b = 12 + horizP * 15;
-            a = 0.12 + horizP * 0.18;
-          } else if (warm < 0.8) {
-            // Rocky grey-brown patches — visible contrast
-            r = 25 + rng(gi, 28) * 18; g = 20 + rng(gi, 29) * 12; b = 16 + rng(gi, 30) * 10;
-            a = 0.15 + rng(gi, 31) * 0.20;
-          } else {
-            // Reddish dried-blood earth
-            r = 45 + rng(gi, 28) * 30; g = 12 + rng(gi, 29) * 10; b = 5 + rng(gi, 30) * 5;
-            a = 0.10 + rng(gi, 31) * 0.15;
-          }
-          const tg = ctx.createRadialGradient(gpx, gpy, 0, gpx, gpy, pr);
-          tg.addColorStop(0, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + a.toFixed(3) + ')');
-          tg.addColorStop(0.5, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + (a * 0.4).toFixed(3) + ')');
-          tg.addColorStop(1, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',0)');
-          ctx.fillStyle = tg;
-          ctx.beginPath(); ctx.arc(gpx, gpy, pr, 0, Math.PI * 2); ctx.fill();
-        }
-
-        // Layer 2: Ground cracks and ridges (thin dark lines)
-        for (let ci = 0; ci < 30; ci++) {
-          const cx1 = rng(ci, 50) * W;
-          const cy1 = hY + (H - hY) * (rng(ci, 51) * 0.8 + 0.05);
-          const depthT = (cy1 - hY) / (H - hY);
-          const cLen = (15 + rng(ci, 52) * 40) * (0.3 + depthT);
-          const cAngle = (rng(ci, 53) - 0.5) * 1.2;
-          ctx.save();
-          ctx.translate(cx1, cy1);
-          ctx.rotate(cAngle);
-          ctx.strokeStyle = 'rgba(2,1,1,' + (0.20 + rng(ci, 54) * 0.25).toFixed(3) + ')';
-          ctx.lineWidth = 0.8 + rng(ci, 55) * 2.5 * depthT;
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          // Jagged line
-          const segs = 3 + Math.floor(rng(ci, 56) * 4);
-          for (let s = 1; s <= segs; s++) {
-            ctx.lineTo(
-              cLen * s / segs + (rng(ci * 10 + s, 57) - 0.5) * 6,
-              (rng(ci * 10 + s, 58) - 0.5) * 4
-            );
-          }
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        // Layer 3: Elongated cast shadows (from weapons implied)
-        for (let si = 0; si < 50; si++) {
-          const sx2 = rng(si, 40) * W;
-          const sy2 = hY + (H - hY) * (rng(si, 41) * 0.65 + 0.02);
-          const depthT = (sy2 - hY) / (H - hY);
-          const sLen = (8 + rng(si, 42) * 25) * (0.4 + depthT);
-          const sWid = (0.8 + rng(si, 43) * 2) * (0.3 + depthT * 0.7);
-          ctx.save();
-          ctx.translate(sx2, sy2);
-          ctx.rotate((rng(si, 44) - 0.3) * 0.35);
-          ctx.fillStyle = 'rgba(3,1,1,' + (0.20 + rng(si, 45) * 0.20).toFixed(3) + ')';
-          ctx.beginPath();
-          ctx.ellipse(0, 0, sLen, sWid, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-
-        // Layer 4: Subtle warm light pools near horizon
-        for (let li = 0; li < 12; li++) {
-          const lx = W * (0.2 + rng(li, 60) * 0.6);
-          const ly = hY + (H - hY) * (rng(li, 61) * 0.15 + 0.01);
-          const lr = 15 + rng(li, 62) * 30;
-          const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, lr);
-          lg.addColorStop(0, 'rgba(130,75,30,0.16)');
-          lg.addColorStop(1, 'rgba(90,45,18,0)');
-          ctx.fillStyle = lg;
-          ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.fill();
-        }
-
-        // Mountains
-        ctx.fillStyle = 'rgba(22,14,16,0.8)';
-        ctx.beginPath(); ctx.moveTo(0, hY);
-        const mp = [[.05,.01],[.12,.025],[.18,.018],[.24,.032],[.30,.02],[.36,.012],
-          [.42,.006],[.48,.003],[.52,.002],[.56,.004],[.62,.008],[.68,.022],
-          [.74,.030],[.80,.020],[.86,.028],[.92,.018],[.96,.010],[1,.004]];
-        for (const p of mp) ctx.lineTo(W * p[0], hY - H * p[1]);
-        ctx.lineTo(W, hY); ctx.closePath(); ctx.fill();
+        // (Old ground layers, textures, cracks, mountains removed — terrain mesh handles all)
 
         // ============================================
         // 3D TERRAIN HEIGHTMAP — relief mesh with lighting
@@ -4041,7 +3924,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // === GRID OF SWORDS — evenly spaced, then camera projects ===
           // Spacing grows with distance (close rows dense, far rows sparse)
           // so ~equal number of visible swords per row on screen
-          const gridZmin = 0.3, gridZmax = 80;
+          const gridZmin = 0.15, gridZmax = 80;
           const maxSwords = 750;
           let swordIdx = 0;
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
@@ -4052,7 +3935,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
               const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
               const wzJ = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
-              if (wzJ < 0.25) { swordIdx++; continue; }
+              if (wzJ < 0.12) { swordIdx++; continue; }
               const wy = terrH(wx, wzJ);
 
               const scrX = W * 0.5 + wx * focal / wzJ;
