@@ -2863,7 +2863,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           const halfW = mod * 0.25 * wt.bwM;     // blade half-width ≈ 0.5 module wide
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
-          const gripHW = halfW * 6 / 7;            // grip = 6/7 of blade width
+          const gripHW = halfW * 0.5;               // grip narrower than blade
+          const leatherHW = halfW * 6 / 7;           // leather wrap = 6/7 of blade width
 
           // Hilt sub-proportions: pommel:grip ≈ 1:2, thin guard bar
           const pommelH = mod * 1.0;              // pommel ≈ 1 module
@@ -3044,36 +3045,48 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const gSamplesTop = [];
             const NS = 12; // more samples for smoother curves
 
+            // V-notch parameters
+            const notchX = gcHW * 1.15;     // X where V-notch sits
+            const notchDepth = ghh * 1.2;   // how deep V dips toward center (pronounced)
+
             // Left outer tip
             gSamplesTop.push({ x: -tipOuterX, y: gCenterY - tipFlare });
             gSamplesTop.push({ x: -tipInnerX, y: gCenterY - tipFlare * 0.6 });
-            // Smooth curve: left arm → center-left, with subtle V-notch dip at transition
-            const notchX = gcHW * 1.2; // X where arm meets center zone
-            const notchDip = ghh * 0.35; // how deep the V-notch dips toward center
+            // Left arm: tip → approaching V-notch (flat along arm height)
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(cBez(
                 -tipInnerX, gCenterY - tipFlare * 0.6,
                 -tipInnerX * 0.7, gCenterY - ghh,
-                -notchX * 1.1, gCenterY - ghh,
-                -notchX, gCenterY - ghh + notchDip,
+                -notchX - gcHW * 0.2, gCenterY - ghh,
+                -notchX, gCenterY - ghh,
                 i / NS
               ));
             }
-            // Center: left notch → right notch with gentle concave dip
+            // Left V-notch: dip down then back up
             for (let i = 1; i <= NS; i++) {
-              gSamplesTop.push(cBez(
-                -notchX, gCenterY - ghh + notchDip,
-                -notchX * 0.5, gCenterY - ghh,
-                notchX * 0.5, gCenterY - ghh,
-                notchX, gCenterY - ghh + notchDip,
+              gSamplesTop.push(qBez(
+                -notchX, gCenterY - ghh,
+                -notchX * 0.85, gCenterY - ghh + notchDepth,
+                -gcHW * 0.5, gCenterY - ghh,
                 i / NS
               ));
             }
-            // Right arm: right notch → right tip
+            // Flat center: left side → right side
+            gSamplesTop.push({ x: gcHW * 0.5, y: gCenterY - ghh });
+            // Right V-notch: dip down then back up
+            for (let i = 1; i <= NS; i++) {
+              gSamplesTop.push(qBez(
+                gcHW * 0.5, gCenterY - ghh,
+                notchX * 0.85, gCenterY - ghh + notchDepth,
+                notchX, gCenterY - ghh,
+                i / NS
+              ));
+            }
+            // Right arm: V-notch → tip
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(cBez(
-                notchX, gCenterY - ghh + notchDip,
-                notchX * 1.1, gCenterY - ghh,
+                notchX, gCenterY - ghh,
+                notchX + gcHW * 0.2, gCenterY - ghh,
                 tipInnerX * 0.7, gCenterY - ghh,
                 tipInnerX, gCenterY - tipFlare * 0.6,
                 i / NS
@@ -3171,7 +3184,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const lR = Math.round(hdR * 0.25);
             const lG = Math.round(hdG * 0.2);
             const lB = Math.round(hdB * 0.18);
-            const leatherGrad = ctx.createLinearGradient(-gripHW, 0, gripHW, 0);
+            const leatherGrad = ctx.createLinearGradient(-leatherHW, 0, leatherHW, 0);
             const lHi = 'rgb(' + Math.min(255, lR + 12) + ',' + Math.min(255, lG + 8) + ',' + Math.min(255, lB + 6) + ')';
             const lLo = 'rgb(' + Math.round(lR * 0.4) + ',' + Math.round(lG * 0.4) + ',' + Math.round(lB * 0.4) + ')';
             if (sinA > 0) {
@@ -3184,14 +3197,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               leatherGrad.addColorStop(1, lHi);
             }
             const leatherH = leatherTop - leatherBot;
-            const leatherHW = gripHW + 2; // leather is 2px wider than grip on each side
-            const leatherNarrowHW = gripHW + 1; // converges to 1px wider at narrow end
+            const lWideHW = leatherHW;            // wide end = 6/7 blade width (from outer scope)
+            const lNarrowHW = gripHW + 1;         // narrow end = 1px wider than grip
             // Draw leather as a gentle trapezoid
             ctx.beginPath();
-            ctx.moveTo(-leatherHW, leatherTop);
-            ctx.lineTo(leatherHW, leatherTop);
-            ctx.lineTo(leatherNarrowHW, leatherBot);
-            ctx.lineTo(-leatherNarrowHW, leatherBot);
+            ctx.moveTo(-lWideHW, leatherTop);
+            ctx.lineTo(lWideHW, leatherTop);
+            ctx.lineTo(lNarrowHW, leatherBot);
+            ctx.lineTo(-lNarrowHW, leatherBot);
             ctx.closePath();
             ctx.fillStyle = leatherGrad;
             ctx.fill();
@@ -3203,7 +3216,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.fillStyle = 'rgba(0,0,0,0.22)';
             for (let i = 1; i <= wrapCount; i++) {
               const t = i / (wrapCount + 1);
-              const wHW = leatherHW + (leatherNarrowHW - leatherHW) * t;
+              const wHW = lWideHW + (lNarrowHW - lWideHW) * t;
               const wy = leatherBot + i * wrapSpacing;
               ctx.beginPath();
               ctx.rect(-wHW, wy - wrapHt * 0.5, wHW * 2, wrapHt);
@@ -3212,7 +3225,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.fillStyle = 'rgba(255,255,255,0.07)';
             for (let i = 1; i <= wrapCount; i++) {
               const t = i / (wrapCount + 1);
-              const wHW = leatherHW + (leatherNarrowHW - leatherHW) * t;
+              const wHW = lWideHW + (lNarrowHW - lWideHW) * t;
               const wy = leatherBot + i * wrapSpacing;
               ctx.beginPath();
               ctx.rect(-wHW, wy - wrapHt * 0.5 - wrapHt * 0.5, wHW * 2, wrapHt * 0.3);
