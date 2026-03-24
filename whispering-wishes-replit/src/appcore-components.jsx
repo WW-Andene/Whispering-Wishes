@@ -4273,8 +4273,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const nx = (x - cx) / normR;
             const ny = (y - cy) / normR;
             const r2 = nx * nx + ny * ny;
-            // Barrel fisheye: source closer to center → image bulges outward at edges
-            const distort = 1 / (1 + k * r2);
+            // Pincushion: horizon sags down in center, edges pull up
+            const distort = 1 + k * r2;
             const sx = cx + nx * distort * normR;
             const sy = cy + ny * distort * normR;
             const di = (y * w + x) * 4;
