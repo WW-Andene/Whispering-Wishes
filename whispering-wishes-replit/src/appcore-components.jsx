@@ -2566,7 +2566,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;           // w * 0.5
         const vpY = sunY;           // h * 0.18
 
-        const botY = h * 0.625;     // 50% of L1
+        const botY = h * 0.42;     // 50% of L1
         // Top must stay below VP for correct perspective convergence
         const topY = vpY + h * 0.04; // below the sun
 
@@ -2579,7 +2579,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Half-width scales with distance from the sun VP
         const dBot = botY - vpY;    // distance bottom→VP
         const dTop = topY - vpY;    // distance top→VP (positive, top is below VP)
-        const hwBot = w * 0.5;              // full width at bottom
+        const hwBot = w * 0.25;              // 0.5x uniform scale
         const hwTop = hwBot * dTop / dBot;  // narrow at top
 
         const botL = vpX - hwBot;
@@ -2671,7 +2671,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.625;
+        const botY = h * 0.42;
         const topY = vpY + h * 0.04;
 
         ctx.save();
@@ -2681,7 +2681,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const dBot = botY - vpY;
         const dTop = topY - vpY;
-        const hwBot = w * 0.39;              // narrower than the outer (0.5 → 0.39)
+        const hwBot = w * 0.195;             // 0.5x uniform scale
         const hwTop = hwBot * dTop / dBot;
 
         const botL = vpX - hwBot;
@@ -3232,7 +3232,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // --- Side faces: step-aligned stone blocks between outer frame and stairway ---
         {
           // Outer frame edges
-          const hwOBot = w * 0.5;
+          const hwOBot = w * 0.25;
           const hwOTop = hwOBot * (topY - vpY) / dBot;
           const outerL = (py) => (vpX - hwOBot) + ((vpX - hwOTop) - (vpX - hwOBot)) * (botY - py) / (botY - topY);
           const outerR = (py) => (vpX + hwOBot) + ((vpX + hwOTop) - (vpX + hwOBot)) * (botY - py) / (botY - topY);
