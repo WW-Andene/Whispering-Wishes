@@ -2560,334 +2560,417 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
-      // --- Battleground: swords stuck in scorched earth ---
+      // ===== BATTLEGROUND — Unlimited Blade Works composition =====
+      // Reference: low camera, flat scorched earth bottom ~40%, swords blade-UP
+      // Large framing swords at L/R edges, dense field receding to horizon,
+      // mountain silhouettes, warm rim light, ground embers.
       {
-        const groundY = h * 0.62; // horizon line where ground starts
-        const groundBot = h; // bottom of screen
+        const groundY = h * 0.58; // horizon line
+        const groundBot = h;
+        const aS = alphaScale;
 
-        // --- Scorched earth ground plane ---
-        ctx.save();
-        // Ground gradient: dark earth fading to near-black at bottom
-        const groundGrd = ctx.createLinearGradient(0, groundY, 0, groundBot);
-        groundGrd.addColorStop(0, 'rgba(45, 25, 12, 0.0)');
-        groundGrd.addColorStop(0.08, 'rgba(35, 18, 8, 0.75)');
-        groundGrd.addColorStop(0.25, 'rgba(28, 14, 6, 0.88)');
-        groundGrd.addColorStop(0.6, 'rgba(18, 9, 4, 0.94)');
-        groundGrd.addColorStop(1, 'rgba(8, 4, 2, 0.98)');
-        ctx.fillStyle = groundGrd;
-        ctx.fillRect(0, groundY, w, groundBot - groundY);
-
-        // Subtle terrain undulation
-        for (let tx = 0; tx < 6; tx++) {
-          const txH = hash(tx * 77.3);
-          const txX = w * (tx / 5 - 0.05);
-          const txW = w * (0.25 + txH * 0.15);
-          const txY = groundY + h * 0.02 + txH * h * 0.04;
-          const tGrd = ctx.createRadialGradient(txX + txW / 2, txY, 0, txX + txW / 2, txY, txW * 0.5);
-          tGrd.addColorStop(0, `rgba(50, 28, 10, ${0.15 * alphaScale})`);
-          tGrd.addColorStop(1, 'rgba(50, 28, 10, 0)');
-          ctx.fillStyle = tGrd;
-          ctx.fillRect(txX, txY - txW * 0.2, txW, txW * 0.4);
-        }
-
-        // Warm glow on ground near horizon (sunset reflection)
-        const horizGlow = ctx.createLinearGradient(0, groundY, 0, groundY + h * 0.15);
-        horizGlow.addColorStop(0, `rgba(200, 100, 30, ${0.18 * alphaScale})`);
-        horizGlow.addColorStop(0.5, `rgba(150, 60, 15, ${0.08 * alphaScale})`);
-        horizGlow.addColorStop(1, 'rgba(100, 40, 10, 0)');
-        ctx.fillStyle = horizGlow;
-        ctx.fillRect(0, groundY, w, h * 0.15);
-        ctx.restore();
-
-        // --- Swords thrust blade-down into the ground (hilt up) ---
-        const swordHash = (a, b) => {
+        // Deterministic hash
+        const sH = (a, b) => {
           let n = ((a * 2654435761) ^ (b * 2246822519)) | 0;
           n = Math.imul(n ^ (n >>> 13), 1274126177) | 0;
           n = n ^ (n >>> 16);
           return (n & 0x7fffffff) / 0x7fffffff;
         };
 
-        const SWORD_COUNT = 65;
-        const swords = [];
-        for (let si = 0; si < SWORD_COUNT; si++) {
-          const sh = (b) => swordHash(si, b);
-
-          // Depth: 0 = horizon (far), 1 = near camera (bottom)
-          const depth = sh(1) * sh(1) * 0.8 + sh(2) * 0.2;
-
-          // X: wider spread near camera
-          const spread = 0.35 + depth * 0.65;
-          const xN = 0.5 + (sh(3) - 0.5) * spread * 2.2;
-
-          // Y on ground plane
-          const baseY = groundY + (groundBot - groundY) * depth;
-
-          // Visible height above ground scales with perspective
-          const perspScale = 0.12 + depth * 0.88;
-          const visH = h * (0.10 + sh(4) * 0.18) * perspScale;
-
-          // Tilt: slight lean, some more dramatic
-          const tilt = (sh(5) - 0.5) * 0.3 + (sh(7) > 0.85 ? (sh(7) - 0.5) * 0.5 : 0);
-
-          // Sword style: 0=longsword 1=greatsword 2=katana 3=broadsword 4=bastard
-          const sType = Math.floor(sh(6) * 5);
-
-          swords.push({
-            x: xN * w, y: baseY, visH, tilt, depth, type: sType,
-            h1: sh(1), h2: sh(2), h3: sh(3), h4: sh(4), h5: sh(5),
-            h6: sh(6), h7: sh(7), h8: sh(8), h9: sh(9), h10: sh(10)
-          });
+        // --- Mountain silhouettes at horizon ---
+        ctx.save();
+        const mtPeaks = [
+          { x: 0.08, h: 0.06, w: 0.18 },
+          { x: 0.22, h: 0.045, w: 0.15 },
+          { x: 0.38, h: 0.055, w: 0.2 },
+          { x: 0.52, h: 0.04, w: 0.16 },
+          { x: 0.65, h: 0.06, w: 0.18 },
+          { x: 0.78, h: 0.05, w: 0.2 },
+          { x: 0.92, h: 0.055, w: 0.17 },
+        ];
+        // Far mountain layer (darker, taller)
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        for (const mp of mtPeaks) {
+          const mx = mp.x * w;
+          const mw = mp.w * w * 0.5;
+          const my = groundY - mp.h * h * 1.2;
+          ctx.lineTo(mx - mw, groundY);
+          ctx.lineTo(mx - mw * 0.3, my + (groundY - my) * 0.25);
+          ctx.lineTo(mx, my);
+          ctx.lineTo(mx + mw * 0.3, my + (groundY - my) * 0.2);
+          ctx.lineTo(mx + mw, groundY);
         }
+        ctx.lineTo(w, groundY);
+        ctx.lineTo(w, groundY + h * 0.02);
+        ctx.lineTo(0, groundY + h * 0.02);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(25, 15, 20, ${0.7 * aS})`;
+        ctx.fill();
+        // Warm glow at mountain base
+        const mtGlow = ctx.createLinearGradient(0, groundY - h * 0.06, 0, groundY + h * 0.01);
+        mtGlow.addColorStop(0, 'rgba(180, 80, 40, 0)');
+        mtGlow.addColorStop(0.5, `rgba(160, 70, 30, ${0.15 * aS})`);
+        mtGlow.addColorStop(1, `rgba(120, 50, 20, ${0.1 * aS})`);
+        ctx.fillStyle = mtGlow;
+        ctx.fillRect(0, groundY - h * 0.06, w, h * 0.08);
+        ctx.restore();
 
-        // Painter's order: far swords first
-        swords.sort((a, b) => a.depth - b.depth);
+        // --- Ground plane ---
+        ctx.save();
+        const gGrd = ctx.createLinearGradient(0, groundY, 0, groundBot);
+        gGrd.addColorStop(0, 'rgba(50, 30, 18, 0.0)');
+        gGrd.addColorStop(0.04, 'rgba(40, 22, 12, 0.6)');
+        gGrd.addColorStop(0.12, 'rgba(32, 18, 10, 0.82)');
+        gGrd.addColorStop(0.3, 'rgba(22, 12, 6, 0.92)');
+        gGrd.addColorStop(0.6, 'rgba(14, 8, 4, 0.96)');
+        gGrd.addColorStop(1, 'rgba(6, 3, 2, 0.99)');
+        ctx.fillStyle = gGrd;
+        ctx.fillRect(0, groundY, w, groundBot - groundY);
 
-        for (const sw of swords) {
+        // Warm horizon reflection
+        const hGlow = ctx.createLinearGradient(w * 0.2, groundY, w * 0.8, groundY + h * 0.12);
+        hGlow.addColorStop(0, `rgba(180, 90, 35, ${0.2 * aS})`);
+        hGlow.addColorStop(0.4, `rgba(140, 60, 20, ${0.1 * aS})`);
+        hGlow.addColorStop(1, 'rgba(80, 30, 10, 0)');
+        ctx.fillStyle = hGlow;
+        ctx.fillRect(0, groundY, w, h * 0.12);
+
+        // Subtle terrain bumps
+        for (let ti = 0; ti < 12; ti++) {
+          const th = sH(ti + 200, 1);
+          const th2 = sH(ti + 200, 2);
+          const tx = (th * 1.3 - 0.15) * w;
+          const ty = groundY + h * 0.03 + th2 * h * 0.25;
+          const tw = w * (0.06 + th * 0.1);
+          const tg = ctx.createRadialGradient(tx, ty, 0, tx, ty, tw);
+          tg.addColorStop(0, `rgba(45, 28, 14, ${0.12 * aS})`);
+          tg.addColorStop(1, 'rgba(30, 18, 8, 0)');
+          ctx.fillStyle = tg;
+          ctx.fillRect(tx - tw, ty - tw * 0.3, tw * 2, tw * 0.6);
+        }
+        ctx.restore();
+
+        // === SWORD DRAWING FUNCTION ===
+        // Draws a single sword: blade UP, grip/pommel buried in ground.
+        // (x, y) = ground insertion point. visH = total visible height above ground.
+        // Composition: ground → pommel(buried) → grip(partially visible) → crossguard → blade → tip(top)
+        const drawSword = (x, y, visH, tilt, type, depth, seeds) => {
           ctx.save();
-          ctx.translate(sw.x, sw.y);
-          ctx.rotate(sw.tilt);
+          ctx.translate(x, y);
+          ctx.rotate(tilt);
 
-          // Proportions — blade goes DOWN into earth, hilt sticks UP
-          // Layout from top to bottom: pommel, grip, crossguard, (ground line), blade buried
-          const H = sw.visH;
-          const bladeW = H * (0.018 + sw.h4 * 0.012);
-          const guardW = H * (0.06 + sw.h6 * 0.05);
-          const guardThk = Math.max(1.5, H * 0.018);
-          const gripLen = H * (0.22 + sw.h8 * 0.08);
-          const pommelR = bladeW * (1.5 + sw.h9 * 1.0);
+          const H = visH;
+          const s = seeds;
+          // Proportions
+          const bW = H * (0.016 + s[0] * 0.010); // blade half-width
+          const guardW = H * (0.055 + s[1] * 0.045); // crossguard half-length
+          const guardThk = Math.max(1.5, H * 0.016);
+          const gripVis = H * (0.06 + s[2] * 0.04); // visible grip above ground
+          const bladeLen = H - gripVis - guardThk * 2; // blade length above guard
 
-          // Portion of blade visible above ground (sticking out above crossguard)
-          const bladeAbove = H - gripLen - guardThk;
+          // Darkness
+          const silA = (0.85 + (1 - depth) * 0.15) * aS;
+          const dk = `rgba(10, 6, 3, ${silA})`;
+          const rimA = (0.08 + depth * 0.25) * aS;
+          const litSide = x < w * 0.5 ? 1 : -1;
 
-          // Silhouette darkness — far = pure black silhouette, near = slight detail
-          const silA = (0.82 + (1 - sw.depth) * 0.18) * alphaScale;
-          const detA = sw.depth * 0.35 * alphaScale;
-          const darkCol = `rgba(12, 8, 4, ${silA})`;
-
-          // --- Blade above ground (pointing upward from crossguard) ---
+          // --- Grip stub (visible just above ground, going down) ---
           ctx.beginPath();
-          if (sw.type === 2) {
-            // Katana: curved single-edge blade
-            const c = bladeW * 3;
-            ctx.moveTo(bladeW * 0.3, 0);
-            ctx.quadraticCurveTo(bladeW * 0.4 + c * 0.4, -bladeAbove * 0.5, bladeW * 0.1, -bladeAbove);
-            ctx.lineTo(-bladeW * 0.1, -bladeAbove);
-            ctx.quadraticCurveTo(-bladeW * 0.2 + c * 0.1, -bladeAbove * 0.5, -bladeW * 0.15, 0);
-          } else if (sw.type === 1) {
-            // Greatsword: wide, long, tapers to point
-            const bw = bladeW * 1.4;
-            ctx.moveTo(-bw, 0);
-            ctx.lineTo(-bw * 0.8, -bladeAbove * 0.7);
-            ctx.lineTo(-bw * 0.15, -bladeAbove * 0.95);
-            ctx.lineTo(0, -bladeAbove);
-            ctx.lineTo(bw * 0.15, -bladeAbove * 0.95);
-            ctx.lineTo(bw * 0.8, -bladeAbove * 0.7);
-            ctx.lineTo(bw, 0);
-          } else if (sw.type === 3) {
-            // Broadsword: wider blade, rounded point
-            const bw = bladeW * 1.2;
-            ctx.moveTo(-bw, 0);
-            ctx.lineTo(-bw, -bladeAbove * 0.75);
-            ctx.quadraticCurveTo(-bw, -bladeAbove, 0, -bladeAbove);
-            ctx.quadraticCurveTo(bw, -bladeAbove, bw, -bladeAbove * 0.75);
-            ctx.lineTo(bw, 0);
+          ctx.rect(-bW * 0.45, 0, bW * 0.9, gripVis);
+          ctx.fillStyle = dk;
+          ctx.fill();
+
+          // --- Crossguard at top of grip ---
+          const gY = -guardThk; // guard bottom
+          ctx.beginPath();
+          if (type === 0) {
+            // Longsword: straight cross with slight droop at ends
+            ctx.moveTo(-guardW, gY + guardThk * 0.7);
+            ctx.lineTo(-guardW * 0.8, gY);
+            ctx.lineTo(guardW * 0.8, gY);
+            ctx.lineTo(guardW, gY + guardThk * 0.7);
+            ctx.lineTo(guardW, gY + guardThk * 1.5);
+            ctx.lineTo(-guardW, gY + guardThk * 1.5);
+            ctx.closePath();
+          } else if (type === 1) {
+            // Greatsword: long curved quillons curving upward at tips
+            ctx.moveTo(-guardW * 1.15, gY - guardThk * 0.8);
+            ctx.quadraticCurveTo(-guardW * 0.6, gY + guardThk * 0.5, 0, gY + guardThk * 0.3);
+            ctx.quadraticCurveTo(guardW * 0.6, gY + guardThk * 0.5, guardW * 1.15, gY - guardThk * 0.8);
+            ctx.lineTo(guardW * 1.15, gY + guardThk * 0.3);
+            ctx.quadraticCurveTo(guardW * 0.5, gY + guardThk * 1.5, 0, gY + guardThk * 1.0);
+            ctx.quadraticCurveTo(-guardW * 0.5, gY + guardThk * 1.5, -guardW * 1.15, gY + guardThk * 0.3);
+            ctx.closePath();
+          } else if (type === 2) {
+            // Katana: oval tsuba
+            ctx.ellipse(0, gY + guardThk * 0.5, guardW * 0.45, guardW * 0.35, 0, 0, Math.PI * 2);
+          } else if (type === 3) {
+            // Broadsword: thick bar with round ends
+            ctx.moveTo(-guardW, gY);
+            ctx.lineTo(guardW, gY);
+            ctx.lineTo(guardW, gY + guardThk * 1.5);
+            ctx.lineTo(-guardW, gY + guardThk * 1.5);
+            ctx.closePath();
+            ctx.fillStyle = dk;
+            ctx.fill();
+            // Round finials
+            ctx.beginPath();
+            ctx.arc(-guardW, gY + guardThk * 0.75, guardThk * 1.0, 0, Math.PI * 2);
+            ctx.fillStyle = dk;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(guardW, gY + guardThk * 0.75, guardThk * 1.0, 0, Math.PI * 2);
           } else {
-            // Longsword / bastard sword: straight taper
-            const bw = sw.type === 4 ? bladeW * 1.1 : bladeW;
-            ctx.moveTo(-bw, 0);
-            ctx.lineTo(-bw * 0.2, -bladeAbove * 0.93);
-            ctx.lineTo(0, -bladeAbove);
-            ctx.lineTo(bw * 0.2, -bladeAbove * 0.93);
-            ctx.lineTo(bw, 0);
+            // Bastard/hand-and-half: angular S-guard
+            ctx.moveTo(-guardW * 0.9, gY + guardThk * 1.2);
+            ctx.lineTo(-guardW, gY);
+            ctx.lineTo(-guardW * 0.15, gY + guardThk * 0.3);
+            ctx.lineTo(guardW * 0.15, gY + guardThk * 0.3);
+            ctx.lineTo(guardW, gY);
+            ctx.lineTo(guardW * 0.9, gY + guardThk * 1.2);
+            ctx.closePath();
+          }
+          ctx.fillStyle = dk;
+          ctx.fill();
+
+          // --- Blade (going UP from crossguard to tip) ---
+          const bladeBot = gY; // starts at guard top
+          const bladeTip = gY - bladeLen;
+          ctx.beginPath();
+          if (type === 2) {
+            // Katana: curved single-edge
+            const curve = bW * 4;
+            ctx.moveTo(-bW * 0.3, bladeBot);
+            ctx.lineTo(bW * 0.6, bladeBot);
+            ctx.quadraticCurveTo(bW * 0.5 + curve * 0.25, bladeBot + (bladeTip - bladeBot) * 0.5, bW * 0.15, bladeTip + bladeLen * 0.03);
+            ctx.lineTo(0, bladeTip); // tip
+            ctx.quadraticCurveTo(-bW * 0.3 - curve * 0.1, bladeBot + (bladeTip - bladeBot) * 0.5, -bW * 0.3, bladeBot);
+          } else if (type === 1) {
+            // Greatsword: wide blade, slight taper
+            const bw = bW * 1.5;
+            ctx.moveTo(-bw, bladeBot);
+            ctx.lineTo(-bw * 0.95, bladeBot + (bladeTip - bladeBot) * 0.6);
+            ctx.lineTo(-bw * 0.2, bladeBot + (bladeTip - bladeBot) * 0.93);
+            ctx.lineTo(0, bladeTip);
+            ctx.lineTo(bw * 0.2, bladeBot + (bladeTip - bladeBot) * 0.93);
+            ctx.lineTo(bw * 0.95, bladeBot + (bladeTip - bladeBot) * 0.6);
+            ctx.lineTo(bw, bladeBot);
+          } else if (type === 3) {
+            // Broadsword: wider, parallel edges, rounded tip
+            const bw = bW * 1.3;
+            ctx.moveTo(-bw, bladeBot);
+            ctx.lineTo(-bw, bladeBot + (bladeTip - bladeBot) * 0.7);
+            ctx.quadraticCurveTo(-bw, bladeTip, 0, bladeTip);
+            ctx.quadraticCurveTo(bw, bladeTip, bw, bladeBot + (bladeTip - bladeBot) * 0.7);
+            ctx.lineTo(bw, bladeBot);
+          } else {
+            // Longsword / bastard: straight taper to point
+            const bw = type === 4 ? bW * 1.15 : bW;
+            ctx.moveTo(-bw, bladeBot);
+            ctx.lineTo(-bw * 0.18, bladeBot + (bladeTip - bladeBot) * 0.92);
+            ctx.lineTo(0, bladeTip);
+            ctx.lineTo(bw * 0.18, bladeBot + (bladeTip - bladeBot) * 0.92);
+            ctx.lineTo(bw, bladeBot);
           }
           ctx.closePath();
-          ctx.fillStyle = darkCol;
+          ctx.fillStyle = dk;
           ctx.fill();
 
-          // Blade edge highlight — sunset rim light on one side
-          {
-            const litSide = sw.x < w * 0.5 ? 1 : -1;
-            const edgeA = (0.12 + sw.depth * 0.22) * alphaScale;
+          // --- Sunset rim light on blade edge ---
+          ctx.beginPath();
+          ctx.moveTo(litSide * bW * (type === 1 ? 1.5 : type === 3 ? 1.3 : 1.0), bladeBot);
+          ctx.lineTo(0, bladeTip);
+          ctx.strokeStyle = `rgba(255, 150, 55, ${rimA})`;
+          ctx.lineWidth = Math.max(0.4, bW * 0.2);
+          ctx.stroke();
+
+          // Secondary softer glow line
+          ctx.beginPath();
+          ctx.moveTo(litSide * bW * 0.6, bladeBot);
+          ctx.lineTo(0, bladeTip);
+          ctx.strokeStyle = `rgba(200, 100, 40, ${rimA * 0.3})`;
+          ctx.lineWidth = Math.max(0.3, bW * 0.6);
+          ctx.stroke();
+
+          // Guard rim highlight
+          ctx.beginPath();
+          ctx.moveTo(litSide * guardW * (type === 1 ? 1.15 : 1.0), gY + guardThk * 0.5);
+          ctx.lineTo(0, gY + guardThk * 0.5);
+          ctx.strokeStyle = `rgba(255, 160, 60, ${rimA * 0.7})`;
+          ctx.lineWidth = Math.max(0.3, guardThk * 0.4);
+          ctx.stroke();
+
+          // Fuller groove on nearer swords
+          if (depth > 0.3 && type !== 2) {
             ctx.beginPath();
-            ctx.moveTo(litSide * bladeW * 0.8, 0);
-            ctx.lineTo(0, -bladeAbove);
-            ctx.strokeStyle = `rgba(255, 160, 60, ${edgeA})`;
-            ctx.lineWidth = Math.max(0.4, bladeW * 0.18);
+            ctx.moveTo(0, bladeBot + (bladeTip - bladeBot) * 0.05);
+            ctx.lineTo(0, bladeBot + (bladeTip - bladeBot) * 0.75);
+            ctx.strokeStyle = `rgba(30, 18, 8, ${depth * 0.2 * aS})`;
+            ctx.lineWidth = Math.max(0.3, bW * 0.3);
             ctx.stroke();
           }
 
-          // Fuller (center groove) on nearer straight swords
-          if (sw.depth > 0.35 && sw.type !== 2) {
-            ctx.beginPath();
-            ctx.moveTo(0, -guardThk * 0.5);
-            ctx.lineTo(0, -bladeAbove * 0.8);
-            ctx.strokeStyle = `rgba(35, 22, 10, ${detA * 0.6})`;
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.25);
-            ctx.stroke();
-          }
-
-          // --- Crossguard (at y = 0, the ground insertion point) ---
-          const gY = 0; // guard sits right at ground level
-          ctx.beginPath();
-          if (sw.type === 2) {
-            // Katana: oval tsuba
-            ctx.ellipse(0, gY, guardW * 0.45, guardW * 0.35, 0, 0, Math.PI * 2);
-          } else if (sw.type === 1) {
-            // Greatsword: long curved quillons
-            ctx.moveTo(-guardW * 1.1, gY + guardThk * 0.3);
-            ctx.quadraticCurveTo(-guardW * 0.5, gY - guardThk * 1.5, 0, gY);
-            ctx.quadraticCurveTo(guardW * 0.5, gY - guardThk * 1.5, guardW * 1.1, gY + guardThk * 0.3);
-            ctx.quadraticCurveTo(guardW * 0.5, gY + guardThk * 1.2, 0, gY + guardThk);
-            ctx.quadraticCurveTo(-guardW * 0.5, gY + guardThk * 1.2, -guardW * 1.1, gY + guardThk * 0.3);
-          } else if (sw.type === 3) {
-            // Broadsword: wide straight guard with finials
-            ctx.rect(-guardW, gY - guardThk * 0.5, guardW * 2, guardThk);
-            ctx.fillStyle = darkCol;
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(-guardW, gY, guardThk * 0.8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(guardW, gY, guardThk * 0.8, 0, Math.PI * 2);
-          } else {
-            // Longsword/bastard: straight crossguard, slightly tapered ends
-            const gDrop = sw.type === 4 ? guardThk * 0.6 : 0;
-            ctx.moveTo(-guardW, gY - guardThk * 0.5 + gDrop);
-            ctx.lineTo(-guardW * 0.1, gY - guardThk * 0.5);
-            ctx.lineTo(guardW * 0.1, gY - guardThk * 0.5);
-            ctx.lineTo(guardW, gY - guardThk * 0.5 + gDrop);
-            ctx.lineTo(guardW, gY + guardThk * 0.5 + gDrop);
-            ctx.lineTo(guardW * 0.1, gY + guardThk * 0.5);
-            ctx.lineTo(-guardW * 0.1, gY + guardThk * 0.5);
-            ctx.lineTo(-guardW, gY + guardThk * 0.5 + gDrop);
-          }
-          ctx.fillStyle = darkCol;
-          ctx.fill();
-
-          // Guard sunset glint
-          if (sw.depth > 0.25) {
-            const glintSide = sw.x < w * 0.5 ? -1 : 1;
-            const glA = (0.15 + Math.sin(time * 1.5 + sw.h1 * 12) * 0.08) * detA;
-            ctx.beginPath();
-            ctx.arc(glintSide * guardW * 0.7, gY, guardThk * 1.2, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 170, 70, ${glA})`;
-            ctx.fill();
-          }
-
-          // --- Grip (above crossguard, going upward) ---
-          const gripTop = gY + guardThk * 0.5;
-          const gripBot = gripTop + gripLen;
-          const gripW = bladeW * 0.4;
-          ctx.beginPath();
-          ctx.rect(-gripW, gripTop, gripW * 2, gripLen);
-          ctx.fillStyle = darkCol;
-          ctx.fill();
-
-          // Leather wrapping on near swords
-          if (sw.depth > 0.4) {
-            const wraps = 3 + Math.floor(sw.h3 * 4);
-            for (let wi = 0; wi < wraps; wi++) {
-              const wy = gripTop + gripLen * (wi + 0.5) / wraps;
-              ctx.beginPath();
-              ctx.moveTo(-gripW * 1.1, wy);
-              ctx.lineTo(gripW * 1.1, wy);
-              ctx.strokeStyle = `rgba(50, 30, 12, ${detA * 0.5})`;
-              ctx.lineWidth = Math.max(0.3, gripW * 0.2);
-              ctx.stroke();
-            }
-          }
-
-          // --- Pommel (top of sword, furthest from ground) ---
-          ctx.beginPath();
-          if (sw.type === 1) {
-            // Greatsword: large round pommel
-            ctx.arc(0, gripBot + pommelR * 0.5, pommelR * 1.3, 0, Math.PI * 2);
-          } else if (sw.type === 2) {
-            // Katana: small cap
-            ctx.rect(-gripW * 1.2, gripBot, gripW * 2.4, pommelR);
-          } else if (sw.type === 3) {
-            // Broadsword: wheel pommel
-            ctx.arc(0, gripBot + pommelR, pommelR * 1.2, 0, Math.PI * 2);
-          } else {
-            // Longsword: teardrop pommel
-            ctx.ellipse(0, gripBot + pommelR * 0.7, pommelR, pommelR * 1.2, 0, 0, Math.PI * 2);
-          }
-          ctx.fillStyle = darkCol;
-          ctx.fill();
-
           ctx.restore();
+        };
 
-          // Ground shadow at insertion point
-          const shW = H * 0.1 + sw.depth * H * 0.05;
-          ctx.save();
-          ctx.translate(sw.x, sw.y);
-          ctx.rotate(sw.tilt * 0.3);
-          const shGrd = ctx.createRadialGradient(0, 0, 0, 0, 0, shW);
-          shGrd.addColorStop(0, `rgba(0, 0, 0, ${0.35 * alphaScale})`);
-          shGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          ctx.fillStyle = shGrd;
-          ctx.beginPath();
-          ctx.ellipse(0, 0, shW, shW * 0.25, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
+        // === HERO SWORDS — large framing swords at screen edges ===
+        // These are hand-placed to match the reference composition exactly.
+        // Left side: 3 large swords, partially cropped at left edge
+        drawSword(w * -0.02, groundY + h * 0.18, h * 0.72, 0.06, 1, 0.95,
+          [0.7, 0.8, 0.3, 0.5, 0.6, 0.4, 0.3, 0.5]);
+        drawSword(w * 0.06, groundY + h * 0.12, h * 0.65, -0.04, 3, 0.9,
+          [0.5, 0.7, 0.4, 0.6, 0.3, 0.7, 0.5, 0.4]);
+        drawSword(w * 0.12, groundY + h * 0.08, h * 0.58, 0.08, 0, 0.85,
+          [0.6, 0.6, 0.35, 0.4, 0.7, 0.5, 0.6, 0.3]);
+        drawSword(w * 0.03, groundY + h * 0.22, h * 0.48, -0.12, 4, 0.88,
+          [0.4, 0.5, 0.5, 0.7, 0.4, 0.6, 0.4, 0.6]);
+
+        // Right side: 3 large swords, partially cropped at right edge
+        drawSword(w * 1.02, groundY + h * 0.16, h * 0.70, -0.05, 1, 0.93,
+          [0.8, 0.75, 0.3, 0.6, 0.5, 0.3, 0.7, 0.4]);
+        drawSword(w * 0.94, groundY + h * 0.10, h * 0.63, 0.06, 0, 0.88,
+          [0.55, 0.65, 0.4, 0.5, 0.6, 0.4, 0.5, 0.5]);
+        drawSword(w * 0.88, groundY + h * 0.07, h * 0.55, -0.07, 3, 0.84,
+          [0.65, 0.55, 0.35, 0.45, 0.5, 0.6, 0.3, 0.7]);
+        drawSword(w * 0.97, groundY + h * 0.24, h * 0.45, 0.10, 4, 0.86,
+          [0.3, 0.6, 0.5, 0.55, 0.7, 0.5, 0.6, 0.3]);
+
+        // === MID-FOREGROUND SWORDS — left and right of center ===
+        drawSword(w * 0.20, groundY + h * 0.05, h * 0.42, -0.05, 0, 0.7,
+          [0.5, 0.5, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5]);
+        drawSword(w * 0.25, groundY + h * 0.07, h * 0.38, 0.09, 2, 0.65,
+          [0.6, 0.4, 0.5, 0.4, 0.6, 0.3, 0.4, 0.6]);
+        drawSword(w * 0.17, groundY + h * 0.10, h * 0.35, -0.12, 1, 0.6,
+          [0.4, 0.6, 0.3, 0.6, 0.4, 0.6, 0.5, 0.4]);
+        drawSword(w * 0.30, groundY + h * 0.04, h * 0.33, 0.03, 4, 0.55,
+          [0.7, 0.5, 0.45, 0.35, 0.7, 0.4, 0.6, 0.3]);
+        drawSword(w * 0.80, groundY + h * 0.06, h * 0.40, 0.04, 0, 0.68,
+          [0.45, 0.55, 0.4, 0.55, 0.4, 0.55, 0.5, 0.4]);
+        drawSword(w * 0.75, groundY + h * 0.08, h * 0.36, -0.08, 3, 0.63,
+          [0.55, 0.45, 0.5, 0.45, 0.55, 0.45, 0.4, 0.55]);
+        drawSword(w * 0.83, groundY + h * 0.10, h * 0.34, 0.11, 2, 0.58,
+          [0.35, 0.65, 0.35, 0.65, 0.35, 0.65, 0.55, 0.35]);
+        drawSword(w * 0.72, groundY + h * 0.04, h * 0.30, -0.03, 1, 0.52,
+          [0.6, 0.4, 0.55, 0.4, 0.6, 0.35, 0.45, 0.55]);
+
+        // === MIDGROUND FIELD — smaller swords filling the center ===
+        drawSword(w * 0.35, groundY + h * 0.03, h * 0.26, 0.06, 0, 0.45,
+          [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+        drawSword(w * 0.40, groundY + h * 0.02, h * 0.24, -0.04, 2, 0.4,
+          [0.6, 0.4, 0.4, 0.6, 0.4, 0.6, 0.4, 0.6]);
+        drawSword(w * 0.45, groundY + h * 0.04, h * 0.22, 0.08, 1, 0.38,
+          [0.4, 0.6, 0.6, 0.4, 0.6, 0.4, 0.6, 0.4]);
+        drawSword(w * 0.50, groundY + h * 0.02, h * 0.20, -0.02, 0, 0.35,
+          [0.55, 0.45, 0.5, 0.5, 0.5, 0.5, 0.45, 0.55]);
+        drawSword(w * 0.55, groundY + h * 0.03, h * 0.23, 0.05, 3, 0.37,
+          [0.45, 0.55, 0.55, 0.45, 0.55, 0.45, 0.55, 0.45]);
+        drawSword(w * 0.60, groundY + h * 0.02, h * 0.21, -0.06, 4, 0.36,
+          [0.5, 0.5, 0.45, 0.55, 0.45, 0.55, 0.5, 0.5]);
+        drawSword(w * 0.65, groundY + h * 0.04, h * 0.25, 0.03, 2, 0.42,
+          [0.6, 0.4, 0.5, 0.5, 0.6, 0.4, 0.5, 0.5]);
+        drawSword(w * 0.33, groundY + h * 0.06, h * 0.28, -0.09, 3, 0.48,
+          [0.4, 0.6, 0.45, 0.55, 0.4, 0.6, 0.55, 0.45]);
+        drawSword(w * 0.68, groundY + h * 0.05, h * 0.27, 0.07, 1, 0.46,
+          [0.55, 0.45, 0.55, 0.45, 0.55, 0.45, 0.45, 0.55]);
+
+        // Cross/diagonal swords (some fallen at steep angles, like reference)
+        drawSword(w * 0.28, groundY + h * 0.11, h * 0.20, 0.35, 0, 0.5,
+          [0.5, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+        drawSword(w * 0.74, groundY + h * 0.12, h * 0.18, -0.30, 0, 0.48,
+          [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+        drawSword(w * 0.42, groundY + h * 0.08, h * 0.16, -0.40, 2, 0.4,
+          [0.5, 0.3, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+        drawSword(w * 0.58, groundY + h * 0.09, h * 0.17, 0.38, 0, 0.42,
+          [0.5, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+
+        // === BACKGROUND SWORDS — tiny, near horizon, dense ===
+        // Procedurally place many small swords
+        for (let si = 0; si < 45; si++) {
+          const h1 = sH(si + 300, 1), h2 = sH(si + 300, 2);
+          const h3 = sH(si + 300, 3), h4 = sH(si + 300, 4);
+          const h5 = sH(si + 300, 5), h6 = sH(si + 300, 6);
+          // Spread across width, cluster near center
+          const xN = 0.1 + h1 * 0.8;
+          // Very close to horizon
+          const depth = h2 * 0.25;
+          const yPos = groundY + (groundBot - groundY) * depth;
+          const vH = h * (0.04 + h3 * 0.10) * (0.15 + depth * 0.5);
+          const tilt = (h4 - 0.5) * 0.25;
+          const tp = Math.floor(h5 * 5);
+          drawSword(xN * w, yPos, vH, tilt, tp, depth,
+            [h1, h2, h3, h4, h5, h6, sH(si + 300, 7), sH(si + 300, 8)]);
         }
 
-        // --- Floating embers / sparks ---
-        const EMBER_COUNT = 80;
-        for (let ei = 0; ei < EMBER_COUNT; ei++) {
-          const eH1 = swordHash(ei + 500, 1);
-          const eH2 = swordHash(ei + 500, 2);
-          const eH3 = swordHash(ei + 500, 3);
-          const eH4 = swordHash(ei + 500, 4);
+        // === GROUND EMBERS / SPARKS ===
+        // Orange-red glowing dots scattered on the dark ground
+        for (let ei = 0; ei < 120; ei++) {
+          const e1 = sH(ei + 600, 1), e2 = sH(ei + 600, 2);
+          const e3 = sH(ei + 600, 3), e4 = sH(ei + 600, 4);
 
-          // Embers rise slowly, drift sideways
-          const period = 4 + eH1 * 8; // seconds per cycle
-          const phase = eH2 * Math.PI * 2;
-          const t = ((time * 0.3) / period + phase) % 1;
+          const ex = (e1 * 1.2 - 0.1) * w;
+          const ey = groundY + (groundBot - groundY) * (0.02 + e2 * 0.7);
 
-          // Start from ground area, float upward
-          const ex = (eH3 * 1.2 - 0.1) * w + Math.sin(time * 0.5 + ei * 1.7) * w * 0.03;
-          const ey = groundY + (groundBot - groundY) * 0.8 * (1 - t) - t * h * 0.35;
+          // Flicker
+          const flk = 0.4 + 0.6 * Math.sin(time * 6 + ei * 2.7);
+          const sz = (0.6 + e3 * 1.8) * flk;
+          const ea = Math.max(0, (0.3 + e4 * 0.5) * flk * aS);
 
-          // Size: small, flicker
-          const flicker = 0.5 + 0.5 * Math.sin(time * 8 + ei * 3.1);
-          const eSize = (0.8 + eH4 * 1.5) * (1 + flicker * 0.5) * (0.3 + (1 - t) * 0.7);
-
-          // Color: orange to red, fading as they rise
-          const fadeA = Math.max(0, 1 - t * 1.3) * (0.4 + flicker * 0.3) * alphaScale;
+          // Color: warm orange to deep red
           const r = 255;
-          const g = Math.floor(100 + eH1 * 100 * (1 - t));
-          const b = Math.floor(20 + eH2 * 30);
+          const g = Math.floor(70 + e1 * 110);
+          const b = Math.floor(15 + e2 * 25);
 
           ctx.beginPath();
-          ctx.arc(ex, ey, eSize, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${fadeA})`;
+          ctx.arc(ex, ey, sz, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${ea})`;
           ctx.fill();
 
-          // Glow around ember
-          if (eSize > 1) {
-            const glowGrd = ctx.createRadialGradient(ex, ey, 0, ex, ey, eSize * 4);
-            glowGrd.addColorStop(0, `rgba(255, 150, 50, ${fadeA * 0.15})`);
-            glowGrd.addColorStop(1, 'rgba(255, 100, 30, 0)');
-            ctx.fillStyle = glowGrd;
+          // Glow halo
+          if (sz > 0.8) {
+            const eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, sz * 5);
+            eg.addColorStop(0, `rgba(255, 130, 40, ${ea * 0.12})`);
+            eg.addColorStop(1, 'rgba(255, 80, 20, 0)');
+            ctx.fillStyle = eg;
             ctx.beginPath();
-            ctx.arc(ex, ey, eSize * 4, 0, Math.PI * 2);
+            ctx.arc(ex, ey, sz * 5, 0, Math.PI * 2);
             ctx.fill();
           }
         }
 
-        // --- Ground-level haze/dust ---
-        for (let di = 0; di < 4; di++) {
-          const dH = hash(di * 333.7);
-          const dustX = (dH * 1.4 - 0.2) * w + Math.sin(time * 0.15 + di * 2) * w * 0.05;
-          const dustY = groundY + h * 0.08 + dH * h * 0.12;
-          const dustW = w * (0.2 + dH * 0.15);
-          const dustGrd = ctx.createRadialGradient(dustX, dustY, 0, dustX, dustY, dustW);
-          dustGrd.addColorStop(0, `rgba(60, 35, 15, ${0.12 * alphaScale})`);
-          dustGrd.addColorStop(0.6, `rgba(40, 20, 8, ${0.06 * alphaScale})`);
-          dustGrd.addColorStop(1, 'rgba(30, 15, 5, 0)');
-          ctx.fillStyle = dustGrd;
-          ctx.fillRect(dustX - dustW, dustY - dustW * 0.3, dustW * 2, dustW * 0.6);
+        // === FLOATING EMBERS (rising into sky) ===
+        for (let fi = 0; fi < 50; fi++) {
+          const f1 = sH(fi + 800, 1), f2 = sH(fi + 800, 2);
+          const f3 = sH(fi + 800, 3), f4 = sH(fi + 800, 4);
+          const period = 5 + f1 * 10;
+          const phase = f2 * Math.PI * 2;
+          const t = ((time * 0.25) / period + phase) % 1;
+
+          const fx = (f3 * 1.2 - 0.1) * w + Math.sin(time * 0.4 + fi * 1.9) * w * 0.025;
+          const fy = groundY * (1 - t * 0.8) + groundBot * 0.3 * (1 - t);
+
+          const fFlk = 0.5 + 0.5 * Math.sin(time * 7 + fi * 4.1);
+          const fSz = (0.5 + f4 * 1.2) * (1 - t * 0.6) * fFlk;
+          const fA = Math.max(0, (1 - t * 1.4) * (0.3 + fFlk * 0.25) * aS);
+
+          ctx.beginPath();
+          ctx.arc(fx, fy, fSz, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, ${Math.floor(120 + f1 * 80)}, ${Math.floor(20 + f2 * 30)}, ${fA})`;
+          ctx.fill();
+        }
+
+        // === GROUND-LEVEL HAZE ===
+        for (let di = 0; di < 5; di++) {
+          const dh = sH(di + 900, 1);
+          const dx = (dh * 1.4 - 0.2) * w + Math.sin(time * 0.12 + di * 2.5) * w * 0.04;
+          const dy = groundY + h * 0.05 + dh * h * 0.08;
+          const dw = w * (0.15 + dh * 0.12);
+          const dg = ctx.createRadialGradient(dx, dy, 0, dx, dy, dw);
+          dg.addColorStop(0, `rgba(50, 30, 15, ${0.10 * aS})`);
+          dg.addColorStop(0.5, `rgba(35, 18, 8, ${0.05 * aS})`);
+          dg.addColorStop(1, 'rgba(25, 12, 5, 0)');
+          ctx.fillStyle = dg;
+          ctx.fillRect(dx - dw, dy - dw * 0.25, dw * 2, dw * 0.5);
         }
       }
 
