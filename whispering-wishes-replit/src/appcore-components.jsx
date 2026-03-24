@@ -4091,11 +4091,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
             let wx = (rng(i, 101) * 2 - 1) * xSpread;
 
-            // Subtle center thinning — gently nudge swords near X=0 outward
-            const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
+            // Center clearing — keep open space in the middle (matching sketch)
+            // Wider clearing for close swords, narrower for far
+            const clearingHW = 3.0 * (1 + 4.0 / (wzJ + 2));
             if (Math.abs(wx) < clearingHW) {
               const sign = wx >= 0 ? 1 : -1;
-              wx = sign * (Math.abs(wx) + clearingHW * 0.5 + rng(i, 110) * 1.5);
+              wx = sign * (clearingHW + rng(i, 110) * 2.0);
             }
             const wy = terrH(wx, wzJ);
 
@@ -4256,29 +4257,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.restore();
       }
 
-      // === BARREL LENS DISTORTION — post-process warp ===
-      // Read the current canvas, then redraw with radial distortion
+      // === FISHEYE LENS DISTORTION — barrel warp, edges bulge outward ===
+      // For each output pixel, find where it came from in the undistorted image
+      // by reversing the barrel equation: r_distorted = r * (1 + k * r^2)
       {
         const imgData = ctx.getImageData(0, 0, w, h);
         const src = imgData.data;
         const outData = ctx.createImageData(w, h);
         const dst = outData.data;
         const cx = w * 0.5, cy = h * 0.5;
-        const maxR = Math.sqrt(cx * cx + cy * cy);
-        const k = 0.15; // barrel distortion (positive = edges push outward)
+        const normR = Math.min(cx, cy); // normalize to screen edge
+        const k = 0.35; // fisheye strength — visible barrel bulge
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
-            // Normalize coords to [-1, 1]
-            const nx = (x - cx) / maxR;
-            const ny = (y - cy) / maxR;
-            const r2 = nx * nx + ny * ny;
-            const distort = 1 + k * r2;
-            // Source pixel (undistorted position)
-            const sx = cx + nx * distort * maxR;
-            const sy = cy + ny * distort * maxR;
-            const si = (Math.round(sy) * w + Math.round(sx)) * 4;
+            // Normalized distance from center
+            const nx = (x - cx) / normR;
+            const ny = (y - cy) / normR;
+            const r = Math.sqrt(nx * nx + ny * ny);
+            // Inverse barrel: output pixel at r maps to source at r / (1 + k*r^2)
+            const distort = r > 0 ? 1 / (1 + k * r * r) : 1;
+            const sx = cx + nx * distort * normR;
+            const sy = cy + ny * distort * normR;
             const di = (y * w + x) * 4;
-            if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+            const sxi = Math.round(sx), syi = Math.round(sy);
+            if (sxi >= 0 && sxi < w && syi >= 0 && syi < h) {
+              const si = (syi * w + sxi) * 4;
               dst[di] = src[si]; dst[di+1] = src[si+1]; dst[di+2] = src[si+2]; dst[di+3] = src[si+3];
             }
           }
