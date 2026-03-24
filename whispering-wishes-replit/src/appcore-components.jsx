@@ -2863,7 +2863,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           const halfW = mod * 0.25 * wt.bwM;     // blade half-width ≈ 0.5 module wide
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
-          const gripHW = halfW * 0.8;             // grip narrower than blade
+          const gripHW = halfW * 6 / 7;            // grip = 6/7 of blade width
 
           // Hilt sub-proportions: pommel:grip ≈ 1:2, thin guard bar
           const pommelH = mod * 1.0;              // pommel ≈ 1 module
@@ -3026,65 +3026,57 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Build ONE edge (top) then mirror for bottom
             const ghh = guardBarH * 0.5; // half the bar height at arms
             const tipFlare = gFlareH * 0.5; // how far tips extend beyond center
-            const centerFlare = ghh * 2.2; // center is taller than the arms
 
             // Key X positions
             const tipOuterX = guardArmHW + gTipW;
             const tipInnerX = guardArmHW;
-            const notchX = gcHW * 1.3; // where the V-notch sits (transition arm→center)
+
+            // Cubic bezier for smoother curves
+            const cBez = (ax, ay, c1x, c1y, c2x, c2y, bx, by, t) => {
+              const u = 1 - t;
+              return {
+                x: u * u * u * ax + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * bx,
+                y: u * u * u * ay + 3 * u * u * t * c1y + 3 * u * t * t * c2y + t * t * t * by
+              };
+            };
 
             // === TOP EDGE (going left to right) ===
             const gSamplesTop = [];
+            const NS = 12; // more samples for smoother curves
 
             // Left outer tip
             gSamplesTop.push({ x: -tipOuterX, y: gCenterY - tipFlare });
             gSamplesTop.push({ x: -tipInnerX, y: gCenterY - tipFlare * 0.6 });
-            // Curve: left arm → notch point (arm height)
-            for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(
+            // Smooth curve: left arm → center-left, with subtle V-notch dip at transition
+            const notchX = gcHW * 1.2; // X where arm meets center zone
+            const notchDip = ghh * 0.35; // how deep the V-notch dips toward center
+            for (let i = 1; i <= NS; i++) {
+              gSamplesTop.push(cBez(
                 -tipInnerX, gCenterY - tipFlare * 0.6,
-                (-tipInnerX - notchX) * 0.5, gCenterY - ghh - ghh * 0.15,
-                -notchX, gCenterY - ghh,
-                i / N
+                -tipInnerX * 0.7, gCenterY - ghh,
+                -notchX * 1.1, gCenterY - ghh,
+                -notchX, gCenterY - ghh + notchDip,
+                i / NS
               ));
             }
-            // V-notch: arm height → dip down → flare up to center height
-            // Notch dip at transition
-            const notchDipY = gCenterY - ghh * 0.4; // dip inward (less tall)
-            const notchMidX = -gcHW * 0.8;
-            for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(
-                -notchX, gCenterY - ghh,
-                (-notchX + notchMidX) * 0.5, notchDipY,
-                notchMidX, gCenterY - centerFlare,
-                i / N
+            // Center: left notch → right notch with gentle concave dip
+            for (let i = 1; i <= NS; i++) {
+              gSamplesTop.push(cBez(
+                -notchX, gCenterY - ghh + notchDip,
+                -notchX * 0.5, gCenterY - ghh,
+                notchX * 0.5, gCenterY - ghh,
+                notchX, gCenterY - ghh + notchDip,
+                i / NS
               ));
             }
-            // Center dome: left → right (smooth arc)
-            for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(
-                notchMidX, gCenterY - centerFlare,
-                0, gCenterY - centerFlare * 1.1,
-                -notchMidX, gCenterY - centerFlare,
-                i / N
-              ));
-            }
-            // Right V-notch: center height → dip → arm height
-            for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(
-                -notchMidX, gCenterY - centerFlare,
-                (-notchMidX + notchX) * 0.5, notchDipY,
-                notchX, gCenterY - ghh,
-                i / N
-              ));
-            }
-            // Curve: right notch → right arm
-            for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(
-                notchX, gCenterY - ghh,
-                (tipInnerX + notchX) * 0.5, gCenterY - ghh - ghh * 0.15,
+            // Right arm: right notch → right tip
+            for (let i = 1; i <= NS; i++) {
+              gSamplesTop.push(cBez(
+                notchX, gCenterY - ghh + notchDip,
+                notchX * 1.1, gCenterY - ghh,
+                tipInnerX * 0.7, gCenterY - ghh,
                 tipInnerX, gCenterY - tipFlare * 0.6,
-                i / N
+                i / NS
               ));
             }
             // Right outer tip
@@ -3191,29 +3183,27 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               leatherGrad.addColorStop(0.6, lHi);
               leatherGrad.addColorStop(1, lHi);
             }
-            const leatherH = leatherTop - leatherBot; // positive since top > bot in screen coords (guard is lower Y)
-            const lThick = 2; // extra pixels beyond grip on each side
-            const lMin = 1;   // minimum extra beyond grip at narrowest
-            // Draw leather as a trapezoid: wider at guard end (leatherTop), narrower at mid (leatherBot)
-            const lTopHW = gripHW + lThick;   // wider at guard end
-            const lBotHW = gripHW + lMin;     // still 1px wider than handle at narrow end
+            const leatherH = leatherTop - leatherBot;
+            const leatherHW = gripHW + 2; // leather is 2px wider than grip on each side
+            const leatherNarrowHW = gripHW + 1; // converges to 1px wider at narrow end
+            // Draw leather as a gentle trapezoid
             ctx.beginPath();
-            ctx.moveTo(-lTopHW, leatherTop);
-            ctx.lineTo(lTopHW, leatherTop);
-            ctx.lineTo(lBotHW, leatherBot);
-            ctx.lineTo(-lBotHW, leatherBot);
+            ctx.moveTo(-leatherHW, leatherTop);
+            ctx.lineTo(leatherHW, leatherTop);
+            ctx.lineTo(leatherNarrowHW, leatherBot);
+            ctx.lineTo(-leatherNarrowHW, leatherBot);
             ctx.closePath();
             ctx.fillStyle = leatherGrad;
             ctx.fill();
 
-            // Leather wrap ridges on the wrapped portion only
+            // Leather wrap ridges
             const wrapCount = Math.max(3, Math.round(Math.abs(leatherH) / (gripHW * 0.7)));
             const wrapSpacing = leatherH / (wrapCount + 1);
             const wrapHt = Math.abs(wrapSpacing) * 0.25;
             ctx.fillStyle = 'rgba(0,0,0,0.22)';
             for (let i = 1; i <= wrapCount; i++) {
-              const t = i / (wrapCount + 1); // 0=top, 1=bottom
-              const wHW = lTopHW + (lBotHW - lTopHW) * t;
+              const t = i / (wrapCount + 1);
+              const wHW = leatherHW + (leatherNarrowHW - leatherHW) * t;
               const wy = leatherBot + i * wrapSpacing;
               ctx.beginPath();
               ctx.rect(-wHW, wy - wrapHt * 0.5, wHW * 2, wrapHt);
@@ -3222,7 +3212,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.fillStyle = 'rgba(255,255,255,0.07)';
             for (let i = 1; i <= wrapCount; i++) {
               const t = i / (wrapCount + 1);
-              const wHW = lTopHW + (lBotHW - lTopHW) * t;
+              const wHW = leatherHW + (leatherNarrowHW - leatherHW) * t;
               const wy = leatherBot + i * wrapSpacing;
               ctx.beginPath();
               ctx.rect(-wHW, wy - wrapHt * 0.5 - wrapHt * 0.5, wHW * 2, wrapHt * 0.3);
@@ -3239,39 +3229,75 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const pomLoCol = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
             const pomDepth = gripHT; // Z half-depth matches handle thickness
 
-            const pomHW = pomR * 1.5;
-            const pomH = pomR * 2.0;
+            const pomHW = pomR * 1.8;
+            const pomH = pomR * 2.2;
             const pomTopY = gripTop - pomH;
             const pomBotY = gripTop;
-            const neckHW = gripHW * 0.95;
+            const neckHW = gripHW;
 
             // Sample the pommel outline as discrete points (clockwise)
-            // Smooth rounded dome shape
+            // Smooth rounded dome shape matching green outline reference
             const qBez = (ax, ay, cx, cy, bx, by, t) => ({
               x: (1 - t) * (1 - t) * ax + 2 * (1 - t) * t * cx + t * t * bx,
               y: (1 - t) * (1 - t) * ay + 2 * (1 - t) * t * cy + t * t * by
             });
-            const N = 8;
-            const pomOutline = []; // clockwise outline points
+            // Cubic bezier for smoother curves
+            const cBez = (ax, ay, c1x, c1y, c2x, c2y, bx, by, t) => {
+              const u = 1 - t;
+              return {
+                x: u * u * u * ax + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * bx,
+                y: u * u * u * ay + 3 * u * u * t * c1y + 3 * u * t * t * c2y + t * t * t * by
+              };
+            };
+            const N = 12; // more samples for smoother curves
+            const pomOutline = [];
 
             // Bottom edge: left neck to right neck
             pomOutline.push({ x: -neckHW, y: pomBotY });
             pomOutline.push({ x: neckHW, y: pomBotY });
 
-            // Right side: neck → widest point → top
-            // Neck widens out to pomHW
-            const rBulgeX = pomHW, rBulgeY = pomBotY - pomH * 0.45;
-            for (let i = 1; i <= N; i++) pomOutline.push(qBez(neckHW, pomBotY, pomHW * 1.05, pomBotY - pomH * 0.2, rBulgeX, rBulgeY, i / N));
-
-            // Right side upper: widest → top center (smooth dome arc)
-            for (let i = 1; i <= N; i++) pomOutline.push(qBez(rBulgeX, rBulgeY, pomHW * 0.95, pomTopY - pomH * 0.05, 0, pomTopY, i / N));
-
-            // Left side upper: top center → widest point (mirror)
-            const lBulgeX = -pomHW, lBulgeY = pomBotY - pomH * 0.45;
-            for (let i = 1; i <= N; i++) pomOutline.push(qBez(0, pomTopY, -pomHW * 0.95, pomTopY - pomH * 0.05, lBulgeX, lBulgeY, i / N));
-
-            // Left side: widest → neck
-            for (let i = 1; i <= N; i++) pomOutline.push(qBez(lBulgeX, lBulgeY, -pomHW * 1.05, pomBotY - pomH * 0.2, -neckHW, pomBotY, i / N));
+            // Right side: neck flares out smoothly then arcs to dome top
+            // Use cubic bezier for smoother S-curve from neck to widest point
+            const bulgeY = pomBotY - pomH * 0.5; // widest at vertical midpoint
+            for (let i = 1; i <= N; i++) {
+              pomOutline.push(cBez(
+                neckHW, pomBotY,
+                neckHW, pomBotY - pomH * 0.15,  // initially goes straight up
+                pomHW, pomBotY - pomH * 0.25,    // then curves outward
+                pomHW, bulgeY,                    // arrives at widest point horizontally
+                i / N
+              ));
+            }
+            // Right upper: widest → dome top (smooth arc)
+            for (let i = 1; i <= N; i++) {
+              pomOutline.push(cBez(
+                pomHW, bulgeY,
+                pomHW, bulgeY - pomH * 0.2,      // continues outward briefly
+                pomHW * 0.7, pomTopY - pomH * 0.02, // curves toward top
+                0, pomTopY,                        // arrives at dome apex
+                i / N
+              ));
+            }
+            // Left upper: dome top → widest (mirror)
+            for (let i = 1; i <= N; i++) {
+              pomOutline.push(cBez(
+                0, pomTopY,
+                -pomHW * 0.7, pomTopY - pomH * 0.02,
+                -pomHW, bulgeY - pomH * 0.2,
+                -pomHW, bulgeY,
+                i / N
+              ));
+            }
+            // Left side: widest → neck (mirror)
+            for (let i = 1; i <= N; i++) {
+              pomOutline.push(cBez(
+                -pomHW, bulgeY,
+                -pomHW, pomBotY - pomH * 0.25,
+                -neckHW, pomBotY - pomH * 0.15,
+                -neckHW, pomBotY,
+                i / N
+              ));
+            }
 
             // Transform all outline points through rotY for front and back Z
             const pomF = pomOutline.map(p => rotY(p.x, p.y, pomDepth, cosA, sinA));
