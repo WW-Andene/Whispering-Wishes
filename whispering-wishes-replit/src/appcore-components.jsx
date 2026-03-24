@@ -3948,12 +3948,36 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldXrange = 30;
 
           // Scattered placement — organic, with natural clearing in center
+          // First: explicit foreground swords at edges (framing the scene)
+          const fgSwords = [
+            { wx: -6, wz: 1.5, tiltO: -10 }, { wx: 7, wz: 1.3, tiltO: 8 },
+            { wx: -4, wz: 2.0, tiltO: -6 }, { wx: 5, wz: 1.8, tiltO: 12 },
+            { wx: -9, wz: 2.5, tiltO: -14 }, { wx: 8, wz: 2.2, tiltO: 5 },
+            { wx: -3, wz: 3.0, tiltO: 7 }, { wx: 4, wz: 2.8, tiltO: -9 },
+            { wx: -7, wz: 1.8, tiltO: 4 }, { wx: 10, wz: 2.5, tiltO: -7 },
+            { wx: -11, wz: 3.2, tiltO: 10 }, { wx: 3, wz: 3.5, tiltO: -5 },
+          ];
+          for (let fi = 0; fi < fgSwords.length; fi++) {
+            const fg = fgSwords[fi];
+            const wy = terrH(fg.wx, fg.wz);
+            const scrX = W * 0.5 + fg.wx * focal / fg.wz;
+            const scrY = hY + (camH - wy) * focal / fg.wz;
+            const appSize = 1.8 * focal / fg.wz;
+            const typeIdx = Math.floor(rng(fi + 500, 102) * weaponTypes.length);
+            const zRot = rng(fi + 500, 103) * Math.PI * 2;
+            swords.push({
+              wx: fg.wx, wy, wz: fg.wz, scrX, scrY, appSize,
+              wType: weaponTypes[typeIdx], zRot, tilt: fg.tiltO,
+              darkness: 0
+            });
+          }
+
+          // Then: scatter field swords with linear distribution (not quadratic)
           const swordCount = 250;
           for (let i = 0; i < swordCount; i++) {
-            // Distribute Z with bias toward mid-field
             const zRaw = rng(i, 100);
-            const zBiased = zRaw * zRaw;
-            const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zBiased;
+            // Linear distribution — even spread from near to far
+            const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zRaw;
 
             // X spread widens with distance (perspective cone)
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
