@@ -4037,33 +4037,33 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Scattered placement — organic, with natural clearing in center
           // First: explicit foreground swords at edges (framing the scene)
+          // Layout from sketch: 2 dominant close swords (left-center + right),
+          // medium sword near left group, small cluster far-left, few far-right,
+          // scattered tiny along horizon
           const fgSwords = [
-            // Very close — partially off-screen, framing edges
-            { wx: -1.0, wz: 0.28, tiltO: -12 }, { wx: 1.2, wz: 0.26, tiltO: 9 },
-            { wx: -0.6, wz: 0.32, tiltO: 5 }, { wx: 0.8, wz: 0.30, tiltO: -7 },
-            { wx: -1.8, wz: 0.35, tiltO: -15 }, { wx: 2.0, wz: 0.33, tiltO: 11 },
-            { wx: -0.3, wz: 0.38, tiltO: 3 }, { wx: 1.5, wz: 0.36, tiltO: -10 },
-            // Close foreground
-            { wx: -2.2, wz: 0.42, tiltO: -8 }, { wx: 2.5, wz: 0.40, tiltO: 6 },
-            { wx: -1.3, wz: 0.45, tiltO: 14 }, { wx: 0.5, wz: 0.43, tiltO: -4 },
-            { wx: -3.0, wz: 0.50, tiltO: -11 }, { wx: 3.2, wz: 0.48, tiltO: 8 },
-            { wx: -0.8, wz: 0.55, tiltO: 7 }, { wx: 1.8, wz: 0.52, tiltO: -13 },
-            // Mid foreground
-            { wx: -2.5, wz: 0.60, tiltO: -6 }, { wx: 2.8, wz: 0.58, tiltO: 10 },
-            { wx: -1.5, wz: 0.65, tiltO: 4 }, { wx: 1.0, wz: 0.62, tiltO: -9 },
-            { wx: -3.5, wz: 0.70, tiltO: -14 }, { wx: 3.8, wz: 0.68, tiltO: 5 },
-            { wx: -0.5, wz: 0.75, tiltO: 8 }, { wx: 2.2, wz: 0.72, tiltO: -7 },
-            // Near-mid
-            { wx: -4.0, wz: 0.85, tiltO: 12 }, { wx: 4.2, wz: 0.80, tiltO: -10 },
-            { wx: -1.8, wz: 0.90, tiltO: -5 }, { wx: 1.5, wz: 0.88, tiltO: 11 },
-            { wx: -2.8, wz: 0.95, tiltO: 6 }, { wx: 3.0, wz: 0.92, tiltO: -8 },
-            { wx: -5.0, wz: 1.0, tiltO: -3 }, { wx: 5.2, wz: 1.05, tiltO: 9 },
-            // Extra close right sword
-            { wx: 1.8, wz: 0.27, tiltO: -6 },
-            // Extra middle-left cluster
-            { wx: -2.0, wz: 0.65, tiltO: -8 }, { wx: -2.6, wz: 0.72, tiltO: 10 },
-            { wx: -3.2, wz: 0.68, tiltO: -4 }, { wx: -1.7, wz: 0.78, tiltO: 13 },
-            { wx: -3.8, wz: 0.82, tiltO: -11 },
+            // === BIG left-center sword (dominant, tilted left) ===
+            { wx: -0.15, wz: 0.40, tiltO: -15 },
+            // === BIG right sword (dominant, tilted right) ===
+            { wx: 0.22, wz: 0.35, tiltO: 14 },
+            // === Medium sword near left group ===
+            { wx: -0.12, wz: 0.55, tiltO: -8 },
+            // === Far-left edge — big, partially cropped ===
+            { wx: -0.35, wz: 0.32, tiltO: -18 },
+
+            // Small cluster far-left along ground line
+            { wx: -4.0, wz: 1.8, tiltO: -10 }, { wx: -3.5, wz: 2.0, tiltO: 6 },
+            { wx: -5.0, wz: 2.2, tiltO: -8 }, { wx: -3.0, wz: 2.5, tiltO: 12 },
+            { wx: -4.5, wz: 1.6, tiltO: -5 }, { wx: -6.0, wz: 2.8, tiltO: 7 },
+            { wx: -3.8, wz: 3.0, tiltO: -11 },
+
+            // Couple small swords far-right along ground
+            { wx: 3.5, wz: 2.5, tiltO: 8 }, { wx: 4.0, wz: 3.0, tiltO: -6 },
+
+            // Scattered tiny swords along horizon center
+            { wx: 0.5, wz: 4.0, tiltO: -4 }, { wx: -0.3, wz: 5.0, tiltO: 7 },
+            { wx: 1.2, wz: 4.5, tiltO: -9 }, { wx: -0.8, wz: 5.5, tiltO: 5 },
+            { wx: 0.1, wz: 6.0, tiltO: -3 }, { wx: -1.5, wz: 4.2, tiltO: 8 },
+            { wx: 2.0, wz: 5.0, tiltO: -6 }, { wx: -2.0, wz: 5.8, tiltO: 4 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
