@@ -2861,8 +2861,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Handle (with pommel) = 1/7 of sword length
           const handleH = sh / 7;
           const bladeH = sh - handleH;         // blade = 6/7
-          const pommelH = handleH * 0.20;      // pommel = 20% of handle
-          const guardBarH = handleH * 0.12;    // guard bar = 12% of handle
+          const pommelH = handleH * 0.33;      // pommel ≈ 1/3 of handle
+          const guardBarH = handleH * 0.05;    // guard bar ≈ 5% of handle
           const gripH = handleH - pommelH - guardBarH; // grip = remainder
 
           // Grip width = 1/3 blade width; arms = handle without pommel
