@@ -2736,13 +2736,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Lit by sun direction with shadows/highlights showing form
         {
           const tWaves = [
-            { fx: 1.8, fz: 1.4, amp: 0.06, px: 0.0, pz: 0.0 },
-            { fx: 3.2, fz: 2.5, amp: 0.07, px: 2.1, pz: 1.4 },
-            { fx: 4.5, fz: 3.8, amp: 0.05, px: 4.7, pz: 3.2 },
-            { fx: 6.0, fz: 5.2, amp: 0.035, px: 1.3, pz: 5.1 },
-            { fx: 8.0, fz: 6.5, amp: 0.025, px: 3.8, pz: 0.7 },
-            { fx: 10.0, fz: 8.0, amp: 0.015, px: 5.5, pz: 2.9 },
-            { fx: 5.5, fz: 9.0, amp: 0.012, px: 0.9, pz: 4.3 },
+            { fx: 1.8, fz: 1.4, amp: 0.15, px: 0.0, pz: 0.0 },
+            { fx: 3.2, fz: 2.5, amp: 0.14, px: 2.1, pz: 1.4 },
+            { fx: 4.5, fz: 3.8, amp: 0.10, px: 4.7, pz: 3.2 },
+            { fx: 6.0, fz: 5.2, amp: 0.07, px: 1.3, pz: 5.1 },
+            { fx: 8.0, fz: 6.5, amp: 0.05, px: 3.8, pz: 0.7 },
+            { fx: 10.0, fz: 8.0, amp: 0.03, px: 5.5, pz: 2.9 },
+            { fx: 5.5, fz: 9.0, amp: 0.025, px: 0.9, pz: 4.3 },
           ];
 
           // Heightmap: returns world-Y height at world (wx, wz)
@@ -2754,11 +2754,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             return h;
           };
 
-          // Grid dimensions
-          const TX = 40;   // columns (X subdivisions)
-          const TZ = 50;   // rows (Z subdivisions, back to front)
-          const tExtentX = 35;  // world X range: -tExtentX to +tExtentX
-          const tZnear = 3;     // nearest Z row
+          // Grid dimensions — cover entire ground plane
+          const TX = 60;   // columns (X subdivisions)
+          const TZ = 60;   // rows (Z subdivisions, back to front)
+          const tExtentX = 80;  // world X range wide enough for full screen at near Z
+          const tZnear = 1.5;   // very close to camera for foreground coverage
           const tZfar = 90;     // farthest Z row
 
           // Camera/projection (reuse existing system params)
