@@ -2823,16 +2823,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const ir = wp.irr || {};
           const zRot = wp.zRot || 0; // 0=facing camera, ±PI/2=edge-on
 
-          // Z-rotation interpolates between front view and side view.
-          // cos=1 → full front face. cos=0 → edge-on (side profile).
-          const zCos = Math.abs(Math.cos(zRot));
-          const zSinAbs = Math.abs(Math.sin(zRot));
-          const fullBW = sbw * wt.bwM; // full front-face blade width
-          // Side-view width = blade thickness (~20% of full width, min 1px for visibility)
-          const sideBW = Math.max(1, fullBW * 0.20);
-          // Interpolate between front width and side width
-          const effBW = fullBW * zCos + sideBW * zSinAbs;
-          if (effBW < 0.4) return;
+          // Z-rotation: scale the whole sword horizontally via ctx.scale.
+          // cos(zRot)=1 → full front face. cos(zRot)→0 → edge-on (thin sliver).
+          // Clamp to 0.15 minimum so edge-on swords stay visible.
+          const zScale = Math.max(0.15, Math.abs(Math.cos(zRot)));
+          const effBW = sbw * wt.bwM; // full blade width (scale handles foreshortening)
 
           ctx.save();
 
@@ -2843,6 +2838,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
+          ctx.scale(zScale, 1); // <-- squish horizontally for rotation on itself
 
           // Dimensions with weapon type + irregularities
           const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
@@ -2881,71 +2877,29 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hdG = Math.round(handleLight.g * dkMul * 0.95);
           const hdB = Math.round(handleLight.b * dkMul * 0.95);
 
-          // Front-view tip width
-          const frontTipW = wt.tipS === 1 ? fullBW * 0.45 : fullBW * 0.22;
-          // Side-view: blade is diamond-shaped (widest at middle, thin at edges)
-          // Interpolate tip width between front and side profiles
-          const tipW = frontTipW * zCos + effBW * 0.08 * zSinAbs; // side tip is very thin
-
+          const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
           const zSin = Math.sin(zRot);
 
           // === DRAW BLADE ===
-          // Front view: trapezoid (wide base, narrow tip)
-          // Side view: diamond/lozenge (thin at top and bottom, widest in middle)
-          // zSinAbs controls the blend between these two shapes
           ctx.beginPath();
-          if (zSinAbs < 0.3) {
-            // Mostly front-facing — standard trapezoid
-            ctx.moveTo(bSkew, 0);
-            ctx.lineTo(-tipW + bSkew * 0.6, -1);
-            ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(tipW + bSkew * 0.6, -1);
-          } else {
-            // Side-facing — diamond/lozenge profile (widest at ~40% from tip)
-            const midY = -bladeH * 0.4;
-            const midW = effBW * 1.0; // widest point
-            ctx.moveTo(0, 0); // sharp tip
-            ctx.lineTo(-midW, midY); // left bulge at 40%
-            ctx.lineTo(-effBW * 0.7, -bladeH); // narrower at base
-            ctx.lineTo(effBW * 0.7, -bladeH);
-            ctx.lineTo(midW, midY); // right bulge
-          }
+          ctx.moveTo(bSkew, 0);
+          ctx.lineTo(-tipW + bSkew * 0.6, -1);
+          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
+          ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
+          ctx.lineTo(tipW + bSkew * 0.6, -1);
           ctx.closePath();
-
-          // Shading: side-view swords are darker (seeing the flat of the blade edge)
-          const sideShade = 1.0 - zSinAbs * 0.4; // up to 40% darker when edge-on
-          const shR = Math.round(blR * sideShade);
-          const shG = Math.round(blG * sideShade);
-          const shB = Math.round(blB * sideShade);
-
-          if (Math.abs(zSin) > 0.1 && effBW > 0.5) {
-            const blGrad = ctx.createLinearGradient(-effBW, 0, effBW, 0);
-            const darkSide = zSin > 0 ? 0 : 1;
-            blGrad.addColorStop(darkSide, 'rgb(' + Math.round(shR * 0.6) + ',' + Math.round(shG * 0.6) + ',' + Math.round(shB * 0.6) + ')');
-            blGrad.addColorStop(1 - darkSide, 'rgb(' + Math.min(255, Math.round(shR * 1.2)) + ',' + Math.min(255, Math.round(shG * 1.2)) + ',' + Math.min(255, Math.round(shB * 1.2)) + ')');
-            ctx.fillStyle = blGrad;
-          } else {
-            ctx.fillStyle = 'rgb(' + shR + ',' + shG + ',' + shB + ')';
-          }
+          ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
           ctx.fill();
 
-          // === DRAW GUARD ===
-          // Front view: wide horizontal bar. Side view: short thick nub.
+          // === DRAW GUARD (if present) ===
           if (wt.gwM > 0.1) {
-            const frontGHW = fullBW * (wt.gwM + (ir.guardVar || 0) * 0.3);
-            const sideGHW = Math.max(1, frontGHW * 0.25); // side view: guard looks short
-            const gHWActual = frontGHW * zCos + sideGHW * zSinAbs;
-            // Side view: guard is thicker (seeing depth)
-            const gThkActual = gThk * (1 + zSinAbs * 2);
             ctx.beginPath();
-            ctx.rect(-gHWActual, -bladeH, gHWActual * 2, -gThkActual);
-            ctx.fillStyle = 'rgb(' + Math.round(shR * 0.7) + ',' + Math.round(shG * 0.7) + ',' + Math.round(shB * 0.7) + ')';
+            ctx.rect(-gHW, -bladeH, gHW * 2, -gThk);
+            ctx.fillStyle = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
             ctx.fill();
           }
 
           // === DRAW GRIP ===
-          // Grip is round, doesn't change much with rotation
           ctx.beginPath();
           ctx.rect(-gripHW, -bladeH - gThk, gripHW * 2, -gripH);
           ctx.fillStyle = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
@@ -2955,7 +2909,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (pomR > 0.3) {
             ctx.beginPath();
             ctx.arc(0, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgb(' + Math.round(shR * 0.8) + ',' + Math.round(shG * 0.8) + ',' + Math.round(shB * 0.8) + ')';
+            ctx.fillStyle = 'rgb(' + Math.round(blR * 0.8) + ',' + Math.round(blG * 0.8) + ',' + Math.round(blB * 0.8) + ')';
             ctx.fill();
           }
 
