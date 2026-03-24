@@ -2696,15 +2696,18 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
         }
 
-        // --- OPAQUE GROUND ---
+        // --- OPAQUE GROUND (darkest at bottom to hide lens warp edge) ---
         const gd = ctx.createLinearGradient(0, hY, 0, H);
         gd.addColorStop(0, 'rgb(45,32,24)');
         gd.addColorStop(0.1, 'rgb(38,26,19)');
         gd.addColorStop(0.3, 'rgb(30,20,15)');
-        gd.addColorStop(0.6, 'rgb(22,14,10)');
-        gd.addColorStop(1, 'rgb(14,9,6)');
+        gd.addColorStop(0.6, 'rgb(18,12,8)');
+        gd.addColorStop(1, 'rgb(8,5,3)');
         ctx.fillStyle = gd;
         ctx.fillRect(0, hY, W, H - hY);
+        // Extra dark band at very bottom to cover lens warp reveal
+        ctx.fillStyle = 'rgb(8,5,3)';
+        ctx.fillRect(0, H * 0.92, W, H * 0.08);
 
         // Warm glow on ground near horizon
         const gl = ctx.createRadialGradient(W * 0.5, hY, 0, W * 0.5, hY, W * 0.35);
@@ -4286,8 +4289,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const sx = cx + nx * distort * normR;
             const sy = cy + ny * distort * normR;
             const di = (y * w + x) * 4;
-            const sxi = Math.round(sx), syi = Math.round(sy);
-            if (sxi >= 0 && sxi < w && syi >= 0 && syi < h) {
+            // Clamp to canvas bounds — no black pixels
+            const sxi = Math.max(0, Math.min(w - 1, Math.round(sx)));
+            const syi = Math.max(0, Math.min(h - 1, Math.round(sy)));
+            {
               const si = (syi * w + sxi) * 4;
               dst[di] = src[si]; dst[di+1] = src[si+1]; dst[di+2] = src[si+2]; dst[di+3] = src[si+3];
             }
