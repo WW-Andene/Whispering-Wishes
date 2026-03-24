@@ -3244,30 +3244,30 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.fillStyle = fullerGrad;
             ctx.fill();
 
-            // Top highlight edge — light catching the upper lip of the groove
-            const lipAlpha = (0.15 + Math.abs(cosA) * 0.15).toFixed(3);
+            // Top highlight edge — subtle light on upper lip
+            const lipAlpha = (0.06 + Math.abs(cosA) * 0.06).toFixed(3);
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
             ctx.lineTo(fsCx + fullerW, fsY);
             ctx.lineTo(feCx + fullerW * 0.15, feY);
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
-            const lipGrad = ctx.createLinearGradient(0, fsY, 0, fsY + (feY - fsY) * 0.08);
+            const lipGrad = ctx.createLinearGradient(0, fsY, 0, fsY + (feY - fsY) * 0.25);
             lipGrad.addColorStop(0, 'rgba(255,255,255,' + lipAlpha + ')');
             lipGrad.addColorStop(1, 'rgba(255,255,255,0)');
             ctx.fillStyle = lipGrad;
             ctx.fill();
 
-            // Bottom shadow edge — shadow at the lower lip
+            // Bottom shadow edge — subtle shadow on lower lip
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
             ctx.lineTo(fsCx + fullerW, fsY);
             ctx.lineTo(feCx + fullerW * 0.15, feY);
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
-            const shadowGrad = ctx.createLinearGradient(0, feY - (feY - fsY) * 0.06, 0, feY);
+            const shadowGrad = ctx.createLinearGradient(0, feY - (feY - fsY) * 0.15, 0, feY);
             shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
-            shadowGrad.addColorStop(1, 'rgba(0,0,0,' + (parseFloat(lipAlpha) * 0.7).toFixed(3) + ')');
+            shadowGrad.addColorStop(1, 'rgba(0,0,0,' + (parseFloat(lipAlpha) * 0.5).toFixed(3) + ')');
             ctx.fillStyle = shadowGrad;
             ctx.fill();
           }
