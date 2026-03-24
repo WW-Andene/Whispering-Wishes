@@ -4089,16 +4089,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Linear distribution — even spread from near to far
             const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zRaw;
 
-            // X spread proportional to Z (so screen projection stays on-screen)
-            // At any Z, max visible wx ≈ ±0.7*wz (for focal=0.7W)
-            const xSpread = wzJ * 0.75;
+            // X spread widens with distance (perspective cone)
+            const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
             let wx = (rng(i, 101) * 2 - 1) * xSpread;
 
-            // Subtle center thinning — scale with Z too
-            const clearingHW = 0.08 * wzJ;
+            // Clamp so close swords stay on screen (max visible wx ≈ wz * 1.4 / focal ratio)
+            const maxVisWx = wzJ * 1.2;
+            if (Math.abs(wx) > maxVisWx) wx = (wx > 0 ? 1 : -1) * maxVisWx;
+
+            // Subtle center thinning — gently nudge swords near X=0 outward
+            const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
             if (Math.abs(wx) < clearingHW) {
               const sign = wx >= 0 ? 1 : -1;
-              wx = sign * (Math.abs(wx) + clearingHW * 0.5 + rng(i, 110) * wzJ * 0.1);
+              wx = sign * (Math.abs(wx) + clearingHW * 0.5 + rng(i, 110) * 1.5);
             }
             const wy = terrH(wx, wzJ);
 
