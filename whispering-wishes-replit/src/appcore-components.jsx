@@ -2561,7 +2561,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Devastated battleground (drawn BEHIND staircase) ---
       {
-        const groundY = h * 0.30;
+        const groundY = h * 0.37;
         const groundH = h - groundY;
         const center = 0.48, spread = 0.25;
         const moundGetY = (xn) => {
@@ -2592,71 +2592,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // Background weapons on the mound slopes
-        const bgWeapons = [
-          { x: 0.04, h: 0.14, lean: -0.18, type: 'spear' },
-          { x: 0.09, h: 0.18, lean: 0.25, type: 'sword' },
-          { x: 0.14, h: 0.11, lean: -0.38, type: 'spear' },
-          { x: 0.19, h: 0.16, lean: 0.12, type: 'halberd' },
-          { x: 0.24, h: 0.13, lean: -0.22, type: 'spear' },
-          { x: 0.29, h: 0.10, lean: 0.35, type: 'sword' },
-          { x: 0.34, h: 0.09, lean: -0.15, type: 'spear' },
-          { x: 0.66, h: 0.09, lean: 0.18, type: 'spear' },
-          { x: 0.71, h: 0.11, lean: -0.28, type: 'sword' },
-          { x: 0.76, h: 0.15, lean: 0.14, type: 'halberd' },
-          { x: 0.81, h: 0.12, lean: -0.32, type: 'spear' },
-          { x: 0.86, h: 0.17, lean: 0.22, type: 'sword' },
-          { x: 0.91, h: 0.10, lean: -0.20, type: 'spear' },
-          { x: 0.96, h: 0.14, lean: 0.38, type: 'spear' },
-        ];
-        for (let wi = 0; wi < bgWeapons.length; wi++) {
-          const wp = bgWeapons[wi];
-          const wx = wp.x * w;
-          const baseY = moundGetY(wp.x) + hash(wi * 317.3) * groundH * 0.02;
-          const wh = wp.h * h;
-          const tipX = wx + Math.sin(wp.lean) * wh;
-          const tipY = baseY - Math.cos(wp.lean) * wh;
-          const bell = Math.exp(-((wp.x - center) * (wp.x - center)) / (2 * spread * spread));
-          const depthScale = 0.5 + (1 - bell) * 0.5;
-          const thickness = (1.5 + hash(wi * 193.7) * 1.8) * depthScale;
-          ctx.beginPath();
-          if (wp.type === 'sword') {
-            const px = Math.cos(wp.lean) * thickness, py = Math.sin(wp.lean) * thickness;
-            ctx.moveTo(wx - px * 0.5, baseY - py * 0.5);
-            ctx.lineTo(tipX, tipY);
-            ctx.lineTo(wx + px * 0.5, baseY + py * 0.5);
-            ctx.closePath();
-            ctx.fillStyle = `rgba(10, 6, 3, ${(0.65 + hash(wi * 431.7) * 0.3) * alphaScale})`;
-            ctx.fill();
-            const cgF = 0.15, cgX = wx + Math.sin(wp.lean) * wh * cgF, cgY2 = baseY - Math.cos(wp.lean) * wh * cgF;
-            ctx.beginPath();
-            ctx.moveTo(cgX - px * 2.5, cgY2 - py * 2.5);
-            ctx.lineTo(cgX + px * 2.5, cgY2 + py * 2.5);
-          } else if (wp.type === 'halberd') {
-            ctx.moveTo(wx, baseY); ctx.lineTo(tipX, tipY);
-            const hT = 0.8, hx = wx + Math.sin(wp.lean) * wh * hT, hy = baseY - Math.cos(wp.lean) * wh * hT;
-            const px = Math.cos(wp.lean), py = Math.sin(wp.lean);
-            ctx.moveTo(hx - px * 5, hy - py * 5);
-            ctx.lineTo(hx + Math.sin(wp.lean) * wh * 0.07, hy - Math.cos(wp.lean) * wh * 0.07);
-            ctx.lineTo(hx + px * 3, hy + py * 3);
-          } else {
-            ctx.moveTo(wx, baseY); ctx.lineTo(tipX, tipY);
-          }
-          ctx.strokeStyle = `rgba(10, 6, 3, ${(0.6 + hash(wi * 431.7) * 0.3) * alphaScale * depthScale})`;
-          ctx.lineWidth = thickness;
-          ctx.lineCap = 'round';
-          ctx.stroke();
-        }
-
-        // Debris
-        for (let di = 0; di < 25; di++) {
-          const dx = hash(di * 271.3) * w, dt = dx / w;
-          const bell = Math.exp(-((dt - center) * (dt - center)) / (2 * spread * spread));
-          const dy = moundGetY(dt) + hash(di * 413.7) * groundH * 0.08;
-          const dSz = 2 + hash(di * 531.1) * 4;
-          ctx.fillStyle = `rgba(18, 12, 6, ${(0.2 + hash(di * 617.3) * 0.2) * alphaScale})`;
-          ctx.fillRect(dx - dSz, dy - dSz * 0.4, dSz * 2, dSz * 0.8);
-        }
       }
 
       // --- 3D rectangle with perspective pointing toward the sun ---
@@ -2665,7 +2600,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.32;
+        const botY = h * 0.39;
         // Top must stay below VP for correct perspective convergence
         const topY = vpY + h * 0.04; // below the sun
 
@@ -2689,7 +2624,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Half-width scales with distance from the sun VP
         const dBot = botY - vpY;    // distance bottom→VP
         const dTop = topY - vpY;    // distance top→VP (positive, top is below VP)
-        const hwBot = w * 0.5;              // full width at bottom
+        const hwBot = w * 0.25;              // scaled down 0.5x
         const hwTop = hwBot * dTop / dBot;  // narrow at top
 
         const botL = vpX - hwBot;
@@ -2781,7 +2716,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.32;
+        const botY = h * 0.39;
         const topY = vpY + h * 0.04;
 
         // Same transform as outer rectangle
@@ -2798,7 +2733,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         const dBot = botY - vpY;
         const dTop = topY - vpY;
-        const hwBot = w * 0.39;              // narrower than the outer (0.5 → 0.39)
+        const hwBot = w * 0.195;             // scaled down 0.5x
         const hwTop = hwBot * dTop / dBot;
 
         const botL = vpX - hwBot;
