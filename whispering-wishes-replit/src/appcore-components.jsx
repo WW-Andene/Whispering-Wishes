@@ -4038,72 +4038,39 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldZfar = 80;
           const fieldXrange = 30;
 
-          // Hand-placed foreground swords (from sketch)
-          const fgSwords = [
-            { wx: -0.15, wz: 0.40, tiltO: -15 },
-            { wx: 0.22, wz: 0.35, tiltO: 14 },
-            { wx: -0.12, wz: 0.55, tiltO: -8 },
-            { wx: -0.35, wz: 0.32, tiltO: -18 },
-            { wx: -4.0, wz: 1.8, tiltO: -10 }, { wx: -3.5, wz: 2.0, tiltO: 6 },
-            { wx: -5.0, wz: 2.2, tiltO: -8 }, { wx: -3.0, wz: 2.5, tiltO: 12 },
-            { wx: -4.5, wz: 1.6, tiltO: -5 }, { wx: -6.0, wz: 2.8, tiltO: 7 },
-            { wx: 3.5, wz: 2.5, tiltO: 8 }, { wx: 4.0, wz: 3.0, tiltO: -6 },
-            { wx: 0.5, wz: 4.0, tiltO: -4 }, { wx: -0.3, wz: 5.0, tiltO: 7 },
-            { wx: 1.2, wz: 4.5, tiltO: -9 }, { wx: -0.8, wz: 5.5, tiltO: 5 },
-          ];
-          for (let fi = 0; fi < fgSwords.length; fi++) {
-            const fg = fgSwords[fi];
-            const wy = terrH(fg.wx, fg.wz);
-            const scrX = W * 0.5 + fg.wx * focal / fg.wz;
-            const scrY = hY + (camH - wy) * focal / fg.wz;
-            const appSize = 1.8 * focal / fg.wz;
-            swords.push({
-              wx: fg.wx, wy, wz: fg.wz, scrX, scrY, appSize,
-              wType: weaponTypes[Math.floor(rng(fi + 500, 102) * weaponTypes.length)],
-              zRot: rng(fi + 500, 103) * Math.PI * 2, tilt: fg.tiltO, darkness: 0
-            });
-          }
+          // === GRID OF SWORDS — evenly spaced, then camera projects ===
+          const gridSpacingX = 2.5;  // meters between swords X
+          const gridSpacingZ = 2.5;  // meters between swords Z
+          const gridXmin = -40, gridXmax = 40;
+          const gridZmin = 0.5, gridZmax = 80;
+          let swordIdx = 0;
+          for (let gz = gridZmin; gz <= gridZmax; gz += gridSpacingZ) {
+            for (let gx = gridXmin; gx <= gridXmax; gx += gridSpacingX) {
+              // Jitter position slightly so it's not perfectly rigid
+              const wx = gx + (rng(swordIdx, 101) - 0.5) * gridSpacingX * 0.6;
+              const wzJ = gz + (rng(swordIdx, 100) - 0.5) * gridSpacingZ * 0.6;
+              if (wzJ < 0.3) { swordIdx++; continue; }
+              const wy = terrH(wx, wzJ);
 
-          // Field swords — log distribution (even visual spread)
-          const swordCount = 800;
-          for (let i = 0; i < swordCount; i++) {
-            const zRaw = rng(i, 100);
-            const wzJ = fieldZnear * Math.pow(fieldZfar / fieldZnear, zRaw);
+              const scrX = W * 0.5 + wx * focal / wzJ;
+              const scrY = hY + (camH - wy) * focal / wzJ;
+              const appSize = 1.8 * focal / wzJ;
 
-            const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
-            let wx = (rng(i, 101) * 2 - 1) * xSpread;
+              // Skip if off screen
+              if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2) { swordIdx++; continue; }
 
-            // Gentle center clearing
-            const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
-            if (Math.abs(wx) < clearingHW) {
-              const sign = wx >= 0 ? 1 : -1;
-              wx = sign * (clearingHW + rng(i, 110) * 1.5);
+              const typeIdx = Math.floor(rng(swordIdx, 102) * weaponTypes.length);
+              const wType = weaponTypes[typeIdx];
+              const zRot = rng(swordIdx, 103) * Math.PI * 2;
+              const tilt = (rng(swordIdx, 104) - 0.5) * 24;
+              const distT = Math.min(1, wzJ / gridZmax);
+              const darkness = distT * 0.6;
+
+              swords.push({
+                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness
+              });
+              swordIdx++;
             }
-            const wy = terrH(wx, wzJ);
-
-            const scrX = W * 0.5 + wx * focal / wzJ;
-            const scrY = hY + (camH - wy) * focal / wzJ;
-            const appSize = 1.8 * focal / wzJ;
-
-            if (scrX < -W * 0.5 || scrX > W * 1.5) continue;
-
-            // Weapon type
-            const typeIdx = Math.floor(rng(i, 102) * weaponTypes.length);
-            const wType = weaponTypes[typeIdx];
-
-            // Fixed random Y-rotation per sword
-            const zRot = rng(i, 103) * Math.PI * 2;
-
-            // Tilt — stuck in ground at angles, more tilt variation
-            const tilt = (rng(i, 104) - 0.5) * 24; // ±12 degrees
-
-            // Atmospheric perspective
-            const distT = Math.min(1, (wzJ - fieldZnear) / (fieldZfar - fieldZnear));
-            const darkness = distT * 0.6;
-
-            swords.push({
-              wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness
-            });
           }
 
           // Sort back-to-front
