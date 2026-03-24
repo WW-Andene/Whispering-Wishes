@@ -4084,18 +4084,18 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // Then: scatter field swords with linear distribution (not quadratic)
-          const swordCount = 800;
+          // === LAY OUT BATTLEFIELD FIRST, THEN CAMERA VIEWS IT ===
+          // Uniform world-space density: constant swords per unit area
+          const swordCount = 1200;
+          const battlefieldW = 60; // total X width of battlefield
+          const battlefieldZmin = 0.5;
+          const battlefieldZmax = 80;
           for (let i = 0; i < swordCount; i++) {
-            const zRaw = rng(i, 100);
-            // Log distribution — even visual spread from near to far
-            // zRaw=0 → near, zRaw=0.5 → ~4.5, zRaw=1 → 80
-            const wzJ = fieldZnear * Math.pow(fieldZfar / fieldZnear, zRaw);
+            // Uniform random position on the ground plane
+            const wzJ = battlefieldZmin + rng(i, 100) * (battlefieldZmax - battlefieldZmin);
+            let wx = (rng(i, 101) * 2 - 1) * battlefieldW * 0.5;
 
-            // X spread widens with distance (perspective cone)
-            const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
-            let wx = (rng(i, 101) * 2 - 1) * xSpread;
-
-            // Gentle center clearing — small gap in the middle
+            // Gentle center clearing
             const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
             if (Math.abs(wx) < clearingHW) {
               const sign = wx >= 0 ? 1 : -1;
