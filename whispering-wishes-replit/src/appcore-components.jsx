@@ -4064,6 +4064,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             { wx: -2.0, wz: 0.65, tiltO: -8 }, { wx: -2.6, wz: 0.72, tiltO: 10 },
             { wx: -3.2, wz: 0.68, tiltO: -4 }, { wx: -1.7, wz: 0.78, tiltO: 13 },
             { wx: -3.8, wz: 0.82, tiltO: -11 },
+            // Very close right edge
+            { wx: 3.5, wz: 0.22, tiltO: 7 },
+            // Middle-far left
+            { wx: -6, wz: 2.5, tiltO: -9 }, { wx: -5, wz: 3.0, tiltO: 6 },
+            { wx: -7, wz: 2.8, tiltO: -12 }, { wx: -4.5, wz: 3.5, tiltO: 4 },
+            { wx: -6.5, wz: 3.2, tiltO: -7 },
+            // Far center
+            { wx: 0.3, wz: 4.0, tiltO: -5 }, { wx: -0.4, wz: 4.5, tiltO: 8 },
+            { wx: 0.8, wz: 5.0, tiltO: -3 }, { wx: -0.6, wz: 5.5, tiltO: 10 },
+            { wx: 0.1, wz: 3.5, tiltO: -6 }, { wx: -0.2, wz: 6.0, tiltO: 4 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
