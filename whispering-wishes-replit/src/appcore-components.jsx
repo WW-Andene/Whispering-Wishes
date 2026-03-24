@@ -2709,37 +2709,54 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.restore();
         }
 
-        // === SWORD FIELD (perspective rows) ===
+        // === SWORD FIELD (row-based with proper spacing) ===
+        // Rows from horizon to camera. Each row: [depth, swordCount]
+        // Far rows: many tiny swords. Near rows: few big swords.
         const rng = (i, off) => { const s = Math.sin(i * 127.1 + off * 311.7) * 43758.5; return s - Math.floor(s); };
 
-        // Generate depth-sorted swords
-        const swords = [];
-        const N = 280;
-        for (let i = 0; i < N; i++) {
-          const depth = rng(i, 0);  // 0=horizon, 1=camera
-          const xn = rng(i, 1);
-          const szVar = rng(i, 2);
-          const tiltVar = rng(i, 3);
-          const steepR = rng(i, 5);
+        const rows = [
+          // depth,  count  — depth 0=horizon, 1=camera
+          [0.02, 50],   // horizon — many tiny
+          [0.05, 40],
+          [0.09, 32],
+          [0.14, 25],
+          [0.20, 20],
+          [0.28, 15],
+          [0.37, 12],
+          [0.47, 9],
+          [0.58, 7],
+          [0.70, 5],
+          [0.82, 4],
+          [0.92, 3],    // near camera — few huge
+          [1.00, 2],    // hero swords at edges
+        ];
 
-          const screenY = hY + (H - hY) * Math.pow(depth, 0.6);
-          const screenX = xn * W * 1.1 - W * 0.05; // slight overflow for edge cropping
-
+        let swordIdx = 0;
+        for (const [depth, count] of rows) {
+          const screenY = hY + (H - hY) * Math.pow(depth, 0.55);
           const scale = 0.04 + depth * 0.96;
-          const sH = H * (0.05 + szVar * 0.05) * scale * 7.5;
-          const bW = Math.max(0.5, W * (0.0015 + szVar * 0.002) * scale * 5.0);
 
-          let tilt = (tiltVar - 0.5) * 20;
-          if (steepR > 0.93) tilt *= 2.2;
+          // Evenly space swords across width, with random jitter
+          const spacing = W / (count + 1);
+          for (let j = 0; j < count; j++) {
+            const baseX = spacing * (j + 1);
+            const jitterX = (rng(swordIdx, 1) - 0.5) * spacing * 0.7;
+            const jitterY = (rng(swordIdx, 6) - 0.5) * (H - hY) * depth * 0.06;
+            const szVar = rng(swordIdx, 2);
+            const tiltVar = rng(swordIdx, 3);
+            const steepR = rng(swordIdx, 5);
 
-          swords.push({ x: screenX, y: screenY, h: sH, t: tilt, bw: bW, d: depth });
-        }
+            const sx = baseX + jitterX;
+            const sy = screenY + jitterY;
+            const sH = H * (0.05 + szVar * 0.04) * scale * 7.0;
+            const bW = Math.max(0.5, W * (0.0012 + szVar * 0.0018) * scale * 4.5);
 
-        // Sort far→near (draw back to front)
-        swords.sort((a, b) => a.d - b.d);
+            let tilt = (tiltVar - 0.5) * 18;
+            if (steepR > 0.93) tilt *= 2.5;
 
-        for (const s of swords) {
-          sword(s.x, s.y, s.h, s.t, s.bw);
+            sword(sx, sy, sH, tilt, bW);
+            swordIdx++;
+          }
         }
 
         // --- EMBERS (tiny pinpoints on dark ground) ---
