@@ -2854,23 +2854,27 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           // DIMENSIONS — matching reference sword proportions
           // ================================================================
-          // === SWORD PROPORTIONS ===
-          const halfW = sbw * wt.bwM; // blade half-width (from parameter)
+          // === SWORD PROPORTIONS (Johnsson module system) ===
+          // Total = 11 modules: blade = 8 modules, hilt = 3 modules
+          // Module = blade/8; guard width ≈ 2 modules; pommel/blade-base ≈ 0.5 module
+          const bladeH = sh * 8 / 11;
+          const handleH = sh * 3 / 11;           // hilt = 3/11 of total
+          const mod = bladeH / 8;                 // 1 module
+
+          const halfW = mod * 0.25 * wt.bwM;     // blade half-width ≈ 0.5 module wide
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
 
-          // Handle (with pommel) = 1/7 of sword length
-          const handleH = sh / 7;
-          const bladeH = sh - handleH;         // blade = 6/7
-          const pommelH = handleH * 0.33;      // pommel ≈ 1/3 of handle
-          const guardBarH = handleH * 0.05;    // guard bar ≈ 5% of handle
-          const gripH = handleH - pommelH - guardBarH; // grip = remainder
+          // Hilt sub-proportions: pommel:grip ≈ 1:2, thin guard bar
+          const pommelH = mod * 1.0;              // pommel ≈ 1 module
+          const guardBarH = mod * 0.15;           // guard bar thin
+          const gripH = handleH - pommelH - guardBarH; // grip ≈ remainder (~1.85 mod)
 
-          // Grip width = 1/3 blade width; arms = handle without pommel
-          const gripHW = halfW / 3;             // 1/3 of blade width (half-width)
-          const gripHT = gripHW;                // grip is round
-          const guardArmHW = gripH + guardBarH; // each arm = handle minus pommel
-          const guardBarHT = gripHT;            // guard depth = grip depth
-          const pomR = gripHW * 1.2 * wt.pomM;  // pommel slightly wider than grip
+          // Widths from module system
+          const gripHW = halfW * 0.8;             // grip narrower than blade
+          const gripHT = gripHW;                  // grip is round
+          const guardArmHW = mod * 1.0;           // each arm ≈ 1 module (total guard ≈ 2 mod)
+          const guardBarHT = gripHT;              // guard depth = grip depth
+          const pomR = mod * 0.25 * wt.pomM;      // pommel radius ≈ blade base width
           const rainGuardH = 0;
 
           // Y positions (tip at y=0, everything else negative = up)
