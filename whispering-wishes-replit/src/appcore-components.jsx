@@ -4038,21 +4038,40 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldZfar = 80;
           const fieldXrange = 30;
 
-          // === SCREEN-SPACE PLACEMENT — even coverage guaranteed ===
-          // Place swords evenly across the VISIBLE ground, then back-project
-          // to world coords. This fills foreground to horizon uniformly.
+          // Hand-placed foreground swords (from sketch)
+          const fgSwords = [
+            { wx: -0.15, wz: 0.40, tiltO: -15 },
+            { wx: 0.22, wz: 0.35, tiltO: 14 },
+            { wx: -0.12, wz: 0.55, tiltO: -8 },
+            { wx: -0.35, wz: 0.32, tiltO: -18 },
+            { wx: -4.0, wz: 1.8, tiltO: -10 }, { wx: -3.5, wz: 2.0, tiltO: 6 },
+            { wx: -5.0, wz: 2.2, tiltO: -8 }, { wx: -3.0, wz: 2.5, tiltO: 12 },
+            { wx: -4.5, wz: 1.6, tiltO: -5 }, { wx: -6.0, wz: 2.8, tiltO: 7 },
+            { wx: 3.5, wz: 2.5, tiltO: 8 }, { wx: 4.0, wz: 3.0, tiltO: -6 },
+            { wx: 0.5, wz: 4.0, tiltO: -4 }, { wx: -0.3, wz: 5.0, tiltO: 7 },
+            { wx: 1.2, wz: 4.5, tiltO: -9 }, { wx: -0.8, wz: 5.5, tiltO: 5 },
+          ];
+          for (let fi = 0; fi < fgSwords.length; fi++) {
+            const fg = fgSwords[fi];
+            const wy = terrH(fg.wx, fg.wz);
+            const scrX = W * 0.5 + fg.wx * focal / fg.wz;
+            const scrY = hY + (camH - wy) * focal / fg.wz;
+            const appSize = 1.8 * focal / fg.wz;
+            swords.push({
+              wx: fg.wx, wy, wz: fg.wz, scrX, scrY, appSize,
+              wType: weaponTypes[Math.floor(rng(fi + 500, 102) * weaponTypes.length)],
+              zRot: rng(fi + 500, 103) * Math.PI * 2, tilt: fg.tiltO, darkness: 0
+            });
+          }
+
+          // Field swords — log distribution (even visual spread)
           const swordCount = 800;
           for (let i = 0; i < swordCount; i++) {
-            // Random screen position on visible ground (hY to H)
-            const randScrY = hY + rng(i, 100) * (H - hY) * 0.98 + 1;
-            const randScrX = rng(i, 101) * W;
+            const zRaw = rng(i, 100);
+            const wzJ = fieldZnear * Math.pow(fieldZfar / fieldZnear, zRaw);
 
-            // Back-project screen → world
-            // scrY = hY + camH * focal / wz  →  wz = camH * focal / (scrY - hY)
-            const wzJ = camH * focal / (randScrY - hY);
-            if (wzJ < 0.3 || wzJ > 200) continue;
-            // scrX = W/2 + wx * focal / wz  →  wx = (scrX - W/2) * wz / focal
-            let wx = (randScrX - W * 0.5) * wzJ / focal;
+            const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
+            let wx = (rng(i, 101) * 2 - 1) * xSpread;
 
             // Gentle center clearing
             const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
@@ -4062,12 +4081,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             }
             const wy = terrH(wx, wzJ);
 
-            // Re-project to screen (with terrain height)
             const scrX = W * 0.5 + wx * focal / wzJ;
             const scrY = hY + (camH - wy) * focal / wzJ;
             const appSize = 1.8 * focal / wzJ;
 
-            if (scrX < -W * 0.3 || scrX > W * 1.3) continue;
+            if (scrX < -W * 0.5 || scrX > W * 1.5) continue;
 
             // Weapon type
             const typeIdx = Math.floor(rng(i, 102) * weaponTypes.length);
