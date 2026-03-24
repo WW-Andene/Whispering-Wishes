@@ -3081,12 +3081,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.save();
 
-          // Clip below ground — bury lower 20% of sword into earth
+          // Clip AT ground line — everything below sy is hidden (buried)
           ctx.beginPath();
-          ctx.rect(sx - sh * 2, 0, sh * 4, sy - sh * 0.05);
+          ctx.rect(sx - sh * 2, 0, sh * 4, sy);
           ctx.clip();
 
-          ctx.translate(sx, sy - sh * 0.08);
+          // Place sword tip BELOW ground — tip at sy + 15% of height
+          // so the lower blade is buried in the earth
+          ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
 
           // ================================================================
