@@ -2955,7 +2955,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Arms along X, bar depth along Z
           // ================================================================
           const gy = bladeTop;
-          const gBarDepth = Math.max(1, gripHW * 0.5); // bar Z-depth (thin)
+          const gBarDepth = gripHT; // bar Z-depth = grip depth (same thickness)
           // Guard: X = arm length (wide), Z = bar depth (thin)
           const gfTL = rotY(-guardArmHW, gy - guardBarH, gBarDepth, cosA, sinA);
           const gfTR = rotY(guardArmHW, gy - guardBarH, gBarDepth, cosA, sinA);
