@@ -2560,481 +2560,385 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
-      // ===== BATTLEGROUND — Unlimited Blade Works composition =====
+      // ===== BATTLEGROUND — Unlimited Blade Works (perspective field) =====
       {
         const W = canvas.width, H = canvas.height;
-        const horizonY = H * 0.55;          // horizon at 55% from top
-        const sunCX = W * 0.50;             // sun center X
-        const sunCY = horizonY - H * 0.02;  // sun just above horizon
+        const horizY = H * 0.52;
+        const sunCX = W * 0.50;
+        const sunCY = horizY - H * 0.01;
 
-        // --- SKY GRADIENT ---
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
-        skyGrad.addColorStop(0.0,  'rgba(25,18,40,' + (0.95 * alphaScale) + ')');
-        skyGrad.addColorStop(0.15, 'rgba(45,25,55,' + (0.92 * alphaScale) + ')');
-        skyGrad.addColorStop(0.35, 'rgba(90,40,60,' + (0.88 * alphaScale) + ')');
-        skyGrad.addColorStop(0.55, 'rgba(170,75,50,' + (0.85 * alphaScale) + ')');
-        skyGrad.addColorStop(0.75, 'rgba(210,110,55,' + (0.82 * alphaScale) + ')');
-        skyGrad.addColorStop(0.90, 'rgba(240,155,65,' + (0.80 * alphaScale) + ')');
-        skyGrad.addColorStop(1.0,  'rgba(255,195,80,' + (0.78 * alphaScale) + ')');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, W, horizonY + 2);
+        // --- Opaque sky (covers existing rendering underneath) ---
+        // Pink/salmon dominant palette matching reference
+        const skyG = ctx.createLinearGradient(0, 0, 0, horizY);
+        skyG.addColorStop(0.0,  'rgb(18,12,30)');       // deep navy-purple
+        skyG.addColorStop(0.10, 'rgb(28,18,42)');       // dark purple
+        skyG.addColorStop(0.25, 'rgb(55,30,55)');       // purple
+        skyG.addColorStop(0.40, 'rgb(120,55,65)');      // pink-mauve
+        skyG.addColorStop(0.55, 'rgb(175,85,70)');      // salmon-coral
+        skyG.addColorStop(0.70, 'rgb(210,120,70)');     // warm coral
+        skyG.addColorStop(0.85, 'rgb(235,160,70)');     // amber
+        skyG.addColorStop(0.95, 'rgb(250,195,85)');     // golden yellow
+        skyG.addColorStop(1.0,  'rgb(255,215,100)');    // bright golden
+        ctx.fillStyle = skyG;
+        ctx.fillRect(0, 0, W, horizY + 2);
 
-        // --- SUN GLOW (layered radial) ---
-        const glowLayers = [
-          [H * 0.35, 'rgba(255,200,80,',  0.10],
-          [H * 0.22, 'rgba(255,175,60,',  0.15],
-          [H * 0.12, 'rgba(255,155,50,',  0.22],
-          [H * 0.06, 'rgba(255,210,120,', 0.30],
+        // --- Sun glow (narrow golden band at horizon) ---
+        const sg1 = ctx.createRadialGradient(sunCX, sunCY, 0, sunCX, sunCY, H * 0.25);
+        sg1.addColorStop(0, 'rgba(255,220,110,0.35)');
+        sg1.addColorStop(0.3, 'rgba(255,190,80,0.15)');
+        sg1.addColorStop(0.6, 'rgba(255,160,60,0.05)');
+        sg1.addColorStop(1, 'rgba(255,140,50,0)');
+        ctx.fillStyle = sg1;
+        ctx.fillRect(0, 0, W, horizY + 2);
+
+        // Tight bright core
+        const sg2 = ctx.createRadialGradient(sunCX, sunCY, 0, sunCX, sunCY, H * 0.06);
+        sg2.addColorStop(0, 'rgba(255,235,160,0.45)');
+        sg2.addColorStop(0.5, 'rgba(255,210,120,0.20)');
+        sg2.addColorStop(1, 'rgba(255,190,80,0)');
+        ctx.fillStyle = sg2;
+        ctx.fillRect(sunCX - H * 0.1, sunCY - H * 0.1, H * 0.2, H * 0.2);
+
+        // --- DRAMATIC CLOUD FORMATIONS (pink/salmon wisps) ---
+        // Large sweeping streaks across the sky, not small puffs
+        const cloudDefs = [
+          // [cx, cy (norm of horizY), widthFrac, heightFrac, colorShift]
+          // Upper sky - deep pink/purple clouds
+          [0.10, 0.08, 0.30, 0.04, 0],
+          [0.50, 0.05, 0.25, 0.035, 0],
+          [0.85, 0.07, 0.28, 0.038, 0],
+          [0.30, 0.14, 0.35, 0.045, 0.2],
+          [0.70, 0.12, 0.32, 0.04, 0.2],
+          [0.05, 0.20, 0.25, 0.035, 0.3],
+          [0.55, 0.18, 0.28, 0.04, 0.3],
+          [0.90, 0.16, 0.22, 0.035, 0.3],
+          // Mid sky - salmon/coral clouds (most prominent)
+          [0.15, 0.28, 0.38, 0.05, 0.5],
+          [0.60, 0.25, 0.35, 0.048, 0.5],
+          [0.35, 0.32, 0.30, 0.042, 0.55],
+          [0.80, 0.30, 0.32, 0.045, 0.55],
+          [0.05, 0.35, 0.28, 0.04, 0.6],
+          [0.50, 0.38, 0.35, 0.04, 0.6],
+          [0.90, 0.36, 0.25, 0.035, 0.6],
+          // Lower sky - warm coral near horizon
+          [0.20, 0.45, 0.40, 0.05, 0.75],
+          [0.65, 0.48, 0.35, 0.045, 0.75],
+          [0.40, 0.55, 0.30, 0.04, 0.8],
+          [0.10, 0.58, 0.28, 0.035, 0.8],
+          [0.75, 0.55, 0.32, 0.04, 0.8],
+          [0.50, 0.62, 0.25, 0.03, 0.85],
+          // Thin wisps everywhere
+          [0.25, 0.10, 0.18, 0.02, 0.1],
+          [0.45, 0.22, 0.15, 0.018, 0.4],
+          [0.70, 0.40, 0.20, 0.022, 0.65],
+          [0.15, 0.50, 0.16, 0.018, 0.7],
+          [0.85, 0.45, 0.17, 0.020, 0.7],
         ];
-        for (const [r, col, a] of glowLayers) {
-          const sg = ctx.createRadialGradient(sunCX, sunCY, 0, sunCX, sunCY, r);
-          sg.addColorStop(0, col + (a * alphaScale) + ')');
-          sg.addColorStop(1, col + '0)');
-          ctx.fillStyle = sg;
-          ctx.fillRect(0, 0, W, horizonY + 2);
-        }
 
-        // --- CLOUD WISPS across the sky ---
-        const cloudSeed = 42;
-        const cloudCount = 18;
-        ctx.globalCompositeOperation = 'lighter';
-        for (let ci = 0; ci < cloudCount; ci++) {
-          const rng1 = Math.sin(cloudSeed + ci * 7.3) * 0.5 + 0.5;
-          const rng2 = Math.sin(cloudSeed + ci * 13.1) * 0.5 + 0.5;
-          const rng3 = Math.sin(cloudSeed + ci * 19.7) * 0.5 + 0.5;
-          const cx = rng1 * W;
-          const cy = rng2 * horizonY * 0.85;
-          const cw = W * (0.08 + rng3 * 0.22);
-          const ch = H * (0.008 + rng2 * 0.018);
-          const distFromSun = Math.abs(cy - sunCY) / horizonY;
-          const warmth = Math.max(0, 1 - distFromSun * 1.5);
-          const r = Math.round(180 + warmth * 75);
-          const g = Math.round(80 + warmth * 80);
-          const b = Math.round(50 + (1 - warmth) * 40);
-          const ca = (0.04 + warmth * 0.08) * alphaScale;
+        for (const cd of cloudDefs) {
+          const cx = cd[0] * W;
+          const cy = cd[1] * horizY;
+          const cw = cd[2] * W;
+          const ch = cd[3] * horizY;
+          const shift = cd[4]; // 0 = top (purple-pink), 1 = bottom (coral-warm)
+
+          // Color interpolation: purple-pink at top → salmon-coral in mid → warm amber near horizon
+          const r = Math.round(140 + shift * 80);  // 140→220
+          const g = Math.round(60 + shift * 60);   // 60→120
+          const b = Math.round(80 - shift * 20);   // 80→60
+          const a = 0.12 + shift * 0.08;           // more opaque near horizon
+
           const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.5);
-          cg.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + ca + ')');
-          cg.addColorStop(0.6, 'rgba(' + r + ',' + g + ',' + b + ',' + (ca * 0.4) + ')');
+          cg.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')');
+          cg.addColorStop(0.35, 'rgba(' + r + ',' + g + ',' + b + ',' + (a * 0.55) + ')');
+          cg.addColorStop(0.7, 'rgba(' + r + ',' + g + ',' + b + ',' + (a * 0.2) + ')');
           cg.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
+
           ctx.save();
-          ctx.scale(1, ch / cw);
+          ctx.translate(cx, cy);
+          ctx.scale(1, ch / (cw * 0.5)); // flatten to wispy horizontal
           ctx.fillStyle = cg;
-          ctx.fillRect(cx - cw, (cy / (ch / cw)) - cw, cw * 2, cw * 2);
+          ctx.beginPath();
+          ctx.arc(0, 0, cw * 0.5, 0, Math.PI * 2);
+          ctx.fill();
           ctx.restore();
         }
-        ctx.globalCompositeOperation = 'source-over';
 
-        // --- GROUND ---
-        const gndGrad = ctx.createLinearGradient(0, horizonY, 0, H);
-        gndGrad.addColorStop(0.0,  'rgba(60,40,35,' + (0.85 * alphaScale) + ')');
-        gndGrad.addColorStop(0.15, 'rgba(45,32,28,' + (0.88 * alphaScale) + ')');
-        gndGrad.addColorStop(0.4,  'rgba(35,25,22,' + (0.92 * alphaScale) + ')');
-        gndGrad.addColorStop(0.7,  'rgba(25,18,16,' + (0.95 * alphaScale) + ')');
-        gndGrad.addColorStop(1.0,  'rgba(15,10,10,' + (0.98 * alphaScale) + ')');
-        ctx.fillStyle = gndGrad;
-        ctx.fillRect(0, horizonY - 1, W, H - horizonY + 2);
+        // Second pass: brighter highlights on clouds near sun
+        for (const cd of cloudDefs) {
+          if (cd[4] < 0.5) continue; // only lower clouds
+          const cx = cd[0] * W;
+          const cy = cd[1] * horizY;
+          const distToSun = Math.sqrt(Math.pow(cx - sunCX, 2) + Math.pow(cy - sunCY, 2));
+          const litStr = Math.max(0, 1 - distToSun / (W * 0.5));
+          if (litStr < 0.05) continue;
+          const cw = cd[2] * W * 0.5;
+          const ch = cd[3] * horizY * 0.6;
+          const hg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.4);
+          hg.addColorStop(0, 'rgba(255,200,130,' + (litStr * 0.12) + ')');
+          hg.addColorStop(1, 'rgba(255,180,100,0)');
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(1, ch / (cw * 0.4));
+          ctx.fillStyle = hg;
+          ctx.beginPath();
+          ctx.arc(0, 0, cw * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
 
-        // Ground warm light near horizon
-        const gndLight = ctx.createRadialGradient(sunCX, horizonY, 0, sunCX, horizonY, W * 0.5);
-        gndLight.addColorStop(0, 'rgba(180,100,40,' + (0.18 * alphaScale) + ')');
-        gndLight.addColorStop(0.4, 'rgba(120,60,25,' + (0.08 * alphaScale) + ')');
-        gndLight.addColorStop(1, 'rgba(60,30,15,0)');
-        ctx.fillStyle = gndLight;
-        ctx.fillRect(0, horizonY, W, H - horizonY);
+        // --- OPAQUE GROUND (very dark brownish-grey) ---
+        const gndG = ctx.createLinearGradient(0, horizY, 0, H);
+        gndG.addColorStop(0.0,  'rgb(40,28,22)');     // dark warm at horizon
+        gndG.addColorStop(0.08, 'rgb(30,22,18)');
+        gndG.addColorStop(0.25, 'rgb(22,16,13)');     // very dark
+        gndG.addColorStop(0.5,  'rgb(15,11,9)');      // nearly black
+        gndG.addColorStop(1.0,  'rgb(8,5,4)');        // black-brown at bottom
+        ctx.fillStyle = gndG;
+        ctx.fillRect(0, horizY - 1, W, H - horizY + 2);
 
-        // --- MOUNTAINS (subtle low silhouettes at horizon) ---
-        ctx.fillStyle = 'rgba(30,18,22,' + (0.85 * alphaScale) + ')';
+        // Subtle warm glow on ground near sun/horizon center only
+        const gndLit = ctx.createRadialGradient(sunCX, horizY, 0, sunCX, horizY, W * 0.30);
+        gndLit.addColorStop(0, 'rgba(140,80,30,0.12)');
+        gndLit.addColorStop(0.5, 'rgba(80,45,18,0.05)');
+        gndLit.addColorStop(1, 'rgba(40,20,10,0)');
+        ctx.fillStyle = gndLit;
+        ctx.fillRect(0, horizY, W, H * 0.15);
+
+        // --- MOUNTAINS (very subtle, small bumps at horizon) ---
+        ctx.fillStyle = 'rgba(25,16,18,0.80)';
         ctx.beginPath();
-        ctx.moveTo(0, horizonY);
-        // Left mountain range (subtle)
-        ctx.lineTo(W * 0.05, horizonY - H * 0.015);
-        ctx.lineTo(W * 0.10, horizonY - H * 0.028);
-        ctx.lineTo(W * 0.16, horizonY - H * 0.020);
-        ctx.lineTo(W * 0.22, horizonY - H * 0.035);
-        ctx.lineTo(W * 0.28, horizonY - H * 0.025);
-        ctx.lineTo(W * 0.34, horizonY - H * 0.018);
-        // Center dip (where sun sits)
-        ctx.lineTo(W * 0.40, horizonY - H * 0.012);
-        ctx.lineTo(W * 0.45, horizonY - H * 0.008);
-        ctx.lineTo(W * 0.50, horizonY - H * 0.005);
-        ctx.lineTo(W * 0.55, horizonY - H * 0.008);
-        ctx.lineTo(W * 0.60, horizonY - H * 0.012);
-        // Right mountain range (subtle)
-        ctx.lineTo(W * 0.66, horizonY - H * 0.020);
-        ctx.lineTo(W * 0.72, horizonY - H * 0.032);
-        ctx.lineTo(W * 0.78, horizonY - H * 0.022);
-        ctx.lineTo(W * 0.84, horizonY - H * 0.030);
-        ctx.lineTo(W * 0.90, horizonY - H * 0.022);
-        ctx.lineTo(W * 0.95, horizonY - H * 0.015);
-        ctx.lineTo(W, horizonY);
+        ctx.moveTo(0, horizY);
+        const mtnPts = [
+          [0.05,0.012],[0.10,0.025],[0.15,0.018],[0.20,0.030],[0.25,0.022],
+          [0.30,0.015],[0.35,0.010],[0.40,0.006],[0.45,0.003],[0.50,0.002],
+          [0.55,0.003],[0.60,0.006],[0.65,0.012],[0.70,0.028],[0.75,0.020],
+          [0.80,0.032],[0.85,0.024],[0.90,0.018],[0.95,0.010],[1.0,0.005]
+        ];
+        for (const [xn, yn] of mtnPts) {
+          ctx.lineTo(W * xn, horizY - H * yn);
+        }
+        ctx.lineTo(W, horizY);
         ctx.closePath();
         ctx.fill();
 
-        // --- DRAW SWORD HELPER ---
-        // Draws a sword planted blade-down into the ground.
-        // (x,y) = ground insertion point. sH = total visible height above ground.
-        // tilt = degrees lean. bW = blade half-width at guard.
-        // detail: 0=distant silhouette, 1=mid, 2=close/ornate
-        function drawBattleSword(x, y, sH, tilt, bW, detail) {
+        // === PERSPECTIVE SWORD FIELD ===
+        // Camera at ground level, looking toward horizon.
+        // Swords scattered across a 3D ground plane, projected to screen.
+        // depth: 0=horizon (far), 1=camera (near)
+        // screenY = horizY + (H - horizY) * depth^0.7  (perspective compression)
+        // swordHeight = baseHeight * depth  (bigger when closer)
+        // swordWidth = baseWidth * depth
+
+        const swordHash = (i, offset) => {
+          const s = Math.sin(i * 127.1 + offset * 311.7) * 43758.5453;
+          return s - Math.floor(s);
+        };
+
+        // Generate sword field: many rows of depth
+        const SWORD_COUNT = 260;
+        const swordData = [];
+        for (let i = 0; i < SWORD_COUNT; i++) {
+          const depth = swordHash(i, 0);         // 0..1 (far..near)
+          const xSpread = swordHash(i, 1);        // 0..1 across width
+          const tiltH = swordHash(i, 2);
+          const sizeVar = swordHash(i, 3);
+          const angleVar = swordHash(i, 4);
+
+          // Perspective projection
+          const perspPow = 0.65;
+          const screenYnorm = Math.pow(depth, perspPow);  // compressed near horizon
+          const screenY = horizY + (H - horizY) * screenYnorm;
+
+          // X position: spread across full width, with slight center-sparse bias
+          // Reference shows swords everywhere but fewer right at center near horizon
+          let screenX = xSpread * W;
+
+          // Scale by depth: tiny at horizon, huge near camera
+          const scale = 0.03 + depth * 0.97;  // 0.03..1.0
+          const swordH = H * (0.04 + sizeVar * 0.04) * scale * 3.2;
+          const bladeHW = W * (0.002 + sizeVar * 0.003) * scale * 1.8;
+
+          // Tilt: slight random lean
+          const tilt = (tiltH - 0.5) * 24;  // -12 to +12 degrees
+          // Some extra steep leans
+          const steepChance = swordHash(i, 5);
+          const finalTilt = steepChance > 0.92 ? tilt * 2.5 : tilt;
+
+          // Detail level based on scale
+          const detail = scale > 0.55 ? 2 : scale > 0.20 ? 1 : 0;
+
+          swordData.push([screenX, screenY, swordH, finalTilt, bladeHW, detail, scale, depth]);
+        }
+
+        // Sort by depth (far first = draw first, close swords on top)
+        swordData.sort((a, b) => a[7] - b[7]);
+
+        // --- DRAW SWORD ---
+        function drawSword(x, y, sH, tilt, bW, detail, scale) {
           ctx.save();
           ctx.translate(x, y);
           ctx.rotate(tilt * Math.PI / 180);
 
-          // Proportions (going UP from ground):
-          // blade: 72% of sH (wide at top near guard, thinner at ground)
-          // guard: 3% of sH
-          // grip:  20% of sH
-          // pommel: 5% of sH
-          const bladeH  = sH * 0.72;
-          const guardH  = sH * 0.03;
-          const gripH   = sH * 0.20;
-          const pommelH = sH * 0.05;
+          // Proportions
+          const bladeH = sH * 0.72;
+          const guardH = Math.max(1, sH * 0.025);
+          const gripH = sH * 0.20;
+          const pommelR = Math.max(0.8, sH * 0.02);
+          const guardW = bW * 1.8;
+          const gripW = bW * 0.35;
 
-          const guardW  = bW * 2.0;  // guard wider than blade but not chunky
-          const gripW   = bW * 0.35; // grip thinner than blade
-          const pommelW = bW * 0.5;
+          // Colors: dark charcoal-brown, not pure black
+          const baseCol = 'rgba(22,16,14,' + (0.93 * alphaScale) + ')';
 
-          // Base silhouette color (dark)
-          const baseR = 20, baseG = 14, baseB = 16;
-          const baseA = 0.92 * alphaScale;
+          // Rim light calculation
+          const rimSide = (x < sunCX) ? 1 : -1;
+          const distNorm = Math.abs(x - sunCX) / (W * 0.5);
+          const rimA = Math.max(0, 1 - distNorm * 0.5) * (0.25 + scale * 0.35);
 
-          // Rim light: warm edge on sun-facing side
-          const rimSide = (x < sunCX) ? 1 : -1; // right edge if left of sun
-          const distFromCenter = Math.abs(x - sunCX) / (W * 0.5);
-          const rimStrength = Math.max(0, 1 - distFromCenter * 0.6);
-
-          // === BLADE (from ground y=0 going up to -bladeH) ===
-          const bladeTipW = bW * 0.35; // narrower at ground (blade buried)
+          // === BLADE ===
+          const tipW = bW * 0.30;
           ctx.beginPath();
-          ctx.moveTo(-bladeTipW, 0);                  // ground left
-          ctx.lineTo(-bW, -bladeH);                   // top-left (wide at guard)
-          ctx.lineTo(bW, -bladeH);                    // top-right
-          ctx.lineTo(bladeTipW, 0);                    // ground right
+          ctx.moveTo(-tipW, 0);
+          ctx.lineTo(-bW, -bladeH);
+          ctx.lineTo(bW, -bladeH);
+          ctx.lineTo(tipW, 0);
           ctx.closePath();
-          ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
+          ctx.fillStyle = baseCol;
           ctx.fill();
 
-          // Blade fuller (center groove) on detailed swords
-          if (detail >= 1) {
-            const fullerW = bW * 0.12;
+          // Rim light edge on blade
+          if (rimA > 0.05) {
             ctx.beginPath();
-            ctx.moveTo(-fullerW, -bladeH * 0.05);
-            ctx.lineTo(-fullerW * 0.8, -bladeH * 0.92);
-            ctx.lineTo(fullerW * 0.8, -bladeH * 0.92);
-            ctx.lineTo(fullerW, -bladeH * 0.05);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(40,30,32,' + (0.5 * alphaScale) + ')';
-            ctx.fill();
-          }
-
-          // Blade rim light (warm edge)
-          if (detail >= 1 && rimStrength > 0.1) {
-            ctx.beginPath();
+            const edgeW = Math.max(0.5, bW * 0.12);
             if (rimSide > 0) {
-              ctx.moveTo(bladeTipW, 0);
+              ctx.moveTo(tipW, 0);
               ctx.lineTo(bW, -bladeH);
-              ctx.lineTo(bW - bW * 0.08, -bladeH);
-              ctx.lineTo(bladeTipW - bladeTipW * 0.08, 0);
+              ctx.lineTo(bW - edgeW, -bladeH);
+              ctx.lineTo(tipW - edgeW * 0.3, 0);
             } else {
-              ctx.moveTo(-bladeTipW, 0);
+              ctx.moveTo(-tipW, 0);
               ctx.lineTo(-bW, -bladeH);
-              ctx.lineTo(-bW + bW * 0.08, -bladeH);
-              ctx.lineTo(-bladeTipW + bladeTipW * 0.08, 0);
+              ctx.lineTo(-bW + edgeW, -bladeH);
+              ctx.lineTo(-tipW + edgeW * 0.3, 0);
             }
             ctx.closePath();
-            ctx.fillStyle = 'rgba(220,140,60,' + (rimStrength * 0.35 * alphaScale) + ')';
+            ctx.fillStyle = 'rgba(215,135,55,' + (rimA * alphaScale) + ')';
             ctx.fill();
           }
 
-          // === CROSSGUARD at y = -bladeH ===
-          const gy = -bladeH;
-          const ght = Math.max(1.5, guardH);
-          ctx.beginPath();
-          if (detail >= 2) {
-            // Ornate guard: slightly curved thin bar with small tips
-            ctx.moveTo(-guardW, gy - ght * 0.4);
-            ctx.quadraticCurveTo(0, gy - ght * 1.2, guardW, gy - ght * 0.4);
-            ctx.lineTo(guardW, gy + ght * 0.4);
-            ctx.quadraticCurveTo(0, gy + ght * 0.8, -guardW, gy + ght * 0.4);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
-            ctx.fill();
-            // Small knobs at quillon ends
+          // Fuller on mid/close swords
+          if (detail >= 1) {
+            const fw = bW * 0.08;
             ctx.beginPath();
-            ctx.arc(-guardW, gy, ght * 0.6, 0, Math.PI * 2);
-            ctx.arc(guardW, gy, ght * 0.6, 0, Math.PI * 2);
-            ctx.fill();
-          } else {
-            // Simple guard: thin horizontal bar
-            ctx.rect(-guardW, gy - ght * 0.5, guardW * 2, ght);
-            ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
+            ctx.moveTo(-fw, -bladeH * 0.08);
+            ctx.lineTo(-fw * 0.7, -bladeH * 0.90);
+            ctx.lineTo(fw * 0.7, -bladeH * 0.90);
+            ctx.lineTo(fw, -bladeH * 0.08);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(35,25,22,' + (0.4 * alphaScale) + ')';
             ctx.fill();
           }
+
+          // === CROSSGUARD ===
+          const gy = -bladeH;
+          ctx.fillStyle = baseCol;
+          ctx.fillRect(-guardW, gy - guardH * 0.5, guardW * 2, guardH);
 
           // Guard rim highlight
-          if (rimStrength > 0.1) {
-            ctx.beginPath();
-            const gEdge = rimSide > 0 ? guardW : -guardW;
-            ctx.arc(gEdge, gy, guardH * (detail >= 2 ? 0.9 : 0.6), 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(210,130,55,' + (rimStrength * 0.25 * alphaScale) + ')';
-            ctx.fill();
+          if (rimA > 0.08) {
+            const gx = rimSide > 0 ? guardW - guardH : -guardW;
+            ctx.fillStyle = 'rgba(210,130,55,' + (rimA * 0.7 * alphaScale) + ')';
+            ctx.fillRect(gx, gy - guardH * 0.5, guardH, guardH);
           }
 
-          // === GRIP (from guard up) ===
-          const gripTop = gy - guardH - gripH;
+          // === GRIP ===
+          const gripTop = gy - guardH * 0.5 - gripH;
           ctx.beginPath();
-          ctx.moveTo(-gripW, gy - guardH);
-          ctx.lineTo(-gripW * 0.85, gripTop);
-          ctx.lineTo(gripW * 0.85, gripTop);
-          ctx.lineTo(gripW, gy - guardH);
+          ctx.moveTo(-gripW, gy - guardH * 0.5);
+          ctx.lineTo(-gripW * 0.8, gripTop);
+          ctx.lineTo(gripW * 0.8, gripTop);
+          ctx.lineTo(gripW, gy - guardH * 0.5);
           ctx.closePath();
-          ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
+          ctx.fillStyle = baseCol;
           ctx.fill();
 
-          // Grip wrapping bands on detailed swords
-          if (detail >= 2) {
-            const bandCount = 5;
-            for (let bi = 0; bi < bandCount; bi++) {
-              const by = (gy - guardH) - gripH * ((bi + 0.5) / bandCount);
-              const bwi = gripW * (0.85 + 0.15 * (1 - bi / bandCount));
-              ctx.beginPath();
-              ctx.rect(-bwi, by - gripH * 0.02, bwi * 2, gripH * 0.04);
-              ctx.fillStyle = 'rgba(50,35,30,' + (0.7 * alphaScale) + ')';
-              ctx.fill();
-            }
+          // Grip rim
+          if (rimA > 0.10 && detail >= 1) {
+            const gEdge = rimSide > 0 ? gripW * 0.7 : -gripW * 0.9;
+            ctx.fillStyle = 'rgba(200,120,50,' + (rimA * 0.5 * alphaScale) + ')';
+            ctx.fillRect(gEdge, gripTop, gripW * 0.2, gripH);
           }
 
-          // Grip rim light
-          if (detail >= 1 && rimStrength > 0.15) {
-            ctx.beginPath();
-            const ge = rimSide > 0 ? gripW : -gripW;
-            ctx.rect(ge - gripW * 0.1, gy - guardH, gripW * 0.2, -gripH);
-            ctx.fillStyle = 'rgba(200,120,50,' + (rimStrength * 0.20 * alphaScale) + ')';
-            ctx.fill();
+          // Grip bands on close swords
+          if (detail >= 2) {
+            for (let bi = 0; bi < 4; bi++) {
+              const by = (gy - guardH * 0.5) - gripH * ((bi + 0.5) / 4);
+              ctx.fillStyle = 'rgba(40,28,24,' + (0.5 * alphaScale) + ')';
+              ctx.fillRect(-gripW * 0.9, by - 1, gripW * 1.8, 2);
+            }
           }
 
           // === POMMEL ===
-          const pommelCY = gripTop - pommelH * 0.5;
-          if (detail >= 2) {
-            // Ornate pommel: diamond/gem shape
-            ctx.beginPath();
-            ctx.moveTo(0, pommelCY - pommelH * 0.6);
-            ctx.lineTo(-pommelW, pommelCY);
-            ctx.lineTo(0, pommelCY + pommelH * 0.5);
-            ctx.lineTo(pommelW, pommelCY);
-            ctx.closePath();
-          } else {
-            // Simple pommel: circle
-            ctx.beginPath();
-            ctx.arc(0, pommelCY, pommelW * 0.6, 0, Math.PI * 2);
-          }
-          ctx.fillStyle = 'rgba(' + baseR + ',' + baseG + ',' + baseB + ',' + baseA + ')';
+          ctx.beginPath();
+          ctx.arc(0, gripTop - pommelR, pommelR, 0, Math.PI * 2);
+          ctx.fillStyle = baseCol;
           ctx.fill();
 
           // Pommel rim
-          if (rimStrength > 0.15) {
+          if (rimA > 0.12) {
             ctx.beginPath();
-            ctx.arc(rimSide * pommelW * 0.3, pommelCY, pommelW * 0.25, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(220,140,60,' + (rimStrength * 0.30 * alphaScale) + ')';
+            ctx.arc(rimSide * pommelR * 0.4, gripTop - pommelR, pommelR * 0.35, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(220,140,60,' + (rimA * 0.6 * alphaScale) + ')';
             ctx.fill();
           }
 
           ctx.restore();
         }
 
-        // === SWORD PLACEMENT DATA ===
-        // [xNorm, baseYNorm, heightNorm, tiltDeg, bladeHalfWidthNorm, detailLevel]
-        // xNorm/baseYNorm: 0-1 normalized canvas coords
-        // heightNorm: fraction of canvas height
-        // detailLevel: 0=distant silhouette, 1=mid, 2=close ornate
-
-        const swords = [
-          // ---- FAR LEFT FOREGROUND (massive, partially cropped) ----
-          [-0.04, 0.70, 0.75, 2,   0.026, 2],
-          [-0.01, 0.68, 0.68, -5,  0.024, 2],
-          [0.06,  0.65, 0.62, -3,  0.020, 2],
-          [0.12,  0.62, 0.58, 5,   0.018, 2],
-          [0.03,  0.67, 0.55, 8,   0.017, 2],
-
-          // ---- LEFT FOREGROUND ----
-          [0.09,  0.64, 0.50, -8,  0.015, 1],
-          [0.15,  0.62, 0.48, 4,   0.014, 1],
-          [0.18,  0.63, 0.44, -6,  0.013, 1],
-          [0.04,  0.66, 0.42, 12,  0.014, 1],
-          [0.11,  0.64, 0.40, -10, 0.012, 1],
-          [0.20,  0.62, 0.46, 3,   0.013, 1],
-          [0.07,  0.65, 0.38, -15, 0.012, 1],
-
-          // ---- LEFT MIDGROUND ----
-          [0.22,  0.60, 0.36, 7,   0.010, 1],
-          [0.25,  0.59, 0.33, -5,  0.009, 1],
-          [0.19,  0.61, 0.30, 20,  0.008, 1],
-          [0.28,  0.59, 0.32, -4,  0.009, 1],
-          [0.24,  0.60, 0.28, -14, 0.008, 1],
-          [0.16,  0.61, 0.34, 11,  0.010, 1],
-          [0.26,  0.59, 0.27, 8,   0.008, 1],
-          [0.21,  0.60, 0.31, -9,  0.009, 1],
-          [0.23,  0.60, 0.25, 16,  0.007, 1],
-          [0.27,  0.59, 0.29, -7,  0.008, 1],
-
-          // ---- LEFT BACKGROUND (dense field) ----
-          [0.29,  0.58, 0.24, 3,   0.006, 0],
-          [0.30,  0.58, 0.22, -5,  0.006, 0],
-          [0.31,  0.57, 0.20, 6,   0.005, 0],
-          [0.32,  0.57, 0.19, -3,  0.005, 0],
-          [0.33,  0.57, 0.21, 4,   0.005, 0],
-          [0.34,  0.57, 0.18, -7,  0.005, 0],
-          [0.35,  0.56, 0.17, 2,   0.004, 0],
-          [0.36,  0.56, 0.16, -4,  0.004, 0],
-          [0.37,  0.56, 0.15, 5,   0.004, 0],
-          [0.30,  0.58, 0.18, -10, 0.005, 0],
-          [0.32,  0.57, 0.16, 8,   0.004, 0],
-          [0.34,  0.57, 0.14, -6,  0.004, 0],
-          [0.29,  0.58, 0.20, 12,  0.005, 0],
-          [0.36,  0.56, 0.13, -3,  0.004, 0],
-          [0.31,  0.57, 0.23, 5,   0.006, 0],
-          [0.35,  0.56, 0.19, -8,  0.005, 0],
-
-          // ---- CENTER-LEFT DISTANT ----
-          [0.38,  0.56, 0.14, 3,   0.003, 0],
-          [0.39,  0.56, 0.12, -4,  0.003, 0],
-          [0.40,  0.56, 0.11, 5,   0.003, 0],
-          [0.41,  0.56, 0.10, -3,  0.003, 0],
-          [0.42,  0.55, 0.09, 2,   0.003, 0],
-          [0.43,  0.55, 0.10, -5,  0.003, 0],
-          [0.44,  0.55, 0.08, 4,   0.002, 0],
-          [0.39,  0.56, 0.13, -6,  0.003, 0],
-          [0.41,  0.56, 0.11, 7,   0.003, 0],
-          [0.43,  0.55, 0.09, -2,  0.002, 0],
-
-          // ---- CENTER (corridor - sparser but not empty) ----
-          [0.46,  0.55, 0.07, -2,  0.002, 0],
-          [0.48,  0.55, 0.06, 3,   0.002, 0],
-          [0.50,  0.55, 0.05, -1,  0.002, 0],
-          [0.52,  0.55, 0.06, 2,   0.002, 0],
-          [0.54,  0.55, 0.07, -3,  0.002, 0],
-          [0.47,  0.55, 0.08, 4,   0.002, 0],
-          [0.51,  0.55, 0.07, -2,  0.002, 0],
-          [0.53,  0.55, 0.06, 3,   0.002, 0],
-
-          // ---- CENTER-RIGHT DISTANT ----
-          [0.56,  0.55, 0.08, -3,  0.002, 0],
-          [0.57,  0.55, 0.09, 4,   0.003, 0],
-          [0.58,  0.56, 0.10, -2,  0.003, 0],
-          [0.59,  0.56, 0.11, 5,   0.003, 0],
-          [0.60,  0.56, 0.12, -4,  0.003, 0],
-          [0.61,  0.56, 0.10, 3,   0.003, 0],
-          [0.57,  0.56, 0.11, -6,  0.003, 0],
-          [0.59,  0.56, 0.09, 2,   0.002, 0],
-          [0.61,  0.56, 0.13, -3,  0.003, 0],
-          [0.58,  0.56, 0.08, 5,   0.002, 0],
-
-          // ---- RIGHT BACKGROUND (dense field) ----
-          [0.62,  0.56, 0.13, -2,  0.004, 0],
-          [0.63,  0.56, 0.15, 4,   0.004, 0],
-          [0.64,  0.56, 0.14, -5,  0.004, 0],
-          [0.65,  0.57, 0.16, 3,   0.004, 0],
-          [0.66,  0.57, 0.17, -6,  0.005, 0],
-          [0.67,  0.57, 0.18, 2,   0.005, 0],
-          [0.68,  0.57, 0.19, -4,  0.005, 0],
-          [0.69,  0.57, 0.20, 5,   0.005, 0],
-          [0.70,  0.57, 0.22, -3,  0.006, 0],
-          [0.71,  0.58, 0.21, 6,   0.006, 0],
-          [0.63,  0.57, 0.16, -8,  0.004, 0],
-          [0.65,  0.57, 0.14, 7,   0.004, 0],
-          [0.67,  0.57, 0.20, -5,  0.005, 0],
-          [0.69,  0.57, 0.17, 10,  0.005, 0],
-          [0.71,  0.58, 0.23, -4,  0.006, 0],
-          [0.64,  0.57, 0.19, 3,   0.005, 0],
-
-          // ---- RIGHT MIDGROUND ----
-          [0.72,  0.58, 0.27, -6,  0.008, 1],
-          [0.74,  0.59, 0.30, 5,   0.009, 1],
-          [0.76,  0.59, 0.28, -4,  0.008, 1],
-          [0.78,  0.59, 0.32, 3,   0.009, 1],
-          [0.80,  0.60, 0.26, 16,  0.007, 1],
-          [0.75,  0.59, 0.25, -12, 0.008, 1],
-          [0.82,  0.60, 0.34, -7,  0.010, 1],
-          [0.73,  0.59, 0.29, 9,   0.008, 1],
-          [0.77,  0.59, 0.31, -8,  0.009, 1],
-          [0.79,  0.60, 0.27, 13,  0.008, 1],
-
-          // ---- RIGHT FOREGROUND ----
-          [0.80,  0.62, 0.38, -5,  0.012, 1],
-          [0.83,  0.62, 0.42, 4,   0.013, 1],
-          [0.86,  0.63, 0.44, -7,  0.014, 1],
-          [0.89,  0.63, 0.46, 6,   0.014, 1],
-          [0.84,  0.62, 0.40, -10, 0.013, 1],
-          [0.91,  0.64, 0.48, 3,   0.015, 1],
-          [0.81,  0.63, 0.36, 12,  0.011, 1],
-
-          // ---- FAR RIGHT FOREGROUND (massive, partially cropped) ----
-          [0.88,  0.63, 0.55, -4,  0.017, 2],
-          [0.93,  0.65, 0.62, 5,   0.020, 2],
-          [0.97,  0.67, 0.68, -3,  0.024, 2],
-          [1.01,  0.68, 0.72, 3,   0.026, 2],
-          [1.04,  0.70, 0.75, -2,  0.026, 2],
-        ];
-
-        // --- RENDER ALL SWORDS (back to front: distant first, close last) ---
-        // Sort by detail level (0 first = background), then by height (smaller first)
-        const sortedSwords = [...swords].sort((a, b) => {
-          if (a[5] !== b[5]) return a[5] - b[5];
-          return a[2] - b[2];
-        });
-
-        for (const s of sortedSwords) {
-          const sx = s[0] * W;
-          const sy = s[1] * H;
-          const sh = s[2] * H;
-          const st = s[3];
-          const sbw = s[4] * W;
-          const sd = s[5];
-          drawBattleSword(sx, sy, sh, st, sbw, sd);
+        // Render all swords
+        for (const s of swordData) {
+          drawSword(s[0], s[1], s[2], s[3], s[4], s[5], s[6]);
         }
 
-        // --- GROUND EMBERS (orange-red glowing dots) ---
-        const emberCount = 90;
+        // --- GROUND EMBERS (tiny pinpoint dots, low to ground) ---
+        const emberCount = 120;
         for (let ei = 0; ei < emberCount; ei++) {
-          const eHash1 = Math.sin(ei * 127.1 + 311.7) * 43758.5453;
-          const eHash2 = Math.sin(ei * 269.5 + 183.3) * 43758.5453;
-          const eHash3 = Math.sin(ei * 419.2 + 71.9) * 43758.5453;
-          const ex = (eHash1 - Math.floor(eHash1)) * W;
-          const eyNorm = (eHash2 - Math.floor(eHash2));
-          const ey = horizonY + eyNorm * (H - horizonY) * 0.7;
-          const eSize = 1 + (eHash3 - Math.floor(eHash3)) * 2.5;
-          const ePulse = Math.sin(time * 2 + ei * 1.7) * 0.5 + 0.5;
-          const eAlpha = (0.3 + ePulse * 0.5) * alphaScale;
-          // Glow
-          const eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, eSize * 4);
-          eg.addColorStop(0, 'rgba(255,120,40,' + (eAlpha * 0.4) + ')');
+          const ex = swordHash(ei, 10) * W;
+          const eyD = swordHash(ei, 11);
+          // Mostly in the lower 30% of the ground area
+          const ey = horizY + (H - horizY) * (0.45 + eyD * 0.50);
+          const eSize = 0.5 + swordHash(ei, 12) * 1.2; // tiny: 0.5-1.7px
+          const ePulse = Math.sin(time * 2.5 + ei * 1.9) * 0.5 + 0.5;
+          const eA = (0.35 + ePulse * 0.45) * alphaScale;
+
+          // Tiny glow
+          const eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, eSize * 3);
+          eg.addColorStop(0, 'rgba(255,130,40,' + (eA * 0.3) + ')');
           eg.addColorStop(1, 'rgba(255,80,20,0)');
           ctx.fillStyle = eg;
-          ctx.fillRect(ex - eSize * 4, ey - eSize * 4, eSize * 8, eSize * 8);
-          // Core
+          ctx.fillRect(ex - eSize * 3, ey - eSize * 3, eSize * 6, eSize * 6);
+
+          // Pinpoint core
           ctx.beginPath();
           ctx.arc(ex, ey, eSize, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255,160,60,' + eAlpha + ')';
+          ctx.fillStyle = 'rgba(255,160,60,' + eA + ')';
           ctx.fill();
         }
 
-        // --- FLOATING EMBERS (rising from ground) ---
-        const floatCount = 25;
-        for (let fi = 0; fi < floatCount; fi++) {
-          const fHash1 = Math.sin(fi * 73.1 + 517.3) * 43758.5453;
-          const fHash2 = Math.sin(fi * 157.5 + 283.7) * 43758.5453;
-          const fx = (fHash1 - Math.floor(fHash1)) * W;
-          const fSpeed = 0.02 + (fHash2 - Math.floor(fHash2)) * 0.04;
-          const fPhase = fi * 2.3;
-          const fProgress = ((time * fSpeed + fPhase) % 1);
-          const fy = H - fProgress * H * 0.6;
-          const fDrift = Math.sin(time * 0.8 + fi * 1.3) * 15;
-          const fAlpha = Math.sin(fProgress * Math.PI) * 0.7 * alphaScale;
-          const fSize = 1 + fProgress * 1.5;
-          if (fAlpha > 0.05) {
+        // --- A few floating embers rising ---
+        const floatN = 15;
+        for (let fi = 0; fi < floatN; fi++) {
+          const fx0 = swordHash(fi, 20) * W;
+          const fSpd = 0.015 + swordHash(fi, 21) * 0.03;
+          const fProg = ((time * fSpd + fi * 1.7) % 1);
+          const fy = H - fProg * H * 0.45;
+          const fDrift = Math.sin(time * 0.6 + fi) * 12;
+          const fA = Math.sin(fProg * Math.PI) * 0.5 * alphaScale;
+          if (fA > 0.03) {
             ctx.beginPath();
-            ctx.arc(fx + fDrift, fy, fSize, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,140,50,' + fAlpha + ')';
+            ctx.arc(fx0 + fDrift, fy, 0.8 + fProg, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,140,50,' + fA + ')';
             ctx.fill();
           }
         }
