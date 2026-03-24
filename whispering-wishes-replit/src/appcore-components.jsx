@@ -2560,6 +2560,234 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
+      // ===== BATTLEGROUND — ground-plan projected sword field =====
+      {
+        const W = canvas.width, H = canvas.height;
+        const hY = H * 0.52;
+        const rng = (i, off) => { const s = Math.sin(i * 127.1 + off * 311.7) * 43758.5; return s - Math.floor(s); };
+
+        // --- OPAQUE SKY (pink/salmon) ---
+        const sk = ctx.createLinearGradient(0, 0, 0, hY);
+        sk.addColorStop(0,    'rgb(15,10,28)');
+        sk.addColorStop(0.12, 'rgb(30,18,45)');
+        sk.addColorStop(0.28, 'rgb(65,35,58)');
+        sk.addColorStop(0.42, 'rgb(130,60,68)');
+        sk.addColorStop(0.58, 'rgb(185,90,72)');
+        sk.addColorStop(0.72, 'rgb(215,125,70)');
+        sk.addColorStop(0.85, 'rgb(240,165,72)');
+        sk.addColorStop(1,    'rgb(255,210,95)');
+        ctx.fillStyle = sk;
+        ctx.fillRect(0, 0, W, hY + 1);
+
+        // Sun glow
+        const sg = ctx.createRadialGradient(W * 0.5, hY, 0, W * 0.5, hY, H * 0.22);
+        sg.addColorStop(0, 'rgba(255,225,120,0.4)');
+        sg.addColorStop(0.35, 'rgba(255,190,80,0.15)');
+        sg.addColorStop(1, 'rgba(255,150,60,0)');
+        ctx.fillStyle = sg;
+        ctx.fillRect(0, hY * 0.5, W, hY * 0.6);
+
+        // Clouds
+        const clds = [
+          [0.08,0.06,0.28,0.035,0],[0.55,0.04,0.24,0.03,0],[0.85,0.08,0.22,0.03,0],
+          [0.20,0.14,0.32,0.04,0.15],[0.65,0.12,0.28,0.035,0.15],
+          [0.40,0.22,0.35,0.045,0.3],[0.75,0.20,0.30,0.04,0.3],[0.12,0.26,0.26,0.035,0.35],
+          [0.55,0.30,0.33,0.042,0.45],[0.22,0.34,0.28,0.04,0.45],[0.80,0.32,0.25,0.035,0.5],
+          [0.05,0.40,0.30,0.04,0.55],[0.45,0.42,0.35,0.045,0.6],[0.70,0.38,0.28,0.04,0.55],
+          [0.30,0.48,0.32,0.04,0.7],[0.60,0.50,0.28,0.035,0.7],
+          [0.50,0.58,0.30,0.035,0.78],[0.80,0.55,0.26,0.03,0.75],
+        ];
+        for (const c of clds) {
+          const cx = c[0] * W, cy = c[1] * hY, cw = c[2] * W, ch = c[3] * hY, warm = c[4];
+          const r = Math.round(145 + warm * 75), g = Math.round(65 + warm * 55), b = Math.round(82 - warm * 18);
+          const a = 0.14 + warm * 0.10;
+          const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.5);
+          cg.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')');
+          cg.addColorStop(0.4, 'rgba(' + r + ',' + g + ',' + b + ',' + (a * 0.45) + ')');
+          cg.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
+          ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ch / (cw * 0.5));
+          ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, cw * 0.5, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+
+        // --- OPAQUE GROUND ---
+        const gd = ctx.createLinearGradient(0, hY, 0, H);
+        gd.addColorStop(0, 'rgb(38,26,20)');
+        gd.addColorStop(0.1, 'rgb(28,19,15)');
+        gd.addColorStop(0.3, 'rgb(18,12,10)');
+        gd.addColorStop(0.6, 'rgb(12,8,6)');
+        gd.addColorStop(1, 'rgb(6,4,3)');
+        ctx.fillStyle = gd;
+        ctx.fillRect(0, hY, W, H - hY);
+
+        // Warm glow on ground near horizon
+        const gl = ctx.createRadialGradient(W * 0.5, hY, 0, W * 0.5, hY, W * 0.35);
+        gl.addColorStop(0, 'rgba(130,75,28,0.14)');
+        gl.addColorStop(0.6, 'rgba(70,40,15,0.05)');
+        gl.addColorStop(1, 'rgba(30,15,8,0)');
+        ctx.fillStyle = gl;
+        ctx.fillRect(0, hY, W, H * 0.12);
+
+        // Mountains
+        ctx.fillStyle = 'rgba(22,14,16,0.8)';
+        ctx.beginPath(); ctx.moveTo(0, hY);
+        const mp = [[.05,.01],[.12,.025],[.18,.018],[.24,.032],[.30,.02],[.36,.012],
+          [.42,.006],[.48,.003],[.52,.002],[.56,.004],[.62,.008],[.68,.022],
+          [.74,.030],[.80,.020],[.86,.028],[.92,.018],[.96,.010],[1,.004]];
+        for (const p of mp) ctx.lineTo(W * p[0], hY - H * p[1]);
+        ctx.lineTo(W, hY); ctx.closePath(); ctx.fill();
+
+        // ============================================
+        // GROUND PLAN → PERSPECTIVE PROJECTION
+        // ============================================
+        // Square ground plane in world space.
+        // Camera at (0, camH, 0) looking along +Z.
+        // Swords placed on a grid across the X-Z plane.
+        // Project: screenX = W/2 + worldX * focal / worldZ
+        //          screenY = hY + camH * focal / worldZ
+        //          apparent size = realSize * focal / worldZ
+
+        const camH = 1.3;            // camera height in world units
+        const focal = W * 0.7;       // focal length → controls FOV
+        const swordRealH = 4.0;      // sword total visible height (world units)
+        const swordRealBW = 0.12;    // blade half-width (world units)
+        const gridSpacing = 3.8;     // average gap between swords on the plan
+        const sunScreenX = W * 0.5;
+
+        // Draw one sword silhouette at screen coords
+        function drawSword(sx, sy, sh, sbw, tilt) {
+          if (sh < 1.5 || sbw < 0.2) return;
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(tilt * Math.PI / 180);
+
+          const bladeH = sh * 0.74;
+          const gThk = Math.max(0.8, sh * 0.006);
+          const gHW = sbw * 1.5;
+          const gripH = sh * 0.21;
+          const gripHW = sbw * 0.2;
+          const tipW = sbw * 0.22;
+          const pomR = Math.max(0.3, sbw * 0.25);
+
+          // Single silhouette path
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(-tipW, -1);
+          ctx.lineTo(-sbw, -bladeH);
+          ctx.lineTo(-gHW, -bladeH);
+          ctx.lineTo(-gHW, -bladeH - gThk);
+          ctx.lineTo(-gripHW, -bladeH - gThk);
+          ctx.lineTo(-gripHW, -bladeH - gThk - gripH);
+          ctx.arc(0, -bladeH - gThk - gripH - pomR, pomR, Math.PI * 0.85, Math.PI * 0.15);
+          ctx.lineTo(gripHW, -bladeH - gThk - gripH);
+          ctx.lineTo(gripHW, -bladeH - gThk);
+          ctx.lineTo(gHW, -bladeH - gThk);
+          ctx.lineTo(gHW, -bladeH);
+          ctx.lineTo(sbw, -bladeH);
+          ctx.lineTo(tipW, -1);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(16,10,8,0.96)';
+          ctx.fill();
+
+          // Rim light
+          const rimSide = sx < sunScreenX ? 1 : -1;
+          const rimStr = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45)) * 0.4;
+          if (rimStr > 0.03 && sbw > 1) {
+            const ew = Math.max(0.4, sbw * 0.08);
+            ctx.beginPath();
+            if (rimSide > 0) {
+              ctx.moveTo(tipW, -1); ctx.lineTo(sbw, -bladeH);
+              ctx.lineTo(sbw - ew, -bladeH); ctx.lineTo(tipW - ew * 0.3, -1);
+            } else {
+              ctx.moveTo(-tipW, -1); ctx.lineTo(-sbw, -bladeH);
+              ctx.lineTo(-sbw + ew, -bladeH); ctx.lineTo(-tipW + ew * 0.3, -1);
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(215,135,55,' + rimStr + ')';
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        // === PLACE SWORDS ON THE GROUND PLAN ===
+        // Z goes from zNear (close to camera) to zFar (horizon).
+        // At each Z, visible X range = ±(Z * W) / (2 * focal).
+        // Place swords across that range at ~gridSpacing intervals.
+        const zNear = 2.0, zFar = 120;
+        const numRows = 28;
+        let sIdx = 0;
+
+        // Collect all swords for depth sorting
+        const allSwords = [];
+
+        for (let row = 0; row < numRows; row++) {
+          // Quadratic spacing: more rows packed near camera, fewer far away
+          const t = row / (numRows - 1);
+          const z = zNear + (zFar - zNear) * t * t;
+
+          // Visible half-width at this depth (plus 30% overflow for edge swords)
+          const visHW = z * W * 1.3 / (2 * focal);
+
+          // Number of swords across this row
+          const count = Math.max(1, Math.round(visHW * 2 / gridSpacing));
+          const xStep = visHW * 2 / count;
+
+          for (let j = 0; j < count; j++) {
+            // Evenly spaced base position + jitter
+            const wx = -visHW + xStep * (j + 0.5) + (rng(sIdx, 1) - 0.5) * xStep * 0.6;
+            const wz = z + (rng(sIdx, 2) - 0.5) * gridSpacing * 0.4;
+            if (wz < 1.5) { sIdx++; continue; }
+
+            const sizeVar = 0.8 + rng(sIdx, 3) * 0.4; // 0.8-1.2x size variation
+            const tiltVal = (rng(sIdx, 4) - 0.5) * 16;
+            const steep = rng(sIdx, 5) > 0.94 ? 2.2 : 1;
+
+            // Project to screen
+            const scrX = W * 0.5 + wx * focal / wz;
+            const scrY = hY + camH * focal / wz;
+            const scrH = swordRealH * sizeVar * focal / wz;
+            const scrBW = swordRealBW * sizeVar * focal / wz;
+
+            allSwords.push({ x: scrX, y: scrY, h: scrH, bw: scrBW, t: tiltVal * steep, z: wz });
+            sIdx++;
+          }
+        }
+
+        // Sort far→near (draw back to front)
+        allSwords.sort((a, b) => b.z - a.z);
+
+        for (const s of allSwords) {
+          drawSword(s.x, s.y, s.h, s.bw, s.t);
+        }
+
+        // --- EMBERS ---
+        for (let i = 0; i < 90; i++) {
+          const ex = rng(i, 10) * W;
+          const ey = hY + (H - hY) * (0.4 + rng(i, 11) * 0.55);
+          const sz = 0.4 + rng(i, 12) * 1.0;
+          const pulse = Math.sin(time * 2.5 + i * 1.8) * 0.5 + 0.5;
+          const ea = (0.3 + pulse * 0.5) * alphaScale;
+          const eg = ctx.createRadialGradient(ex, ey, 0, ex, ey, sz * 3);
+          eg.addColorStop(0, 'rgba(255,130,40,' + (ea * 0.25) + ')');
+          eg.addColorStop(1, 'rgba(255,80,20,0)');
+          ctx.fillStyle = eg;
+          ctx.fillRect(ex - sz * 3, ey - sz * 3, sz * 6, sz * 6);
+          ctx.beginPath(); ctx.arc(ex, ey, sz, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,150,55,' + ea + ')'; ctx.fill();
+        }
+
+        for (let i = 0; i < 12; i++) {
+          const fx = rng(i, 20) * W;
+          const prog = ((time * 0.02 + i * 1.5) % 1);
+          const fy = H - prog * H * 0.4;
+          const fa = Math.sin(prog * Math.PI) * 0.45 * alphaScale;
+          if (fa > 0.03) {
+            ctx.beginPath();
+            ctx.arc(fx + Math.sin(time * 0.5 + i) * 10, fy, 0.6 + prog * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,140,50,' + fa + ')'; ctx.fill();
+          }
+        }
+      } // end BATTLEGROUND block
 
       // --- Atmospheric lightning (sky to ground) ---
       const lightningActive = Math.sin(time * 3) > 0.6;
