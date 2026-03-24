@@ -2946,9 +2946,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
             const wt = weaponTypes[wtIdx];
 
-            // Size: very subtle variation + distance shrink + weapon type multiplier
-            const sizeVar = 0.96 + rng(sIdx, 3) * 0.08; // ±4% only
-            const distShrink = 1 - depthRatio * 0.18; // 18% smaller at max distance
+            // Size: subtle per-object variation. Perspective (focal/wz) handles
+            // apparent size reduction with distance naturally.
+            // distShrink is a small world-space reduction (worn/old swords far away).
+            const sizeVar = 0.97 + rng(sIdx, 3) * 0.06; // ±3% per-object
+            const distShrink = 1 - depthRatio * 0.08; // 8% world-space shrink at max depth
 
             // Tilt: gentle lean, most swords nearly upright
             const tiltVal = (rng(sIdx, 4) - 0.5) * 12; // ±6° base
