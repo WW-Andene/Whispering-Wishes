@@ -3959,13 +3959,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
             let wx = (rng(i, 101) * 2 - 1) * xSpread;
 
-            // Natural clearing in center — push swords away from X=0
-            // Clearing is wider near camera, narrower in distance
-            const clearingHW = 3.0 * (1 + 5.0 / (wzJ + 2)); // half-width of clearing
+            // Subtle center thinning — gently nudge swords near X=0 outward
+            const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
             if (Math.abs(wx) < clearingHW) {
-              // Push outward: sign preserved, moved to clearing edge + jitter
               const sign = wx >= 0 ? 1 : -1;
-              wx = sign * (clearingHW + rng(i, 110) * 2);
+              wx = sign * (Math.abs(wx) + clearingHW * 0.5 + rng(i, 110) * 1.5);
             }
             const wy = terrH(wx, wzJ);
 
