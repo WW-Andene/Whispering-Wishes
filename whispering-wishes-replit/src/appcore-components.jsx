@@ -2879,6 +2879,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
 
           // === DRAW BLADE ===
+          // Z-rotation makes one edge face the light more — gradient across width
+          const zSin = Math.sin(zRot); // -1..1, indicates rotation direction
+          const edgeBright = 1 + zSin * 0.35; // brighter edge
+          const edgeDark = 1 - zSin * 0.35;   // darker edge
           ctx.beginPath();
           ctx.moveTo(bSkew, 0);
           ctx.lineTo(-tipW + bSkew * 0.6, -1);
@@ -2886,8 +2890,28 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
           ctx.lineTo(tipW + bSkew * 0.6, -1);
           ctx.closePath();
-          ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
+          if (Math.abs(zRot) > 0.08 && effBW > 1) {
+            // Gradient across blade shows rotation
+            const blGrad = ctx.createLinearGradient(-effBW, -bladeH * 0.5, effBW, -bladeH * 0.5);
+            blGrad.addColorStop(0, 'rgb(' + Math.round(blR * edgeDark) + ',' + Math.round(blG * edgeDark) + ',' + Math.round(blB * edgeDark) + ')');
+            blGrad.addColorStop(1, 'rgb(' + Math.min(255, Math.round(blR * edgeBright)) + ',' + Math.min(255, Math.round(blG * edgeBright)) + ',' + Math.min(255, Math.round(blB * edgeBright)) + ')');
+            ctx.fillStyle = blGrad;
+          } else {
+            ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
+          }
           ctx.fill();
+
+          // Edge catch — bright line on the edge catching light when blade is rotated
+          if (Math.abs(zRot) > 0.15 && effBW > 1 && bladeH > 4) {
+            const catchSide = zSin > 0 ? effBW : -effBW;
+            const catchAlpha = Math.min(0.6, Math.abs(zSin) * 0.8) * dkMul;
+            ctx.beginPath();
+            ctx.moveTo(catchSide * 0.8 + bSkew * 0.6, -1);
+            ctx.lineTo(catchSide * 0.85 + bSkew * 0.3, -bladeH);
+            ctx.strokeStyle = 'rgba(255,230,180,' + catchAlpha.toFixed(3) + ')';
+            ctx.lineWidth = Math.max(0.5, effBW * 0.12);
+            ctx.stroke();
+          }
 
           // === DRAW GUARD (if present) ===
           if (wt.gwM > 0.1) {
