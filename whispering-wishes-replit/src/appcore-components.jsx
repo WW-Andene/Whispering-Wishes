@@ -2730,8 +2730,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Grid dimensions — cover entire ground plane including foreground
           const TX = 70;   // columns (X subdivisions)
           const TZ = 70;   // rows (Z subdivisions, back to front)
-          const tExtentX = 120;  // world X range covers full screen even at Z=0.8
-          const tZnear = 0.8;    // right at camera for full foreground
+          const tExtentX = 120;  // world X range covers full screen
+          const tZnear = 0.1;    // very close — terrain fills to screen bottom
           const tZfar = 90;      // farthest Z row
 
           // Camera/projection (reuse existing system params)
