@@ -2934,10 +2934,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (frontVis) fillQuad(fTL, fTR, fBR, fBL, frontCol);
 
           // ================================================================
-          // 3D GUARD — wider box perpendicular to blade
+          // 3D GUARD — crossbar is PERPENDICULAR to the blade
+          // Guard extends along X in blade-local space. When the blade
+          // rotates, the guard's width axis (X) rotates too.
+          // Key: guard width is along X, guard DEPTH is along Z.
+          // From front (θ=0): wide bar. From side (θ=90°): short nub.
           // ================================================================
           if (wt.gwM > 0.1) {
-            const gy = -bladeH; // guard Y position
+            const gy = -bladeH;
+            // Guard: X = half-width (long axis), Z = half-depth (thin axis)
             const gfTL = rotY(-gHW, gy - gThk, gHT, cosA, sinA);
             const gfTR = rotY(gHW, gy - gThk, gHT, cosA, sinA);
             const gfBR = rotY(gHW, gy, gHT, cosA, sinA);
@@ -2949,15 +2954,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             const gFrontCol = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
             const gSideCol = 'rgb(' + Math.round(blR * 0.4) + ',' + Math.round(blG * 0.4) + ',' + Math.round(blB * 0.4) + ')';
+            // Top face of guard (visible since camera is above)
+            const gTopCol = 'rgb(' + Math.round(blR * 0.55) + ',' + Math.round(blG * 0.55) + ',' + Math.round(blB * 0.55) + ')';
 
             if (backVis) fillQuad(gbTL, gbTR, gbBR, gbBL, gSideCol);
             if (rightVis) fillQuad(gfTR, gbTR, gbBR, gfBR, gSideCol);
             if (leftVis) fillQuad(gbTL, gfTL, gfBL, gbBL, gSideCol);
             if (frontVis) fillQuad(gfTL, gfTR, gfBR, gfBL, gFrontCol);
+            // Top face of guard
+            fillQuad(gfTL, gfTR, gbTR, gbTL, gTopCol);
           }
 
           // ================================================================
-          // GRIP — small box (roughly cylindrical approximation)
+          // GRIP — cylindrical (use rotated box)
           // ================================================================
           const grY0 = -bladeH - gThk;
           const grY1 = grY0 - gripH;
@@ -3026,82 +3035,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === PLACE WEAPONS ON THE GROUND PLAN (3D) ===
-        const zNear = 1.4, zFar = 130;
-        const numRows = 38;
-        let sIdx = 0;
-        const allWeapons = [];
-        const baseRealH = 4.0;
-        const baseRealBW = 0.12;
+        // === DEBUG: 3 test swords — 0°, 45°, 90° rotation ===
+        {
+          const testWt = weaponTypes[0];
+          const testH = H * 0.4;
+          const testBW = testH * 0.06;
+          const testY = H * 0.85;
+          const angles = [0, Math.PI * 0.25, Math.PI * 0.45];
+          const xPositions = [W * 0.2, W * 0.5, W * 0.8];
 
-        for (let row = 0; row < numRows; row++) {
-          const t = row / (numRows - 1);
-          const z = zNear + (zFar - zNear) * t * t;
-          const depthRatio = Math.min(1, (z - zNear) / (zFar - zNear));
-          const spacing = 7.0 * (1 - depthRatio) + 1.5 * depthRatio;
-          const visHW = z * W * 1.3 / (2 * focal);
-          const count = Math.max(1, Math.round(visHW * 2 / spacing));
-          const xStep = visHW * 2 / count;
-
-          for (let j = 0; j < count; j++) {
-            const jitterX = (rng(sIdx, 1) - 0.5) * xStep * 0.5;
-            const jitterZ = (rng(sIdx, 2) - 0.5) * spacing * 0.35;
-            const wx = -visHW + xStep * (j + 0.5) + jitterX;
-            const wz = z + jitterZ;
-            if (wz < 1.2) { sIdx++; continue; }
-
-            const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
-            const wt = weaponTypes[wtIdx];
-
-            const sizeVar = 0.90 + rng(sIdx, 3) * 0.20;
-            const distShrink = 1 - depthRatio * 0.15;
-
-            // Tilt distribution: 40% upright, 35% leaning, 25% heavily angled
-            const tiltRng = rng(sIdx, 4);
-            const tiltBase = (rng(sIdx, 16) - 0.5) * 2;
-            let tiltVal;
-            if (tiltRng < 0.40) tiltVal = tiltBase * 15;
-            else if (tiltRng < 0.75) tiltVal = tiltBase * 35;
-            else tiltVal = tiltBase * 60;
-
-            // Y-axis rotation (rotation on itself) — full range
-            const zRot = (rng(sIdx, 5) - 0.5) * Math.PI * 0.9; // ±81°
-
-            const irr = {
-              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.2,
-              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.06,
-              guardVar:  (rng(sIdx, 8) - 0.5) * 0.25,
-              gripVar:   (rng(sIdx, 9) - 0.5) * 0.05,
-              pomVar:    (rng(sIdx, 10) - 0.5) * 0.12
-            };
-
-            const distToSun = Math.sqrt(wx * wx + (wz - lightPos.z) * (wz - lightPos.z) * 0.3);
-            const lightReach = Math.max(0, 1 - distToSun / 35);
-            const darkness = Math.max(0, depthRatio * 0.85 - lightReach * 0.5);
-
-            const realH = baseRealH * sizeVar * distShrink * wt.hM;
-            const realBW = baseRealBW * sizeVar * distShrink * wt.wM;
-            let scrX = W * 0.5 + wx * focal / wz;
-            let scrY = hY + camH * focal / wz;
-            const scrH = realH * focal / wz;
-            const scrBW = realBW * focal / wz;
-
-            const distorted = lensDistort(scrX, scrY);
-            scrX = distorted.x;
-            scrY = distorted.y;
-
-            allWeapons.push({
-              x: scrX, y: scrY, h: scrH, bw: scrBW,
-              t: tiltVal, z: wz,
-              wp: { type: wt, zRot, irr, wx, wy: 0, wz, darkness }
+          for (let i = 0; i < 3; i++) {
+            drawWeapon(xPositions[i], testY, testH, testBW, 0, {
+              type: testWt,
+              zRot: angles[i],
+              irr: {},
+              wx: 0, wy: 0, wz: 3,
+              darkness: 0
             });
-            sIdx++;
           }
-        }
-
-        allWeapons.sort((a, b) => b.z - a.z);
-        for (const s of allWeapons) {
-          drawWeapon(s.x, s.y, s.h, s.bw, s.t, s.wp);
         }
 
         // --- EMBERS ---
