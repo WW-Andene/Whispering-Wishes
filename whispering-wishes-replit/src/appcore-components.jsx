@@ -2564,7 +2564,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         const W = canvas.width, H = canvas.height;
         const hY = H * 0.68; // low horizon — big sky, low camera feel
-        const rng = (i, off) => { const s = Math.sin(i * 127.1 + off * 311.7) * 43758.5; return s - Math.floor(s); };
+        const rng = (i, off) => { const s = Math.sin(i * 153.7 + off * 267.3) * 51291.1; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (lighter, more luminous) ---
         const sk = ctx.createLinearGradient(0, 0, 0, hY);
