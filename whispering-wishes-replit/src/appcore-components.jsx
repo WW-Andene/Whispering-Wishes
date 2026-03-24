@@ -2865,9 +2865,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
           const gripHW = halfW * 0.8;             // grip narrower than blade
 
-          // Hilt sub-proportions: pommel:grip ≈ 1:2, guard bar = handle thickness
+          // Hilt sub-proportions: pommel:grip ≈ 1:2, thin guard bar
           const pommelH = mod * 1.0;              // pommel ≈ 1 module
-          const guardBarH = gripHW * 2;           // guard bar thickness = handle thickness
+          const guardBarH = mod * 0.15;           // guard bar height (thin)
           const gripH = handleH - pommelH - guardBarH; // grip ≈ remainder
 
           // Widths from module system
