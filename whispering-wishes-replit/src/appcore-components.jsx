@@ -4265,17 +4265,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const src = imgData.data;
         const outData = ctx.createImageData(w, h);
         const dst = outData.data;
-        const cx = w * 0.5, cy = h * 0.5;
-        const normR = Math.min(cx, cy); // normalize to screen edge
-        const k = 0.35; // fisheye strength — visible barrel bulge
+        const cx = w * 0.5, cy = h * 0.35; // center higher up in the frame
+        const normR = Math.max(w, h) * 0.5; // normalize to full frame
+        const k = 0.12; // subtle fisheye — gentle outward bend
         for (let y = 0; y < h; y++) {
           for (let x = 0; x < w; x++) {
             // Normalized distance from center
             const nx = (x - cx) / normR;
             const ny = (y - cy) / normR;
-            const r = Math.sqrt(nx * nx + ny * ny);
-            // Inverse barrel: output pixel at r maps to source at r / (1 + k*r^2)
-            const distort = r > 0 ? 1 / (1 + k * r * r) : 1;
+            const r2 = nx * nx + ny * ny;
+            // Barrel: source pixel pulled inward → edges push outward
+            const distort = 1 + k * r2;
             const sx = cx + nx * distort * normR;
             const sy = cy + ny * distort * normR;
             const di = (y * w + x) * 4;
