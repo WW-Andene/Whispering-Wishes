@@ -2860,16 +2860,18 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const bladeLight = calcLight(wp.wx, 2.0, wp.wz, nx / nd, ny, nz / nd, bladeMat);
           const handleLight = calcLight(wp.wx, 3.5, wp.wz, nx / nd, ny, nz / nd, handleMat);
 
-          // Distance darkness overlay
+          // Distance darkness: far objects tend darker unless light reaches them.
+          // dk=0 (near/lit) to dk=1 (far/dark). Applied as exponential falloff
+          // so it strongly dominates at high values — Blinn-Phong can't overpower it.
           const dk = wp.darkness || 0;
+          const dkMul = Math.pow(1 - dk, 2.2); // exponential: dk=0→1.0, dk=0.5→0.22, dk=0.85→0.02
 
-          // Blade color from lighting (darkened by distance)
-          const blR = Math.round(bladeLight.r * (1 - dk * 0.8));
-          const blG = Math.round(bladeLight.g * (1 - dk * 0.8));
-          const blB = Math.round(bladeLight.b * (1 - dk * 0.8));
-          const hdR = Math.round(handleLight.r * (1 - dk * 0.85));
-          const hdG = Math.round(handleLight.g * (1 - dk * 0.85));
-          const hdB = Math.round(handleLight.b * (1 - dk * 0.85));
+          const blR = Math.round(bladeLight.r * dkMul);
+          const blG = Math.round(bladeLight.g * dkMul);
+          const blB = Math.round(bladeLight.b * dkMul);
+          const hdR = Math.round(handleLight.r * dkMul * 0.95);
+          const hdG = Math.round(handleLight.g * dkMul * 0.95);
+          const hdB = Math.round(handleLight.b * dkMul * 0.95);
 
           // Tip width: pointed (narrow) vs slightly broad
           const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
@@ -2912,7 +2914,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rimSide = sx < sunScreenX ? 1 : -1;
           const rimBase = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45));
           const rimMat = 0.15 + bladeMat.metal * 0.35 + bladeMat.spec * 0.2;
-          const rimStr = rimBase * rimMat * bladeLight.rimAtten * (1 - dk * 0.7);
+          const rimStr = rimBase * rimMat * bladeLight.rimAtten * dkMul;
           if (rimStr > 0.02 && effBW > 0.8) {
             const ew = Math.max(0.3, effBW * 0.1);
             ctx.beginPath();
