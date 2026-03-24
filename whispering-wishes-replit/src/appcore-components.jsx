@@ -3926,7 +3926,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // === GRID OF SWORDS — evenly spaced, then camera projects ===
           // Spacing grows with distance (close rows dense, far rows sparse)
           // so ~equal number of visible swords per row on screen
-          const gridZmin = 0.1, gridZmax = 80;
+          const gridZmin = 0.03, gridZmax = 80;
+
           const maxSwords = 500;
           let swordIdx = 0;
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
@@ -3937,7 +3938,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
               const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
               const wzJ = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
-              if (wzJ < 0.12) { swordIdx++; continue; }
+              if (wzJ < 0.02) { swordIdx++; continue; }
               const wy = terrH(wx, wzJ);
 
               const scrX = W * 0.5 + wx * focal / wzJ;
