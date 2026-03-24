@@ -2856,7 +2856,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           // All proportions relative to sh (total sword height) and halfW (blade half-width)
           const halfW = sbw * wt.bwM; // blade half-width
-          const halfT = Math.max(0.5, halfW * 0.10); // blade depth (thin flat rectangle)
+          const halfT = Math.max(1.5, halfW * 0.10); // blade depth — min 1.5px (3px total)
 
           // Height breakdown (fractions of sh)
           const bladeH = sh * 0.75;     // blade = 75% of total height
@@ -3055,9 +3055,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === SINGLE TEST SWORD ===
+        // === SINGLE TEST SWORD — rotating 3D ===
         drawWeapon(W * 0.5, H * 0.65, H * 0.5, H * 0.5 * 0.025, 0, {
-          type: weaponTypes[0], zRot: 0, irr: {},
+          type: weaponTypes[0], zRot: time * 1.5, irr: {},
           wx: 0, wy: 0, wz: 3, darkness: 0
         });
 
