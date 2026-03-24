@@ -2729,6 +2729,174 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.lineTo(W, hY); ctx.closePath(); ctx.fill();
 
         // ============================================
+        // 3D TERRAIN HEIGHTMAP — relief mesh with lighting
+        // ============================================
+        // Static wave vectors define 2D heightmap h(x,z)
+        // Rendered as perspective-projected quad strips, back-to-front
+        // Lit by sun direction with shadows/highlights showing form
+        {
+          const tWaves = [
+            { fx: 0.7, fz: 0.5, amp: 0.35, px: 0.0, pz: 0.0 },
+            { fx: 1.3, fz: 0.9, amp: 0.20, px: 2.1, pz: 1.4 },
+            { fx: 0.3, fz: 1.1, amp: 0.25, px: 4.7, pz: 3.2 },
+            { fx: 2.1, fz: 1.8, amp: 0.10, px: 1.3, pz: 5.1 },
+            { fx: 0.5, fz: 2.4, amp: 0.08, px: 3.8, pz: 0.7 },
+            { fx: 3.0, fz: 0.4, amp: 0.06, px: 5.5, pz: 2.9 },
+            { fx: 1.8, fz: 3.2, amp: 0.04, px: 0.9, pz: 4.3 },
+          ];
+
+          // Heightmap: returns world-Y height at world (wx, wz)
+          const terrH = (wx, wz) => {
+            let h = 0;
+            for (const w of tWaves) {
+              h += Math.sin(wx * w.fx + w.px) * Math.sin(wz * w.fz + w.pz) * w.amp;
+            }
+            return h;
+          };
+
+          // Grid dimensions
+          const TX = 40;   // columns (X subdivisions)
+          const TZ = 50;   // rows (Z subdivisions, back to front)
+          const tExtentX = 35;  // world X range: -tExtentX to +tExtentX
+          const tZnear = 3;     // nearest Z row
+          const tZfar = 90;     // farthest Z row
+
+          // Camera/projection (reuse existing system params)
+          const tCamH = 1.3;
+          const tFocal = W * 0.7;
+
+          // Sun direction for terrain lighting (toward horizon center, from above)
+          const sunDirX = 0.0;
+          const sunDirY = 0.5;
+          const sunDirZ = 0.8;
+          const sdLen = Math.sqrt(sunDirX * sunDirX + sunDirY * sunDirY + sunDirZ * sunDirZ);
+          const sdx = sunDirX / sdLen, sdy = sunDirY / sdLen, sdz = sunDirZ / sdLen;
+
+          // Project world (wx, wy, wz) → screen (sx, sy)
+          const tProj = (wx, wy, wz) => ({
+            x: W * 0.5 + wx * tFocal / wz,
+            y: hY + (tCamH - wy) * tFocal / wz
+          });
+
+          // Build heightmap grid
+          const grid = []; // grid[iz][ix] = { wx, wy, wz, sx, sy }
+          for (let iz = 0; iz <= TZ; iz++) {
+            const row = [];
+            const zt = iz / TZ;
+            const wz = tZfar - (tZfar - tZnear) * zt; // far to near
+            for (let ix = 0; ix <= TX; ix++) {
+              const xt = ix / TX;
+              const wx = (xt * 2 - 1) * tExtentX;
+              const wy = terrH(wx, wz);
+              const scr = tProj(wx, wy, wz);
+              row.push({ wx, wy, wz, x: scr.x, y: scr.y });
+            }
+            grid.push(row);
+          }
+
+          // Render quads back-to-front (painter's algorithm)
+          // Earth tone base colors
+          const tBaseR = 45, tBaseG = 32, tBaseB = 24;
+
+          for (let iz = 0; iz < TZ; iz++) {
+            for (let ix = 0; ix < TX; ix++) {
+              const p00 = grid[iz][ix];
+              const p10 = grid[iz][ix + 1];
+              const p01 = grid[iz + 1][ix];
+              const p11 = grid[iz + 1][ix + 1];
+
+              // Skip quads entirely off screen
+              const minX = Math.min(p00.x, p10.x, p01.x, p11.x);
+              const maxX = Math.max(p00.x, p10.x, p01.x, p11.x);
+              if (maxX < -10 || minX > W + 10) continue;
+              const minY = Math.min(p00.y, p10.y, p01.y, p11.y);
+              if (minY > H + 10) continue;
+
+              // Approximate surface normal via cross product of diagonals
+              // World-space vectors
+              const dAx = p11.wx - p00.wx, dAy = p11.wy - p00.wy, dAz = p11.wz - p00.wz;
+              const dBx = p10.wx - p01.wx, dBy = p10.wy - p01.wy, dBz = p10.wz - p01.wz;
+              let nx = dAy * dBz - dAz * dBy;
+              let ny = dAz * dBx - dAx * dBz;
+              let nz = dAx * dBy - dAy * dBx;
+              const nl = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+              nx /= nl; ny /= nl; nz /= nl;
+              // Flip normal to face upward
+              if (ny < 0) { nx = -nx; ny = -ny; nz = -nz; }
+
+              // Diffuse lighting
+              const dot = nx * sdx + ny * sdy + nz * sdz;
+              const diff = Math.max(0, dot);
+
+              // Distance fog (further = more faded toward atmosphere)
+              const avgZ = (p00.wz + p11.wz) * 0.5;
+              const fogT = Math.pow(Math.min(1, (avgZ - tZnear) / (tZfar - tZnear)), 1.2);
+
+              // Combine lighting
+              const ambient = 0.18;
+              const light = ambient + diff * 0.82;
+
+              // Color: warm earth tones, modulated by height and light
+              const avgH = (p00.wy + p10.wy + p01.wy + p11.wy) * 0.25;
+              const hBright = 0.85 + avgH * 0.4; // higher = slightly brighter
+              const r = Math.round(Math.min(255, tBaseR * light * hBright * (1 - fogT * 0.5) + fogT * 35));
+              const g = Math.round(Math.min(255, tBaseG * light * hBright * (1 - fogT * 0.5) + fogT * 22));
+              const b = Math.round(Math.min(255, tBaseB * light * hBright * (1 - fogT * 0.5) + fogT * 16));
+
+              // Draw quad
+              ctx.beginPath();
+              ctx.moveTo(p00.x, p00.y);
+              ctx.lineTo(p10.x, p10.y);
+              ctx.lineTo(p11.x, p11.y);
+              ctx.lineTo(p01.x, p01.y);
+              ctx.closePath();
+              ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+              ctx.fill();
+            }
+          }
+
+          // Highlight ridges: draw bright edges on sun-facing slopes
+          ctx.lineWidth = 0.5;
+          for (let iz = 0; iz < TZ; iz++) {
+            for (let ix = 0; ix < TX; ix++) {
+              const p00 = grid[iz][ix];
+              const p10 = grid[iz][ix + 1];
+              const p01 = grid[iz + 1][ix];
+              const p11 = grid[iz + 1][ix + 1];
+
+              const minX = Math.min(p00.x, p10.x, p01.x, p11.x);
+              const maxX = Math.max(p00.x, p10.x, p01.x, p11.x);
+              if (maxX < -10 || minX > W + 10) continue;
+
+              // Normal
+              const dAx = p11.wx - p00.wx, dAy = p11.wy - p00.wy, dAz = p11.wz - p00.wz;
+              const dBx = p10.wx - p01.wx, dBy = p10.wy - p01.wy, dBz = p10.wz - p01.wz;
+              let rnx = dAy * dBz - dAz * dBy;
+              let rny = dAz * dBx - dAx * dBz;
+              let rnz = dAx * dBy - dAy * dBx;
+              const rnl = Math.sqrt(rnx * rnx + rny * rny + rnz * rnz) || 1;
+              rnx /= rnl; rny /= rnl; rnz /= rnl;
+              if (rny < 0) { rnx = -rnx; rny = -rny; rnz = -rnz; }
+
+              const rdot = rnx * sdx + rny * sdy + rnz * sdz;
+              const avgZ = (p00.wz + p11.wz) * 0.5;
+              const fogT = Math.pow(Math.min(1, (avgZ - tZnear) / (tZfar - tZnear)), 1.2);
+
+              // Only draw highlight on strongly sun-facing quads
+              if (rdot > 0.6) {
+                const hStr = (rdot - 0.6) * 2.5 * (1 - fogT * 0.7);
+                if (hStr > 0.05) {
+                  ctx.strokeStyle = 'rgba(255,200,120,' + Math.min(0.3, hStr * 0.3).toFixed(3) + ')';
+                  ctx.beginPath();
+                  ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
+                  ctx.stroke();
+                }
+              }
+            }
+          }
+        }
+
+        // ============================================
         // GROUND PLAN → PERSPECTIVE PROJECTION
         // ============================================
         // Square ground plane in world space.
