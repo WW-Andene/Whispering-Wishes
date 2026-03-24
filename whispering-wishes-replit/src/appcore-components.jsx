@@ -2567,7 +2567,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpY = sunY;           // h * 0.18
 
         const botY = h * 0.8;
-        const topY = h * 0.2;
+        const topY = h * 0.32;
 
         // Clip so nothing renders outside the intended bounds
         ctx.save();
@@ -2671,7 +2671,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpY = sunY;
 
         const botY = h * 0.8;
-        const topY = h * 0.2;
+        const topY = h * 0.32;
 
         ctx.save();
         ctx.beginPath();
