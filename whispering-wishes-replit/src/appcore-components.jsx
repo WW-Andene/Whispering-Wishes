@@ -2736,13 +2736,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Lit by sun direction with shadows/highlights showing form
         {
           const tWaves = [
-            { fx: 0.7, fz: 0.5, amp: 0.14, px: 0.0, pz: 0.0 },
-            { fx: 1.3, fz: 0.9, amp: 0.08, px: 2.1, pz: 1.4 },
-            { fx: 0.3, fz: 1.1, amp: 0.10, px: 4.7, pz: 3.2 },
-            { fx: 2.1, fz: 1.8, amp: 0.04, px: 1.3, pz: 5.1 },
-            { fx: 0.5, fz: 2.4, amp: 0.03, px: 3.8, pz: 0.7 },
-            { fx: 3.0, fz: 0.4, amp: 0.025, px: 5.5, pz: 2.9 },
-            { fx: 1.8, fz: 3.2, amp: 0.015, px: 0.9, pz: 4.3 },
+            { fx: 1.8, fz: 1.4, amp: 0.06, px: 0.0, pz: 0.0 },
+            { fx: 3.2, fz: 2.5, amp: 0.07, px: 2.1, pz: 1.4 },
+            { fx: 4.5, fz: 3.8, amp: 0.05, px: 4.7, pz: 3.2 },
+            { fx: 6.0, fz: 5.2, amp: 0.035, px: 1.3, pz: 5.1 },
+            { fx: 8.0, fz: 6.5, amp: 0.025, px: 3.8, pz: 0.7 },
+            { fx: 10.0, fz: 8.0, amp: 0.015, px: 5.5, pz: 2.9 },
+            { fx: 5.5, fz: 9.0, amp: 0.012, px: 0.9, pz: 4.3 },
           ];
 
           // Heightmap: returns world-Y height at world (wx, wz)
