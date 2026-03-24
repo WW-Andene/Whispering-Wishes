@@ -2854,16 +2854,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Dimensions
           const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
           const halfW = sbw * wt.bwM; // half blade width
-          const halfT = Math.max(2, halfW * 0.45); // half thickness — 45% of width, min 2px
+          const halfT = Math.max(1, halfW * 0.12); // blade thickness ~12% of width (thin flat blade)
           const tipW = wt.tipS === 1 ? halfW * 0.45 : halfW * 0.22;
-          const tipT = Math.max(1, halfT * 0.4); // tip thinner but still visible
-          const gThk = Math.max(0.6, sh * 0.006) * (1 + (ir.guardVar || 0));
-          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard half-width
-          const gHT = Math.max(2, gHW * 0.5); // guard depth — 50% of width, min 2px
+          const tipT = Math.max(0.5, halfT * 0.5);
+          const gThk = Math.max(0.8, sh * 0.008) * (1 + (ir.guardVar || 0)); // guard bar height
+          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard arm length
+          const gHT = Math.max(1, halfT * 1.0); // guard depth ≈ blade thickness (never more)
           const gripH = sh * (wt.gripP + (ir.gripVar || 0));
-          const gripHW = halfW * 0.18;
-          const gripHT = Math.max(1.5, gripHW); // grip is roughly square
-          const pomR = Math.max(0.2, halfW * (0.25 * wt.pomM + (ir.pomVar || 0)));
+          const gripHW = halfW * 0.65; // grip width ~65% of blade width (blade ≈ 1.5x grip)
+          const gripHT = Math.max(1, gripHW * 0.8); // grip roughly round
+          const pomR = Math.max(0.3, gripHW * (0.6 * wt.pomM + (ir.pomVar || 0))); // pommel proportional to grip
 
           // Material lighting
           const bladeMat = materials[wt.bladeMat] || materials.steel;
