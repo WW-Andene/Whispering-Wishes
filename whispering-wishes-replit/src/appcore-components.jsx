@@ -3194,59 +3194,58 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (rbVis || rfVis) fillPoly([fTR, bTR, eTR], sideCol);
           if (lbVis || lfVis) fillPoly([bTL, fTL, eTL], sideCol);
 
-          // Fuller (blood groove) — recessed channel along blade center
-          if (frontVis && innerHW > 1.5) {
-            const fullerW = innerHW * 0.28;   // width of the groove
-            const fullerStart = bladeTop + mod * 0.3; // starts just below guard
-            const fullerEnd = taperY + (0 - taperY) * 0.3; // ends ~30% into taper
-            const fcx = (fTL.x + fTR.x) * 0.5; // blade center X on screen
+          // Fuller (blood groove) — on both front and back faces
+          // Helper to draw fuller on a given face
+          const drawFuller = (isFront, tl, tr, ml, mr, tip, faceCol) => {
+            const vis = isFront ? frontVis : backVis;
+            if (!vis || innerHW <= 1.5) return;
 
-            // Recessed channel — darker than blade face
-            const fDarkR = Math.round(blR * 0.55);
-            const fDarkG = Math.round(blG * 0.55);
-            const fDarkB = Math.round(blB * 0.55);
+            const fullerW = innerHW * 0.28;
+            const fullerStart = bladeTop + mod * 0.3;
+            const fullerEnd = taperY + (0 - taperY) * 0.3;
+            const fcx = (tl.x + tr.x) * 0.5;
+
+            // Darker recessed color
+            const baseR = isFront ? blR : Math.round(blR * 0.6);
+            const baseG = isFront ? blG : Math.round(blG * 0.6);
+            const baseB = isFront ? blB : Math.round(blB * 0.6);
+            const fDkR = Math.round(baseR * 0.55);
+            const fDkG = Math.round(baseG * 0.55);
+            const fDkB = Math.round(baseB * 0.55);
             const fullerGrad = ctx.createLinearGradient(fcx - fullerW, 0, fcx + fullerW, 0);
-            // Concave shading: dark edges, slightly lighter center
-            if (sinA > 0) {
-              fullerGrad.addColorStop(0, 'rgb(' + Math.round(fDarkR * 0.7) + ',' + Math.round(fDarkG * 0.7) + ',' + Math.round(fDarkB * 0.7) + ')');
-              fullerGrad.addColorStop(0.35, 'rgb(' + fDarkR + ',' + fDarkG + ',' + fDarkB + ')');
-              fullerGrad.addColorStop(0.7, 'rgb(' + Math.round(fDarkR * 1.15) + ',' + Math.round(fDarkG * 1.15) + ',' + Math.round(fDarkB * 1.15) + ')');
-              fullerGrad.addColorStop(1, 'rgb(' + Math.round(fDarkR * 0.8) + ',' + Math.round(fDarkG * 0.8) + ',' + Math.round(fDarkB * 0.8) + ')');
+            const litSide = isFront ? sinA > 0 : sinA < 0;
+            if (litSide) {
+              fullerGrad.addColorStop(0, 'rgb(' + Math.round(fDkR * 0.7) + ',' + Math.round(fDkG * 0.7) + ',' + Math.round(fDkB * 0.7) + ')');
+              fullerGrad.addColorStop(0.35, 'rgb(' + fDkR + ',' + fDkG + ',' + fDkB + ')');
+              fullerGrad.addColorStop(0.7, 'rgb(' + Math.round(fDkR * 1.15) + ',' + Math.round(fDkG * 1.15) + ',' + Math.round(fDkB * 1.15) + ')');
+              fullerGrad.addColorStop(1, 'rgb(' + Math.round(fDkR * 0.8) + ',' + Math.round(fDkG * 0.8) + ',' + Math.round(fDkB * 0.8) + ')');
             } else {
-              fullerGrad.addColorStop(0, 'rgb(' + Math.round(fDarkR * 0.8) + ',' + Math.round(fDarkG * 0.8) + ',' + Math.round(fDarkB * 0.8) + ')');
-              fullerGrad.addColorStop(0.3, 'rgb(' + Math.round(fDarkR * 1.15) + ',' + Math.round(fDarkG * 1.15) + ',' + Math.round(fDarkB * 1.15) + ')');
-              fullerGrad.addColorStop(0.65, 'rgb(' + fDarkR + ',' + fDarkG + ',' + fDarkB + ')');
-              fullerGrad.addColorStop(1, 'rgb(' + Math.round(fDarkR * 0.7) + ',' + Math.round(fDarkG * 0.7) + ',' + Math.round(fDarkB * 0.7) + ')');
+              fullerGrad.addColorStop(0, 'rgb(' + Math.round(fDkR * 0.8) + ',' + Math.round(fDkG * 0.8) + ',' + Math.round(fDkB * 0.8) + ')');
+              fullerGrad.addColorStop(0.3, 'rgb(' + Math.round(fDkR * 1.15) + ',' + Math.round(fDkG * 1.15) + ',' + Math.round(fDkB * 1.15) + ')');
+              fullerGrad.addColorStop(0.65, 'rgb(' + fDkR + ',' + fDkG + ',' + fDkB + ')');
+              fullerGrad.addColorStop(1, 'rgb(' + Math.round(fDkR * 0.7) + ',' + Math.round(fDkG * 0.7) + ',' + Math.round(fDkB * 0.7) + ')');
             }
 
-            // Interpolate screen positions for fuller start/end
-            // fullerStart is between bladeTop and taperY on the straight section
             const sT = (fullerStart - bladeTop) / (taperY - bladeTop || 1);
-            const fsLx = fTL.x + (fML.x - fTL.x) * sT;
-            const fsRx = fTR.x + (fMR.x - fTR.x) * sT;
-            const fsY = fTL.y + (fML.y - fTL.y) * sT;
-            // fullerEnd is in the taper zone
+            const fsY = tl.y + (ml.y - tl.y) * sT;
             const eT = (fullerEnd - taperY) / (0 - taperY || 1);
-            const feLx = fML.x + (fTip.x - fML.x) * eT;
-            const feRx = fMR.x + (fTip.x - fMR.x) * eT;
-            const feY = fML.y + (fTip.y - fML.y) * eT;
-            // Fuller center line at start and end
-            const fsCx = (fsLx + fsRx) * 0.5;
-            const feCx = (feLx + feRx) * 0.5;
+            const feY = ml.y + (tip.y - ml.y) * eT;
+            const fsCx = (tl.x + (ml.x - tl.x) * sT + tr.x + (mr.x - tr.x) * sT) * 0.5;
+            const feCx = (ml.x + (tip.x - ml.x) * eT + mr.x + (tip.x - mr.x) * eT) * 0.5;
 
-            // Draw the groove — rounded pointed top, tapered bottom
-            const fullerPeakY = fsY - fullerW * 0.7; // how far the point rises above the flat start
+            const fullerPeakY = fsY - fullerW * 0.7;
+            // Groove fill
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
-            ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY); // rounded point at top
-            ctx.lineTo(feCx + fullerW * 0.15, feY); // narrows toward tip
+            ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY);
+            ctx.lineTo(feCx + fullerW * 0.15, feY);
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
             ctx.fillStyle = fullerGrad;
             ctx.fill();
 
-            // Top highlight edge — subtle light on upper lip
-            const lipAlpha = (0.06 + Math.abs(cosA) * 0.06).toFixed(3);
+            // Lip highlight
+            const lipAlpha = (0.06 + Math.abs(cosA) * 0.06) * (isFront ? 1 : 0.5);
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
             ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY);
@@ -3254,12 +3253,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
             const lipGrad = ctx.createLinearGradient(0, fsY, 0, fsY + (feY - fsY) * 0.25);
-            lipGrad.addColorStop(0, 'rgba(255,255,255,' + lipAlpha + ')');
+            lipGrad.addColorStop(0, 'rgba(255,255,255,' + lipAlpha.toFixed(3) + ')');
             lipGrad.addColorStop(1, 'rgba(255,255,255,0)');
             ctx.fillStyle = lipGrad;
             ctx.fill();
 
-            // Bottom shadow edge — subtle shadow on lower lip
+            // Bottom shadow
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
             ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY);
@@ -3268,9 +3267,67 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.closePath();
             const shadowGrad = ctx.createLinearGradient(0, feY - (feY - fsY) * 0.15, 0, feY);
             shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
-            shadowGrad.addColorStop(1, 'rgba(0,0,0,' + (parseFloat(lipAlpha) * 0.5).toFixed(3) + ')');
+            shadowGrad.addColorStop(1, 'rgba(0,0,0,' + (lipAlpha * 0.5).toFixed(3) + ')');
             ctx.fillStyle = shadowGrad;
             ctx.fill();
+          };
+          // Draw on back face first (painter's order), then front
+          drawFuller(false, bTL, bTR, bML, bMR, bTip, backCol);
+          drawFuller(true, fTL, fTR, fML, fMR, fTip, frontCol);
+
+          // Blade texture — subtle hammered/grain pattern on visible faces
+          if (innerHW > 1.5) {
+            const texFaces = [];
+            if (backVis) texFaces.push({ tl: bTL, tr: bTR, ml: bML, mr: bMR, tip: bTip, alpha: 0.04 });
+            if (frontVis) texFaces.push({ tl: fTL, tr: fTR, ml: fML, mr: fMR, tip: fTip, alpha: 0.06 });
+
+            for (const face of texFaces) {
+              ctx.save();
+              // Clip to blade face shape
+              ctx.beginPath();
+              ctx.moveTo(face.tl.x, face.tl.y);
+              ctx.lineTo(face.tr.x, face.tr.y);
+              ctx.lineTo(face.mr.x, face.mr.y);
+              ctx.lineTo(face.tip.x, face.tip.y);
+              ctx.lineTo(face.ml.x, face.ml.y);
+              ctx.closePath();
+              ctx.clip();
+
+              // Vertical grain lines (forging direction)
+              const grainCount = Math.max(8, Math.round(innerHW * 0.8));
+              for (let gi = 0; gi < grainCount; gi++) {
+                const t = (gi + 0.5) / grainCount;
+                const x1 = face.tl.x + (face.tr.x - face.tl.x) * t;
+                const y1 = face.tl.y + (face.tr.y - face.tl.y) * t;
+                const x2 = face.ml.x + (face.tip.x - face.ml.x) * t;
+                const y2 = face.ml.y + (face.tip.y - face.ml.y) * t;
+                const wobble = rng(gi, 80) * 0.6 + 0.7;
+                ctx.strokeStyle = 'rgba(255,255,255,' + (face.alpha * wobble).toFixed(4) + ')';
+                ctx.lineWidth = 0.3 + rng(gi, 81) * 0.4;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                // Slight waviness
+                const mx = (x1 + x2) * 0.5 + (rng(gi, 82) - 0.5) * 1.5;
+                const my = (y1 + y2) * 0.5;
+                ctx.quadraticCurveTo(mx, my, x2, y2);
+                ctx.stroke();
+              }
+
+              // Scattered forge marks (small dark spots)
+              for (let fi = 0; fi < 20; fi++) {
+                const ft = rng(fi, 90);
+                const fu = rng(fi, 91);
+                const fx = face.tl.x + (face.tr.x - face.tl.x) * ft;
+                const fy = face.tl.y + (face.tip.y - face.tl.y) * fu;
+                const fr = 0.3 + rng(fi, 92) * 0.8;
+                ctx.fillStyle = 'rgba(0,0,0,' + (face.alpha * 0.8).toFixed(4) + ')';
+                ctx.beginPath();
+                ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+                ctx.fill();
+              }
+
+              ctx.restore();
+            }
           }
 
           // ================================================================
