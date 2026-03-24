@@ -2851,39 +2851,47 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
 
-          // Dimensions
-          const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
-          // --- Sword proportions ---
-          const halfW = sbw * wt.bwM; // blade half-width (wide flat face)
-          const halfT = Math.max(0.5, halfW * 0.1); // blade half-thickness: ~10% of width (flat rectangle)
+          // ================================================================
+          // DIMENSIONS — matching reference sword proportions
+          // ================================================================
+          // All proportions relative to sh (total sword height) and halfW (blade half-width)
+          const halfW = sbw * wt.bwM; // blade half-width
+          const halfT = Math.max(0.5, halfW * 0.10); // blade depth (thin flat rectangle)
 
-          const tipW = wt.tipS === 1 ? halfW * 0.4 : halfW * 0.12;
-          const tipT = Math.max(0.3, halfT * 0.3);
+          // Height breakdown (fractions of sh)
+          const bladeH = sh * 0.63;     // blade = 63% of total height
+          const guardBarH = Math.max(1, sh * 0.015); // guard bar thickness (Y)
+          const rainGuardH = sh * 0.03; // rain guard / chappe height
+          const gripH = sh * 0.18;      // grip = 18%
+          const pommelH = sh * 0.05;    // pommel height
 
-          // Grip: blade is 1.5x grip width. Grip is round (width ≈ depth).
-          const gripHW = halfW / 1.5;
-          const gripHT = gripHW;
-          const gripH = sh * (wt.gripP + (ir.gripVar || 0));
+          // Widths
+          const gripHW = halfW / 1.5;             // grip half-width (blade = 1.5x grip)
+          const gripHT = gripHW;                   // grip is round
+          const guardArmHW = halfW * 3.0 * wt.gwM; // guard arms extend ~3x blade width each side
+          const guardBarHT = gripHW;               // guard bar depth = grip diameter
+          const pomR = gripHW * 1.3 * wt.pomM;    // pommel radius
 
-          // Guard: cylindrical bar, same diameter as grip, perpendicular to blade
-          const gThk = gripHW; // guard bar height = grip diameter
-          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // arm length (how far it extends)
-          const gHT = gripHW; // guard bar depth = grip diameter
+          // Y positions (tip at y=0, everything else negative = up)
+          const bladeTop = -bladeH;
+          const guardTop = bladeTop - guardBarH;
+          const rainBot = bladeTop;
+          const rainTop = bladeTop - rainGuardH;
+          const gripBot = guardTop;
+          const gripTop = gripBot - gripH;
+          const pomY = gripTop - pomR;
 
-          // Pommel: round, ~1.3x grip diameter
-          const pomR = Math.max(0.5, gripHW * 1.3 * (wt.pomM + (ir.pomVar || 0)));
-
-          // Material lighting
+          // ================================================================
+          // LIGHTING
+          // ================================================================
           const bladeMat = materials[wt.bladeMat] || materials.steel;
           const handleMat = materials[wt.handleMat] || materials.wood;
           const nx = sinA, nz = -cosA;
           const bladeLight = calcLight(wp.wx, 2.0, wp.wz, nx, 0, nz, bladeMat);
           const handleLight = calcLight(wp.wx, 3.5, wp.wz, nx, 0, nz, handleMat);
-
           const dk = wp.darkness || 0;
           const dkMul = Math.pow(1 - dk, 2.2);
 
-          // Base colors for front face
           const blR = Math.round(bladeLight.r * dkMul);
           const blG = Math.round(bladeLight.g * dkMul);
           const blB = Math.round(bladeLight.b * dkMul);
@@ -2891,37 +2899,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hdG = Math.round(handleLight.g * dkMul * 0.95);
           const hdB = Math.round(handleLight.b * dkMul * 0.95);
 
-          // Side face is darker (edge of the blade)
-          const sideF = 0.45;
-          const sBlR = Math.round(blR * sideF);
-          const sBlG = Math.round(blG * sideF);
-          const sBlB = Math.round(blB * sideF);
-          const sHdR = Math.round(hdR * sideF);
-          const sHdG = Math.round(hdG * sideF);
-          const sHdB = Math.round(hdB * sideF);
-
-          // ================================================================
-          // 3D BLADE — proper sword shape: parallel edges + pointed tip
-          // ================================================================
-          // Blade outline (6 points per face):
-          //   Base (top, y=-bladeH): full width, parallel edges
-          //   Taper starts at ~85% down from base (y = -bladeH * 0.15)
-          //   Tip (bottom, y=0): pointed
-          const taperY = -bladeH * 0.15; // where taper begins (near tip)
-
-          // Front face (Z = +halfT)
-          const fTL = rotY(-halfW, -bladeH, halfT, cosA, sinA);  // base top-left
-          const fTR = rotY(halfW, -bladeH, halfT, cosA, sinA);   // base top-right
-          const fMR = rotY(halfW, taperY, halfT, cosA, sinA);    // right edge at taper start
-          const fTip = rotY(0, 0, tipT, cosA, sinA);             // pointed tip
-          const fML = rotY(-halfW, taperY, halfT, cosA, sinA);   // left edge at taper start
-
-          // Back face (Z = -halfT)
-          const bTL = rotY(-halfW, -bladeH, -halfT, cosA, sinA);
-          const bTR = rotY(halfW, -bladeH, -halfT, cosA, sinA);
-          const bMR = rotY(halfW, taperY, -halfT, cosA, sinA);
-          const bTip = rotY(0, 0, -tipT, cosA, sinA);
-          const bML = rotY(-halfW, taperY, -halfT, cosA, sinA);
+          const frontCol = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
+          const sideCol = 'rgb(' + Math.round(blR * 0.45) + ',' + Math.round(blG * 0.45) + ',' + Math.round(blB * 0.45) + ')';
+          const backCol = 'rgb(' + Math.round(blR * 0.6) + ',' + Math.round(blG * 0.6) + ',' + Math.round(blB * 0.6) + ')';
+          const guardCol = 'rgb(' + Math.round(hdR * 0.85) + ',' + Math.round(hdG * 0.85) + ',' + Math.round(hdB * 0.85) + ')';
+          const guardSideCol = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
+          const gripCol = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
+          const gripSideCol = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
 
           // Face visibility
           const eps = 0.01;
@@ -2930,92 +2914,109 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rightVis = sinA > eps;
           const leftVis = sinA < -eps;
 
-          const frontCol = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
-          const backCol = 'rgb(' + Math.round(blR * 0.6) + ',' + Math.round(blG * 0.6) + ',' + Math.round(blB * 0.6) + ')';
-          const sideCol = 'rgb(' + sBlR + ',' + sBlG + ',' + sBlB + ')';
+          // ================================================================
+          // BLADE — flat rectangle with parallel edges + short pointed tip
+          // ================================================================
+          const taperY = -bladeH * 0.08; // taper starts 8% from tip
+          const tipT = Math.max(0.3, halfT * 0.3);
 
-          // Draw back-to-front
+          const fTL = rotY(-halfW, bladeTop, halfT, cosA, sinA);
+          const fTR = rotY(halfW, bladeTop, halfT, cosA, sinA);
+          const fMR = rotY(halfW, taperY, halfT, cosA, sinA);
+          const fTip = rotY(0, 0, tipT, cosA, sinA);
+          const fML = rotY(-halfW, taperY, halfT, cosA, sinA);
+
+          const bTL = rotY(-halfW, bladeTop, -halfT, cosA, sinA);
+          const bTR = rotY(halfW, bladeTop, -halfT, cosA, sinA);
+          const bMR = rotY(halfW, taperY, -halfT, cosA, sinA);
+          const bTip = rotY(0, 0, -tipT, cosA, sinA);
+          const bML = rotY(-halfW, taperY, -halfT, cosA, sinA);
+
           if (backVis) fillPoly([bTL, bTR, bMR, bTip, bML], backCol);
-
-          // Right side (connects front-right edge to back-right edge)
           if (rightVis) fillPoly([fTR, bTR, bMR, bTip, fTip, fMR], sideCol);
-          // Left side
           if (leftVis) fillPoly([bTL, fTL, fML, fTip, bTip, bML], sideCol);
-
           if (frontVis) fillPoly([fTL, fTR, fMR, fTip, fML], frontCol);
 
-          // ================================================================
-          // 3D GUARD — crossbar PERPENDICULAR to blade flat face
-          // The guard extends along Z-axis in blade-local space (depth axis).
-          // From front (θ=0): guard sticks out toward camera = thin line.
-          //   But we see its CROSS-SECTION: a thin horizontal bar.
-          // Actually: guard extends LEFT-RIGHT in world space, perpendicular
-          //   to the blade's facing direction. So:
-          //   - Guard long axis = blade's Z axis (the depth/thickness axis)
-          //   - Guard thin axis = blade's X axis (the width axis)
-          // This means: swap X and Z for the guard vertices!
-          // ================================================================
-          if (wt.gwM > 0.1) {
-            const gy = -bladeH;
-            // Guard long arm along Z, thin along X
-            // gHW = half-length of guard arm, halfT*0.5 = half-thickness of guard bar
-            const gArmLen = gHW; // how far the guard extends (the cross-arm)
-            const gBarThk = Math.max(1.5, halfT * 0.5); // thickness of the bar itself
-            // Guard vertices: X = thin (bar thickness), Z = long (arm length)
-            const gfTL = rotY(-gBarThk, gy - gThk, gArmLen, cosA, sinA);
-            const gfTR = rotY(gBarThk, gy - gThk, gArmLen, cosA, sinA);
-            const gfBR = rotY(gBarThk, gy, gArmLen, cosA, sinA);
-            const gfBL = rotY(-gBarThk, gy, gArmLen, cosA, sinA);
-            const gbTL = rotY(-gBarThk, gy - gThk, -gArmLen, cosA, sinA);
-            const gbTR = rotY(gBarThk, gy - gThk, -gArmLen, cosA, sinA);
-            const gbBR = rotY(gBarThk, gy, -gArmLen, cosA, sinA);
-            const gbBL = rotY(-gBarThk, gy, -gArmLen, cosA, sinA);
-
-            const gFrontCol = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
-            const gSideCol = 'rgb(' + Math.round(blR * 0.4) + ',' + Math.round(blG * 0.4) + ',' + Math.round(blB * 0.4) + ')';
-            const gTopCol = 'rgb(' + Math.round(blR * 0.55) + ',' + Math.round(blG * 0.55) + ',' + Math.round(blB * 0.55) + ')';
-
-            // Front/back of guard bar (the flat faces of the bar)
-            if (backVis) fillPoly([gbTL, gbTR, gbBR, gbBL], gSideCol);
-            if (frontVis) fillPoly([gfTL, gfTR, gfBR, gfBL], gFrontCol);
-            fillPoly([gfTL, gfTR, gbTR, gbTL], gTopCol); // top face
-            fillPoly([gfTR, gbTR, gbBR, gfBR], gSideCol); // right end
-            fillPoly([gbTL, gfTL, gfBL, gbBL], gSideCol); // left end
-          }
-
-          // ================================================================
-          // GRIP — cylindrical (use rotated box)
-          // ================================================================
-          const grY0 = -bladeH - gThk;
-          const grY1 = grY0 - gripH;
-          const grfTL = rotY(-gripHW, grY1, gripHT, cosA, sinA);
-          const grfTR = rotY(gripHW, grY1, gripHT, cosA, sinA);
-          const grfBR = rotY(gripHW, grY0, gripHT, cosA, sinA);
-          const grfBL = rotY(-gripHW, grY0, gripHT, cosA, sinA);
-          const grbTL = rotY(-gripHW, grY1, -gripHT, cosA, sinA);
-          const grbTR = rotY(gripHW, grY1, -gripHT, cosA, sinA);
-          const grbBR = rotY(gripHW, grY0, -gripHT, cosA, sinA);
-          const grbBL = rotY(-gripHW, grY0, -gripHT, cosA, sinA);
-
-          const hdFCol = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
-          const hdSCol = 'rgb(' + sHdR + ',' + sHdG + ',' + sHdB + ')';
-
-          if (backVis) fillPoly([grbTL, grbTR, grbBR, grbBL], hdSCol);
-          if (rightVis) fillPoly([grfTR, grbTR, grbBR, grfBR], hdSCol);
-          if (leftVis) fillPoly([grbTL, grfTL, grfBL, grbBL], hdSCol);
-          if (frontVis) fillPoly([grfTL, grfTR, grfBR, grfBL], hdFCol);
-
-          // ================================================================
-          // POMMEL — circle (rotation doesn't change a sphere)
-          // ================================================================
-          if (pomR > 0.3) {
+          // Center ridge line (fuller) on front face
+          if (frontVis && halfW > 1.5) {
+            const ridgeCol = 'rgba(' + Math.min(255, blR + 25) + ',' + Math.min(255, blG + 25) + ',' + Math.min(255, blB + 25) + ',0.4)';
+            const rw = Math.max(0.3, halfW * 0.06);
             ctx.beginPath();
-            ctx.arc(0, grY1 - pomR, pomR, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgb(' + Math.round(blR * 0.8) + ',' + Math.round(blG * 0.8) + ',' + Math.round(blB * 0.8) + ')';
+            ctx.moveTo(fTip.x, fTip.y);
+            ctx.lineTo(fTL.x + (fTR.x - fTL.x) * 0.5 - rw, fTL.y);
+            ctx.lineTo(fTL.x + (fTR.x - fTL.x) * 0.5 + rw, fTL.y);
+            ctx.closePath();
+            ctx.fillStyle = ridgeCol;
             ctx.fill();
           }
 
-          // === RIM LIGHT (on front face edge closest to sun) ===
+          // ================================================================
+          // GUARD — straight crossbar, perpendicular to blade face
+          // Guard arms extend along Z in local space (swap X and Z)
+          // ================================================================
+          const gy = bladeTop;
+          const gBarW = Math.max(1, halfT * 0.6); // bar X-thickness (thin from front)
+          const gfTL = rotY(-gBarW, gy - guardBarH, guardArmHW, cosA, sinA);
+          const gfTR = rotY(gBarW, gy - guardBarH, guardArmHW, cosA, sinA);
+          const gfBR = rotY(gBarW, gy, guardArmHW, cosA, sinA);
+          const gfBL = rotY(-gBarW, gy, guardArmHW, cosA, sinA);
+          const gbTL = rotY(-gBarW, gy - guardBarH, -guardArmHW, cosA, sinA);
+          const gbTR = rotY(gBarW, gy - guardBarH, -guardArmHW, cosA, sinA);
+          const gbBR = rotY(gBarW, gy, -guardArmHW, cosA, sinA);
+          const gbBL = rotY(-gBarW, gy, -guardArmHW, cosA, sinA);
+
+          if (backVis) fillPoly([gbTL, gbTR, gbBR, gbBL], guardSideCol);
+          if (frontVis) fillPoly([gfTL, gfTR, gfBR, gfBL], guardCol);
+          fillPoly([gfTL, gfTR, gbTR, gbTL], guardSideCol); // top
+          fillPoly([gfTR, gbTR, gbBR, gfBR], guardSideCol); // right end
+          fillPoly([gbTL, gfTL, gfBL, gbBL], guardSideCol); // left end
+
+          // ================================================================
+          // GRIP — tapered rectangle (narrower in middle), perpendicular depth
+          // ================================================================
+          const gripMidHW = gripHW * 0.8; // narrower in the middle
+          const grMidY = (gripTop + gripBot) * 0.5;
+          // Grip as 6-point shape (tapered) — front face
+          const grfA = rotY(-gripHW, gripBot, gripHT, cosA, sinA);
+          const grfB = rotY(-gripMidHW, grMidY, gripHT, cosA, sinA);
+          const grfC = rotY(-gripHW, gripTop, gripHT, cosA, sinA);
+          const grfD = rotY(gripHW, gripTop, gripHT, cosA, sinA);
+          const grfE = rotY(gripMidHW, grMidY, gripHT, cosA, sinA);
+          const grfF = rotY(gripHW, gripBot, gripHT, cosA, sinA);
+          // Back face
+          const grbA = rotY(-gripHW, gripBot, -gripHT, cosA, sinA);
+          const grbB = rotY(-gripMidHW, grMidY, -gripHT, cosA, sinA);
+          const grbC = rotY(-gripHW, gripTop, -gripHT, cosA, sinA);
+          const grbD = rotY(gripHW, gripTop, -gripHT, cosA, sinA);
+          const grbE = rotY(gripMidHW, grMidY, -gripHT, cosA, sinA);
+          const grbF = rotY(gripHW, gripBot, -gripHT, cosA, sinA);
+
+          if (backVis) fillPoly([grbA, grbB, grbC, grbD, grbE, grbF], gripSideCol);
+          if (rightVis) fillPoly([grfF, grbF, grbE, grbD, grfD, grfE], gripSideCol);
+          if (leftVis) fillPoly([grbA, grfA, grfB, grfC, grbC, grbB], gripSideCol);
+          if (frontVis) fillPoly([grfA, grfB, grfC, grfD, grfE, grfF], gripCol);
+
+          // ================================================================
+          // POMMEL — oval with small finial on top
+          // ================================================================
+          if (pomR > 0.3) {
+            // Pommel body (oval)
+            const pomCol = 'rgb(' + Math.round(hdR * 0.9) + ',' + Math.round(hdG * 0.9) + ',' + Math.round(hdB * 0.9) + ')';
+            ctx.beginPath();
+            ctx.ellipse(0, pomY, pomR, pomR * 1.2, 0, 0, Math.PI * 2);
+            ctx.fillStyle = pomCol;
+            ctx.fill();
+            // Small finial nub on top
+            const finR = pomR * 0.4;
+            ctx.beginPath();
+            ctx.arc(0, pomY - pomR * 1.2 - finR * 0.5, finR, 0, Math.PI * 2);
+            ctx.fillStyle = pomCol;
+            ctx.fill();
+          }
+
+          // ================================================================
+          // RIM LIGHT — edge highlight on sun side
+          // ================================================================
           const rimSide = sx < sunScreenX ? 1 : -1;
           const rimBase = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45));
           const rimMat = 0.15 + bladeMat.metal * 0.35 + bladeMat.spec * 0.2;
