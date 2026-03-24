@@ -2817,17 +2817,30 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Draw one weapon at screen coords with full 3D treatment
         // wp = weapon props: { type, zRot, irr, wx, wy, wz }
+        // Rotate a 3D point (x, y, z) around Y-axis by angle θ, return projected (screenX, screenY, depth)
+        function rotY(x, y, z, cosA, sinA) {
+          return { x: x * cosA - z * sinA, y: y, z: x * sinA + z * cosA };
+        }
+
+        // Draw a filled quad from 4 projected 2D points
+        function fillQuad(p0, p1, p2, p3, color) {
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.lineTo(p3.x, p3.y);
+          ctx.closePath();
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+
         function drawWeapon(sx, sy, sh, sbw, tilt, wp) {
           if (sh < 1.5 || sbw < 0.2) return;
           const wt = wp.type || weaponTypes[0];
           const ir = wp.irr || {};
-          const zRot = wp.zRot || 0; // 0=facing camera, ±PI/2=edge-on
-
-          // Z-rotation: scale the whole sword horizontally via ctx.scale.
-          // cos(zRot)=1 → full front face. cos(zRot)→0 → edge-on (thin sliver).
-          // Clamp to 0.15 minimum so edge-on swords stay visible.
-          const zScale = Math.max(0.15, Math.abs(Math.cos(zRot)));
-          const effBW = sbw * wt.bwM; // full blade width (scale handles foreshortening)
+          const theta = wp.zRot || 0; // rotation around sword's vertical axis
+          const cosA = Math.cos(theta);
+          const sinA = Math.sin(theta);
 
           ctx.save();
 
@@ -2838,38 +2851,32 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
-          ctx.scale(zScale, 1); // <-- squish horizontally for rotation on itself
 
-          // Dimensions with weapon type + irregularities
+          // Dimensions
           const bladeH = sh * (wt.bladeP + (ir.bladeHVar || 0));
+          const halfW = sbw * wt.bwM; // half blade width
+          const halfT = halfW * 0.20; // half thickness (~20% of width)
+          const tipW = wt.tipS === 1 ? halfW * 0.45 : halfW * 0.22;
+          const tipT = halfT * 0.5; // tip is thinner
           const gThk = Math.max(0.6, sh * 0.006) * (1 + (ir.guardVar || 0));
-          const gHW = effBW * (wt.gwM + (ir.guardVar || 0) * 0.3);
+          const gHW = halfW * (wt.gwM + (ir.guardVar || 0) * 0.3); // guard half-width
+          const gHT = gThk * 0.6; // guard half-thickness (depth)
           const gripH = sh * (wt.gripP + (ir.gripVar || 0));
-          const gripHW = effBW * 0.18;
-          const pomR = Math.max(0.2, effBW * (0.25 * wt.pomM + (ir.pomVar || 0)));
-          const bSkew = (ir.bladeSkew || 0) * effBW;
+          const gripHW = halfW * 0.18;
+          const gripHT = gripHW * 0.8; // grip is roughly square
+          const pomR = Math.max(0.2, halfW * (0.25 * wt.pomM + (ir.pomVar || 0)));
 
-          // 3D surface normal: blade flat face rotated by zRot around Y-axis.
-          // At zRot=0, normal points toward camera (-Z). As zRot increases,
-          // the blade turns and the normal swings sideways (X), changing how
-          // light hits the surface — swords facing the sun catch more light.
-          const nx = Math.sin(zRot);
-          const ny = 0;
-          const nz = -Math.cos(zRot);
-          const nd = 1; // sin²+cos²=1, already normalized
-
-          // Get material lighting
+          // Material lighting
           const bladeMat = materials[wt.bladeMat] || materials.steel;
           const handleMat = materials[wt.handleMat] || materials.wood;
-          const bladeLight = calcLight(wp.wx, 2.0, wp.wz, nx / nd, ny, nz / nd, bladeMat);
-          const handleLight = calcLight(wp.wx, 3.5, wp.wz, nx / nd, ny, nz / nd, handleMat);
+          const nx = sinA, nz = -cosA;
+          const bladeLight = calcLight(wp.wx, 2.0, wp.wz, nx, 0, nz, bladeMat);
+          const handleLight = calcLight(wp.wx, 3.5, wp.wz, nx, 0, nz, handleMat);
 
-          // Distance darkness: far objects tend darker unless light reaches them.
-          // dk=0 (near/lit) to dk=1 (far/dark). Applied as exponential falloff
-          // so it strongly dominates at high values — Blinn-Phong can't overpower it.
           const dk = wp.darkness || 0;
-          const dkMul = Math.pow(1 - dk, 2.2); // exponential: dk=0→1.0, dk=0.5→0.22, dk=0.85→0.02
+          const dkMul = Math.pow(1 - dk, 2.2);
 
+          // Base colors for front face
           const blR = Math.round(bladeLight.r * dkMul);
           const blG = Math.round(bladeLight.g * dkMul);
           const blB = Math.round(bladeLight.b * dkMul);
@@ -2877,60 +2884,127 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hdG = Math.round(handleLight.g * dkMul * 0.95);
           const hdB = Math.round(handleLight.b * dkMul * 0.95);
 
-          const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
-          const zSin = Math.sin(zRot);
+          // Side face is darker (edge of the blade)
+          const sideF = 0.45;
+          const sBlR = Math.round(blR * sideF);
+          const sBlG = Math.round(blG * sideF);
+          const sBlB = Math.round(blB * sideF);
+          const sHdR = Math.round(hdR * sideF);
+          const sHdG = Math.round(hdG * sideF);
+          const sHdB = Math.round(hdB * sideF);
 
-          // === DRAW BLADE ===
-          ctx.beginPath();
-          ctx.moveTo(bSkew, 0);
-          ctx.lineTo(-tipW + bSkew * 0.6, -1);
-          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-          ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
-          ctx.lineTo(tipW + bSkew * 0.6, -1);
-          ctx.closePath();
-          ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
-          ctx.fill();
+          // ================================================================
+          // 3D BLADE — define vertices, rotate, project to 2D (orthographic)
+          // ================================================================
+          // Blade is a rectangular prism: front/back faces are trapezoids,
+          // side faces are thin parallelograms.
+          // Local coords: X = width, Y = up (negative), Z = depth (toward camera)
 
-          // === DRAW GUARD (if present) ===
+          // Front face (Z = +halfT): trapezoid
+          const fTL = rotY(-halfW, -bladeH, halfT, cosA, sinA);   // front top-left
+          const fTR = rotY(halfW, -bladeH, halfT, cosA, sinA);    // front top-right
+          const fBR = rotY(tipW, 0, tipT, cosA, sinA);            // front bottom-right (tip)
+          const fBL = rotY(-tipW, 0, tipT, cosA, sinA);           // front bottom-left (tip)
+
+          // Back face (Z = -halfT): same shape, behind
+          const bTL = rotY(-halfW, -bladeH, -halfT, cosA, sinA);
+          const bTR = rotY(halfW, -bladeH, -halfT, cosA, sinA);
+          const bBR = rotY(tipW, 0, -tipT, cosA, sinA);
+          const bBL = rotY(-tipW, 0, -tipT, cosA, sinA);
+
+          // Determine face visibility by checking if normal faces camera (z > 0)
+          // Front face normal: (0, 0, +1) rotated → (sinA, 0, cosA) → visible if cosA > 0
+          const frontVis = cosA > 0;
+          // Back face: visible if cosA < 0
+          const backVis = cosA < 0;
+          // Right side: normal (1,0,0) rotated → (cosA, 0, -sinA) → visible if cosA > 0 when sinA < 0...
+          // Simpler: right side visible when the right edge turns toward camera
+          const rightVis = sinA > 0;
+          const leftVis = sinA < 0;
+
+          const frontCol = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
+          const backCol = 'rgb(' + Math.round(blR * 0.6) + ',' + Math.round(blG * 0.6) + ',' + Math.round(blB * 0.6) + ')';
+          const sideCol = 'rgb(' + sBlR + ',' + sBlG + ',' + sBlB + ')';
+
+          // Draw faces back-to-front: back face → side faces → front face
+          if (backVis) fillQuad(bTL, bTR, bBR, bBL, backCol);
+
+          // Right side face (connects front-right to back-right edges)
+          if (rightVis) fillQuad(fTR, bTR, bBR, fBR, sideCol);
+          // Left side face
+          if (leftVis) fillQuad(bTL, fTL, fBL, bBL, sideCol);
+
+          if (frontVis) fillQuad(fTL, fTR, fBR, fBL, frontCol);
+
+          // ================================================================
+          // 3D GUARD — wider box perpendicular to blade
+          // ================================================================
           if (wt.gwM > 0.1) {
-            ctx.beginPath();
-            ctx.rect(-gHW, -bladeH, gHW * 2, -gThk);
-            ctx.fillStyle = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
-            ctx.fill();
+            const gy = -bladeH; // guard Y position
+            const gfTL = rotY(-gHW, gy - gThk, gHT, cosA, sinA);
+            const gfTR = rotY(gHW, gy - gThk, gHT, cosA, sinA);
+            const gfBR = rotY(gHW, gy, gHT, cosA, sinA);
+            const gfBL = rotY(-gHW, gy, gHT, cosA, sinA);
+            const gbTL = rotY(-gHW, gy - gThk, -gHT, cosA, sinA);
+            const gbTR = rotY(gHW, gy - gThk, -gHT, cosA, sinA);
+            const gbBR = rotY(gHW, gy, -gHT, cosA, sinA);
+            const gbBL = rotY(-gHW, gy, -gHT, cosA, sinA);
+
+            const gFrontCol = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
+            const gSideCol = 'rgb(' + Math.round(blR * 0.4) + ',' + Math.round(blG * 0.4) + ',' + Math.round(blB * 0.4) + ')';
+
+            if (backVis) fillQuad(gbTL, gbTR, gbBR, gbBL, gSideCol);
+            if (rightVis) fillQuad(gfTR, gbTR, gbBR, gfBR, gSideCol);
+            if (leftVis) fillQuad(gbTL, gfTL, gfBL, gbBL, gSideCol);
+            if (frontVis) fillQuad(gfTL, gfTR, gfBR, gfBL, gFrontCol);
           }
 
-          // === DRAW GRIP ===
-          ctx.beginPath();
-          ctx.rect(-gripHW, -bladeH - gThk, gripHW * 2, -gripH);
-          ctx.fillStyle = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
-          ctx.fill();
+          // ================================================================
+          // GRIP — small box (roughly cylindrical approximation)
+          // ================================================================
+          const grY0 = -bladeH - gThk;
+          const grY1 = grY0 - gripH;
+          const grfTL = rotY(-gripHW, grY1, gripHT, cosA, sinA);
+          const grfTR = rotY(gripHW, grY1, gripHT, cosA, sinA);
+          const grfBR = rotY(gripHW, grY0, gripHT, cosA, sinA);
+          const grfBL = rotY(-gripHW, grY0, gripHT, cosA, sinA);
+          const grbTL = rotY(-gripHW, grY1, -gripHT, cosA, sinA);
+          const grbTR = rotY(gripHW, grY1, -gripHT, cosA, sinA);
+          const grbBR = rotY(gripHW, grY0, -gripHT, cosA, sinA);
+          const grbBL = rotY(-gripHW, grY0, -gripHT, cosA, sinA);
 
-          // === DRAW POMMEL ===
+          const hdFCol = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
+          const hdSCol = 'rgb(' + sHdR + ',' + sHdG + ',' + sHdB + ')';
+
+          if (backVis) fillQuad(grbTL, grbTR, grbBR, grbBL, hdSCol);
+          if (rightVis) fillQuad(grfTR, grbTR, grbBR, grfBR, hdSCol);
+          if (leftVis) fillQuad(grbTL, grfTL, grfBL, grbBL, hdSCol);
+          if (frontVis) fillQuad(grfTL, grfTR, grfBR, grfBL, hdFCol);
+
+          // ================================================================
+          // POMMEL — circle (rotation doesn't change a sphere)
+          // ================================================================
           if (pomR > 0.3) {
             ctx.beginPath();
-            ctx.arc(0, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
+            ctx.arc(0, grY1 - pomR, pomR, 0, Math.PI * 2);
             ctx.fillStyle = 'rgb(' + Math.round(blR * 0.8) + ',' + Math.round(blG * 0.8) + ',' + Math.round(blB * 0.8) + ')';
             ctx.fill();
           }
 
-          // === RIM LIGHT ===
-          // Sun-side edge highlight — metallic materials get stronger rims
+          // === RIM LIGHT (on front face edge closest to sun) ===
           const rimSide = sx < sunScreenX ? 1 : -1;
           const rimBase = Math.max(0, 1 - Math.abs(sx - sunScreenX) / (W * 0.45));
           const rimMat = 0.15 + bladeMat.metal * 0.35 + bladeMat.spec * 0.2;
           const rimStr = rimBase * rimMat * bladeLight.rimAtten * dkMul;
-          if (rimStr > 0.02 && effBW > 0.8) {
-            const ew = Math.max(0.3, effBW * 0.1);
+          if (rimStr > 0.02 && frontVis) {
+            const rEdge = rimSide > 0 ? { t: fTR, b: fBR } : { t: fTL, b: fBL };
+            const ew = Math.max(0.3, halfW * 0.1);
             ctx.beginPath();
-            if (rimSide > 0) {
-              ctx.moveTo(tipW + bSkew * 0.6, -1); ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
-              ctx.lineTo(effBW + bSkew * 0.3 - ew, -bladeH); ctx.lineTo(tipW + bSkew * 0.6 - ew * 0.3, -1);
-            } else {
-              ctx.moveTo(-tipW + bSkew * 0.6, -1); ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-              ctx.lineTo(-effBW + bSkew * 0.3 + ew, -bladeH); ctx.lineTo(-tipW + bSkew * 0.6 + ew * 0.3, -1);
-            }
+            ctx.moveTo(rEdge.b.x, rEdge.b.y);
+            ctx.lineTo(rEdge.t.x, rEdge.t.y);
+            ctx.lineTo(rEdge.t.x - rimSide * ew, rEdge.t.y);
+            ctx.lineTo(rEdge.b.x - rimSide * ew * 0.3, rEdge.b.y);
             ctx.closePath();
-            // Rim color tinted by material
             const rr = Math.round(lightColor.r * 0.6 + bladeMat.r * 0.4);
             const rg = Math.round(lightColor.g * 0.6 + bladeMat.g * 0.4);
             const rb = Math.round(lightColor.b * 0.6 + bladeMat.b * 0.4);
