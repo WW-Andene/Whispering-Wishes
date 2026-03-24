@@ -2519,6 +2519,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const pR = Math.max(pW, pH_);
             ctx.save();
             ctx.translate(cxP + pOx, cyP + pOy);
+            ctx.rotate(-5 * Math.PI / 180); // rotate clouds upward 5°
             ctx.scale(pW / pR, pH_ / pR);
 
             const cGrd = ctx.createRadialGradient(0, 0, pR * 0.05, 0, 0, pR);
@@ -2567,7 +2568,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpY = sunY;           // h * 0.18
 
         const botY = h * 0.85;
-        const topY = h * 0.32;
+        const topY = h * 0.22;
 
         // Clip so nothing renders outside the intended bounds
         ctx.save();
@@ -2671,7 +2672,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpY = sunY;
 
         const botY = h * 0.85;
-        const topY = h * 0.32;
+        const topY = h * 0.22;
 
         ctx.save();
         ctx.beginPath();
