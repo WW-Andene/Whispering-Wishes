@@ -2854,30 +2854,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           // DIMENSIONS — matching reference sword proportions
           // ================================================================
-          // === GOLDEN RATIO PROPORTIONS ===
-          // blade / handle = φ (1.618). Total = blade + handle.
-          // blade = 62%, guard = 3%, grip = 25%, pommel = 10%
-          const bladeH = sh * 0.62;
-          const guardBarH = sh * 0.03;
-          const gripH = sh * 0.25;
-          const pommelH = sh * 0.10;
+          // All proportions relative to sh (total sword height) and halfW (blade half-width)
+          const halfW = sbw * wt.bwM; // blade half-width
+          const halfT = Math.max(1.5, halfW * 0.10); // blade depth — min 1.5px (3px total)
 
-          // Blade width = 1/16 of blade length
-          const halfW = Math.max(1, bladeH / 16);
-          const halfT = Math.max(1.5, halfW * 0.10); // blade depth
+          // Widths (defined first — other dimensions depend on grip)
+          const gripHW = halfW / 1.5;             // grip half-width (blade = 1.5x grip)
 
-          // Grip diameter = blade width / 1.5
-          const gripHW = halfW / 1.5;
-          const gripHT = gripHW;
-
-          // Guard: each arm = blade / 8. Bar thickness = grip diameter.
-          const guardArmHW = bladeH / 8;
-          const guardBarHT = gripHW; // guard depth = grip diameter
-
-          // Pommel ≈ blade width
-          const pomR = halfW * wt.pomM;
-
-          const rainGuardH = sh * 0.0; // not using rain guard
+          // Height breakdown (fractions of sh)
+          const bladeH = sh * 0.75;     // blade = 75% of total height
+          const guardBarH = gripHW * 2; // guard bar thickness = grip diameter
+          const rainGuardH = sh * 0.03; // rain guard / chappe height
+          const gripH = sh * 0.18;      // grip = 18%
+          const pommelH = sh * 0.05;    // pommel height
+          const gripHT = gripHW;                   // grip is round
+          const guardArmHW = bladeH / 7; // each arm ≈ 1/7 of blade length
+          const guardBarHT = gripHW;               // guard bar depth = grip diameter
+          const pomR = gripHW * 1.3 * wt.pomM;    // pommel radius
 
           // Y positions (tip at y=0, everything else negative = up)
           const bladeTop = -bladeH;
