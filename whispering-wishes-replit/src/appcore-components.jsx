@@ -2926,26 +2926,40 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // === PLACE WEAPONS ON THE GROUND PLAN (3D) ===
-        const zNear = 1.6, zFar = 120;
-        const numRows = 34;
+        // Rules: near = few, spread apart. Far = progressively more grouped and compact.
+        // Enough objects close to camera to fill the foreground.
+        const zNear = 1.4, zFar = 130;
+        const numRows = 38; // more rows = smoother distribution
         let sIdx = 0;
         const allWeapons = [];
         const baseRealH = 4.0;
         const baseRealBW = 0.12;
 
         for (let row = 0; row < numRows; row++) {
+          // Row distribution: quadratic — gives good near-camera coverage
+          // while packing rows tighter toward the horizon
           const t = row / (numRows - 1);
-          const z = zNear + (zFar - zNear) * t * t * t;
+          const z = zNear + (zFar - zNear) * t * t;
+
           const depthRatio = Math.min(1, (z - zNear) / (zFar - zNear));
-          const spacing = 6.0 - depthRatio * 4.2;
+
+          // Spacing in world units:
+          // Near (depthRatio~0): wide spacing 7.0 → few, spread apart
+          // Far  (depthRatio~1): tight spacing 1.5 → grouped, compact
+          // Smooth interpolation so mid-field transitions naturally
+          const spacing = 7.0 * (1 - depthRatio) + 1.5 * depthRatio;
+
           const visHW = z * W * 1.3 / (2 * focal);
           const count = Math.max(1, Math.round(visHW * 2 / spacing));
           const xStep = visHW * 2 / count;
 
           for (let j = 0; j < count; j++) {
-            const wx = -visHW + xStep * (j + 0.5) + (rng(sIdx, 1) - 0.5) * xStep * 0.6;
-            const wz = z + (rng(sIdx, 2) - 0.5) * spacing * 0.4;
-            if (wz < 1.3) { sIdx++; continue; }
+            // Position jitter scales with spacing: spread near, tight far
+            const jitterX = (rng(sIdx, 1) - 0.5) * xStep * 0.5;
+            const jitterZ = (rng(sIdx, 2) - 0.5) * spacing * 0.35;
+            const wx = -visHW + xStep * (j + 0.5) + jitterX;
+            const wz = z + jitterZ;
+            if (wz < 1.2) { sIdx++; continue; }
 
             // Pick weapon type deterministically per sword
             const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
