@@ -2859,7 +2859,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const halfT = Math.max(0.5, halfW * 0.10); // blade depth (thin flat rectangle)
 
           // Height breakdown (fractions of sh)
-          const bladeH = sh * 0.68;     // blade = 68% of total height
+          const bladeH = sh * 0.75;     // blade = 75% of total height
           const guardBarH = Math.max(2, sh * 0.025); // guard bar thickness (Y)
           const rainGuardH = sh * 0.03; // rain guard / chappe height
           const gripH = sh * 0.18;      // grip = 18%
@@ -2868,7 +2868,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Widths
           const gripHW = halfW / 1.5;             // grip half-width (blade = 1.5x grip)
           const gripHT = gripHW;                   // grip is round
-          const guardArmHW = halfW * 3.0 * wt.gwM; // guard arms extend ~3x blade width each side
+          const guardArmHW = halfW * 2.0 * wt.gwM; // guard arms extend ~2x blade width each side
           const guardBarHT = gripHW;               // guard bar depth = grip diameter
           const pomR = gripHW * 1.3 * wt.pomM;    // pommel radius
 
