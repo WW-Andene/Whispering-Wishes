@@ -2658,7 +2658,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         function drawSword(sx, sy, sh, sbw, tilt) {
           if (sh < 1.5 || sbw < 0.2) return;
           ctx.save();
-          ctx.translate(sx, sy);
+          // Sword is buried 15% into the ground (blade-first)
+          ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
 
           const bladeH = sh * 0.74;
