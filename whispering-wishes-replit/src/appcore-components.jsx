@@ -2734,8 +2734,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Static wave vectors define 2D heightmap h(x,z)
         // Rendered as perspective-projected quad strips, back-to-front
         // Lit by sun direction with shadows/highlights showing form
-        {
-          const tWaves = [
+        // Terrain wave vectors (shared with sword placement for height sampling)
+        const tWaves = [
             { fx: 3.5, fz: 2.8, amp: 0.28, px: 0.0, pz: 0.0 },
             { fx: 6.0, fz: 5.0, amp: 0.22, px: 2.1, pz: 1.4 },
             { fx: 9.0, fz: 7.5, amp: 0.16, px: 4.7, pz: 3.2 },
@@ -2745,15 +2745,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             { fx: 11.0, fz: 18.0, amp: 0.03, px: 0.9, pz: 4.3 },
           ];
 
-          // Heightmap: returns world-Y height at world (wx, wz)
-          const terrH = (wx, wz) => {
-            let h = 0;
-            for (const w of tWaves) {
-              h += Math.sin(wx * w.fx + w.px) * Math.sin(wz * w.fz + w.pz) * w.amp;
-            }
-            return h;
-          };
+        const terrH = (wx, wz) => {
+          let h = 0;
+          for (const w of tWaves) {
+            h += Math.sin(wx * w.fx + w.px) * Math.sin(wz * w.fz + w.pz) * w.amp;
+          }
+          return h;
+        };
 
+        // Terrain mesh rendering block
+        {
           // Grid dimensions — cover entire ground plane including foreground
           const TX = 70;   // columns (X subdivisions)
           const TZ = 70;   // rows (Z subdivisions, back to front)
@@ -3936,11 +3937,67 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === SINGLE TEST SWORD — rotating 3D, slight diagonal tilt ===
-        drawWeapon(W * 0.5, H * 0.55, H * 0.5, H * 0.5 * 0.025, 8, {
-          type: weaponTypes[0], zRot: time * 1.5, irr: {},
-          wx: 0, wy: 0, wz: 3, darkness: 0
-        });
+        // === BATTLEGROUND SWORD FIELD ===
+        // Swords stuck in the ground across the battlefield, sorted back-to-front
+        {
+          const swords = [];
+          const fieldXrange = 25;  // world X extent
+          const fieldZnear = 4;
+          const fieldZfar = 70;
+          const rows = 12;
+          const colsBase = 8;
+
+          for (let rz = 0; rz < rows; rz++) {
+            const zt = rz / (rows - 1);
+            const wz = fieldZfar - (fieldZfar - fieldZnear) * zt;
+            const cols = colsBase + Math.floor(rz * 0.5); // more swords in near rows
+            for (let cx = 0; cx < cols; cx++) {
+              const idx = rz * 100 + cx;
+              // Jittered grid placement
+              const baseX = (cx / (cols - 1 || 1) * 2 - 1) * fieldXrange;
+              const wx = baseX + (rng(idx, 100) - 0.5) * gridSpacing * 1.5;
+              const wzJ = wz + (rng(idx, 101) - 0.5) * gridSpacing;
+              const wy = terrH(wx, wzJ); // sit on terrain
+
+              // Skip if too far off screen
+              const scrX = W * 0.5 + wx * focal / wzJ;
+              if (scrX < -W * 0.3 || scrX > W * 1.3) continue;
+              const scrY = hY + (camH - wy) * focal / wzJ;
+              const appSize = 1.8 * focal / wzJ; // apparent height
+
+              // Weapon type — deterministic from position
+              const typeIdx = Math.floor(rng(idx, 102) * weaponTypes.length);
+              const wType = weaponTypes[typeIdx];
+
+              // Rotation — each sword has a fixed random Y-rotation
+              const zRot = rng(idx, 103) * Math.PI * 2;
+
+              // Slight random tilt (stuck in ground at angles)
+              const tilt = (rng(idx, 104) - 0.5) * 16; // ±8 degrees
+
+              // Distance-based darkness (atmospheric perspective)
+              const distT = Math.min(1, (wzJ - fieldZnear) / (fieldZfar - fieldZnear));
+              const darkness = distT * 0.55;
+
+              swords.push({
+                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness, idx
+              });
+            }
+          }
+
+          // Sort back-to-front (far Z first)
+          swords.sort((a, b) => b.wz - a.wz);
+
+          // Draw all swords
+          for (const s of swords) {
+            if (s.appSize < 2) continue; // too small to see
+            const sbw = s.appSize * 0.025;
+            drawWeapon(s.scrX, s.scrY, s.appSize, sbw, s.tilt, {
+              type: s.wType, zRot: s.zRot, irr: {},
+              wx: s.wx, wy: s.wy, wz: s.wz, darkness: s.darkness
+            });
+          }
+        }
 
         // --- EMBERS ---
         for (let i = 0; i < 90; i++) {
