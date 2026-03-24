@@ -2736,13 +2736,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Lit by sun direction with shadows/highlights showing form
         {
           const tWaves = [
-            { fx: 1.8, fz: 1.4, amp: 0.15, px: 0.0, pz: 0.0 },
-            { fx: 3.2, fz: 2.5, amp: 0.14, px: 2.1, pz: 1.4 },
-            { fx: 4.5, fz: 3.8, amp: 0.10, px: 4.7, pz: 3.2 },
-            { fx: 6.0, fz: 5.2, amp: 0.07, px: 1.3, pz: 5.1 },
-            { fx: 8.0, fz: 6.5, amp: 0.05, px: 3.8, pz: 0.7 },
-            { fx: 10.0, fz: 8.0, amp: 0.03, px: 5.5, pz: 2.9 },
-            { fx: 5.5, fz: 9.0, amp: 0.025, px: 0.9, pz: 4.3 },
+            { fx: 3.5, fz: 2.8, amp: 0.28, px: 0.0, pz: 0.0 },
+            { fx: 6.0, fz: 5.0, amp: 0.22, px: 2.1, pz: 1.4 },
+            { fx: 9.0, fz: 7.5, amp: 0.16, px: 4.7, pz: 3.2 },
+            { fx: 12.0, fz: 10.0, amp: 0.10, px: 1.3, pz: 5.1 },
+            { fx: 16.0, fz: 13.0, amp: 0.07, px: 3.8, pz: 0.7 },
+            { fx: 20.0, fz: 16.0, amp: 0.04, px: 5.5, pz: 2.9 },
+            { fx: 11.0, fz: 18.0, amp: 0.03, px: 0.9, pz: 4.3 },
           ];
 
           // Heightmap: returns world-Y height at world (wx, wz)
@@ -2754,12 +2754,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             return h;
           };
 
-          // Grid dimensions — cover entire ground plane
-          const TX = 60;   // columns (X subdivisions)
-          const TZ = 60;   // rows (Z subdivisions, back to front)
-          const tExtentX = 80;  // world X range wide enough for full screen at near Z
-          const tZnear = 1.5;   // very close to camera for foreground coverage
-          const tZfar = 90;     // farthest Z row
+          // Grid dimensions — cover entire ground plane including foreground
+          const TX = 70;   // columns (X subdivisions)
+          const TZ = 70;   // rows (Z subdivisions, back to front)
+          const tExtentX = 120;  // world X range covers full screen even at Z=0.8
+          const tZnear = 0.8;    // right at camera for full foreground
+          const tZfar = 90;      // farthest Z row
 
           // Camera/projection (reuse existing system params)
           const tCamH = 1.3;
