@@ -3485,6 +3485,136 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.fill();
           }
 
+          // ================================================================
+          // VOLUMETRIC LIGHT — depth simulation via atmospheric scattering
+          // ================================================================
+          {
+            // 1. DEPTH FOG — back-facing parts fade toward atmosphere color
+            //    Parts rotated away from viewer get hazier, simulating aerial perspective
+            const fogStr = Math.max(0, -cosA) * 0.35; // stronger when back faces toward us
+            if (fogStr > 0.01) {
+              // Blade back-side fog
+              const fogCol = 'rgba(180,120,60,' + fogStr.toFixed(3) + ')'; // warm atmospheric haze
+              ctx.beginPath();
+              ctx.moveTo(bTL.x, bTL.y); ctx.lineTo(bTR.x, bTR.y);
+              ctx.lineTo(bMR.x, bMR.y); ctx.lineTo(bTip.x, bTip.y);
+              ctx.lineTo(bML.x, bML.y); ctx.closePath();
+              ctx.fillStyle = fogCol;
+              ctx.fill();
+            }
+
+            // 2. EDGE SCATTER — light bleeding along silhouette edges
+            //    Simulates subsurface/volumetric scatter where light wraps around edges
+            const scatterW = Math.max(1, halfW * 0.18); // scatter spread
+            const lr = lightColor.r, lg = lightColor.g, lb = lightColor.b;
+            const scatterBase = rimBase * 0.4 * dkMul;
+
+            if (scatterBase > 0.02) {
+              // Right edge scatter (visible when sword turns right)
+              const rScatter = scatterBase * Math.max(0, sinA);
+              if (rScatter > 0.01) {
+                const grad = ctx.createLinearGradient(
+                  fTR.x, 0, fTR.x + scatterW * 3, 0
+                );
+                grad.addColorStop(0, 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (rScatter * 0.6).toFixed(3) + ')');
+                grad.addColorStop(0.4, 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (rScatter * 0.2).toFixed(3) + ')');
+                grad.addColorStop(1, 'rgba(' + lr + ',' + lg + ',' + lb + ',0)');
+                ctx.beginPath();
+                ctx.moveTo(fTR.x, fTR.y);
+                ctx.lineTo(fTR.x + scatterW * 3, fTR.y);
+                ctx.lineTo(fMR.x + scatterW * 2, fMR.y);
+                ctx.lineTo(fTip.x + scatterW, fTip.y);
+                ctx.lineTo(fTip.x, fTip.y);
+                ctx.lineTo(fMR.x, fMR.y);
+                ctx.closePath();
+                ctx.fillStyle = grad;
+                ctx.fill();
+              }
+              // Left edge scatter
+              const lScatter = scatterBase * Math.max(0, -sinA);
+              if (lScatter > 0.01) {
+                const grad = ctx.createLinearGradient(
+                  fTL.x, 0, fTL.x - scatterW * 3, 0
+                );
+                grad.addColorStop(0, 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (lScatter * 0.6).toFixed(3) + ')');
+                grad.addColorStop(0.4, 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (lScatter * 0.2).toFixed(3) + ')');
+                grad.addColorStop(1, 'rgba(' + lr + ',' + lg + ',' + lb + ',0)');
+                ctx.beginPath();
+                ctx.moveTo(fTL.x, fTL.y);
+                ctx.lineTo(fTL.x - scatterW * 3, fTL.y);
+                ctx.lineTo(fML.x - scatterW * 2, fML.y);
+                ctx.lineTo(fTip.x - scatterW, fTip.y);
+                ctx.lineTo(fTip.x, fTip.y);
+                ctx.lineTo(fML.x, fML.y);
+                ctx.closePath();
+                ctx.fillStyle = grad;
+                ctx.fill();
+              }
+            }
+
+            // 3. DEPTH GRADIENT on front face — subtle darkening toward edges
+            //    Simulates light falloff with depth; center (closest to viewer) brightest
+            if (frontVis) {
+              const depthGrad = ctx.createLinearGradient(
+                fTL.x, 0, fTR.x, 0
+              );
+              const dEdge = Math.abs(sinA) * 0.12; // stronger at oblique angles
+              if (sinA > 0) {
+                depthGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                depthGrad.addColorStop(0.7, 'rgba(0,0,0,0)');
+                depthGrad.addColorStop(1, 'rgba(0,0,0,' + dEdge.toFixed(3) + ')');
+              } else {
+                depthGrad.addColorStop(0, 'rgba(0,0,0,' + dEdge.toFixed(3) + ')');
+                depthGrad.addColorStop(0.3, 'rgba(0,0,0,0)');
+                depthGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              }
+              ctx.beginPath();
+              ctx.moveTo(fTL.x, fTL.y); ctx.lineTo(fTR.x, fTR.y);
+              ctx.lineTo(fMR.x, fMR.y); ctx.lineTo(fTip.x, fTip.y);
+              ctx.lineTo(fML.x, fML.y); ctx.closePath();
+              ctx.fillStyle = depthGrad;
+              ctx.fill();
+            }
+
+            // 4. VOLUMETRIC GLOW — soft radial light around guard/blade junction
+            //    Simulates light pooling where blade meets hilt
+            const glowStr = rimBase * 0.25 * dkMul;
+            if (glowStr > 0.02) {
+              const junctionY = bladeTop; // where blade meets guard
+              const glowR = halfW * 2.5;
+              const glow = ctx.createRadialGradient(0, junctionY, 0, 0, junctionY, glowR);
+              glow.addColorStop(0, 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (glowStr * 0.3).toFixed(3) + ')');
+              glow.addColorStop(0.4, 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (glowStr * 0.1).toFixed(3) + ')');
+              glow.addColorStop(1, 'rgba(' + lr + ',' + lg + ',' + lb + ',0)');
+              ctx.beginPath();
+              ctx.arc(0, junctionY, glowR, 0, Math.PI * 2);
+              ctx.fillStyle = glow;
+              ctx.fill();
+            }
+
+            // 5. SPECULAR DEPTH BAND — bright line along blade center
+            //    Simulates light reflecting off the blade's thickness profile
+            if (frontVis && halfW > 2) {
+              const specStr = Math.pow(Math.abs(cosA), 3) * 0.25 * dkMul;
+              if (specStr > 0.02) {
+                const bandW = Math.max(0.5, halfW * 0.04);
+                const specGrad = ctx.createLinearGradient(0, bladeTop, 0, 0);
+                specGrad.addColorStop(0, 'rgba(255,255,255,' + (specStr * 0.8).toFixed(3) + ')');
+                specGrad.addColorStop(0.6, 'rgba(255,255,255,' + (specStr * 0.4).toFixed(3) + ')');
+                specGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                const cx = (fTL.x + fTR.x) * 0.5;
+                ctx.beginPath();
+                ctx.moveTo(cx - bandW, bladeTop);
+                ctx.lineTo(cx + bandW, bladeTop);
+                ctx.lineTo(fTip.x + bandW * 0.2, fTip.y);
+                ctx.lineTo(fTip.x - bandW * 0.2, fTip.y);
+                ctx.closePath();
+                ctx.fillStyle = specGrad;
+                ctx.fill();
+              }
+            }
+          }
+
           ctx.restore();
         }
 
