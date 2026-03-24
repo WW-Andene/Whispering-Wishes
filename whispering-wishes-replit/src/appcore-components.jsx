@@ -2879,80 +2879,57 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
 
           // === DRAW BLADE WITH 3D ROTATION ===
-          // When a sword rotates around its vertical axis:
-          // - Front face narrows by cos(zRot)  (effBW already does this)
-          // - Side edge/thickness appears on one side: thickness * |sin(zRot)|
+          // zRot rotates the sword around its vertical axis.
+          // Effect: the blade silhouette shifts — one edge moves inward, the other
+          // stays, creating an asymmetric angled shape. Combined with width
+          // foreshortening (effBW), this makes rotated swords look distinctly different.
           const zSin = Math.sin(zRot);
-          const absZSin = Math.abs(zSin);
-          const bladeThickness = sbw * wt.bwM * 0.18; // blade is ~18% as thick as it is wide
-          const sideW = bladeThickness * absZSin; // visible side strip width
-          const sideSgn = zSin > 0 ? 1 : -1; // which side the edge appears on
+          // Shift = how much one edge moves inward relative to the other.
+          // At full effBW, this is a proportion of the blade width.
+          const edgeShift = zSin * effBW * 0.6;
 
-          // Side edge color — darker than front face (it's the flat edge)
-          const sideR = Math.round(blR * 0.35);
-          const sideG = Math.round(blG * 0.35);
-          const sideB = Math.round(blB * 0.35);
-
-          // Draw side edge first (behind the front face)
-          if (sideW > 0.3) {
-            const edgeX = sideSgn * effBW; // outer edge of front face
-            ctx.beginPath();
-            ctx.moveTo(edgeX + bSkew * 0.6, 0);
-            ctx.lineTo(edgeX + sideSgn * sideW + bSkew * 0.6, 0);
-            ctx.lineTo(edgeX + sideSgn * sideW + bSkew * 0.3, -bladeH);
-            ctx.lineTo(edgeX + bSkew * 0.3, -bladeH);
-            ctx.closePath();
-            ctx.fillStyle = 'rgb(' + sideR + ',' + sideG + ',' + sideB + ')';
-            ctx.fill();
-          }
-
-          // Front face (narrowed by cos(zRot))
+          // Blade: asymmetric trapezoid — one side pinched inward
           ctx.beginPath();
-          ctx.moveTo(bSkew, 0);
-          ctx.lineTo(-tipW + bSkew * 0.6, -1);
-          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH);
-          ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
-          ctx.lineTo(tipW + bSkew * 0.6, -1);
+          ctx.moveTo(bSkew + edgeShift * 0.3, 0); // tip shifted
+          ctx.lineTo(-tipW + bSkew * 0.6 + edgeShift * 0.2, -1);
+          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH); // left base
+          ctx.lineTo(effBW + bSkew * 0.3 + edgeShift, -bladeH); // right base shifted
+          ctx.lineTo(tipW + bSkew * 0.6 + edgeShift * 0.2, -1);
           ctx.closePath();
-          ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
+          // Darker on the receding side
+          if (Math.abs(zRot) > 0.1 && effBW > 1) {
+            const blGrad = ctx.createLinearGradient(-effBW, 0, effBW + edgeShift, 0);
+            const darkSide = zSin > 0 ? 0 : 1;
+            const litF = 1.15, dkF = 0.7;
+            blGrad.addColorStop(darkSide, 'rgb(' + Math.round(blR * dkF) + ',' + Math.round(blG * dkF) + ',' + Math.round(blB * dkF) + ')');
+            blGrad.addColorStop(1 - darkSide, 'rgb(' + Math.min(255, Math.round(blR * litF)) + ',' + Math.min(255, Math.round(blG * litF)) + ',' + Math.min(255, Math.round(blB * litF)) + ')');
+            ctx.fillStyle = blGrad;
+          } else {
+            ctx.fillStyle = 'rgb(' + blR + ',' + blG + ',' + blB + ')';
+          }
           ctx.fill();
 
           // === DRAW GUARD (if present) ===
           if (wt.gwM > 0.1) {
-            // Guard also has thickness visible when rotated
-            const guardSideW = gThk * 1.2 * absZSin; // guard is thicker than blade
-            if (guardSideW > 0.3) {
-              const gEdgeX = sideSgn * gHW;
-              ctx.beginPath();
-              ctx.rect(gEdgeX, -bladeH - gThk, sideSgn * guardSideW, gThk);
-              ctx.fillStyle = 'rgb(' + sideR + ',' + sideG + ',' + sideB + ')';
-              ctx.fill();
-            }
             ctx.beginPath();
-            ctx.rect(-gHW, -bladeH, gHW * 2, -gThk);
+            // Guard shifts with rotation too
+            const gShift = zSin * gHW * 0.4;
+            ctx.rect(-gHW + gShift * 0.5, -bladeH, gHW * 2, -gThk);
             ctx.fillStyle = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
             ctx.fill();
           }
 
           // === DRAW GRIP ===
-          // Grip is roughly cylindrical — width doesn't change much, but show side
-          const gripSideW = gripHW * 0.6 * absZSin;
-          if (gripSideW > 0.2) {
-            const grEdgeX = sideSgn * gripHW;
-            ctx.beginPath();
-            ctx.rect(grEdgeX, -bladeH - gThk - gripH, sideSgn * gripSideW, gripH);
-            ctx.fillStyle = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
-            ctx.fill();
-          }
           ctx.beginPath();
-          ctx.rect(-gripHW, -bladeH - gThk, gripHW * 2, -gripH);
+          const grShift = zSin * gripHW * 0.3;
+          ctx.rect(-gripHW + grShift, -bladeH - gThk, gripHW * 2, -gripH);
           ctx.fillStyle = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
           ctx.fill();
 
           // === DRAW POMMEL ===
           if (pomR > 0.3) {
             ctx.beginPath();
-            ctx.arc(0, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
+            ctx.arc(grShift * 0.5, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
             ctx.fillStyle = 'rgb(' + Math.round(blR * 0.8) + ',' + Math.round(blG * 0.8) + ',' + Math.round(blB * 0.8) + ')';
             ctx.fill();
           }
