@@ -2302,7 +2302,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Sun/Vortex glow (top center) ---
       const sunX = w * 0.5;
-      const sunY = h * 0.16;
+      const sunY = h * 0.19;
       const sunPulse = 1 + Math.sin(time * 0.3) * 0.08;
 
       // Outer atmospheric haze
@@ -2437,7 +2437,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         // Cloud banks: wide horizontal masses, no rotation
         // Perspective: clouds lower on screen (further from sun) get flatter
-        const sunYn = 0.16; // match sunY
+        const sunYn = 0.19; // match sunY
         const cloudDefs = [
           // { cx, cy (normalized), widthN, heightN } — always horizontal
           // Left bank — large masses
