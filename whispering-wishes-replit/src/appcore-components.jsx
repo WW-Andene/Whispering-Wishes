@@ -2755,9 +2755,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           let screenX = xSpread * W;
 
           // Scale by depth: tiny at horizon, huge near camera
-          const scale = 0.03 + depth * 0.97;  // 0.03..1.0
-          const swordH = H * (0.04 + sizeVar * 0.04) * scale * 3.2;
-          const bladeHW = W * (0.002 + sizeVar * 0.003) * scale * 1.8;
+          const scale = 0.05 + depth * 0.95;  // 0.05..1.0
+          const swordH = H * (0.06 + sizeVar * 0.06) * scale * 8.0;
+          const bladeHW = Math.max(0.8, W * (0.004 + sizeVar * 0.005) * scale * 5.0);
 
           // Tilt: slight random lean
           const tilt = (tiltH - 0.5) * 24;  // -12 to +12 degrees
@@ -2788,8 +2788,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const guardW = bW * 1.8;
           const gripW = bW * 0.35;
 
-          // Colors: dark charcoal-brown, not pure black
-          const baseCol = 'rgba(22,16,14,' + (0.93 * alphaScale) + ')';
+          // Colors: dark charcoal-brown, fully opaque for silhouette
+          const baseCol = 'rgba(18,12,10,' + Math.min(1, 0.97 * alphaScale) + ')';
 
           // Rim light calculation
           const rimSide = (x < sunCX) ? 1 : -1;
