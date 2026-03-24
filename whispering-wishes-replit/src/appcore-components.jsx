@@ -3524,13 +3524,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               cylGrad.addColorStop(0.55, cylHi);
               cylGrad.addColorStop(1, cylHi);
             }
-            // Draw full grip with metal gradient
+            // Grip tapers subtly toward pommel
+            const gripNarrowHW = gripHW * 0.75; // narrower at pommel end
+            // Draw full grip as tapered trapezoid
             ctx.beginPath();
-            ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+            ctx.moveTo(-gripHW, gripBot);      // wide end (guard side)
+            ctx.lineTo(gripHW, gripBot);
+            ctx.lineTo(gripNarrowHW, gripTop); // narrow end (pommel side)
+            ctx.lineTo(-gripNarrowHW, gripTop);
+            ctx.closePath();
             ctx.fillStyle = gripSideCol;
             ctx.fill();
             ctx.beginPath();
-            ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+            ctx.moveTo(-gripHW, gripBot);
+            ctx.lineTo(gripHW, gripBot);
+            ctx.lineTo(gripNarrowHW, gripTop);
+            ctx.lineTo(-gripNarrowHW, gripTop);
+            ctx.closePath();
             ctx.fillStyle = cylGrad;
             ctx.fill();
 
@@ -3553,7 +3563,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             }
             const leatherH = leatherTop - leatherBot;
             const lWideHW = leatherHW;            // wide end = 6/7 blade width (from outer scope)
-            const lNarrowHW = gripHW + 1;         // narrow end = 1px wider than grip
+            // Grip width at leather bottom (midpoint) follows taper
+            const midGripT = (leatherBot - gripBot) / (gripTop - gripBot || 1);
+            const gripAtMid = gripHW + (gripNarrowHW - gripHW) * midGripT;
+            const lNarrowHW = gripAtMid + 1;    // narrow end = 1px wider than grip at that point
             // Draw leather as a gentle trapezoid
             ctx.beginPath();
             ctx.moveTo(-lWideHW, leatherTop);
@@ -3601,7 +3614,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const pomH = pomR * 2.2;
             const pomTopY = gripTop - pomH;
             const pomBotY = gripTop;
-            const neckHW = gripHW;
+            const neckHW = gripHW * 0.75; // matches narrowed grip end
 
             // Sample the pommel outline as discrete points (clockwise)
             // Smooth rounded dome shape matching green outline reference
