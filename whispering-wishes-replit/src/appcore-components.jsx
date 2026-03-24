@@ -3234,10 +3234,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const fsCx = (fsLx + fsRx) * 0.5;
             const feCx = (feLx + feRx) * 0.5;
 
-            // Draw the groove as a tapered rectangle
+            // Draw the groove — rounded pointed top, tapered bottom
+            const fullerPeakY = fsY - fullerW * 0.7; // how far the point rises above the flat start
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
-            ctx.lineTo(fsCx + fullerW, fsY);
+            ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY); // rounded point at top
             ctx.lineTo(feCx + fullerW * 0.15, feY); // narrows toward tip
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
@@ -3248,7 +3249,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const lipAlpha = (0.06 + Math.abs(cosA) * 0.06).toFixed(3);
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
-            ctx.lineTo(fsCx + fullerW, fsY);
+            ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY);
             ctx.lineTo(feCx + fullerW * 0.15, feY);
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
@@ -3261,7 +3262,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Bottom shadow edge — subtle shadow on lower lip
             ctx.beginPath();
             ctx.moveTo(fsCx - fullerW, fsY);
-            ctx.lineTo(fsCx + fullerW, fsY);
+            ctx.quadraticCurveTo(fsCx, fullerPeakY, fsCx + fullerW, fsY);
             ctx.lineTo(feCx + fullerW * 0.15, feY);
             ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
