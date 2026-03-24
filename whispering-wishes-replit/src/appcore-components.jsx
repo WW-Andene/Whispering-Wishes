@@ -3943,19 +3943,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Matching reference: scattered across battlefield, various tilts
         {
           const swords = [];
-          const fieldZnear = 1.2;   // very close — swords right at camera
+          const fieldZnear = 0.5;   // right at camera — swords fill the screen
           const fieldZfar = 80;
           const fieldXrange = 30;
 
           // Scattered placement — organic, with natural clearing in center
           // First: explicit foreground swords at edges (framing the scene)
           const fgSwords = [
-            { wx: -6, wz: 1.5, tiltO: -10 }, { wx: 7, wz: 1.3, tiltO: 8 },
-            { wx: -4, wz: 2.0, tiltO: -6 }, { wx: 5, wz: 1.8, tiltO: 12 },
-            { wx: -9, wz: 2.5, tiltO: -14 }, { wx: 8, wz: 2.2, tiltO: 5 },
-            { wx: -3, wz: 3.0, tiltO: 7 }, { wx: 4, wz: 2.8, tiltO: -9 },
-            { wx: -7, wz: 1.8, tiltO: 4 }, { wx: 10, wz: 2.5, tiltO: -7 },
-            { wx: -11, wz: 3.2, tiltO: 10 }, { wx: 3, wz: 3.5, tiltO: -5 },
+            { wx: -2, wz: 0.6, tiltO: -10 }, { wx: 2.5, wz: 0.55, tiltO: 8 },
+            { wx: -1.5, wz: 0.8, tiltO: -6 }, { wx: 1.8, wz: 0.7, tiltO: 12 },
+            { wx: -3.5, wz: 0.9, tiltO: -14 }, { wx: 3, wz: 0.85, tiltO: 5 },
+            { wx: -1, wz: 1.2, tiltO: 7 }, { wx: 1.5, wz: 1.1, tiltO: -9 },
+            { wx: -2.8, wz: 0.7, tiltO: 4 }, { wx: 4, wz: 1.0, tiltO: -7 },
+            { wx: -4, wz: 1.3, tiltO: 10 }, { wx: 1, wz: 1.5, tiltO: -5 },
+            { wx: -0.5, wz: 0.5, tiltO: -3 }, { wx: 3.5, wz: 0.65, tiltO: 11 },
+            { wx: -5, wz: 1.1, tiltO: 6 }, { wx: 5, wz: 0.9, tiltO: -8 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
