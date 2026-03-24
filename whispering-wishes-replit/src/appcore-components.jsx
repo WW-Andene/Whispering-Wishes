@@ -3026,105 +3026,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === PLACE WEAPONS ON THE GROUND PLAN (3D) ===
-        // Rules: near = few, spread apart. Far = progressively more grouped and compact.
-        // Enough objects close to camera to fill the foreground.
-        const zNear = 1.4, zFar = 130;
-        const numRows = 38; // more rows = smoother distribution
-        let sIdx = 0;
-        const allWeapons = [];
-        const baseRealH = 4.0;
-        const baseRealBW = 0.12;
+        // === DEBUG: SINGLE TEST SWORD — large, centered, 45° rotated ===
+        // Shows one sword so we can verify the 3D rotation works.
+        {
+          const testWt = weaponTypes[0]; // longsword
+          const testH = H * 0.5; // 50% of screen height — very large
+          const testBW = testH * 0.06; // blade half-width proportional
+          const testY = H * 0.85; // near bottom of screen
+          const testX = W * 0.5; // centered
 
-        for (let row = 0; row < numRows; row++) {
-          // Row distribution: quadratic — gives good near-camera coverage
-          // while packing rows tighter toward the horizon
-          const t = row / (numRows - 1);
-          const z = zNear + (zFar - zNear) * t * t;
-
-          const depthRatio = Math.min(1, (z - zNear) / (zFar - zNear));
-
-          // Spacing in world units:
-          // Near (depthRatio~0): wide spacing 7.0 → few, spread apart
-          // Far  (depthRatio~1): tight spacing 1.5 → grouped, compact
-          // Smooth interpolation so mid-field transitions naturally
-          const spacing = 7.0 * (1 - depthRatio) + 1.5 * depthRatio;
-
-          const visHW = z * W * 1.3 / (2 * focal);
-          const count = Math.max(1, Math.round(visHW * 2 / spacing));
-          const xStep = visHW * 2 / count;
-
-          for (let j = 0; j < count; j++) {
-            // Position jitter scales with spacing: spread near, tight far
-            const jitterX = (rng(sIdx, 1) - 0.5) * xStep * 0.5;
-            const jitterZ = (rng(sIdx, 2) - 0.5) * spacing * 0.35;
-            const wx = -visHW + xStep * (j + 0.5) + jitterX;
-            const wz = z + jitterZ;
-            if (wz < 1.2) { sIdx++; continue; }
-
-            // Pick weapon type deterministically per sword
-            const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
-            const wt = weaponTypes[wtIdx];
-
-            // Size: noticeable per-object variation + distance world-space shrink
-            const sizeVar = 0.90 + rng(sIdx, 3) * 0.20; // 0.90–1.10
-            const distShrink = 1 - depthRatio * 0.15; // 15% shrink at max depth
-
-            // Tilt: wide range of angles — battlefield swords stuck at all orientations
-            // ~40% nearly upright (±15°), ~35% clearly leaning (±35°), ~25% heavily angled (±60°)
-            const tiltRng = rng(sIdx, 4);
-            const tiltBase = (rng(sIdx, 16) - 0.5) * 2; // -1 to 1 direction
-            let tiltVal;
-            if (tiltRng < 0.40) {
-              tiltVal = tiltBase * 15;       // nearly upright
-            } else if (tiltRng < 0.75) {
-              tiltVal = tiltBase * 35;       // clearly leaning
-            } else {
-              tiltVal = tiltBase * 60;       // heavily angled / nearly fallen
-            }
-            const steep = 1; // no longer needed — tilt range handles variety
-
-            // Z-axis rotation: affects width foreshortening + lighting only
-            const zRot = (rng(sIdx, 5) - 0.5) * Math.PI * 0.45;
-
-            // Organic irregularities — noticeable but natural
-            const irr = {
-              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.2,     // visible asymmetry
-              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.06,     // blade height ±3%
-              guardVar:  (rng(sIdx, 8) - 0.5) * 0.25,     // guard size ±12%
-              gripVar:   (rng(sIdx, 9) - 0.5) * 0.05,     // grip length ±2.5%
-              pomVar:    (rng(sIdx, 10) - 0.5) * 0.12      // pommel ±6%
-            };
-
-            // Distance darkness (still used as overlay)
-            const distToSun = Math.sqrt(wx * wx + (wz - lightPos.z) * (wz - lightPos.z) * 0.3);
-            const lightReach = Math.max(0, 1 - distToSun / 35);
-            const darkness = Math.max(0, depthRatio * 0.85 - lightReach * 0.5);
-
-            // Project to screen
-            const realH = baseRealH * sizeVar * distShrink * wt.hM;
-            const realBW = baseRealBW * sizeVar * distShrink * wt.wM;
-            let scrX = W * 0.5 + wx * focal / wz;
-            let scrY = hY + camH * focal / wz;
-            const scrH = realH * focal / wz;
-            const scrBW = realBW * focal / wz;
-
-            const distorted = lensDistort(scrX, scrY);
-            scrX = distorted.x;
-            scrY = distorted.y;
-
-            allWeapons.push({
-              x: scrX, y: scrY, h: scrH, bw: scrBW,
-              t: tiltVal * steep, z: wz,
-              wp: { type: wt, zRot, irr, wx, wy: 0, wz, darkness }
-            });
-            sIdx++;
-          }
-        }
-
-        allWeapons.sort((a, b) => b.z - a.z);
-        for (const s of allWeapons) {
-          drawWeapon(s.x, s.y, s.h, s.bw, s.t, s.wp);
+          drawWeapon(testX, testY, testH, testBW, 0, {
+            type: testWt,
+            zRot: Math.PI * 0.25, // 45° rotation
+            irr: {},
+            wx: 0, wy: 0, wz: 3,
+            darkness: 0
+          });
         }
 
         // --- EMBERS ---
