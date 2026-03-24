@@ -2696,7 +2696,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
         }
 
-        // Fill ground area solid dark before terrain mesh paints over it
+        // Solid dark ground fill to bottom
         ctx.fillStyle = 'rgb(14,9,6)';
         ctx.fillRect(0, hY, W, H - hY);
 
@@ -2733,7 +2733,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const TX = 70;   // columns (X subdivisions)
           const TZ = 70;   // rows (Z subdivisions, back to front)
           const tExtentX = 120;  // world X range covers full screen
-          const tZnear = 0.1;    // very close — terrain fills to screen bottom
+          const tZnear = 0.02;   // extremely close — terrain must touch screen bottom
           const tZfar = 90;      // farthest Z row
 
           // Camera/projection (reuse existing system params)
