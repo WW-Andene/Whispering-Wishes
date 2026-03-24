@@ -2879,28 +2879,27 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const tipW = wt.tipS === 1 ? effBW * 0.45 : effBW * 0.22;
 
           // === DRAW BLADE WITH 3D ROTATION ===
-          // zRot rotates the sword around its vertical axis.
-          // Effect: the blade silhouette shifts — one edge moves inward, the other
-          // stays, creating an asymmetric angled shape. Combined with width
-          // foreshortening (effBW), this makes rotated swords look distinctly different.
+          // zRot rotates the sword around its vertical axis (Y-axis in 3D).
+          // Visually: the top of the blade shifts sideways relative to the base,
+          // creating a leaning/angled silhouette. The shift is proportional to
+          // blade HEIGHT (which is large) not width (which is tiny at distance).
           const zSin = Math.sin(zRot);
-          // Shift = how much one edge moves inward relative to the other.
-          // At full effBW, this is a proportion of the blade width.
-          const edgeShift = zSin * effBW * 0.6;
+          // At ±40° rotation, the top of the blade shifts ~18% of blade height sideways
+          const hShift = zSin * bladeH * 0.28;
 
-          // Blade: asymmetric trapezoid — one side pinched inward
+          // Blade: shifted trapezoid — top offset from base
           ctx.beginPath();
-          ctx.moveTo(bSkew + edgeShift * 0.3, 0); // tip shifted
-          ctx.lineTo(-tipW + bSkew * 0.6 + edgeShift * 0.2, -1);
-          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH); // left base
-          ctx.lineTo(effBW + bSkew * 0.3 + edgeShift, -bladeH); // right base shifted
-          ctx.lineTo(tipW + bSkew * 0.6 + edgeShift * 0.2, -1);
+          ctx.moveTo(bSkew + hShift, 0); // tip shifted sideways
+          ctx.lineTo(-tipW + bSkew * 0.6 + hShift * 0.9, -1);
+          ctx.lineTo(-effBW + bSkew * 0.3, -bladeH); // base stays put (stuck in ground)
+          ctx.lineTo(effBW + bSkew * 0.3, -bladeH);
+          ctx.lineTo(tipW + bSkew * 0.6 + hShift * 0.9, -1);
           ctx.closePath();
-          // Darker on the receding side
-          if (Math.abs(zRot) > 0.1 && effBW > 1) {
-            const blGrad = ctx.createLinearGradient(-effBW, 0, effBW + edgeShift, 0);
+          // Gradient: receding side darker, facing side lighter
+          if (Math.abs(zSin) > 0.05) {
+            const blGrad = ctx.createLinearGradient(-effBW, 0, effBW + hShift, 0);
             const darkSide = zSin > 0 ? 0 : 1;
-            const litF = 1.15, dkF = 0.7;
+            const litF = 1.2, dkF = 0.6;
             blGrad.addColorStop(darkSide, 'rgb(' + Math.round(blR * dkF) + ',' + Math.round(blG * dkF) + ',' + Math.round(blB * dkF) + ')');
             blGrad.addColorStop(1 - darkSide, 'rgb(' + Math.min(255, Math.round(blR * litF)) + ',' + Math.min(255, Math.round(blG * litF)) + ',' + Math.min(255, Math.round(blB * litF)) + ')');
             ctx.fillStyle = blGrad;
@@ -2911,25 +2910,27 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // === DRAW GUARD (if present) ===
           if (wt.gwM > 0.1) {
+            // Guard shifts partway between base and tip
+            const guardShift = hShift * (1 - wt.bladeP); // proportional to guard position
             ctx.beginPath();
-            // Guard shifts with rotation too
-            const gShift = zSin * gHW * 0.4;
-            ctx.rect(-gHW + gShift * 0.5, -bladeH, gHW * 2, -gThk);
+            ctx.rect(-gHW + guardShift, -bladeH, gHW * 2, -gThk);
             ctx.fillStyle = 'rgb(' + Math.round(blR * 0.7) + ',' + Math.round(blG * 0.7) + ',' + Math.round(blB * 0.7) + ')';
             ctx.fill();
           }
 
           // === DRAW GRIP ===
+          // Grip is above guard, shifts more than guard, less than pommel
+          const gripShift = hShift * (1 - wt.bladeP - wt.gripP * 0.5);
           ctx.beginPath();
-          const grShift = zSin * gripHW * 0.3;
-          ctx.rect(-gripHW + grShift, -bladeH - gThk, gripHW * 2, -gripH);
+          ctx.rect(-gripHW + gripShift, -bladeH - gThk, gripHW * 2, -gripH);
           ctx.fillStyle = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
           ctx.fill();
 
           // === DRAW POMMEL ===
           if (pomR > 0.3) {
+            const pomShift = hShift * (1 - wt.bladeP - wt.gripP);
             ctx.beginPath();
-            ctx.arc(grShift * 0.5, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
+            ctx.arc(pomShift, -bladeH - gThk - gripH - pomR, pomR, 0, Math.PI * 2);
             ctx.fillStyle = 'rgb(' + Math.round(blR * 0.8) + ',' + Math.round(blG * 0.8) + ',' + Math.round(blB * 0.8) + ')';
             ctx.fill();
           }
