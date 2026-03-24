@@ -2854,22 +2854,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           // DIMENSIONS — matching reference sword proportions
           // ================================================================
-          // === JOHNSSON GEOMETRIC PROPORTIONS ===
+          // === SWORD PROPORTIONS ===
           const halfW = sbw * wt.bwM; // blade half-width (from parameter)
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
 
-          // Heights (from Johnsson diagrams)
-          const bladeH = sh * 0.73;      // blade ≈ 73%
-          const guardBarH = sh * 0.02;   // guard bar = 2%
-          const gripH = sh * 0.18;       // grip = 18%
-          const pommelH = sh * 0.07;     // pommel = 7%
+          // Handle (with pommel) = 1/7 of sword length
+          const handleH = sh / 7;
+          const bladeH = sh - handleH;         // blade = 6/7
+          const pommelH = handleH * 0.20;      // pommel = 20% of handle
+          const guardBarH = handleH * 0.12;    // guard bar = 12% of handle
+          const gripH = handleH - pommelH - guardBarH; // grip = remainder
 
-          // Key Johnsson proportion: guard total width ≈ grip length
-          const gripHW = halfW * 0.4;    // grip = 40% of blade width
-          const gripHT = gripHW;          // grip is round
-          const guardArmHW = gripH / 2;   // each arm = half grip length (total span ≈ grip length)
-          const guardBarHT = gripHT;      // guard depth = grip depth
-          const pomR = gripHW * 1.2 * wt.pomM; // pommel slightly wider than grip
+          // Grip width = 1/3 blade width; arms = handle without pommel
+          const gripHW = halfW / 3;             // 1/3 of blade width (half-width)
+          const gripHT = gripHW;                // grip is round
+          const guardArmHW = gripH + guardBarH; // each arm = handle minus pommel
+          const guardBarHT = gripHT;            // guard depth = grip depth
+          const pomR = gripHW * 1.2 * wt.pomM;  // pommel slightly wider than grip
           const rainGuardH = 0;
 
           // Y positions (tip at y=0, everything else negative = up)
