@@ -2822,13 +2822,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           return { x: x * cosA - z * sinA, y: y, z: x * sinA + z * cosA };
         }
 
-        // Draw a filled quad from 4 projected 2D points
-        function fillQuad(p0, p1, p2, p3, color) {
+        // Draw a filled polygon from projected 2D points
+        function fillPoly(pts, color) {
+          if (pts.length < 3) return;
           ctx.beginPath();
-          ctx.moveTo(p0.x, p0.y);
-          ctx.lineTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.lineTo(p3.x, p3.y);
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
           ctx.closePath();
           ctx.fillStyle = color;
           ctx.fill();
@@ -2894,25 +2893,29 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const sHdB = Math.round(hdB * sideF);
 
           // ================================================================
-          // 3D BLADE — define vertices, rotate, project to 2D (orthographic)
+          // 3D BLADE — proper sword shape: parallel edges + pointed tip
           // ================================================================
-          // Blade is a rectangular prism: front/back faces are trapezoids,
-          // side faces are thin parallelograms.
-          // Local coords: X = width, Y = up (negative), Z = depth (toward camera)
+          // Blade outline (6 points per face):
+          //   Base (top, y=-bladeH): full width, parallel edges
+          //   Taper starts at ~85% down from base (y = -bladeH * 0.15)
+          //   Tip (bottom, y=0): pointed
+          const taperY = -bladeH * 0.15; // where taper begins (near tip)
 
-          // Front face (Z = +halfT): trapezoid
-          const fTL = rotY(-halfW, -bladeH, halfT, cosA, sinA);   // front top-left
-          const fTR = rotY(halfW, -bladeH, halfT, cosA, sinA);    // front top-right
-          const fBR = rotY(tipW, 0, tipT, cosA, sinA);            // front bottom-right (tip)
-          const fBL = rotY(-tipW, 0, tipT, cosA, sinA);           // front bottom-left (tip)
+          // Front face (Z = +halfT)
+          const fTL = rotY(-halfW, -bladeH, halfT, cosA, sinA);  // base top-left
+          const fTR = rotY(halfW, -bladeH, halfT, cosA, sinA);   // base top-right
+          const fMR = rotY(halfW, taperY, halfT, cosA, sinA);    // right edge at taper start
+          const fTip = rotY(0, 0, tipT, cosA, sinA);             // pointed tip
+          const fML = rotY(-halfW, taperY, halfT, cosA, sinA);   // left edge at taper start
 
-          // Back face (Z = -halfT): same shape, behind
+          // Back face (Z = -halfT)
           const bTL = rotY(-halfW, -bladeH, -halfT, cosA, sinA);
           const bTR = rotY(halfW, -bladeH, -halfT, cosA, sinA);
-          const bBR = rotY(tipW, 0, -tipT, cosA, sinA);
-          const bBL = rotY(-tipW, 0, -tipT, cosA, sinA);
+          const bMR = rotY(halfW, taperY, -halfT, cosA, sinA);
+          const bTip = rotY(0, 0, -tipT, cosA, sinA);
+          const bML = rotY(-halfW, taperY, -halfT, cosA, sinA);
 
-          // Determine face visibility (with epsilon to avoid degenerate draws)
+          // Face visibility
           const eps = 0.01;
           const frontVis = cosA > eps;
           const backVis = cosA < -eps;
@@ -2923,15 +2926,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const backCol = 'rgb(' + Math.round(blR * 0.6) + ',' + Math.round(blG * 0.6) + ',' + Math.round(blB * 0.6) + ')';
           const sideCol = 'rgb(' + sBlR + ',' + sBlG + ',' + sBlB + ')';
 
-          // Draw faces back-to-front: back face → side faces → front face
-          if (backVis) fillQuad(bTL, bTR, bBR, bBL, backCol);
+          // Draw back-to-front
+          if (backVis) fillPoly([bTL, bTR, bMR, bTip, bML], backCol);
 
-          // Right side face (connects front-right to back-right edges)
-          if (rightVis) fillQuad(fTR, bTR, bBR, fBR, sideCol);
-          // Left side face
-          if (leftVis) fillQuad(bTL, fTL, fBL, bBL, sideCol);
+          // Right side (connects front-right edge to back-right edge)
+          if (rightVis) fillPoly([fTR, bTR, bMR, bTip, fTip, fMR], sideCol);
+          // Left side
+          if (leftVis) fillPoly([bTL, fTL, fML, fTip, bTip, bML], sideCol);
 
-          if (frontVis) fillQuad(fTL, fTR, fBR, fBL, frontCol);
+          if (frontVis) fillPoly([fTL, fTR, fMR, fTip, fML], frontCol);
 
           // ================================================================
           // 3D GUARD — crossbar PERPENDICULAR to blade flat face
@@ -2965,13 +2968,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const gTopCol = 'rgb(' + Math.round(blR * 0.55) + ',' + Math.round(blG * 0.55) + ',' + Math.round(blB * 0.55) + ')';
 
             // Front/back of guard bar (the flat faces of the bar)
-            if (backVis) fillQuad(gbTL, gbTR, gbBR, gbBL, gSideCol);
-            if (frontVis) fillQuad(gfTL, gfTR, gfBR, gfBL, gFrontCol);
-            // Side faces = the ENDS of the guard arms (the tips sticking out)
-            // Right end (positive Z side after rotation)
-            fillQuad(gfTL, gfTR, gbTR, gbTL, gTopCol); // top face
-            fillQuad(gfTR, gbTR, gbBR, gfBR, gSideCol); // right end
-            fillQuad(gbTL, gfTL, gfBL, gbBL, gSideCol); // left end
+            if (backVis) fillPoly([gbTL, gbTR, gbBR, gbBL], gSideCol);
+            if (frontVis) fillPoly([gfTL, gfTR, gfBR, gfBL], gFrontCol);
+            fillPoly([gfTL, gfTR, gbTR, gbTL], gTopCol); // top face
+            fillPoly([gfTR, gbTR, gbBR, gfBR], gSideCol); // right end
+            fillPoly([gbTL, gfTL, gfBL, gbBL], gSideCol); // left end
           }
 
           // ================================================================
@@ -2991,10 +2992,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const hdFCol = 'rgb(' + hdR + ',' + hdG + ',' + hdB + ')';
           const hdSCol = 'rgb(' + sHdR + ',' + sHdG + ',' + sHdB + ')';
 
-          if (backVis) fillQuad(grbTL, grbTR, grbBR, grbBL, hdSCol);
-          if (rightVis) fillQuad(grfTR, grbTR, grbBR, grfBR, hdSCol);
-          if (leftVis) fillQuad(grbTL, grfTL, grfBL, grbBL, hdSCol);
-          if (frontVis) fillQuad(grfTL, grfTR, grfBR, grfBL, hdFCol);
+          if (backVis) fillPoly([grbTL, grbTR, grbBR, grbBL], hdSCol);
+          if (rightVis) fillPoly([grfTR, grbTR, grbBR, grfBR], hdSCol);
+          if (leftVis) fillPoly([grbTL, grfTL, grfBL, grbBL], hdSCol);
+          if (frontVis) fillPoly([grfTL, grfTR, grfBR, grfBL], hdFCol);
 
           // ================================================================
           // POMMEL — circle (rotation doesn't change a sphere)
@@ -3012,7 +3013,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const rimMat = 0.15 + bladeMat.metal * 0.35 + bladeMat.spec * 0.2;
           const rimStr = rimBase * rimMat * bladeLight.rimAtten * dkMul;
           if (rimStr > 0.02 && frontVis) {
-            const rEdge = rimSide > 0 ? { t: fTR, b: fBR } : { t: fTL, b: fBL };
+            const rEdge = rimSide > 0 ? { t: fTR, b: fMR } : { t: fTL, b: fML };
             const ew = Math.max(0.3, halfW * 0.1);
             ctx.beginPath();
             ctx.moveTo(rEdge.b.x, rEdge.b.y);
