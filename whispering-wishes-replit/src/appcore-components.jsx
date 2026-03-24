@@ -2864,7 +2864,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const halfW = mod * 0.25 * wt.bwM;     // blade half-width ≈ 0.5 module wide
           const halfT = Math.max(1.5, halfW * 0.10); // blade depth
           const gripHW = halfW * 0.5;               // grip narrower than blade
-          const leatherHW = halfW * 6 / 7;           // leather wrap = 6/7 of blade width
+          const leatherHW = halfW * 0.65;             // leather wrap width
 
           // Hilt sub-proportions: pommel:grip ≈ 1:2, thin guard bar
           const pommelH = mod * 1.0;              // pommel ≈ 1 module
@@ -3045,48 +3045,46 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const gSamplesTop = [];
             const NS = 12; // more samples for smoother curves
 
-            // V-notch parameters
-            const notchX = gcHW * 1.15;     // X where V-notch sits
-            const notchDepth = ghh * 1.2;   // how deep V dips toward center (pronounced)
+            // V-notch: opens slightly wider than blade, meets at center Y = gap
+            const vOuterX = halfW * 1.15;   // V starts slightly wider than blade
+            const vInnerX = halfW * 0.2;    // V apex near center
 
             // Left outer tip
             gSamplesTop.push({ x: -tipOuterX, y: gCenterY - tipFlare });
             gSamplesTop.push({ x: -tipInnerX, y: gCenterY - tipFlare * 0.6 });
-            // Left arm: tip → approaching V-notch (flat along arm height)
+            // Left arm: tip → V start (flat along arm height)
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(cBez(
                 -tipInnerX, gCenterY - tipFlare * 0.6,
                 -tipInnerX * 0.7, gCenterY - ghh,
-                -notchX - gcHW * 0.2, gCenterY - ghh,
-                -notchX, gCenterY - ghh,
+                -vOuterX - gcHW * 0.2, gCenterY - ghh,
+                -vOuterX, gCenterY - ghh,
                 i / NS
               ));
             }
-            // Left V-notch: dip down then back up
+            // Left V: arm edge → center (pinch to zero height = gap)
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(qBez(
-                -notchX, gCenterY - ghh,
-                -notchX * 0.85, gCenterY - ghh + notchDepth,
-                -gcHW * 0.5, gCenterY - ghh,
+                -vOuterX, gCenterY - ghh,
+                -vInnerX * 1.5, gCenterY,
+                -vInnerX, gCenterY,
                 i / NS
               ));
             }
-            // Flat center: left side → right side
-            gSamplesTop.push({ x: gcHW * 0.5, y: gCenterY - ghh });
-            // Right V-notch: dip down then back up
+            // Right V: center → arm edge
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(qBez(
-                gcHW * 0.5, gCenterY - ghh,
-                notchX * 0.85, gCenterY - ghh + notchDepth,
-                notchX, gCenterY - ghh,
+                vInnerX, gCenterY,
+                vInnerX * 1.5, gCenterY,
+                vOuterX, gCenterY - ghh,
                 i / NS
               ));
             }
-            // Right arm: V-notch → tip
+            // Right arm: V end → tip
             for (let i = 1; i <= NS; i++) {
               gSamplesTop.push(cBez(
-                notchX, gCenterY - ghh,
-                notchX + gcHW * 0.2, gCenterY - ghh,
+                vOuterX, gCenterY - ghh,
+                vOuterX + gcHW * 0.2, gCenterY - ghh,
                 tipInnerX * 0.7, gCenterY - ghh,
                 tipInnerX, gCenterY - tipFlare * 0.6,
                 i / NS
@@ -3101,13 +3099,29 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               y: gCenterY + (gCenterY - p.y)
             }));
 
-            // Transform all points to front-Z and back-Z via rotY
-            const gTopF = gSamplesTop.map(p => rotY(p.x, p.y, gBarDepth, cosA, sinA));
-            const gTopB = gSamplesTop.map(p => rotY(p.x, p.y, -gBarDepth, cosA, sinA));
-            const gBotF = gSamplesBot.map(p => rotY(p.x, p.y, gBarDepth, cosA, sinA));
-            const gBotB = gSamplesBot.map(p => rotY(p.x, p.y, -gBarDepth, cosA, sinA));
+            // Build multiple Z-depth layers for curved side faces
+            const DEPTH_LAYERS = 5;
+            const gTopLayers = [];  // [layer][pointIdx]
+            const gBotLayers = [];
+            for (let l = 0; l <= DEPTH_LAYERS; l++) {
+              const t = l / DEPTH_LAYERS;                    // 0 = front, 1 = back
+              const z01 = t * 2 - 1;                         // -1 (front) to +1 (back)
+              const zCurved = Math.sin(z01 * Math.PI * 0.5); // barrel curve in Z
+              const zVal = gBarDepth * -zCurved;              // front=+gBarDepth, back=-gBarDepth with barrel
+              gTopLayers.push(gSamplesTop.map(p => rotY(p.x, p.y, zVal, cosA, sinA)));
+              gBotLayers.push(gSamplesBot.map(p => rotY(p.x, p.y, zVal, cosA, sinA)));
+            }
+            const gTopF = gTopLayers[0];
+            const gTopB = gTopLayers[DEPTH_LAYERS];
+            const gBotF = gBotLayers[0];
+            const gBotB = gBotLayers[DEPTH_LAYERS];
 
-            // Draw back face (filled polygon: top-back + bottom-back reversed)
+            // Guard side shading: interpolate color per depth layer
+            const gsR = parseInt(guardSideCol.slice(4), 10) || 60;
+            const gsG = parseInt(guardSideCol.split(',')[1], 10) || 60;
+            const gsB = parseInt(guardSideCol.split(',')[2], 10) || 60;
+
+            // Draw back face
             if (backVis) {
               const backPoly = [...gTopB, ...gBotB.slice().reverse()];
               ctx.beginPath();
@@ -3118,18 +3132,34 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               ctx.fill();
             }
 
-            // Draw depth quads along top edge
-            for (let i = 0; i < gTopF.length - 1; i++) {
-              fillPoly([gTopF[i], gTopF[i + 1], gTopB[i + 1], gTopB[i]], guardSideCol);
+            // Draw curved depth strips along top and bottom edges
+            for (let l = 0; l < DEPTH_LAYERS; l++) {
+              // Shade: lighter in middle layers (barrel highlight), darker at edges
+              const mid = Math.abs((l + 0.5) / DEPTH_LAYERS - 0.5) * 2; // 0=middle, 1=edge
+              const shade = 0.7 + 0.3 * (1 - mid);
+              const sCol = 'rgb(' + Math.round(gsR * shade) + ',' + Math.round(gsG * shade) + ',' + Math.round(gsB * shade) + ')';
+              // Top edge strips
+              for (let i = 0; i < gTopLayers[l].length - 1; i++) {
+                fillPoly([gTopLayers[l][i], gTopLayers[l][i + 1], gTopLayers[l + 1][i + 1], gTopLayers[l + 1][i]], sCol);
+              }
+              // Bottom edge strips
+              for (let i = 0; i < gBotLayers[l].length - 1; i++) {
+                fillPoly([gBotLayers[l][i], gBotLayers[l][i + 1], gBotLayers[l + 1][i + 1], gBotLayers[l + 1][i]], sCol);
+              }
             }
-            // Draw depth quads along bottom edge
-            for (let i = 0; i < gBotF.length - 1; i++) {
-              fillPoly([gBotF[i], gBotF[i + 1], gBotB[i + 1], gBotB[i]], guardSideCol);
+
+            // End caps (curved: connect all depth layers)
+            if (rightVis) {
+              for (let l = 0; l < DEPTH_LAYERS; l++) {
+                const n = gTopLayers[l].length - 1;
+                fillPoly([gTopLayers[l][n], gBotLayers[l][n], gBotLayers[l + 1][n], gTopLayers[l + 1][n]], guardSideCol);
+              }
             }
-            // Right end cap
-            if (rightVis) fillPoly([gTopF[gTopF.length - 1], gBotF[gBotF.length - 1], gBotB[gBotB.length - 1], gTopB[gTopB.length - 1]], guardSideCol);
-            // Left end cap
-            if (leftVis) fillPoly([gTopF[0], gBotF[0], gBotB[0], gTopB[0]], guardSideCol);
+            if (leftVis) {
+              for (let l = 0; l < DEPTH_LAYERS; l++) {
+                fillPoly([gTopLayers[l][0], gBotLayers[l][0], gBotLayers[l + 1][0], gTopLayers[l + 1][0]], guardSideCol);
+              }
+            }
 
             // Draw front face
             if (frontVis) {
