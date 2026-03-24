@@ -2874,7 +2874,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripHT = gripHW;                  // grip is round
           const guardArmHW = mod * 1.0;           // each arm ≈ 1 module (total guard ≈ 2 mod)
           const guardBarHT = gripHT;              // guard depth = grip depth
-          const pomR = mod * 0.25 * wt.pomM;      // pommel radius ≈ blade base width
+          const pomR = gripHW * wt.pomM;            // pommel matches handle thickness
           const rainGuardH = 0;
 
           // Y positions (tip at y=0, everything else negative = up)
