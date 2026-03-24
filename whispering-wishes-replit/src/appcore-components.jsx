@@ -2302,7 +2302,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
       // --- Sun/Vortex glow (top center) ---
       const sunX = w * 0.5;
-      const sunY = h * 0.15;
+      const sunY = h * 0.12;
       const sunPulse = 1 + Math.sin(time * 0.3) * 0.08;
 
       // Outer atmospheric haze
@@ -2437,7 +2437,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         // Cloud banks: wide horizontal masses, no rotation
         // Perspective: clouds lower on screen (further from sun) get flatter
-        const sunYn = 0.15; // match sunY
+        const sunYn = 0.12; // match sunY
         const cloudDefs = [
           // { cx, cy (normalized), widthN, heightN } — always horizontal
           // Left bank — large masses
@@ -2559,13 +2559,113 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       //   Layer 0 (bottom): 75%–100%  — rocks (near, bigger, darker)
       // ============================================================
 
+      // --- Devastated battleground (drawn BEHIND staircase) ---
+      {
+        const groundY = h * 0.56;
+        const groundH = h - groundY;
+        const center = 0.48, spread = 0.25;
+        const moundGetY = (xn) => {
+          const bell = Math.exp(-((xn - center) * (xn - center)) / (2 * spread * spread));
+          return groundY - groundH * 0.18 * bell;
+        };
+
+        // Scorched earth mound
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        ctx.lineTo(0, groundY + groundH * 0.3);
+        for (let i = 0; i <= 25; i++) {
+          const t = i / 25;
+          const bump = hash(i * 317.3) * groundH * 0.02;
+          ctx.lineTo(t * w, moundGetY(t) + bump);
+        }
+        ctx.lineTo(w, groundY + groundH * 0.3);
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(14, 9, 4, ${0.95 * alphaScale})`;
+        ctx.fill();
+        {
+          const grd = ctx.createLinearGradient(0, groundY - groundH * 0.18, 0, groundY + groundH * 0.1);
+          grd.addColorStop(0, `rgba(130, 75, 22, ${0.14 * alphaScale})`);
+          grd.addColorStop(0.5, `rgba(60, 30, 8, ${0.06 * alphaScale})`);
+          grd.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grd;
+          ctx.fill();
+        }
+
+        // Background weapons on the mound slopes
+        const bgWeapons = [
+          { x: 0.04, h: 0.14, lean: -0.18, type: 'spear' },
+          { x: 0.09, h: 0.18, lean: 0.25, type: 'sword' },
+          { x: 0.14, h: 0.11, lean: -0.38, type: 'spear' },
+          { x: 0.19, h: 0.16, lean: 0.12, type: 'halberd' },
+          { x: 0.24, h: 0.13, lean: -0.22, type: 'spear' },
+          { x: 0.29, h: 0.10, lean: 0.35, type: 'sword' },
+          { x: 0.34, h: 0.09, lean: -0.15, type: 'spear' },
+          { x: 0.66, h: 0.09, lean: 0.18, type: 'spear' },
+          { x: 0.71, h: 0.11, lean: -0.28, type: 'sword' },
+          { x: 0.76, h: 0.15, lean: 0.14, type: 'halberd' },
+          { x: 0.81, h: 0.12, lean: -0.32, type: 'spear' },
+          { x: 0.86, h: 0.17, lean: 0.22, type: 'sword' },
+          { x: 0.91, h: 0.10, lean: -0.20, type: 'spear' },
+          { x: 0.96, h: 0.14, lean: 0.38, type: 'spear' },
+        ];
+        for (let wi = 0; wi < bgWeapons.length; wi++) {
+          const wp = bgWeapons[wi];
+          const wx = wp.x * w;
+          const baseY = moundGetY(wp.x) + hash(wi * 317.3) * groundH * 0.02;
+          const wh = wp.h * h;
+          const tipX = wx + Math.sin(wp.lean) * wh;
+          const tipY = baseY - Math.cos(wp.lean) * wh;
+          const bell = Math.exp(-((wp.x - center) * (wp.x - center)) / (2 * spread * spread));
+          const depthScale = 0.5 + (1 - bell) * 0.5;
+          const thickness = (1.5 + hash(wi * 193.7) * 1.8) * depthScale;
+          ctx.beginPath();
+          if (wp.type === 'sword') {
+            const px = Math.cos(wp.lean) * thickness, py = Math.sin(wp.lean) * thickness;
+            ctx.moveTo(wx - px * 0.5, baseY - py * 0.5);
+            ctx.lineTo(tipX, tipY);
+            ctx.lineTo(wx + px * 0.5, baseY + py * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(10, 6, 3, ${(0.65 + hash(wi * 431.7) * 0.3) * alphaScale})`;
+            ctx.fill();
+            const cgF = 0.15, cgX = wx + Math.sin(wp.lean) * wh * cgF, cgY2 = baseY - Math.cos(wp.lean) * wh * cgF;
+            ctx.beginPath();
+            ctx.moveTo(cgX - px * 2.5, cgY2 - py * 2.5);
+            ctx.lineTo(cgX + px * 2.5, cgY2 + py * 2.5);
+          } else if (wp.type === 'halberd') {
+            ctx.moveTo(wx, baseY); ctx.lineTo(tipX, tipY);
+            const hT = 0.8, hx = wx + Math.sin(wp.lean) * wh * hT, hy = baseY - Math.cos(wp.lean) * wh * hT;
+            const px = Math.cos(wp.lean), py = Math.sin(wp.lean);
+            ctx.moveTo(hx - px * 5, hy - py * 5);
+            ctx.lineTo(hx + Math.sin(wp.lean) * wh * 0.07, hy - Math.cos(wp.lean) * wh * 0.07);
+            ctx.lineTo(hx + px * 3, hy + py * 3);
+          } else {
+            ctx.moveTo(wx, baseY); ctx.lineTo(tipX, tipY);
+          }
+          ctx.strokeStyle = `rgba(10, 6, 3, ${(0.6 + hash(wi * 431.7) * 0.3) * alphaScale * depthScale})`;
+          ctx.lineWidth = thickness;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+
+        // Debris
+        for (let di = 0; di < 25; di++) {
+          const dx = hash(di * 271.3) * w, dt = dx / w;
+          const bell = Math.exp(-((dt - center) * (dt - center)) / (2 * spread * spread));
+          const dy = moundGetY(dt) + hash(di * 413.7) * groundH * 0.08;
+          const dSz = 2 + hash(di * 531.1) * 4;
+          ctx.fillStyle = `rgba(18, 12, 6, ${(0.2 + hash(di * 617.3) * 0.2) * alphaScale})`;
+          ctx.fillRect(dx - dSz, dy - dSz * 0.4, dSz * 2, dSz * 0.8);
+        }
+      }
+
       // --- 3D rectangle with perspective pointing toward the sun ---
       // Rotated 2° left and sinking 2° from left corner via canvas transform
       {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.48;
+        const botY = h * 0.58;
         // Top must stay below VP for correct perspective convergence
         const topY = vpY + h * 0.04; // below the sun
 
@@ -2681,7 +2781,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const vpX = sunX;
         const vpY = sunY;
 
-        const botY = h * 0.48;
+        const botY = h * 0.58;
         const topY = vpY + h * 0.04;
 
         // Same transform as outer rectangle
@@ -3363,169 +3463,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.strokeStyle = `rgba(255, 100, 50, ${lightA * 0.25})`;
         ctx.lineWidth = 6;
         ctx.stroke();
-      }
-
-      // --- Devastated battleground (lower area beneath staircase) ---
-      {
-        const groundY = h * 0.46; // just below staircase base
-        const groundH = h - groundY;
-
-        // Scorched earth mound — dark hill the staircase sits on
-        ctx.beginPath();
-        ctx.moveTo(0, h);
-        ctx.lineTo(0, groundY + groundH * 0.35);
-        // Irregular mound silhouette
-        const moundPts = 20;
-        for (let i = 0; i <= moundPts; i++) {
-          const t = i / moundPts;
-          const mx = t * w;
-          // Bell curve centered slightly left (matching stair tilt)
-          const center = 0.47;
-          const spread = 0.28;
-          const bell = Math.exp(-((t - center) * (t - center)) / (2 * spread * spread));
-          const bumpY = groundY - groundH * 0.15 * bell;
-          // Add irregular bumps
-          const bump = hash(i * 317.3) * groundH * 0.03 * (1 - bell * 0.5);
-          ctx.lineTo(mx, bumpY + bump);
-        }
-        ctx.lineTo(w, groundY + groundH * 0.35);
-        ctx.lineTo(w, h);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(12, 8, 4, ${0.95 * alphaScale})`;
-        ctx.fill();
-        // Warm top edge from sun backlight
-        {
-          const grd = ctx.createLinearGradient(0, groundY - groundH * 0.15, 0, groundY + groundH * 0.1);
-          grd.addColorStop(0, `rgba(120, 70, 20, ${0.15 * alphaScale})`);
-          grd.addColorStop(0.4, `rgba(60, 30, 8, ${0.08 * alphaScale})`);
-          grd.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = grd;
-          ctx.fill();
-        }
-
-        // Broken weapons/spears sticking out of the ground — silhouettes
-        const weaponSeeds = [
-          // { x (norm), baseY offset, height, lean, type }
-          // Left side — dense cluster
-          { x: 0.03, h: 0.18, lean: -0.15, type: 'spear' },
-          { x: 0.07, h: 0.22, lean: 0.25, type: 'sword' },
-          { x: 0.10, h: 0.14, lean: -0.35, type: 'spear' },
-          { x: 0.14, h: 0.20, lean: 0.10, type: 'halberd' },
-          { x: 0.18, h: 0.16, lean: -0.20, type: 'spear' },
-          { x: 0.22, h: 0.12, lean: 0.40, type: 'sword' },
-          { x: 0.25, h: 0.19, lean: -0.08, type: 'spear' },
-          // Near staircase base
-          { x: 0.32, h: 0.13, lean: 0.30, type: 'sword' },
-          { x: 0.37, h: 0.10, lean: -0.25, type: 'spear' },
-          { x: 0.62, h: 0.11, lean: 0.22, type: 'spear' },
-          { x: 0.67, h: 0.14, lean: -0.30, type: 'sword' },
-          // Right side — dense cluster
-          { x: 0.75, h: 0.17, lean: 0.15, type: 'spear' },
-          { x: 0.78, h: 0.21, lean: -0.20, type: 'halberd' },
-          { x: 0.82, h: 0.15, lean: 0.35, type: 'spear' },
-          { x: 0.86, h: 0.19, lean: -0.12, type: 'sword' },
-          { x: 0.90, h: 0.23, lean: 0.18, type: 'spear' },
-          { x: 0.94, h: 0.13, lean: -0.40, type: 'sword' },
-          { x: 0.97, h: 0.17, lean: 0.28, type: 'spear' },
-          // Extra scattered
-          { x: 0.05, h: 0.10, lean: 0.50, type: 'spear' },
-          { x: 0.55, h: 0.08, lean: -0.45, type: 'sword' },
-          { x: 0.43, h: 0.09, lean: 0.38, type: 'spear' },
-          { x: 0.70, h: 0.10, lean: -0.35, type: 'spear' },
-        ];
-
-        for (let wi = 0; wi < weaponSeeds.length; wi++) {
-          const wp = weaponSeeds[wi];
-          const wx = wp.x * w;
-          // Base Y follows the mound contour
-          const center = 0.47;
-          const spread = 0.28;
-          const bell = Math.exp(-((wp.x - center) * (wp.x - center)) / (2 * spread * spread));
-          const baseY = groundY - groundH * 0.15 * bell + hash(wi * 317.3) * groundH * 0.03;
-          const wh = wp.h * h;
-          const tipX = wx + Math.sin(wp.lean) * wh;
-          const tipY = baseY - Math.cos(wp.lean) * wh;
-
-          // Scale with distance (higher on mound = further = thinner)
-          const depthScale = 0.5 + (1 - bell) * 0.5;
-          const thickness = (1.5 + hash(wi * 193.7) * 2.0) * depthScale;
-
-          ctx.save();
-          ctx.beginPath();
-
-          if (wp.type === 'sword') {
-            // Sword: wider near base, tapers, crossguard
-            const perpX = Math.cos(wp.lean) * thickness;
-            const perpY = Math.sin(wp.lean) * thickness;
-            // Blade
-            ctx.moveTo(wx - perpX * 0.5, baseY - perpY * 0.5);
-            ctx.lineTo(tipX, tipY);
-            ctx.lineTo(wx + perpX * 0.5, baseY + perpY * 0.5);
-            ctx.closePath();
-            // Crossguard
-            const cgY = baseY - Math.cos(wp.lean) * wh * 0.15;
-            const cgX = wx + Math.sin(wp.lean) * wh * 0.15;
-            ctx.moveTo(cgX - perpX * 2.5, cgY - perpY * 2.5);
-            ctx.lineTo(cgX + perpX * 2.5, cgY + perpY * 2.5);
-          } else if (wp.type === 'halberd') {
-            // Halberd: shaft + axe head near top
-            ctx.moveTo(wx, baseY);
-            ctx.lineTo(tipX, tipY);
-            // Axe head
-            const headT = 0.8;
-            const hx = wx + Math.sin(wp.lean) * wh * headT;
-            const hy = baseY - Math.cos(wp.lean) * wh * headT;
-            const perpX = Math.cos(wp.lean);
-            const perpY = Math.sin(wp.lean);
-            ctx.moveTo(hx - perpX * 6, hy - perpY * 6);
-            ctx.lineTo(hx + Math.sin(wp.lean) * wh * 0.08, hy - Math.cos(wp.lean) * wh * 0.08);
-            ctx.lineTo(hx + perpX * 3, hy + perpY * 3);
-          } else {
-            // Spear: simple shaft + point
-            ctx.moveTo(wx, baseY);
-            ctx.lineTo(tipX, tipY);
-          }
-
-          // Dark silhouette
-          const wAlpha = (0.6 + hash(wi * 431.7) * 0.3) * alphaScale * depthScale;
-          ctx.strokeStyle = `rgba(8, 5, 2, ${wAlpha})`;
-          ctx.lineWidth = thickness;
-          ctx.lineCap = 'round';
-          ctx.stroke();
-
-          // Subtle warm edge highlight from sun
-          if (bell < 0.5) {
-            ctx.strokeStyle = `rgba(100, 60, 20, ${0.08 * alphaScale})`;
-            ctx.lineWidth = thickness + 1;
-            ctx.stroke();
-          }
-
-          ctx.restore();
-        }
-
-        // Scattered debris/rubble on the ground
-        for (let di = 0; di < 30; di++) {
-          const dx = hash(di * 271.3) * w;
-          const dt = dx / w;
-          const bell = Math.exp(-((dt - 0.47) * (dt - 0.47)) / (2 * 0.28 * 0.28));
-          const dy = groundY - groundH * 0.15 * bell + hash(di * 317.3) * groundH * 0.03
-                   + hash(di * 413.7) * groundH * 0.08;
-          const dSz = 2 + hash(di * 531.1) * 5;
-          const dAlpha = (0.2 + hash(di * 617.3) * 0.25) * alphaScale;
-          ctx.fillStyle = `rgba(18, 12, 6, ${dAlpha})`;
-          ctx.fillRect(dx - dSz, dy - dSz * 0.4, dSz * 2, dSz * 0.8);
-        }
-
-        // Dust/haze over the ground
-        {
-          const hazeGrd = ctx.createLinearGradient(0, groundY - groundH * 0.1, 0, h);
-          hazeGrd.addColorStop(0, 'rgba(80, 50, 20, 0)');
-          hazeGrd.addColorStop(0.2, `rgba(60, 35, 12, ${0.06 * alphaScale})`);
-          hazeGrd.addColorStop(0.6, `rgba(40, 25, 10, ${0.10 * alphaScale})`);
-          hazeGrd.addColorStop(1, `rgba(8, 5, 2, ${0.25 * alphaScale})`);
-          ctx.fillStyle = hazeGrd;
-          ctx.fillRect(0, groundY - groundH * 0.1, w, h - groundY + groundH * 0.1);
-        }
       }
 
       // --- Atmospheric mist layers ---
