@@ -3197,7 +3197,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Fuller (blood groove) — recessed channel along blade center
           if (frontVis && innerHW > 1.5) {
             const fullerW = innerHW * 0.28;   // width of the groove
-            const fullerStart = bladeTop + mod * 0.3; // starts just below guard
+            const fullerStart = bladeTop + mod * 1.0; // starts well below guard
             const fullerEnd = taperY + (0 - taperY) * 0.3; // ends ~30% into taper
             const fcx = (fTL.x + fTR.x) * 0.5; // blade center X on screen
 
