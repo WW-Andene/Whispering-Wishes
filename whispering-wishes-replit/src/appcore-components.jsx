@@ -4031,41 +4031,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Matching reference: scattered across battlefield, various tilts
         {
           const swords = [];
-          const fieldZnear = 0.25;  // extremely close — swords dominate the screen
+          const fieldZnear = 0.5;   // right at camera — swords fill the screen
           const fieldZfar = 80;
           const fieldXrange = 30;
 
           // Scattered placement — organic, with natural clearing in center
           // First: explicit foreground swords at edges (framing the scene)
-          // wx must be proportional to wz for screen visibility:
-          // scrX = W/2 + wx * focal/wz, so wx ~= ±0.3*wz for edge of screen
           const fgSwords = [
-            // Very close — huge, partially cropped at screen edges
-            { wx: -0.18, wz: 0.28, tiltO: -12 }, { wx: 0.20, wz: 0.26, tiltO: 9 },
-            { wx: -0.10, wz: 0.32, tiltO: 5 },   { wx: 0.14, wz: 0.30, tiltO: -7 },
-            { wx: -0.28, wz: 0.35, tiltO: -15 },  { wx: 0.30, wz: 0.33, tiltO: 11 },
-            { wx: -0.05, wz: 0.38, tiltO: 3 },    { wx: 0.22, wz: 0.36, tiltO: -10 },
-            // Close right sword (requested) — big, right side
-            { wx: 0.25, wz: 0.29, tiltO: -6 },
-            // Close foreground
-            { wx: -0.35, wz: 0.45, tiltO: -8 },   { wx: 0.38, wz: 0.42, tiltO: 6 },
-            { wx: -0.18, wz: 0.48, tiltO: 14 },   { wx: 0.08, wz: 0.46, tiltO: -4 },
-            { wx: -0.42, wz: 0.52, tiltO: -11 },  { wx: 0.45, wz: 0.50, tiltO: 8 },
-            { wx: -0.12, wz: 0.55, tiltO: 7 },    { wx: 0.28, wz: 0.53, tiltO: -13 },
-            // Mid foreground
-            { wx: -0.50, wz: 0.62, tiltO: -6 },   { wx: 0.55, wz: 0.60, tiltO: 10 },
-            { wx: -0.25, wz: 0.68, tiltO: 4 },    { wx: 0.18, wz: 0.65, tiltO: -9 },
-            { wx: -0.62, wz: 0.72, tiltO: -14 },  { wx: 0.65, wz: 0.70, tiltO: 5 },
-            { wx: -0.08, wz: 0.78, tiltO: 8 },    { wx: 0.40, wz: 0.75, tiltO: -7 },
-            // Middle-left cluster (requested)
-            { wx: -0.35, wz: 0.66, tiltO: -8 },   { wx: -0.48, wz: 0.72, tiltO: 10 },
-            { wx: -0.55, wz: 0.69, tiltO: -4 },   { wx: -0.30, wz: 0.80, tiltO: 13 },
-            { wx: -0.65, wz: 0.84, tiltO: -11 },
-            // Near-mid
-            { wx: -0.75, wz: 0.88, tiltO: 12 },   { wx: 0.80, wz: 0.85, tiltO: -10 },
-            { wx: -0.30, wz: 0.92, tiltO: -5 },   { wx: 0.28, wz: 0.90, tiltO: 11 },
-            { wx: -0.55, wz: 0.96, tiltO: 6 },    { wx: 0.58, wz: 0.94, tiltO: -8 },
-            { wx: -0.90, wz: 1.05, tiltO: -3 },   { wx: 0.95, wz: 1.08, tiltO: 9 },
+            { wx: -2, wz: 0.6, tiltO: -10 }, { wx: 2.5, wz: 0.55, tiltO: 8 },
+            { wx: -1.5, wz: 0.8, tiltO: -6 }, { wx: 1.8, wz: 0.7, tiltO: 12 },
+            { wx: -3.5, wz: 0.9, tiltO: -14 }, { wx: 3, wz: 0.85, tiltO: 5 },
+            { wx: -1, wz: 1.2, tiltO: 7 }, { wx: 1.5, wz: 1.1, tiltO: -9 },
+            { wx: -2.8, wz: 0.7, tiltO: 4 }, { wx: 4, wz: 1.0, tiltO: -7 },
+            { wx: -4, wz: 1.3, tiltO: 10 }, { wx: 1, wz: 1.5, tiltO: -5 },
+            { wx: -0.5, wz: 0.5, tiltO: -3 }, { wx: 3.5, wz: 0.65, tiltO: 11 },
+            { wx: -5, wz: 1.1, tiltO: 6 }, { wx: 5, wz: 0.9, tiltO: -8 },
           ];
           for (let fi = 0; fi < fgSwords.length; fi++) {
             const fg = fgSwords[fi];
@@ -4083,7 +4063,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // Then: scatter field swords with linear distribution (not quadratic)
-          const swordCount = 500;
+          const swordCount = 250;
           for (let i = 0; i < swordCount; i++) {
             const zRaw = rng(i, 100);
             // Linear distribution — even spread from near to far
@@ -4092,10 +4072,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // X spread widens with distance (perspective cone)
             const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
             let wx = (rng(i, 101) * 2 - 1) * xSpread;
-
-            // Clamp so close swords stay on screen (max visible wx ≈ wz * 1.4 / focal ratio)
-            const maxVisWx = wzJ * 1.2;
-            if (Math.abs(wx) > maxVisWx) wx = (wx > 0 ? 1 : -1) * maxVisWx;
 
             // Subtle center thinning — gently nudge swords near X=0 outward
             const clearingHW = 1.5 * (1 + 2.0 / (wzJ + 3));
