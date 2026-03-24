@@ -3026,16 +3026,81 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (rbVis || rfVis) fillPoly([fTR, bTR, eTR], sideCol);
           if (lbVis || lfVis) fillPoly([bTL, fTL, eTL], sideCol);
 
-          // Center ridge line (fuller) on front face
+          // Fuller (blood groove) — recessed channel along blade center
           if (frontVis && innerHW > 1.5) {
-            const ridgeCol = 'rgba(' + Math.min(255, blR + 25) + ',' + Math.min(255, blG + 25) + ',' + Math.min(255, blB + 25) + ',0.4)';
-            const rw = Math.max(0.3, innerHW * 0.06);
+            const fullerW = innerHW * 0.28;   // width of the groove
+            const fullerStart = bladeTop + mod * 0.3; // starts just below guard
+            const fullerEnd = taperY + (0 - taperY) * 0.3; // ends ~30% into taper
+            const fcx = (fTL.x + fTR.x) * 0.5; // blade center X on screen
+
+            // Recessed channel — darker than blade face
+            const fDarkR = Math.round(blR * 0.55);
+            const fDarkG = Math.round(blG * 0.55);
+            const fDarkB = Math.round(blB * 0.55);
+            const fullerGrad = ctx.createLinearGradient(fcx - fullerW, 0, fcx + fullerW, 0);
+            // Concave shading: dark edges, slightly lighter center
+            if (sinA > 0) {
+              fullerGrad.addColorStop(0, 'rgb(' + Math.round(fDarkR * 0.7) + ',' + Math.round(fDarkG * 0.7) + ',' + Math.round(fDarkB * 0.7) + ')');
+              fullerGrad.addColorStop(0.35, 'rgb(' + fDarkR + ',' + fDarkG + ',' + fDarkB + ')');
+              fullerGrad.addColorStop(0.7, 'rgb(' + Math.round(fDarkR * 1.15) + ',' + Math.round(fDarkG * 1.15) + ',' + Math.round(fDarkB * 1.15) + ')');
+              fullerGrad.addColorStop(1, 'rgb(' + Math.round(fDarkR * 0.8) + ',' + Math.round(fDarkG * 0.8) + ',' + Math.round(fDarkB * 0.8) + ')');
+            } else {
+              fullerGrad.addColorStop(0, 'rgb(' + Math.round(fDarkR * 0.8) + ',' + Math.round(fDarkG * 0.8) + ',' + Math.round(fDarkB * 0.8) + ')');
+              fullerGrad.addColorStop(0.3, 'rgb(' + Math.round(fDarkR * 1.15) + ',' + Math.round(fDarkG * 1.15) + ',' + Math.round(fDarkB * 1.15) + ')');
+              fullerGrad.addColorStop(0.65, 'rgb(' + fDarkR + ',' + fDarkG + ',' + fDarkB + ')');
+              fullerGrad.addColorStop(1, 'rgb(' + Math.round(fDarkR * 0.7) + ',' + Math.round(fDarkG * 0.7) + ',' + Math.round(fDarkB * 0.7) + ')');
+            }
+
+            // Interpolate screen positions for fuller start/end
+            // fullerStart is between bladeTop and taperY on the straight section
+            const sT = (fullerStart - bladeTop) / (taperY - bladeTop || 1);
+            const fsLx = fTL.x + (fML.x - fTL.x) * sT;
+            const fsRx = fTR.x + (fMR.x - fTR.x) * sT;
+            const fsY = fTL.y + (fML.y - fTL.y) * sT;
+            // fullerEnd is in the taper zone
+            const eT = (fullerEnd - taperY) / (0 - taperY || 1);
+            const feLx = fML.x + (fTip.x - fML.x) * eT;
+            const feRx = fMR.x + (fTip.x - fMR.x) * eT;
+            const feY = fML.y + (fTip.y - fML.y) * eT;
+            // Fuller center line at start and end
+            const fsCx = (fsLx + fsRx) * 0.5;
+            const feCx = (feLx + feRx) * 0.5;
+
+            // Draw the groove as a tapered rectangle
             ctx.beginPath();
-            ctx.moveTo(fTip.x, fTip.y);
-            ctx.lineTo(fTL.x + (fTR.x - fTL.x) * 0.5 - rw, fTL.y);
-            ctx.lineTo(fTL.x + (fTR.x - fTL.x) * 0.5 + rw, fTL.y);
+            ctx.moveTo(fsCx - fullerW, fsY);
+            ctx.lineTo(fsCx + fullerW, fsY);
+            ctx.lineTo(feCx + fullerW * 0.15, feY); // narrows toward tip
+            ctx.lineTo(feCx - fullerW * 0.15, feY);
             ctx.closePath();
-            ctx.fillStyle = ridgeCol;
+            ctx.fillStyle = fullerGrad;
+            ctx.fill();
+
+            // Top highlight edge — light catching the upper lip of the groove
+            const lipAlpha = (0.15 + Math.abs(cosA) * 0.15).toFixed(3);
+            ctx.beginPath();
+            ctx.moveTo(fsCx - fullerW, fsY);
+            ctx.lineTo(fsCx + fullerW, fsY);
+            ctx.lineTo(feCx + fullerW * 0.15, feY);
+            ctx.lineTo(feCx - fullerW * 0.15, feY);
+            ctx.closePath();
+            const lipGrad = ctx.createLinearGradient(0, fsY, 0, fsY + (feY - fsY) * 0.08);
+            lipGrad.addColorStop(0, 'rgba(255,255,255,' + lipAlpha + ')');
+            lipGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = lipGrad;
+            ctx.fill();
+
+            // Bottom shadow edge — shadow at the lower lip
+            ctx.beginPath();
+            ctx.moveTo(fsCx - fullerW, fsY);
+            ctx.lineTo(fsCx + fullerW, fsY);
+            ctx.lineTo(feCx + fullerW * 0.15, feY);
+            ctx.lineTo(feCx - fullerW * 0.15, feY);
+            ctx.closePath();
+            const shadowGrad = ctx.createLinearGradient(0, feY - (feY - fsY) * 0.06, 0, feY);
+            shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
+            shadowGrad.addColorStop(1, 'rgba(0,0,0,' + (parseFloat(lipAlpha) * 0.7).toFixed(3) + ')');
+            ctx.fillStyle = shadowGrad;
             ctx.fill();
           }
 
