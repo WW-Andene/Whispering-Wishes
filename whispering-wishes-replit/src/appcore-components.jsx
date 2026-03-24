@@ -3150,36 +3150,18 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               }
             }
 
-            // End caps (curved: subdivide vertically + depth for rounded look)
-            const CAP_VSTEPS = 5;
-            const drawCurvedCap = (pIdx, vis) => {
-              if (!vis) return;
+            // End caps (simple depth-layered quads, no bulge)
+            if (rightVis) {
               for (let l = 0; l < DEPTH_LAYERS; l++) {
-                const tA = gTopLayers[l][pIdx];
-                const bA = gBotLayers[l][pIdx];
-                const tB = gTopLayers[l + 1][pIdx];
-                const bB = gBotLayers[l + 1][pIdx];
-                for (let v = 0; v < CAP_VSTEPS; v++) {
-                  const t0 = v / CAP_VSTEPS;
-                  const t1 = (v + 1) / CAP_VSTEPS;
-                  // Barrel bulge: push outward at middle of cap
-                  const bulge0 = Math.sin(t0 * Math.PI) * gBarDepth * 0.3;
-                  const bulge1 = Math.sin(t1 * Math.PI) * gBarDepth * 0.3;
-                  const sign = pIdx === 0 ? -1 : 1; // left cap pushes left, right pushes right
-                  const p00 = { x: tA.x + (bA.x - tA.x) * t0 + bulge0 * sign, y: tA.y + (bA.y - tA.y) * t0 };
-                  const p01 = { x: tA.x + (bA.x - tA.x) * t1 + bulge1 * sign, y: tA.y + (bA.y - tA.y) * t1 };
-                  const p10 = { x: tB.x + (bB.x - tB.x) * t0 + bulge0 * sign, y: tB.y + (bB.y - tB.y) * t0 };
-                  const p11 = { x: tB.x + (bB.x - tB.x) * t1 + bulge1 * sign, y: tB.y + (bB.y - tB.y) * t1 };
-                  // Shade: brighter at bulge peak
-                  const capMid = Math.sin((t0 + t1) * 0.5 * Math.PI);
-                  const capShade = 0.6 + 0.4 * capMid;
-                  const cCol = 'rgb(' + Math.round(gsR * capShade) + ',' + Math.round(gsG * capShade) + ',' + Math.round(gsB * capShade) + ')';
-                  fillPoly([p00, p01, p11, p10], cCol);
-                }
+                const n = gTopLayers[l].length - 1;
+                fillPoly([gTopLayers[l][n], gBotLayers[l][n], gBotLayers[l + 1][n], gTopLayers[l + 1][n]], guardSideCol);
               }
-            };
-            drawCurvedCap(gTopLayers[0].length - 1, rightVis);
-            drawCurvedCap(0, leftVis);
+            }
+            if (leftVis) {
+              for (let l = 0; l < DEPTH_LAYERS; l++) {
+                fillPoly([gTopLayers[l][0], gBotLayers[l][0], gBotLayers[l + 1][0], gTopLayers[l + 1][0]], guardSideCol);
+              }
+            }
 
             // Draw front face
             if (frontVis) {
