@@ -2655,26 +2655,35 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const sunScreenX = W * 0.5;
 
         // Draw one sword silhouette at screen coords
-        function drawSword(sx, sy, sh, sbw, tilt) {
+        // irr = irregularity object: { bladeSkew, bladeHVar, guardVar, gripVar, pomVar }
+        function drawSword(sx, sy, sh, sbw, tilt, irr) {
           if (sh < 1.5 || sbw < 0.2) return;
           ctx.save();
+
+          // Clip everything below ground line (sy) so buried blade is hidden
+          ctx.beginPath();
+          ctx.rect(sx - sh * 2, 0, sh * 4, sy);
+          ctx.clip();
+
           // Sword is buried 15% into the ground (blade-first)
           ctx.translate(sx, sy + sh * 0.15);
           ctx.rotate(tilt * Math.PI / 180);
 
-          const bladeH = sh * 0.74;
-          const gThk = Math.max(0.8, sh * 0.006);
-          const gHW = sbw * 1.5;
-          const gripH = sh * 0.21;
+          const ir = irr || {};
+          const bladeH = sh * (0.74 + (ir.bladeHVar || 0));
+          const gThk = Math.max(0.8, sh * 0.006) * (1 + (ir.guardVar || 0));
+          const gHW = sbw * (1.5 + (ir.guardVar || 0) * 0.5);
+          const gripH = sh * (0.21 + (ir.gripVar || 0));
           const gripHW = sbw * 0.2;
           const tipW = sbw * 0.22;
-          const pomR = Math.max(0.3, sbw * 0.25);
+          const pomR = Math.max(0.3, sbw * (0.25 + (ir.pomVar || 0)));
+          const bSkew = (ir.bladeSkew || 0) * sbw; // asymmetric blade lean
 
-          // Single silhouette path
+          // Single silhouette path (with asymmetry via bSkew)
           ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(-tipW, -1);
-          ctx.lineTo(-sbw, -bladeH);
+          ctx.moveTo(bSkew, 0);
+          ctx.lineTo(-tipW + bSkew * 0.6, -1);
+          ctx.lineTo(-sbw + bSkew * 0.3, -bladeH);
           ctx.lineTo(-gHW, -bladeH);
           ctx.lineTo(-gHW, -bladeH - gThk);
           ctx.lineTo(-gripHW, -bladeH - gThk);
@@ -2684,8 +2693,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(gripHW, -bladeH - gThk);
           ctx.lineTo(gHW, -bladeH - gThk);
           ctx.lineTo(gHW, -bladeH);
-          ctx.lineTo(sbw, -bladeH);
-          ctx.lineTo(tipW, -1);
+          ctx.lineTo(sbw + bSkew * 0.3, -bladeH);
+          ctx.lineTo(tipW + bSkew * 0.6, -1);
           ctx.closePath();
           ctx.fillStyle = 'rgba(16,10,8,0.96)';
           ctx.fill();
@@ -2697,17 +2706,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const ew = Math.max(0.4, sbw * 0.08);
             ctx.beginPath();
             if (rimSide > 0) {
-              ctx.moveTo(tipW, -1); ctx.lineTo(sbw, -bladeH);
-              ctx.lineTo(sbw - ew, -bladeH); ctx.lineTo(tipW - ew * 0.3, -1);
+              ctx.moveTo(tipW + bSkew * 0.6, -1); ctx.lineTo(sbw + bSkew * 0.3, -bladeH);
+              ctx.lineTo(sbw + bSkew * 0.3 - ew, -bladeH); ctx.lineTo(tipW + bSkew * 0.6 - ew * 0.3, -1);
             } else {
-              ctx.moveTo(-tipW, -1); ctx.lineTo(-sbw, -bladeH);
-              ctx.lineTo(-sbw + ew, -bladeH); ctx.lineTo(-tipW + ew * 0.3, -1);
+              ctx.moveTo(-tipW + bSkew * 0.6, -1); ctx.lineTo(-sbw + bSkew * 0.3, -bladeH);
+              ctx.lineTo(-sbw + bSkew * 0.3 + ew, -bladeH); ctx.lineTo(-tipW + bSkew * 0.6 + ew * 0.3, -1);
             }
             ctx.closePath();
             ctx.fillStyle = 'rgba(215,135,55,' + rimStr + ')';
             ctx.fill();
           }
           ctx.restore();
+        }
+
+        // === BARREL LENS DISTORTION for depth illusion ===
+        const lensK = 0.12; // distortion strength (subtle)
+        function lensDistort(px, py) {
+          // Normalize to [-1,1] centered on screen
+          const nx = (px - W * 0.5) / (W * 0.5);
+          const ny = (py - H * 0.5) / (H * 0.5);
+          const r2 = nx * nx + ny * ny;
+          const factor = 1 + lensK * r2;
+          return {
+            x: W * 0.5 + nx * factor * W * 0.5,
+            y: H * 0.5 + ny * factor * H * 0.5
+          };
         }
 
         // === PLACE SWORDS ON THE GROUND PLAN ===
@@ -2740,16 +2763,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (wz < 1.5) { sIdx++; continue; }
 
             const sizeVar = 0.8 + rng(sIdx, 3) * 0.4; // 0.8-1.2x size variation
-            const tiltVal = (rng(sIdx, 4) - 0.5) * 16;
-            const steep = rng(sIdx, 5) > 0.94 ? 2.2 : 1;
+            // More rotation variation: wider base tilt + occasional steep lean
+            const tiltVal = (rng(sIdx, 4) - 0.5) * 26; // wider range (was 16)
+            const steep = rng(sIdx, 5) > 0.88 ? 2.5 : (rng(sIdx, 5) > 0.75 ? 1.6 : 1);
+
+            // Organic irregularities — each sword is slightly different
+            const irr = {
+              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.3,    // asymmetric blade lean
+              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.08,    // blade height ±4%
+              guardVar:  (rng(sIdx, 8) - 0.5) * 0.3,      // guard size variation
+              gripVar:   (rng(sIdx, 9) - 0.5) * 0.06,     // grip length ±3%
+              pomVar:    (rng(sIdx, 10) - 0.5) * 0.15      // pommel size variation
+            };
 
             // Project to screen
-            const scrX = W * 0.5 + wx * focal / wz;
-            const scrY = hY + camH * focal / wz;
+            let scrX = W * 0.5 + wx * focal / wz;
+            let scrY = hY + camH * focal / wz;
             const scrH = swordRealH * sizeVar * focal / wz;
             const scrBW = swordRealBW * sizeVar * focal / wz;
 
-            allSwords.push({ x: scrX, y: scrY, h: scrH, bw: scrBW, t: tiltVal * steep, z: wz });
+            // Apply barrel lens distortion
+            const distorted = lensDistort(scrX, scrY);
+            scrX = distorted.x;
+            scrY = distorted.y;
+
+            allSwords.push({ x: scrX, y: scrY, h: scrH, bw: scrBW, t: tiltVal * steep, z: wz, irr });
             sIdx++;
           }
         }
@@ -2758,7 +2796,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         allSwords.sort((a, b) => b.z - a.z);
 
         for (const s of allSwords) {
-          drawSword(s.x, s.y, s.h, s.bw, s.t);
+          drawSword(s.x, s.y, s.h, s.bw, s.t, s.irr);
         }
 
         // --- EMBERS ---
