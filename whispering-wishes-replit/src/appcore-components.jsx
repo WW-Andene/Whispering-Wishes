@@ -2868,7 +2868,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Widths
           const gripHW = halfW / 1.5;             // grip half-width (blade = 1.5x grip)
           const gripHT = gripHW;                   // grip is round
-          const guardArmHW = halfW * 2.0 * wt.gwM; // guard arms extend ~2x blade width each side
+          const guardArmHW = bladeH / 6; // each arm ≈ 1/6 of blade length
           const guardBarHT = gripHW;               // guard bar depth = grip diameter
           const pomR = gripHW * 1.3 * wt.pomM;    // pommel radius
 
