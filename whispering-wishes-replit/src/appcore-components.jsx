@@ -3010,12 +3010,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const sizeVar = 0.90 + rng(sIdx, 3) * 0.20; // 0.90–1.10
             const distShrink = 1 - depthRatio * 0.15; // 15% shrink at max depth
 
-            // Tilt: visible lean, most nearly upright but some clearly angled
-            const tiltVal = (rng(sIdx, 4) - 0.5) * 20; // ±10°
-            const steep = rng(sIdx, 5) > 0.90 ? 2.0 : 1; // 10% chance of double lean
+            // Tilt: wide range of angles — battlefield swords stuck at all orientations
+            // ~40% nearly upright (±15°), ~35% clearly leaning (±35°), ~25% heavily angled (±60°)
+            const tiltRng = rng(sIdx, 4);
+            const tiltBase = (rng(sIdx, 16) - 0.5) * 2; // -1 to 1 direction
+            let tiltVal;
+            if (tiltRng < 0.40) {
+              tiltVal = tiltBase * 15;       // nearly upright
+            } else if (tiltRng < 0.75) {
+              tiltVal = tiltBase * 35;       // clearly leaning
+            } else {
+              tiltVal = tiltBase * 60;       // heavily angled / nearly fallen
+            }
+            const steep = 1; // no longer needed — tilt range handles variety
 
-            // Z-axis rotation: visible facing variation ±40°
-            const zRot = (rng(sIdx, 16) - 0.5) * Math.PI * 0.45;
+            // Z-axis rotation: affects width foreshortening + lighting only
+            const zRot = (rng(sIdx, 5) - 0.5) * Math.PI * 0.45;
 
             // Organic irregularities — noticeable but natural
             const irr = {
