@@ -2924,7 +2924,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // BLADE — razor cross-section with beveled edges meeting at Z=0
           // Each edge bevel is 1/7 of full blade width per side
           // ================================================================
-          const taperY = -bladeH * 0.35;
+          const taperY = -bladeH * 0.10;
           const tipT = Math.max(0.3, halfT * 0.3);
           const edgeW = halfW * 2 / 7;          // 1/7 of full width
           const innerHW = halfW - edgeW;         // inner flat face half-width
@@ -2950,6 +2950,29 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const eML = rotY(-halfW, taperY, 0, cosA, sinA);
           const eTip = rotY(0, 0, 0, cosA, sinA);
 
+          // Curved tip sides: intermediate points with subtle outward bow
+          const TIP_SEG = 6;
+          const tipBow = innerHW * 0.08; // subtle outward bulge
+          const tipCurvePts = (startX, startY, startZ, endX, endY, endZ, sign) => {
+            const pts = [];
+            for (let i = 1; i < TIP_SEG; i++) {
+              const t = i / TIP_SEG;
+              const x = startX + (endX - startX) * t + Math.sin(t * Math.PI) * tipBow * sign;
+              const y = startY + (endY - startY) * t;
+              const z = startZ + (endZ - startZ) * t;
+              pts.push(rotY(x, y, z, cosA, sinA));
+            }
+            return pts;
+          };
+          // Right side curve points (front, back, edge)
+          const fTipR = tipCurvePts(innerHW, taperY, halfT, 0, 0, tipT, 1);
+          const bTipR = tipCurvePts(innerHW, taperY, -halfT, 0, 0, -tipT, 1);
+          const eTipR = tipCurvePts(halfW, taperY, 0, 0, 0, 0, 1);
+          // Left side curve points (front, back, edge)
+          const fTipL = tipCurvePts(-innerHW, taperY, halfT, 0, 0, tipT, -1);
+          const bTipL = tipCurvePts(-innerHW, taperY, -halfT, 0, 0, -tipT, -1);
+          const eTipL = tipCurvePts(-halfW, taperY, 0, 0, 0, 0, -1);
+
           // Per-bevel visibility using actual face normals
           // Right-front bevel normal ≈ (halfT, 0, edgeW)
           // Right-back  bevel normal ≈ (halfT, 0, -edgeW)
@@ -2965,30 +2988,39 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const bBevelCol = 'rgb(' + Math.round(blR * 0.35) + ',' + Math.round(blG * 0.35) + ',' + Math.round(blB * 0.35) + ')';
 
           // Draw back-to-front (painter's algorithm)
-          if (backVis) fillPoly([bTL, bTR, bMR, bTip, bML], backCol);
+          if (backVis) fillPoly([bTL, bTR, bMR, ...bTipR, bTip, ...bTipL.slice().reverse(), bML], backCol);
 
-          // Back bevels
+          // Back bevels (straight section + curved tip segments)
           if (rbVis) {
             fillPoly([eTR, eMR, bMR, bTR], bBevelCol);
-            fillPoly([eMR, eTip, bTip, bMR], bBevelCol);
+            // Tip segments: right back bevel
+            const rbAll = [bMR, ...bTipR, bTip];
+            const reAll = [eMR, ...eTipR, eTip];
+            for (let i = 0; i < rbAll.length - 1; i++) fillPoly([reAll[i], reAll[i + 1], rbAll[i + 1], rbAll[i]], bBevelCol);
           }
           if (lbVis) {
             fillPoly([bTL, bML, eML, eTL], bBevelCol);
-            fillPoly([bML, bTip, eTip, eML], bBevelCol);
+            const lbAll = [bML, ...bTipL.slice().reverse(), bTip];
+            const leAll = [eML, ...eTipL.slice().reverse(), eTip];
+            for (let i = 0; i < lbAll.length - 1; i++) fillPoly([lbAll[i], lbAll[i + 1], leAll[i + 1], leAll[i]], bBevelCol);
           }
 
-          // Front bevels
+          // Front bevels (straight section + curved tip segments)
           if (rfVis) {
             fillPoly([fTR, fMR, eMR, eTR], fBevelCol);
-            fillPoly([fMR, fTip, eTip, eMR], fBevelCol);
+            const rfAll = [fMR, ...fTipR, fTip];
+            const reAll = [eMR, ...eTipR, eTip];
+            for (let i = 0; i < rfAll.length - 1; i++) fillPoly([rfAll[i], rfAll[i + 1], reAll[i + 1], reAll[i]], fBevelCol);
           }
           if (lfVis) {
             fillPoly([eTL, eML, fML, fTL], fBevelCol);
-            fillPoly([eML, eTip, fTip, fML], fBevelCol);
+            const lfAll = [fML, ...fTipL.slice().reverse(), fTip];
+            const leAll = [eML, ...eTipL.slice().reverse(), eTip];
+            for (let i = 0; i < lfAll.length - 1; i++) fillPoly([leAll[i], leAll[i + 1], lfAll[i + 1], lfAll[i]], fBevelCol);
           }
 
           // Front face
-          if (frontVis) fillPoly([fTL, fTR, fMR, fTip, fML], frontCol);
+          if (frontVis) fillPoly([fTL, fTR, fMR, ...fTipR, fTip, ...fTipL.slice().reverse(), fML], frontCol);
 
           // Top cap triangles at bladeTop
           if (rbVis || rfVis) fillPoly([fTR, bTR, eTR], sideCol);
