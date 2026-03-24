@@ -2868,7 +2868,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Widths
           const gripHW = halfW / 1.5;             // grip half-width (blade = 1.5x grip)
           const gripHT = gripHW;                   // grip is round
-          const guardArmHW = bladeH / 6; // each arm ≈ 1/6 of blade length
+          const guardArmHW = bladeH / 7; // each arm ≈ 1/7 of blade length
           const guardBarHT = gripHW;               // guard bar depth = grip diameter
           const pomR = gripHW * 1.3 * wt.pomM;    // pommel radius
 
@@ -2977,25 +2977,36 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // ================================================================
           const gripMidHW = gripHW * 0.8; // narrower in the middle
           const grMidY = (gripTop + gripBot) * 0.5;
-          // Grip as 6-point shape (tapered) — front face
-          const grfA = rotY(-gripHW, gripBot, gripHT, cosA, sinA);
-          const grfB = rotY(-gripMidHW, grMidY, gripHT, cosA, sinA);
-          const grfC = rotY(-gripHW, gripTop, gripHT, cosA, sinA);
-          const grfD = rotY(gripHW, gripTop, gripHT, cosA, sinA);
-          const grfE = rotY(gripMidHW, grMidY, gripHT, cosA, sinA);
-          const grfF = rotY(gripHW, gripBot, gripHT, cosA, sinA);
-          // Back face
-          const grbA = rotY(-gripHW, gripBot, -gripHT, cosA, sinA);
-          const grbB = rotY(-gripMidHW, grMidY, -gripHT, cosA, sinA);
-          const grbC = rotY(-gripHW, gripTop, -gripHT, cosA, sinA);
-          const grbD = rotY(gripHW, gripTop, -gripHT, cosA, sinA);
-          const grbE = rotY(gripMidHW, grMidY, -gripHT, cosA, sinA);
-          const grbF = rotY(gripHW, gripBot, -gripHT, cosA, sinA);
-
-          if (backVis) fillPoly([grbA, grbB, grbC, grbD, grbE, grbF], gripSideCol);
-          if (rightVis) fillPoly([grfF, grbF, grbE, grbD, grfD, grfE], gripSideCol);
-          if (leftVis) fillPoly([grbA, grfA, grfB, grfC, grbC, grbB], gripSideCol);
-          if (frontVis) fillPoly([grfA, grfB, grfC, grfD, grfE, grfF], gripCol);
+          // Grip as cylinder — draw as a rectangle whose width changes with rotation
+          // A cylinder seen from the front is always the same width (its diameter).
+          // The apparent width = sqrt(cos²θ * r² + sin²θ * r²) = r (constant!)
+          // So we just draw a rectangle of constant width = gripHW, shaded by angle.
+          // Back half (darker)
+          ctx.beginPath();
+          ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+          ctx.fillStyle = gripSideCol;
+          ctx.fill();
+          // Front half (lighter, drawn as rounded rect to look cylindrical)
+          const cylShade = Math.abs(cosA); // 1 = facing camera, 0 = edge-on
+          const cylR = Math.round(hdR * (0.5 + cylShade * 0.5));
+          const cylG = Math.round(hdG * (0.5 + cylShade * 0.5));
+          const cylB = Math.round(hdB * (0.5 + cylShade * 0.5));
+          // Gradient across cylinder width for 3D roundness
+          const cylGrad = ctx.createLinearGradient(-gripHW, 0, gripHW, 0);
+          const cylHi = 'rgb(' + Math.min(255, cylR + 20) + ',' + Math.min(255, cylG + 20) + ',' + Math.min(255, cylB + 20) + ')';
+          const cylLo = 'rgb(' + Math.round(cylR * 0.6) + ',' + Math.round(cylG * 0.6) + ',' + Math.round(cylB * 0.6) + ')';
+          // Light comes from left based on rotation
+          if (sinA > 0) {
+            cylGrad.addColorStop(0, cylHi);
+            cylGrad.addColorStop(1, cylLo);
+          } else {
+            cylGrad.addColorStop(0, cylLo);
+            cylGrad.addColorStop(1, cylHi);
+          }
+          ctx.beginPath();
+          ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+          ctx.fillStyle = cylGrad;
+          ctx.fill();
 
           // ================================================================
           // POMMEL — oval with small finial on top
