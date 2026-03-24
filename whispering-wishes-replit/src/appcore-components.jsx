@@ -4039,19 +4039,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const fieldXrange = 30;
 
           // === GRID OF SWORDS — evenly spaced, then camera projects ===
-          const gridSpacingX = 1.0;  // meters between swords X
-          const gridSpacingZ = 1.0;  // meters between swords Z
-          const gridXmin = -40, gridXmax = 40;
+          // Spacing grows with distance (close rows dense, far rows sparse)
+          // so ~equal number of visible swords per row on screen
           const gridZmin = 0.3, gridZmax = 80;
+          const maxSwords = 1500;
           let swordIdx = 0;
-          for (let gz = gridZmin; gz <= gridZmax; gz += gridSpacingZ) {
-            // Only iterate X positions that could be visible at this Z
-            // Visible wx range: |wx| < wz * W / (2 * focal) * 1.5 (with margin)
-            const visibleXrange = Math.min(gridXmax, gz * W / (2 * focal) * 1.8);
-            for (let gx = -visibleXrange; gx <= visibleXrange; gx += gridSpacingX) {
-              // Jitter position slightly so it's not perfectly rigid
-              const wx = gx + (rng(swordIdx, 101) - 0.5) * gridSpacingX * 0.6;
-              const wzJ = gz + (rng(swordIdx, 100) - 0.5) * gridSpacingZ * 0.6;
+          for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
+            // Spacing scales with Z — constant screen density
+            const spacing = Math.max(0.4, gz * 0.12);
+            // Visible X range at this Z
+            const visibleXrange = gz * W / (2 * focal) * 1.5;
+            for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
+              const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
+              const wzJ = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
               if (wzJ < 0.25) { swordIdx++; continue; }
               const wy = terrH(wx, wzJ);
 
@@ -4074,6 +4074,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               });
               swordIdx++;
             }
+            gz += spacing; // Z step scales with distance
           }
 
           // Sort back-to-front
