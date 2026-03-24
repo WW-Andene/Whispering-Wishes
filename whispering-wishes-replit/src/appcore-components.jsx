@@ -3007,94 +3007,65 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // ================================================================
-          // GUARD — curved crossguard with depth, sweeps down with flared tips
-          // Sampled as discrete points through rotY so it rotates properly
+          // GUARD — symmetrical curved crossguard with flared tips
+          // Top and bottom edges are exact mirrors around guard center Y
           // ================================================================
-          const gy = bladeTop;
+          const gCenterY = bladeTop - guardBarH * 0.5; // vertical center of guard
           const gBarDepth = gripHT;
-          const gFlareH = guardBarH * 1.8;
+          const gFlareH = guardBarH * 1.8;             // how far tips extend from center
           const gTipW = guardArmHW * 0.22;
           const gcHW = halfW * 1.1;
 
-          // Sample the guard silhouette as point pairs (top edge, bottom edge)
-          // so we can rotY every point and connect front/back with depth quads
           {
-            const earFlareG = gTipW;
-            // Build top-edge and bottom-edge sample points (X,Y) for guard
-            // We'll sample ~20 points along each edge from left tip to right tip
-            const gSamplesTop = []; // upper silhouette
-            const gSamplesBot = []; // lower silhouette
-
-            // Helper: quadratic bezier sample
             const qBez = (ax, ay, cx, cy, bx, by, t) => ({
               x: (1 - t) * (1 - t) * ax + 2 * (1 - t) * t * cx + t * t * bx,
               y: (1 - t) * (1 - t) * ay + 2 * (1 - t) * t * cy + t * t * by
             });
+            const N = 8;
 
-            // Guard profile key points (X, Y) — same as the bezier path
-            // Top edge: left-tip-outer → left-tip-top → center-top-left → center-top-right → right-tip-top → right-tip-outer
-            // Bottom edge: left-tip-bot → center-bot-left → center-bot-right → right-tip-bot
+            // Build ONE edge (top) as offsets above gCenterY, then mirror for bottom
+            // Top edge profile (left to right), Y values are ABOVE center (negative offset)
+            const ghh = guardBarH * 0.5; // half the bar height at center
+            const tipFlare = gFlareH * 0.5; // how far tips extend beyond center
 
-            const N = 8; // samples per curve segment
+            // Key X positions
+            const tipOuterX = guardArmHW + gTipW;
+            const tipInnerX = guardArmHW;
 
             // === TOP EDGE (going left to right) ===
-            // Left outer tip
-            const ltOX = -guardArmHW - gTipW, ltOY = gy - guardBarH - gFlareH * 0.4;
-            const ltTX = -guardArmHW, ltTY = gy - guardBarH - gFlareH * 0.15;
-            const ctLX = -gcHW, ctLY = gy - guardBarH;
-            const ctRX = gcHW, ctRY = gy - guardBarH;
-            const rtTX = guardArmHW, rtTY = gy - guardBarH - gFlareH * 0.15;
-            const rtOX = guardArmHW + gTipW, rtOY = gy - guardBarH - gFlareH * 0.4;
+            const gSamplesTop = [];
 
-            // Left tip outer to left tip top (straight)
-            gSamplesTop.push({ x: ltOX, y: ltOY });
-            gSamplesTop.push({ x: ltTX, y: ltTY });
-            // Curve: left tip top → center top left
-            const cpLT_X = (ctLX + ltTX) * 0.5, cpLT_Y = ctLY - guardBarH * 0.2;
+            // Left outer tip
+            gSamplesTop.push({ x: -tipOuterX, y: gCenterY - tipFlare });
+            gSamplesTop.push({ x: -tipInnerX, y: gCenterY - tipFlare * 0.6 });
+            // Curve: left arm → center-left
             for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(ltTX, ltTY, cpLT_X, cpLT_Y, ctLX, ctLY, i / N));
+              gSamplesTop.push(qBez(
+                -tipInnerX, gCenterY - tipFlare * 0.6,
+                (-tipInnerX - gcHW) * 0.5, gCenterY - ghh - ghh * 0.15,
+                -gcHW, gCenterY - ghh,
+                i / N
+              ));
             }
             // Straight center top
-            gSamplesTop.push({ x: ctRX, y: ctRY });
-            // Curve: center top right → right tip top
-            const cpRT_X = (rtTX + ctRX) * 0.5, cpRT_Y = ctRY - guardBarH * 0.2;
+            gSamplesTop.push({ x: gcHW, y: gCenterY - ghh });
+            // Curve: center-right → right arm
             for (let i = 1; i <= N; i++) {
-              gSamplesTop.push(qBez(ctRX, ctRY, cpRT_X, cpRT_Y, rtTX, rtTY, i / N));
+              gSamplesTop.push(qBez(
+                gcHW, gCenterY - ghh,
+                (tipInnerX + gcHW) * 0.5, gCenterY - ghh - ghh * 0.15,
+                tipInnerX, gCenterY - tipFlare * 0.6,
+                i / N
+              ));
             }
-            // Right tip top to right tip outer (straight)
-            gSamplesTop.push({ x: rtOX, y: rtOY });
+            // Right outer tip
+            gSamplesTop.push({ x: tipOuterX, y: gCenterY - tipFlare });
 
-            // === BOTTOM EDGE (going left to right) ===
-            const lbBX = -guardArmHW, lbBY = gy + gFlareH * 0.6;
-            const lbIX = -guardArmHW + gTipW * 0.5, lbIY = gy + gFlareH * 0.2;
-            const cbLX = -gcHW, cbLY = gy;
-            const cbRX = gcHW, cbRY = gy;
-            const rbIX = guardArmHW - gTipW * 0.5, rbIY = gy + gFlareH * 0.2;
-            const rbBX = guardArmHW, rbBY = gy + gFlareH * 0.6;
-
-            // Left tip outer bottom (curve from outer tip down to left bot)
-            const cpLBO_X = ltOX + gTipW * 0.3, cpLBO_Y = lbBY;
-            gSamplesBot.push({ x: ltOX, y: ltOY }); // starts at same X as top
-            for (let i = 1; i <= N; i++) {
-              gSamplesBot.push(qBez(ltOX, ltOY, cpLBO_X, cpLBO_Y, lbBX, lbBY, i / N));
-            }
-            // Curve: left bot → center bot left
-            const cpLBI_X = (lbIX + cbLX) * 0.5, cpLBI_Y = gy + gFlareH * 0.15;
-            for (let i = 1; i <= N; i++) {
-              gSamplesBot.push(qBez(lbBX, lbBY, cpLBI_X, cpLBI_Y, cbLX, cbLY, i / N));
-            }
-            // Straight center bottom
-            gSamplesBot.push({ x: cbRX, y: cbRY });
-            // Curve: center bot right → right bot
-            const cpRBI_X = (cbRX + rbIX) * 0.5, cpRBI_Y = gy + gFlareH * 0.15;
-            for (let i = 1; i <= N; i++) {
-              gSamplesBot.push(qBez(cbRX, cbRY, cpRBI_X, cpRBI_Y, rbBX, rbBY, i / N));
-            }
-            // Curve: right bot → right tip outer
-            const cpRBO_X = rtOX - gTipW * 0.3, cpRBO_Y = rbBY;
-            for (let i = 1; i <= N; i++) {
-              gSamplesBot.push(qBez(rbBX, rbBY, cpRBO_X, cpRBO_Y, rtOX, rtOY, i / N));
-            }
+            // === BOTTOM EDGE — exact mirror of top around gCenterY ===
+            const gSamplesBot = gSamplesTop.map(p => ({
+              x: p.x,
+              y: gCenterY + (gCenterY - p.y)
+            }));
 
             // Transform all points to front-Z and back-Z via rotY
             const gTopF = gSamplesTop.map(p => rotY(p.x, p.y, gBarDepth, cosA, sinA));
