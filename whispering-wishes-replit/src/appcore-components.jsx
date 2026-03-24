@@ -3139,23 +3139,22 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
 
           // ================================================================
-          // GRIP — leather-wrapped cylinder with horizontal wrap ridges
+          // GRIP — bare metal upper half + leather-wrapped lower half
+          // Leather wrap covers guard→midpoint, bare handle below
           // ================================================================
           {
-            // Back half (darker base)
-            ctx.beginPath();
-            ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
-            ctx.fillStyle = gripSideCol;
-            ctx.fill();
+            const gripMidY = (gripTop + gripBot) * 0.5;
+            const leatherTop = gripBot;    // leather starts at guard (bottom of grip rect = near guard)
+            const leatherBot = gripMidY;   // leather ends at midpoint
 
-            // Front half with cylindrical gradient
+            // Full grip base (metal/wood tone)
             const cylShade = Math.abs(cosA);
-            const cylR = Math.round(hdR * (0.35 + cylShade * 0.35));
-            const cylG = Math.round(hdG * (0.35 + cylShade * 0.35));
-            const cylB = Math.round(hdB * (0.35 + cylShade * 0.35));
+            const cylR = Math.round(hdR * (0.5 + cylShade * 0.4));
+            const cylG = Math.round(hdG * (0.5 + cylShade * 0.4));
+            const cylB = Math.round(hdB * (0.5 + cylShade * 0.4));
             const cylGrad = ctx.createLinearGradient(-gripHW, 0, gripHW, 0);
-            const cylHi = 'rgb(' + Math.min(255, cylR + 15) + ',' + Math.min(255, cylG + 10) + ',' + Math.min(255, cylB + 8) + ')';
-            const cylLo = 'rgb(' + Math.round(cylR * 0.5) + ',' + Math.round(cylG * 0.5) + ',' + Math.round(cylB * 0.5) + ')';
+            const cylHi = 'rgb(' + Math.min(255, cylR + 20) + ',' + Math.min(255, cylG + 20) + ',' + Math.min(255, cylB + 20) + ')';
+            const cylLo = 'rgb(' + Math.round(cylR * 0.55) + ',' + Math.round(cylG * 0.55) + ',' + Math.round(cylB * 0.55) + ')';
             if (sinA > 0) {
               cylGrad.addColorStop(0, cylHi);
               cylGrad.addColorStop(0.45, cylHi);
@@ -3165,28 +3164,55 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               cylGrad.addColorStop(0.55, cylHi);
               cylGrad.addColorStop(1, cylHi);
             }
+            // Draw full grip with metal gradient
+            ctx.beginPath();
+            ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
+            ctx.fillStyle = gripSideCol;
+            ctx.fill();
             ctx.beginPath();
             ctx.rect(-gripHW, gripTop, gripHW * 2, gripBot - gripTop);
             ctx.fillStyle = cylGrad;
             ctx.fill();
 
-            // Leather wrap ridges — horizontal lines across grip
-            const wrapCount = Math.max(4, Math.round(gripH / (gripHW * 0.7)));
-            const wrapSpacing = gripH / (wrapCount + 1);
-            const wrapH = wrapSpacing * 0.25;
-            ctx.fillStyle = 'rgba(0,0,0,0.18)';
+            // Leather wrap overlay on upper half (guard side)
+            // Darker brown/black leather color
+            const lR = Math.round(hdR * 0.25);
+            const lG = Math.round(hdG * 0.2);
+            const lB = Math.round(hdB * 0.18);
+            const leatherGrad = ctx.createLinearGradient(-gripHW, 0, gripHW, 0);
+            const lHi = 'rgb(' + Math.min(255, lR + 12) + ',' + Math.min(255, lG + 8) + ',' + Math.min(255, lB + 6) + ')';
+            const lLo = 'rgb(' + Math.round(lR * 0.4) + ',' + Math.round(lG * 0.4) + ',' + Math.round(lB * 0.4) + ')';
+            if (sinA > 0) {
+              leatherGrad.addColorStop(0, lHi);
+              leatherGrad.addColorStop(0.4, lHi);
+              leatherGrad.addColorStop(1, lLo);
+            } else {
+              leatherGrad.addColorStop(0, lLo);
+              leatherGrad.addColorStop(0.6, lHi);
+              leatherGrad.addColorStop(1, lHi);
+            }
+            const leatherH = leatherTop - leatherBot; // positive since top > bot in screen coords (guard is lower Y)
+            ctx.beginPath();
+            ctx.rect(-gripHW, leatherBot, gripHW * 2, leatherH);
+            ctx.fillStyle = leatherGrad;
+            ctx.fill();
+
+            // Leather wrap ridges on the wrapped portion only
+            const wrapCount = Math.max(3, Math.round(Math.abs(leatherH) / (gripHW * 0.7)));
+            const wrapSpacing = leatherH / (wrapCount + 1);
+            const wrapHt = Math.abs(wrapSpacing) * 0.25;
+            ctx.fillStyle = 'rgba(0,0,0,0.22)';
             for (let i = 1; i <= wrapCount; i++) {
-              const wy = gripTop + i * wrapSpacing;
+              const wy = leatherBot + i * wrapSpacing;
               ctx.beginPath();
-              ctx.rect(-gripHW, wy - wrapH * 0.5, gripHW * 2, wrapH);
+              ctx.rect(-gripHW, wy - wrapHt * 0.5, gripHW * 2, wrapHt);
               ctx.fill();
             }
-            // Subtle wrap edge highlights
-            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.fillStyle = 'rgba(255,255,255,0.07)';
             for (let i = 1; i <= wrapCount; i++) {
-              const wy = gripTop + i * wrapSpacing;
+              const wy = leatherBot + i * wrapSpacing;
               ctx.beginPath();
-              ctx.rect(-gripHW, wy - wrapH * 0.5 - wrapH * 0.4, gripHW * 2, wrapH * 0.3);
+              ctx.rect(-gripHW, wy - wrapHt * 0.5 - wrapHt * 0.5, gripHW * 2, wrapHt * 0.3);
               ctx.fill();
             }
           }
@@ -3198,7 +3224,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           if (pomR > 0.3) {
             const pomCol = 'rgb(' + Math.round(hdR * 0.85) + ',' + Math.round(hdG * 0.85) + ',' + Math.round(hdB * 0.85) + ')';
             const pomLoCol = 'rgb(' + Math.round(hdR * 0.5) + ',' + Math.round(hdG * 0.5) + ',' + Math.round(hdB * 0.5) + ')';
-            const pomDepth = gripHT * 1.2; // Z half-depth of pommel
+            const pomDepth = gripHT; // Z half-depth matches handle thickness
 
             const pomHW = pomR * 1.6;
             const pomH = pomR * 2.2;
