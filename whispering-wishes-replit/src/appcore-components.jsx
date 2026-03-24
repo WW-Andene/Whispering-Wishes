@@ -2628,52 +2628,95 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = gl;
         ctx.fillRect(0, hY, W, H * 0.12);
 
-        // --- GROUND TEXTURE: uneven soil patches, shadows, warm spots ---
-        for (let gi = 0; gi < 120; gi++) {
+        // --- GROUND TEXTURE: uneven terrain with visible depth ---
+        // Layer 1: Large terrain color variation (earth tones, mud, rock)
+        for (let gi = 0; gi < 80; gi++) {
           const gpx = rng(gi, 20) * W;
           const gpy = hY + (H - hY) * (rng(gi, 21) * 0.95 + 0.01);
-          const gpr = 6 + rng(gi, 22) * 40;
-          // Depth: patches near horizon are smaller, near camera bigger
           const depthT = (gpy - hY) / (H - hY);
-          const pr = gpr * (0.3 + depthT * 1.5);
-          // Mix between dark shadow patches and warm lit patches
+          // Near horizon = small patches, near camera = large
+          const pr = (8 + rng(gi, 22) * 35) * (0.4 + depthT * 1.2);
           const warm = rng(gi, 23);
           let r, g, b, a;
-          if (warm < 0.4) {
-            // Dark shadow patches
-            r = 6 + rng(gi, 24) * 10; g = 4 + rng(gi, 25) * 6; b = 3 + rng(gi, 26) * 5;
-            a = 0.12 + rng(gi, 27) * 0.15;
-          } else if (warm < 0.7) {
-            // Warm earth-tone patches (near horizon get warmer)
-            const horizonProx = 1 - depthT;
-            r = 35 + horizonProx * 50; g = 20 + horizonProx * 25; b = 10 + horizonProx * 8;
-            a = 0.04 + horizonProx * 0.06;
+          if (warm < 0.35) {
+            // Dark depression / shadow
+            r = 4 + rng(gi, 24) * 8; g = 2 + rng(gi, 25) * 5; b = 1 + rng(gi, 26) * 4;
+            a = 0.18 + rng(gi, 27) * 0.22;
+          } else if (warm < 0.6) {
+            // Warm lit ground near horizon, cooler near camera
+            const horizP = 1 - depthT;
+            r = 40 + horizP * 65; g = 22 + horizP * 30; b = 10 + horizP * 10;
+            a = 0.08 + horizP * 0.12;
+          } else if (warm < 0.8) {
+            // Rocky grey-brown patches
+            r = 22 + rng(gi, 28) * 15; g = 18 + rng(gi, 29) * 10; b = 14 + rng(gi, 30) * 8;
+            a = 0.10 + rng(gi, 31) * 0.14;
           } else {
-            // Subtle color variation patches (slight reddish-brown / grey)
-            r = 18 + rng(gi, 28) * 20; g = 12 + rng(gi, 29) * 10; b = 8 + rng(gi, 30) * 8;
-            a = 0.06 + rng(gi, 31) * 0.08;
+            // Reddish dried-blood earth
+            r = 35 + rng(gi, 28) * 25; g = 10 + rng(gi, 29) * 8; b = 6 + rng(gi, 30) * 5;
+            a = 0.06 + rng(gi, 31) * 0.10;
           }
           const tg = ctx.createRadialGradient(gpx, gpy, 0, gpx, gpy, pr);
           tg.addColorStop(0, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + a.toFixed(3) + ')');
+          tg.addColorStop(0.5, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + (a * 0.4).toFixed(3) + ')');
           tg.addColorStop(1, 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',0)');
           ctx.fillStyle = tg;
           ctx.beginPath(); ctx.arc(gpx, gpy, pr, 0, Math.PI * 2); ctx.fill();
         }
 
-        // --- Elongated ground shadows (cast by swords, implied) ---
-        for (let si = 0; si < 40; si++) {
+        // Layer 2: Ground cracks and ridges (thin dark lines)
+        for (let ci = 0; ci < 30; ci++) {
+          const cx1 = rng(ci, 50) * W;
+          const cy1 = hY + (H - hY) * (rng(ci, 51) * 0.8 + 0.05);
+          const depthT = (cy1 - hY) / (H - hY);
+          const cLen = (15 + rng(ci, 52) * 40) * (0.3 + depthT);
+          const cAngle = (rng(ci, 53) - 0.5) * 1.2;
+          ctx.save();
+          ctx.translate(cx1, cy1);
+          ctx.rotate(cAngle);
+          ctx.strokeStyle = 'rgba(2,1,1,' + (0.10 + rng(ci, 54) * 0.15).toFixed(3) + ')';
+          ctx.lineWidth = 0.5 + rng(ci, 55) * 1.5 * depthT;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          // Jagged line
+          const segs = 3 + Math.floor(rng(ci, 56) * 4);
+          for (let s = 1; s <= segs; s++) {
+            ctx.lineTo(
+              cLen * s / segs + (rng(ci * 10 + s, 57) - 0.5) * 6,
+              (rng(ci * 10 + s, 58) - 0.5) * 4
+            );
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Layer 3: Elongated cast shadows (from weapons implied)
+        for (let si = 0; si < 50; si++) {
           const sx2 = rng(si, 40) * W;
-          const sy2 = hY + (H - hY) * (rng(si, 41) * 0.6 + 0.02);
-          const sLen = 10 + rng(si, 42) * 30;
-          const sWid = 1 + rng(si, 43) * 3;
+          const sy2 = hY + (H - hY) * (rng(si, 41) * 0.65 + 0.02);
+          const depthT = (sy2 - hY) / (H - hY);
+          const sLen = (8 + rng(si, 42) * 25) * (0.4 + depthT);
+          const sWid = (0.8 + rng(si, 43) * 2) * (0.3 + depthT * 0.7);
           ctx.save();
           ctx.translate(sx2, sy2);
-          ctx.rotate((rng(si, 44) - 0.3) * 0.4); // slight angle
-          ctx.fillStyle = 'rgba(4,2,2,' + (0.08 + rng(si, 45) * 0.1).toFixed(3) + ')';
+          ctx.rotate((rng(si, 44) - 0.3) * 0.35);
+          ctx.fillStyle = 'rgba(3,1,1,' + (0.12 + rng(si, 45) * 0.15).toFixed(3) + ')';
           ctx.beginPath();
           ctx.ellipse(0, 0, sLen, sWid, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
+        }
+
+        // Layer 4: Subtle warm light pools near horizon
+        for (let li = 0; li < 12; li++) {
+          const lx = W * (0.2 + rng(li, 60) * 0.6);
+          const ly = hY + (H - hY) * (rng(li, 61) * 0.15 + 0.01);
+          const lr = 15 + rng(li, 62) * 30;
+          const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, lr);
+          lg.addColorStop(0, 'rgba(120,70,25,0.08)');
+          lg.addColorStop(1, 'rgba(80,40,15,0)');
+          ctx.fillStyle = lg;
+          ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.fill();
         }
 
         // Mountains
