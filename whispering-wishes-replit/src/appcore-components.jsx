@@ -2563,7 +2563,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ===== BATTLEGROUND — ground-plan projected sword field =====
       {
         const W = canvas.width, H = canvas.height;
-        const hY = H * 0.35; // camera shifted toward ground
+        const hY = H * 0.52; // horizon at ~half, big sky above
         const rng = (i, off) => { const s = Math.sin(i * 127.1 + off * 311.7) * 43758.5; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (pink/salmon) ---
@@ -3938,59 +3938,61 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // === BATTLEGROUND SWORD FIELD ===
-        // Swords stuck in the ground across the battlefield, sorted back-to-front
+        // Blades stuck in the ground — tip buried, hilt up
+        // Close foreground swords partially off-screen at edges
+        // Matching reference: scattered across battlefield, various tilts
         {
           const swords = [];
-          const fieldXrange = 25;  // world X extent
-          const fieldZnear = 4;
-          const fieldZfar = 70;
-          const rows = 12;
-          const colsBase = 8;
+          const fieldZnear = 1.2;   // very close — swords right at camera
+          const fieldZfar = 80;
+          const fieldXrange = 30;
 
-          for (let rz = 0; rz < rows; rz++) {
-            const zt = rz / (rows - 1);
-            const wz = fieldZfar - (fieldZfar - fieldZnear) * zt;
-            const cols = colsBase + Math.floor(rz * 0.5); // more swords in near rows
-            for (let cx = 0; cx < cols; cx++) {
-              const idx = rz * 100 + cx;
-              // Jittered grid placement
-              const baseX = (cx / (cols - 1 || 1) * 2 - 1) * fieldXrange;
-              const wx = baseX + (rng(idx, 100) - 0.5) * gridSpacing * 1.5;
-              const wzJ = wz + (rng(idx, 101) - 0.5) * gridSpacing;
-              const wy = terrH(wx, wzJ); // sit on terrain
+          // Scattered placement — not a uniform grid, more organic
+          const swordCount = 120;
+          for (let i = 0; i < swordCount; i++) {
+            // Distribute Z with bias toward mid-field (more density in mid-range)
+            const zRaw = rng(i, 100);
+            const zBiased = zRaw * zRaw; // quadratic bias: more swords further out
+            const wzJ = fieldZnear + (fieldZfar - fieldZnear) * zBiased;
 
-              // Skip if too far off screen
-              const scrX = W * 0.5 + wx * focal / wzJ;
-              if (scrX < -W * 0.3 || scrX > W * 1.3) continue;
-              const scrY = hY + (camH - wy) * focal / wzJ;
-              const appSize = 1.8 * focal / wzJ; // apparent height
+            // X spread widens with distance (perspective cone)
+            const xSpread = fieldXrange * (0.5 + wzJ / fieldZfar * 1.5);
+            const wx = (rng(i, 101) * 2 - 1) * xSpread;
+            const wy = terrH(wx, wzJ);
 
-              // Weapon type — deterministic from position
-              const typeIdx = Math.floor(rng(idx, 102) * weaponTypes.length);
-              const wType = weaponTypes[typeIdx];
+            // Screen projection
+            const scrX = W * 0.5 + wx * focal / wzJ;
+            const scrY = hY + (camH - wy) * focal / wzJ;
+            const appSize = 1.8 * focal / wzJ;
 
-              // Rotation — each sword has a fixed random Y-rotation
-              const zRot = rng(idx, 103) * Math.PI * 2;
+            // Allow swords partially off-screen at edges (foreground ones)
+            if (scrX < -W * 0.5 || scrX > W * 1.5) continue;
 
-              // Slight random tilt (stuck in ground at angles)
-              const tilt = (rng(idx, 104) - 0.5) * 16; // ±8 degrees
+            // Weapon type
+            const typeIdx = Math.floor(rng(i, 102) * weaponTypes.length);
+            const wType = weaponTypes[typeIdx];
 
-              // Distance-based darkness (atmospheric perspective)
-              const distT = Math.min(1, (wzJ - fieldZnear) / (fieldZfar - fieldZnear));
-              const darkness = distT * 0.55;
+            // Fixed random Y-rotation per sword
+            const zRot = rng(i, 103) * Math.PI * 2;
 
-              swords.push({
-                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness, idx
-              });
-            }
+            // Tilt — stuck in ground at angles, more tilt variation
+            const tilt = (rng(i, 104) - 0.5) * 24; // ±12 degrees
+
+            // Atmospheric perspective
+            const distT = Math.min(1, (wzJ - fieldZnear) / (fieldZfar - fieldZnear));
+            const darkness = distT * 0.6;
+
+            swords.push({
+              wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness
+            });
           }
 
-          // Sort back-to-front (far Z first)
+          // Sort back-to-front
           swords.sort((a, b) => b.wz - a.wz);
 
           // Draw all swords
           for (const s of swords) {
-            if (s.appSize < 2) continue; // too small to see
+            if (s.appSize < 1.5) continue;
             const sbw = s.appSize * 0.025;
             drawWeapon(s.scrX, s.scrY, s.appSize, sbw, s.tilt, {
               type: s.wType, zRot: s.zRot, irr: {},
