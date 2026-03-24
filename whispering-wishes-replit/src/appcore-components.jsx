@@ -3054,81 +3054,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           };
         }
 
-        // === PLACE WEAPONS ON THE GROUND PLAN (3D) ===
-        const zNear = 1.4, zFar = 130;
-        const numRows = 38;
-        let sIdx = 0;
-        const allWeapons = [];
-        const baseRealH = 4.0;
-        const baseRealBW = 0.12;
-
-        for (let row = 0; row < numRows; row++) {
-          const t = row / (numRows - 1);
-          const z = zNear + (zFar - zNear) * t * t;
-          const depthRatio = Math.min(1, (z - zNear) / (zFar - zNear));
-          const spacing = 7.0 * (1 - depthRatio) + 1.5 * depthRatio;
-          const visHW = z * W * 1.3 / (2 * focal);
-          const count = Math.max(1, Math.round(visHW * 2 / spacing));
-          const xStep = visHW * 2 / count;
-
-          for (let j = 0; j < count; j++) {
-            const jitterX = (rng(sIdx, 1) - 0.5) * xStep * 0.5;
-            const jitterZ = (rng(sIdx, 2) - 0.5) * spacing * 0.35;
-            const wx = -visHW + xStep * (j + 0.5) + jitterX;
-            const wz = z + jitterZ;
-            if (wz < 1.2) { sIdx++; continue; }
-
-            const wtIdx = Math.floor(rng(sIdx, 15) * weaponTypes.length);
-            const wt = weaponTypes[wtIdx];
-
-            const sizeVar = 0.90 + rng(sIdx, 3) * 0.20;
-            const distShrink = 1 - depthRatio * 0.15;
-
-            const tiltRng = rng(sIdx, 4);
-            const tiltBase = (rng(sIdx, 16) - 0.5) * 2;
-            let tiltVal;
-            if (tiltRng < 0.40) tiltVal = tiltBase * 15;
-            else if (tiltRng < 0.75) tiltVal = tiltBase * 35;
-            else tiltVal = tiltBase * 60;
-
-            const zRot = (rng(sIdx, 5) - 0.5) * Math.PI * 0.9;
-
-            const irr = {
-              bladeSkew: (rng(sIdx, 6) - 0.5) * 0.2,
-              bladeHVar: (rng(sIdx, 7) - 0.5) * 0.06,
-              guardVar:  (rng(sIdx, 8) - 0.5) * 0.25,
-              gripVar:   (rng(sIdx, 9) - 0.5) * 0.05,
-              pomVar:    (rng(sIdx, 10) - 0.5) * 0.12
-            };
-
-            const distToSun = Math.sqrt(wx * wx + (wz - lightPos.z) * (wz - lightPos.z) * 0.3);
-            const lightReach = Math.max(0, 1 - distToSun / 35);
-            const darkness = Math.max(0, depthRatio * 0.85 - lightReach * 0.5);
-
-            const realH = baseRealH * sizeVar * distShrink * wt.hM;
-            const realBW = baseRealBW * sizeVar * distShrink * wt.wM;
-            let scrX = W * 0.5 + wx * focal / wz;
-            let scrY = hY + camH * focal / wz;
-            const scrH = realH * focal / wz;
-            const scrBW = realBW * focal / wz;
-
-            const distorted = lensDistort(scrX, scrY);
-            scrX = distorted.x;
-            scrY = distorted.y;
-
-            allWeapons.push({
-              x: scrX, y: scrY, h: scrH, bw: scrBW,
-              t: tiltVal, z: wz,
-              wp: { type: wt, zRot, irr, wx, wy: 0, wz, darkness }
-            });
-            sIdx++;
-          }
-        }
-
-        allWeapons.sort((a, b) => b.z - a.z);
-        for (const s of allWeapons) {
-          drawWeapon(s.x, s.y, s.h, s.bw, s.t, s.wp);
-        }
+        // === SINGLE TEST SWORD ===
+        drawWeapon(W * 0.5, H * 0.85, H * 0.5, H * 0.5 * 0.025, 0, {
+          type: weaponTypes[0], zRot: 0, irr: {},
+          wx: 0, wy: 0, wz: 3, darkness: 0
+        });
 
         // --- EMBERS ---
         for (let i = 0; i < 90; i++) {
