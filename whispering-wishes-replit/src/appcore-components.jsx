@@ -2398,19 +2398,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
-          // Grip — curves inward by 1/5 gripW each side before pommel
+          // Grip — smooth inward curve, narrowing by 2/5 gripW each side at bottom
           const gripNarrow = gripW * 2 / 5;
-          const curveStart = guardH + gripH * 0.5;       // curve begins halfway down grip
           const gripBot = guardH + gripH;
           ctx.beginPath();
           ctx.moveTo(-gripW / 2, guardH);                                    // top-left
-          ctx.lineTo(-gripW / 2, curveStart);                                // left side straight
-          ctx.quadraticCurveTo(-gripW / 2, gripBot,                          // control: keep left edge
-                                -gripW / 2 + gripNarrow, gripBot);          // end: narrowed bottom-left
-          ctx.lineTo(gripW / 2 - gripNarrow, gripBot);                      // bottom edge (narrowed)
-          ctx.quadraticCurveTo(gripW / 2, gripBot,                           // control: keep right edge
-                                gripW / 2, curveStart);                      // end: back to full width
-          ctx.lineTo(gripW / 2, guardH);                                     // right side up
+          ctx.bezierCurveTo(-gripW / 2, guardH + gripH * 0.6,               // cp1: straight most of way
+                            -gripW / 2 + gripNarrow, gripBot,               // cp2: ease into narrow
+                            0, gripBot);                                     // end: center bottom
+          ctx.bezierCurveTo(gripW / 2 - gripNarrow, gripBot,                // cp2: ease out of narrow
+                            gripW / 2, guardH + gripH * 0.6,                // cp1: straight most of way
+                            gripW / 2, guardH);                              // end: top-right
           ctx.closePath();
           ctx.fill();
           // Pommel
