@@ -2419,7 +2419,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
           oc.restore();
         };
-        };
 
         // Staggered shape refresh — rebuild 4 clouds per frame
         const refreshPerFrame = 4;
