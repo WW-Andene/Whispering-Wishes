@@ -2533,7 +2533,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ===== BATTLEGROUND — ground-plan projected sword field =====
       {
         const W = canvas.width, H = canvas.height;
-        const hY = H * 0.99; // sky reaches almost to bottom
+        const hY = H; // sky covers 100%
         const rng = (i, off) => { const s = Math.sin(i * 153.7 + off * 267.3) * 51291.1; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (lighter, more luminous) ---
