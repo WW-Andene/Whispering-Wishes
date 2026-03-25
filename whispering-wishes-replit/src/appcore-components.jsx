@@ -2366,8 +2366,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const bladeH = s.size * 8 / 11;
           const handleH = s.size * 3 / 11;
           const mod = bladeH / 8;
-          const bladeW = mod * 0.5 * s.yRot;
-          const guardW = mod * 2.0 * s.yRot;
+          const bladeW = mod * 0.503 * s.yRot;    // 4.4 cm
+          const guardW = mod * 2.0 * s.yRot;      // 17.5 cm
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
@@ -2383,7 +2383,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
           // Handle
           const gripW = bladeW * 0.5;
-          const pomR = mod * 0.45 * s.yRot;
+          const pomR = mod * 0.251 * s.yRot;     // 4.4 cm diameter / 2
           ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
           // Pommel
           ctx.beginPath();
