@@ -2443,8 +2443,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
-          let ph = ((s.idx + 7) * 2246822519) >>> 0; ph = ((ph >> 16) ^ ph) * 0x45d9f3b >>> 0; ph = ((ph >> 16) ^ ph) >>> 0;
-          const pommelType = ph % 2;
+          let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
+          const pommelType = (ph >>> 0) % 2;
           ctx.beginPath();
           if (pommelType === 1) {
             // Circle
