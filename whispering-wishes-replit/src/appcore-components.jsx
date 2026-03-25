@@ -2297,7 +2297,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // 3D ground surface: concave bowl (center dips, edges rise to horizon)
         // Circular arc cross-section — smooth curve
-        const bowlRadius = 1.2; // world-space half-width of bowl
+        const bowlRadius = 50; // world-space half-width of bowl (much larger than screen)
         const bowlDepth = 0.18; // max depth at center
         const groundWY = (wx) => {
           const r2 = wx * wx;
@@ -2352,26 +2352,28 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // --- SWORDS: uniform grid on the bowl surface ---
-        const swordSpacing = 0.12; // equal world-space distance between swords
-        const maxSwords = 500;
+        // --- SWORDS: large grid, only generate what's on screen ---
+        const swordSpacing = 0.12;
+        const maxSwords = 600;
         const swords = [];
         let swordIdx = 0;
 
         for (let wz = swordSpacing; wz <= 60 && swords.length < maxSwords; wz += swordSpacing) {
-          const swordXrange = 8;
-          for (let wx = -swordXrange + swordSpacing * 0.5; wx <= swordXrange - swordSpacing * 0.5 && swords.length < maxSwords; wx += swordSpacing) {
+          // Compute visible world-X range at this depth, with margin
+          const visibleHalfX = (W * 0.5) * wz / focal;
+          const margin = swordSpacing * 2;
+          const xMin = -visibleHalfX - margin;
+          const xMax = visibleHalfX + margin;
+
+          for (let wx = xMin + swordSpacing * 0.5; wx <= xMax - swordSpacing * 0.5 && swords.length < maxSwords; wx += swordSpacing) {
             // Small jitter so it doesn't look like a perfect grid
             const jx = wx + (rng(swordIdx, 101) - 0.5) * swordSpacing * 0.3;
             const jz = wz + (rng(swordIdx, 100) - 0.5) * swordSpacing * 0.3;
             swordIdx++;
             if (jz < 0.02) continue;
 
-            // Check if inside bowl
-            if (jx * jx >= bowlRadius * bowlRadius) continue;
-
             const scrX = projX(jx, jz);
-            if (scrX < -W * 0.3 || scrX > W * 1.3) continue;
+            if (scrX < -20 || scrX > W + 20) continue;
 
             // Place sword ON the 3D ground surface
             const wy = groundWY(jx);
