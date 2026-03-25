@@ -931,6 +931,21 @@ const KuroStyles = memo(({ oledMode }) => (
       0%, 100% { border-color: rgba(var(--glow-color), 0.3); }
       50% { border-color: rgba(var(--glow-color), 0.85); }
     }
+    .moon-glow-pulse {
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(240,245,255,1) 0%, rgba(225,235,255,0.7) 20%, rgba(200,220,250,0.3) 38%, rgba(180,210,240,0.1) 50%, transparent 60%);
+      animation: moonGlowPulse 8s ease-in-out infinite !important;
+    }
+    @keyframes moonGlowPulse {
+      0%, 100% {
+        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+    }
     .luck-badge-inner {
       position: relative;
       z-index: 1;
@@ -982,7 +997,7 @@ const KuroStyles = memo(({ oledMode }) => (
       /* E1-SHD1: Use shadow token + hairline accents */
       box-shadow:
         var(--shadow-lg),
-        0 0 0 1px rgba(255, 255, 255, 0.03),
+        0 0 0 1px var(--card-outline, rgba(255, 255, 255, 0.03)),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
       transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     }
@@ -994,8 +1009,8 @@ const KuroStyles = memo(({ oledMode }) => (
         transform: translateY(-2px);
         box-shadow:
           var(--shadow-xl),
-          0 0 0 1px rgba(255, 255, 255, 0.06),
-          0 0 40px rgba(100, 140, 200, 0.03),
+          0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.06)),
+          0 0 40px var(--card-glow, rgba(100, 140, 200, 0.03)),
           inset 0 1px 0 rgba(255, 255, 255, 0.08);
       }
     }
@@ -1017,11 +1032,11 @@ const KuroStyles = memo(({ oledMode }) => (
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.3) 20%,
-        rgba(255, 255, 255, 0.5) 50%,
-        rgba(255, 255, 255, 0.3) 80%,
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
+        var(--shimmer-color-bright, rgba(255, 255, 255, 0.7)) 50%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.45)) 80%,
         transparent 100%
       );
       animation: shimmer 3s ease-in-out infinite;
@@ -1154,7 +1169,6 @@ const KuroStyles = memo(({ oledMode }) => (
       cursor: pointer;
       transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal), color var(--transition-fast);
       text-align: center;
-      overflow: hidden;
       box-shadow: var(--shadow-md);
       backdrop-filter: blur(var(--blur-md));
       -webkit-backdrop-filter: blur(var(--blur-md));
@@ -1165,6 +1179,7 @@ const KuroStyles = memo(({ oledMode }) => (
       content: '';
       position: absolute;
       inset: 0;
+      border-radius: inherit;
       background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
       opacity: 0;
       transition: opacity var(--transition-normal);
@@ -1302,45 +1317,45 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* Active states with glassy glow */
     .kuro-btn.active-gold {
-      background: rgba(237, 175, 24, 0.15);
+      background: linear-gradient(180deg, rgba(237, 175, 24, 0.18) 0%, rgba(237, 175, 24, 0.10) 100%);
       border-color: rgba(237, 175, 24, 0.7);
       color: #fef08a;
-      box-shadow: 0 0 25px rgba(237, 175, 24, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(237, 175, 24, 0.08);
+      box-shadow: 0 0 20px rgba(237, 175, 24, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(237, 175, 24, 0.6);
       animation: borderGlow 2s ease-in-out infinite;
     }
-    
+
     .kuro-btn.active-pink {
-      background: rgba(236, 72, 153, 0.15);
+      background: linear-gradient(180deg, rgba(236, 72, 153, 0.18) 0%, rgba(236, 72, 153, 0.10) 100%);
       border-color: rgba(236, 72, 153, 0.7);
       color: #fbcfe8;
-      box-shadow: 0 0 25px rgba(236, 72, 153, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(236, 72, 153, 0.08);
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
     }
-    
+
     /* Blue for Standard banners */
     .kuro-btn.active-cyan {
-      background: rgba(56, 189, 248, 0.15);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0.10) 100%);
       border-color: rgba(56, 189, 248, 0.7);
       color: #bae6fd;
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(56, 189, 248, 0.08);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
     }
-    
+
     .kuro-btn.active-purple {
-      background: rgba(168, 85, 247, 0.15);
+      background: linear-gradient(180deg, rgba(168, 85, 247, 0.18) 0%, rgba(168, 85, 247, 0.10) 100%);
       border-color: rgba(168, 85, 247, 0.7);
       color: #e9d5ff;
-      box-shadow: 0 0 25px rgba(168, 85, 247, 0.3), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(168, 85, 247, 0.08);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
     }
-    
+
     /* Muted green for Both options */
     .kuro-btn.active-emerald {
-      background: rgba(34, 197, 94, 0.15);
+      background: linear-gradient(180deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.10) 100%);
       border-color: rgba(34, 197, 94, 0.7);
       color: #86efac;
-      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), 0 4px 12px rgba(0,0,0,0.3), inset 0 0 20px rgba(34, 197, 94, 0.08);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.20), 0 4px 12px rgba(0,0,0,0.3);
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
     }
     
@@ -2187,9 +2202,9 @@ const KuroStyles = memo(({ oledMode }) => (
       animation: shimmer 2s ease-in-out infinite;
       background: linear-gradient(90deg,
         transparent 0%,
-        rgba(255, 255, 255, 0.4) 20%,
-        rgba(255, 255, 255, 0.7) 50%,
-        rgba(255, 255, 255, 0.4) 80%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.4)) 20%,
+        var(--shimmer-color-bright, rgba(255, 255, 255, 0.7)) 50%,
+        var(--shimmer-color, rgba(255, 255, 255, 0.4)) 80%,
         transparent 100%
       );
     }
@@ -2200,8 +2215,8 @@ const KuroStyles = memo(({ oledMode }) => (
         transform: translateY(-4px);
         box-shadow:
           var(--shadow-xl),
-          0 0 0 1px rgba(255, 255, 255, 0.08),
-          0 0 50px rgba(100, 140, 200, 0.06),
+          0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.08)),
+          0 0 50px var(--card-glow, rgba(100, 140, 200, 0.06)),
           inset 0 1px 0 rgba(255, 255, 255, 0.10);
       }
       .animations-full .collection-card:hover {

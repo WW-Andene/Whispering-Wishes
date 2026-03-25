@@ -19,6 +19,7 @@ export {
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   TAB_ORDER, MEDAL_COLORS,
   ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder,
+  CHARACTER_THEMES,
 } from './appcore-data.js';
 
 // --- appcore-engine.js ---
@@ -44,7 +45,7 @@ export {
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, CountdownTimer, PityRing,
   AppErrorBoundary, TabErrorBoundary,
-  BackgroundGlow, TriangleMirrorWave,
+  BackgroundGlow, TriangleMirrorWave, ResonanceField, AugustaRuins,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
