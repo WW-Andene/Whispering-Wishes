@@ -3928,11 +3928,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // so ~equal number of visible swords per row on screen
           const gridZmin = 0.03, gridZmax = 80;
 
-          const maxSwords = 500;
+          const maxSwords = 250;
           let swordIdx = 0;
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
             // Spacing scales with Z — constant screen density
-            const spacing = Math.max(1.0, gz * 0.05);
+            const spacing = 1.0;
             // Visible X range at this Z
             const visibleXrange = gz * W / (2 * focal) * 1.5;
             for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
