@@ -3988,9 +3988,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const spearH = H * 0.85;
           const spearBw = spearH * 0.02;
           const spearX = W * 0.5;
-          const spearY = H * 0.55;
+          const spearY = H * 0.5 + spearH * 0.5;
           const spearBob = Math.sin(time * 1.2) * 8;
-          const spearTilt = 12 + Math.sin(time * 0.7) * 3;
+          const spearTilt = 0 + Math.sin(time * 0.7) * 3;
           drawWeapon(spearX, spearY + spearBob, spearH, spearBw, spearTilt, {
             type: spearType, zRot: 0, irr: {},
             wx: 0, wy: 0, wz: 0.1, darkness: 0
