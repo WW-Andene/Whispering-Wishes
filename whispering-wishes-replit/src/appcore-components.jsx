@@ -2363,14 +2363,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
-          // 7u total: blade 5u, guard height 1u, handle+pommel 1u
-          const u = s.size / 7;
-          const bladeH = 5 * u;
-          const guardHBlock = 1 * u;
-          const handleH = 1 * u;
+          // Blade 70cm, hilt 26.25cm → 8:3 modules, mod=8.75cm, overall≈96.5cm
+          const bladeH = s.size * 8 / 11;
+          const handleH = s.size * 3 / 11;
           const mod = bladeH / 8;
-          const bladeW = mod * 0.503 * s.yRot;    // 4.4 cm
-          const guardW = mod * 2.0 * s.yRot;      // 17.5 cm
+          const bladeW = mod * 0.503 * s.yRot;       // 4.4 cm
+          const guardW = mod * 2.0 * s.yRot;         // 17.5 cm
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
@@ -2381,17 +2379,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Sword stuck tip-first into ground — 60% blade exposed above
           const exposedBlade = bladeH * 0.6;
           ctx.fillRect(-bladeW / 2, -exposedBlade, bladeW, exposedBlade);
-          // Guard — height = 3/5 of 1/3 of 1u
-          const guardH = (3 / 5) * (1 / 3) * u;
+          // Guard
+          const guardH = mod * 0.15;
           ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
-          // Handle — grip portion of 1u (minus pommel)
-          const pomR = u * (1 / 5) / 2;              // pommel diameter = 1/5 of 1u
-          const gripH = handleH - pomR * 2;
+          // Handle
           const gripW = bladeW / 3;                   // handle width = 1/3 blade width
-          ctx.fillRect(-gripW / 2, -exposedBlade - guardH - gripH, gripW, gripH);
+          const pomR = mod * 0.251 * s.yRot;          // pommel radius, 4.4cm diameter
+          ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
           // Pommel
           ctx.beginPath();
-          ctx.arc(0, -exposedBlade - guardH - gripH - pomR, pomR, 0, Math.PI * 2);
+          ctx.arc(0, -exposedBlade - guardH - handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
