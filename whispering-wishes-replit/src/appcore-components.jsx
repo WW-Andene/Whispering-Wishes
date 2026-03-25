@@ -2390,7 +2390,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180) + curveLean;
 
             // Y-axis rotation — foreshortens width (cos of angle)
-            const yAngle = (rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3);
+            const yAngle = rng(swordIdx, 606) * Math.PI;  // 0-180°
             const yRot = Math.cos(yAngle);
 
             swords.push({ scrX, scrY, size, lean, yRot, yAngle, wz: jz, wx: jx, shuffle: rng(swordIdx, 200), idx: swordIdx });
