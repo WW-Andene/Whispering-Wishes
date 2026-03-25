@@ -2316,59 +2316,76 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           return [-dndy, dndx]; // perpendicular = curl
         };
 
-        // Draw cloud — fractal blob with soft edges and animated flexibility
+        // Draw cloud — particle-like points driven by flow field
         const drawCloud = (cx, cy, baseR, stretch, seed, alpha, flowAngle, sizeClass) => {
-          const segs = 64;
-          const noiseScale = 0.8 + (1 - sizeClass) * 1.5;
+          const segs = 72;
+          const noiseAmt = baseR * (0.5 + (1 - sizeClass) * 0.8);
           ctx.save();
           ctx.translate(cx, cy);
           ctx.rotate(flowAngle);
           ctx.scale(stretch, 1);
 
-          // Multiple layered fills for soft fluffy edges
-          const layers = 3;
-          for (let L = layers - 1; L >= 0; L--) {
-            const layerT = L / layers;
-            const layerR = baseR * (1 + layerT * 0.4); // outer layers bigger
-            const layerAlpha = alpha * (1 - layerT * 0.6); // outer layers more transparent
-            const noiseAmt = layerR * (0.25 + layerT * 0.3 + (1 - sizeClass) * 0.2);
+          // Each perimeter point acts like a particle advected by flow
+          ctx.beginPath();
+          for (let i = 0; i <= segs; i++) {
+            const a = (i / segs) * Math.PI * 2;
+            let px = Math.cos(a) * baseR;
+            let py = Math.sin(a) * baseR * 0.45;
 
-            ctx.beginPath();
-            for (let i = 0; i <= segs; i++) {
-              const a = (i / segs) * Math.PI * 2;
-              const baseX = Math.cos(a) * layerR;
-              const baseY = Math.sin(a) * layerR * 0.45;
+            // Advect point through curl flow field — gives fluid deformation
+            // Each point traces a tiny streamline
+            const flowScale = 0.02;
+            const worldX = (cx + px) * flowScale + seed * 0.01;
+            const worldY = (cy + py) * flowScale + seed * 0.007;
 
-              // 6-octave fBm for fractal cloud edge — like real cumulus
-              const px = a * noiseScale + seed;
-              const py = seed * 0.13;
-              const t1 = time * 0.04, t2 = time * 0.07, t3 = time * 0.11;
-              let disp = 0;
-              disp += (noise2d(px * 0.7 + t1, py + t1 * 0.5) - 0.5) * noiseAmt * 1.0;     // large bulge
-              disp += (noise2d(px * 1.4 + t2, py * 1.3 + t2) - 0.5) * noiseAmt * 0.5;      // medium bump
-              disp += (noise2d(px * 2.8 + t3, py * 2.7 - t1) - 0.5) * noiseAmt * 0.25;     // small detail
-              disp += (noise2d(px * 5.5 - t2, py * 5.3 + t3) - 0.5) * noiseAmt * 0.12;     // fine grain
-              disp += (noise2d(px * 11 + t1 * 0.5, py * 10.7) - 0.5) * noiseAmt * 0.06;    // micro
-              disp += (noise2d(px * 22 - t3 * 0.3, py * 21) - 0.5) * noiseAmt * 0.03;      // sub-pixel
+            // Curl flow at this point — divergence-free swirl
+            const [fx, fy] = curlFlow(worldX + time * 0.015, worldY + time * 0.012);
+            px += fx * noiseAmt * 2.5;
+            py += fy * noiseAmt * 2.5;
 
-              // Animated breathing — whole shape expands/contracts gently
-              const breathe = Math.sin(time * 0.15 + seed * 0.3 + a * 0.5) * baseR * 0.03;
+            // Second advection pass at higher frequency for detail
+            const [fx2, fy2] = curlFlow(worldX * 3.1 + time * 0.025, worldY * 2.9 - time * 0.02);
+            px += fx2 * noiseAmt * 0.8;
+            py += fy2 * noiseAmt * 0.8;
 
-              // Per-lobe deformation — creates the cauliflower bulges
-              const lobe = Math.sin(a * 3 + seed + time * 0.08) * noiseAmt * 0.15 +
-                           Math.sin(a * 5 + seed * 2.3 + time * 0.05) * noiseAmt * 0.08;
+            // Third pass — fine wispy detail, stronger on smaller clouds
+            const [fx3, fy3] = curlFlow(worldX * 7 - time * 0.03, worldY * 6.5 + time * 0.018);
+            px += fx3 * noiseAmt * 0.3 * (1 + (1 - sizeClass) * 2);
+            py += fy3 * noiseAmt * 0.3 * (1 + (1 - sizeClass) * 2);
 
-              const totalDisp = disp + breathe + lobe;
-              const x = baseX + Math.cos(a) * totalDisp;
-              const y = baseY + Math.sin(a) * totalDisp * 0.45;
-
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-            ctx.fillStyle = `rgba(15,8,5,${layerAlpha.toFixed(3)})`;
-            ctx.fill();
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
           }
+          ctx.closePath();
+
+          // Soft edge — draw 2 layers
+          ctx.fillStyle = `rgba(12,6,3,${(alpha * 0.4).toFixed(3)})`;
+          ctx.fill();
+
+          // Inner denser core — slightly smaller
+          ctx.save();
+          ctx.scale(0.75, 0.75);
+          ctx.beginPath();
+          for (let i = 0; i <= segs; i++) {
+            const a = (i / segs) * Math.PI * 2;
+            let px = Math.cos(a) * baseR;
+            let py = Math.sin(a) * baseR * 0.45;
+            const worldX = (cx + px) * 0.02 + seed * 0.01;
+            const worldY = (cy + py) * 0.02 + seed * 0.007;
+            const [fx, fy] = curlFlow(worldX + time * 0.015, worldY + time * 0.012);
+            px += fx * noiseAmt * 1.8;
+            py += fy * noiseAmt * 1.8;
+            const [fx2, fy2] = curlFlow(worldX * 3.1 + time * 0.025, worldY * 2.9 - time * 0.02);
+            px += fx2 * noiseAmt * 0.5;
+            py += fy2 * noiseAmt * 0.5;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = `rgba(15,8,5,${alpha.toFixed(3)})`;
+          ctx.fill();
+          ctx.restore();
+
           ctx.restore();
         };
 
