@@ -2245,6 +2245,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const sceneSeed = 52908;
 
     let lastFrame = 0;
+    let cloudCache = null;
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -2316,137 +2317,162 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           return [-dndy, dndx]; // perpendicular = curl
         };
 
-        // Draw cloud — particle-like points driven by flow field
-        const drawCloud = (cx, cy, baseR, stretch, seed, alpha, flowAngle, sizeClass) => {
-          const segs = 72;
-          const noiseAmt = baseR * (0.5 + (1 - sizeClass) * 0.8);
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(flowAngle);
-          ctx.scale(stretch, 1);
-
-          // Each perimeter point acts like a particle advected by flow
-          ctx.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            let px = Math.cos(a) * baseR;
-            let py = Math.sin(a) * baseR * 0.45;
-
-            // Advect point through curl flow field — gives fluid deformation
-            // Each point traces a tiny streamline
-            const flowScale = 0.02;
-            const worldX = (cx + px) * flowScale + seed * 0.01;
-            const worldY = (cy + py) * flowScale + seed * 0.007;
-
-            // Gentle curl flow — slow, smooth deformation
-            const [fx, fy] = curlFlow(worldX + time * 0.002, worldY + time * 0.0015);
-            px += fx * noiseAmt * 1.2;
-            py += fy * noiseAmt * 1.2;
-
-            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.003, worldY * 2.3 - time * 0.0025);
-            px += fx2 * noiseAmt * 0.4;
-            py += fy2 * noiseAmt * 0.4;
-
-            const [fx3, fy3] = curlFlow(worldX * 5 - time * 0.004, worldY * 4.5 + time * 0.0025);
-            px += fx3 * noiseAmt * 0.15 * (1 + (1 - sizeClass));
-            py += fy3 * noiseAmt * 0.15 * (1 + (1 - sizeClass));
-
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-
-          // Soft edge — draw 2 layers
-          ctx.fillStyle = `rgba(12,6,3,${(alpha * 0.4).toFixed(3)})`;
-          ctx.fill();
-
-          // Inner denser core — slightly smaller
-          ctx.save();
-          ctx.scale(0.75, 0.75);
-          ctx.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            let px = Math.cos(a) * baseR;
-            let py = Math.sin(a) * baseR * 0.45;
-            const worldX = (cx + px) * 0.02 + seed * 0.01;
-            const worldY = (cy + py) * 0.02 + seed * 0.007;
-            const [fx, fy] = curlFlow(worldX + time * 0.002, worldY + time * 0.0015);
-            px += fx * noiseAmt * 0.9;
-            py += fy * noiseAmt * 0.9;
-            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.003, worldY * 2.3 - time * 0.0025);
-            px += fx2 * noiseAmt * 0.3;
-            py += fy2 * noiseAmt * 0.3;
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          ctx.fillStyle = `rgba(15,8,5,${alpha.toFixed(3)})`;
-          ctx.fill();
-          ctx.restore();
-
-          ctx.restore();
-        };
-
-        // === CLOUD CLUSTER SYSTEM ===
-        // Multiple swirl lanes at slightly different speeds
-        ctx.save();
-        const numSwirls = 4;
-        const swirlSpeeds = [0.25, 0.18, 0.13, 0.09];
-        const swirlOffsets = [0, 1.2, 2.7, 4.1];
-
-        for (let sw = 0; sw < numSwirls; sw++) {
-          const swirlSpeed = swirlSpeeds[sw];
-          const swirlOff = swirlOffsets[sw];
-          const numClusters = 3 + sw;
-
-          for (let cl = 0; cl < numClusters; cl++) {
-            const clSeed = sw * 1000 + cl * 137;
-            const clAngleBase = (cl / numClusters) * Math.PI * 2 + swirlOff;
-            const clDist = sunR * 1.5 + hash(clSeed * 0.7) * H * 0.4;
-            const clOrbitSpeed = swirlSpeed / (0.3 + clDist / (H * 0.5));
-            const clAngle = clAngleBase + time * clOrbitSpeed;
-
-            // Big parent cloud
-            const bigR = (35 + hash(clSeed) * 55) * 0.65;
-            const bigX = sunX + Math.cos(clAngle) * clDist;
-            const bigY = sunY + Math.sin(clAngle) * clDist * 0.5;
-            const tangent = clAngle + Math.PI / 2;
-            const bigStretch = 1.8 + hash(clSeed + 5) * 1.2;
-            const bigAlpha = 0.18 + hash(clSeed + 10) * 0.12;
-            drawCloud(bigX, bigY, bigR, bigStretch, clSeed, bigAlpha, tangent, 1.0);
-
-            // Medium children — stay close to parent
-            const numMed = 1 + Math.floor(hash(clSeed + 20) * 2);
-            for (let m = 0; m < numMed; m++) {
-              const mSeed = clSeed + m * 31 + 200;
-              const mAngleOff = (hash(mSeed) - 0.5) * 1.2;
-              const mDistOff = bigR * (0.6 + hash(mSeed + 1) * 0.8);
-              const mOrbit = clAngle + mAngleOff + time * clOrbitSpeed * 1.1;
-              const mx = bigX + Math.cos(mOrbit) * mDistOff;
-              const my = bigY + Math.sin(mOrbit) * mDistOff * 0.5;
-              const mR = bigR * (0.4 + hash(mSeed + 2) * 0.3);
-              const mStretch = 1.3 + hash(mSeed + 3) * 1.5;
-              const mAlpha = bigAlpha * (0.6 + hash(mSeed + 4) * 0.3);
-              drawCloud(mx, my, mR, mStretch, mSeed, mAlpha, tangent + mAngleOff * 0.3, 0.5);
-
-              // Small wisps — detach further, thinner, more ragged
-              const numSmall = Math.floor(hash(mSeed + 30) * 2);
-              for (let s = 0; s < numSmall; s++) {
-                const sSeed = mSeed + s * 47 + 400;
-                const sAngleOff = (hash(sSeed) - 0.5) * 2.5; // more scattered
-                const sDistOff = mR * (1.0 + hash(sSeed + 1) * 2.0); // further detached
-                const sOrbit = mOrbit + sAngleOff + time * clOrbitSpeed * 1.3;
-                const sx = mx + Math.cos(sOrbit) * sDistOff;
-                const sy = my + Math.sin(sOrbit) * sDistOff * 0.5;
-                const sR = mR * (0.2 + hash(sSeed + 2) * 0.3);
-                const sStretch = 1.5 + hash(sSeed + 3) * 2.0;
-                const sAlpha = mAlpha * (0.3 + hash(sSeed + 4) * 0.3);
-                drawCloud(sx, sy, sR, sStretch, sSeed, sAlpha, tangent + sAngleOff * 0.2, 0.15);
+        // === CACHED CLOUD SYSTEM ===
+        // Build cloud list once, cache shapes to offscreen canvases
+        if (!cloudCache || cloudCache.W !== W) {
+          cloudCache = { W, clouds: [], frame: 0 };
+          const swirlSpeeds = [0.25, 0.18, 0.13, 0.09];
+          const swirlOffsets = [0, 1.2, 2.7, 4.1];
+          let id = 0;
+          for (let sw = 0; sw < 4; sw++) {
+            const numCl = 3 + sw;
+            for (let cl = 0; cl < numCl; cl++) {
+              const s0 = sw * 1000 + cl * 137;
+              const dist = sunR * 1.5 + hash(s0 * 0.7) * H * 0.4;
+              const angleBase = (cl / numCl) * Math.PI * 2 + swirlOffsets[sw];
+              const orbitSpd = swirlSpeeds[sw] / (0.3 + dist / (H * 0.5));
+              const bR = (35 + hash(s0) * 55) * 0.65;
+              const bStr = 1.8 + hash(s0 + 5) * 1.2;
+              const bA = 0.18 + hash(s0 + 10) * 0.12;
+              // Parent
+              cloudCache.clouds.push({ seed: s0, dist, angleBase, orbitSpd, baseR: bR, stretch: bStr, alpha: bA, sizeClass: 1, angleOff: 0, parent: -1, id: id++ });
+              const pIdx = cloudCache.clouds.length - 1;
+              // Medium
+              const nMed = 1 + Math.floor(hash(s0 + 20) * 2);
+              for (let m = 0; m < nMed; m++) {
+                const ms = s0 + m * 31 + 200;
+                const mAO = (hash(ms) - 0.5) * 1.2;
+                const mDO = bR * (0.6 + hash(ms + 1) * 0.8);
+                const mR = bR * (0.4 + hash(ms + 2) * 0.3);
+                cloudCache.clouds.push({ seed: ms, dist: mDO, angleBase: mAO, orbitSpd: orbitSpd * 1.1, baseR: mR, stretch: 1.3 + hash(ms + 3) * 1.5, alpha: bA * (0.6 + hash(ms + 4) * 0.3), sizeClass: 0.5, angleOff: mAO * 0.3, parent: pIdx, id: id++ });
+                const mIdx = cloudCache.clouds.length - 1;
+                // Small wisps
+                const nSm = Math.floor(hash(ms + 30) * 2);
+                for (let s = 0; s < nSm; s++) {
+                  const ss = ms + s * 47 + 400;
+                  const sAO = (hash(ss) - 0.5) * 2.5;
+                  const sDO = mR * (1 + hash(ss + 1) * 2);
+                  cloudCache.clouds.push({ seed: ss, dist: sDO, angleBase: sAO, orbitSpd: orbitSpd * 1.3, baseR: mR * (0.2 + hash(ss + 2) * 0.3), stretch: 1.5 + hash(ss + 3) * 2, alpha: bA * 0.5 * (0.3 + hash(ss + 4) * 0.3), sizeClass: 0.15, angleOff: sAO * 0.2, parent: mIdx, id: id++ });
+                }
               }
             }
           }
+          // Create offscreen canvas per cloud
+          for (const c of cloudCache.clouds) {
+            const pad = c.baseR * (c.stretch + 1) * 1.5;
+            const cw = Math.ceil(pad * 2), ch = Math.ceil(c.baseR * 2);
+            const osc = document.createElement('canvas');
+            osc.width = cw; osc.height = ch;
+            c.osc = osc; c.oscW = cw; c.oscH = ch; c.dirty = true;
+          }
         }
-        ctx.restore();
+
+        // Render cloud shape to offscreen canvas
+        const renderCloudShape = (c, t) => {
+          const oc = c.osc.getContext('2d');
+          oc.clearRect(0, 0, c.oscW, c.oscH);
+          const cx = c.oscW / 2, cy = c.oscH / 2;
+          const segs = c.sizeClass > 0.3 ? 36 : 20;
+          const noiseAmt = c.baseR * (0.5 + (1 - c.sizeClass) * 0.8);
+          const passes = c.sizeClass > 0.3 ? 3 : 1;
+
+          oc.save();
+          oc.translate(cx, cy);
+          oc.scale(c.stretch, 1);
+
+          // Outer haze
+          oc.beginPath();
+          for (let i = 0; i <= segs; i++) {
+            const a = (i / segs) * Math.PI * 2;
+            let px = Math.cos(a) * c.baseR;
+            let py = Math.sin(a) * c.baseR * 0.45;
+            const wx = (px + c.seed) * 0.02, wy = (py + c.seed * 0.7) * 0.02;
+            const [fx, fy] = curlFlow(wx + t * 0.002, wy + t * 0.0015);
+            px += fx * noiseAmt * 1.2; py += fy * noiseAmt * 1.2;
+            if (passes > 1) {
+              const [fx2, fy2] = curlFlow(wx * 2.5 + t * 0.003, wy * 2.3 - t * 0.0025);
+              px += fx2 * noiseAmt * 0.4; py += fy2 * noiseAmt * 0.4;
+              const [fx3, fy3] = curlFlow(wx * 5 - t * 0.004, wy * 4.5 + t * 0.0025);
+              px += fx3 * noiseAmt * 0.15 * (1 + (1 - c.sizeClass));
+              py += fy3 * noiseAmt * 0.15 * (1 + (1 - c.sizeClass));
+            }
+            i === 0 ? oc.moveTo(px, py) : oc.lineTo(px, py);
+          }
+          oc.closePath();
+          oc.fillStyle = `rgba(12,6,3,${(c.alpha * 0.4).toFixed(3)})`;
+          oc.fill();
+
+          // Inner core
+          oc.scale(0.75, 0.75);
+          oc.beginPath();
+          for (let i = 0; i <= segs; i++) {
+            const a = (i / segs) * Math.PI * 2;
+            let px = Math.cos(a) * c.baseR;
+            let py = Math.sin(a) * c.baseR * 0.45;
+            const wx = (px + c.seed) * 0.02, wy = (py + c.seed * 0.7) * 0.02;
+            const [fx, fy] = curlFlow(wx + t * 0.002, wy + t * 0.0015);
+            px += fx * noiseAmt * 0.9; py += fy * noiseAmt * 0.9;
+            if (passes > 1) {
+              const [fx2, fy2] = curlFlow(wx * 2.5 + t * 0.003, wy * 2.3 - t * 0.0025);
+              px += fx2 * noiseAmt * 0.3; py += fy2 * noiseAmt * 0.3;
+            }
+            i === 0 ? oc.moveTo(px, py) : oc.lineTo(px, py);
+          }
+          oc.closePath();
+          oc.fillStyle = `rgba(15,8,5,${c.alpha.toFixed(3)})`;
+          oc.fill();
+          oc.restore();
+          c.dirty = false;
+        };
+
+        // Staggered shape refresh — rebuild 4 clouds per frame
+        const refreshPerFrame = 4;
+        const cf = cloudCache.frame++;
+        for (let i = 0; i < refreshPerFrame; i++) {
+          const idx = (cf * refreshPerFrame + i) % cloudCache.clouds.length;
+          renderCloudShape(cloudCache.clouds[idx], time);
+        }
+        // First frame: render all
+        if (cf < 2) cloudCache.clouds.forEach(c => renderCloudShape(c, time));
+
+        // Draw cached clouds at orbital positions
+        for (const c of cloudCache.clouds) {
+          // Compute position
+          let cx, cy, tangent;
+          if (c.parent === -1) {
+            const angle = c.angleBase + time * c.orbitSpd;
+            cx = sunX + Math.cos(angle) * c.dist;
+            cy = sunY + Math.sin(angle) * c.dist * 0.5;
+            tangent = angle + Math.PI / 2;
+          } else {
+            const p = cloudCache.clouds[c.parent];
+            let px, py, pTangent;
+            if (p.parent === -1) {
+              const pAngle = p.angleBase + time * p.orbitSpd;
+              px = sunX + Math.cos(pAngle) * p.dist;
+              py = sunY + Math.sin(pAngle) * p.dist * 0.5;
+              pTangent = pAngle + Math.PI / 2;
+            } else {
+              const gp = cloudCache.clouds[p.parent];
+              const gpAngle = gp.angleBase + time * gp.orbitSpd;
+              const gpx = sunX + Math.cos(gpAngle) * gp.dist;
+              const gpy = sunY + Math.sin(gpAngle) * gp.dist * 0.5;
+              const pOrbit = gpAngle + p.angleBase + time * p.orbitSpd;
+              px = gpx + Math.cos(pOrbit) * p.dist;
+              py = gpy + Math.sin(pOrbit) * p.dist * 0.5;
+              pTangent = pOrbit + Math.PI / 2;
+            }
+            const orbit = (c.parent >= 0 ? cloudCache.clouds[c.parent].angleBase + time * cloudCache.clouds[c.parent].orbitSpd : 0) + c.angleBase + time * c.orbitSpd;
+            cx = px + Math.cos(orbit) * c.dist;
+            cy = py + Math.sin(orbit) * c.dist * 0.5;
+            tangent = (pTangent || 0) + c.angleOff;
+          }
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(tangent || 0);
+          ctx.drawImage(c.osc, -c.oscW / 2, -c.oscH / 2);
+          ctx.restore();
+        }
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
