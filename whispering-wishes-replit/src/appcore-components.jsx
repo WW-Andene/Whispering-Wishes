@@ -2351,7 +2351,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const closeup = Math.min(1, dz / 3);
               const fadeout = 1 - Math.max(0, (dz - pathEnd + 3) / 3);  // fade out near end
               const pathW = 0.4 * closeup * fadeout;
-              const fadeW = 0.7 * closeup * fadeout;
+              const fadeW = 0.35 * closeup * fadeout;
               const ax = Math.abs(jx);
               // Jitter the edge per-sword for messy look
               const jitter = (ihash(swordIdx, sceneSeed + 888) - 0.5) * 0.6;
