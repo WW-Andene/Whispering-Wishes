@@ -2458,14 +2458,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.quadraticCurveTo(0, gripBot - pomDia * 0.1, -barW / 2, gripBot);
             ctx.closePath();
           } else {
-            // Fan — wide flat top, narrows to rounded bottom
-            const fanW = guardW * 0.35;
+            // Fan — wide flat top, shallow curved bottom
+            const fanW = guardW * 0.4;
+            const fanH = pomDia * 0.5;
             ctx.moveTo(-fanW, gripBot);
-            ctx.lineTo(-fanW, gripBot + pomDia * 0.3);
-            ctx.quadraticCurveTo(-fanW, gripBot + pomDia,
-                                  0, gripBot + pomDia);
-            ctx.quadraticCurveTo(fanW, gripBot + pomDia,
-                                  fanW, gripBot + pomDia * 0.3);
+            ctx.lineTo(-fanW, gripBot + fanH);
+            ctx.quadraticCurveTo(0, gripBot + fanH + pomDia * 0.4,
+                                  fanW, gripBot + fanH);
             ctx.lineTo(fanW, gripBot);
             ctx.closePath();
           }
