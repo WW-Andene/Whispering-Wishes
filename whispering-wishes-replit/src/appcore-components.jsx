@@ -3933,7 +3933,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
             // Inverse gradient: close = spread, far = grouped
             const t = Math.min(1, gz / gridZmax);
-            const spacing = Math.min(2, Math.max(0.44, gz * 0.3));
+            const spacing = Math.min(2, Math.max(0.44, gz * 0.4));
             // Visible X range at this Z
             const visibleXrange = gz * W / (2 * focal) * 1.5;
             for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
@@ -3957,15 +3957,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const darkness = distT * 0.6;
 
               swords.push({
-                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness
+                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness,
+                shuffle: rng(swordIdx, 200)
               });
               swordIdx++;
             }
             gz += spacing; // Z step scales with distance
           }
 
-          // Sort back-to-front
-          swords.sort((a, b) => b.wz - a.wz);
+          // Sort back-to-front with shuffle jitter
+          swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
 
           // Draw all swords
           for (const s of swords) {
