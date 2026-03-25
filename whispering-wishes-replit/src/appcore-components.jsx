@@ -2257,13 +2257,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         const W = canvas.width, H = canvas.height;
         const hY = H; // sky covers 100%
-        const rng = (i, off) => {
-          let h = (i * 2654435761 + off * 2246822519) >>> 0;
-          h = ((h >> 16) ^ h) * 0x45d9f3b >>> 0;
-          h = ((h >> 16) ^ h) * 0x45d9f3b >>> 0;
-          h = (h >> 16) ^ h;
-          return (h >>> 0) / 4294967296;
-        };
+        const rng = (i, off) => { const s = Math.sin(i * 153.7 + off * 267.3) * 51291.1; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (lighter, more luminous) ---
         const sk = ctx.createLinearGradient(0, 0, 0, hY);
@@ -2411,7 +2405,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.closePath();
           ctx.fill();
           // Guard — varies per sword
-          const guardType = Math.floor(rng(s.idx, 300) * 5);
+          const guardType = ((s.idx * 2654435761 + 300) >>> 0) % 5;
           ctx.beginPath();
           if (guardType === 1) {
             // Tapered — wider at ends, narrow in middle
@@ -2456,7 +2450,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
-          const pommelType = Math.floor(rng(s.idx, 400) * 2);
+          const pommelType = ((s.idx * 2246822519 + 400) >>> 0) % 2;
           ctx.beginPath();
           if (pommelType === 1) {
             // Circle
