@@ -2311,62 +2311,80 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // === SWORDS — stuck in ground, pointing toward the sun ===
-        {
-          const swordCount = 14;
-          for (let i = 0; i < swordCount; i++) {
-            const t = 0.08 + (i / (swordCount - 1)) * 0.84; // spread across ground
-            const sx = t * W;
-            // Y position on the concave curve: quadratic interpolation
-            const groundY = (1 - 2 * Math.abs(t - 0.5)) * edgeY + 2 * Math.abs(t - 0.5) * edgeY
-              + 4 * t * (1 - t) * (dipY - edgeY) + edgeY * 0; // simplify:
-            const gy = edgeY + 4 * t * (1 - t) * (dipY - edgeY);
+        // === SWORD SILHOUETTES — perspective projected, pointing toward sun ===
+        const focal = W * 0.7;
+        const camH = 0.3;
+        const horizonY = edgeY;
+        const gridZmin = 0.03, gridZmax = 80;
+        const maxSwords = 500;
+        const swords = [];
+        let swordIdx = 0;
 
-            // Angle pointing toward sun
-            const dx = sunX - sx;
-            const dy = sunY - gy;
-            const angle = Math.atan2(dy, dx) + Math.PI * 0.5; // rotate so blade points at sun
+        for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
+          const spacing = Math.min(2, Math.max(0.44, gz * 0.3));
+          const visibleXrange = gz * W / (2 * focal) * 1.5;
+          for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
+            const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
+            const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
+            if (wz < 0.02) { swordIdx++; continue; }
 
-            // Sword dimensions — vary slightly
-            const swordH = H * (0.06 + rng(i, 50) * 0.05);
-            const bladeW = 2 + rng(i, 51) * 1.5;
+            const scrX = W * 0.5 + wx * focal / wz;
+            const scrY = horizonY + camH * focal / wz;
+            const size = 3.0 * focal / wz;
 
-            ctx.save();
-            ctx.translate(sx, gy);
-            ctx.rotate(angle);
+            if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
 
-            // Blade
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-bladeW, -swordH * 0.15);
-            ctx.lineTo(-bladeW * 0.6, -swordH * 0.8);
-            ctx.lineTo(0, -swordH);
-            ctx.lineTo(bladeW * 0.6, -swordH * 0.8);
-            ctx.lineTo(bladeW, -swordH * 0.15);
-            ctx.closePath();
-            ctx.fillStyle = 'rgb(60,60,70)';
-            ctx.fill();
+            // Angle: point toward sun
+            const dx = sunX - scrX;
+            const dy = sunY - scrY;
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
 
-            // Blade highlight
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, -swordH);
-            ctx.lineTo(bladeW * 0.4, -swordH * 0.5);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(140,140,160,0.3)';
-            ctx.fill();
+            const distT = Math.min(1, wz / gridZmax);
+            const alpha = (1 - distT) * 0.7 + 0.05;
 
-            // Crossguard
-            const guardW = bladeW * 3;
-            ctx.fillStyle = 'rgb(50,40,35)';
-            ctx.fillRect(-guardW, -2, guardW * 2, 4);
-
-            // Grip
-            ctx.fillStyle = 'rgb(40,30,25)';
-            ctx.fillRect(-bladeW * 0.5, 0, bladeW, swordH * 0.2);
-
-            ctx.restore();
+            swords.push({ scrX, scrY, size, angle, wz, alpha, shuffle: rng(swordIdx, 200) });
+            swordIdx++;
           }
+          gz += spacing;
+        }
+
+        swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
+
+        for (const s of swords) {
+          const bladeH = s.size * 8 / 11;
+          const handleH = s.size * 3 / 11;
+          const mod = bladeH / 8;
+          const bladeW = mod * 0.5;
+          const guardW = mod * 2.0;
+
+          ctx.save();
+          ctx.translate(s.scrX, s.scrY);
+          ctx.rotate(s.angle * Math.PI / 180);
+
+          ctx.fillStyle = 'rgb(10,6,4)';
+
+          // Tip
+          ctx.beginPath();
+          ctx.moveTo(0, bladeH + handleH + bladeW * 2);
+          ctx.lineTo(bladeW / 2, bladeH + handleH);
+          ctx.lineTo(-bladeW / 2, bladeH + handleH);
+          ctx.closePath();
+          ctx.fill();
+          // Blade
+          ctx.fillRect(-bladeW / 2, handleH, bladeW, bladeH);
+          // Guard
+          const guardH = mod * 0.15;
+          ctx.fillRect(-guardW / 2, handleH - guardH / 2, guardW, guardH);
+          // Handle
+          const gripW = bladeW * 0.5;
+          ctx.fillRect(-gripW / 2, 0, gripW, handleH);
+          // Pommel
+          const pomR = mod * 0.45;
+          ctx.beginPath();
+          ctx.arc(0, -pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
         }
 
       } // end BATTLEGROUND block
