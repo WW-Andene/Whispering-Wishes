@@ -2345,10 +2345,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (scrX < -30 || scrX > W + 30) continue;
 
             const scrY = projY(jz);
-            if (scrY < edgeY - 5 || scrY > H + 30) continue;
+            if (scrY < edgeY - 5) continue;
 
             const size = 2.5 * focal / jz;
             if (size < 1.5) continue;
+
 
             // Random lean: 0 to ±22.5° (π/8)
             const lean = (rng(swordIdx, 505) - 0.5) * 2 * (Math.PI / 8);
