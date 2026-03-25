@@ -3918,7 +3918,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Blades stuck in the ground — tip buried, hilt up
         // Close foreground swords partially off-screen at edges
         // Matching reference: scattered across battlefield, various tilts
-        {
+        if (false) {
           const swords = [];
           const fieldZnear = 0.25;  // extremely close — swords dominate the screen
           const fieldZfar = 80;
