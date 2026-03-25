@@ -2242,6 +2242,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
+    const sceneSeed = Math.random() * 99999 | 0;
 
     let lastFrame = 0;
 
@@ -2257,7 +2258,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         const W = canvas.width, H = canvas.height;
         const hY = H; // sky covers 100%
-        const rng = (i, off) => { const s = Math.sin(i * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
+        const rng = (i, off) => { const s = Math.sin((i + sceneSeed) * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (lighter, more luminous) ---
         const sk = ctx.createLinearGradient(0, 0, 0, hY);
@@ -2331,7 +2332,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         let swordIdx = 0;
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
-        for (let bz = baseSpacing * 0.5; bz < planeSize; ) {
+        for (let bz = baseSpacing * 0.3; bz < planeSize; ) {
           const rowSpacingZ = 0.5 + rng(swordIdx + 7000, 77) * 1.5; // 0.5–2
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = 0.5 + rng(swordIdx + 8000, 88) * 1.5; // 0.5–2
