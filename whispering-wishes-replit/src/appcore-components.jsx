@@ -2465,20 +2465,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.quadraticCurveTo(0, gripBot - pomDia * 0.1, -barW / 2, gripBot);
             ctx.closePath();
           } else {
-            // Fan — trapezoid: flat bottom at grip, inward curved sides, outward curved top
-            const fanW = bladeW * 0.8;      // half-width at bottom (wide)
-            const fanTopW = fanW * 0.5;     // half-width at top (narrow)
+            // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
+            const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
+            const fanTopW = bladeW * 1.2;   // half-width at top (wide)
             const fanH = pomDia;
-            ctx.moveTo(-fanW, gripBot);     // bottom-left (grip connection)
-            // Left side — curves inward
-            ctx.quadraticCurveTo(-fanTopW * 0.5, gripBot + fanH * 0.5,
-                                  -fanTopW, gripBot + fanH);
-            // Top — curves outward (away from grip)
-            ctx.quadraticCurveTo(0, gripBot + fanH + fanH * 0.3,
-                                  fanTopW, gripBot + fanH);
+            ctx.moveTo(-fanBotW, gripBot);  // flat bottom-left (grip connection)
+            ctx.lineTo(fanBotW, gripBot);   // flat bottom-right
             // Right side — curves inward
-            ctx.quadraticCurveTo(fanTopW * 0.5, gripBot + fanH * 0.5,
-                                  fanW, gripBot);
+            ctx.quadraticCurveTo(fanBotW * 0.5, gripBot + fanH * 0.5,
+                                  fanTopW, gripBot + fanH);
+            // Top — curves outward (away from grip)
+            ctx.quadraticCurveTo(0, gripBot + fanH + fanH * 0.35,
+                                  -fanTopW, gripBot + fanH);
+            // Left side — curves inward
+            ctx.quadraticCurveTo(-fanBotW * 0.5, gripBot + fanH * 0.5,
+                                  -fanBotW, gripBot);
             ctx.closePath();
           }
           ctx.fill();
