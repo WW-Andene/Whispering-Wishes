@@ -2293,8 +2293,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // === CONCAVE GROUND ===
         {
-          const edgeY = H * 0.52;
-          const dipY = H * 0.62;
+          const edgeY = H * 0.7;
+          const dipY = H * 0.8;
           ctx.beginPath();
           ctx.moveTo(0, edgeY);
           ctx.quadraticCurveTo(W * 0.5, dipY, W, edgeY);
