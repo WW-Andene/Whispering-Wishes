@@ -2304,7 +2304,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Ground curve — horizon dips at edges
         const curveStr = H * 0.06;
-        const curveY = (sx, sy) => sy + curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
+        const curveY = (sx, sy) => sy - curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
 
         // --- Draw curved ground strips ---
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
@@ -2383,7 +2383,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const size = 2.5 * focal / (jz - camZ);
 
             // Curve lean — swords follow the ground curve outward at edges
-            const curveLean = 2 * curveStr * (scrX - W * 0.5) / (W * 0.5 * W * 0.5) * 0.3;
+            const curveLean = -2 * curveStr * (scrX - W * 0.5) / (W * 0.5 * W * 0.5) * 0.3;
 
             // Random lean + curve lean
             let lh = (swordIdx * 2654435761 + 3651) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
