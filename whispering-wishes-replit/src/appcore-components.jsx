@@ -2334,10 +2334,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
 
-            // Angle: pommel (top) points toward sun
-            const dx = sunX - scrX;
-            const dy = sunY - scrY;
-            const angle = Math.atan2(dy, dx) + Math.PI * 0.5; // radians
+            const angle = ((rng(swordIdx * 7 + 3, 104) - 0.5) * 30 + (rng(swordIdx * 13 + 7, 105) - 0.5) * 12) * Math.PI / 180;
 
             const distT = Math.min(1, wz / gridZmax);
             const alpha = (1 - distT) * 0.7 + 0.05;
