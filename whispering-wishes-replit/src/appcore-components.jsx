@@ -2398,39 +2398,26 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
-          // Grip — gentle inward curve, narrowing by 2/5 gripW each side, flat bottom
-          const gripNarrow = gripW * 2 / 5;
+          // Grip — straight rectangle
           const gripBot = guardH + gripH;
-          const narrowW = gripW - gripNarrow * 2;
-          ctx.beginPath();
-          ctx.moveTo(-gripW / 2, guardH);                                    // top-left
-          ctx.lineTo(-gripW / 2, guardH + gripH * 0.65);                    // straight most of way
-          ctx.quadraticCurveTo(-gripW / 2, gripBot - gripNarrow * 0.2,         // control: above bottom
-                                -narrowW / 2, gripBot);                     // end: narrowed bottom-left
-          ctx.lineTo(narrowW / 2, gripBot);                                  // flat bottom
-          ctx.quadraticCurveTo(gripW / 2, gripBot - gripNarrow * 0.2,        // control: above bottom
-                                gripW / 2, guardH + gripH * 0.65);          // end: back to full width
-          ctx.lineTo(gripW / 2, guardH);                                     // right side up
-          ctx.closePath();
-          ctx.fill();
-          // Pommel — varies per sword: full circle, half circle, or fan
+          ctx.fillRect(-gripW / 2, guardH, gripW, gripH);
+          // Pommel — sits directly on grip
           const pommelType = s.idx % 3;  // 0 = circle, 1 = half-circle, 2 = fan
           ctx.beginPath();
           if (pommelType === 1) {
-            // Half circle — same width as pomDia, half-circle fills pomDia height
-            ctx.arc(0, gripBot, pomDia, 0, Math.PI);
+            // Half-circle
+            ctx.arc(0, gripBot, pomR, Math.PI, 0, true);
+            ctx.closePath();
           } else if (pommelType === 2) {
-            // Fan shape — pomDia wide at top, pomDia tall, rounded bottom
+            // Fan shape
             ctx.moveTo(-pomR, gripBot);
-            ctx.bezierCurveTo(-pomR, gripBot + pomDia * 0.8,
-                               0, gripBot + pomDia,
-                               0, gripBot + pomDia);
-            ctx.bezierCurveTo(0, gripBot + pomDia,
-                               pomR, gripBot + pomDia * 0.8,
-                               pomR, gripBot);
+            ctx.quadraticCurveTo(-pomR, gripBot + pomDia,
+                                  0, gripBot + pomDia);
+            ctx.quadraticCurveTo(pomR, gripBot + pomDia,
+                                  pomR, gripBot);
             ctx.closePath();
           } else {
-            // Full circle (default)
+            // Full circle
             ctx.arc(0, gripBot + pomR, pomR, 0, Math.PI * 2);
           }
           ctx.fill();
