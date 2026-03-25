@@ -2291,29 +2291,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === 3D CONCAVE GROUND + SWORDS (unified surface) ===
-        const edgeY = H * 0.7; // horizon line
-        const focal = W * 0.7;
+        // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
+        const edgeY = H * 0.55; // horizon line
+        const focal = W * 0.8;
 
-        // 3D ground surface: concave bowl (center dips, edges rise to horizon)
-        // Circular arc cross-section — smooth curve
-        const bowlRadius = 50; // world-space half-width of bowl (much larger than screen)
-        const bowlDepth = 0.18; // max depth at center
-        const groundWY = (wx) => {
-          const r2 = wx * wx;
-          const R2 = bowlRadius * bowlRadius;
-          if (r2 >= R2) return 0; // beyond bowl edge = horizon level
-          // Center deepest, edges at horizon: depth = bowlDepth * sqrt(R²-x²)/R
-          return bowlDepth * Math.sqrt(R2 - r2) / bowlRadius;
-        };
-
-        // 3D projection helpers
+        // Flat ground — no bowl, wy = 0 everywhere
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const projY = (wy, wz) => edgeY + wy * focal / wz;
+        const projY = (wz) => edgeY + focal / wz;
 
-        // --- Draw ground as 3D projected strips (back-to-front) ---
-        const zNear = 0.04, zFar = 80, zSlices = 30;
-        const xSteps = 40;
+        // --- Draw flat ground as depth strips (back-to-front) ---
+        const zNear = 0.3, zFar = 100, zSlices = 30;
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2321,27 +2308,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
-          const wz0 = zNear * Math.pow(zFar / zNear, t0); // near edge of strip
-          const wz1 = zNear * Math.pow(zFar / zNear, t1); // far edge of strip
+          const wz0 = zNear * Math.pow(zFar / zNear, t0);
+          const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
-          ctx.beginPath();
-          // Far edge (top of strip) left to right
-          for (let j = 0; j <= xSteps; j++) {
-            const sx = W * j / xSteps;
-            const wx = (sx - W * 0.5) * wz1 / focal;
-            const wy = groundWY(wx);
-            const sy = projY(wy, wz1);
-            if (j === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-          }
-          // Near edge (bottom of strip) right to left
-          for (let j = xSteps; j >= 0; j--) {
-            const sx = W * j / xSteps;
-            const wx = (sx - W * 0.5) * wz0 / focal;
-            const wy = groundWY(wx);
-            const sy = projY(wy, wz0);
-            ctx.lineTo(sx, sy);
-          }
-          ctx.closePath();
+          const sy0 = projY(wz0);
+          const sy1 = projY(wz1);
 
           // Depth-based color: lighter near, darker far
           const depthT = Math.pow(t0, 0.6);
@@ -2349,38 +2320,39 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const g = Math.round(55 - 45 * depthT);
           const b = Math.round(32 - 26 * depthT);
           ctx.fillStyle = `rgb(${r},${g},${b})`;
-          ctx.fill();
+          ctx.fillRect(0, sy1, W, sy0 - sy1 + 1);
         }
 
-        // --- SWORDS: large grid, only generate what's on screen ---
-        const swordSpacing = 0.12;
-        const maxSwords = 600;
+        // --- 500 SWORDS spread equally on 100m × 100m plane ---
+        // 500 swords in ~22×23 grid → spacing ≈ 100/22 ≈ 4.5m
+        const planeSize = 100; // 100m × 100m
+        const gridCols = 22;
+        const gridRows = 23;
+        const spacingX = planeSize / gridCols;
+        const spacingZ = planeSize / gridRows;
         const swords = [];
         let swordIdx = 0;
 
-        for (let wz = swordSpacing; wz <= 60 && swords.length < maxSwords; wz += swordSpacing) {
-          // Compute visible world-X range at this depth, with margin
-          const visibleHalfX = (W * 0.5) * wz / focal;
-          const margin = swordSpacing * 2;
-          const xMin = -visibleHalfX - margin;
-          const xMax = visibleHalfX + margin;
+        for (let row = 0; row < gridRows; row++) {
+          for (let col = 0; col < gridCols; col++) {
+            const baseX = (col - gridCols / 2 + 0.5) * spacingX;
+            const baseZ = (row + 0.5) * spacingZ;
 
-          for (let wx = xMin + swordSpacing * 0.5; wx <= xMax - swordSpacing * 0.5 && swords.length < maxSwords; wx += swordSpacing) {
-            // Small jitter so it doesn't look like a perfect grid
-            const jx = wx + (rng(swordIdx, 101) - 0.5) * swordSpacing * 0.3;
-            const jz = wz + (rng(swordIdx, 100) - 0.5) * swordSpacing * 0.3;
+            // Jitter for natural look
+            const jx = baseX + (rng(swordIdx, 101) - 0.5) * spacingX * 0.5;
+            const jz = baseZ + (rng(swordIdx, 100) - 0.5) * spacingZ * 0.4;
             swordIdx++;
-            if (jz < 0.02) continue;
+            if (jz < 0.3) continue;
 
+            // Project and cull to screen
             const scrX = projX(jx, jz);
-            if (scrX < -20 || scrX > W + 20) continue;
+            if (scrX < -30 || scrX > W + 30) continue;
 
-            // Place sword ON the 3D ground surface
-            const wy = groundWY(jx);
-            const scrY = projY(wy, jz);
-            const size = Math.min(H * 0.6125, 3.0 * focal / jz);
+            const scrY = projY(jz);
+            if (scrY < edgeY - 5 || scrY > H + 30) continue;
 
-            if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) continue;
+            const size = Math.min(H * 0.18, 2.5 * focal / jz);
+            if (size < 1.5) continue;
 
             // Pommel points toward sun
             const angle = Math.atan2(sunY - scrY, sunX - scrX) + Math.PI * 0.5;
@@ -2389,7 +2361,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           }
         }
 
-        swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
+        // Sort back-to-front
+        swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
           const bladeH = s.size * 8 / 11;
@@ -2399,24 +2372,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const guardW = mod * 2.0;
 
           ctx.save();
-          // Anchor at guard level (where sword enters ground)
           ctx.translate(s.scrX, s.scrY);
           ctx.rotate(s.angle);
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Sword stuck tip-first into ground. Anchor (y=0) = ground surface.
-          // Negative Y = above ground (visible), positive Y = below ground (hidden).
+          // Sword stuck tip-first into ground — 60% blade exposed above
           const exposedBlade = bladeH * 0.6;
-          // Exposed blade above ground
           ctx.fillRect(-bladeW / 2, -exposedBlade, bladeW, exposedBlade);
-          // Guard at top of exposed blade
+          // Guard
           const guardH = mod * 0.15;
           ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
-          // Handle above guard
+          // Handle
           const gripW = bladeW * 0.5;
           ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
-          // Pommel at very top
+          // Pommel
           const pomR = mod * 0.45;
           ctx.beginPath();
           ctx.arc(0, -exposedBlade - guardH - handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
