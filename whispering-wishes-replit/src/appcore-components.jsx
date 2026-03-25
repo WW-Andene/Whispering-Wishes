@@ -2357,7 +2357,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const size = 2.5 * focal / jz;
             if (size < 1.5) continue;
 
-            swords.push({ scrX, scrY, size, wz: jz, shuffle: rng(swordIdx, 200) });
+            // Random lean: 0 to ±22.5° (π/8)
+            const lean = (rng(swordIdx, 505) - 0.5) * 2 * (Math.PI / 8);
+
+            swords.push({ scrX, scrY, size, lean, wz: jz, shuffle: rng(swordIdx, 200) });
           }
         }
 
@@ -2373,6 +2376,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
+          ctx.rotate(s.lean);
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
