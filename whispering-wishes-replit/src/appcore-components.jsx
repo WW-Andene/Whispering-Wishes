@@ -2295,10 +2295,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
 
-        // Flat ground — no bowl, wy = 0 everywhere
+        // Ground with slight inward curve (bowl)
+        const bowlStr = 0.06;  // bowl curvature strength
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const camH = 0.15;  // camera near ground level
-        const projY = (wz) => edgeY + camH * focal / wz;
+        const camH = 0.15;
+        const projY = (wz, wx) => {
+          const wy = wx !== undefined ? bowlStr * wx * wx : 0;  // bowl dip
+          return edgeY + (camH + wy) * focal / wz;
+        };
 
         // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = 0.05, zFar = 50, zSlices = 30;
@@ -2341,17 +2345,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             bx += cellSpacingX;
             if (jz < 0.3) continue;
 
-            // Project to screen
+            // Project to screen (with bowl)
             const scrX = projX(jx, jz);
-            const scrY = projY(jz);
+            const scrY = projY(jz, jx);
             if (scrY < edgeY - 5) continue;
 
             const size = 2.5 * focal / jz;
 
+            // Bowl slope — swords lean inward following the curve
+            const bowlLean = -2 * bowlStr * jx * 0.5;
 
-            // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
+            // Random lean: -22.5° to +22.5° + bowl lean
             let lh = (swordIdx * 2654435761 + 505) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x45d9f3b); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8);
+            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8) + bowlLean;
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
