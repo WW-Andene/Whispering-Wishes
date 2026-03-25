@@ -2380,7 +2380,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Flip sword so blade points down into ground, hilt sticks up
           const buried = bladeH * 0.35;
           ctx.beginPath();
-          ctx.rect(0, 0, W, H);
+          ctx.rect(0, 0, W, s.scrY);
           ctx.clip();
           ctx.translate(s.scrX, s.scrY - buried);
           ctx.scale(1, -1);
