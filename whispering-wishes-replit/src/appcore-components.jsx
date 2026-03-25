@@ -2354,7 +2354,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
 
-            swords.push({ scrX, scrY, size, lean, yRot, wz: jz, shuffle: rng(swordIdx, 200) });
+            swords.push({ scrX, scrY, size, lean, yRot, wz: jz, shuffle: rng(swordIdx, 200), idx: swordIdx });
           }
           bz += rowSpacingZ;
         }
@@ -2398,24 +2398,40 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
-          // Grip — smooth inward curve, narrowing by 2/5 gripW each side, flat bottom
+          // Grip — gentle inward curve, narrowing by 2/5 gripW each side, flat bottom
           const gripNarrow = gripW * 2 / 5;
           const gripBot = guardH + gripH;
           const narrowW = gripW - gripNarrow * 2;
           ctx.beginPath();
           ctx.moveTo(-gripW / 2, guardH);                                    // top-left
-          ctx.bezierCurveTo(-gripW / 2, guardH + gripH * 0.6,               // cp1: straight most of way
-                            -gripW / 2, gripBot,                            // cp2: stay at edge
-                            -narrowW / 2, gripBot);                         // end: narrowed bottom-left
+          ctx.lineTo(-gripW / 2, guardH + gripH * 0.65);                    // straight most of way
+          ctx.quadraticCurveTo(-gripW / 2, gripBot,                          // control: smooth corner
+                                -narrowW / 2, gripBot);                     // end: narrowed bottom-left
           ctx.lineTo(narrowW / 2, gripBot);                                  // flat bottom
-          ctx.bezierCurveTo(gripW / 2, gripBot,                             // cp2: stay at edge
-                            gripW / 2, guardH + gripH * 0.6,                // cp1: straight most of way
-                            gripW / 2, guardH);                              // end: top-right
+          ctx.quadraticCurveTo(gripW / 2, gripBot,                           // control: smooth corner
+                                gripW / 2, guardH + gripH * 0.65);          // end: back to full width
+          ctx.lineTo(gripW / 2, guardH);                                     // right side up
           ctx.closePath();
           ctx.fill();
-          // Pommel
+          // Pommel — varies per sword: full circle, half circle, or fan
+          const pommelType = s.idx % 3;  // 0 = circle, 1 = half-circle, 2 = fan
           ctx.beginPath();
-          ctx.arc(0, guardH + gripH + pomR, pomR, 0, Math.PI * 2);
+          if (pommelType === 1) {
+            // Half circle
+            ctx.arc(0, gripBot, pomR, 0, Math.PI);
+          } else if (pommelType === 2) {
+            // Fan shape — wider flat top tapering to rounded bottom
+            const fanW = pomR * 1.5;
+            ctx.moveTo(-fanW, gripBot);
+            ctx.quadraticCurveTo(-fanW, gripBot + pomDia,
+                                  0, gripBot + pomDia);
+            ctx.quadraticCurveTo(fanW, gripBot + pomDia,
+                                  fanW, gripBot);
+            ctx.closePath();
+          } else {
+            // Full circle (default)
+            ctx.arc(0, gripBot + pomR, pomR, 0, Math.PI * 2);
+          }
           ctx.fill();
 
           ctx.restore();
