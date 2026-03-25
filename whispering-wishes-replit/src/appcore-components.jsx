@@ -2364,19 +2364,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Blade exposed above ground (~60% visible, tip buried)
+          // Sword stuck tip-first into ground. Anchor (y=0) = ground surface.
+          // Negative Y = above ground (visible), positive Y = below ground (hidden).
           const exposedBlade = bladeH * 0.6;
-          ctx.fillRect(-bladeW / 2, -exposedBlade - handleH, bladeW, exposedBlade);
-          // Guard
+          // Exposed blade above ground
+          ctx.fillRect(-bladeW / 2, -exposedBlade, bladeW, exposedBlade);
+          // Guard at top of exposed blade
           const guardH = mod * 0.15;
-          ctx.fillRect(-guardW / 2, -handleH - guardH / 2, guardW, guardH);
-          // Handle
+          ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
+          // Handle above guard
           const gripW = bladeW * 0.5;
-          ctx.fillRect(-gripW / 2, 0, gripW, handleH);
-          // Pommel (bottom, away from sun — handle end touches ground)
+          ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
+          // Pommel at very top
           const pomR = mod * 0.45;
           ctx.beginPath();
-          ctx.arc(0, handleH + pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.arc(0, -exposedBlade - guardH - handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
