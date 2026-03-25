@@ -2371,7 +2371,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
             let lh = (swordIdx * 2654435761 + 3651) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x45d9f3b); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8);
+            // Second hash pass for more variation
+            let lh2 = Math.imul(lh ^ 0xdeadbeef, 0x119de1f3); lh2 = Math.imul(lh2 ^ (lh2 >>> 16), 0x45d9f3b); lh2 = lh2 ^ (lh2 >>> 16);
+            const lean = (((lh2 >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180);
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
