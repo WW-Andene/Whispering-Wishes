@@ -2397,7 +2397,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
           // Grip — curves inward by 1/5 gripW each side before pommel
-          const gripNarrow = gripW / 5;
+          const gripNarrow = gripW * 2 / 5;
           const curveStart = guardH + gripH * 0.5;       // curve begins halfway down grip
           const gripBot = guardH + gripH;
           ctx.beginPath();
