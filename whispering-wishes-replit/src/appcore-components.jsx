@@ -2346,12 +2346,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Teardrop clearing with gradient edge
             const dz = jz - camZ;
-            const maxDz = 6;
+            const maxDz = 4;
             if (dz > 0 && dz < maxDz) {
               const t = dz / maxDz;
               const shape = Math.sin(Math.PI * t);
-              const innerR = 1.5 * shape;
-              const outerR = 3 * shape;
+              const innerR = 0.8 * shape;
+              const outerR = 1.8 * shape;
               const ax = Math.abs(jx);
               if (ax < innerR) continue;
               if (ax < outerR) {
