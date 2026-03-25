@@ -2333,11 +2333,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
         for (let bz = 0; bz < planeSize; ) {
-          const rowSpacingZ = 0.5 + rng(swordIdx + 7000, 77) * 1.5; // 0.5–2
+          const ihash = (n, off) => { let h = Math.imul(n + off, 2654435761) | 0; h = Math.imul(h ^ (h >>> 16), 0x45d9f3b); h = Math.imul(h ^ (h >>> 13), 0x45d9f3b); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+          const rowSpacingZ = 0.5 + ihash(swordIdx + 7000, sceneSeed) * 1.5;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
-            const cellSpacingX = 0.5 + rng(swordIdx + 8000, 88) * 1.5; // 0.5–2
-            const jx = bx + (rng(swordIdx, 101) - 0.5) * cellSpacingX * 0.3;
-            const jz = bz + (rng(swordIdx, 100) - 0.5) * rowSpacingZ * 0.3;
+            const cellSpacingX = 0.5 + ihash(swordIdx + 8000, sceneSeed) * 1.5;
+            const jx = bx + (ihash(swordIdx, sceneSeed + 101) - 0.5) * cellSpacingX * 0.3;
+            const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3;
             swordIdx++;
             bx += cellSpacingX;
             if (jz < 0.01) continue;  // avoid div by zero
