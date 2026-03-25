@@ -2571,51 +2571,40 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // === 3D PERSPECTIVE SETUP ===
         const focal = W * 0.7;
         const camH = 0.3;
-        const horizonY = H * 0.68; // original ground-hugging camera
+        const horizonY = H * 0.55; // horizon slightly above center
 
-        // === GROUND PLANE — perspective projected grid ===
+        // === GROUND — curved hill with dark fill ===
         {
-          const zNear = 0.5, zFar = 120;
-          // Horizontal depth lines
-          ctx.strokeStyle = 'rgba(30,18,10,0.35)';
-          ctx.lineWidth = 1;
-          for (let gz = zNear; gz < zFar;) {
-            const scrY = horizonY + camH * focal / gz;
-            if (scrY > H * 1.1) break;
-            if (scrY > horizonY) {
-              ctx.beginPath();
-              ctx.moveTo(0, scrY);
-              ctx.lineTo(W, scrY);
-              ctx.stroke();
-            }
-            gz += Math.max(0.3, gz * 0.15);
-          }
-          // Vertical vanishing lines
-          const vLines = 20;
-          for (let i = -vLines; i <= vLines; i++) {
-            const worldX = i * 2.5;
-            // Near point
-            const nz = zNear;
-            const nx = W * 0.5 + worldX * focal / nz;
-            const ny = horizonY + camH * focal / nz;
-            // Far point (converges to horizon center)
-            const fz = zFar;
-            const fx = W * 0.5 + worldX * focal / fz;
-            const fy = horizonY + camH * focal / fz;
-            if (nx < -W * 0.5 && fx < -W * 0.5) continue;
-            if (nx > W * 1.5 && fx > W * 1.5) continue;
+          // Curved horizon line (slight mound)
+          ctx.beginPath();
+          ctx.moveTo(0, horizonY + H * 0.04);
+          ctx.quadraticCurveTo(W * 0.5, horizonY - H * 0.02, W, horizonY + H * 0.04);
+          ctx.lineTo(W, H);
+          ctx.lineTo(0, H);
+          ctx.closePath();
+          const gFill = ctx.createLinearGradient(0, horizonY, 0, H);
+          gFill.addColorStop(0, 'rgb(25,16,10)');
+          gFill.addColorStop(0.4, 'rgb(18,11,7)');
+          gFill.addColorStop(1, 'rgb(10,6,3)');
+          ctx.fillStyle = gFill;
+          ctx.fill();
+
+          // Ground texture — small cross-hatch marks
+          ctx.strokeStyle = 'rgba(40,25,15,0.4)';
+          ctx.lineWidth = 0.8;
+          for (let i = 0; i < 120; i++) {
+            const gx = rng(i, 300) * W;
+            const gz = 0.5 + rng(i, 301) * 60;
+            const gy = horizonY + camH * focal / gz;
+            if (gy < horizonY || gy > H) continue;
+            const markSize = 3 + (gy - horizonY) * 0.02;
             ctx.beginPath();
-            ctx.moveTo(fx, Math.max(horizonY, fy));
-            ctx.lineTo(nx, Math.min(H * 1.1, ny));
+            ctx.moveTo(gx - markSize, gy - markSize);
+            ctx.lineTo(gx + markSize, gy + markSize);
+            ctx.moveTo(gx + markSize, gy - markSize);
+            ctx.lineTo(gx - markSize, gy + markSize);
             ctx.stroke();
           }
-          // Ground fill below horizon
-          const gFill = ctx.createLinearGradient(0, horizonY, 0, H);
-          gFill.addColorStop(0, 'rgba(20,12,8,0.15)');
-          gFill.addColorStop(0.3, 'rgba(15,9,5,0.25)');
-          gFill.addColorStop(1, 'rgba(10,6,3,0.4)');
-          ctx.fillStyle = gFill;
-          ctx.fillRect(0, horizonY, W, H - horizonY);
         }
 
         // === SWORD SILHOUETTES — flat 2D shades with perspective ===
@@ -2634,7 +2623,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             const scrX = W * 0.5 + wx * focal / wz;
             const scrY = horizonY + camH * focal / wz;
-            const size = 2.4 * focal / wz;
+            const size = 3.0 * focal / wz;
 
             if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
 
@@ -2681,6 +2670,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Handle (above guard, going up = hilt up)
           const gripW = bladeW * 0.5;
           ctx.fillRect(-gripW / 2, 0, gripW, handleH);
+          // Pommel (circle at top)
+          const pomR = mod * 0.45;
+          ctx.beginPath();
+          ctx.arc(0, -pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.fill();
 
           ctx.restore();
         }
