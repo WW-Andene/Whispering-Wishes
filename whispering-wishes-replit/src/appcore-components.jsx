@@ -2390,9 +2390,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180) + curveLean;
 
             // Y-axis rotation — foreshortens width (cos of angle)
-            const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
+            const yAngle = (rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3);
+            const yRot = Math.cos(yAngle);
 
-            swords.push({ scrX, scrY, size, lean, yRot, wz: jz, wx: jx, shuffle: rng(swordIdx, 200), idx: swordIdx });
+            swords.push({ scrX, scrY, size, lean, yRot, yAngle, wz: jz, wx: jx, shuffle: rng(swordIdx, 200), idx: swordIdx });
           }
           bz += rowSpacingZ;
         }
@@ -2426,8 +2427,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           const darkSide = 'rgb(10,6,4)';
           const lightSide = 'rgb(30,20,14)';
-          // Lighter side faces center (x=0, z=max)
-          const leftLight = s.wx > 0;  // sword right of center → left faces center
+          // Lighter side faces center (x=0, z=max) — combines position and Y rotation
+          const toSunAngle = Math.atan2(-s.wx, 20);  // angle from sword to sun direction
+          const leftLight = Math.sin(s.yAngle - toSunAngle) > 0;
 
           // Blade — split into two halves along Y axis
           const tipEnd = -bladeH + pomDia * 2;
