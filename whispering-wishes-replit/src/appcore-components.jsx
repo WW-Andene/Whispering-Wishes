@@ -2338,9 +2338,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const baseX = (col - gridCols / 2 + 0.5) * spacingX;
             const baseZ = (row + 0.5) * spacingZ;
 
-            // Jitter for natural look
-            const jx = baseX + (rng(swordIdx, 101) - 0.5) * spacingX * 0.5;
-            const jz = baseZ + (rng(swordIdx, 100) - 0.5) * spacingZ * 0.4;
+            // Very small jitter — subtle clustering
+            const jx = baseX + (rng(swordIdx, 101) - 0.5) * spacingX * 0.15;
+            const jz = baseZ + (rng(swordIdx, 100) - 0.5) * spacingZ * 0.15;
             swordIdx++;
             if (jz < 0.3) continue;
 
