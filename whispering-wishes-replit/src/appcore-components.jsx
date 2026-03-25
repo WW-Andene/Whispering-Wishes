@@ -2373,7 +2373,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripW = bladeW * 2 / 3;
           const gripH = overall * (18.4 / 114.7);
           const pomDia = overall * (5.0 / 114.7);
-          const pomR = pomDia / 2;
+          const pomRx = pomDia / 2 * s.yRot;  // width scales with rotation
+          const pomRy = pomDia / 2;            // height stays constant
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
@@ -2446,7 +2447,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           if (pommelType === 1) {
             // Circle
-            ctx.arc(0, gripBot + pomR, pomR, 0, Math.PI * 2);
+            ctx.ellipse(0, gripBot + pomRy, pomRx, pomRy, 0, 0, Math.PI * 2);
           } else if (pommelType === 2) {
             // Curved-up bar — flat ends
             const barW = bladeW * 1.2;
