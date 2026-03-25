@@ -2338,14 +2338,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const baseX = (col - gridCols / 2 + 0.5) * spacingX;
             const baseZ = (row + 0.5) * spacingZ;
 
-            // Very small jitter — subtle clustering
-            const jx = baseX + (rng(swordIdx, 101) - 0.5) * spacingX * 0.15;
-            const jz = baseZ + (rng(swordIdx, 100) - 0.5) * spacingZ * 0.15;
+            // Jitter for natural look
+            const jx = baseX + (rng(swordIdx, 101) - 0.5) * spacingX * 0.5;
+            const jz = baseZ + (rng(swordIdx, 100) - 0.5) * spacingZ * 0.4;
+            // Small spread variation — some swords drift slightly closer together
+            const clusterSeed = rng(swordIdx, 303);
+            const clusterShift = clusterSeed < 0.3 ? (rng(swordIdx, 404) - 0.5) * spacingX * 0.25 : 0;
             swordIdx++;
             if (jz < 0.3) continue;
 
             // Project and cull to screen
-            const scrX = projX(jx, jz);
+            const scrX = projX(jx + clusterShift, jz);
             if (scrX < -30 || scrX > W + 30) continue;
 
             const scrY = projY(jz);
