@@ -2381,13 +2381,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Blade — pointed tip within blade height
+          // Blade — curved tip taper
+          const tipEnd = -bladeH + pomDia * 2;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);                            // tip point
-          ctx.lineTo(-bladeW / 2, -bladeH + pomDia * 2);       // taper to full width
+          ctx.quadraticCurveTo(-bladeW / 2, -bladeH,         // control: pull outward at tip
+                                -bladeW / 2, tipEnd);        // end: full width
           ctx.lineTo(-bladeW / 2, 0);                        // bottom-left
           ctx.lineTo(bladeW / 2, 0);                         // bottom-right
-          ctx.lineTo(bladeW / 2, -bladeH + pomDia * 2);      // taper to full width
+          ctx.lineTo(bladeW / 2, tipEnd);                    // right full width
+          ctx.quadraticCurveTo(bladeW / 2, -bladeH,          // control: pull outward at tip
+                                0, -bladeH);                 // back to tip
           ctx.closePath();
           ctx.fill();
           // Guard
