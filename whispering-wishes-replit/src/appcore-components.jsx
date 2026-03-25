@@ -2297,7 +2297,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // 3D ground surface: concave bowl (center dips, edges rise to horizon)
         // Circular arc cross-section — smooth curve
-        const bowlRadius = 1.2; // world-space half-width of bowl
+        const bowlRadius = 4; // world-space half-width of bowl
         const bowlDepth = 0.18; // max depth at center
         const groundWY = (wx) => {
           const r2 = wx * wx;
