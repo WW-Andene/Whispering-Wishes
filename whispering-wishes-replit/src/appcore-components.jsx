@@ -2292,49 +2292,49 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === NOISY CLOUD SHAPES spiraling around sun ===
-        // Simple 1D noise: interpolated hash
-        const noise1d = (x) => {
-          const i = Math.floor(x), f = x - i;
-          const a = hash(i * 127.1), b = hash((i + 1) * 127.1);
-          const t = f * f * (3 - 2 * f); // smoothstep
-          return a + (b - a) * t;
+        // === NOISY CLOUD SHAPES with fluid motion ===
+        // 2D noise via hash interpolation
+        const noise2d = (x, y) => {
+          const ix = Math.floor(x), iy = Math.floor(y);
+          const fx = x - ix, fy = y - iy;
+          const tx = fx * fx * (3 - 2 * fx), ty = fy * fy * (3 - 2 * fy);
+          const a = hash(ix * 127.1 + iy * 311.7);
+          const b = hash((ix + 1) * 127.1 + iy * 311.7);
+          const c = hash(ix * 127.1 + (iy + 1) * 311.7);
+          const d = hash((ix + 1) * 127.1 + (iy + 1) * 311.7);
+          return a + (b - a) * tx + (c - a) * ty + (a - b - c + d) * tx * ty;
         };
-        // Fractal noise — 3 octaves
-        const fnoise = (x, seed) => {
-          return noise1d(x * 1 + seed) * 0.5 +
-                 noise1d(x * 2.3 + seed + 50) * 0.3 +
-                 noise1d(x * 5.7 + seed + 100) * 0.2;
+        // Fractal noise 2D — 4 octaves
+        const fnoise2 = (x, y) =>
+          noise2d(x, y) * 0.45 + noise2d(x * 2.1, y * 2.1) * 0.28 +
+          noise2d(x * 4.3, y * 4.3) * 0.17 + noise2d(x * 8.7, y * 8.7) * 0.1;
+        // Curl noise — gives a swirling flow vector from scalar noise
+        const curlFlow = (x, y) => {
+          const e = 0.01;
+          const dndx = (fnoise2(x + e, y) - fnoise2(x - e, y)) / (2 * e);
+          const dndy = (fnoise2(x, y + e) - fnoise2(x, y - e)) / (2 * e);
+          return [-dndy, dndx]; // perpendicular = curl
         };
-        // Generate a noisy cloud blob from a rectangle
-        const drawCloud = (cx, cy, cw, ch, seed, alpha, rot) => {
-          const perimSegs = 48;
-          const noiseAmt = Math.min(cw, ch) * 0.4;
+
+        // Draw noisy cloud — perimeter walks a circle with noise displacement
+        const drawCloud = (cx, cy, baseR, stretch, seed, alpha, flowAngle) => {
+          const segs = 56;
+          const noiseAmt = baseR * 0.55;
           ctx.save();
           ctx.translate(cx, cy);
-          ctx.rotate(rot);
+          ctx.rotate(flowAngle);
+          ctx.scale(stretch, 1);
           ctx.beginPath();
-          for (let i = 0; i <= perimSegs; i++) {
-            const t = i / perimSegs;
-            // Walk rectangle perimeter
-            let px, py, nx, ny;
-            if (t < 0.25) {          // top: left to right
-              const f = t / 0.25;
-              px = -cw/2 + cw * f; py = -ch/2; nx = 0; ny = -1;
-            } else if (t < 0.5) {    // right: top to bottom
-              const f = (t - 0.25) / 0.25;
-              px = cw/2; py = -ch/2 + ch * f; nx = 1; ny = 0;
-            } else if (t < 0.75) {   // bottom: right to left
-              const f = (t - 0.5) / 0.25;
-              px = cw/2 - cw * f; py = ch/2; nx = 0; ny = 1;
-            } else {                  // left: bottom to top
-              const f = (t - 0.75) / 0.25;
-              px = -cw/2; py = ch/2 - ch * f; nx = -1; ny = 0;
-            }
-            // Displace along normal with noise
-            const n = (fnoise(t * 8 + time * 0.1, seed) - 0.5) * noiseAmt * 2;
-            const x = px + nx * n;
-            const y = py + ny * n;
+          for (let i = 0; i <= segs; i++) {
+            const a = (i / segs) * Math.PI * 2;
+            const rx = Math.cos(a) * baseR;
+            const ry = Math.sin(a) * baseR * 0.5;
+            // Multi-frequency noise displacement
+            const n1 = fnoise2(a * 1.3 + seed, time * 0.08 + seed * 0.1);
+            const n2 = fnoise2(a * 3.7 + seed + 50, time * 0.12 + seed * 0.2);
+            const disp = ((n1 - 0.5) * 2 * noiseAmt) + ((n2 - 0.5) * noiseAmt * 0.6);
+            const x = rx + Math.cos(a) * disp;
+            const y = ry + Math.sin(a) * disp * 0.5;
             i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
           }
           ctx.closePath();
@@ -2344,22 +2344,32 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         };
 
         ctx.save();
-        const numArms = 5;
-        const cloudsPerArm = 6;
+        const numArms = 6;
+        const cloudsPerArm = 7;
         for (let arm = 0; arm < numArms; arm++) {
-          const armAngle = (arm / numArms) * Math.PI * 2 + time * 0.04;
+          const armBase = (arm / numArms) * Math.PI * 2;
           for (let c = 0; c < cloudsPerArm; c++) {
-            const t = (c + 0.5) / cloudsPerArm;
-            const dist = sunR * 3 + t * H * 0.45;
-            const spiral = armAngle + t * 2 + hash(arm * 5.3 + c * 7.1) * 0.6;
-            const wave = Math.sin(time * 0.25 + t * 3 + arm * 1.5) * (8 + t * 20);
-            const cx = sunX + Math.cos(spiral) * dist + wave * Math.sin(spiral);
-            const cy = sunY + (Math.sin(spiral) * dist + wave * Math.cos(spiral)) * 0.5;
-            const cw = (40 + hash(c + arm * 10) * 60) * (0.6 + t);
-            const ch = cw * (0.3 + hash(c * 3 + arm) * 0.3);
-            const alpha = (0.15 + hash(c * 7 + arm * 3) * 0.2) * (1 - t * 0.4);
-            const rot = spiral * 0.4 + hash(arm + c * 11) * 0.5;
-            drawCloud(cx, cy, cw, ch, arm * 100 + c * 13, alpha, rot);
+            const t = (c + 0.3) / cloudsPerArm;
+            const dist = sunR * 2.5 + t * H * 0.5;
+            const spiralOff = armBase + t * 2.2 + hash(arm * 5.3 + c * 7.1) * 0.7;
+
+            // Curl flow drives position, rotation, and stretch
+            const fx = (sunX + Math.cos(spiralOff) * dist) / W * 3;
+            const fy = (sunY + Math.sin(spiralOff) * dist) / H * 3;
+            const [cvx, cvy] = curlFlow(fx + time * 0.03, fy + time * 0.02);
+            const flowAngle = Math.atan2(cvy, cvx);
+            const flowMag = Math.sqrt(cvx * cvx + cvy * cvy);
+
+            // Position with curl drift
+            const cx = sunX + Math.cos(spiralOff) * dist + cvx * 40 * t;
+            const cy = sunY + (Math.sin(spiralOff) * dist + cvy * 40 * t) * 0.5;
+
+            // Size and stretch driven by flow
+            const baseR = (25 + hash(c + arm * 10) * 50) * (0.5 + t * 1.2);
+            const stretch = 1.2 + flowMag * 3 + hash(c * 3 + arm) * 0.8;
+            const alpha = (0.12 + hash(c * 7 + arm * 3) * 0.2) * (1 - t * 0.35);
+            const seed = arm * 100 + c * 17;
+            drawCloud(cx, cy, baseR, stretch, seed, alpha, flowAngle);
           }
         }
         ctx.restore();
