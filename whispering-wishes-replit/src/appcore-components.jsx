@@ -2410,16 +2410,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.bezierCurveTo(guardW / 4, -midW / 2, -guardW / 4, -midW / 2, -guardW / 2, -endW / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved down
+            // Curved down — flat ends
             ctx.moveTo(-guardW / 2, 0);
-            ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, 0);
-            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
+            ctx.lineTo(-guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, guardH * 4, guardW / 2, guardH);
+            ctx.lineTo(guardW / 2, 0);
+            ctx.quadraticCurveTo(0, guardH * 3, -guardW / 2, 0);
             ctx.closePath();
           } else if (guardType === 3) {
-            // Curved up
+            // Curved up — flat ends
             ctx.moveTo(-guardW / 2, guardH);
-            ctx.quadraticCurveTo(0, -guardH * 2, guardW / 2, guardH);
-            ctx.quadraticCurveTo(0, -guardH, -guardW / 2, guardH);
+            ctx.lineTo(-guardW / 2, 0);
+            ctx.quadraticCurveTo(0, -guardH * 3, guardW / 2, 0);
+            ctx.lineTo(guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, -guardH * 2, -guardW / 2, guardH);
             ctx.closePath();
           } else if (guardType === 4) {
             // Three segmented — center block + two end blocks
