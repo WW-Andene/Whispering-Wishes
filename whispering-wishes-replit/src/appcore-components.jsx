@@ -3952,12 +3952,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const typeIdx = Math.floor(rng(swordIdx, 102) * weaponTypes.length);
               const wType = weaponTypes[typeIdx];
               const zRot = rng(swordIdx, 103) * Math.PI * 2;
-              const tilt = (rng(swordIdx, 104) - 0.5) * 24;
+              const tilt = (rng(swordIdx, 104) - 0.5) * 70;
+              const lean = (rng(swordIdx, 105) - 0.5) * 50;
               const distT = Math.min(1, wzJ / gridZmax);
               const darkness = distT * 0.6;
 
               swords.push({
-                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, darkness,
+                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt, lean, darkness,
                 shuffle: rng(swordIdx, 200)
               });
               swordIdx++;
@@ -3972,7 +3973,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (const s of swords) {
             if (s.appSize < 1.5) continue;
             const sbw = s.appSize * 0.025;
-            drawWeapon(s.scrX, s.scrY, s.appSize, sbw, s.tilt, {
+            drawWeapon(s.scrX, s.scrY, s.appSize, sbw, s.tilt + s.lean, {
               type: s.wType, zRot: s.zRot, irr: {},
               wx: s.wx, wy: s.wy, wz: s.wz, darkness: s.darkness
             });
