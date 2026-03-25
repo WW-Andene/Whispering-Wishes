@@ -2465,15 +2465,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.quadraticCurveTo(0, gripBot - pomDia * 0.1, -barW / 2, gripBot);
             ctx.closePath();
           } else {
-            // Fan — flat bottom, wide curved top connecting to grip
-            const fanW = guardW * 0.4;
-            const fanH = pomDia * 0.5;
-            ctx.moveTo(-fanW, gripBot + fanH);
-            ctx.lineTo(fanW, gripBot + fanH);
-            ctx.lineTo(fanW, gripBot + fanH * 0.5);
-            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.3,
-                                  -fanW, gripBot + fanH * 0.5);
-            ctx.closePath();
+            // Fan — semicircle mushroom cap, flat at grip, arc away
+            const fanW = guardW * 0.35;
+            ctx.arc(0, gripBot, fanW, Math.PI, 0);
           }
           ctx.fill();
 
