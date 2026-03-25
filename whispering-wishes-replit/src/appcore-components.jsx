@@ -2376,19 +2376,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Sword stuck tip-first into ground — 60% blade exposed above
-          const exposedBlade = bladeH * 0.6;
-          ctx.fillRect(-bladeW / 2, -exposedBlade, bladeW, exposedBlade);
+          // Full sword standing upright — blade on top, handle below
+          // Blade
+          ctx.fillRect(-bladeW / 2, -bladeH, bladeW, bladeH);
           // Guard
           const guardH = mod * 0.15;
-          ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
+          ctx.fillRect(-guardW / 2, 0, guardW, guardH);
           // Handle
           const gripW = bladeW / 3;                   // handle width = 1/3 blade width
           const pomR = mod * 0.251 * s.yRot;          // pommel radius, 4.4cm diameter
-          ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
+          ctx.fillRect(-gripW / 2, guardH, gripW, handleH);
           // Pommel
           ctx.beginPath();
-          ctx.arc(0, -exposedBlade - guardH - handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.arc(0, guardH + handleH + pomR, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
