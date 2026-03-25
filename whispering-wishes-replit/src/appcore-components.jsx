@@ -2344,17 +2344,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             bx += cellSpacingX;
             if (jz - camZ < 0.01) continue;  // skip swords behind camera
 
-            // Teardrop clearing — narrow at camera, widens forward, rounds off
+            // Teardrop clearing — empty inside, narrow at camera, wide arc ahead
             const dz = jz - camZ;
-            const maxDz = 8;     // how far the clearing extends
-            const maxR = 4;      // max half-width of clearing
+            const maxDz = 8;
+            const maxR = 5;
             if (dz > 0 && dz < maxDz) {
               const t = dz / maxDz;
-              const clearWidth = maxR * Math.sin(Math.PI * t);  // 0 at camera, max in middle, 0 at end
-              if (Math.abs(jx) < clearWidth) {
-                const edgeDist = (clearWidth - Math.abs(jx)) / clearWidth;
-                if (ihash(swordIdx, sceneSeed + 999) < edgeDist * 0.7) continue;
-              }
+              const clearWidth = maxR * Math.sin(Math.PI * t);
+              if (Math.abs(jx) < clearWidth) continue;
             }
 
             // Project to screen
