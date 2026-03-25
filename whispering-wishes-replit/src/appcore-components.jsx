@@ -2380,7 +2380,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const scrY = curveY(scrX, projY(jz));
             if (scrX < -200 || scrX > W + 200 || scrY < -200 || scrY > H + 200) continue;
 
-            const size = 2.5 * focal / (jz - camZ);
+            const size = 2.8 * focal / (jz - camZ);
 
             // Curve lean — swords follow the ground curve outward at edges
             const curveLean = -2 * curveStr * (scrX - W * 0.5) / (W * 0.5 * W * 0.5) * 0.3;
