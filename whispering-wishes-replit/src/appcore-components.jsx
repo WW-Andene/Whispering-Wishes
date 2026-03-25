@@ -2392,7 +2392,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
 
-            swords.push({ scrX, scrY, size, lean, yRot, wz: jz, shuffle: rng(swordIdx, 200), idx: swordIdx });
+            swords.push({ scrX, scrY, size, lean, yRot, wz: jz, wx: jx, shuffle: rng(swordIdx, 200), idx: swordIdx });
           }
           bz += rowSpacingZ;
         }
@@ -2426,12 +2426,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           const darkSide = 'rgb(10,6,4)';
           const lightSide = 'rgb(30,20,14)';
+          // Lighter side faces center (x=0, z=max)
+          const leftLight = s.wx > 0;  // sword right of center → left faces center
 
-          // Blade — split into left (dark) and right (light) halves
+          // Blade — split into two halves along Y axis
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
-          // Left half (dark)
-          ctx.fillStyle = darkSide;
+          // Left half
+          ctx.fillStyle = leftLight ? lightSide : darkSide;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -2441,8 +2443,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          // Right half (light)
-          ctx.fillStyle = lightSide;
+          // Right half
+          ctx.fillStyle = leftLight ? darkSide : lightSide;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
