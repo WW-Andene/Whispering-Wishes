@@ -2402,14 +2402,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripNarrow = gripW * 2 / 5;
           const gripBot = guardH + gripH;
           const narrowW = gripW - gripNarrow * 2;
+          const taperStart = guardH + gripH * 0.65;
           ctx.beginPath();
           ctx.moveTo(-gripW / 2, guardH);                  // top-left
-          ctx.lineTo(-gripW / 2, guardH + gripH * 0.65);  // straight left side
-          ctx.quadraticCurveTo(-gripW / 2, gripBot,        // control: same X, at bottom Y
-                                -narrowW / 2, gripBot);   // end: arrives horizontally
+          ctx.lineTo(-gripW / 2, taperStart);              // straight left side
+          ctx.bezierCurveTo(-gripW / 2, taperStart + (gripBot - taperStart) * 0.7, // ease down
+                            -narrowW / 2, gripBot - (gripBot - taperStart) * 0.3,  // ease in
+                            -narrowW / 2, gripBot);        // end exactly at gripBot
           ctx.lineTo(narrowW / 2, gripBot);                // flat bottom
-          ctx.quadraticCurveTo(gripW / 2, gripBot,         // control: same X, at bottom Y
-                                gripW / 2, guardH + gripH * 0.65); // end: arrives vertically
+          ctx.bezierCurveTo(narrowW / 2, gripBot - (gripBot - taperStart) * 0.3,   // ease out
+                            gripW / 2, taperStart + (gripBot - taperStart) * 0.7,  // ease up
+                            gripW / 2, taperStart);         // end at taper start
           ctx.lineTo(gripW / 2, guardH);                   // straight right side
           ctx.closePath();
           ctx.fill();
