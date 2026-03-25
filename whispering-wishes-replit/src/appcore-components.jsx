@@ -2408,30 +2408,29 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const guardType = ((s.idx * 2654435761 + 300) >>> 0) % 5;
           ctx.beginPath();
           if (guardType === 1) {
-            // Tapered — wider at ends, narrow in middle
-            const endW = guardW * 0.15;
-            const midW = guardH * 0.4;
-            ctx.moveTo(-guardW / 2, -endW / 2);
-            ctx.lineTo(-guardW / 2, endW / 2);
-            ctx.bezierCurveTo(-guardW / 4, midW / 2, guardW / 4, midW / 2, guardW / 2, endW / 2);
-            ctx.lineTo(guardW / 2, -endW / 2);
-            ctx.bezierCurveTo(guardW / 4, -midW / 2, -guardW / 4, -midW / 2, -guardW / 2, -endW / 2);
+            // Tapered — wider at ends, narrow in middle, spans 0 to guardH
+            const endH = guardH * 2;
+            ctx.moveTo(-guardW / 2, guardH / 2 - endH / 2);
+            ctx.lineTo(-guardW / 2, guardH / 2 + endH / 2);
+            ctx.bezierCurveTo(-guardW / 4, guardH, guardW / 4, guardH, guardW / 2, guardH / 2 + endH / 2);
+            ctx.lineTo(guardW / 2, guardH / 2 - endH / 2);
+            ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved down — flat ends
+            // Curved down — flat ends, spans 0 to guardH
             ctx.moveTo(-guardW / 2, 0);
             ctx.lineTo(-guardW / 2, guardH);
-            ctx.quadraticCurveTo(0, guardH * 4, guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
             ctx.lineTo(guardW / 2, 0);
-            ctx.quadraticCurveTo(0, guardH * 3, -guardW / 2, 0);
+            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
             ctx.closePath();
           } else if (guardType === 3) {
-            // Curved up — flat ends
+            // Curved up — flat ends, spans 0 to guardH
             ctx.moveTo(-guardW / 2, guardH);
             ctx.lineTo(-guardW / 2, 0);
-            ctx.quadraticCurveTo(0, -guardH * 3, guardW / 2, 0);
+            ctx.quadraticCurveTo(0, -guardH * 2, guardW / 2, 0);
             ctx.lineTo(guardW / 2, guardH);
-            ctx.quadraticCurveTo(0, -guardH * 2, -guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, -guardH, -guardW / 2, guardH);
             ctx.closePath();
           } else if (guardType === 4) {
             // Three segmented — center block + two end blocks
