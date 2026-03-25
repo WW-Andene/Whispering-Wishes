@@ -2311,36 +2311,37 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // === SWORD SILHOUETTES — perspective grid on curved plane ===
+        // === SWORDS — ground-level camera, stuck in curved ground, pommels toward sun ===
         const focal = W * 0.7;
-        const camH = 0.3;
-        const gridZmin = 0.03, gridZmax = 80;
+        const camH = 0.05; // ground-level camera
+        const gridZmin = 0.3, gridZmax = 60;
         const maxSwords = 500;
         const swords = [];
         let swordIdx = 0;
 
         for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
-          const spacing = Math.min(2, Math.max(0.44, gz * 0.3));
-          const visibleXrange = gz * W / (2 * focal) * 1.5;
+          const spacing = Math.min(2, Math.max(0.3, gz * 0.25));
+          const visibleXrange = gz * W / (2 * focal) * 2.0;
           for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
             const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
             const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
-            if (wz < 0.02) { swordIdx++; continue; }
+            if (wz < 0.1) { swordIdx++; continue; }
 
             const scrX = W * 0.5 + wx * focal / wz;
+            if (scrX < -W * 0.3 || scrX > W * 1.3) { swordIdx++; continue; }
+
+            // Flat perspective Y + curve offset
             const flatY = edgeY + camH * focal / wz;
-            // Curve offset: bend the flat plane to match the concave ground
             const xt = Math.max(0, Math.min(1, scrX / W));
-            const curveY = (1 - xt) * (1 - xt) * edgeY + 2 * (1 - xt) * xt * dipY + xt * xt * edgeY;
-            const scrY = flatY + (curveY - edgeY);
+            const curveOffset = (1 - xt) * (1 - xt) * edgeY + 2 * (1 - xt) * xt * dipY + xt * xt * edgeY - edgeY;
+            const scrY = flatY + curveOffset;
             const size = 3.0 * focal / wz;
 
-            if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
+            if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) { swordIdx++; continue; }
 
             // Pommel points toward sun
             const angle = Math.atan2(sunY - scrY, sunX - scrX) + Math.PI * 0.5;
 
-            const distT = Math.min(1, wz / gridZmax);
             swords.push({ scrX, scrY, size, angle, wz, shuffle: rng(swordIdx, 200) });
             swordIdx++;
           }
@@ -2357,30 +2358,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const guardW = mod * 2.0;
 
           ctx.save();
+          // Anchor at guard level (where sword enters ground)
           ctx.translate(s.scrX, s.scrY);
           ctx.rotate(s.angle);
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Tip (buried in ground)
-          ctx.beginPath();
-          ctx.moveTo(0, bladeH + handleH + bladeW * 2);
-          ctx.lineTo(bladeW / 2, bladeH + handleH);
-          ctx.lineTo(-bladeW / 2, bladeH + handleH);
-          ctx.closePath();
-          ctx.fill();
-          // Blade
-          ctx.fillRect(-bladeW / 2, handleH, bladeW, bladeH);
-          // Guard
-          const guardH = mod * 0.15;
-          ctx.fillRect(-guardW / 2, handleH - guardH / 2, guardW, guardH);
-          // Handle
+          // Only draw above ground: handle + pommel (blade is buried)
+          // Handle (sticks up from ground)
           const gripW = bladeW * 0.5;
-          ctx.fillRect(-gripW / 2, 0, gripW, handleH);
-          // Pommel
+          ctx.fillRect(-gripW / 2, -handleH, gripW, handleH);
+          // Guard (at ground level)
+          const guardH = mod * 0.15;
+          ctx.fillRect(-guardW / 2, -guardH / 2, guardW, guardH);
+          // Pommel (top, pointing toward sun)
           const pomR = mod * 0.45;
           ctx.beginPath();
-          ctx.arc(0, -pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.arc(0, -handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
