@@ -2316,33 +2316,59 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           return [-dndy, dndx]; // perpendicular = curl
         };
 
-        // Draw noisy cloud — smaller clouds = sparser/thinner noise
+        // Draw cloud — fractal blob with soft edges and animated flexibility
         const drawCloud = (cx, cy, baseR, stretch, seed, alpha, flowAngle, sizeClass) => {
-          const segs = 40 + Math.floor(sizeClass * 20); // more detail on big clouds
-          const noiseAmt = baseR * (0.3 + (1 - sizeClass) * 0.5); // smaller = more noise distortion
-          const noiseFreq = 1.5 + (1 - sizeClass) * 3; // smaller = higher frequency = more ragged
+          const segs = 64;
+          const noiseScale = 0.8 + (1 - sizeClass) * 1.5;
           ctx.save();
           ctx.translate(cx, cy);
           ctx.rotate(flowAngle);
           ctx.scale(stretch, 1);
-          ctx.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            const rx = Math.cos(a) * baseR;
-            const ry = Math.sin(a) * baseR * 0.45;
-            const n1 = fnoise2(a * noiseFreq + seed, time * 0.06 + seed * 0.1);
-            const n2 = fnoise2(a * noiseFreq * 2.5 + seed + 50, time * 0.09 + seed * 0.2);
-            const n3 = fnoise2(a * noiseFreq * 5 + seed + 100, time * 0.04 + seed * 0.3);
-            const disp = ((n1 - 0.5) * 2 * noiseAmt) +
-                         ((n2 - 0.5) * noiseAmt * 0.5) +
-                         ((n3 - 0.5) * noiseAmt * 0.25 * (1 - sizeClass));
-            const x = rx + Math.cos(a) * disp;
-            const y = ry + Math.sin(a) * disp * 0.45;
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+
+          // Multiple layered fills for soft fluffy edges
+          const layers = 3;
+          for (let L = layers - 1; L >= 0; L--) {
+            const layerT = L / layers;
+            const layerR = baseR * (1 + layerT * 0.4); // outer layers bigger
+            const layerAlpha = alpha * (1 - layerT * 0.6); // outer layers more transparent
+            const noiseAmt = layerR * (0.25 + layerT * 0.3 + (1 - sizeClass) * 0.2);
+
+            ctx.beginPath();
+            for (let i = 0; i <= segs; i++) {
+              const a = (i / segs) * Math.PI * 2;
+              const baseX = Math.cos(a) * layerR;
+              const baseY = Math.sin(a) * layerR * 0.45;
+
+              // 6-octave fBm for fractal cloud edge — like real cumulus
+              const px = a * noiseScale + seed;
+              const py = seed * 0.13;
+              const t1 = time * 0.04, t2 = time * 0.07, t3 = time * 0.11;
+              let disp = 0;
+              disp += (noise2d(px * 0.7 + t1, py + t1 * 0.5) - 0.5) * noiseAmt * 1.0;     // large bulge
+              disp += (noise2d(px * 1.4 + t2, py * 1.3 + t2) - 0.5) * noiseAmt * 0.5;      // medium bump
+              disp += (noise2d(px * 2.8 + t3, py * 2.7 - t1) - 0.5) * noiseAmt * 0.25;     // small detail
+              disp += (noise2d(px * 5.5 - t2, py * 5.3 + t3) - 0.5) * noiseAmt * 0.12;     // fine grain
+              disp += (noise2d(px * 11 + t1 * 0.5, py * 10.7) - 0.5) * noiseAmt * 0.06;    // micro
+              disp += (noise2d(px * 22 - t3 * 0.3, py * 21) - 0.5) * noiseAmt * 0.03;      // sub-pixel
+
+              // Animated breathing — whole shape expands/contracts gently
+              const breathe = Math.sin(time * 0.15 + seed * 0.3 + a * 0.5) * baseR * 0.03;
+
+              // Per-lobe deformation — creates the cauliflower bulges
+              const lobe = Math.sin(a * 3 + seed + time * 0.08) * noiseAmt * 0.15 +
+                           Math.sin(a * 5 + seed * 2.3 + time * 0.05) * noiseAmt * 0.08;
+
+              const totalDisp = disp + breathe + lobe;
+              const x = baseX + Math.cos(a) * totalDisp;
+              const y = baseY + Math.sin(a) * totalDisp * 0.45;
+
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = `rgba(15,8,5,${layerAlpha.toFixed(3)})`;
+            ctx.fill();
           }
-          ctx.closePath();
-          ctx.fillStyle = `rgba(15,8,5,${alpha})`;
-          ctx.fill();
           ctx.restore();
         };
 
