@@ -2329,7 +2329,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (wz < 0.02) { swordIdx++; continue; }
 
             const scrX = W * 0.5 + wx * focal / wz;
-            const scrY = horizonY + camH * focal / wz;
+            // Place on concave curve instead of flat plane
+            const t = Math.max(0, Math.min(1, scrX / W));
+            const scrY = edgeY + 4 * t * (1 - t) * (dipY - edgeY);
             const size = 3.0 * focal / wz;
 
             if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
