@@ -2321,7 +2321,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
           const spacing = Math.min(2, Math.max(0.3, gz * 0.25));
-          const visibleXrange = gz * W / (2 * focal) * 2.0;
+          const visibleXrange = gz * W / (2 * focal) * 3.5;
           for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
             const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
             const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
