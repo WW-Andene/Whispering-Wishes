@@ -2311,7 +2311,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // === SWORD SILHOUETTES — perspective projected, pointing toward sun ===
+        // === SWORD SILHOUETTES — flat 2D shades with perspective ===
         const focal = W * 0.7;
         const camH = 0.3;
         const horizonY = edgeY;
@@ -2334,11 +2334,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
 
-            // Angle: point toward sun
-            const dx = sunX - scrX;
-            const dy = sunY - scrY;
-            const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-
+            const angle = (rng(swordIdx * 7 + 3, 104) - 0.5) * 30 + (rng(swordIdx * 13 + 7, 105) - 0.5) * 12;
             const distT = Math.min(1, wz / gridZmax);
             const alpha = (1 - distT) * 0.7 + 0.05;
 
@@ -2348,8 +2344,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           gz += spacing;
         }
 
+        // Sort back-to-front
         swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
 
+        // Draw flat sword silhouettes
         for (const s of swords) {
           const bladeH = s.size * 8 / 11;
           const handleH = s.size * 3 / 11;
@@ -2361,24 +2359,25 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.translate(s.scrX, s.scrY);
           ctx.rotate(s.angle * Math.PI / 180);
 
+          // Dark silhouette color
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Tip
+          // Tip (pointing down, buried in ground)
           ctx.beginPath();
           ctx.moveTo(0, bladeH + handleH + bladeW * 2);
           ctx.lineTo(bladeW / 2, bladeH + handleH);
           ctx.lineTo(-bladeW / 2, bladeH + handleH);
           ctx.closePath();
           ctx.fill();
-          // Blade
+          // Blade (below guard, going down)
           ctx.fillRect(-bladeW / 2, handleH, bladeW, bladeH);
           // Guard
           const guardH = mod * 0.15;
           ctx.fillRect(-guardW / 2, handleH - guardH / 2, guardW, guardH);
-          // Handle
+          // Handle (above guard, going up = hilt up)
           const gripW = bladeW * 0.5;
           ctx.fillRect(-gripW / 2, 0, gripW, handleH);
-          // Pommel
+          // Pommel (circle at top)
           const pomR = mod * 0.45;
           ctx.beginPath();
           ctx.arc(0, -pomR * 0.3, pomR, 0, Math.PI * 2);
