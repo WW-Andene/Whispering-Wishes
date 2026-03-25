@@ -2297,7 +2297,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Flat ground — no bowl, wy = 0 everywhere
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const projY = (wz) => edgeY + focal / wz;
+        const camH = 0.15;  // camera height above ground (low = ground level)
+        const projY = (wz) => edgeY + camH * focal / wz;
 
         // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = 0.3, zFar = 50, zSlices = 30;
@@ -2349,9 +2350,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
 
             // Random lean: 0 to ±22.5° (π/8) — hashed for better variation
-            const leanAmt = rng(swordIdx, 505) * (Math.PI / 8);
-            const leanDir = rng(swordIdx, 909) > 0.5 ? 1 : -1;
-            const lean = leanAmt * leanDir;
+            const lean = (rng(swordIdx, 505) * 2 - 1) * (Math.PI / 8);
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
