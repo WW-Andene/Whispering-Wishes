@@ -2302,18 +2302,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz) => edgeY + camH * focal / (wz - camZ);
 
-        // Fisheye lens centered on sun — 80% radius, 60% strength
-        const fishR = Math.max(W, H) * 0.8;
-        const fishK = 0.6;
-        const fisheye = (sx, sy) => {
-          const dx = sx - sunX, dy = sy - sunY;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d > fishR || d < 1) return [sx, sy];
-          const t = d / fishR;
-          const push = 1 + fishK * (1 - t) * (1 - t);
-          return [sunX + dx * push, sunY + dy * push];
-        };
-
         // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
 
@@ -2373,19 +2361,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               }
             }
 
-            // Project to screen + fisheye
-            const rawX = projX(jx, jz);
-            const rawY = projY(jz);
-            const [scrX, scrY] = fisheye(rawX, rawY);
+            // Project to screen
+            const scrX = projX(jx, jz);
+            const scrY = projY(jz);
             if (scrX < -200 || scrX > W + 200 || scrY < -200 || scrY > H + 200) continue;
 
             const size = 2.5 * focal / (jz - camZ);
 
-            // Fisheye lens lean
-            const lensLean = (scrX - rawX) / (size || 1) * 0.3;
+
             // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
             let lh = (swordIdx * 2654435761 + 3651) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180) + lensLean;
+            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180);
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
