@@ -2298,7 +2298,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Flat ground — no bowl, wy = 0 everywhere
         const camZ = 8;  // camera position in the field
-        const camH = 1.0;
+        const camH = 0.7;
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz) => edgeY + camH * focal / (wz - camZ);
 
@@ -2349,8 +2349,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const pathEnd = 12;
             if (dz > 0 && dz < pathEnd) {
               const t = dz / pathEnd;
-              const pathW = 2 * (1 - t * t);
-              const fadeW = 0.5 * (1 - t * t);
+              const pathW = 1.5 * (1 - t * t);
+              const fadeW = 0.35 * (1 - t * t);
               const ax = Math.abs(jx);
               // Jitter the edge per-sword for messy look
               const jitter = (ihash(swordIdx, sceneSeed + 888) - 0.5) * 0.6;
