@@ -2366,14 +2366,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Overall 114.7cm: blade 90.3, guard ~1, grip 18.4, pommel ~5
           const overall = s.size;
           const bladeH = overall * (90.3 / 114.7);
-          const guardH = bladeW / 3;
-          const pomDia = overall * (5.0 / 114.7);
-          const pomR = pomDia / 2;
-          const gripH = overall * (18.4 / 114.7);
           const mod = bladeH / 8;
           const bladeW = mod * 0.434 * s.yRot;       // 4.9 cm
+          const guardH = bladeW / 3;
           const guardW = mod * 1.772 * s.yRot;       // ~20 cm
           const gripW = bladeW * 2 / 3;
+          const gripH = overall * (18.4 / 114.7);
+          const pomDia = overall * (5.0 / 114.7);
+          const pomR = pomDia / 2;
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
