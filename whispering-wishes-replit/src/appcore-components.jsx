@@ -2977,6 +2977,83 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
+        function drawSpear(sx, sy, sh, tilt, wp) {
+          ctx.save();
+          ctx.translate(sx, sy);
+          ctx.rotate(tilt * Math.PI / 180);
+          const dark = wp.darkness || 0;
+
+          const shaftLen = sh * 0.82;
+          const headLen = sh * 0.18;
+          const shaftW = sh * 0.018;
+          const headW = sh * 0.045;
+          const collarH = sh * 0.02;
+
+          // --- Shaft (long wooden pole) ---
+          const shaftGrad = ctx.createLinearGradient(-shaftW, 0, shaftW, 0);
+          shaftGrad.addColorStop(0, `rgba(${Math.round(80*(1-dark))},${Math.round(45*(1-dark))},${Math.round(30*(1-dark))},1)`);
+          shaftGrad.addColorStop(0.3, `rgba(${Math.round(140*(1-dark))},${Math.round(75*(1-dark))},${Math.round(45*(1-dark))},1)`);
+          shaftGrad.addColorStop(0.7, `rgba(${Math.round(120*(1-dark))},${Math.round(65*(1-dark))},${Math.round(40*(1-dark))},1)`);
+          shaftGrad.addColorStop(1, `rgba(${Math.round(60*(1-dark))},${Math.round(35*(1-dark))},${Math.round(22*(1-dark))},1)`);
+          ctx.fillStyle = shaftGrad;
+          ctx.beginPath();
+          ctx.moveTo(-shaftW, 0);
+          ctx.lineTo(shaftW, 0);
+          ctx.lineTo(shaftW * 0.85, -shaftLen);
+          ctx.lineTo(-shaftW * 0.85, -shaftLen);
+          ctx.closePath();
+          ctx.fill();
+
+          // --- Collar (metal band where head meets shaft) ---
+          const collarY = -shaftLen;
+          const collarW = shaftW * 1.6;
+          ctx.fillStyle = `rgba(${Math.round(90*(1-dark))},${Math.round(85*(1-dark))},${Math.round(80*(1-dark))},1)`;
+          ctx.fillRect(-collarW, collarY - collarH, collarW * 2, collarH);
+
+          // --- Spearhead (leaf/diamond shape) ---
+          const headBase = collarY - collarH;
+          const headTip = headBase - headLen;
+          const headMid = headBase - headLen * 0.35;
+
+          // Main head shape
+          const headGrad = ctx.createLinearGradient(-headW, headBase, headW, headBase);
+          headGrad.addColorStop(0, `rgba(${Math.round(150*(1-dark))},${Math.round(155*(1-dark))},${Math.round(160*(1-dark))},1)`);
+          headGrad.addColorStop(0.35, `rgba(${Math.round(200*(1-dark))},${Math.round(205*(1-dark))},${Math.round(210*(1-dark))},1)`);
+          headGrad.addColorStop(0.5, `rgba(${Math.round(220*(1-dark))},${Math.round(225*(1-dark))},${Math.round(230*(1-dark))},1)`);
+          headGrad.addColorStop(0.65, `rgba(${Math.round(190*(1-dark))},${Math.round(195*(1-dark))},${Math.round(200*(1-dark))},1)`);
+          headGrad.addColorStop(1, `rgba(${Math.round(120*(1-dark))},${Math.round(125*(1-dark))},${Math.round(130*(1-dark))},1)`);
+          ctx.fillStyle = headGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, headTip);
+          ctx.quadraticCurveTo(headW * 1.1, headMid, headW * 0.7, headBase);
+          ctx.lineTo(-headW * 0.7, headBase);
+          ctx.quadraticCurveTo(-headW * 1.1, headMid, 0, headTip);
+          ctx.closePath();
+          ctx.fill();
+
+          // Central ridge
+          ctx.strokeStyle = `rgba(${Math.round(240*(1-dark))},${Math.round(242*(1-dark))},${Math.round(245*(1-dark))},0.6)`;
+          ctx.lineWidth = shaftW * 0.3;
+          ctx.beginPath();
+          ctx.moveTo(0, headBase);
+          ctx.lineTo(0, headTip);
+          ctx.stroke();
+
+          // Edge highlights
+          ctx.strokeStyle = `rgba(255,255,255,${0.15*(1-dark)})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(0, headTip);
+          ctx.quadraticCurveTo(headW * 1.1, headMid, headW * 0.7, headBase);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, headTip);
+          ctx.quadraticCurveTo(-headW * 1.1, headMid, -headW * 0.7, headBase);
+          ctx.stroke();
+
+          ctx.restore();
+        }
+
         function drawWeapon(sx, sy, sh, sbw, tilt, wp) {
           if (sh < 1.5 || sbw < 0.2) return;
           const wt = wp.type || weaponTypes[0];
@@ -3991,9 +4068,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const spearY = H * 0.5 + spearH * 0.5;
           const spearBob = Math.sin(time * 1.2) * 8;
           const spearTilt = 0 + Math.sin(time * 0.7) * 3;
-          drawWeapon(spearX, spearY + spearBob, spearH, spearBw, spearTilt, {
-            type: spearType, zRot: 0, irr: {},
-            wx: 0, wy: 0, wz: 0.1, darkness: 0
+          drawSpear(spearX, spearY + spearBob, spearH, spearTilt, {
+            darkness: 0
           });
         }
 
