@@ -2617,19 +2617,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Dark silhouette color
           ctx.fillStyle = `rgba(10,6,4,${s.alpha})`;
 
-          // Blade
-          ctx.fillRect(-bladeW / 2, -bladeH - handleH, bladeW, bladeH);
-          // Tip
+          // Tip (pointing down, buried in ground)
           ctx.beginPath();
-          ctx.moveTo(0, -bladeH - handleH - bladeW * 2);
-          ctx.lineTo(bladeW / 2, -bladeH - handleH);
-          ctx.lineTo(-bladeW / 2, -bladeH - handleH);
+          ctx.moveTo(0, bladeH + handleH + bladeW * 2);
+          ctx.lineTo(bladeW / 2, bladeH + handleH);
+          ctx.lineTo(-bladeW / 2, bladeH + handleH);
           ctx.closePath();
           ctx.fill();
+          // Blade (below guard, going down)
+          ctx.fillRect(-bladeW / 2, handleH, bladeW, bladeH);
           // Guard
-          ctx.fillRect(-guardW / 2, -handleH, guardW, bladeW * 0.8);
-          // Handle
-          ctx.fillRect(-bladeW * 0.4, -handleH, bladeW * 0.8, handleH);
+          ctx.fillRect(-guardW / 2, handleH - bladeW * 0.4, guardW, bladeW * 0.8);
+          // Handle (above guard, going up = hilt up)
+          ctx.fillRect(-bladeW * 0.4, 0, bladeW * 0.8, handleH);
 
           ctx.restore();
         }
