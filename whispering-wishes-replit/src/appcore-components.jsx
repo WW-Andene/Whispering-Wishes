@@ -2366,7 +2366,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Total sword = 7 units. s.size = total pixel height
           const u = s.size / 7;
           const bladeH = 5 * u;                       // blade = 5u
-          const bladeW = u * s.yRot;                  // blade width = 1u at base
+          const bladeW = u * s.yRot;                  // blade width = 1u
           const guardArm = 1 * u * s.yRot;            // guard arm = 1u from Y-axis each side
           const guardH = (3 / 5) * (1 / 3) * u;      // guard height = 3/5 of 1/3 of 1u
           const pomDia = (1 / 5) * u;                 // pommel size = 1/5 of 1u
@@ -2382,23 +2382,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           // Sword stuck tip-first into ground — 60% blade exposed above
           const exposedBlade = bladeH * 0.6;
-          // Blade — tapers from full width at base to point at tip
-          ctx.beginPath();
-          ctx.moveTo(0, -exposedBlade);                      // tip (point)
-          ctx.lineTo(-bladeW / 2, 0);                        // base left
-          ctx.lineTo(bladeW / 2, 0);                         // base right
-          ctx.closePath();
-          ctx.fill();
-          // Guard — diamond shape
-          const gHalf = guardH / 2;
-          const guardY = -exposedBlade - gHalf;               // center of guard
-          ctx.beginPath();
-          ctx.moveTo(-guardArm, guardY);                      // left
-          ctx.lineTo(0, guardY - gHalf);                      // top
-          ctx.lineTo(guardArm, guardY);                       // right
-          ctx.lineTo(0, guardY + gHalf);                      // bottom
-          ctx.closePath();
-          ctx.fill();
+          // Blade
+          ctx.fillRect(-bladeW / 2, -exposedBlade, bladeW, exposedBlade);
+          // Guard
+          ctx.fillRect(-guardArm, -exposedBlade - guardH, guardArm * 2, guardH);
           // Handle
           ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
           // Pommel
