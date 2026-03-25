@@ -2417,16 +2417,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const pommelType = s.idx % 3;  // 0 = circle, 1 = half-circle, 2 = fan
           ctx.beginPath();
           if (pommelType === 1) {
-            // Half circle
-            ctx.arc(0, gripBot, pomR, 0, Math.PI);
+            // Half circle — same width as pomDia, half-circle fills pomDia height
+            ctx.arc(0, gripBot, pomDia, 0, Math.PI);
           } else if (pommelType === 2) {
-            // Fan shape — wider flat top tapering to rounded bottom
-            const fanW = pomR * 1.5;
-            ctx.moveTo(-fanW, gripBot);
-            ctx.quadraticCurveTo(-fanW, gripBot + pomDia,
-                                  0, gripBot + pomDia);
-            ctx.quadraticCurveTo(fanW, gripBot + pomDia,
-                                  fanW, gripBot);
+            // Fan shape — pomDia wide at top, pomDia tall, rounded bottom
+            ctx.moveTo(-pomR, gripBot);
+            ctx.bezierCurveTo(-pomR, gripBot + pomDia * 0.8,
+                               0, gripBot + pomDia,
+                               0, gripBot + pomDia);
+            ctx.bezierCurveTo(0, gripBot + pomDia,
+                               pomR, gripBot + pomDia * 0.8,
+                               pomR, gripBot);
             ctx.closePath();
           } else {
             // Full circle (default)
