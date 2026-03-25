@@ -2291,7 +2291,66 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // (ground and swords removed)
+        // === 3D CURVED GROUND — convex hill bulging toward viewer ===
+        {
+          const horizonY = H * 0.55;
+          const groundSegments = 80;
+
+          // Draw the curved ground shape — convex arc bulging outward
+          ctx.beginPath();
+          ctx.moveTo(0, H);
+          for (let i = 0; i <= groundSegments; i++) {
+            const t = i / groundSegments;
+            const x = t * W;
+            // Convex curve: highest (closest to horizon) at center, drops at edges
+            const curve = Math.sin(t * Math.PI); // 0 at edges, 1 at center
+            const edgeDrop = H * 0.08; // how much edges sag below horizon
+            const y = horizonY + edgeDrop - edgeDrop * curve * 1.3;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.lineTo(W, H);
+          ctx.lineTo(0, H);
+          ctx.closePath();
+
+          // Ground fill — dark earth gradient
+          const gFill = ctx.createLinearGradient(0, horizonY, 0, H);
+          gFill.addColorStop(0, 'rgb(90,55,32)');
+          gFill.addColorStop(0.15, 'rgb(65,40,22)');
+          gFill.addColorStop(0.4, 'rgb(45,28,16)');
+          gFill.addColorStop(0.7, 'rgb(30,18,10)');
+          gFill.addColorStop(1, 'rgb(18,10,6)');
+          ctx.fillStyle = gFill;
+          ctx.fill();
+
+          // Rim light along the curved horizon edge — warm glow from sun
+          ctx.save();
+          ctx.beginPath();
+          for (let i = 0; i <= groundSegments; i++) {
+            const t = i / groundSegments;
+            const x = t * W;
+            const curve = Math.sin(t * Math.PI);
+            const edgeDrop = H * 0.08;
+            const y = horizonY + edgeDrop - edgeDrop * curve * 1.3;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = 'rgba(255,200,100,0.25)';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = 'rgba(255,180,80,0.4)';
+          ctx.shadowBlur = 12;
+          ctx.stroke();
+          ctx.restore();
+
+          // Subtle 3D shading — radial highlight at center top of mound
+          const moundX = W * 0.5, moundY = horizonY + H * 0.02;
+          const moundGlow = ctx.createRadialGradient(moundX, moundY, 0, moundX, moundY, W * 0.35);
+          moundGlow.addColorStop(0, 'rgba(120,70,35,0.3)');
+          moundGlow.addColorStop(0.4, 'rgba(80,45,20,0.12)');
+          moundGlow.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = moundGlow;
+          ctx.fill();
+        }
 
       } // end BATTLEGROUND block
     };
