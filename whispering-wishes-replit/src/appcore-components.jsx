@@ -2295,12 +2295,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const edgeY = H * 0.7; // horizon line
         const focal = W * 0.7;
 
-        // 3D ground surface: parabolic valley cross-section
-        // wy = depth below horizon at world-space x position
-        // Center (wx=0) is deepest, edges rise to horizon
-        const valleyDepth = 0.15;
-        const valleyCurve = 0.5;
-        const groundWY = (wx) => Math.max(0, valleyDepth - valleyCurve * wx * wx);
+        // 3D ground surface: spherical concave bowl
+        // Circular cross-section — smooth curve, not a V-shape
+        const bowlRadius = 1.2; // radius of curvature
+        const bowlDepth = 0.18; // max depth at center
+        const groundWY = (wx) => {
+          const r2 = wx * wx;
+          const inner = bowlRadius * bowlRadius - r2;
+          if (inner <= 0) return 0;
+          // Circular arc: depth = R - sqrt(R² - x²), scaled to bowlDepth
+          return bowlDepth * (1 - Math.sqrt(inner) / bowlRadius);
+        };
 
         // 3D projection helpers
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
