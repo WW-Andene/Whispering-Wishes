@@ -2396,29 +2396,69 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
                             0, -bladeH);                           // back to sharp tip
           ctx.closePath();
           ctx.fill();
-          // Guard
-          ctx.fillRect(-guardW / 2, 0, guardW, guardH);
+          // Guard — varies per sword
+          const guardType = s.idx % 5;
+          ctx.beginPath();
+          if (guardType === 1) {
+            // Tapered — wider at ends, narrow in middle
+            const endW = guardW * 0.15;
+            const midW = guardH * 0.4;
+            ctx.moveTo(-guardW / 2, -endW / 2);
+            ctx.lineTo(-guardW / 2, endW / 2);
+            ctx.bezierCurveTo(-guardW / 4, midW / 2, guardW / 4, midW / 2, guardW / 2, endW / 2);
+            ctx.lineTo(guardW / 2, -endW / 2);
+            ctx.bezierCurveTo(guardW / 4, -midW / 2, -guardW / 4, -midW / 2, -guardW / 2, -endW / 2);
+            ctx.closePath();
+          } else if (guardType === 2) {
+            // Curved down
+            ctx.moveTo(-guardW / 2, 0);
+            ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, 0);
+            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
+            ctx.closePath();
+          } else if (guardType === 3) {
+            // Curved up
+            ctx.moveTo(-guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, -guardH * 2, guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, -guardH, -guardW / 2, guardH);
+            ctx.closePath();
+          } else if (guardType === 4) {
+            // Three segmented — center block + two end blocks
+            const segW = guardW * 0.12;
+            const segH = guardH * 1.5;
+            ctx.rect(-guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
+            ctx.rect(-segW / 2, 0, segW, guardH);
+            ctx.rect(guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
+            ctx.rect(-guardW / 2, 0, guardW, guardH);
+          } else {
+            // Straight (default)
+            ctx.rect(-guardW / 2, 0, guardW, guardH);
+          }
+          ctx.fill();
           // Grip — straight rectangle
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH, gripW, gripH);
           // Pommel — sits directly on grip
-          const pommelType = s.idx % 3;  // 0 = circle, 1 = half-circle, 2 = fan
+          const pommelType = s.idx % 3;
           ctx.beginPath();
           if (pommelType === 1) {
-            // Half-circle
-            ctx.arc(0, gripBot, pomR, Math.PI, 0, true);
-            ctx.closePath();
+            // Circle
+            ctx.arc(0, gripBot + pomR, pomR, 0, Math.PI * 2);
           } else if (pommelType === 2) {
-            // Fan shape
-            ctx.moveTo(-pomR, gripBot);
-            ctx.quadraticCurveTo(-pomR, gripBot + pomDia,
-                                  0, gripBot + pomDia);
-            ctx.quadraticCurveTo(pomR, gripBot + pomDia,
-                                  pomR, gripBot);
+            // Curved-up bar
+            const barW = bladeW * 1.2;
+            const barH = pomDia * 0.4;
+            ctx.moveTo(-barW / 2, gripBot + barH);
+            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.3, barW / 2, gripBot + barH);
+            ctx.quadraticCurveTo(0, gripBot + barH * 0.3, -barW / 2, gripBot + barH);
             ctx.closePath();
           } else {
-            // Full circle
-            ctx.arc(0, gripBot + pomR, pomR, 0, Math.PI * 2);
+            // Fan (default)
+            ctx.moveTo(-pomR, gripBot);
+            ctx.quadraticCurveTo(-pomR * 1.2, gripBot + pomDia,
+                                  0, gripBot + pomDia);
+            ctx.quadraticCurveTo(pomR * 1.2, gripBot + pomDia,
+                                  pomR, gripBot);
+            ctx.closePath();
           }
           ctx.fill();
 
