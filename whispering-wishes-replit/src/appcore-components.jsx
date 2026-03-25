@@ -2292,39 +2292,75 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === SWIRLING SMOKE RIBBONS around sun ===
-        ctx.save();
-        ctx.translate(sunX, sunY);
-        const numRibbons = 8;
-        const ribbonSegs = 30;
-        for (let r = 0; r < numRibbons; r++) {
-          const baseAngle = (r / numRibbons) * Math.PI * 2 + time * 0.06;
-          const ribbonW = 3 + hash(r * 7.3) * 8;
-          const alpha = 0.12 + hash(r * 13.1) * 0.18;
+        // === NOISY CLOUD SHAPES spiraling around sun ===
+        // Simple 1D noise: interpolated hash
+        const noise1d = (x) => {
+          const i = Math.floor(x), f = x - i;
+          const a = hash(i * 127.1), b = hash((i + 1) * 127.1);
+          const t = f * f * (3 - 2 * f); // smoothstep
+          return a + (b - a) * t;
+        };
+        // Fractal noise — 3 octaves
+        const fnoise = (x, seed) => {
+          return noise1d(x * 1 + seed) * 0.5 +
+                 noise1d(x * 2.3 + seed + 50) * 0.3 +
+                 noise1d(x * 5.7 + seed + 100) * 0.2;
+        };
+        // Generate a noisy cloud blob from a rectangle
+        const drawCloud = (cx, cy, cw, ch, seed, alpha, rot) => {
+          const perimSegs = 48;
+          const noiseAmt = Math.min(cw, ch) * 0.4;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(rot);
           ctx.beginPath();
-          for (let s = 0; s <= ribbonSegs; s++) {
-            const t = s / ribbonSegs;
-            const wave = Math.sin(time * 0.3 + t * 4 + r * 1.7) * (5 + t * 15);
-            const dist = sunR * 2.5 + t * H * 0.55;
-            const angle = baseAngle + t * 3 + hash(r * 3.7 + s * 0.1) * 0.4;
-            const x = Math.cos(angle) * dist + wave * Math.sin(angle);
-            const y = (Math.sin(angle) * dist + wave * Math.cos(angle)) * 0.55;
-            const w = ribbonW * (0.3 + t * 2);
-            if (s === 0) {
-              ctx.moveTo(x, y);
-            } else {
-              ctx.lineTo(x, y);
+          for (let i = 0; i <= perimSegs; i++) {
+            const t = i / perimSegs;
+            // Walk rectangle perimeter
+            let px, py, nx, ny;
+            if (t < 0.25) {          // top: left to right
+              const f = t / 0.25;
+              px = -cw/2 + cw * f; py = -ch/2; nx = 0; ny = -1;
+            } else if (t < 0.5) {    // right: top to bottom
+              const f = (t - 0.25) / 0.25;
+              px = cw/2; py = -ch/2 + ch * f; nx = 1; ny = 0;
+            } else if (t < 0.75) {   // bottom: right to left
+              const f = (t - 0.5) / 0.25;
+              px = cw/2 - cw * f; py = ch/2; nx = 0; ny = 1;
+            } else {                  // left: bottom to top
+              const f = (t - 0.75) / 0.25;
+              px = -cw/2; py = ch/2 - ch * f; nx = -1; ny = 0;
             }
+            // Displace along normal with noise
+            const n = (fnoise(t * 8 + time * 0.1, seed) - 0.5) * noiseAmt * 2;
+            const x = px + nx * n;
+            const y = py + ny * n;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
           }
-          ctx.lineWidth = ribbonW * 2;
-          ctx.strokeStyle = `rgba(12,6,3,${alpha})`;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.stroke();
-          // Thinner lighter edge
-          ctx.lineWidth = ribbonW * 0.5;
-          ctx.strokeStyle = `rgba(30,15,8,${alpha * 0.5})`;
-          ctx.stroke();
+          ctx.closePath();
+          ctx.fillStyle = `rgba(15,8,5,${alpha})`;
+          ctx.fill();
+          ctx.restore();
+        };
+
+        ctx.save();
+        const numArms = 5;
+        const cloudsPerArm = 6;
+        for (let arm = 0; arm < numArms; arm++) {
+          const armAngle = (arm / numArms) * Math.PI * 2 + time * 0.04;
+          for (let c = 0; c < cloudsPerArm; c++) {
+            const t = (c + 0.5) / cloudsPerArm;
+            const dist = sunR * 3 + t * H * 0.45;
+            const spiral = armAngle + t * 2 + hash(arm * 5.3 + c * 7.1) * 0.6;
+            const wave = Math.sin(time * 0.25 + t * 3 + arm * 1.5) * (8 + t * 20);
+            const cx = sunX + Math.cos(spiral) * dist + wave * Math.sin(spiral);
+            const cy = sunY + (Math.sin(spiral) * dist + wave * Math.cos(spiral)) * 0.5;
+            const cw = (40 + hash(c + arm * 10) * 60) * (0.6 + t);
+            const ch = cw * (0.3 + hash(c * 3 + arm) * 0.3);
+            const alpha = (0.15 + hash(c * 7 + arm * 3) * 0.2) * (1 - t * 0.4);
+            const rot = spiral * 0.4 + hash(arm + c * 11) * 0.5;
+            drawCloud(cx, cy, cw, ch, arm * 100 + c * 13, alpha, rot);
+          }
         }
         ctx.restore();
 
