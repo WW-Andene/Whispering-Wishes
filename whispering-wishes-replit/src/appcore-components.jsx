@@ -2302,19 +2302,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz) => edgeY + camH * focal / (wz - camZ);
 
-        // Barrel distortion — curves ground, swords follow
-        const barrelK = 0.15;
-        const distort = (sx, sy) => {
-          const dx = (sx - W * 0.5) / (W * 0.5);
-          const dy = (sy - H * 0.5) / (H * 0.5);
-          const r2 = dx * dx + dy * dy;
-          const f = 1 + barrelK * r2;
-          return [W * 0.5 + dx * f * W * 0.5, H * 0.5 + dy * f * H * 0.5];
-        };
-
-        // --- Draw curved ground strips (back-to-front) ---
+        // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
-        const xSegs = 16;
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2325,26 +2314,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
+          const sy0 = projY(wz0);
+          const sy1 = projY(wz1);
+
+          // Depth-based color: lighter near, darker far
           const depthT = Math.pow(t0, 0.6);
           const r = Math.round(90 - 72 * depthT);
           const g = Math.round(55 - 45 * depthT);
           const b = Math.round(32 - 26 * depthT);
           ctx.fillStyle = `rgb(${r},${g},${b})`;
-
-          // Draw strip as curved polygon
-          ctx.beginPath();
-          for (let j = 0; j <= xSegs; j++) {
-            const sx = W * j / xSegs;
-            const [dx, dy] = distort(sx, projY(wz1));
-            j === 0 ? ctx.moveTo(dx, dy) : ctx.lineTo(dx, dy);
-          }
-          for (let j = xSegs; j >= 0; j--) {
-            const sx = W * j / xSegs;
-            const [dx, dy] = distort(sx, projY(wz0));
-            ctx.lineTo(dx, dy);
-          }
-          ctx.closePath();
-          ctx.fill();
+          ctx.fillRect(0, sy1, W, sy0 - sy1 + 1);
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
@@ -2382,20 +2361,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               }
             }
 
-            // Project to screen + barrel distortion
-            const rawX = projX(jx, jz);
-            const rawY = projY(jz);
-            const [scrX, scrY] = distort(rawX, rawY);
+            // Project to screen
+            const scrX = projX(jx, jz);
+            const scrY = projY(jz);
             if (scrX < -200 || scrX > W + 200 || scrY < -200 || scrY > H + 200) continue;
 
             const size = 2.5 * focal / (jz - camZ);
 
-            // Lens lean — swords tilt outward at edges
-            const lensLean = (rawX - W * 0.5) / (W * 0.5) * barrelK * 0.4;
 
-            // Random lean + lens lean
+            // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
             let lh = (swordIdx * 2654435761 + 3651) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180) + lensLean;
+            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180);
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
