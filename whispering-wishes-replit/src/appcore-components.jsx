@@ -2363,8 +2363,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
-          const bladeH = s.size * 8 / 11;
-          const handleH = s.size * 3 / 11;
+          // 7u total: blade 5u, guard height 1u, handle+pommel 1u
+          const u = s.size / 7;
+          const bladeH = 5 * u;
+          const guardHBlock = 1 * u;
+          const handleH = 1 * u;
           const mod = bladeH / 8;
           const bladeW = mod * 0.503 * s.yRot;    // 4.4 cm
           const guardW = mod * 2.0 * s.yRot;      // 17.5 cm
@@ -2378,16 +2381,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Sword stuck tip-first into ground — 60% blade exposed above
           const exposedBlade = bladeH * 0.6;
           ctx.fillRect(-bladeW / 2, -exposedBlade, bladeW, exposedBlade);
-          // Guard
-          const guardH = mod * 0.15;
+          // Guard — height = 3/5 of 1/3 of 1u
+          const guardH = (3 / 5) * (1 / 3) * u;
           ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
-          // Handle
-          const gripW = bladeW * 0.5;
-          const pomR = mod * 0.251 * s.yRot;     // 4.4 cm diameter / 2
-          ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
+          // Handle — grip portion of 1u (minus pommel)
+          const pomR = u * (1 / 5) / 2;              // pommel diameter = 1/5 of 1u
+          const gripH = handleH - pomR * 2;
+          const gripW = bladeW / 3;                   // handle width = 1/3 blade width
+          ctx.fillRect(-gripW / 2, -exposedBlade - guardH - gripH, gripW, gripH);
           // Pommel
           ctx.beginPath();
-          ctx.arc(0, -exposedBlade - guardH - handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.arc(0, -exposedBlade - guardH - gripH - pomR, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
