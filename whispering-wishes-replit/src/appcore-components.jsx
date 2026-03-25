@@ -2354,7 +2354,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Random lean: 0 to ±22.5° (π/8)
             const lean = (rng(swordIdx, 505) - 0.5) * 2 * (Math.PI / 8);
 
-            swords.push({ scrX, scrY, size, lean, wz: jz, shuffle: rng(swordIdx, 200) });
+            // Y-axis rotation — foreshortens width (cos of angle)
+            const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
+
+            swords.push({ scrX, scrY, size, lean, yRot, wz: jz, shuffle: rng(swordIdx, 200) });
           }
           bz += rowSpacingZ;
         }
@@ -2366,8 +2369,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const bladeH = s.size * 8 / 11;
           const handleH = s.size * 3 / 11;
           const mod = bladeH / 8;
-          const bladeW = mod * 0.5;
-          const guardW = mod * 2.0;
+          const bladeW = mod * 0.5 * s.yRot;
+          const guardW = mod * 2.0 * s.yRot;
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
@@ -2383,9 +2386,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillRect(-guardW / 2, -exposedBlade - guardH, guardW, guardH);
           // Handle
           const gripW = bladeW * 0.5;
+          const pomR = mod * 0.45 * s.yRot;
           ctx.fillRect(-gripW / 2, -exposedBlade - guardH - handleH, gripW, handleH);
           // Pommel
-          const pomR = mod * 0.45;
           ctx.beginPath();
           ctx.arc(0, -exposedBlade - guardH - handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
           ctx.fill();
