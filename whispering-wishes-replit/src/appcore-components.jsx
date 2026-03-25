@@ -2458,9 +2458,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.lineTo(0, H);
           ctx.closePath();
           const gFill = ctx.createLinearGradient(0, horizonY, 0, H);
-          gFill.addColorStop(0, 'rgb(25,16,10)');
-          gFill.addColorStop(0.4, 'rgb(18,11,7)');
-          gFill.addColorStop(1, 'rgb(10,6,3)');
+          gFill.addColorStop(0, 'rgb(80,50,30)');
+          gFill.addColorStop(0.3, 'rgb(55,35,20)');
+          gFill.addColorStop(0.7, 'rgb(35,22,14)');
+          gFill.addColorStop(1, 'rgb(20,12,8)');
           ctx.fillStyle = gFill;
           ctx.fill();
 
