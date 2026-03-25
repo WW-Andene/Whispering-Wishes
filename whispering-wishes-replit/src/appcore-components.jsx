@@ -2295,15 +2295,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
 
-        // Curved 3D ground — slight spherical curvature
-        const curveR = 80;  // radius of curvature (larger = subtler)
+        // Concave ground — curves UP on sides (inside of a bowl)
+        const bowlK = 0.03;
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
         const camH = 0.15;
-        const groundY = (wx, wz) => (wx * wx + wz * wz) / (2 * curveR);  // surface drops away
-        const projY = (wz, wx) => edgeY + (camH + (wx !== undefined ? groundY(wx, wz) : 0)) * focal / wz;
+        // Ground rises on sides: wy = bowlK * wx². projY subtracts it so sides go UP on screen.
+        const projY = (wz, wx) => edgeY + (camH - bowlK * (wx || 0) * (wx || 0)) * focal / wz;
 
-        // --- Draw flat ground as depth strips (back-to-front) ---
+        // --- Draw curved ground strips (back-to-front) ---
         const zNear = 0.05, zFar = 50, zSlices = 30;
+        const xSegs = 20;  // horizontal segments per strip for curvature
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2314,16 +2315,31 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
-          const sy0 = projY(wz0);
-          const sy1 = projY(wz1);
-
-          // Depth-based color: lighter near, darker far
           const depthT = Math.pow(t0, 0.6);
           const r = Math.round(90 - 72 * depthT);
           const g = Math.round(55 - 45 * depthT);
           const b = Math.round(32 - 26 * depthT);
           ctx.fillStyle = `rgb(${r},${g},${b})`;
-          ctx.fillRect(0, sy1, W, sy0 - sy1 + 1);
+
+          // Draw curved strip as polygon
+          const halfW = wz0 * W / focal;  // world-space width visible at this depth
+          ctx.beginPath();
+          // Top edge (far) — left to right
+          for (let j = 0; j <= xSegs; j++) {
+            const wx = -halfW + (2 * halfW * j / xSegs);
+            const sx = projX(wx, wz1);
+            const sy = projY(wz1, wx);
+            j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+          }
+          // Bottom edge (near) — right to left
+          for (let j = xSegs; j >= 0; j--) {
+            const wx = -halfW + (2 * halfW * j / xSegs);
+            const sx = projX(wx, wz0);
+            const sy = projY(wz0, wx);
+            ctx.lineTo(sx, sy);
+          }
+          ctx.closePath();
+          ctx.fill();
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
@@ -2351,8 +2367,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const size = 2.5 * focal / jz;
 
 
-            // Surface normal lean — swords follow the curved ground
-            const surfaceLean = jx / curveR;
+            // Surface normal lean — swords follow concave ground INWARD
+            const surfaceLean = -2 * bowlK * jx;
 
             // Random lean: -22.5° to +22.5° + surface normal
             let lh = (swordIdx * 2654435761 + 505) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x45d9f3b); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
