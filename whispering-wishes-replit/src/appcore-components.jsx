@@ -2357,72 +2357,68 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               }
             }
           }
-          // Create offscreen canvas per cloud
+          // Create offscreen canvas + sub-circle lobe data per cloud
           for (const c of cloudCache.clouds) {
-            const pad = c.baseR * (c.stretch + 1) * 1.5;
-            const cw = Math.ceil(pad * 2), ch = Math.ceil(c.baseR * 2);
+            const pad = c.baseR * (c.stretch + 1) * 2;
+            const cw = Math.ceil(pad * 2), ch = Math.ceil(c.baseR * 2.5);
             const osc = document.createElement('canvas');
             osc.width = cw; osc.height = ch;
-            c.osc = osc; c.oscW = cw; c.oscH = ch; c.dirty = true;
+            c.osc = osc; c.oscW = cw; c.oscH = ch;
+            // Generate sub-circle lobes
+            const numLobes = c.sizeClass > 0.3 ? 7 + Math.floor(hash(c.seed + 99) * 5) : 3 + Math.floor(hash(c.seed + 99) * 3);
+            c.lobes = [];
+            for (let L = 0; L < numLobes; L++) {
+              const angle = hash(c.seed + L * 7.3) * Math.PI * 2;
+              const dist = hash(c.seed + L * 13.1 + 50) * c.baseR * 0.6;
+              const r = c.baseR * (0.3 + hash(c.seed + L * 5.7 + 100) * 0.5);
+              // Drift speed per lobe — slow breathing
+              const driftSpd = (hash(c.seed + L * 3.1 + 200) - 0.5) * 0.003;
+              const driftPhase = hash(c.seed + L * 9.3 + 300) * Math.PI * 2;
+              c.lobes.push({ angle, dist, r, driftSpd, driftPhase });
+            }
+            // Add 1-3 small trailing wisps (offset further, smaller)
+            const numTrail = Math.floor(hash(c.seed + 77) * 3);
+            for (let T = 0; T < numTrail; T++) {
+              const angle = hash(c.seed + T * 17 + 500) * Math.PI * 2;
+              const dist = c.baseR * (0.5 + hash(c.seed + T * 11 + 600) * 0.7);
+              const r = c.baseR * (0.1 + hash(c.seed + T * 23 + 700) * 0.15);
+              const driftSpd = (hash(c.seed + T * 7 + 800) - 0.5) * 0.005;
+              const driftPhase = hash(c.seed + T * 19 + 900) * Math.PI * 2;
+              c.lobes.push({ angle, dist, r, driftSpd, driftPhase });
+            }
           }
         }
 
-        // Render cloud shape to offscreen canvas
+        // Render cloud shape — overlapping circle stamps
         const renderCloudShape = (c, t) => {
           const oc = c.osc.getContext('2d');
           oc.clearRect(0, 0, c.oscW, c.oscH);
           const cx = c.oscW / 2, cy = c.oscH / 2;
-          const segs = c.sizeClass > 0.3 ? 36 : 20;
-          const noiseAmt = c.baseR * (0.5 + (1 - c.sizeClass) * 0.8);
-          const passes = c.sizeClass > 0.3 ? 3 : 1;
 
           oc.save();
           oc.translate(cx, cy);
           oc.scale(c.stretch, 1);
 
-          // Outer haze
-          oc.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            let px = Math.cos(a) * c.baseR;
-            let py = Math.sin(a) * c.baseR * 0.45;
-            const wx = (px + c.seed) * 0.02, wy = (py + c.seed * 0.7) * 0.02;
-            const [fx, fy] = curlFlow(wx + t * 0.002, wy + t * 0.0015);
-            px += fx * noiseAmt * 1.2; py += fy * noiseAmt * 1.2;
-            if (passes > 1) {
-              const [fx2, fy2] = curlFlow(wx * 2.5 + t * 0.003, wy * 2.3 - t * 0.0025);
-              px += fx2 * noiseAmt * 0.4; py += fy2 * noiseAmt * 0.4;
-              const [fx3, fy3] = curlFlow(wx * 5 - t * 0.004, wy * 4.5 + t * 0.0025);
-              px += fx3 * noiseAmt * 0.15 * (1 + (1 - c.sizeClass));
-              py += fy3 * noiseAmt * 0.15 * (1 + (1 - c.sizeClass));
-            }
-            i === 0 ? oc.moveTo(px, py) : oc.lineTo(px, py);
-          }
-          oc.closePath();
-          oc.fillStyle = `rgba(12,6,3,${(c.alpha * 0.4).toFixed(3)})`;
-          oc.fill();
+          const baseAlpha = c.alpha;
+          for (const lobe of c.lobes) {
+            // Drift: lobe position slowly shifts over time
+            const driftAngle = lobe.angle + Math.sin(t * lobe.driftSpd * 50 + lobe.driftPhase) * 0.3;
+            const driftDist = lobe.dist + Math.sin(t * lobe.driftSpd * 30 + lobe.driftPhase + 1) * c.baseR * 0.08;
+            const lx = Math.cos(driftAngle) * driftDist;
+            const ly = Math.sin(driftAngle) * driftDist * 0.45;
 
-          // Inner core
-          oc.scale(0.75, 0.75);
-          oc.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            let px = Math.cos(a) * c.baseR;
-            let py = Math.sin(a) * c.baseR * 0.45;
-            const wx = (px + c.seed) * 0.02, wy = (py + c.seed * 0.7) * 0.02;
-            const [fx, fy] = curlFlow(wx + t * 0.002, wy + t * 0.0015);
-            px += fx * noiseAmt * 0.9; py += fy * noiseAmt * 0.9;
-            if (passes > 1) {
-              const [fx2, fy2] = curlFlow(wx * 2.5 + t * 0.003, wy * 2.3 - t * 0.0025);
-              px += fx2 * noiseAmt * 0.3; py += fy2 * noiseAmt * 0.3;
-            }
-            i === 0 ? oc.moveTo(px, py) : oc.lineTo(px, py);
+            // Outer soft halo
+            const grad = oc.createRadialGradient(lx, ly, lobe.r * 0.3, lx, ly, lobe.r);
+            grad.addColorStop(0, `rgba(15,8,5,${(baseAlpha * 0.7).toFixed(3)})`);
+            grad.addColorStop(0.6, `rgba(13,7,4,${(baseAlpha * 0.35).toFixed(3)})`);
+            grad.addColorStop(1, 'rgba(12,6,3,0)');
+            oc.fillStyle = grad;
+            oc.beginPath();
+            oc.arc(lx, ly, lobe.r, 0, Math.PI * 2);
+            oc.fill();
           }
-          oc.closePath();
-          oc.fillStyle = `rgba(15,8,5,${c.alpha.toFixed(3)})`;
-          oc.fill();
           oc.restore();
-          c.dirty = false;
+        };
         };
 
         // Staggered shape refresh — rebuild 4 clouds per frame
