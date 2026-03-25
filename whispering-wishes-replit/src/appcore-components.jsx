@@ -2316,10 +2316,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           return [-dndy, dndx]; // perpendicular = curl
         };
 
-        // Draw noisy cloud — perimeter walks a circle with noise displacement
-        const drawCloud = (cx, cy, baseR, stretch, seed, alpha, flowAngle) => {
-          const segs = 56;
-          const noiseAmt = baseR * 0.55;
+        // Draw noisy cloud — smaller clouds = sparser/thinner noise
+        const drawCloud = (cx, cy, baseR, stretch, seed, alpha, flowAngle, sizeClass) => {
+          const segs = 40 + Math.floor(sizeClass * 20); // more detail on big clouds
+          const noiseAmt = baseR * (0.3 + (1 - sizeClass) * 0.5); // smaller = more noise distortion
+          const noiseFreq = 1.5 + (1 - sizeClass) * 3; // smaller = higher frequency = more ragged
           ctx.save();
           ctx.translate(cx, cy);
           ctx.rotate(flowAngle);
@@ -2328,13 +2329,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let i = 0; i <= segs; i++) {
             const a = (i / segs) * Math.PI * 2;
             const rx = Math.cos(a) * baseR;
-            const ry = Math.sin(a) * baseR * 0.5;
-            // Multi-frequency noise displacement
-            const n1 = fnoise2(a * 1.3 + seed, time * 0.08 + seed * 0.1);
-            const n2 = fnoise2(a * 3.7 + seed + 50, time * 0.12 + seed * 0.2);
-            const disp = ((n1 - 0.5) * 2 * noiseAmt) + ((n2 - 0.5) * noiseAmt * 0.6);
+            const ry = Math.sin(a) * baseR * 0.45;
+            const n1 = fnoise2(a * noiseFreq + seed, time * 0.06 + seed * 0.1);
+            const n2 = fnoise2(a * noiseFreq * 2.5 + seed + 50, time * 0.09 + seed * 0.2);
+            const n3 = fnoise2(a * noiseFreq * 5 + seed + 100, time * 0.04 + seed * 0.3);
+            const disp = ((n1 - 0.5) * 2 * noiseAmt) +
+                         ((n2 - 0.5) * noiseAmt * 0.5) +
+                         ((n3 - 0.5) * noiseAmt * 0.25 * (1 - sizeClass));
             const x = rx + Math.cos(a) * disp;
-            const y = ry + Math.sin(a) * disp * 0.5;
+            const y = ry + Math.sin(a) * disp * 0.45;
             i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
           }
           ctx.closePath();
@@ -2343,32 +2346,63 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.restore();
         };
 
+        // === CLOUD CLUSTER SYSTEM ===
+        // Multiple swirl lanes at slightly different speeds
         ctx.save();
-        const numArms = 6;
-        const cloudsPerArm = 7;
-        for (let arm = 0; arm < numArms; arm++) {
-          const armBase = (arm / numArms) * Math.PI * 2;
-          for (let c = 0; c < cloudsPerArm; c++) {
-            const t = (c + 0.3) / cloudsPerArm;
-            const dist = sunR * 2.5 + t * H * 0.5;
+        const numSwirls = 4;
+        const swirlSpeeds = [0.035, 0.028, 0.022, 0.018];
+        const swirlOffsets = [0, 1.2, 2.7, 4.1];
 
-            // Concentric orbit around sun — each cloud slowly orbits at its radius
-            const orbitSpeed = 0.03 / (0.5 + t); // inner clouds orbit faster
-            const angle = armBase + t * 2.2 + hash(arm * 5.3 + c * 7.1) * 0.7 + time * orbitSpeed;
+        for (let sw = 0; sw < numSwirls; sw++) {
+          const swirlSpeed = swirlSpeeds[sw];
+          const swirlOff = swirlOffsets[sw];
+          const numClusters = 5 + sw * 2;
 
-            // Position on orbit
-            const cx = sunX + Math.cos(angle) * dist;
-            const cy = sunY + Math.sin(angle) * dist * 0.5; // squish vertically
+          for (let cl = 0; cl < numClusters; cl++) {
+            const clSeed = sw * 1000 + cl * 137;
+            const clAngleBase = (cl / numClusters) * Math.PI * 2 + swirlOff;
+            const clDist = sunR * 1.5 + hash(clSeed * 0.7) * H * 0.4;
+            const clOrbitSpeed = swirlSpeed / (0.3 + clDist / (H * 0.5));
+            const clAngle = clAngleBase + time * clOrbitSpeed;
 
-            // Cloud aligned tangent to orbit (perpendicular to radius)
-            const tangentAngle = angle + Math.PI / 2;
+            // Big parent cloud
+            const bigR = (35 + hash(clSeed) * 55);
+            const bigX = sunX + Math.cos(clAngle) * clDist;
+            const bigY = sunY + Math.sin(clAngle) * clDist * 0.5;
+            const tangent = clAngle + Math.PI / 2;
+            const bigStretch = 1.8 + hash(clSeed + 5) * 1.2;
+            const bigAlpha = 0.18 + hash(clSeed + 10) * 0.12;
+            drawCloud(bigX, bigY, bigR, bigStretch, clSeed, bigAlpha, tangent, 1.0);
 
-            // Size grows with distance, stretch along tangent
-            const baseR = (25 + hash(c + arm * 10) * 50) * (0.5 + t * 1.2);
-            const stretch = 1.5 + hash(c * 3 + arm) * 1.0;
-            const alpha = (0.12 + hash(c * 7 + arm * 3) * 0.2) * (1 - t * 0.35);
-            const seed = arm * 100 + c * 17;
-            drawCloud(cx, cy, baseR, stretch, seed, alpha, tangentAngle);
+            // Medium children — stay close to parent
+            const numMed = 2 + Math.floor(hash(clSeed + 20) * 3);
+            for (let m = 0; m < numMed; m++) {
+              const mSeed = clSeed + m * 31 + 200;
+              const mAngleOff = (hash(mSeed) - 0.5) * 1.2;
+              const mDistOff = bigR * (0.6 + hash(mSeed + 1) * 0.8);
+              const mOrbit = clAngle + mAngleOff + time * clOrbitSpeed * 1.1;
+              const mx = bigX + Math.cos(mOrbit) * mDistOff;
+              const my = bigY + Math.sin(mOrbit) * mDistOff * 0.5;
+              const mR = bigR * (0.4 + hash(mSeed + 2) * 0.3);
+              const mStretch = 1.3 + hash(mSeed + 3) * 1.5;
+              const mAlpha = bigAlpha * (0.6 + hash(mSeed + 4) * 0.3);
+              drawCloud(mx, my, mR, mStretch, mSeed, mAlpha, tangent + mAngleOff * 0.3, 0.5);
+
+              // Small wisps — detach further, thinner, more ragged
+              const numSmall = 1 + Math.floor(hash(mSeed + 30) * 3);
+              for (let s = 0; s < numSmall; s++) {
+                const sSeed = mSeed + s * 47 + 400;
+                const sAngleOff = (hash(sSeed) - 0.5) * 2.5; // more scattered
+                const sDistOff = mR * (1.0 + hash(sSeed + 1) * 2.0); // further detached
+                const sOrbit = mOrbit + sAngleOff + time * clOrbitSpeed * 1.3;
+                const sx = mx + Math.cos(sOrbit) * sDistOff;
+                const sy = my + Math.sin(sOrbit) * sDistOff * 0.5;
+                const sR = mR * (0.2 + hash(sSeed + 2) * 0.3);
+                const sStretch = 1.5 + hash(sSeed + 3) * 2.0;
+                const sAlpha = mAlpha * (0.3 + hash(sSeed + 4) * 0.3);
+                drawCloud(sx, sy, sR, sStretch, sSeed, sAlpha, tangent + sAngleOff * 0.2, 0.15);
+              }
+            }
           }
         }
         ctx.restore();
