@@ -2372,7 +2372,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const guardW = mod * 1.772 * s.yRot;       // ~20 cm
           const gripW = bladeW * 2 / 3;
           const gripH = overall * (18.4 / 114.7);
-          const pomDia = bladeW;     // pommel ≈ blade width, scales with yRot
+          const pomDia = overall * (5.0 / 114.7);
           const pomR = pomDia / 2;
 
           ctx.save();
@@ -2398,22 +2398,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
-          // Grip — curved taper, flat bottom
+          // Grip — gentle inward curve, narrowing by 2/5 gripW each side, flat bottom
           const gripNarrow = gripW * 2 / 5;
           const gripBot = guardH + gripH;
           const narrowW = gripW - gripNarrow * 2;
-          const taperStart = guardH + gripH * 0.65;
           ctx.beginPath();
-          ctx.moveTo(-gripW / 2, guardH);                  // top-left
-          ctx.lineTo(-gripW / 2, taperStart);              // straight left side
-          ctx.bezierCurveTo(-gripW / 2, taperStart + (gripBot - taperStart) * 0.7, // ease down
-                            -narrowW / 2, gripBot - (gripBot - taperStart) * 0.3,  // ease in
-                            -narrowW / 2, gripBot);        // end exactly at gripBot
-          ctx.lineTo(narrowW / 2, gripBot);                // flat bottom
-          ctx.bezierCurveTo(narrowW / 2, gripBot - (gripBot - taperStart) * 0.3,   // ease out
-                            gripW / 2, taperStart + (gripBot - taperStart) * 0.7,  // ease up
-                            gripW / 2, taperStart);         // end at taper start
-          ctx.lineTo(gripW / 2, guardH);                   // straight right side
+          ctx.moveTo(-gripW / 2, guardH);                                    // top-left
+          ctx.lineTo(-gripW / 2, guardH + gripH * 0.65);                    // straight most of way
+          ctx.quadraticCurveTo(-gripW / 2, gripBot - gripNarrow * 0.2,         // control: above bottom
+                                -narrowW / 2, gripBot);                     // end: narrowed bottom-left
+          ctx.lineTo(narrowW / 2, gripBot);                                  // flat bottom
+          ctx.quadraticCurveTo(gripW / 2, gripBot - gripNarrow * 0.2,        // control: above bottom
+                                gripW / 2, guardH + gripH * 0.65);          // end: back to full width
+          ctx.lineTo(gripW / 2, guardH);                                     // right side up
           ctx.closePath();
           ctx.fill();
           // Pommel — varies per sword: full circle, half circle, or fan
