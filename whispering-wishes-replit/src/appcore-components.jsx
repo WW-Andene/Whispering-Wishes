@@ -2351,11 +2351,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (size < 1.5) continue;
 
 
-            // Random lean: 0 to ±22.5° (π/8)
-            const lean = (rng(swordIdx, 505) - 0.5) * 2 * (Math.PI / 8);
+            // Random lean: 0 to ±22.5° (π/8) — uses position-based seed
+            const leanSeed = Math.sin(jx * 73.1 + jz * 197.3) * 43758.5453;
+            const lean = (leanSeed - Math.floor(leanSeed) - 0.5) * 2 * (Math.PI / 8);
 
             // Y-axis rotation — foreshortens width (cos of angle)
-            const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
+            const yRotSeed = Math.sin(jx * 311.7 + jz * 59.1) * 43758.5453;
+            const yRot = Math.cos((yRotSeed - Math.floor(yRotSeed) - 0.5) * 2 * (Math.PI / 3));
 
             swords.push({ scrX, scrY, size, lean, yRot, wz: jz, shuffle: rng(swordIdx, 200) });
           }
