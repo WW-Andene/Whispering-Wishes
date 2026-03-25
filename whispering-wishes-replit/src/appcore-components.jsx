@@ -2404,7 +2404,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
                             0, -bladeH);
           ctx.closePath();
           ctx.fill();
-          // Guard — varies per sword
+          // Guard — bridge blade to grip at center, then decorative shape
+          ctx.fillRect(-bladeW / 2, -ov, bladeW, guardH + ov * 2);
           const guardType = ((s.idx * 2654435761 + 300) >>> 0) % 5;
           ctx.beginPath();
           if (guardType === 1) {
