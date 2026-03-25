@@ -2292,7 +2292,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
-        const edgeY = H * 0.5; // horizon line — camera at ground level
+        const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
