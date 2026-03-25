@@ -2344,6 +2344,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             bx += cellSpacingX;
             if (jz - camZ < 0.01) continue;  // skip swords behind camera
 
+            // Gradual clearing — semicircle pushed in front of camera
+            const clearCZ = camZ + 4;  // clearing center 4m ahead
+            const clearR = 4;
+            const cdx = jx, cdz = jz - clearCZ;
+            const clearDist = Math.sqrt(cdx * cdx + cdz * cdz);
+            const clearFade = Math.min(1, clearDist / clearR);
+            if (ihash(swordIdx, sceneSeed + 999) > clearFade * clearFade) continue;
+
             // Project to screen
             const scrX = projX(jx, jz);
             const scrY = projY(jz);
