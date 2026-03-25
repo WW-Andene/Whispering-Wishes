@@ -2405,10 +2405,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           ctx.moveTo(-gripW / 2, guardH);                                    // top-left
           ctx.lineTo(-gripW / 2, guardH + gripH * 0.65);                    // straight most of way
-          ctx.quadraticCurveTo(-gripW / 2, gripBot,                          // control: smooth corner
+          ctx.quadraticCurveTo(-gripW / 2, gripBot - gripNarrow * 0.2,         // control: above bottom
                                 -narrowW / 2, gripBot);                     // end: narrowed bottom-left
           ctx.lineTo(narrowW / 2, gripBot);                                  // flat bottom
-          ctx.quadraticCurveTo(gripW / 2, gripBot,                           // control: smooth corner
+          ctx.quadraticCurveTo(gripW / 2, gripBot - gripNarrow * 0.2,        // control: above bottom
                                 gripW / 2, guardH + gripH * 0.65);          // end: back to full width
           ctx.lineTo(gripW / 2, guardH);                                     // right side up
           ctx.closePath();
