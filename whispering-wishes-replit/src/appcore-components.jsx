@@ -2533,7 +2533,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       // ===== BATTLEGROUND — ground-plan projected sword field =====
       {
         const W = canvas.width, H = canvas.height;
-        const hY = H * 0.68; // low horizon — big sky, low camera feel
+        const hY = H * 0.99; // sky reaches almost to bottom
         const rng = (i, off) => { const s = Math.sin(i * 153.7 + off * 267.3) * 51291.1; return s - Math.floor(s); };
 
         // --- OPAQUE SKY (lighter, more luminous) ---
@@ -2553,7 +2553,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // === SUN DISC with bright core ===
         const sunX = W * 0.5, sunY = H * 0.3;
         const sunR = H * 0.08;
-        // Outer glow halo
         const sunHalo = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
         sunHalo.addColorStop(0, 'rgba(255,250,200,0.5)');
         sunHalo.addColorStop(0.15, 'rgba(255,230,150,0.3)');
@@ -2561,7 +2560,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         sunHalo.addColorStop(1, 'rgba(255,160,60,0)');
         ctx.fillStyle = sunHalo;
         ctx.fillRect(0, 0, W, hY + 1);
-        // Bright sun disc
         const sunDisc = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
         sunDisc.addColorStop(0, 'rgba(255,255,240,0.95)');
         sunDisc.addColorStop(0.3, 'rgba(255,245,200,0.85)');
@@ -2569,6 +2567,72 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         sunDisc.addColorStop(1, 'rgba(255,200,100,0)');
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
+
+        // === SWORD SILHOUETTES — flat 2D shades with perspective ===
+        const focal = W * 0.7;
+        const camH = 0.3;
+        const gridZmin = 0.03, gridZmax = 80;
+        const maxSwords = 500;
+        const swords = [];
+        let swordIdx = 0;
+
+        for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
+          const spacing = Math.min(2, Math.max(0.44, gz * 0.4));
+          const visibleXrange = gz * W / (2 * focal) * 1.5;
+          for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
+            const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
+            const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
+            if (wz < 0.02) { swordIdx++; continue; }
+
+            const scrX = W * 0.5 + wx * focal / wz;
+            const scrY = hY * 0.68 + camH * focal / wz;
+            const size = 2.4 * focal / wz;
+
+            if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
+
+            const angle = (rng(swordIdx * 7 + 3, 104) - 0.5) * 30 + (rng(swordIdx * 13 + 7, 105) - 0.5) * 12;
+            const distT = Math.min(1, wz / gridZmax);
+            const alpha = (1 - distT) * 0.7 + 0.05;
+
+            swords.push({ scrX, scrY, size, angle, wz, alpha, shuffle: rng(swordIdx, 200) });
+            swordIdx++;
+          }
+          gz += spacing;
+        }
+
+        // Sort back-to-front
+        swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
+
+        // Draw flat sword silhouettes
+        for (const s of swords) {
+          const bladeH = s.size * 0.72;
+          const bladeW = s.size * 0.03;
+          const handleH = s.size * 0.28;
+          const guardW = s.size * 0.08;
+
+          ctx.save();
+          ctx.translate(s.scrX, s.scrY);
+          ctx.rotate(s.angle * Math.PI / 180);
+
+          // Dark silhouette color
+          ctx.fillStyle = `rgba(10,6,4,${s.alpha})`;
+
+          // Blade
+          ctx.fillRect(-bladeW / 2, -bladeH - handleH, bladeW, bladeH);
+          // Tip
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH - handleH - bladeW * 2);
+          ctx.lineTo(bladeW / 2, -bladeH - handleH);
+          ctx.lineTo(-bladeW / 2, -bladeH - handleH);
+          ctx.closePath();
+          ctx.fill();
+          // Guard
+          ctx.fillRect(-guardW / 2, -handleH, guardW, bladeW * 0.8);
+          // Handle
+          ctx.fillRect(-bladeW * 0.4, -handleH, bladeW * 0.8, handleH);
+
+          ctx.restore();
+        }
 
       } // end BATTLEGROUND block
     };
