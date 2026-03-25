@@ -2339,17 +2339,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const worldY = (cy + py) * flowScale + seed * 0.007;
 
             // Gentle curl flow — slow, smooth deformation
-            const [fx, fy] = curlFlow(worldX + time * 0.004, worldY + time * 0.003);
+            const [fx, fy] = curlFlow(worldX + time * 0.002, worldY + time * 0.0015);
             px += fx * noiseAmt * 1.2;
             py += fy * noiseAmt * 1.2;
 
-            // Second pass — medium detail
-            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.006, worldY * 2.3 - time * 0.005);
+            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.003, worldY * 2.3 - time * 0.0025);
             px += fx2 * noiseAmt * 0.4;
             py += fy2 * noiseAmt * 0.4;
 
-            // Fine detail — subtle, stronger on small clouds
-            const [fx3, fy3] = curlFlow(worldX * 5 - time * 0.008, worldY * 4.5 + time * 0.005);
+            const [fx3, fy3] = curlFlow(worldX * 5 - time * 0.004, worldY * 4.5 + time * 0.0025);
             px += fx3 * noiseAmt * 0.15 * (1 + (1 - sizeClass));
             py += fy3 * noiseAmt * 0.15 * (1 + (1 - sizeClass));
 
@@ -2372,10 +2370,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             let py = Math.sin(a) * baseR * 0.45;
             const worldX = (cx + px) * 0.02 + seed * 0.01;
             const worldY = (cy + py) * 0.02 + seed * 0.007;
-            const [fx, fy] = curlFlow(worldX + time * 0.004, worldY + time * 0.003);
+            const [fx, fy] = curlFlow(worldX + time * 0.002, worldY + time * 0.0015);
             px += fx * noiseAmt * 0.9;
             py += fy * noiseAmt * 0.9;
-            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.006, worldY * 2.3 - time * 0.005);
+            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.003, worldY * 2.3 - time * 0.0025);
             px += fx2 * noiseAmt * 0.3;
             py += fy2 * noiseAmt * 0.3;
             if (i === 0) ctx.moveTo(px, py);
@@ -2399,7 +2397,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         for (let sw = 0; sw < numSwirls; sw++) {
           const swirlSpeed = swirlSpeeds[sw];
           const swirlOff = swirlOffsets[sw];
-          const numClusters = 5 + sw * 2;
+          const numClusters = 3 + sw;
 
           for (let cl = 0; cl < numClusters; cl++) {
             const clSeed = sw * 1000 + cl * 137;
@@ -2409,7 +2407,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const clAngle = clAngleBase + time * clOrbitSpeed;
 
             // Big parent cloud
-            const bigR = (35 + hash(clSeed) * 55) / 3;
+            const bigR = (35 + hash(clSeed) * 55) * 0.65;
             const bigX = sunX + Math.cos(clAngle) * clDist;
             const bigY = sunY + Math.sin(clAngle) * clDist * 0.5;
             const tangent = clAngle + Math.PI / 2;
@@ -2418,7 +2416,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             drawCloud(bigX, bigY, bigR, bigStretch, clSeed, bigAlpha, tangent, 1.0);
 
             // Medium children — stay close to parent
-            const numMed = 2 + Math.floor(hash(clSeed + 20) * 3);
+            const numMed = 1 + Math.floor(hash(clSeed + 20) * 2);
             for (let m = 0; m < numMed; m++) {
               const mSeed = clSeed + m * 31 + 200;
               const mAngleOff = (hash(mSeed) - 0.5) * 1.2;
@@ -2432,7 +2430,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               drawCloud(mx, my, mR, mStretch, mSeed, mAlpha, tangent + mAngleOff * 0.3, 0.5);
 
               // Small wisps — detach further, thinner, more ragged
-              const numSmall = 1 + Math.floor(hash(mSeed + 30) * 3);
+              const numSmall = Math.floor(hash(mSeed + 30) * 2);
               for (let s = 0; s < numSmall; s++) {
                 const sSeed = mSeed + s * 47 + 400;
                 const sAngleOff = (hash(sSeed) - 0.5) * 2.5; // more scattered
