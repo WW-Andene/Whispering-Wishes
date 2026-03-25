@@ -2257,7 +2257,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
       {
         const W = canvas.width, H = canvas.height;
         const hY = H; // sky covers 100%
-        const rng = (i, off) => { const s = Math.sin(i * 153.7 + off * 267.3) * 51291.1; return s - Math.floor(s); };
+        const rng = (i, off) => {
+          let h = (i * 2654435761 + off * 2246822519) >>> 0;
+          h = ((h >> 16) ^ h) * 0x45d9f3b >>> 0;
+          h = ((h >> 16) ^ h) * 0x45d9f3b >>> 0;
+          h = (h >> 16) ^ h;
+          return (h >>> 0) / 4294967296;
+        };
 
         // --- OPAQUE SKY (lighter, more luminous) ---
         const sk = ctx.createLinearGradient(0, 0, 0, hY);
@@ -2450,26 +2456,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
-          const pommelType = Math.floor(rng(s.idx, 400) * 3);
+          const pommelType = Math.floor(rng(s.idx, 400) * 2);
           ctx.beginPath();
           if (pommelType === 1) {
             // Circle
             ctx.ellipse(0, gripBot + pomRy, pomRx, pomRy, 0, 0, Math.PI * 2);
-          } else if (pommelType === 2) {
-            // Curved-up bar — uniform thickness, curves away from grip
-            const barW = bladeW * 1.2;
-            const barT = pomDia * 0.35;   // bar thickness
-            const curve = pomDia * 0.6;   // how much it curves
-            // Outer edge (away from grip)
-            ctx.moveTo(-barW / 2, gripBot + barT);
-            ctx.quadraticCurveTo(0, gripBot + barT + curve, barW / 2, gripBot + barT);
-            // Round right end
-            ctx.arc(barW / 2, gripBot + barT / 2, barT / 2, Math.PI / 2, -Math.PI / 2);
-            // Inner edge (grip side)
-            ctx.quadraticCurveTo(0, gripBot + curve, -barW / 2, gripBot);
-            // Round left end
-            ctx.arc(-barW / 2, gripBot + barT / 2, barT / 2, -Math.PI / 2, Math.PI / 2);
-            ctx.closePath();
           } else {
             // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
             const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
