@@ -2455,14 +2455,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Circle
             ctx.ellipse(0, gripBot + pomRy, pomRx, pomRy, 0, 0, Math.PI * 2);
           } else if (pommelType === 2) {
-            // Curved-up bar — flat ends
+            // Curved-up bar — uniform thickness, curves away from grip
             const barW = bladeW * 1.2;
-            const barH = pomDia * 0.4;
-            ctx.moveTo(-barW / 2, gripBot);
-            ctx.lineTo(-barW / 2, gripBot + barH);
-            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.2, barW / 2, gripBot + barH);
-            ctx.lineTo(barW / 2, gripBot);
-            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.1, -barW / 2, gripBot);
+            const barT = pomDia * 0.35;   // bar thickness
+            const curve = pomDia * 0.6;   // how much it curves
+            // Outer edge (away from grip)
+            ctx.moveTo(-barW / 2, gripBot + barT);
+            ctx.quadraticCurveTo(0, gripBot + barT + curve, barW / 2, gripBot + barT);
+            // Round right end
+            ctx.arc(barW / 2, gripBot + barT / 2, barT / 2, Math.PI / 2, -Math.PI / 2);
+            // Inner edge (grip side)
+            ctx.quadraticCurveTo(0, gripBot + curve, -barW / 2, gripBot);
+            // Round left end
+            ctx.arc(-barW / 2, gripBot + barT / 2, barT / 2, -Math.PI / 2, Math.PI / 2);
             ctx.closePath();
           } else {
             // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
