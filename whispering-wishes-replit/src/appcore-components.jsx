@@ -2304,10 +2304,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.beginPath();
           for (let s = 0; s <= ribbonSegs; s++) {
             const t = s / ribbonSegs;
+            const wave = Math.sin(time * 0.3 + t * 4 + r * 1.7) * (5 + t * 15);
             const dist = sunR * 2.5 + t * H * 0.55;
             const angle = baseAngle + t * 3 + hash(r * 3.7 + s * 0.1) * 0.4;
-            const x = Math.cos(angle) * dist;
-            const y = Math.sin(angle) * dist * 0.55;
+            const x = Math.cos(angle) * dist + wave * Math.sin(angle);
+            const y = (Math.sin(angle) * dist + wave * Math.cos(angle)) * 0.55;
             const w = ribbonW * (0.3 + t * 2);
             if (s === 0) {
               ctx.moveTo(x, y);
