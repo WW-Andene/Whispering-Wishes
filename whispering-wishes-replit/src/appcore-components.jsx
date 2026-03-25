@@ -3933,8 +3933,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
             // Inverse gradient: close = spread, far = grouped
             const t = Math.min(1, gz / gridZmax);
-            const ease = Math.pow(1 - t * t, 1.5);
-            const spacing = 0.48 * ease + 0.08 * (1 - ease);
+            const ease = 1 - t;
+            const spacing = 0.08 + 0.40 * ease;
             // Visible X range at this Z
             const visibleXrange = gz * W / (2 * focal) * 1.5;
             for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
