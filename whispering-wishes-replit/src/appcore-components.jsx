@@ -2332,7 +2332,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         let swordIdx = 0;
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
-        for (let bz = baseSpacing * 0.3; bz < planeSize; ) {
+        for (let bz = baseSpacing * 0.1; bz < planeSize; ) {
           const rowSpacingZ = 0.5 + rng(swordIdx + 7000, 77) * 1.5; // 0.5–2
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = 0.5 + rng(swordIdx + 8000, 88) * 1.5; // 0.5–2
@@ -2340,7 +2340,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const jz = bz + (rng(swordIdx, 100) - 0.5) * rowSpacingZ * 0.3;
             swordIdx++;
             bx += cellSpacingX;
-            if (jz < 0.25) continue;
+            if (jz < 0.1) continue;
 
             // Project to screen
             const scrX = projX(jx, jz);
