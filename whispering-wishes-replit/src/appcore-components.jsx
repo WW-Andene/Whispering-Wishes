@@ -2353,7 +2353,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = 0.5 + ihash(swordIdx + 8000, sceneSeed) * 1.5;
             const jx = bx + (ihash(swordIdx, sceneSeed + 101) - 0.5) * cellSpacingX * 0.3;
-            const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3;
+            const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3 + 0.03;
             swordIdx++;
             bx += cellSpacingX;
             if (jz - camZ < 0.02) continue;  // skip swords too close
