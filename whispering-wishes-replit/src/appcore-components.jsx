@@ -2292,6 +2292,37 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
+        // === SWIRLING VORTEX CLOUDS around sun ===
+        ctx.save();
+        ctx.translate(sunX, sunY);
+        const cloudHash = (i, s) => { const v = Math.sin(i * 127.1 + s * 311.7) * 43758.5; return v - Math.floor(v); };
+        const numArms = 5;
+        const numClouds = 40;
+        for (let arm = 0; arm < numArms; arm++) {
+          const armAngle = (arm / numArms) * Math.PI * 2 + time * 0.08;
+          for (let c = 0; c < numClouds; c++) {
+            const t = (c + 0.3) / numClouds;
+            const dist = sunR * 2 + t * H * 0.5;
+            const spiral = armAngle + t * 2.5 + cloudHash(arm, c) * 0.8;
+            const cx = Math.cos(spiral) * dist;
+            const cy = Math.sin(spiral) * dist * 0.6;  // squish vertically
+            const cloudR = (15 + cloudHash(c, arm + 50) * 40) * (0.5 + t * 1.5);
+            const alpha = (0.15 + cloudHash(c, arm + 100) * 0.25) * (1 - t * 0.5);
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, cloudR * 1.8, cloudR * 0.7, spiral * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(15,8,5,${alpha})`;
+            ctx.fill();
+          }
+        }
+        // Inner clearing around sun — punch a hole
+        const clearGrad = ctx.createRadialGradient(0, 0, sunR * 1.5, 0, 0, sunR * 3.5);
+        clearGrad.addColorStop(0, 'rgba(255,220,150,0.4)');
+        clearGrad.addColorStop(0.5, 'rgba(255,200,120,0.15)');
+        clearGrad.addColorStop(1, 'rgba(255,180,100,0)');
+        ctx.fillStyle = clearGrad;
+        ctx.beginPath(); ctx.arc(0, 0, sunR * 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
