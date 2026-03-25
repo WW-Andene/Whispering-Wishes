@@ -2295,10 +2295,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
 
-        // Flat ground — no bowl, wy = 0 everywhere
+        // Valley ground — dips in center, higher on sides
+        const bowlStr = 0.04;
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const camH = 0.15;  // camera near ground level
-        const projY = (wz) => edgeY + camH * focal / wz;
+        const camH = 0.15;
+        const projY = (wz, wx) => edgeY + (camH - (wx !== undefined ? bowlStr * wx * wx : 0)) * focal / wz;
 
         // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = 0.05, zFar = 50, zSlices = 30;
@@ -2343,15 +2344,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Project to screen
             const scrX = projX(jx, jz);
-            const scrY = projY(jz);
+            const scrY = projY(jz, jx);
             if (scrY < edgeY - 5) continue;
 
             const size = 2.5 * focal / jz;
 
+            // Swords lean outward following valley slope
+            const slopeLean = 2 * bowlStr * jx;
 
-            // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
+            // Random lean: -22.5° to +22.5° + slope
             let lh = (swordIdx * 2654435761 + 505) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x45d9f3b); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8);
+            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8) + slopeLean;
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
