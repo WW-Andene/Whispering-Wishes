@@ -2291,21 +2291,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === 3D CURVED GROUND — convex hill bulging toward viewer ===
+        // === 3D CURVED GROUND — concave bowl curving away from viewer ===
         {
           const horizonY = H * 0.55;
           const groundSegments = 80;
 
-          // Draw the curved ground shape — convex arc bulging outward
+          // Draw concave ground shape — edges rise up, center dips down
           ctx.beginPath();
-          ctx.moveTo(0, H);
           for (let i = 0; i <= groundSegments; i++) {
             const t = i / groundSegments;
             const x = t * W;
-            // Convex curve: highest (closest to horizon) at center, drops at edges
             const curve = Math.sin(t * Math.PI); // 0 at edges, 1 at center
-            const edgeDrop = H * 0.08; // how much edges sag below horizon
-            const y = horizonY + edgeDrop - edgeDrop * curve * 1.3;
+            const dip = H * 0.1; // how much center sinks below edge horizon
+            const y = horizonY - dip * 0.3 + dip * curve;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
           }
@@ -2323,15 +2321,15 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillStyle = gFill;
           ctx.fill();
 
-          // Rim light along the curved horizon edge — warm glow from sun
+          // Rim light along curved edge — warm sun glow
           ctx.save();
           ctx.beginPath();
           for (let i = 0; i <= groundSegments; i++) {
             const t = i / groundSegments;
             const x = t * W;
             const curve = Math.sin(t * Math.PI);
-            const edgeDrop = H * 0.08;
-            const y = horizonY + edgeDrop - edgeDrop * curve * 1.3;
+            const dip = H * 0.1;
+            const y = horizonY - dip * 0.3 + dip * curve;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
           }
@@ -2342,13 +2340,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.stroke();
           ctx.restore();
 
-          // Subtle 3D shading — radial highlight at center top of mound
-          const moundX = W * 0.5, moundY = horizonY + H * 0.02;
-          const moundGlow = ctx.createRadialGradient(moundX, moundY, 0, moundX, moundY, W * 0.35);
-          moundGlow.addColorStop(0, 'rgba(120,70,35,0.3)');
-          moundGlow.addColorStop(0.4, 'rgba(80,45,20,0.12)');
-          moundGlow.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = moundGlow;
+          // Inner shadow at the bowl center for depth
+          const bowlX = W * 0.5, bowlY = horizonY + H * 0.06;
+          const bowlShadow = ctx.createRadialGradient(bowlX, bowlY, 0, bowlX, bowlY, W * 0.35);
+          bowlShadow.addColorStop(0, 'rgba(10,5,2,0.3)');
+          bowlShadow.addColorStop(0.5, 'rgba(20,12,6,0.12)');
+          bowlShadow.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = bowlShadow;
           ctx.fill();
         }
 
