@@ -2405,7 +2405,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.closePath();
           ctx.fill();
           // Guard — varies per sword
-          const guardType = ((s.idx * 2654435761 + 300) >>> 0) % 5;
+          const guardType = ((s.idx * 2654435761 + 300) >>> 0) % 4;
           ctx.beginPath();
           if (guardType === 1) {
             // Tapered — wider at ends, narrow in middle, spans 0 to guardH
@@ -2425,14 +2425,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
             ctx.closePath();
           } else if (guardType === 3) {
-            // Curved up — flat ends, spans 0 to guardH
-            ctx.moveTo(-guardW / 2, guardH);
-            ctx.lineTo(-guardW / 2, 0);
-            ctx.quadraticCurveTo(0, -guardH * 2, guardW / 2, 0);
-            ctx.lineTo(guardW / 2, guardH);
-            ctx.quadraticCurveTo(0, -guardH, -guardW / 2, guardH);
-            ctx.closePath();
-          } else if (guardType === 4) {
             // Three segmented — center block + two end blocks
             const segW = guardW * 0.12;
             const segH = guardH * 1.5;
