@@ -2298,7 +2298,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // 3D ground surface: concave bowl (center dips, edges rise to horizon)
         // Circular arc cross-section — smooth curve
         const bowlRadius = 50; // world-space half-width of bowl (much larger than screen)
-        const bowlDepth = 0.18; // max depth at center
+        const bowlDepth = 0.02; // very subtle dip — nearly flat ground
         const groundWY = (wx) => {
           const r2 = wx * wx;
           const R2 = bowlRadius * bowlRadius;
@@ -2312,7 +2312,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const projY = (wy, wz) => edgeY + wy * focal / wz;
 
         // --- Draw ground as 3D projected strips (back-to-front) ---
-        const zNear = 0.04, zFar = 80, zSlices = 30;
+        const zNear = 0.5, zFar = 80, zSlices = 30;
         const xSteps = 40;
 
         // Dark base fill below horizon
@@ -2353,8 +2353,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         }
 
         // --- SWORDS: large grid, only generate what's on screen ---
-        const swordSpacing = 0.12;
-        const maxSwords = 600;
+        const swordSpacing = 0.35;
+        const maxSwords = 400;
         const swords = [];
         let swordIdx = 0;
 
@@ -2378,7 +2378,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Place sword ON the 3D ground surface
             const wy = groundWY(jx);
             const scrY = projY(wy, jz);
-            const size = Math.min(H * 0.6125, 3.0 * focal / jz);
+            const size = Math.min(H * 0.15, 3.0 * focal / jz);
 
             if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) continue;
 
