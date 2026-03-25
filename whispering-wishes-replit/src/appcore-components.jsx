@@ -2295,16 +2295,10 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
 
-        // Flat ground with fisheye lens distortion
-        const fishK = 0.3;  // fisheye strength
+        // Flat ground — no bowl, wy = 0 everywhere
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const camH = 0.15;
+        const camH = 0.15;  // camera near ground level
         const projY = (wz) => edgeY + camH * focal / wz;
-        // Apply fisheye: push screen Y down based on distance from center X
-        const fisheye = (sx, sy) => {
-          const dx = (sx - W * 0.5) / (W * 0.5);  // -1 to 1
-          return sy + dx * dx * fishK * (sy - edgeY);
-        };
 
         // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = 0.05, zFar = 50, zSlices = 30;
@@ -2347,21 +2341,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             bx += cellSpacingX;
             if (jz < 0.3) continue;
 
-            // Project to screen + fisheye
+            // Project to screen
             const scrX = projX(jx, jz);
-            const rawY = projY(jz);
-            const scrY = fisheye(scrX, rawY);
+            const scrY = projY(jz);
             if (scrY < edgeY - 5) continue;
 
             const size = 2.5 * focal / jz;
 
-            // Fisheye lens lean — swords follow the distortion curve
-            const dx = (scrX - W * 0.5) / (W * 0.5);
-            const fishLean = dx * fishK * 0.5;
 
-            // Random lean: -22.5° to +22.5° + fisheye lean
+            // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
             let lh = (swordIdx * 2654435761 + 505) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x45d9f3b); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8) + fishLean;
+            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI / 8);
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
