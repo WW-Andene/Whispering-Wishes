@@ -2393,14 +2393,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
           // Grip — curves inward by 1/5 gripW each side before pommel
-          const gripCurve = gripW / 5;
+          const gripNarrow = gripW / 5;
+          const curveStart = guardH + gripH * 0.5;       // curve begins halfway down grip
+          const gripBot = guardH + gripH;
           ctx.beginPath();
           ctx.moveTo(-gripW / 2, guardH);                                    // top-left
-          ctx.lineTo(-gripW / 2, guardH + gripH - gripCurve);               // left side straight
-          ctx.quadraticCurveTo(-gripW / 2 + gripCurve, guardH + gripH,      // curve inward left
-                                0, guardH + gripH);                          // center bottom
-          ctx.quadraticCurveTo(gripW / 2 - gripCurve, guardH + gripH,       // curve inward right
-                                gripW / 2, guardH + gripH - gripCurve);     // back to straight
+          ctx.lineTo(-gripW / 2, curveStart);                                // left side straight
+          ctx.quadraticCurveTo(-gripW / 2, gripBot,                          // control: keep left edge
+                                -gripW / 2 + gripNarrow, gripBot);          // end: narrowed bottom-left
+          ctx.lineTo(gripW / 2 - gripNarrow, gripBot);                      // bottom edge (narrowed)
+          ctx.quadraticCurveTo(gripW / 2, gripBot,                           // control: keep right edge
+                                gripW / 2, curveStart);                      // end: back to full width
           ctx.lineTo(gripW / 2, guardH);                                     // right side up
           ctx.closePath();
           ctx.fill();
