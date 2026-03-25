@@ -3943,7 +3943,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
               const scrX = W * 0.5 + wx * focal / wzJ;
               const scrY = hY + (camH - wy) * focal / wzJ;
-              const appSize = 3.5 * focal / wzJ;
+              const appSize = 2.0 * focal / wzJ;
 
               // Skip if off screen
               if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2) { swordIdx++; continue; }
