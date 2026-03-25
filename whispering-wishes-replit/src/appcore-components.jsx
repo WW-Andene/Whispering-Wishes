@@ -2242,7 +2242,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
-    const sceneSeed = 72518;
+    const sceneSeed = 19483;
 
     let lastFrame = 0;
 
