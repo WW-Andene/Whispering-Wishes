@@ -2344,13 +2344,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             bx += cellSpacingX;
             if (jz - camZ < 0.01) continue;  // skip swords behind camera
 
-            // Gradual clearing around camera — probability increases with distance
-            const dx = jx, dz = jz - camZ;
-            const dist = Math.sqrt(dx * dx + dz * dz);
-            const clearR = 3;  // clearing radius
-            const spawnChance = Math.min(1, dist / clearR);
-            if (ihash(swordIdx, sceneSeed + 999) > spawnChance * spawnChance) continue;
-
             // Project to screen
             const scrX = projX(jx, jz);
             const scrY = projY(jz);
