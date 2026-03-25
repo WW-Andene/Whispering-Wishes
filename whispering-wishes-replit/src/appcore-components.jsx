@@ -2571,7 +2571,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // === 3D PERSPECTIVE SETUP ===
         const focal = W * 0.7;
         const camH = 0.3;
-        const horizonY = H * 0.18; // very low camera, ground-hugging — horizon near top
+        const horizonY = H * 0.68; // original ground-hugging camera
 
         // === GROUND PLANE — perspective projected grid ===
         {
