@@ -2291,29 +2291,63 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === CONCAVE GROUND ===
-        const edgeY = H * 0.7;
-        const dipY = H * 0.8;
-        {
+        // === 3D CONCAVE GROUND + SWORDS (unified surface) ===
+        const edgeY = H * 0.7; // horizon line
+        const focal = W * 0.7;
+
+        // 3D ground surface: parabolic valley cross-section
+        // wy = depth below horizon at world-space x position
+        // Center (wx=0) is deepest, edges rise to horizon
+        const valleyDepth = 0.15;
+        const valleyCurve = 0.5;
+        const groundWY = (wx) => Math.max(0, valleyDepth - valleyCurve * wx * wx);
+
+        // 3D projection helpers
+        const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
+        const projY = (wy, wz) => edgeY + wy * focal / wz;
+
+        // --- Draw ground as 3D projected strips (back-to-front) ---
+        const zNear = 0.04, zFar = 80, zSlices = 30;
+        const xSteps = 40;
+
+        // Dark base fill below horizon
+        ctx.fillStyle = 'rgb(18,10,6)';
+        ctx.fillRect(0, edgeY, W, H - edgeY);
+
+        for (let i = zSlices - 1; i >= 0; i--) {
+          const t0 = i / zSlices, t1 = (i + 1) / zSlices;
+          const wz0 = zNear * Math.pow(zFar / zNear, t0); // near edge of strip
+          const wz1 = zNear * Math.pow(zFar / zNear, t1); // far edge of strip
+
           ctx.beginPath();
-          ctx.moveTo(0, edgeY);
-          ctx.quadraticCurveTo(W * 0.5, dipY, W, edgeY);
-          ctx.lineTo(W, H);
-          ctx.lineTo(0, H);
+          // Far edge (top of strip) left to right
+          for (let j = 0; j <= xSteps; j++) {
+            const sx = W * j / xSteps;
+            const wx = (sx - W * 0.5) * wz1 / focal;
+            const wy = groundWY(wx);
+            const sy = projY(wy, wz1);
+            if (j === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+          }
+          // Near edge (bottom of strip) right to left
+          for (let j = xSteps; j >= 0; j--) {
+            const sx = W * j / xSteps;
+            const wx = (sx - W * 0.5) * wz0 / focal;
+            const wy = groundWY(wx);
+            const sy = projY(wy, wz0);
+            ctx.lineTo(sx, sy);
+          }
           ctx.closePath();
-          const gFill = ctx.createLinearGradient(0, edgeY, 0, H);
-          gFill.addColorStop(0, 'rgb(90,55,32)');
-          gFill.addColorStop(0.15, 'rgb(65,40,22)');
-          gFill.addColorStop(0.4, 'rgb(45,28,16)');
-          gFill.addColorStop(0.7, 'rgb(30,18,10)');
-          gFill.addColorStop(1, 'rgb(18,10,6)');
-          ctx.fillStyle = gFill;
+
+          // Depth-based color: lighter near, darker far
+          const depthT = Math.pow(t0, 0.6);
+          const r = Math.round(90 - 72 * depthT);
+          const g = Math.round(55 - 45 * depthT);
+          const b = Math.round(32 - 26 * depthT);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
           ctx.fill();
         }
 
-        // === SWORDS — ground-level camera, stuck in curved ground, pommels toward sun ===
-        const focal = W * 0.7;
-        const camH = 0.05; // ground-level camera
+        // --- SWORDS on the same 3D surface ---
         const gridZmin = 0.04, gridZmax = 60;
         const maxSwords = 500;
         const swords = [];
@@ -2325,16 +2359,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
             const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
             const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
-            if (wz < 0.1) { swordIdx++; continue; }
+            if (wz < 0.02) { swordIdx++; continue; }
 
-            const scrX = W * 0.5 + wx * focal / wz;
+            const scrX = projX(wx, wz);
             if (scrX < -W * 0.3 || scrX > W * 1.3) { swordIdx++; continue; }
 
-            // Flat perspective Y + curve offset
-            const flatY = edgeY + camH * focal / wz;
-            const xt = Math.max(0, Math.min(1, scrX / W));
-            const curveOffset = (1 - xt) * (1 - xt) * edgeY + 2 * (1 - xt) * xt * dipY + xt * xt * edgeY - edgeY;
-            const scrY = flatY + curveOffset;
+            // Place sword ON the 3D ground surface
+            const wy = groundWY(wx);
+            const scrY = projY(wy, wz);
             const size = Math.min(H * 0.6125, 3.0 * focal / wz);
 
             if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) { swordIdx++; continue; }
