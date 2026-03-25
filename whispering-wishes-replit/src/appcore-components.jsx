@@ -2467,7 +2467,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           } else {
             // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
             const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
-            const fanTopW = bladeW * 1.2;   // half-width at top (wide)
+            const fanTopW = bladeW * 0.8;   // half-width at top
             const fanH = pomDia;
             ctx.moveTo(-fanBotW, gripBot);  // flat bottom-left (grip connection)
             ctx.lineTo(fanBotW, gripBot);   // flat bottom-right
@@ -2475,7 +2475,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.quadraticCurveTo(fanBotW * 0.5, gripBot + fanH * 0.5,
                                   fanTopW, gripBot + fanH);
             // Top — curves outward (away from grip)
-            ctx.quadraticCurveTo(0, gripBot + fanH + fanH * 0.35,
+            ctx.quadraticCurveTo(0, gripBot + fanH + fanH * 0.5,
                                   -fanTopW, gripBot + fanH);
             // Left side — curves inward
             ctx.quadraticCurveTo(-fanBotW * 0.5, gripBot + fanH * 0.5,
