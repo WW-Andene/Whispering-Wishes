@@ -2424,24 +2424,35 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.scale(1, -1);
           ctx.rotate(-s.lean);
 
-          ctx.fillStyle = 'rgb(10,6,4)';
+          const darkSide = 'rgb(10,6,4)';
+          const lightSide = 'rgb(30,20,14)';
 
-          // Blade — curved tip taper (overlap 1px into guard to avoid gaps)
+          // Blade — split into left (dark) and right (light) halves
           const tipEnd = -bladeH + pomDia * 2;
-          const ov = 1; // overlap pixels
+          const ov = 1;
+          // Left half (dark)
+          ctx.fillStyle = darkSide;
           ctx.beginPath();
-          ctx.moveTo(0, -bladeH);                            // sharp tip point
+          ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
                             -bladeW * 0.5, tipEnd - pomDia,
                             -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, ov);                       // overlap into guard
-          ctx.lineTo(bladeW / 2, ov);
-          ctx.lineTo(bladeW / 2, tipEnd);
-          ctx.bezierCurveTo(bladeW * 0.5, tipEnd - pomDia,
-                            bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            0, -bladeH);
+          ctx.lineTo(-bladeW / 2, ov);
+          ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
+          // Right half (light)
+          ctx.fillStyle = lightSide;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
+                            bladeW * 0.5, tipEnd - pomDia,
+                            bladeW / 2, tipEnd);
+          ctx.lineTo(bladeW / 2, ov);
+          ctx.lineTo(0, ov);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = darkSide;
           // Guard — varies per sword
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
