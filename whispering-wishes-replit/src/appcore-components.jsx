@@ -2338,20 +2338,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const worldX = (cx + px) * flowScale + seed * 0.01;
             const worldY = (cy + py) * flowScale + seed * 0.007;
 
-            // Curl flow at this point — divergence-free swirl
-            const [fx, fy] = curlFlow(worldX + time * 0.015, worldY + time * 0.012);
-            px += fx * noiseAmt * 2.5;
-            py += fy * noiseAmt * 2.5;
+            // Gentle curl flow — slow, smooth deformation
+            const [fx, fy] = curlFlow(worldX + time * 0.004, worldY + time * 0.003);
+            px += fx * noiseAmt * 1.2;
+            py += fy * noiseAmt * 1.2;
 
-            // Second advection pass at higher frequency for detail
-            const [fx2, fy2] = curlFlow(worldX * 3.1 + time * 0.025, worldY * 2.9 - time * 0.02);
-            px += fx2 * noiseAmt * 0.8;
-            py += fy2 * noiseAmt * 0.8;
+            // Second pass — medium detail
+            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.006, worldY * 2.3 - time * 0.005);
+            px += fx2 * noiseAmt * 0.4;
+            py += fy2 * noiseAmt * 0.4;
 
-            // Third pass — fine wispy detail, stronger on smaller clouds
-            const [fx3, fy3] = curlFlow(worldX * 7 - time * 0.03, worldY * 6.5 + time * 0.018);
-            px += fx3 * noiseAmt * 0.3 * (1 + (1 - sizeClass) * 2);
-            py += fy3 * noiseAmt * 0.3 * (1 + (1 - sizeClass) * 2);
+            // Fine detail — subtle, stronger on small clouds
+            const [fx3, fy3] = curlFlow(worldX * 5 - time * 0.008, worldY * 4.5 + time * 0.005);
+            px += fx3 * noiseAmt * 0.15 * (1 + (1 - sizeClass));
+            py += fy3 * noiseAmt * 0.15 * (1 + (1 - sizeClass));
 
             if (i === 0) ctx.moveTo(px, py);
             else ctx.lineTo(px, py);
@@ -2372,12 +2372,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             let py = Math.sin(a) * baseR * 0.45;
             const worldX = (cx + px) * 0.02 + seed * 0.01;
             const worldY = (cy + py) * 0.02 + seed * 0.007;
-            const [fx, fy] = curlFlow(worldX + time * 0.015, worldY + time * 0.012);
-            px += fx * noiseAmt * 1.8;
-            py += fy * noiseAmt * 1.8;
-            const [fx2, fy2] = curlFlow(worldX * 3.1 + time * 0.025, worldY * 2.9 - time * 0.02);
-            px += fx2 * noiseAmt * 0.5;
-            py += fy2 * noiseAmt * 0.5;
+            const [fx, fy] = curlFlow(worldX + time * 0.004, worldY + time * 0.003);
+            px += fx * noiseAmt * 0.9;
+            py += fy * noiseAmt * 0.9;
+            const [fx2, fy2] = curlFlow(worldX * 2.5 + time * 0.006, worldY * 2.3 - time * 0.005);
+            px += fx2 * noiseAmt * 0.3;
+            py += fy2 * noiseAmt * 0.3;
             if (i === 0) ctx.moveTo(px, py);
             else ctx.lineTo(px, py);
           }
@@ -2393,7 +2393,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Multiple swirl lanes at slightly different speeds
         ctx.save();
         const numSwirls = 4;
-        const swirlSpeeds = [0.25, 0.18, 0.13, 0.09];
+        const swirlSpeeds = [0.06, 0.045, 0.035, 0.025];
         const swirlOffsets = [0, 1.2, 2.7, 4.1];
 
         for (let sw = 0; sw < numSwirls; sw++) {
