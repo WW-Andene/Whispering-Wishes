@@ -2299,11 +2299,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const bowlK = 0.03;
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
         const camH = 0.15;
-        // Ground rises on sides — based on view angle so curve is uniform at all depths
-        const projY = (wz, wx) => {
-          const angle = (wx || 0) / wz;
-          return edgeY + camH * focal / wz - bowlK * angle * angle * focal;
-        };
+        // Ground rises on sides: wy = bowlK * wx². projY subtracts it so sides go UP on screen.
+        const projY = (wz, wx) => edgeY + (camH - bowlK * (wx || 0) * (wx || 0)) * focal / wz;
 
         // --- Draw curved ground strips (back-to-front) ---
         const zNear = 0.05, zFar = 50, zSlices = 30;
@@ -2371,7 +2368,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
 
             // Surface normal lean — swords follow concave ground INWARD
-            const surfaceLean = -2 * bowlK * (jx / jz);
+            const surfaceLean = -2 * bowlK * jx;
 
             // Random lean: -22.5° to +22.5° + surface normal
             let lh = (swordIdx * 2654435761 + 505) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x45d9f3b); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
