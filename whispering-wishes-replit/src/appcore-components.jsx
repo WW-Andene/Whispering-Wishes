@@ -2377,13 +2377,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const pomRy = pomDia / 2;            // height stays constant
 
           ctx.save();
-          // Shift sword down so blade is in the ground, clip at ground level
+          // Flip sword so blade points down into ground, hilt sticks up
           const buried = bladeH * 0.35;
           ctx.beginPath();
-          ctx.rect(0, 0, W, s.scrY);
+          ctx.rect(0, 0, W, H);
           ctx.clip();
-          ctx.translate(s.scrX, s.scrY + buried);
-          ctx.rotate(s.lean);
+          ctx.translate(s.scrX, s.scrY - buried);
+          ctx.scale(1, -1);
+          ctx.rotate(-s.lean);
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
