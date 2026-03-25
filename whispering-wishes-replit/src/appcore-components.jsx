@@ -2917,6 +2917,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           { name: 'arming',      bladeP: 0.70, guardP: 0.018, gripP: 0.20, bwM: 0.90, gwM: 1.35, tipS: 0, pomM: 0.95, hM: 0.92, wM: 0.93, bladeMat: 'steel',    handleMat: 'bone' },
           { name: 'bastard',     bladeP: 0.70, guardP: 0.022, gripP: 0.23, bwM: 1.05, gwM: 1.6,  tipS: 0, pomM: 1.1,  hM: 1.08, wM: 1.03, bladeMat: 'darkIron', handleMat: 'wood' },
           { name: 'falchion',    bladeP: 0.73, guardP: 0.015, gripP: 0.19, bwM: 1.10, gwM: 1.1,  tipS: 1, pomM: 0.85, hM: 0.94, wM: 1.06, bladeMat: 'bronze',   handleMat: 'wood' },
+          { name: 'spear',       bladeP: 0.18, guardP: 0.01,  gripP: 0.78, bwM: 1.6,  gwM: 0.8,  tipS: 0, pomM: 0.4,  hM: 1.4,  wM: 0.7,  bladeMat: 'steel',    handleMat: 'wood' },
         ];
 
         // 3D lighting calculation
@@ -3979,6 +3980,21 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               wx: s.wx, wy: s.wy, wz: s.wz, darkness: s.darkness
             });
           }
+        }
+
+        // --- FLOATING SPEAR ---
+        {
+          const spearType = weaponTypes.find(t => t.name === 'spear');
+          const spearH = H * 0.85;
+          const spearBw = spearH * 0.02;
+          const spearX = W * 0.5;
+          const spearY = H * 0.55;
+          const spearBob = Math.sin(time * 1.2) * 8;
+          const spearTilt = 12 + Math.sin(time * 0.7) * 3;
+          drawWeapon(spearX, spearY + spearBob, spearH, spearBw, spearTilt, {
+            type: spearType, zRot: 0, irr: {},
+            wx: 0, wy: 0, wz: 0.1, darkness: 0
+          });
         }
 
         // --- EMBERS ---
