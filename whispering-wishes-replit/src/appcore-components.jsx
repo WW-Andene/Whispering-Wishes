@@ -2300,7 +2300,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const projY = (wz) => edgeY + focal / wz;
 
         // --- Draw flat ground as depth strips (back-to-front) ---
-        const zNear = 0.3, zFar = 100, zSlices = 30;
+        const zNear = 0.3, zFar = 50, zSlices = 30;
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2323,13 +2323,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillRect(0, sy1, W, sy0 - sy1 + 1);
         }
 
-        // --- 500 SWORDS spread equally on 100m × 100m plane ---
-        // 500 swords in ~22×23 grid → spacing ≈ 100/22 ≈ 4.5m
-        const planeSize = 100; // 100m × 100m
-        const gridCols = 22;
-        const gridRows = 23;
-        const spacingX = planeSize / gridCols;
-        const spacingZ = planeSize / gridRows;
+        // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
+        const planeSize = 50;
+        const spacing = 2;
+        const gridCols = Math.floor(planeSize / spacing);
+        const gridRows = Math.floor(planeSize / spacing);
+        const spacingX = spacing;
+        const spacingZ = spacing;
         const swords = [];
         let swordIdx = 0;
 
@@ -2351,7 +2351,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const scrY = projY(jz);
             if (scrY < edgeY - 5 || scrY > H + 30) continue;
 
-            const size = Math.min(H * 0.18, 2.5 * focal / jz);
+            const size = 2.5 * focal / jz;
             if (size < 1.5) continue;
 
             // Pommel points toward sun
