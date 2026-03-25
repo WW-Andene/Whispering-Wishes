@@ -2388,19 +2388,20 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Blade — curved tip taper
+          // Blade — curved tip taper (overlap 1px into guard to avoid gaps)
           const tipEnd = -bladeH + pomDia * 2;
+          const ov = 1; // overlap pixels
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);                            // sharp tip point
-          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,  // cp1: angled from tip
-                            -bladeW * 0.5, tipEnd - pomDia,       // cp2: convex bulge
-                            -bladeW / 2, tipEnd);                  // end: full width
-          ctx.lineTo(-bladeW / 2, 0);                        // bottom-left
-          ctx.lineTo(bladeW / 2, 0);                         // bottom-right
-          ctx.lineTo(bladeW / 2, tipEnd);                    // right full width
-          ctx.bezierCurveTo(bladeW * 0.5, tipEnd - pomDia,        // cp2: convex bulge
-                            bladeW * 0.25, -bladeH + pomDia * 0.5, // cp1: angled to tip
-                            0, -bladeH);                           // back to sharp tip
+          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
+                            -bladeW * 0.5, tipEnd - pomDia,
+                            -bladeW / 2, tipEnd);
+          ctx.lineTo(-bladeW / 2, ov);                       // overlap into guard
+          ctx.lineTo(bladeW / 2, ov);
+          ctx.lineTo(bladeW / 2, tipEnd);
+          ctx.bezierCurveTo(bladeW * 0.5, tipEnd - pomDia,
+                            bladeW * 0.25, -bladeH + pomDia * 0.5,
+                            0, -bladeH);
           ctx.closePath();
           ctx.fill();
           // Guard — varies per sword
@@ -2445,9 +2446,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           }
           ctx.fill();
-          // Grip — straight rectangle
+          // Grip — straight rectangle (overlap into guard and pommel)
           const gripBot = guardH + gripH;
-          ctx.fillRect(-gripW / 2, guardH, gripW, gripH);
+          ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
           const pommelType = s.idx % 3;
           ctx.beginPath();
