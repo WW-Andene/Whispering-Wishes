@@ -2303,7 +2303,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const projY = (wz) => edgeY + camH * focal / (wz - camZ);
 
         // Ground curve — horizon dips at edges
-        const curveStr = H * 0.06;
+        const curveStr = H * 0.08;
         const curveY = (sx, sy) => sy - curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
 
         // --- Draw curved ground strips ---
