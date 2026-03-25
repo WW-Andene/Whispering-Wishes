@@ -2363,16 +2363,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
-          // Overall 96.5cm: blade 70, guard ~0.5, hilt 26 (grip 21.6 + pommel 4.4)
+          // Overall 114.7cm: blade 90.3, guard ~1, grip 18.4, pommel ~5
           const overall = s.size;
-          const bladeH = overall * (70 / 96.5);
-          const guardH = overall * (0.5 / 96.5);
-          const pomDia = overall * (4.4 / 96.5);
+          const bladeH = overall * (90.3 / 114.7);
+          const guardH = overall * (1.0 / 114.7);
+          const pomDia = overall * (5.0 / 114.7);
           const pomR = pomDia / 2;
-          const gripH = overall * (26 / 96.5) - pomDia;
+          const gripH = overall * (18.4 / 114.7);
           const mod = bladeH / 8;
-          const bladeW = mod * 0.503 * s.yRot;       // 4.4 cm
-          const guardW = mod * 2.0 * s.yRot;         // 17.5 cm
+          const bladeW = mod * 0.434 * s.yRot;       // 4.9 cm
+          const guardW = mod * 1.772 * s.yRot;       // ~20 cm
           const gripW = bladeW / 3;
 
           ctx.save();
