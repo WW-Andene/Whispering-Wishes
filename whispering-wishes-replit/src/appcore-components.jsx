@@ -2325,30 +2325,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
-        const spacing = 2;
-        const gridCols = Math.floor(planeSize / spacing);
-        const gridRows = Math.floor(planeSize / spacing);
-        const spacingX = spacing;
-        const spacingZ = spacing;
+        const baseSpacing = 1;
         const swords = [];
         let swordIdx = 0;
 
-        for (let row = 0; row < gridRows; row++) {
-          for (let col = 0; col < gridCols; col++) {
-            const baseX = (col - gridCols / 2 + 0.5) * spacingX;
-            const baseZ = (row + 0.5) * spacingZ;
-
-            // Jitter for natural look
-            const jx = baseX + (rng(swordIdx, 101) - 0.5) * spacingX * 0.5;
-            const jz = baseZ + (rng(swordIdx, 100) - 0.5) * spacingZ * 0.4;
-            // Small spread variation — some swords drift slightly closer together
-            const clusterSeed = rng(swordIdx, 303);
-            const clusterShift = clusterSeed < 0.3 ? (rng(swordIdx, 404) - 0.5) * spacingX * 0.25 : 0;
+        // Walk the grid with per-sword spacing variation (0.5 to 2)
+        for (let bz = baseSpacing * 0.5; bz < planeSize; ) {
+          const rowSpacingZ = 0.5 + rng(swordIdx + 7000, 77) * 1.5; // 0.5–2
+          for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
+            const cellSpacingX = 0.5 + rng(swordIdx + 8000, 88) * 1.5; // 0.5–2
+            const jx = bx + (rng(swordIdx, 101) - 0.5) * cellSpacingX * 0.3;
+            const jz = bz + (rng(swordIdx, 100) - 0.5) * rowSpacingZ * 0.3;
             swordIdx++;
+            bx += cellSpacingX;
             if (jz < 0.3) continue;
 
             // Project and cull to screen
-            const scrX = projX(jx + clusterShift, jz);
+            const scrX = projX(jx, jz);
             if (scrX < -30 || scrX > W + 30) continue;
 
             const scrY = projY(jz);
@@ -2362,6 +2355,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             swords.push({ scrX, scrY, size, lean, wz: jz, shuffle: rng(swordIdx, 200) });
           }
+          bz += rowSpacingZ;
         }
 
         // Sort back-to-front
