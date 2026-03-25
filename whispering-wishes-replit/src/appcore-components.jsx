@@ -2399,7 +2399,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         for (let sw = 0; sw < numSwirls; sw++) {
           const swirlSpeed = swirlSpeeds[sw];
           const swirlOff = swirlOffsets[sw];
-          const numClusters = 5 + sw * 2;
+          const numClusters = Math.ceil((5 + sw * 2) / 3);
 
           for (let cl = 0; cl < numClusters; cl++) {
             const clSeed = sw * 1000 + cl * 137;
@@ -2409,7 +2409,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const clAngle = clAngleBase + time * clOrbitSpeed;
 
             // Big parent cloud
-            const bigR = (35 + hash(clSeed) * 55);
+            const bigR = (35 + hash(clSeed) * 55) / 3;
             const bigX = sunX + Math.cos(clAngle) * clDist;
             const bigY = sunY + Math.sin(clAngle) * clDist * 0.5;
             const tangent = clAngle + Math.PI / 2;
@@ -2418,7 +2418,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             drawCloud(bigX, bigY, bigR, bigStretch, clSeed, bigAlpha, tangent, 1.0);
 
             // Medium children — stay close to parent
-            const numMed = 2 + Math.floor(hash(clSeed + 20) * 3);
+            const numMed = 1 + Math.floor(hash(clSeed + 20) * 1);
             for (let m = 0; m < numMed; m++) {
               const mSeed = clSeed + m * 31 + 200;
               const mAngleOff = (hash(mSeed) - 0.5) * 1.2;
@@ -2432,7 +2432,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               drawCloud(mx, my, mR, mStretch, mSeed, mAlpha, tangent + mAngleOff * 0.3, 0.5);
 
               // Small wisps — detach further, thinner, more ragged
-              const numSmall = 1 + Math.floor(hash(mSeed + 30) * 3);
+              const numSmall = Math.floor(hash(mSeed + 30) * 2);
               for (let s = 0; s < numSmall; s++) {
                 const sSeed = mSeed + s * 47 + 400;
                 const sAngleOff = (hash(sSeed) - 0.5) * 2.5; // more scattered
