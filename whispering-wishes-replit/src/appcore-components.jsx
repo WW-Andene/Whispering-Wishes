@@ -2297,7 +2297,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
-        const camZ = 5;  // camera position in the field
+        const camZ = 8;  // camera position in the field
         const camH = 0.15;
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz) => edgeY + camH * focal / (wz - camZ);
