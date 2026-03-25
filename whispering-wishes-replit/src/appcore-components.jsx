@@ -2344,19 +2344,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             bx += cellSpacingX;
             if (jz - camZ < 0.01) continue;  // skip swords behind camera
 
-            // Teardrop clearing with gradient edge
+            // Messy path clearing — empty in center, normal on edges
             const dz = jz - camZ;
-            const maxDz = 6;
-            if (dz > 0 && dz < maxDz) {
-              const t = dz / maxDz;
-              const shape = Math.sin(Math.PI * t);
-              const innerR = 0.5 * shape;
-              const outerR = 1.3 * shape;
+            if (dz > 0.3) {
+              const pathW = 0.8 * Math.min(1, dz / 3);   // path widens slightly with depth
+              const fadeW = 1.2 * Math.min(1, dz / 3);   // gradient edge
               const ax = Math.abs(jx);
-              if (ax < innerR) continue;
-              if (ax < outerR) {
-                const grad = (ax - innerR) / (outerR - innerR);
-                if (ihash(swordIdx, sceneSeed + 999) > grad * grad) continue;
+              // Jitter the edge per-sword for messy look
+              const jitter = (ihash(swordIdx, sceneSeed + 888) - 0.5) * 0.6;
+              const effectiveX = ax + jitter;
+              if (effectiveX < pathW) continue;
+              if (effectiveX < pathW + fadeW) {
+                const grad = (effectiveX - pathW) / fadeW;
+                if (ihash(swordIdx, sceneSeed + 999) > grad) continue;
               }
             }
 
