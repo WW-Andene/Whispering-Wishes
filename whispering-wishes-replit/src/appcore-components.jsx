@@ -2377,16 +2377,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fillStyle = 'rgb(10,6,4)';
 
           // Full sword standing upright — blade on top, handle below
-          // Blade with pointed tip
-          const tipH = mod;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH - tipH);                    // pointed tip
-          ctx.lineTo(-bladeW / 2, -bladeH);                 // top-left
-          ctx.lineTo(-bladeW / 2, 0);                       // bottom-left
-          ctx.lineTo(bladeW / 2, 0);                        // bottom-right
-          ctx.lineTo(bladeW / 2, -bladeH);                  // top-right
-          ctx.closePath();
-          ctx.fill();
+          // Blade
+          ctx.fillRect(-bladeW / 2, -bladeH, bladeW, bladeH);
           // Guard
           const guardH = mod * 0.15;
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
