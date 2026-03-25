@@ -3952,15 +3952,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const typeIdx = Math.floor(rng(swordIdx, 102) * weaponTypes.length);
               const wType = weaponTypes[typeIdx];
               const zRot = rng(swordIdx, 103) * Math.PI * 2;
-              const r1 = rng(swordIdx, 104), r2 = rng(swordIdx, 105), r3 = rng(swordIdx, 106);
-              // Some upright, some tilted, some nearly horizontal
-              const tiltStyle = r3 < 0.3 ? (r1 - 0.5) * 10 : r3 < 0.7 ? (r1 - 0.5) * 45 : (r1 - 0.5) * 80;
-              const lean = r3 < 0.3 ? (r2 - 0.5) * 8 : r3 < 0.7 ? (r2 - 0.5) * 30 : (r2 - 0.5) * 60;
+              const r1 = rng(swordIdx, 104), r2 = rng(swordIdx, 105), r3 = rng(swordIdx, 106), r4 = rng(swordIdx, 107);
+              // 5 angle styles for variety, moderate lean
+              const styles = [0, 8, -12, 18, -6, 25, -20, 14, -3, 10];
+              const baseTilt = styles[Math.floor(r3 * styles.length)] + (r1 - 0.5) * 16;
+              const lean = (r2 - 0.5) * 12;
               const distT = Math.min(1, wzJ / gridZmax);
               const darkness = distT * 0.6;
 
               swords.push({
-                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt: tiltStyle + lean, darkness,
+                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt: baseTilt + lean, darkness,
                 shuffle: rng(swordIdx, 200)
               });
               swordIdx++;
