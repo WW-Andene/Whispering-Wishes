@@ -2405,7 +2405,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.closePath();
           ctx.fill();
           // Guard — varies per sword
-          const guardType = s.idx % 5;
+          const guardType = Math.floor(rng(s.idx, 300) * 5);
           ctx.beginPath();
           if (guardType === 1) {
             // Tapered — wider at ends, narrow in middle
@@ -2450,7 +2450,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
-          const pommelType = s.idx % 3;
+          const pommelType = Math.floor(rng(s.idx, 400) * 3);
           ctx.beginPath();
           if (pommelType === 1) {
             // Circle
