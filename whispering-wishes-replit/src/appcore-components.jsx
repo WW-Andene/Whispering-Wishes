@@ -2302,8 +2302,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz) => edgeY + camH * focal / (wz - camZ);
 
-        // --- Draw flat ground as depth strips (back-to-front) ---
+        // Ground curve — horizon dips at edges
+        const curveStr = H * 0.06;
+        const curveY = (sx, sy) => sy + curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
+
+        // --- Draw curved ground strips ---
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
+        const xSegs = 12;
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2314,16 +2319,25 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
-          const sy0 = projY(wz0);
-          const sy1 = projY(wz1);
-
-          // Depth-based color: lighter near, darker far
           const depthT = Math.pow(t0, 0.6);
           const r = Math.round(90 - 72 * depthT);
           const g = Math.round(55 - 45 * depthT);
           const b = Math.round(32 - 26 * depthT);
           ctx.fillStyle = `rgb(${r},${g},${b})`;
-          ctx.fillRect(0, sy1, W, sy0 - sy1 + 1);
+
+          ctx.beginPath();
+          for (let j = 0; j <= xSegs; j++) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz1));
+            j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+          }
+          for (let j = xSegs; j >= 0; j--) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz0));
+            ctx.lineTo(sx, sy);
+          }
+          ctx.closePath();
+          ctx.fill();
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
@@ -2361,17 +2375,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               }
             }
 
-            // Project to screen
+            // Project to screen + ground curve
             const scrX = projX(jx, jz);
-            const scrY = projY(jz);
+            const scrY = curveY(scrX, projY(jz));
             if (scrX < -200 || scrX > W + 200 || scrY < -200 || scrY > H + 200) continue;
 
             const size = 2.5 * focal / (jz - camZ);
 
+            // Curve lean — swords follow the ground curve outward at edges
+            const curveLean = 2 * curveStr * (scrX - W * 0.5) / (W * 0.5 * W * 0.5) * 0.3;
 
-            // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
+            // Random lean + curve lean
             let lh = (swordIdx * 2654435761 + 3651) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
-            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180);
+            const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180) + curveLean;
 
             // Y-axis rotation — foreshortens width (cos of angle)
             const yRot = Math.cos((rng(swordIdx, 606) - 0.5) * 2 * (Math.PI / 3));
