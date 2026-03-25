@@ -2373,7 +2373,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const mod = bladeH / 8;
           const bladeW = mod * 0.434 * s.yRot;       // 4.9 cm
           const guardW = mod * 1.772 * s.yRot;       // ~20 cm
-          const gripW = bladeW / 3;
+          const gripW = bladeW * 2 / 3;
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
