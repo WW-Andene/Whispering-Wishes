@@ -2615,7 +2615,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.rotate(s.angle * Math.PI / 180);
 
           // Dark silhouette color
-          ctx.fillStyle = `rgba(10,6,4,${s.alpha})`;
+          ctx.fillStyle = 'rgb(10,6,4)';
 
           // Tip (pointing down, buried in ground)
           ctx.beginPath();
