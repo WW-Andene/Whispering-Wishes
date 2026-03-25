@@ -2406,13 +2406,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const overall = s.size;
           const bladeH = overall * (90.3 / 114.7);
           const mod = bladeH / 8;
-          const bladeW = mod * 0.434 * s.yRot;       // 4.9 cm
+          const bladeW = mod * 0.434;                  // 4.9 cm (transform handles rotation)
           const guardH = bladeW / 3;
-          const guardW = mod * 1.772 * s.yRot;       // ~20 cm
+          const guardW = mod * 1.772;                  // ~20 cm
           const gripW = bladeW * 2 / 3;
           const gripH = overall * (18.4 / 114.7);
           const pomDia = overall * (5.0 / 114.7);
-          const pomRx = pomDia / 2 * s.yRot;  // width scales with rotation
+          const pomRx = pomDia / 2;  // transform handles rotation
           const pomRy = pomDia / 2;            // height stays constant
 
           ctx.save();
@@ -2424,6 +2424,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.translate(s.scrX, s.scrY - buried);
           ctx.scale(1, -1);
           ctx.rotate(-s.lean);
+          // 3D Y-axis rotation — skew creates perspective effect
+          ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
           const darkSide = 'rgb(10,6,4)';
           const lightSide = 'rgb(30,20,14)';
