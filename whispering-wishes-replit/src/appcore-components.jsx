@@ -2314,7 +2314,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // === SWORDS — ground-level camera, stuck in curved ground, pommels toward sun ===
         const focal = W * 0.7;
         const camH = 0.05; // ground-level camera
-        const gridZmin = 0.3, gridZmax = 60;
+        const gridZmin = 3, gridZmax = 60;
         const maxSwords = 500;
         const swords = [];
         let swordIdx = 0;
@@ -2335,7 +2335,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const xt = Math.max(0, Math.min(1, scrX / W));
             const curveOffset = (1 - xt) * (1 - xt) * edgeY + 2 * (1 - xt) * xt * dipY + xt * xt * edgeY - edgeY;
             const scrY = flatY + curveOffset;
-            const size = 3.0 * focal / wz;
+            const size = Math.min(H * 0.12, 3.0 * focal / wz);
 
             if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) { swordIdx++; continue; }
 
