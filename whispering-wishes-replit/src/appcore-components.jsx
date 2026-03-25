@@ -2346,7 +2346,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Messy path clearing — empty in center, normal on edges
             const dz = jz - camZ;
-            const pathEnd = (planeSize - camZ) * 0.7;  // path ends at 70% depth
+            const pathEnd = (planeSize - camZ) * 0.4;  // path ends at 40% depth
             if (dz > 0.3 && dz < pathEnd) {
               const closeup = Math.min(1, dz / 3);
               const fadeout = 1 - Math.max(0, (dz - pathEnd + 3) / 3);  // fade out near end
