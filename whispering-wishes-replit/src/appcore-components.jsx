@@ -2372,7 +2372,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const guardW = mod * 1.772 * s.yRot;       // ~20 cm
           const gripW = bladeW * 2 / 3;
           const gripH = overall * (18.4 / 114.7);
-          const pomDia = overall * (5.0 / 114.7);
+          const pomDia = bladeW;     // pommel ≈ blade width, scales with yRot
           const pomR = pomDia / 2;
 
           ctx.save();
