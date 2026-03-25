@@ -2441,7 +2441,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
-          const pommelType = ((s.idx * 2246822519 >>> 0) ^ (s.idx * 16807 >>> 0)) % 2;
+          let ph = ((s.idx + 7) * 2246822519) >>> 0; ph = ((ph >> 16) ^ ph) * 0x45d9f3b >>> 0; ph = ((ph >> 16) ^ ph) >>> 0;
+          const pommelType = ph % 2;
           ctx.beginPath();
           if (pommelType === 1) {
             // Circle
