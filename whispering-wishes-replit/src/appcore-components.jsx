@@ -2351,25 +2351,24 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           for (let c = 0; c < cloudsPerArm; c++) {
             const t = (c + 0.3) / cloudsPerArm;
             const dist = sunR * 2.5 + t * H * 0.5;
-            const spiralOff = armBase + t * 2.2 + hash(arm * 5.3 + c * 7.1) * 0.7;
 
-            // Curl flow drives position, rotation, and stretch
-            const fx = (sunX + Math.cos(spiralOff) * dist) / W * 3;
-            const fy = (sunY + Math.sin(spiralOff) * dist) / H * 3;
-            const [cvx, cvy] = curlFlow(fx + time * 0.03, fy + time * 0.02);
-            const flowAngle = Math.atan2(cvy, cvx);
-            const flowMag = Math.sqrt(cvx * cvx + cvy * cvy);
+            // Concentric orbit around sun — each cloud slowly orbits at its radius
+            const orbitSpeed = 0.03 / (0.5 + t); // inner clouds orbit faster
+            const angle = armBase + t * 2.2 + hash(arm * 5.3 + c * 7.1) * 0.7 + time * orbitSpeed;
 
-            // Position with curl drift
-            const cx = sunX + Math.cos(spiralOff) * dist + cvx * 40 * t;
-            const cy = sunY + (Math.sin(spiralOff) * dist + cvy * 40 * t) * 0.5;
+            // Position on orbit
+            const cx = sunX + Math.cos(angle) * dist;
+            const cy = sunY + Math.sin(angle) * dist * 0.5; // squish vertically
 
-            // Size and stretch driven by flow
+            // Cloud aligned tangent to orbit (perpendicular to radius)
+            const tangentAngle = angle + Math.PI / 2;
+
+            // Size grows with distance, stretch along tangent
             const baseR = (25 + hash(c + arm * 10) * 50) * (0.5 + t * 1.2);
-            const stretch = 1.2 + flowMag * 3 + hash(c * 3 + arm) * 0.8;
+            const stretch = 1.5 + hash(c * 3 + arm) * 1.0;
             const alpha = (0.12 + hash(c * 7 + arm * 3) * 0.2) * (1 - t * 0.35);
             const seed = arm * 100 + c * 17;
-            drawCloud(cx, cy, baseR, stretch, seed, alpha, flowAngle);
+            drawCloud(cx, cy, baseR, stretch, seed, alpha, tangentAngle);
           }
         }
         ctx.restore();
