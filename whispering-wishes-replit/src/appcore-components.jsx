@@ -2298,7 +2298,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Flat ground — no bowl, wy = 0 everywhere
         const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const projY = (wz) => edgeY + focal / wz;
+        const camH = 0.15;  // camera at ground level
+        const projY = (wz) => edgeY + camH * focal / wz;
 
         // --- Draw flat ground as depth strips (back-to-front) ---
         const zNear = 0.05, zFar = 50, zSlices = 30;
