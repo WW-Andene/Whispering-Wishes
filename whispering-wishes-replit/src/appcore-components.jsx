@@ -2448,20 +2448,25 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             // Circle
             ctx.arc(0, gripBot + pomR, pomR, 0, Math.PI * 2);
           } else if (pommelType === 2) {
-            // Curved-up bar
+            // Curved-up bar — flat ends
             const barW = bladeW * 1.2;
             const barH = pomDia * 0.4;
-            ctx.moveTo(-barW / 2, gripBot + barH);
-            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.3, barW / 2, gripBot + barH);
-            ctx.quadraticCurveTo(0, gripBot + barH * 0.3, -barW / 2, gripBot + barH);
+            ctx.moveTo(-barW / 2, gripBot);
+            ctx.lineTo(-barW / 2, gripBot + barH);
+            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.2, barW / 2, gripBot + barH);
+            ctx.lineTo(barW / 2, gripBot);
+            ctx.quadraticCurveTo(0, gripBot - pomDia * 0.1, -barW / 2, gripBot);
             ctx.closePath();
           } else {
-            // Fan (default)
-            ctx.moveTo(-pomR, gripBot);
-            ctx.quadraticCurveTo(-pomR * 1.2, gripBot + pomDia,
+            // Fan — wide at top, narrows down
+            const fanW = pomR * 1.3;
+            ctx.moveTo(-fanW, gripBot);
+            ctx.lineTo(-fanW, gripBot + pomDia * 0.2);
+            ctx.quadraticCurveTo(-fanW * 0.3, gripBot + pomDia,
                                   0, gripBot + pomDia);
-            ctx.quadraticCurveTo(pomR * 1.2, gripBot + pomDia,
-                                  pomR, gripBot);
+            ctx.quadraticCurveTo(fanW * 0.3, gripBot + pomDia,
+                                  fanW, gripBot + pomDia * 0.2);
+            ctx.lineTo(fanW, gripBot);
             ctx.closePath();
           }
           ctx.fill();
