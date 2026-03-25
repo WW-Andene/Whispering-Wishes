@@ -2346,9 +2346,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
             // Messy path clearing — empty in center, normal on edges
             const dz = jz - camZ;
-            if (dz > 0.3) {
-              const pathW = 0.8 * Math.min(1, dz / 3);   // path widens slightly with depth
-              const fadeW = 1.2 * Math.min(1, dz / 3);   // gradient edge
+            const pathEnd = (planeSize - camZ) * 0.7;  // path ends at 70% depth
+            if (dz > 0.3 && dz < pathEnd) {
+              const closeup = Math.min(1, dz / 3);
+              const fadeout = 1 - Math.max(0, (dz - pathEnd + 3) / 3);  // fade out near end
+              const pathW = 0.8 * closeup * fadeout;
+              const fadeW = 1.2 * closeup * fadeout;
               const ax = Math.abs(jx);
               // Jitter the edge per-sword for messy look
               const jitter = (ihash(swordIdx, sceneSeed + 888) - 0.5) * 0.6;
