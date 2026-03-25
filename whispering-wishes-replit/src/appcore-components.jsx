@@ -2571,6 +2571,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // === SWORD SILHOUETTES — flat 2D shades with perspective ===
         const focal = W * 0.7;
         const camH = 0.3;
+        const horizonY = H * 0.68; // same camera angle as before
         const gridZmin = 0.03, gridZmax = 80;
         const maxSwords = 500;
         const swords = [];
@@ -2585,7 +2586,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             if (wz < 0.02) { swordIdx++; continue; }
 
             const scrX = W * 0.5 + wx * focal / wz;
-            const scrY = hY * 0.68 + camH * focal / wz;
+            const scrY = horizonY + camH * focal / wz;
             const size = 2.4 * focal / wz;
 
             if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
@@ -2605,10 +2606,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // Draw flat sword silhouettes
         for (const s of swords) {
-          const bladeH = s.size * 0.72;
-          const bladeW = s.size * 0.03;
-          const handleH = s.size * 0.28;
-          const guardW = s.size * 0.08;
+          const bladeH = s.size * 8 / 11;
+          const handleH = s.size * 3 / 11;
+          const mod = bladeH / 8;
+          const bladeW = mod * 0.5;      // 2 × halfW (mod * 0.25)
+          const guardW = mod * 2.0;      // 2 × guardArmHW (mod * 1.0)
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
@@ -2627,9 +2629,11 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Blade (below guard, going down)
           ctx.fillRect(-bladeW / 2, handleH, bladeW, bladeH);
           // Guard
-          ctx.fillRect(-guardW / 2, handleH - bladeW * 0.4, guardW, bladeW * 0.8);
+          const guardH = mod * 0.15;
+          ctx.fillRect(-guardW / 2, handleH - guardH / 2, guardW, guardH);
           // Handle (above guard, going up = hilt up)
-          ctx.fillRect(-bladeW * 0.4, 0, bladeW * 0.8, handleH);
+          const gripW = bladeW * 0.5;
+          ctx.fillRect(-gripW / 2, 0, gripW, handleH);
 
           ctx.restore();
         }
