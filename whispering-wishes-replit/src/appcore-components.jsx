@@ -3952,16 +3952,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
               const typeIdx = Math.floor(rng(swordIdx, 102) * weaponTypes.length);
               const wType = weaponTypes[typeIdx];
               const zRot = rng(swordIdx, 103) * Math.PI * 2;
-              const r1 = rng(swordIdx, 104), r2 = rng(swordIdx, 105), r3 = rng(swordIdx, 106), r4 = rng(swordIdx, 107);
-              // 5 angle styles for variety, moderate lean
-              const styles = [0, 8, -12, 18, -6, 25, -20, 14, -3, 10];
-              const baseTilt = styles[Math.floor(r3 * styles.length)] + (r1 - 0.5) * 16;
-              const lean = (r2 - 0.5) * 12;
+              // Unique rotation per sword using combined seeds
+              const tilt = (rng(swordIdx * 7 + 3, 104) - 0.5) * 30;
+              const lean = (rng(swordIdx * 13 + 7, 105) - 0.5) * 12;
               const distT = Math.min(1, wzJ / gridZmax);
               const darkness = distT * 0.6;
 
               swords.push({
-                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt: baseTilt + lean, darkness,
+                wx, wy, wz: wzJ, scrX, scrY, appSize, wType, zRot, tilt: tilt + lean, darkness,
                 shuffle: rng(swordIdx, 200)
               });
               swordIdx++;
