@@ -2398,15 +2398,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
           // Guard
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
-          // Grip — smooth inward curve, narrowing by 2/5 gripW each side at bottom
+          // Grip — smooth inward curve, narrowing by 2/5 gripW each side, flat bottom
           const gripNarrow = gripW * 2 / 5;
           const gripBot = guardH + gripH;
+          const narrowW = gripW - gripNarrow * 2;
           ctx.beginPath();
           ctx.moveTo(-gripW / 2, guardH);                                    // top-left
           ctx.bezierCurveTo(-gripW / 2, guardH + gripH * 0.6,               // cp1: straight most of way
-                            -gripW / 2 + gripNarrow, gripBot,               // cp2: ease into narrow
-                            0, gripBot);                                     // end: center bottom
-          ctx.bezierCurveTo(gripW / 2 - gripNarrow, gripBot,                // cp2: ease out of narrow
+                            -gripW / 2, gripBot,                            // cp2: stay at edge
+                            -narrowW / 2, gripBot);                         // end: narrowed bottom-left
+          ctx.lineTo(narrowW / 2, gripBot);                                  // flat bottom
+          ctx.bezierCurveTo(gripW / 2, gripBot,                             // cp2: stay at edge
                             gripW / 2, guardH + gripH * 0.6,                // cp1: straight most of way
                             gripW / 2, guardH);                              // end: top-right
           ctx.closePath();
