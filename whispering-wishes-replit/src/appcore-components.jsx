@@ -2386,7 +2386,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const curveLean = -2 * curveStr * (scrX - W * 0.5) / (W * 0.5 * W * 0.5) * 0.3;
 
             // Random lean + curve lean
-            let lh = (swordIdx * 2654435761 + 4829) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
+            let lh = (swordIdx * 2654435761 + 3651) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
             const lean = (((lh >>> 0) / 4294967296) * 2 - 1) * (Math.PI * 33.75 / 180) + curveLean;
 
             // Y-axis rotation — foreshortens width (cos of angle)
@@ -2478,9 +2478,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Grip — straight rectangle (overlap into guard and pommel)
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
-          // Pommel — fan only
+          // Pommel — sits directly on grip
+          let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
+          const pommelType = (ph >>> 0) % 2;
           ctx.beginPath();
-          {
+          if (pommelType === 1) {
+            // Circle
+            ctx.ellipse(0, gripBot + pomRy, pomRx, pomRy, 0, 0, Math.PI * 2);
+          } else {
             // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
             const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
             const fanTopW = bladeW * 0.8;   // half-width at top
