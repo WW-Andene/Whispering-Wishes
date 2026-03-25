@@ -2297,7 +2297,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // 3D ground surface: concave bowl (center dips, edges rise to horizon)
         // Circular arc cross-section — smooth curve
-        const bowlRadius = 4; // world-space half-width of bowl
+        const bowlRadius = 1.2; // world-space half-width of bowl
         const bowlDepth = 0.18; // max depth at center
         const groundWY = (wx) => {
           const r2 = wx * wx;
@@ -2359,7 +2359,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         let swordIdx = 0;
 
         for (let wz = swordSpacing; wz <= 60 && swords.length < maxSwords; wz += swordSpacing) {
-          for (let wx = -bowlRadius + swordSpacing * 0.5; wx <= bowlRadius - swordSpacing * 0.5 && swords.length < maxSwords; wx += swordSpacing) {
+          const swordXrange = 4;
+          for (let wx = -swordXrange + swordSpacing * 0.5; wx <= swordXrange - swordSpacing * 0.5 && swords.length < maxSwords; wx += swordSpacing) {
             // Small jitter so it doesn't look like a perfect grid
             const jx = wx + (rng(swordIdx, 101) - 0.5) * swordSpacing * 0.3;
             const jz = wz + (rng(swordIdx, 100) - 0.5) * swordSpacing * 0.3;
