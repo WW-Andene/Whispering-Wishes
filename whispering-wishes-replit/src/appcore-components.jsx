@@ -2339,7 +2339,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const jz = bz + (rng(swordIdx, 100) - 0.5) * rowSpacingZ * 0.3;
             swordIdx++;
             bx += cellSpacingX;
-            if (jz < 0.3) continue;
+            if (jz < 0.25) continue;
 
             // Project to screen
             const scrX = projX(jx, jz);
