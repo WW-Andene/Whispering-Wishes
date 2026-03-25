@@ -2297,12 +2297,13 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
-        const projX = (wx, wz) => W * 0.5 + wx * focal / wz;
-        const camH = 0.15;  // camera at ground level
-        const projY = (wz) => edgeY + camH * focal / wz;
+        const camZ = 5;  // camera position in the field
+        const camH = 0.15;
+        const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
+        const projY = (wz) => edgeY + camH * focal / (wz - camZ);
 
         // --- Draw flat ground as depth strips (back-to-front) ---
-        const zNear = 0.05, zFar = 50, zSlices = 30;
+        const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2341,14 +2342,14 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
             const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3;
             swordIdx++;
             bx += cellSpacingX;
-            if (jz < 0.01) continue;  // avoid div by zero
+            if (jz - camZ < 0.01) continue;  // skip swords behind camera
 
             // Project to screen
             const scrX = projX(jx, jz);
             const scrY = projY(jz);
             if (scrX < -200 || scrX > W + 200 || scrY < -200 || scrY > H + 200) continue;
 
-            const size = 2.5 * focal / jz;
+            const size = 2.5 * focal / (jz - camZ);
 
 
             // Random lean: -22.5° to +22.5° — integer hash for unbiased distribution
