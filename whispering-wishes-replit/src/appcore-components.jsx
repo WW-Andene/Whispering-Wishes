@@ -2568,10 +2568,57 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === SWORD SILHOUETTES — flat 2D shades with perspective ===
+        // === 3D PERSPECTIVE SETUP ===
         const focal = W * 0.7;
         const camH = 0.3;
-        const horizonY = H * 0.68; // same camera angle as before
+        const horizonY = H * 0.42; // horizon line — camera looking slightly down
+
+        // === GROUND PLANE — perspective projected grid ===
+        {
+          const zNear = 0.5, zFar = 120;
+          // Horizontal depth lines
+          ctx.strokeStyle = 'rgba(30,18,10,0.35)';
+          ctx.lineWidth = 1;
+          for (let gz = zNear; gz < zFar;) {
+            const scrY = horizonY + camH * focal / gz;
+            if (scrY > H * 1.1) break;
+            if (scrY > horizonY) {
+              ctx.beginPath();
+              ctx.moveTo(0, scrY);
+              ctx.lineTo(W, scrY);
+              ctx.stroke();
+            }
+            gz += Math.max(0.3, gz * 0.15);
+          }
+          // Vertical vanishing lines
+          const vLines = 20;
+          for (let i = -vLines; i <= vLines; i++) {
+            const worldX = i * 2.5;
+            // Near point
+            const nz = zNear;
+            const nx = W * 0.5 + worldX * focal / nz;
+            const ny = horizonY + camH * focal / nz;
+            // Far point (converges to horizon center)
+            const fz = zFar;
+            const fx = W * 0.5 + worldX * focal / fz;
+            const fy = horizonY + camH * focal / fz;
+            if (nx < -W * 0.5 && fx < -W * 0.5) continue;
+            if (nx > W * 1.5 && fx > W * 1.5) continue;
+            ctx.beginPath();
+            ctx.moveTo(fx, Math.max(horizonY, fy));
+            ctx.lineTo(nx, Math.min(H * 1.1, ny));
+            ctx.stroke();
+          }
+          // Ground fill below horizon
+          const gFill = ctx.createLinearGradient(0, horizonY, 0, H);
+          gFill.addColorStop(0, 'rgba(20,12,8,0.15)');
+          gFill.addColorStop(0.3, 'rgba(15,9,5,0.25)');
+          gFill.addColorStop(1, 'rgba(10,6,3,0.4)');
+          ctx.fillStyle = gFill;
+          ctx.fillRect(0, horizonY, W, H - horizonY);
+        }
+
+        // === SWORD SILHOUETTES — flat 2D shades with perspective ===
         const gridZmin = 0.03, gridZmax = 80;
         const maxSwords = 500;
         const swords = [];
