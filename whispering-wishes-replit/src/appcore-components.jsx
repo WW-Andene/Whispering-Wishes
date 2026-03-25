@@ -2363,12 +2363,17 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
-          // Blade 70cm, hilt 26.25cm → 8:3 modules, mod=8.75cm, overall≈96.5cm
-          const bladeH = s.size * 8 / 11;
-          const handleH = s.size * 3 / 11;
+          // Overall 96.5cm: blade 70, guard ~0.5, hilt 26 (grip 21.6 + pommel 4.4)
+          const overall = s.size;
+          const bladeH = overall * (70 / 96.5);
+          const guardH = overall * (0.5 / 96.5);
+          const pomDia = overall * (4.4 / 96.5);
+          const pomR = pomDia / 2;
+          const gripH = overall * (26 / 96.5) - pomDia;
           const mod = bladeH / 8;
           const bladeW = mod * 0.503 * s.yRot;       // 4.4 cm
           const guardW = mod * 2.0 * s.yRot;         // 17.5 cm
+          const gripW = bladeW / 3;
 
           ctx.save();
           ctx.translate(s.scrX, s.scrY);
@@ -2376,7 +2381,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Full sword standing upright — blade on top, handle below
           // Blade — pointed tip within blade height
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);                            // tip point
@@ -2387,15 +2391,12 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.closePath();
           ctx.fill();
           // Guard
-          const guardH = mod * 0.15;
           ctx.fillRect(-guardW / 2, 0, guardW, guardH);
-          // Handle
-          const gripW = bladeW / 3;                   // handle width = 1/3 blade width
-          const pomR = mod * 0.251 * s.yRot;          // pommel radius, 4.4cm diameter
-          ctx.fillRect(-gripW / 2, guardH, gripW, handleH);
+          // Grip
+          ctx.fillRect(-gripW / 2, guardH, gripW, gripH);
           // Pommel
           ctx.beginPath();
-          ctx.arc(0, guardH + handleH + pomR, pomR, 0, Math.PI * 2);
+          ctx.arc(0, guardH + gripH + pomR, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
