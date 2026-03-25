@@ -2311,7 +2311,84 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
+        // === SWORD SILHOUETTES — flat 2D shades with perspective, pommels toward sun ===
+        const focal = W * 0.7;
+        const camH = 0.3;
+        const horizonY = edgeY;
+        const gridZmin = 0.03, gridZmax = 80;
+        const maxSwords = 500;
+        const swords = [];
+        let swordIdx = 0;
 
+        for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
+          const spacing = Math.min(2, Math.max(0.44, gz * 0.3));
+          const visibleXrange = gz * W / (2 * focal) * 1.5;
+          for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
+            const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
+            const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
+            if (wz < 0.02) { swordIdx++; continue; }
+
+            const scrX = W * 0.5 + wx * focal / wz;
+            const scrY = horizonY + camH * focal / wz;
+            const size = 3.0 * focal / wz;
+
+            if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2 || size < 1.5) { swordIdx++; continue; }
+
+            // Angle: pommel (top) points toward sun
+            const dx = sunX - scrX;
+            const dy = sunY - scrY;
+            const angle = Math.atan2(dy, dx) + Math.PI * 0.5; // radians
+
+            const distT = Math.min(1, wz / gridZmax);
+            const alpha = (1 - distT) * 0.7 + 0.05;
+
+            swords.push({ scrX, scrY, size, angle, wz, alpha, shuffle: rng(swordIdx, 200) });
+            swordIdx++;
+          }
+          gz += spacing;
+        }
+
+        // Sort back-to-front
+        swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
+
+        // Draw flat sword silhouettes
+        for (const s of swords) {
+          const bladeH = s.size * 8 / 11;
+          const handleH = s.size * 3 / 11;
+          const mod = bladeH / 8;
+          const bladeW = mod * 0.5;
+          const guardW = mod * 2.0;
+
+          ctx.save();
+          ctx.translate(s.scrX, s.scrY);
+          ctx.rotate(s.angle);
+
+          // Dark silhouette color
+          ctx.fillStyle = 'rgb(10,6,4)';
+
+          // Tip (pointing down, buried in ground)
+          ctx.beginPath();
+          ctx.moveTo(0, bladeH + handleH + bladeW * 2);
+          ctx.lineTo(bladeW / 2, bladeH + handleH);
+          ctx.lineTo(-bladeW / 2, bladeH + handleH);
+          ctx.closePath();
+          ctx.fill();
+          // Blade (below guard, going down)
+          ctx.fillRect(-bladeW / 2, handleH, bladeW, bladeH);
+          // Guard
+          const guardH = mod * 0.15;
+          ctx.fillRect(-guardW / 2, handleH - guardH / 2, guardW, guardH);
+          // Handle (above guard, going up = hilt up)
+          const gripW = bladeW * 0.5;
+          ctx.fillRect(-gripW / 2, 0, gripW, handleH);
+          // Pommel (circle at top, pointing toward sun)
+          const pomR = mod * 0.45;
+          ctx.beginPath();
+          ctx.arc(0, -pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
 
       } // end BATTLEGROUND block
     };
