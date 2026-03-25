@@ -3931,8 +3931,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           const maxSwords = 250;
           let swordIdx = 0;
           for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
-            // Spacing scales with Z — constant screen density
-            const spacing = 1.0;
+            // Spacing proportional to distance — even screen density
+            const spacing = Math.max(0.02, gz * 0.12);
             // Visible X range at this Z
             const visibleXrange = gz * W / (2 * focal) * 1.5;
             for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
@@ -3943,7 +3943,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
               const scrX = W * 0.5 + wx * focal / wzJ;
               const scrY = hY + (camH - wy) * focal / wzJ;
-              const appSize = 1.8 * focal / wzJ;
+              const appSize = 3.5 * focal / wzJ;
 
               // Skip if off screen
               if (scrX < -W * 0.5 || scrX > W * 1.5 || scrY < -H * 0.2 || scrY > H * 1.2) { swordIdx++; continue; }
