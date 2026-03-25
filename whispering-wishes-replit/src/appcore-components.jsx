@@ -2292,9 +2292,9 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
         // === CONCAVE GROUND ===
+        const edgeY = H * 0.7;
+        const dipY = H * 0.8;
         {
-          const edgeY = H * 0.7;
-          const dipY = H * 0.8;
           ctx.beginPath();
           ctx.moveTo(0, edgeY);
           ctx.quadraticCurveTo(W * 0.5, dipY, W, edgeY);
@@ -2309,6 +2309,64 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           gFill.addColorStop(1, 'rgb(18,10,6)');
           ctx.fillStyle = gFill;
           ctx.fill();
+        }
+
+        // === SWORDS — stuck in ground, pointing toward the sun ===
+        {
+          const swordCount = 14;
+          for (let i = 0; i < swordCount; i++) {
+            const t = 0.08 + (i / (swordCount - 1)) * 0.84; // spread across ground
+            const sx = t * W;
+            // Y position on the concave curve: quadratic interpolation
+            const groundY = (1 - 2 * Math.abs(t - 0.5)) * edgeY + 2 * Math.abs(t - 0.5) * edgeY
+              + 4 * t * (1 - t) * (dipY - edgeY) + edgeY * 0; // simplify:
+            const gy = edgeY + 4 * t * (1 - t) * (dipY - edgeY);
+
+            // Angle pointing toward sun
+            const dx = sunX - sx;
+            const dy = sunY - gy;
+            const angle = Math.atan2(dy, dx) + Math.PI * 0.5; // rotate so blade points at sun
+
+            // Sword dimensions — vary slightly
+            const swordH = H * (0.06 + rng(i, 50) * 0.05);
+            const bladeW = 2 + rng(i, 51) * 1.5;
+
+            ctx.save();
+            ctx.translate(sx, gy);
+            ctx.rotate(angle);
+
+            // Blade
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-bladeW, -swordH * 0.15);
+            ctx.lineTo(-bladeW * 0.6, -swordH * 0.8);
+            ctx.lineTo(0, -swordH);
+            ctx.lineTo(bladeW * 0.6, -swordH * 0.8);
+            ctx.lineTo(bladeW, -swordH * 0.15);
+            ctx.closePath();
+            ctx.fillStyle = 'rgb(60,60,70)';
+            ctx.fill();
+
+            // Blade highlight
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -swordH);
+            ctx.lineTo(bladeW * 0.4, -swordH * 0.5);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(140,140,160,0.3)';
+            ctx.fill();
+
+            // Crossguard
+            const guardW = bladeW * 3;
+            ctx.fillStyle = 'rgb(50,40,35)';
+            ctx.fillRect(-guardW, -2, guardW * 2, 4);
+
+            // Grip
+            ctx.fillStyle = 'rgb(40,30,25)';
+            ctx.fillRect(-bladeW * 0.5, 0, bladeW, swordH * 0.2);
+
+            ctx.restore();
+          }
         }
 
       } // end BATTLEGROUND block
