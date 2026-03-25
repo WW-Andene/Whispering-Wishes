@@ -2295,16 +2295,16 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const edgeY = H * 0.7; // horizon line
         const focal = W * 0.7;
 
-        // 3D ground surface: spherical concave bowl
-        // Circular cross-section — smooth curve, not a V-shape
-        const bowlRadius = 1.2; // radius of curvature
+        // 3D ground surface: concave bowl (center dips, edges rise to horizon)
+        // Circular arc cross-section — smooth curve
+        const bowlRadius = 1.2; // world-space half-width of bowl
         const bowlDepth = 0.18; // max depth at center
         const groundWY = (wx) => {
           const r2 = wx * wx;
-          const inner = bowlRadius * bowlRadius - r2;
-          if (inner <= 0) return 0;
-          // Circular arc: depth = R - sqrt(R² - x²), scaled to bowlDepth
-          return bowlDepth * (1 - Math.sqrt(inner) / bowlRadius);
+          const R2 = bowlRadius * bowlRadius;
+          if (r2 >= R2) return 0; // beyond bowl edge = horizon level
+          // Center deepest, edges at horizon: depth = bowlDepth * sqrt(R²-x²)/R
+          return bowlDepth * Math.sqrt(R2 - r2) / bowlRadius;
         };
 
         // 3D projection helpers
@@ -2352,37 +2352,38 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
 
-        // --- SWORDS on the same 3D surface ---
-        const gridZmin = 0.04, gridZmax = 60;
+        // --- SWORDS: uniform grid on the bowl surface ---
+        const swordSpacing = 0.12; // equal world-space distance between swords
         const maxSwords = 500;
         const swords = [];
         let swordIdx = 0;
 
-        for (let gz = gridZmin; gz <= gridZmax && swordIdx < maxSwords;) {
-          const spacing = Math.min(2, Math.max(0.3, gz * 0.25));
-          const visibleXrange = gz * W / (2 * focal) * 3.5;
-          for (let gx = -visibleXrange; gx <= visibleXrange && swordIdx < maxSwords; gx += spacing) {
-            const wx = gx + (rng(swordIdx, 101) - 0.5) * spacing * 0.6;
-            const wz = gz + (rng(swordIdx, 100) - 0.5) * spacing * 0.5;
-            if (wz < 0.02) { swordIdx++; continue; }
+        for (let wz = swordSpacing; wz <= 60 && swords.length < maxSwords; wz += swordSpacing) {
+          for (let wx = -bowlRadius + swordSpacing * 0.5; wx <= bowlRadius - swordSpacing * 0.5 && swords.length < maxSwords; wx += swordSpacing) {
+            // Small jitter so it doesn't look like a perfect grid
+            const jx = wx + (rng(swordIdx, 101) - 0.5) * swordSpacing * 0.3;
+            const jz = wz + (rng(swordIdx, 100) - 0.5) * swordSpacing * 0.3;
+            swordIdx++;
+            if (jz < 0.02) continue;
 
-            const scrX = projX(wx, wz);
-            if (scrX < -W * 0.3 || scrX > W * 1.3) { swordIdx++; continue; }
+            // Check if inside bowl
+            if (jx * jx >= bowlRadius * bowlRadius) continue;
+
+            const scrX = projX(jx, jz);
+            if (scrX < -W * 0.3 || scrX > W * 1.3) continue;
 
             // Place sword ON the 3D ground surface
-            const wy = groundWY(wx);
-            const scrY = projY(wy, wz);
-            const size = Math.min(H * 0.6125, 3.0 * focal / wz);
+            const wy = groundWY(jx);
+            const scrY = projY(wy, jz);
+            const size = Math.min(H * 0.6125, 3.0 * focal / jz);
 
-            if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) { swordIdx++; continue; }
+            if (scrY < edgeY * 0.5 || scrY > H * 1.1 || size < 1) continue;
 
             // Pommel points toward sun
             const angle = Math.atan2(sunY - scrY, sunX - scrX) + Math.PI * 0.5;
 
-            swords.push({ scrX, scrY, size, angle, wz, shuffle: rng(swordIdx, 200) });
-            swordIdx++;
+            swords.push({ scrX, scrY, size, angle, wz: jz, shuffle: rng(swordIdx, 200) });
           }
-          gz += spacing;
         }
 
         swords.sort((a, b) => (b.wz + b.shuffle * 2) - (a.wz + a.shuffle * 2));
