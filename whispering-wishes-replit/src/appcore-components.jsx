@@ -2291,62 +2291,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sunDisc;
         ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
 
-        // === 3D CURVED GROUND — concave bowl curving away from viewer ===
+        // === CONCAVE GROUND ===
         {
-          const horizonY = H * 0.55;
-          const groundSegments = 80;
-
-          // Draw concave ground shape — edges rise up, center dips down
+          const edgeY = H * 0.52;
+          const dipY = H * 0.62;
           ctx.beginPath();
-          for (let i = 0; i <= groundSegments; i++) {
-            const t = i / groundSegments;
-            const x = t * W;
-            const curve = Math.sin(t * Math.PI); // 0 at edges, 1 at center
-            const dip = H * 0.1; // how much center sinks below edge horizon
-            const y = horizonY - dip * 0.3 + dip * curve;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
+          ctx.moveTo(0, edgeY);
+          ctx.quadraticCurveTo(W * 0.5, dipY, W, edgeY);
           ctx.lineTo(W, H);
           ctx.lineTo(0, H);
           ctx.closePath();
-
-          // Ground fill — dark earth gradient
-          const gFill = ctx.createLinearGradient(0, horizonY, 0, H);
+          const gFill = ctx.createLinearGradient(0, edgeY, 0, H);
           gFill.addColorStop(0, 'rgb(90,55,32)');
           gFill.addColorStop(0.15, 'rgb(65,40,22)');
           gFill.addColorStop(0.4, 'rgb(45,28,16)');
           gFill.addColorStop(0.7, 'rgb(30,18,10)');
           gFill.addColorStop(1, 'rgb(18,10,6)');
           ctx.fillStyle = gFill;
-          ctx.fill();
-
-          // Rim light along curved edge — warm sun glow
-          ctx.save();
-          ctx.beginPath();
-          for (let i = 0; i <= groundSegments; i++) {
-            const t = i / groundSegments;
-            const x = t * W;
-            const curve = Math.sin(t * Math.PI);
-            const dip = H * 0.1;
-            const y = horizonY - dip * 0.3 + dip * curve;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.strokeStyle = 'rgba(255,200,100,0.25)';
-          ctx.lineWidth = 2.5;
-          ctx.shadowColor = 'rgba(255,180,80,0.4)';
-          ctx.shadowBlur = 12;
-          ctx.stroke();
-          ctx.restore();
-
-          // Inner shadow at the bowl center for depth
-          const bowlX = W * 0.5, bowlY = horizonY + H * 0.06;
-          const bowlShadow = ctx.createRadialGradient(bowlX, bowlY, 0, bowlX, bowlY, W * 0.35);
-          bowlShadow.addColorStop(0, 'rgba(10,5,2,0.3)');
-          bowlShadow.addColorStop(0.5, 'rgba(20,12,6,0.12)');
-          bowlShadow.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = bowlShadow;
           ctx.fill();
         }
 
