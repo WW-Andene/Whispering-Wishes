@@ -2393,7 +2393,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         // Multiple swirl lanes at slightly different speeds
         ctx.save();
         const numSwirls = 4;
-        const swirlSpeeds = [0.035, 0.028, 0.022, 0.018];
+        const swirlSpeeds = [0.25, 0.18, 0.13, 0.09];
         const swirlOffsets = [0, 1.2, 2.7, 4.1];
 
         for (let sw = 0; sw < numSwirls; sw++) {
