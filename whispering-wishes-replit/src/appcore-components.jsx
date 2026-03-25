@@ -2364,17 +2364,19 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
           ctx.fillStyle = 'rgb(10,6,4)';
 
-          // Only draw above ground: handle + pommel (blade is buried)
-          // Handle (sticks up from ground)
-          const gripW = bladeW * 0.5;
-          ctx.fillRect(-gripW / 2, -handleH, gripW, handleH);
-          // Guard (at ground level)
+          // Blade exposed above ground (~60% visible, tip buried)
+          const exposedBlade = bladeH * 0.6;
+          ctx.fillRect(-bladeW / 2, -exposedBlade - handleH, bladeW, exposedBlade);
+          // Guard
           const guardH = mod * 0.15;
-          ctx.fillRect(-guardW / 2, -guardH / 2, guardW, guardH);
-          // Pommel (top, pointing toward sun)
+          ctx.fillRect(-guardW / 2, -handleH - guardH / 2, guardW, guardH);
+          // Handle
+          const gripW = bladeW * 0.5;
+          ctx.fillRect(-gripW / 2, 0, gripW, handleH);
+          // Pommel (bottom, away from sun — handle end touches ground)
           const pomR = mod * 0.45;
           ctx.beginPath();
-          ctx.arc(0, -handleH - pomR * 0.3, pomR, 0, Math.PI * 2);
+          ctx.arc(0, handleH + pomR * 0.3, pomR, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
