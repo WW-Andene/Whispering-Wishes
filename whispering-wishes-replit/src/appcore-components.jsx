@@ -2337,7 +2337,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       const w = Math.max(4, Math.round(fullW * sc)), h = Math.max(4, Math.round(fullH * sc));
       const ox = (-minX + pad) * sc, oy = (-minY + pad) * sc;
       const dCvs = document.createElement("canvas"); dCvs.width = w; dCvs.height = h;
-      const dCtx = dCvs.getContext("2d"); dCtx.globalCompositeOperation = "lighter";
+      const dCtx = dCvs.getContext("2d", { willReadFrequently: true }); dCtx.globalCompositeOperation = "lighter";
       const fo = def.densFall, pk = def.densPeak;
       for (let bi = 0; bi < balls.length; bi++) {
         const ball = balls[bi], bx = ox + ball.cx * sc, by = oy + ball.cy * sc, br = ball.r * def.densMul * sc;
@@ -2401,7 +2401,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const balls = generateBalls(seed, radius, cType);
             const cx = sunX + Math.cos(angle) * dist;
             const cy = sunY + Math.sin(angle) * dist * 0.7;
-            const rs = 1;
+            const rs = cType <= 1 ? 0.5 : 1;
             const baked = getCachedBake(seed, balls, Math.atan2(sunY - cy, sunX - cx), cType, dep, prox, rs);
             if (!baked) return;
             clouds.push({ id: id++, sunX: sunX, sunY: sunY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, noRefresh: cType <= 1 });
@@ -2412,7 +2412,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const balls = generateBalls(seed, radius, cType);
             const hcx = sunX + Math.cos(angle) * dist;
             const hcy = layerY + Math.sin(angle) * dist * layerFlat;
-            const rs = 1;
+            const rs = cType <= 1 ? 0.5 : 1;
             const baked = getCachedBake(seed, balls, Math.atan2(sunY - hcy, sunX - hcx), cType, dep, prox, rs);
             if (!baked) return;
             clouds.push({ id: id++, sunX: sunX, sunY: layerY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, orbitFlatten: layerFlat, noRefresh: cType <= 1 });
@@ -2584,6 +2584,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let sceneClouds = null;
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
+    let skyCache = null; // pre-baked sky gradient canvas
 
     const honourFps = bgFps || (isFull ? 30 : 15);
     const honourInterval = Math.round(1000 / honourFps);
@@ -2608,36 +2609,38 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunX = W * 0.5, sunY = H * 0.3;
         const sunR = H * 0.06;
 
-        // Dark dramatic sky
-        ctx.fillStyle = 'rgb(8,6,12)'; ctx.fillRect(0, 0, W, H);
-        // Deep warm radial from sun
-        const skyR1 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
-        skyR1.addColorStop(0, 'rgba(255,200,100,0.55)'); skyR1.addColorStop(0.08, 'rgba(240,150,60,0.4)');
-        skyR1.addColorStop(0.18, 'rgba(200,80,30,0.3)'); skyR1.addColorStop(0.35, 'rgba(140,40,20,0.2)');
-        skyR1.addColorStop(0.55, 'rgba(60,15,15,0.12)'); skyR1.addColorStop(0.8, 'rgba(20,8,15,0.05)');
-        skyR1.addColorStop(1, 'rgba(8,6,12,0)');
-        ctx.fillStyle = skyR1; ctx.fillRect(0, 0, W, H);
-        // Hot inner glow
-        const skyR2 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
-        skyR2.addColorStop(0, 'rgba(255,240,180,0.6)'); skyR2.addColorStop(0.15, 'rgba(255,190,100,0.4)');
-        skyR2.addColorStop(0.4, 'rgba(220,120,50,0.15)'); skyR2.addColorStop(1, 'rgba(120,40,15,0)');
-        ctx.fillStyle = skyR2; ctx.fillRect(0, 0, W, H);
-        // Sun disc
-        const sh = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
-        sh.addColorStop(0, 'rgba(255,255,220,0.7)'); sh.addColorStop(0.06, 'rgba(255,240,160,0.5)');
-        sh.addColorStop(0.15, 'rgba(255,200,80,0.3)'); sh.addColorStop(0.35, 'rgba(255,140,40,0.1)');
-        sh.addColorStop(1, 'rgba(200,60,10,0)');
-        ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
-        const sd = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
-        sd.addColorStop(0, 'rgba(255,255,235,1)'); sd.addColorStop(0.25, 'rgba(255,245,190,0.9)');
-        sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
-        ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
+        // Sky + sun — bake to offscreen canvas once, drawImage every frame
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H) {
+          skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
+          const sc = skyCache.getContext('2d');
+          sc.fillStyle = 'rgb(8,6,12)'; sc.fillRect(0, 0, W, H);
+          const skyR1 = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
+          skyR1.addColorStop(0, 'rgba(255,200,100,0.55)'); skyR1.addColorStop(0.08, 'rgba(240,150,60,0.4)');
+          skyR1.addColorStop(0.18, 'rgba(200,80,30,0.3)'); skyR1.addColorStop(0.35, 'rgba(140,40,20,0.2)');
+          skyR1.addColorStop(0.55, 'rgba(60,15,15,0.12)'); skyR1.addColorStop(0.8, 'rgba(20,8,15,0.05)');
+          skyR1.addColorStop(1, 'rgba(8,6,12,0)');
+          sc.fillStyle = skyR1; sc.fillRect(0, 0, W, H);
+          const skyR2 = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
+          skyR2.addColorStop(0, 'rgba(255,240,180,0.6)'); skyR2.addColorStop(0.15, 'rgba(255,190,100,0.4)');
+          skyR2.addColorStop(0.4, 'rgba(220,120,50,0.15)'); skyR2.addColorStop(1, 'rgba(120,40,15,0)');
+          sc.fillStyle = skyR2; sc.fillRect(0, 0, W, H);
+          const sh = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
+          sh.addColorStop(0, 'rgba(255,255,220,0.7)'); sh.addColorStop(0.06, 'rgba(255,240,160,0.5)');
+          sh.addColorStop(0.15, 'rgba(255,200,80,0.3)'); sh.addColorStop(0.35, 'rgba(255,140,40,0.1)');
+          sh.addColorStop(1, 'rgba(200,60,10,0)');
+          sc.fillStyle = sh; sc.fillRect(0, 0, W, H);
+          const sd = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+          sd.addColorStop(0, 'rgba(255,255,235,1)'); sd.addColorStop(0.25, 'rgba(255,245,190,0.9)');
+          sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
+          sc.fillStyle = sd; sc.beginPath(); sc.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); sc.fill();
+        }
+        ctx.drawImage(skyCache, 0, 0);
 
         // === LIVE CLOUD RENDERING ===
         if (!sceneClouds) sceneClouds = buildCloudsForScene(W, H);
         cloudTime += honourInterval;
         // Refresh a few cloud shapes
-        const rPerF = 5;
+        const rPerF = 2;
         for (let ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
         cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
         // Draw clouds with velocity stretch
@@ -2653,7 +2656,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vx = -Math.sin(ca) * cloud.orbitDist * angSpeed, vy = Math.cos(ca) * cloud.orbitDist * flatR * angSpeed;
           const speed = Math.sqrt(vx * vx + vy * vy);
           const drawW = bk.w, drawH = bk.h;
-          if (speed > 0.01) {
+          if (speed > 0.05) {
             const stretchAmt = 1 + Math.min(0.6, speed * 0.25), squeezeAmt = 1 / Math.sqrt(stretchAmt);
             const centSkew = Math.max(-0.3, Math.min(0.3, angSpeed * cloud.orbitDist * 0.0004));
             const vAngle = Math.atan2(vy, vx);
