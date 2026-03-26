@@ -2372,10 +2372,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sunF = (nx*sdx+ny*sdy)*0.5+0.5, thin = 1-thick;
           let rim = thin*thin*thin*Math.max(0,sunF)*0.7, sL = sunF*(0.35+thick*0.65);
           if (gl < 2) { sL *= 0.4; rim = 0; }
-          if (levels <= 1) sL = 0.5;
-          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.2;
-          else if (levels === 3) sL = sL > 0.6 ? 0.9 : sL > 0.3 ? 0.5 : 0.15;
-          else { const band = sL > 0.7 ? 0.92 : sL > 0.45 ? 0.65 : sL > 0.2 ? 0.35 : 0.1; sL = band + (sL - band) * 0.3; }
+          // Banded shading — distinct shade steps like stacked cloud layers
+          // Floor at 0.3 so darkest clouds are still warm, never black
+          if (levels <= 1) sL = 0.55;
+          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.35;
+          else if (levels === 3) sL = sL > 0.6 ? 0.88 : sL > 0.3 ? 0.55 : 0.3;
+          else { sL = sL > 0.65 ? 0.9 : sL > 0.45 ? 0.65 : sL > 0.25 ? 0.42 : 0.3; }
           sL *= lr;
           let r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL);
           if (levels >= 2) { r = Math.min(255,r+Math.round(rmR*rim*0.4*lr)); g = Math.min(255,g+Math.round(rmG*rim*0.4*lr)); bv = Math.min(255,bv+Math.round(rmB*rim*0.4*lr)); }
