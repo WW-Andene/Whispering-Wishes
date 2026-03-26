@@ -1220,7 +1220,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const bctx = buf.getContext('2d');
     if (!bctx) return;
     let animId;
-    const BLUR_SCALE = 0.08; // Canvas downscale factor for blur buffer
+    const BLUR_SCALE = 1; // Full resolution
     let w, h, bw, bh;
     
     // OLED mode uses darker base color
@@ -1251,7 +1251,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 66) return;
+      if (t - lastFrame < 33) return;
       lastFrame = t;
       const time = t * 0.00075; // 25% slower
       bctx.fillStyle = bgColor;
@@ -1360,7 +1360,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 66) return;
+      if (t - lastFrame < 33) return;
       lastFrame = t;
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.00075; // 25% slower
@@ -1516,7 +1516,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 50) return;
+      if (t - lastFrame < 33) return;
       lastFrame = t;
       const time = t * 0.00075; // 25% slower globally
 
