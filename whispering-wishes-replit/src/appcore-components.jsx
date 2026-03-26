@@ -2836,74 +2836,30 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillStyle = 'rgb(18,10,6)';
         ctx.fillRect(0, edgeY, W, H - edgeY);
 
-        // --- Draw rocky textured ground strips ---
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
           const depthT = Math.pow(t0, 0.6);
-          // Base warm brown ground color
-          const baseR = Math.round(90 - 55 * depthT);
-          const baseG = Math.round(55 - 35 * depthT);
-          const baseB = Math.round(32 - 20 * depthT);
+          const r = Math.round(90 - 72 * depthT);
+          const g = Math.round(55 - 45 * depthT);
+          const b = Math.round(32 - 26 * depthT);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
 
-          // Draw strip with noise-displaced top edge for rocky silhouette
           ctx.beginPath();
-          const segsPerStrip = Math.max(xSegs, 20);
-          for (let j = 0; j <= segsPerStrip; j++) {
-            const sx = W * j / segsPerStrip;
-            let sy = curveY(sx, projY(wz1));
-            // Add rocky noise to the top edge of each strip
-            const noiseVal = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.01) * 2 - 1;
-            const noiseVal2 = hash(i * 73.3 + j * 197.5 + sceneSeed * 0.02) * 2 - 1;
-            const rockHeight = (noiseVal * 3 + noiseVal2 * 1.5) * (1 - depthT) * (1 + t0 * 2);
-            sy += rockHeight;
+          for (let j = 0; j <= xSegs; j++) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz1));
             j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
           }
-          for (let j = segsPerStrip; j >= 0; j--) {
-            const sx = W * j / segsPerStrip;
+          for (let j = xSegs; j >= 0; j--) {
+            const sx = W * j / xSegs;
             const sy = curveY(sx, projY(wz0));
             ctx.lineTo(sx, sy);
           }
           ctx.closePath();
-          ctx.fillStyle = `rgb(${baseR},${baseG},${baseB})`;
           ctx.fill();
-
-          // Add rocky texture — small noisy color variation on top of each strip
-          if (i < zSlices - 5) { // skip the farthest strips (too small to see)
-            const stripTop = curveY(W * 0.5, projY(wz1));
-            const stripBot = curveY(W * 0.5, projY(wz0));
-            const stripH = stripBot - stripTop;
-            if (stripH > 2) {
-              // Scatter small rock fragments across the strip
-              const numRocks = Math.max(2, Math.round(8 * (1 - depthT)));
-              for (let ri = 0; ri < numRocks; ri++) {
-                const rSeed = i * 1000 + ri * 37 + sceneSeed;
-                const rx = hash(rSeed) * W;
-                const ry = stripTop + hash(rSeed + 100) * stripH;
-                const rSize = (1 + hash(rSeed + 200) * 3) * (1 - depthT * 0.7);
-                // Vary rock color — lighter or darker than base
-                const rockBright = hash(rSeed + 300);
-                const rr = Math.round(baseR * (0.6 + rockBright * 0.8));
-                const rg = Math.round(baseG * (0.6 + rockBright * 0.7));
-                const rb = Math.round(baseB * (0.5 + rockBright * 0.8));
-                ctx.fillStyle = `rgb(${rr},${rg},${rb})`;
-                // Draw rough polygon rock shape
-                ctx.beginPath();
-                const sides = 3 + Math.floor(hash(rSeed + 400) * 3);
-                for (let si = 0; si <= sides; si++) {
-                  const a = (si / sides) * Math.PI * 2;
-                  const jitter = 0.6 + hash(rSeed + si * 50 + 500) * 0.8;
-                  const px = rx + Math.cos(a) * rSize * jitter;
-                  const py = ry + Math.sin(a) * rSize * jitter * 0.6;
-                  si === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-                }
-                ctx.closePath();
-                ctx.fill();
-              }
-            }
-          }
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
