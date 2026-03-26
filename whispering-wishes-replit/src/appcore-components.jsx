@@ -2262,10 +2262,60 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     let lastFrame = 0;
     let sceneClouds = null;
-    let skyFrames = null;      // array of pre-rendered ImageBitmap/canvas frames
-    let skyFrameIdx = 0;       // current playback frame
+    let skyFrames = null;
+    let skyFrameIdx = 0;
     let skyPrerendering = false;
-    let skyPreRenderQueue = null; // { clouds, frameIdx, totalFrames, W, H, sunX, sunY, sunR }
+    let skyPreRenderQueue = null;
+    let skyCacheChecked = false;
+    let skyCacheLoading = false;
+
+    // === IndexedDB sky frame cache ===
+    const SKY_DB_NAME = 'ww-sky-cache';
+    const SKY_STORE = 'frames';
+    function openSkyDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(SKY_DB_NAME, 1);
+        req.onupgradeneeded = () => { req.result.createObjectStore(SKY_STORE); };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+    async function loadSkyFromCache(w, h) {
+      try {
+        const db = await openSkyDB();
+        const tx = db.transaction(SKY_STORE, 'readonly');
+        const store = tx.objectStore(SKY_STORE);
+        const meta = await new Promise((res, rej) => { const r = store.get('meta'); r.onsuccess = () => res(r.result); r.onerror = rej; });
+        if (!meta || meta.w !== w || meta.h !== h || meta.count < 1) { db.close(); return null; }
+        const blobs = await new Promise((res, rej) => { const r = store.get('blobs'); r.onsuccess = () => res(r.result); r.onerror = rej; });
+        db.close();
+        if (!blobs || blobs.length !== meta.count) return null;
+        const bitmaps = await Promise.all(blobs.map(b => createImageBitmap(b)));
+        return bitmaps;
+      } catch(e) { return null; }
+    }
+    async function saveSkyToCache(frames, w, h) {
+      try {
+        const blobs = [];
+        for (let i = 0; i < frames.length; i++) {
+          const cvs = frames[i];
+          const blob = await new Promise(res => {
+            if (cvs.convertToBlob) cvs.convertToBlob({ type: 'image/webp', quality: 0.8 }).then(res);
+            else if (cvs.toBlob) cvs.toBlob(res, 'image/webp', 0.8);
+            else res(null);
+          });
+          if (blob) blobs.push(blob);
+        }
+        if (blobs.length !== frames.length) return;
+        const db = await openSkyDB();
+        const tx = db.transaction(SKY_STORE, 'readwrite');
+        const store = tx.objectStore(SKY_STORE);
+        store.put({ w, h, count: blobs.length }, 'meta');
+        store.put(blobs, 'blobs');
+        await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+        db.close();
+      } catch(e) { /* cache save failed, not critical */ }
+    }
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -2311,11 +2361,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
 
         // === PRE-RENDERED SKY FRAMES (GIF-like playback) ===
-        var totalSkyFrames = 80;  // ~4s of animation at 20fps
-        var skyScale = 0.33;       // render at 33% resolution
+        var totalSkyFrames = 80;
+        var skyScale = 0.33;
 
-        // Start pre-rendering if not done
-        if (!skyFrames && !skyPrerendering) {
+        // Try loading from IndexedDB cache first
+        if (!skyFrames && !skyPrerendering && !skyCacheChecked && !skyCacheLoading) {
+          skyCacheLoading = true;
+          var cacheW = Math.ceil(W * skyScale), cacheH = Math.ceil(H * skyScale);
+          loadSkyFromCache(cacheW, cacheH).then(function(cached) {
+            skyCacheChecked = true;
+            skyCacheLoading = false;
+            if (cached) { skyFrames = cached; }
+          });
+        }
+
+        // Start pre-rendering if cache miss and not loading
+        if (!skyFrames && !skyPrerendering && skyCacheChecked && !skyCacheLoading) {
           skyPrerendering = true;
           skyPreRenderQueue = {
             clouds: buildCloudsForScene(W, H),
@@ -2395,6 +2456,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
           // Done pre-rendering?
           if (q.frameIdx >= q.totalFrames) {
             skyFrames = q.frames;
+            // Save to IndexedDB for next load
+            saveSkyToCache(q.frames, q.sW, q.sH);
             skyPreRenderQueue = null;
             skyPrerendering = false;
           }
