@@ -2842,24 +2842,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
           const depthT = Math.pow(t0, 0.6);
-          const r = Math.round(90 - 72 * depthT);
-          const g = Math.round(55 - 45 * depthT);
-          const b = Math.round(32 - 26 * depthT);
-          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          const baseR = 90 - 72 * depthT;
+          const baseG = 55 - 45 * depthT;
+          const baseB = 32 - 26 * depthT;
 
-          ctx.beginPath();
-          for (let j = 0; j <= xSegs; j++) {
-            const sx = W * j / xSegs;
-            const sy = curveY(sx, projY(wz1));
-            j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+          // Draw each cell with noise-varied color
+          for (let j = 0; j < xSegs; j++) {
+            const cellNoise = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.13);
+            const bright = 0.82 + cellNoise * 0.36;
+            ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
+            ctx.beginPath();
+            // Top edge points for this cell
+            const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
+            const sy0L = curveY(x0, projY(wz1));
+            const sy0M = curveY(xM, projY(wz1));
+            const sy0R = curveY(x1, projY(wz1));
+            ctx.moveTo(x0, sy0L);
+            ctx.lineTo(xM, sy0M);
+            ctx.lineTo(x1, sy0R);
+            // Bottom edge points
+            const sy1R = curveY(x1, projY(wz0));
+            const sy1M = curveY(xM, projY(wz0));
+            const sy1L = curveY(x0, projY(wz0));
+            ctx.lineTo(x1, sy1R);
+            ctx.lineTo(xM, sy1M);
+            ctx.lineTo(x0, sy1L);
+            ctx.closePath();
+            ctx.fill();
           }
-          for (let j = xSegs; j >= 0; j--) {
-            const sx = W * j / xSegs;
-            const sy = curveY(sx, projY(wz0));
-            ctx.lineTo(sx, sy);
-          }
-          ctx.closePath();
-          ctx.fill();
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
