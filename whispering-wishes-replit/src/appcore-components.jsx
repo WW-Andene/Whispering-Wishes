@@ -2898,8 +2898,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const distZ = jz - camZ;
             const visibleHalfX = distZ * (W * 0.6) / focal + 2;
             if (Math.abs(jx) > visibleHalfX) continue;
-            // Reduce density around the teardrop midpoint (z=14, dz=6)
-            if (jz > 12 && jz < 16 && Math.abs(jx) < 3 && (swordIdx & 3) === 0) continue;
+            // Reduce density near center from z=14 onward (past teardrop)
+            if (jz > 14 && Math.abs(jx) < 1.5 && (swordIdx & 3) === 0) continue;
 
             // Clearing — based on view angle, not absolute X
             const dz = jz - camZ;
