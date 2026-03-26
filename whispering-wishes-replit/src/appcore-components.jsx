@@ -2357,9 +2357,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
       // Sunset palette — matching warm amber-brown reference
       // Shadow: deep warm brown (like dark amber/chocolate, not olive)
-      const shR = Math.round(50 + ds * 15 + lr * 10), shG = Math.round(20 + ds * 8 + lr * 5), shB = Math.round(8 + ds * 4 + lr * 3);
+      const shR = Math.round(50 + ds * 15 + lr * 10), shG = Math.round(16 + ds * 6 + lr * 4), shB = Math.round(5 + ds * 3 + lr * 2);
       // Lit: warm golden amber (NOT cream-white — warm gold like the reference)
-      const ltR = Math.min(255, Math.round(190 + ds * 30 + proximity * 10)), ltG = Math.min(255, Math.round(120 + ds * 20 + proximity * 8)), ltB = Math.min(255, Math.round(55 + ds * 10 + proximity * 5));
+      const ltR = Math.min(255, Math.round(210 + ds * 30 + proximity * 10)), ltG = Math.min(255, Math.round(140 + ds * 20 + proximity * 8)), ltB = Math.min(255, Math.round(70 + ds * 10 + proximity * 5));
       // Rim: bright warm orange-gold edge
       const rmR = Math.min(255, Math.round(220 + ds * 20)), rmG = Math.min(255, Math.round(150 + ds * 15 + proximity * 8)), rmB = Math.min(255, Math.round(60 + ds * 10 + proximity * 5));
       for (let py = 2; py < h - 2; py++) {
@@ -2621,10 +2621,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — warm sunset sky (light near horizon)
           const skyBg = sc.createLinearGradient(0, 0, 0, H);
-          skyBg.addColorStop(0, 'rgb(45,30,65)');
-          skyBg.addColorStop(0.15, 'rgb(75,40,70)');
-          skyBg.addColorStop(0.30, 'rgb(130,65,65)');
-          skyBg.addColorStop(0.45, 'rgb(190,105,65)');
+          skyBg.addColorStop(0, 'rgb(35,18,10)');
+          skyBg.addColorStop(0.15, 'rgb(65,30,12)');
+          skyBg.addColorStop(0.30, 'rgb(120,55,20)');
+          skyBg.addColorStop(0.45, 'rgb(180,95,40)');
           skyBg.addColorStop(0.60, 'rgb(230,150,75)');
           skyBg.addColorStop(0.75, 'rgb(250,190,95)');
           skyBg.addColorStop(0.88, 'rgb(255,215,120)');
@@ -2711,11 +2711,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Rays extend from sun all the way to bottom of screen
           const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
           // Width varies — some thick, some thin, like real crepuscular rays
-          const rayW = sunR * (0.2 + rayRng() * 0.8);
+          const rayW = sunR * (0.3 + rayRng() * 1.2);
           const ex = sunX + Math.cos(rayAngle) * rayLen;
           const ey = sunY + Math.sin(rayAngle) * rayLen;
           // Warm golden color, varying opacity
-          const rayAlpha = 0.015 + rayRng() * 0.035;
+          const rayAlpha = 0.03 + rayRng() * 0.05;
           const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
           rayGrad.addColorStop(0, 'rgba(255,240,170,' + (rayAlpha * 1.2) + ')');
           rayGrad.addColorStop(0.15, 'rgba(255,215,120,' + rayAlpha + ')');
@@ -2803,6 +2803,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillStyle = streakGrad;
         ctx.fillRect(sunX - W * 0.4, sunY - sunR * 0.3, W * 0.8, sunR * 0.6);
         ctx.restore();
+
+        // Atmospheric haze near horizon
+        const hazeY = H * 0.65;
+        const haze = ctx.createLinearGradient(0, hazeY, 0, H);
+        haze.addColorStop(0, 'rgba(200,140,60,0)');
+        haze.addColorStop(0.3, 'rgba(200,140,60,0.08)');
+        haze.addColorStop(0.6, 'rgba(180,110,40,0.15)');
+        haze.addColorStop(1, 'rgba(150,80,25,0.2)');
+        ctx.fillStyle = haze;
+        ctx.fillRect(0, hazeY, W, H - hazeY);
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
@@ -2941,8 +2951,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          const darkSide = 'rgb(10,6,4)';
-          const lightSide = 'rgb(30,20,14)';
+          const darkSide = 'rgb(15,8,5)';
+          const lightSide = 'rgb(45,28,16)';
           // Lighter side faces center (x=0, z=max) — combines position and Y rotation
           const toSunAngle = Math.atan2(-s.wx, 20);  // angle from sword to sun direction
           const leftLight = Math.sin(s.yAngle - toSunAngle) > 0;
