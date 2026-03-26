@@ -2293,15 +2293,54 @@ function WhisperingWishesInner() {
     const tList = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
     const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
     const beginnerHist = state.profile.beginner?.history||[];
-    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
-    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
-    const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
-    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false), w2=countUniqueOwned(weapHist,2,false), w1=countUniqueOwned(weapHist,1,false);
-    const newestRes = [...new Set(charHist.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
-    const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
-    const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
-    const histLabels = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(histBuckets['81+'])histLabels.push('81+'); histLabels.forEach(b=>{if(!histBuckets[b])histBuckets[b]=0;});
-    const histSummary = fiveStarPulls.length>=2?{max:Math.max(...Object.values(histBuckets),1),avg:(fiveStarPulls.reduce((s,p)=>s+p.pity,0)/fiveStarPulls.length).toFixed(1),lo:Math.min(...fiveStarPulls.map(p=>p.pity)),hi:Math.max(...fiveStarPulls.map(p=>p.pity))}:null;
+    const charHist = [
+      ...(state.profile.featured?.history || []),
+      ...(state.profile.standardChar?.history || []),
+      ...beginnerHist.filter(p => p.name && ALL_CHARACTERS.has(p.name))
+    ];
+    const weapHist = [
+      ...(state.profile.weapon?.history || []),
+      ...(state.profile.standardWeap?.history || []),
+      ...beginnerHist.filter(p => p.name && !ALL_CHARACTERS.has(p.name))
+    ];
+
+    const countUniqueOwned = (h, r, isChar) =>
+      new Set(h.filter(p => p.rarity === r && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name))).map(p => p.name)).size;
+
+    const c5 = countUniqueOwned(charHist, 5, true);
+    const c4 = countUniqueOwned(charHist, 4, true);
+    const w5 = countUniqueOwned(weapHist, 5, false);
+    const w4 = countUniqueOwned(weapHist, 4, false);
+    const w3 = countUniqueOwned(weapHist, 3, false);
+    const w2 = countUniqueOwned(weapHist, 2, false);
+    const w1 = countUniqueOwned(weapHist, 1, false);
+
+    const newestRes = [...new Set(
+      charHist.filter(p => (p.rarity === 5 || p.rarity === 4) && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)
+    )].reverse();
+
+    const fiveStarPulls = [...charHist, ...weapHist].filter(p => p.rarity === 5 && p.pity > 0);
+
+    const histBuckets = {};
+    fiveStarPulls.forEach(p => {
+      if (p.pity > 80) {
+        histBuckets['81+'] = (histBuckets['81+'] ?? 0) + 1;
+      } else {
+        const b = Math.floor((p.pity - 1) / 10) * 10 + 1;
+        histBuckets[`${b}-${b + 9}`] = (histBuckets[`${b}-${b + 9}`] ?? 0) + 1;
+      }
+    });
+
+    const histLabels = Array.from({ length: 8 }, (_, i) => `${i * 10 + 1}-${(i + 1) * 10}`);
+    if (histBuckets['81+']) histLabels.push('81+');
+    histLabels.forEach(b => { if (!histBuckets[b]) histBuckets[b] = 0; });
+
+    const histSummary = fiveStarPulls.length >= 2 ? {
+      max: Math.max(...Object.values(histBuckets), 1),
+      avg: (fiveStarPulls.reduce((s, p) => s + p.pity, 0) / fiveStarPulls.length).toFixed(1),
+      lo: Math.min(...fiveStarPulls.map(p => p.pity)),
+      hi: Math.max(...fiveStarPulls.map(p => p.pity))
+    } : null;
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
       {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},

@@ -11,6 +11,33 @@ import { haptic, generateUniqueId, HEADER_ICON } from './appcore-data.js';
 // P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
 // Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
 
+// Shared install banner component used by both native and iframe prompts
+const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
+  <div className="fixed bottom-20 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
+        <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+      </div>
+      <div className="flex-1">
+        <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
+        <div className="text-black/70 text-xs">{subtitle}</div>
+      </div>
+      <button
+        onClick={onAction}
+        className="px-3 py-1.5 bg-black text-yellow-400 rounded-lg text-xs font-medium hover:bg-black/80 transition-colors"
+      >
+        {actionLabel}
+      </button>
+      <button
+        onClick={onDismiss}
+        className="p-1 text-black/50 hover:text-black transition-colors" aria-label="Dismiss install prompt"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  </div>
+);
+
 // PWA Context — exposes install prompt to settings UI
 const PWAContext = createContext(null);
 const usePWA = () => useContext(PWAContext);
@@ -137,55 +164,21 @@ const PWAProvider = ({ children }) => {
       )}
       {/* Install prompt banner — native */}
       {installPrompt && !isInstalled && !isInIframe && (
-        <div className="fixed bottom-20 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
-              <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1">
-              <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
-              <div className="text-black/70 text-xs">Add to home screen for the best experience</div>
-            </div>
-            <button
-              onClick={promptInstall}
-              className="px-3 py-1.5 bg-black text-yellow-400 rounded-lg text-xs font-medium hover:bg-black/80 transition-colors"
-            >
-              Install
-            </button>
-            <button
-              onClick={() => setInstallPrompt(null)}
-              className="p-1 text-black/50 hover:text-black transition-colors" aria-label="Dismiss install prompt"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </div>
+        <InstallBanner
+          subtitle="Add to home screen for the best experience"
+          actionLabel="Install"
+          onAction={promptInstall}
+          onDismiss={() => setInstallPrompt(null)}
+        />
       )}
       {/* Install prompt banner — iframe fallback */}
       {isInIframe && !isInstalled && !iframeBannerDismissed && (
-        <div className="fixed bottom-20 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
-              <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex-1">
-              <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
-              <div className="text-black/70 text-xs">Open in a new tab to install as an app</div>
-            </div>
-            <button
-              onClick={() => window.open(window.location.href, '_blank')}
-              className="px-3 py-1.5 bg-black text-yellow-400 rounded-lg text-xs font-medium hover:bg-black/80 transition-colors"
-            >
-              Open
-            </button>
-            <button
-              onClick={() => setIframeBannerDismissed(true)}
-              className="p-1 text-black/50 hover:text-black transition-colors" aria-label="Dismiss install prompt"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </div>
+        <InstallBanner
+          subtitle="Open in a new tab to install as an app"
+          actionLabel="Open"
+          onAction={() => window.open(window.location.href, '_blank')}
+          onDismiss={() => setIframeBannerDismissed(true)}
+        />
       )}
     </PWAContext.Provider>
   );

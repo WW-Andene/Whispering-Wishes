@@ -2592,24 +2592,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Dark dramatic sky
         ctx.fillStyle = 'rgb(8,6,12)'; ctx.fillRect(0, 0, W, H);
         // Deep warm radial from sun
-        var skyR1 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
+        const skyR1 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
         skyR1.addColorStop(0, 'rgba(255,200,100,0.55)'); skyR1.addColorStop(0.08, 'rgba(240,150,60,0.4)');
         skyR1.addColorStop(0.18, 'rgba(200,80,30,0.3)'); skyR1.addColorStop(0.35, 'rgba(140,40,20,0.2)');
         skyR1.addColorStop(0.55, 'rgba(60,15,15,0.12)'); skyR1.addColorStop(0.8, 'rgba(20,8,15,0.05)');
         skyR1.addColorStop(1, 'rgba(8,6,12,0)');
         ctx.fillStyle = skyR1; ctx.fillRect(0, 0, W, H);
         // Hot inner glow
-        var skyR2 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
+        const skyR2 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
         skyR2.addColorStop(0, 'rgba(255,240,180,0.6)'); skyR2.addColorStop(0.15, 'rgba(255,190,100,0.4)');
         skyR2.addColorStop(0.4, 'rgba(220,120,50,0.15)'); skyR2.addColorStop(1, 'rgba(120,40,15,0)');
         ctx.fillStyle = skyR2; ctx.fillRect(0, 0, W, H);
         // Sun disc
-        var sh = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
+        const sh = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
         sh.addColorStop(0, 'rgba(255,255,220,0.7)'); sh.addColorStop(0.06, 'rgba(255,240,160,0.5)');
         sh.addColorStop(0.15, 'rgba(255,200,80,0.3)'); sh.addColorStop(0.35, 'rgba(255,140,40,0.1)');
         sh.addColorStop(1, 'rgba(200,60,10,0)');
         ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
-        var sd = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+        const sd = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
         sd.addColorStop(0, 'rgba(255,255,235,1)'); sd.addColorStop(0.25, 'rgba(255,245,190,0.9)');
         sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
         ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
@@ -2618,27 +2618,27 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         if (!sceneClouds) sceneClouds = buildCloudsForScene(W, H);
         cloudTime += honourInterval;
         // Refresh a few cloud shapes
-        var rPerF = 5;
-        for (var ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
+        const rPerF = 5;
+        for (let ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
         cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
         // Draw clouds with velocity stretch
-        for (var di = 0; di < sceneClouds.length; di++) {
-          var cloud = sceneClouds[di], angSpeed = cloud.orbitSpeed * 0.025;
+        for (let di = 0; di < sceneClouds.length; di++) {
+          const cloud = sceneClouds[di], angSpeed = cloud.orbitSpeed * 0.025;
           cloud.angle += angSpeed;
-          var ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
-          var cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
-          var cy2 = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR;
-          var bk = cloud.baked; var bkSrc = bk && (bk.bitmap || bk.canvas); if (!bkSrc) continue;
-          var margin2 = Math.max(bk.w, bk.h) * 1.5;
+          const ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
+          const cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
+          const cy2 = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR;
+          const bk = cloud.baked; const bkSrc = bk && (bk.bitmap || bk.canvas); if (!bkSrc) continue;
+          const margin2 = Math.max(bk.w, bk.h) * 1.5;
           if (cx2 + bk.ox > W + margin2 || cx2 + bk.ox + bk.w < -margin2 || cy2 + bk.oy > H + margin2 || cy2 + bk.oy + bk.h < -margin2) continue;
-          var vx = -Math.sin(ca) * cloud.orbitDist * angSpeed, vy = Math.cos(ca) * cloud.orbitDist * flatR * angSpeed;
-          var speed = Math.sqrt(vx * vx + vy * vy);
-          var drawW = bk.w, drawH = bk.h;
+          const vx = -Math.sin(ca) * cloud.orbitDist * angSpeed, vy = Math.cos(ca) * cloud.orbitDist * flatR * angSpeed;
+          const speed = Math.sqrt(vx * vx + vy * vy);
+          const drawW = bk.w, drawH = bk.h;
           if (speed > 0.01) {
-            var stretchAmt = 1 + Math.min(0.6, speed * 0.25), squeezeAmt = 1 / Math.sqrt(stretchAmt);
-            var centSkew = Math.max(-0.3, Math.min(0.3, angSpeed * cloud.orbitDist * 0.0004));
-            var vAngle = Math.atan2(vy, vx);
-            var ccx = cx2 + bk.ox + drawW * 0.5, ccy = cy2 + bk.oy + drawH * 0.5;
+            const stretchAmt = 1 + Math.min(0.6, speed * 0.25), squeezeAmt = 1 / Math.sqrt(stretchAmt);
+            const centSkew = Math.max(-0.3, Math.min(0.3, angSpeed * cloud.orbitDist * 0.0004));
+            const vAngle = Math.atan2(vy, vx);
+            const ccx = cx2 + bk.ox + drawW * 0.5, ccy = cy2 + bk.oy + drawH * 0.5;
             ctx.save(); ctx.translate(ccx, ccy); ctx.rotate(vAngle);
             ctx.transform(stretchAmt, centSkew, 0, squeezeAmt, 0, 0);
             ctx.rotate(-vAngle); ctx.drawImage(bkSrc, -drawW * 0.5, -drawH * 0.5, drawW, drawH); ctx.restore();
@@ -2648,20 +2648,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         // God rays
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        for (var ri2 = 0; ri2 < 18; ri2++) {
-          var rayRng = seededRandom(ri2 * 777 + 42);
-          var coneHalf = Math.PI * 0.35;
-          var rayAngle = Math.PI * 0.5 - coneHalf + (ri2 / 17) * coneHalf * 2 + (rayRng() - 0.5) * 0.08;
-          var rayLen = (H - sunY) * (0.8 + rayRng() * 0.4), rayW = sunR * (0.15 + rayRng() * 0.5);
-          var ex = sunX + Math.cos(rayAngle) * rayLen, ey = sunY + Math.sin(rayAngle) * rayLen;
-          var rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          var rayAlpha = 0.02 + rayRng() * 0.04;
+        for (let ri2 = 0; ri2 < 18; ri2++) {
+          const rayRng = seededRandom(ri2 * 777 + 42);
+          const coneHalf = Math.PI * 0.35;
+          const rayAngle = Math.PI * 0.5 - coneHalf + (ri2 / 17) * coneHalf * 2 + (rayRng() - 0.5) * 0.08;
+          const rayLen = (H - sunY) * (0.8 + rayRng() * 0.4), rayW = sunR * (0.15 + rayRng() * 0.5);
+          const ex = sunX + Math.cos(rayAngle) * rayLen, ey = sunY + Math.sin(rayAngle) * rayLen;
+          const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
+          const rayAlpha = 0.02 + rayRng() * 0.04;
           rayGrad.addColorStop(0, 'rgba(255,230,140,' + (rayAlpha * 1.5) + ')');
           rayGrad.addColorStop(0.2, 'rgba(255,200,90,' + rayAlpha + ')');
           rayGrad.addColorStop(0.6, 'rgba(255,150,50,' + (rayAlpha * 0.35) + ')');
           rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
           ctx.fillStyle = rayGrad; ctx.beginPath();
-          var perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
+          const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
           ctx.moveTo(sunX + perpX * rayW * 0.15, sunY + perpY * rayW * 0.15);
           ctx.lineTo(sunX - perpX * rayW * 0.15, sunY - perpY * rayW * 0.15);
           ctx.lineTo(ex - perpX * rayW * 2.5, ey - perpY * rayW * 2.5);
@@ -3640,9 +3640,18 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic }) => (
-  <div 
-    className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/50' : isProfilePic ? ownedBg : owned ? `${ownedBg} ${ownedBorder} ${glowClass}` : 'bg-neutral-800/50 border-neutral-700/50'}`} 
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic }) => {
+  const cardStateClass = isSelected
+    ? 'border-emerald-500 ring-2 ring-emerald-500/50'
+    : isProfilePic
+      ? ownedBg
+      : owned
+        ? `${ownedBg} ${ownedBorder} ${glowClass}`
+        : 'bg-neutral-800/50 border-neutral-700/50';
+  const cardClassName = `relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${cardStateClass}`;
+  return (
+  <div
+    className={cardClassName}
     style={{ height: '140px', contain: 'paint', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     role="button"
     tabIndex={0}
@@ -3717,7 +3726,8 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className={`text-[10px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
     </div>
   </div>
-), (prev, next) => 
+  );
+}, (prev, next) =>
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
