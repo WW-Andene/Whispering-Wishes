@@ -2728,18 +2728,60 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         ctx.restore();
 
-        // Ambient light above clouds — warm glow that varies with cloud density
-        // Brighter in the clearing (center path), dimmer where clouds are thick
+        // Dynamic ambient light — responds to cloud positions blocking sunlight
+        // Sample cloud occlusion in a grid to determine how much light reaches each area
         ctx.save();
+        const ambGridX = 6, ambGridY = 4;
+        const ambCellW = W / ambGridX, ambCellH = H / ambGridY;
+        for (let gy = 0; gy < ambGridY; gy++) {
+          for (let gx = 0; gx < ambGridX; gx++) {
+            const cellCX = (gx + 0.5) * ambCellW;
+            const cellCY = (gy + 0.5) * ambCellH;
+            // How close is this cell to the sun? Closer = more potential light
+            const dxS = cellCX - sunX, dyS = cellCY - sunY;
+            const distToSun = Math.sqrt(dxS * dxS + dyS * dyS);
+            const sunProx = Math.max(0, 1 - distToSun / (Math.max(W, H) * 0.8));
+            // Count cloud occlusion — how many clouds overlap this cell
+            let occlusion = 0;
+            if (sceneClouds) {
+              for (let ci = 0; ci < sceneClouds.length; ci++) {
+                const cl = sceneClouds[ci];
+                const bk = cl.baked; if (!bk) continue;
+                const ca = cl.angle, flatR = cl.orbitFlatten || 0.7;
+                const clx = cl.sunX + Math.cos(ca) * cl.orbitDist;
+                const cly = cl.sunY + Math.sin(ca) * cl.orbitDist * flatR;
+                // Check if cloud overlaps this cell (rough AABB)
+                const clLeft = clx + bk.ox, clTop = cly + bk.oy;
+                if (cellCX > clLeft && cellCX < clLeft + bk.w && cellCY > clTop && cellCY < clTop + bk.h) {
+                  // Cloud is over this cell — add occlusion based on cloud type
+                  occlusion += cl.cloudType >= 2 ? 0.15 : 0.05;
+                }
+              }
+            }
+            occlusion = Math.min(1, occlusion);
+            // Light = sun proximity × (1 - occlusion). More light where fewer clouds block
+            const lightAmount = sunProx * sunProx * (1 - occlusion * 0.7);
+            if (lightAmount > 0.005) {
+              const ambAlpha = lightAmount * 0.08;
+              ctx.globalCompositeOperation = 'lighter';
+              const cellGrad = ctx.createRadialGradient(cellCX, cellCY, 0, cellCX, cellCY, ambCellW * 0.8);
+              cellGrad.addColorStop(0, 'rgba(255,210,120,' + ambAlpha.toFixed(3) + ')');
+              cellGrad.addColorStop(0.5, 'rgba(255,180,80,' + (ambAlpha * 0.4).toFixed(3) + ')');
+              cellGrad.addColorStop(1, 'rgba(200,120,40,0)');
+              ctx.fillStyle = cellGrad;
+              ctx.fillRect(cellCX - ambCellW, cellCY - ambCellH, ambCellW * 2, ambCellH * 2);
+            }
+            // Darken cells with heavy occlusion — shadows from cloud mass
+            if (occlusion > 0.2) {
+              ctx.globalCompositeOperation = 'source-over';
+              const shadowAlpha = (occlusion - 0.2) * 0.08;
+              ctx.fillStyle = 'rgba(8,4,15,' + shadowAlpha.toFixed(3) + ')';
+              ctx.fillRect(gx * ambCellW, gy * ambCellH, ambCellW, ambCellH);
+            }
+          }
+        }
+        // Horizon ambient — warm scattering at the horizon regardless of clouds
         ctx.globalCompositeOperation = 'lighter';
-        // Main ambient from sun — washes over the cloud layer
-        const ambR = ctx.createRadialGradient(sunX, sunY, sunR * 2, sunX, sunY, Math.max(W, H) * 0.7);
-        ambR.addColorStop(0, 'rgba(255,220,140,0.06)');
-        ambR.addColorStop(0.2, 'rgba(255,180,90,0.04)');
-        ambR.addColorStop(0.5, 'rgba(200,120,50,0.02)');
-        ambR.addColorStop(1, 'rgba(100,50,20,0)');
-        ctx.fillStyle = ambR; ctx.fillRect(0, 0, W, H);
-        // Horizon ambient — warm light scattering along the horizon line
         const horizY = H * 0.75;
         const horizAmb = ctx.createLinearGradient(0, horizY - H * 0.15, 0, horizY + H * 0.05);
         horizAmb.addColorStop(0, 'rgba(255,200,100,0)');
