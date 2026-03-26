@@ -2689,26 +2689,41 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.drawImage(bkSrc, cx2 + bk.ox, cy2 + bk.oy, drawW, drawH);
           }
         }
-        // God rays
+        // God rays — fan downward from sun toward ground, matching camera angle
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        for (let ri2 = 0; ri2 < 18; ri2++) {
+        const rayCount = 12;
+        // Rays fan from sun downward toward the ground plane
+        // Camera looks up at sun (sun at 30% height, horizon at 75%)
+        // Center ray direction: straight down from sun to ground center
+        const rayCenterAngle = Math.PI * 0.5; // straight down
+        const rayConeSpread = Math.PI * 0.55; // wide fan covering most of the ground
+        for (let ri2 = 0; ri2 < rayCount; ri2++) {
           const rayRng = seededRandom(ri2 * 777 + 42);
-          const coneHalf = Math.PI * 0.35;
-          const rayAngle = Math.PI * 0.5 - coneHalf + (ri2 / 17) * coneHalf * 2 + (rayRng() - 0.5) * 0.08;
-          const rayLen = (H - sunY) * (0.8 + rayRng() * 0.4), rayW = sunR * (0.15 + rayRng() * 0.5);
-          const ex = sunX + Math.cos(rayAngle) * rayLen, ey = sunY + Math.sin(rayAngle) * rayLen;
+          // Distribute rays across the cone with randomized spacing
+          const t = (ri2 + rayRng() * 0.6 - 0.3) / (rayCount - 1);
+          const rayAngle = rayCenterAngle - rayConeSpread * 0.5 + t * rayConeSpread;
+          // Rays extend from sun all the way to bottom of screen
+          const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
+          // Width varies — some thick, some thin, like real crepuscular rays
+          const rayW = sunR * (0.2 + rayRng() * 0.8);
+          const ex = sunX + Math.cos(rayAngle) * rayLen;
+          const ey = sunY + Math.sin(rayAngle) * rayLen;
+          // Warm golden color, varying opacity
+          const rayAlpha = 0.015 + rayRng() * 0.035;
           const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          const rayAlpha = 0.02 + rayRng() * 0.04;
-          rayGrad.addColorStop(0, 'rgba(255,230,140,' + (rayAlpha * 1.5) + ')');
-          rayGrad.addColorStop(0.2, 'rgba(255,200,90,' + rayAlpha + ')');
-          rayGrad.addColorStop(0.6, 'rgba(255,150,50,' + (rayAlpha * 0.35) + ')');
+          rayGrad.addColorStop(0, 'rgba(255,240,170,' + (rayAlpha * 1.2) + ')');
+          rayGrad.addColorStop(0.15, 'rgba(255,215,120,' + rayAlpha + ')');
+          rayGrad.addColorStop(0.5, 'rgba(255,180,70,' + (rayAlpha * 0.4) + ')');
+          rayGrad.addColorStop(0.8, 'rgba(255,140,40,' + (rayAlpha * 0.12) + ')');
           rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
-          ctx.fillStyle = rayGrad; ctx.beginPath();
+          ctx.fillStyle = rayGrad;
+          ctx.beginPath();
           const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
-          ctx.moveTo(sunX + perpX * rayW * 0.15, sunY + perpY * rayW * 0.15);
-          ctx.lineTo(sunX - perpX * rayW * 0.15, sunY - perpY * rayW * 0.15);
-          ctx.lineTo(ex - perpX * rayW * 2.5, ey - perpY * rayW * 2.5);
-          ctx.lineTo(ex + perpX * rayW * 2.5, ey + perpY * rayW * 2.5);
+          // Narrow at sun, widens as it reaches the ground
+          ctx.moveTo(sunX + perpX * rayW * 0.1, sunY + perpY * rayW * 0.1);
+          ctx.lineTo(sunX - perpX * rayW * 0.1, sunY - perpY * rayW * 0.1);
+          ctx.lineTo(ex - perpX * rayW * 3.5, ey - perpY * rayW * 3.5);
+          ctx.lineTo(ex + perpX * rayW * 3.5, ey + perpY * rayW * 3.5);
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
