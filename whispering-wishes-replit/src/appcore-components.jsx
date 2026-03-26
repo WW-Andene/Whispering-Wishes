@@ -2822,7 +2822,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillRect(0, hazeY, W, H - hazeY);
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
-        const edgeY = H * 0.75; // horizon line — 25% from bottom
+        const edgeY = H * 0.82; // horizon line — lower to cover curve
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
@@ -2836,12 +2836,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const curveY = (sx, sy) => sy - curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.5, zFar = 50, zSlices = 60;
+        const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
         const xSegs = 24;
 
-        // Dark base fill below curved horizon — extend above edgeY to cover curve
+        // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
-        ctx.fillRect(0, edgeY - curveStr - 2, W, H - edgeY + curveStr + 2);
+        ctx.fillRect(0, edgeY, W, H - edgeY);
 
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
@@ -2853,27 +2853,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const baseG = 55 - 45 * depthT;
           const baseB = 32 - 26 * depthT;
 
-          // Draw each cell with noise-varied color
           for (let j = 0; j < xSegs; j++) {
             const cellNoise = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.13);
             const bright = 0.82 + cellNoise * 0.36;
             ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
             ctx.beginPath();
-            // Top edge points for this cell
             const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
-            const sy0L = curveY(x0, projY(wz1));
-            const sy0M = curveY(xM, projY(wz1));
-            const sy0R = curveY(x1, projY(wz1));
-            ctx.moveTo(x0, sy0L);
-            ctx.lineTo(xM, sy0M);
-            ctx.lineTo(x1, sy0R);
-            // Bottom edge points
-            const sy1R = curveY(x1, projY(wz0));
-            const sy1M = curveY(xM, projY(wz0));
-            const sy1L = curveY(x0, projY(wz0));
-            ctx.lineTo(x1, sy1R);
-            ctx.lineTo(xM, sy1M);
-            ctx.lineTo(x0, sy1L);
+            ctx.moveTo(x0, curveY(x0, projY(wz1)));
+            ctx.lineTo(xM, curveY(xM, projY(wz1)));
+            ctx.lineTo(x1, curveY(x1, projY(wz1)));
+            ctx.lineTo(x1, curveY(x1, projY(wz0)));
+            ctx.lineTo(xM, curveY(xM, projY(wz0)));
+            ctx.lineTo(x0, curveY(x0, projY(wz0)));
             ctx.closePath();
             ctx.fill();
           }
