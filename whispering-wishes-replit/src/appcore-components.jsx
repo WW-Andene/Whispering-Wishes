@@ -2836,7 +2836,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const curveY = (sx, sy) => sy - curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
+        const zNear = camZ + 0.3, zFar = 50, zSlices = 60;
         const xSegs = 24;
 
         // Dark base fill — follows the curved horizon, not a straight line
@@ -2975,47 +2975,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          // Dynamic metallic sword shading — light position on blade body
+          // Metallic sword shading — sun proximity + direction
           const sdx = s.scrX - sunX, sdy = s.scrY - sunY;
           const sunDist = Math.sqrt(sdx * sdx + sdy * sdy);
-          const sunProx = Math.max(0, 1 - sunDist / (Math.max(W, H) * 0.8));
-          const refl = sunProx * sunProx;
-          // Sun direction relative to sword (in screen space, accounting for lean)
-          const sunAngleToSword = Math.atan2(sunY - s.scrY, sunX - s.scrX) - (-s.lean);
-          // How much sun hits the front face vs comes from behind
-          const frontFacing = Math.cos(sunAngleToSword); // 1=sun in front, -1=sun behind
-          const sideFacing = Math.sin(sunAngleToSword);  // +1=sun from left, -1=from right
-          const backlit = Math.max(0, -frontFacing); // 0-1 how backlit
-          const frontlit = Math.max(0, frontFacing);  // 0-1 how frontlit
-          // Base metallic grey
-          const baseM = 18, baseL = 50;
-          // Body color: frontlit = bright warm, backlit = dark cool
-          const bodyBright = baseM + frontlit * refl * 60;
-          const bodyR = Math.round(bodyBright + refl * frontlit * 30);
-          const bodyG = Math.round(bodyBright + refl * frontlit * 15);
-          const bodyB = Math.round(bodyBright * 1.05);
-          // Lit edge: the side facing the sun catches a bright highlight
-          const edgeBright = baseL + refl * 90;
-          const edgeR = Math.round(edgeBright + refl * 40);
-          const edgeG = Math.round(edgeBright + refl * 25);
-          const edgeB = Math.round(edgeBright * 0.9);
-          // Rim light for backlit swords — bright outline, dark body
-          const rimStr = backlit * refl;
-          const rimR = Math.round(baseM + rimStr * 80);
-          const rimG = Math.round(baseM + rimStr * 50);
-          const rimB = Math.round(baseM + rimStr * 20);
-          // Which side catches the light
-          const leftCatch = sideFacing > 0;
-          const leftColor = leftCatch
-            ? `rgb(${Math.min(255, edgeR)},${Math.min(255, edgeG)},${Math.min(255, edgeB)})`
-            : `rgb(${bodyR},${bodyG},${bodyB})`;
-          const rightColor = leftCatch
-            ? `rgb(${bodyR},${bodyG},${bodyB})`
-            : `rgb(${Math.min(255, edgeR)},${Math.min(255, edgeG)},${Math.min(255, edgeB)})`;
-          // Backlit rim color for guard/grip
-          const swordBase = backlit > 0.3
-            ? `rgb(${rimR},${rimG},${rimB})`
-            : `rgb(${bodyR},${bodyG},${bodyB})`;
+          const sunProx = Math.max(0, 1 - sunDist / (Math.max(W, H) * 0.7));
+          const lit = sunProx * sunProx;
+          // Sun side: which edge faces the sun (screen-space)
+          const leftCatch = s.scrX > sunX;
+          // Dark side: cool steel grey + warm tint from sun
+          const dR = Math.round(20 + lit * 30), dG = Math.round(20 + lit * 18), dB = Math.round(22 + lit * 8);
+          // Light side: brighter steel + strong warm reflection
+          const lR = Math.round(55 + lit * 100), lG = Math.round(52 + lit * 60), lB = Math.round(55 + lit * 25);
+          const leftColor = leftCatch ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB})`;
+          const rightColor = leftCatch ? `rgb(${lR},${lG},${lB})` : `rgb(${dR},${dG},${dB})`;
+          const swordBase = `rgb(${dR},${dG},${dB})`;
 
           // Blade — split into two halves along Y axis
           const tipEnd = -bladeH + pomDia * 2;
@@ -3076,24 +3049,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           }
           ctx.fill();
-          // Guard highlight — sun-facing edge of guard catches light
-          if (refl > 0.05) {
-            const gHighX = leftCatch ? -guardW / 2 : guardW / 2;
-            const gHighW = guardW * 0.15;
-            ctx.fillStyle = leftCatch ? leftColor : rightColor;
-            ctx.fillRect(gHighX - (leftCatch ? 0 : gHighW), 0, gHighW, guardH);
-          }
           ctx.fillStyle = swordBase;
           // Grip — straight rectangle (overlap into guard and pommel)
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
-          // Grip highlight — sun-facing edge
-          if (refl > 0.05) {
-            const grHighX = leftCatch ? -gripW / 2 : gripW / 2 - gripW * 0.2;
-            ctx.fillStyle = leftCatch ? leftColor : rightColor;
-            ctx.fillRect(grHighX, guardH, gripW * 0.2, gripH);
-          }
-          ctx.fillStyle = swordBase;
           // Pommel — sits directly on grip
           let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
           const pommelType = (ph >>> 0) % 2;
