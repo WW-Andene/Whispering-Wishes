@@ -2355,13 +2355,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       function dens(x, y) { return (x < 0 || x >= w || y < 0 || y >= h) ? 0 : dd[(y * w + x) * 4]; }
       const sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens;
       const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
-      // Sunset palette — 4 distinct warm shades from cream to dark amber
-      // Shadow (deepest stacking): warm dark brown-orange, never cold
-      const shR = Math.round(55 + ds * 20 + lr * 15), shG = Math.round(25 + ds * 10 + lr * 8), shB = Math.round(12 + ds * 5 + lr * 5);
-      // Lit (sun-facing): bright warm cream-white
-      const ltR = Math.min(255, Math.round(220 + ds * 30 + proximity * 5)), ltG = Math.min(255, Math.round(180 + ds * 25 + proximity * 10)), ltB = Math.min(255, Math.round(120 + ds * 15 + proximity * 5));
-      // Rim: brilliant warm gold edge
-      const rmR = Math.min(255, Math.round(240 + ds * 15)), rmG = Math.min(255, Math.round(190 + ds * 15 + proximity * 10)), rmB = Math.min(255, Math.round(100 + ds * 10 + proximity * 10));
+      // Sunset palette — matching warm amber-brown reference
+      // Shadow: deep warm brown (like dark amber/chocolate, not olive)
+      const shR = Math.round(50 + ds * 15 + lr * 10), shG = Math.round(20 + ds * 8 + lr * 5), shB = Math.round(8 + ds * 4 + lr * 3);
+      // Lit: warm golden amber (NOT cream-white — warm gold like the reference)
+      const ltR = Math.min(255, Math.round(190 + ds * 30 + proximity * 10)), ltG = Math.min(255, Math.round(120 + ds * 20 + proximity * 8)), ltB = Math.min(255, Math.round(55 + ds * 10 + proximity * 5));
+      // Rim: bright warm orange-gold edge
+      const rmR = Math.min(255, Math.round(220 + ds * 20)), rmG = Math.min(255, Math.round(150 + ds * 15 + proximity * 8)), rmB = Math.min(255, Math.round(60 + ds * 10 + proximity * 5));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
