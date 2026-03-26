@@ -190,6 +190,8 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   swipeNavigation: false,
   animationsEnabled: 'on', // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
   bgStyle: 'none', // 'none' | 'reflect' | 'resonance' | 'honour' — background animation style
+  bgResolution: null, // null = auto (50% on, 100% full) | 25 | 50 | 100 | 200
+  bgFps: null, // null = auto (15 on, 30 full) | 15 | 30 | 45 | 60
   theme: 'default' // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
 });
 const TRACKER_CATEGORIES = Object.freeze([
@@ -3392,13 +3394,13 @@ function WhisperingWishesInner() {
   return (
     <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {visualSettings.bgStyle === 'resonance' ? (
-        <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+        <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
       ) : visualSettings.bgStyle === 'honour' ? (
-        <Honour oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+        <Honour oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
       ) : visualSettings.bgStyle === 'reflect' ? (
         <>
-          <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-          <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+          <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
+          <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
         </>
       ) : null}
       <KuroStyles oledMode={visualSettings.oledMode} />
@@ -7906,6 +7908,40 @@ function WhisperingWishesInner() {
                         style={visualSettings.bgStyle !== 'honour' ? { background: 'var(--bg-btn)' } : undefined}
                       >Honour</button>
                     </div>
+                    {visualSettings.bgStyle !== 'none' && (
+                      <>
+                        <div className="flex items-center gap-2 mt-2.5">
+                          <div className="text-gray-500 text-[9px] w-[52px] shrink-0">Resolution</div>
+                          <div className="flex gap-1">
+                            {[25, 50, 100, 200].map(res => {
+                              const isAuto = visualSettings.bgResolution === null;
+                              const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
+                              const isActive = isAuto ? res === autoVal : visualSettings.bgResolution === res;
+                              return <button key={res}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === (visualSettings.animationsEnabled === 'full' ? 100 : 50) ? null : res })}
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-purple-500/80 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                              >{res}%</button>;
+                            })}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="text-gray-500 text-[9px] w-[52px] shrink-0">FPS</div>
+                          <div className="flex gap-1">
+                            {[15, 30, 45, 60].map(fps => {
+                              const isAuto = visualSettings.bgFps === null;
+                              const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
+                              const isActive = isAuto ? fps === autoVal : visualSettings.bgFps === fps;
+                              return <button key={fps}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === (visualSettings.animationsEnabled === 'full' ? 30 : 15) ? null : fps })}
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-purple-500/80 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                              >{fps}</button>;
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 

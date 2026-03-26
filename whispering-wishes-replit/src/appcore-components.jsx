@@ -1199,7 +1199,7 @@ async function saveBgFrames(bgId, frames, w, h) {
 // LAYER A: Smooth ambient glow gradient — z-index 1
 // P11-FIX: Wrapped in memo — canvas heavy lifting is in useEffect, but memo prevents
 // unnecessary React reconciliation on parent re-renders (Step 7 audit — LOW-3b)
-const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
+const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (animationsEnabled === 'off' || animationsEnabled === false) {
@@ -1221,7 +1221,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     if (!bctx) return;
     let animId;
     const isFull = animationsEnabled === 'full';
-    const BLUR_SCALE = isFull ? 1 : 0.5; // Full res in full mode, 50% in on mode
+    const BLUR_SCALE = (bgResolution || (isFull ? 100 : 50)) / 100;
+    const frameInterval = bgFps ? Math.round(1000 / bgFps) : (isFull ? 33 : 66);
     let w, h, bw, bh;
 
     // OLED mode uses darker base color
@@ -1251,7 +1252,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 33) return;
+      if (t - lastFrame < frameInterval) return;
       lastFrame = t;
       const time = t * 0.00075; // 25% slower
       bctx.fillStyle = bgColor;
@@ -1311,7 +1312,7 @@ BackgroundGlow.displayName = 'BackgroundGlow';
 
 // LAYER B: Triangle wave mask — traveling wavefront specular, z-index 2
 // P11-FIX: Wrapped in memo — same rationale as BackgroundGlow (Step 7 audit — LOW-3b)
-const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
+const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (animationsEnabled === 'off' || animationsEnabled === false) {
@@ -1330,7 +1331,8 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     if (!ctx) return;
     let animId;
     const isFull = animationsEnabled === 'full';
-    const triScale = isFull ? 1 : 0.5;
+    const triScale = (bgResolution || (isFull ? 100 : 50)) / 100;
+    const frameInterval = bgFps ? Math.round(1000 / bgFps) : (isFull ? 33 : 66);
 
     const TW = 36;
     const TH = 31;
@@ -1361,7 +1363,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 33) return;
+      if (t - lastFrame < frameInterval) return;
       lastFrame = t;
       ctx.save();
       ctx.scale(triScale, triScale);
@@ -1445,7 +1447,7 @@ TriangleMirrorWave.displayName = 'TriangleMirrorWave';
 // The ribbon is a ring of dots with width (multiple rows), viewed from the side.
 // It undulates up/down like a sine wave as it goes around, and the whole thing rotates.
 // Think of it like a halo or ring seen nearly edge-on, rippling like a ribbon.
-const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
+const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (animationsEnabled === 'off' || animationsEnabled === false) {
@@ -1464,7 +1466,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let animId;
 
     const isFull = animationsEnabled === 'full';
-    const resScale = isFull ? 1 : 0.5;
+    const resScale = (bgResolution || (isFull ? 100 : 50)) / 100;
+    const frameInterval = bgFps ? Math.round(1000 / bgFps) : (isFull ? 33 : 66);
     const alphaScale = isFull ? 1.5 : 1.0;
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(3,4,12)';
 
@@ -1523,7 +1526,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 33) return;
+      if (t - lastFrame < frameInterval) return;
       lastFrame = t;
       const time = t * 0.00075; // 25% slower globally
 
@@ -2258,7 +2261,7 @@ ResonanceField.displayName = 'ResonanceField';
 
 // LAYER ALT-2: Augusta Ruins — Ancient golden ruins with sun glow, mist, and floating dust
 // Inspired by Rinascita: warm amber tones, stone pillars/arches, atmospheric haze, golden sunlight
-const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
+const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (animationsEnabled === 'off' || animationsEnabled === false) {
@@ -2343,9 +2346,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let skyCacheChecked = false;
     let skyCacheLoading = false;
 
+    const honourFps = bgFps || (isFull ? 30 : 15);
+    const honourInterval = Math.round(1000 / honourFps);
+    const honourScale = (bgResolution || (isFull ? 100 : 50)) / 100 * 0.33;
+
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 50) return;
+      if (t - lastFrame < honourInterval) return;
       lastFrame = t;
       const time = t * 0.0005;
 
@@ -2388,7 +2395,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
         // === PRE-RENDERED SKY FRAMES (GIF-like playback) ===
         var totalSkyFrames = 80;
-        var skyScale = 0.33;
+        var skyScale = honourScale;
 
         // Try loading from IndexedDB cache first
         if (!skyFrames && !skyPrerendering && !skyCacheChecked && !skyCacheLoading) {
