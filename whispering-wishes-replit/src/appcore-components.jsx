@@ -2975,24 +2975,53 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          // Dynamic metallic sword shading — grey metal reflecting sun color
+          // Dynamic metallic sword shading — light position on blade body
           const sdx = s.scrX - sunX, sdy = s.scrY - sunY;
           const sunDist = Math.sqrt(sdx * sdx + sdy * sdy);
           const sunProx = Math.max(0, 1 - sunDist / (Math.max(W, H) * 0.8));
-          const refl = sunProx * sunProx; // reflection intensity
-          // Base: metallic grey. Reflection adds warm sun color (orange-gold)
-          const dR = Math.round(18 + refl * 45), dG = Math.round(18 + refl * 25), dB = Math.round(20 + refl * 10);
-          const lR = Math.round(50 + refl * 80), lG = Math.round(48 + refl * 50), lB = Math.round(50 + refl * 20);
-          const darkSide = `rgb(${dR},${dG},${dB})`;
-          const lightSide = `rgb(${lR},${lG},${lB})`;
-          const toSunAngle = Math.atan2(-s.wx, 20);
-          const leftLight = Math.sin(s.yAngle - toSunAngle) > 0;
+          const refl = sunProx * sunProx;
+          // Sun direction relative to sword (in screen space, accounting for lean)
+          const sunAngleToSword = Math.atan2(sunY - s.scrY, sunX - s.scrX) - (-s.lean);
+          // How much sun hits the front face vs comes from behind
+          const frontFacing = Math.cos(sunAngleToSword); // 1=sun in front, -1=sun behind
+          const sideFacing = Math.sin(sunAngleToSword);  // +1=sun from left, -1=from right
+          const backlit = Math.max(0, -frontFacing); // 0-1 how backlit
+          const frontlit = Math.max(0, frontFacing);  // 0-1 how frontlit
+          // Base metallic grey
+          const baseM = 18, baseL = 50;
+          // Body color: frontlit = bright warm, backlit = dark cool
+          const bodyBright = baseM + frontlit * refl * 60;
+          const bodyR = Math.round(bodyBright + refl * frontlit * 30);
+          const bodyG = Math.round(bodyBright + refl * frontlit * 15);
+          const bodyB = Math.round(bodyBright * 1.05);
+          // Lit edge: the side facing the sun catches a bright highlight
+          const edgeBright = baseL + refl * 90;
+          const edgeR = Math.round(edgeBright + refl * 40);
+          const edgeG = Math.round(edgeBright + refl * 25);
+          const edgeB = Math.round(edgeBright * 0.9);
+          // Rim light for backlit swords — bright outline, dark body
+          const rimStr = backlit * refl;
+          const rimR = Math.round(baseM + rimStr * 80);
+          const rimG = Math.round(baseM + rimStr * 50);
+          const rimB = Math.round(baseM + rimStr * 20);
+          // Which side catches the light
+          const leftCatch = sideFacing > 0;
+          const leftColor = leftCatch
+            ? `rgb(${Math.min(255, edgeR)},${Math.min(255, edgeG)},${Math.min(255, edgeB)})`
+            : `rgb(${bodyR},${bodyG},${bodyB})`;
+          const rightColor = leftCatch
+            ? `rgb(${bodyR},${bodyG},${bodyB})`
+            : `rgb(${Math.min(255, edgeR)},${Math.min(255, edgeG)},${Math.min(255, edgeB)})`;
+          // Backlit rim color for guard/grip
+          const swordBase = backlit > 0.3
+            ? `rgb(${rimR},${rimG},${rimB})`
+            : `rgb(${bodyR},${bodyG},${bodyB})`;
 
           // Blade — split into two halves along Y axis
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
           // Left half
-          ctx.fillStyle = leftLight ? lightSide : darkSide;
+          ctx.fillStyle = leftColor;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3003,7 +3032,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = leftLight ? darkSide : lightSide;
+          ctx.fillStyle = rightColor;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3013,7 +3042,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          ctx.fillStyle = darkSide;
+          ctx.fillStyle = swordBase;
           // Guard — varies per sword
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
@@ -3047,9 +3076,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           }
           ctx.fill();
+          // Guard highlight — sun-facing edge of guard catches light
+          if (refl > 0.05) {
+            const gHighX = leftCatch ? -guardW / 2 : guardW / 2;
+            const gHighW = guardW * 0.15;
+            ctx.fillStyle = leftCatch ? leftColor : rightColor;
+            ctx.fillRect(gHighX - (leftCatch ? 0 : gHighW), 0, gHighW, guardH);
+          }
+          ctx.fillStyle = swordBase;
           // Grip — straight rectangle (overlap into guard and pommel)
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
+          // Grip highlight — sun-facing edge
+          if (refl > 0.05) {
+            const grHighX = leftCatch ? -gripW / 2 : gripW / 2 - gripW * 0.2;
+            ctx.fillStyle = leftCatch ? leftColor : rightColor;
+            ctx.fillRect(grHighX, guardH, gripW * 0.2, gripH);
+          }
+          ctx.fillStyle = swordBase;
           // Pommel — sits directly on grip
           let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
           const pommelType = (ph >>> 0) % 2;
