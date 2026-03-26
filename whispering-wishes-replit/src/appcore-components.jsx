@@ -2609,29 +2609,50 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunX = W * 0.5, sunY = H * 0.3;
         const sunR = H * 0.06;
 
-        // Sky + sun — bake to offscreen canvas once, drawImage every frame
+        // Sky — warm sunset gradient, light comes from sun, darkness from clouds only
         if (!skyCache || skyCache.width !== W || skyCache.height !== H) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
-          sc.fillStyle = 'rgb(8,6,12)'; sc.fillRect(0, 0, W, H);
-          const skyR1 = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
-          skyR1.addColorStop(0, 'rgba(255,200,100,0.55)'); skyR1.addColorStop(0.08, 'rgba(240,150,60,0.4)');
-          skyR1.addColorStop(0.18, 'rgba(200,80,30,0.3)'); skyR1.addColorStop(0.35, 'rgba(140,40,20,0.2)');
-          skyR1.addColorStop(0.55, 'rgba(60,15,15,0.12)'); skyR1.addColorStop(0.8, 'rgba(20,8,15,0.05)');
-          skyR1.addColorStop(1, 'rgba(8,6,12,0)');
-          sc.fillStyle = skyR1; sc.fillRect(0, 0, W, H);
-          const skyR2 = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
-          skyR2.addColorStop(0, 'rgba(255,240,180,0.6)'); skyR2.addColorStop(0.15, 'rgba(255,190,100,0.4)');
-          skyR2.addColorStop(0.4, 'rgba(220,120,50,0.15)'); skyR2.addColorStop(1, 'rgba(120,40,15,0)');
+          // Base vertical gradient — warm sunset sky (light near horizon)
+          const skyBg = sc.createLinearGradient(0, 0, 0, H);
+          skyBg.addColorStop(0, 'rgb(45,30,65)');
+          skyBg.addColorStop(0.15, 'rgb(75,40,70)');
+          skyBg.addColorStop(0.30, 'rgb(130,65,65)');
+          skyBg.addColorStop(0.45, 'rgb(190,105,65)');
+          skyBg.addColorStop(0.60, 'rgb(230,150,75)');
+          skyBg.addColorStop(0.75, 'rgb(250,190,95)');
+          skyBg.addColorStop(0.88, 'rgb(255,215,120)');
+          skyBg.addColorStop(1, 'rgb(255,235,155)');
+          sc.fillStyle = skyBg; sc.fillRect(0, 0, W, H);
+          // Sun warm radial glow — brightens the area around the sun
+          const sunGlow = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.6);
+          sunGlow.addColorStop(0, 'rgba(255,240,180,0.5)');
+          sunGlow.addColorStop(0.1, 'rgba(255,210,120,0.35)');
+          sunGlow.addColorStop(0.25, 'rgba(255,180,80,0.2)');
+          sunGlow.addColorStop(0.5, 'rgba(255,140,50,0.08)');
+          sunGlow.addColorStop(1, 'rgba(255,100,30,0)');
+          sc.fillStyle = sunGlow; sc.fillRect(0, 0, W, H);
+          // Hot inner glow
+          const skyR2 = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.25);
+          skyR2.addColorStop(0, 'rgba(255,245,200,0.6)');
+          skyR2.addColorStop(0.2, 'rgba(255,220,140,0.35)');
+          skyR2.addColorStop(0.5, 'rgba(255,180,90,0.12)');
+          skyR2.addColorStop(1, 'rgba(200,120,50,0)');
           sc.fillStyle = skyR2; sc.fillRect(0, 0, W, H);
-          const sh = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
-          sh.addColorStop(0, 'rgba(255,255,220,0.7)'); sh.addColorStop(0.06, 'rgba(255,240,160,0.5)');
-          sh.addColorStop(0.15, 'rgba(255,200,80,0.3)'); sh.addColorStop(0.35, 'rgba(255,140,40,0.1)');
-          sh.addColorStop(1, 'rgba(200,60,10,0)');
+          // Sun disc halo
+          const sh = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
+          sh.addColorStop(0, 'rgba(255,255,230,0.8)');
+          sh.addColorStop(0.05, 'rgba(255,245,180,0.5)');
+          sh.addColorStop(0.12, 'rgba(255,220,110,0.25)');
+          sh.addColorStop(0.3, 'rgba(255,180,60,0.08)');
+          sh.addColorStop(1, 'rgba(200,100,20,0)');
           sc.fillStyle = sh; sc.fillRect(0, 0, W, H);
+          // Sun disc core
           const sd = sc.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
-          sd.addColorStop(0, 'rgba(255,255,235,1)'); sd.addColorStop(0.25, 'rgba(255,245,190,0.9)');
-          sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
+          sd.addColorStop(0, 'rgba(255,255,240,1)');
+          sd.addColorStop(0.3, 'rgba(255,250,200,0.9)');
+          sd.addColorStop(0.6, 'rgba(255,225,140,0.5)');
+          sd.addColorStop(1, 'rgba(255,190,80,0)');
           sc.fillStyle = sd; sc.beginPath(); sc.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); sc.fill();
         }
         ctx.drawImage(skyCache, 0, 0);
