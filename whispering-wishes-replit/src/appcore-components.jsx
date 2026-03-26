@@ -2286,8 +2286,30 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const sunX = W * 0.5, sunY = H * 0.3;
         const sunR = H * 0.06;
 
-        // Clear canvas (transparent — CSS sky shows through)
-        ctx.clearRect(0, 0, W, H);
+        // Dark dramatic sky
+        ctx.fillStyle = 'rgb(8,6,12)'; ctx.fillRect(0, 0, W, H);
+        // Deep warm radial from sun
+        var skyR1 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
+        skyR1.addColorStop(0, 'rgba(255,200,100,0.55)'); skyR1.addColorStop(0.08, 'rgba(240,150,60,0.4)');
+        skyR1.addColorStop(0.18, 'rgba(200,80,30,0.3)'); skyR1.addColorStop(0.35, 'rgba(140,40,20,0.2)');
+        skyR1.addColorStop(0.55, 'rgba(60,15,15,0.12)'); skyR1.addColorStop(0.8, 'rgba(20,8,15,0.05)');
+        skyR1.addColorStop(1, 'rgba(8,6,12,0)');
+        ctx.fillStyle = skyR1; ctx.fillRect(0, 0, W, H);
+        // Hot inner glow
+        var skyR2 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
+        skyR2.addColorStop(0, 'rgba(255,240,180,0.6)'); skyR2.addColorStop(0.15, 'rgba(255,190,100,0.4)');
+        skyR2.addColorStop(0.4, 'rgba(220,120,50,0.15)'); skyR2.addColorStop(1, 'rgba(120,40,15,0)');
+        ctx.fillStyle = skyR2; ctx.fillRect(0, 0, W, H);
+        // Sun disc
+        var sh = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
+        sh.addColorStop(0, 'rgba(255,255,220,0.7)'); sh.addColorStop(0.06, 'rgba(255,240,160,0.5)');
+        sh.addColorStop(0.15, 'rgba(255,200,80,0.3)'); sh.addColorStop(0.35, 'rgba(255,140,40,0.1)');
+        sh.addColorStop(1, 'rgba(200,60,10,0)');
+        ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
+        var sd = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+        sd.addColorStop(0, 'rgba(255,255,235,1)'); sd.addColorStop(0.25, 'rgba(255,245,190,0.9)');
+        sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
+        ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
 
         // === HALF-RES SKY BUFFER — clouds + god rays every frame ===
         if (!sceneClouds && !cloudWorkerPending) {
@@ -2613,10 +2635,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
   }, [oledMode, animationsEnabled]);
 
-  return (<>
-    <div className="fixed inset-0 pointer-events-none" style={{zIndex: 0, background: 'radial-gradient(circle at 50% 30%, rgba(255,255,235,0.95) 0%, rgba(255,245,190,0.85) 0.8%, rgba(255,210,110,0.4) 1.8%, rgba(255,170,60,0) 3%), radial-gradient(circle at 50% 30%, rgba(255,255,220,0.7) 0%, rgba(255,240,160,0.5) 1%, rgba(255,200,80,0.3) 2.5%, rgba(255,140,40,0.1) 6%, rgba(200,60,10,0) 15%), radial-gradient(circle at 50% 30%, rgba(255,240,180,0.6) 0%, rgba(255,190,100,0.4) 5%, rgba(220,120,50,0.15) 12%, rgba(120,40,15,0) 35%), radial-gradient(circle at 50% 30%, rgba(255,200,100,0.55) 0%, rgba(240,150,60,0.4) 8%, rgba(200,80,30,0.3) 18%, rgba(140,40,20,0.2) 35%, rgba(60,15,15,0.12) 55%, rgba(20,8,15,0.05) 80%, rgba(8,6,12,0) 95%), rgb(8,6,12)'}} aria-hidden="true" />
-    <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform', background: 'transparent'}} aria-hidden="true" role="presentation" />
-  </>);
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
 AugustaRuins.displayName = 'AugustaRuins';
 
