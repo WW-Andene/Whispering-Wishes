@@ -7876,14 +7876,14 @@ function WhisperingWishesInner() {
 
                 {/* Background Style Selector */}
                 {visualSettings.animationsEnabled !== 'off' && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3 mb-3">
                       <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
                         <Diamond size={16} />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div>
                         <div className="text-white text-xs font-medium">Background Style</div>
-                        <div className="text-gray-400 text-[10px] truncate">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
+                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-1.5">
@@ -7901,7 +7901,7 @@ function WhisperingWishesInner() {
                       ))}
                     </div>
                     {visualSettings.bgStyle !== 'none' && (
-                      <div className="mt-2.5 pt-2.5 border-t border-white/5 space-y-2">
+                      <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
                         <div className="flex items-center gap-3">
                           <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">Resolution</div>
                           <div className="flex gap-1 flex-1">
