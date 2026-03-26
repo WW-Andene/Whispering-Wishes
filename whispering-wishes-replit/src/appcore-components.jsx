@@ -2869,7 +2869,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         let swordIdx = 0;
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
-        for (let bz = 0; bz < planeSize; ) {
+        for (let bz = -7; bz < planeSize; ) {
           // 3 density zones: near +33% denser, mid normal, far -33% sparser
           const zoneDepth = bz - camZ;
           const zoneRange = planeSize - camZ;
