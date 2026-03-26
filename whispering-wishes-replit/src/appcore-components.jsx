@@ -2870,10 +2870,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
         for (let bz = -7; bz < planeSize; ) {
-          // 4 density zones: +66%, +33%, normal, -33%
-          const zoneDepth = bz - camZ;
-          const zoneRange = planeSize - camZ;
-          const zoneDensity = zoneDepth < zoneRange * 0.25 ? 0.34 : zoneDepth < zoneRange * 0.5 ? 0.67 : zoneDepth < zoneRange * 0.75 ? 1.0 : 1.33;
+          // 4 density zones: +66%, +33%, normal, -33% (from z=-7 to z=50)
+          const zoneStart = -7;
+          const zoneT = (bz - zoneStart) / (planeSize - zoneStart);
+          const zoneDensity = zoneT < 0.25 ? 0.34 : zoneT < 0.5 ? 0.67 : zoneT < 0.75 ? 1.0 : 1.33;
           const rowSpacingZ = (1.0 + ihash(swordIdx + 7000, sceneSeed) * 3.0) * zoneDensity;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = (1.0 + ihash(swordIdx + 8000, sceneSeed) * 3.0) * zoneDensity;
