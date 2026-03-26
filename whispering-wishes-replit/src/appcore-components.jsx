@@ -2834,32 +2834,69 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
-        ctx.fillRect(0, edgeY, W, H - edgeY);
+        ctx.fillRect(0, edgeY - curveStr - 5, W, H - edgeY + curveStr + 5);
 
-        for (let i = zSlices - 1; i >= 0; i--) {
-          const t0 = i / zSlices, t1 = (i + 1) / zSlices;
-          const wz0 = zNear * Math.pow(zFar / zNear, t0);
-          const wz1 = zNear * Math.pow(zFar / zNear, t1);
-
-          const depthT = Math.pow(t0, 0.6);
-          const r = Math.round(90 - 72 * depthT);
-          const g = Math.round(55 - 45 * depthT);
-          const b = Math.round(32 - 26 * depthT);
-          ctx.fillStyle = `rgb(${r},${g},${b})`;
-
-          ctx.beginPath();
-          for (let j = 0; j <= xSegs; j++) {
-            const sx = W * j / xSegs;
-            const sy = curveY(sx, projY(wz1));
-            j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+        // --- Subdivided heightmap terrain mesh ---
+        // Fine grid in world space, noise-displaced heights, projected to screen
+        const terrGridX = 24; // horizontal subdivisions
+        const terrGridZ = 20; // depth subdivisions
+        const terrNoise = (wx, wz) => {
+          // 2-octave noise for terrain height
+          const n1 = hash(Math.floor(wx * 2.5) * 127.1 + Math.floor(wz * 2.5) * 311.7 + sceneSeed * 0.3);
+          const n2 = hash(Math.floor(wx * 5) * 73.3 + Math.floor(wz * 5) * 197.5 + sceneSeed * 0.7);
+          return (n1 * 0.65 + n2 * 0.35) * 0.4; // 0-0.4 height range
+        };
+        // Build vertex grid (world space → screen space)
+        const terrVerts = [];
+        for (let iz = 0; iz <= terrGridZ; iz++) {
+          const row = [];
+          const t = iz / terrGridZ;
+          const wz = zNear + Math.pow(t, 1.5) * (zFar - zNear); // exponential Z for perspective
+          for (let ix = 0; ix <= terrGridX; ix++) {
+            const xT = ix / terrGridX;
+            const wx = (xT - 0.5) * wz * 2; // world X spans visible width at this depth
+            const wy = terrNoise(wx, wz);
+            // Project: X and base Y from perspective, then offset Y by height
+            const sx = projX(wx, wz);
+            const baseY = projY(wz);
+            const sy = curveY(sx, baseY) - wy * focal / (wz - camZ) * 0.15;
+            row.push({ sx, sy, wy, wx, wz });
           }
-          for (let j = xSegs; j >= 0; j--) {
-            const sx = W * j / xSegs;
-            const sy = curveY(sx, projY(wz0));
-            ctx.lineTo(sx, sy);
+          terrVerts.push(row);
+        }
+        // Draw quads back-to-front
+        for (let iz = terrGridZ - 1; iz >= 0; iz--) {
+          for (let ix = 0; ix < terrGridX; ix++) {
+            const v00 = terrVerts[iz][ix];
+            const v10 = terrVerts[iz][ix + 1];
+            const v01 = terrVerts[iz + 1][ix];
+            const v11 = terrVerts[iz + 1][ix + 1];
+            // Skip offscreen
+            if (v00.sy > H + 10 && v10.sy > H + 10 && v01.sy > H + 10 && v11.sy > H + 10) continue;
+            if (v00.sy < edgeY - curveStr - 20 && v10.sy < edgeY - curveStr - 20) continue;
+            // Color: base depth color + height-based variation
+            const depthT = Math.pow(iz / terrGridZ, 0.6);
+            const avgH = (v00.wy + v10.wy + v01.wy + v11.wy) * 0.25;
+            // Compute slope for shading — higher slope = darker (crevice)
+            const slopeX = Math.abs(v10.wy - v00.wy) + Math.abs(v11.wy - v01.wy);
+            const slopeZ = Math.abs(v01.wy - v00.wy) + Math.abs(v11.wy - v10.wy);
+            const slope = Math.min(1, (slopeX + slopeZ) * 5);
+            // Peaks lighter, valleys darker, slopes darkest
+            const heightBright = 0.85 + avgH * 0.8; // 0.85-1.17
+            const slopeDark = 1 - slope * 0.25; // slopes darken
+            const bright = heightBright * slopeDark;
+            const bR = Math.round(Math.min(255, (90 - 72 * depthT) * bright));
+            const bG = Math.round(Math.min(255, (55 - 45 * depthT) * bright));
+            const bB = Math.round(Math.min(255, (32 - 26 * depthT) * bright));
+            ctx.fillStyle = `rgb(${bR},${bG},${bB})`;
+            ctx.beginPath();
+            ctx.moveTo(v00.sx, v00.sy);
+            ctx.lineTo(v10.sx, v10.sy);
+            ctx.lineTo(v11.sx, v11.sy);
+            ctx.lineTo(v01.sx, v01.sy);
+            ctx.closePath();
+            ctx.fill();
           }
-          ctx.closePath();
-          ctx.fill();
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
