@@ -2355,13 +2355,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       function dens(x, y) { return (x < 0 || x >= w || y < 0 || y >= h) ? 0 : dd[(y * w + x) * 4]; }
       const sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens;
       const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
-      // Sunset palette — shadows are warm dark orange, never cold/black
-      // Even the darkest cloud underside gets warm ambient from the orange sky
-      const shR = Math.round(80 + ds * 30 + lr * 25), shG = Math.round(35 + ds * 15 + lr * 15), shB = Math.round(15 + ds * 8 + lr * 10);
-      // Lit side — bright warm white/gold from direct sunlight
-      const ltR = Math.round(180 + ds * 40 + proximity * 25 + lr * 10), ltG = Math.round(130 + ds * 30 + proximity * 20 + lr * 10), ltB = Math.round(70 + ds * 20 + proximity * 10 + lr * 10);
-      // Rim — brilliant warm edge where sun peeks around cloud
-      const rmR = Math.min(255, Math.round(220 + ds * 30 + proximity * 5)), rmG = Math.min(255, Math.round(160 + ds * 25 + proximity * 10)), rmB = Math.min(255, Math.round(80 + ds * 15 + proximity * 10));
+      // Sunset palette — 4 distinct warm shades from cream to dark amber
+      // Shadow (deepest stacking): warm dark brown-orange, never cold
+      const shR = Math.round(55 + ds * 20 + lr * 15), shG = Math.round(25 + ds * 10 + lr * 8), shB = Math.round(12 + ds * 5 + lr * 5);
+      // Lit (sun-facing): bright warm cream-white
+      const ltR = Math.min(255, Math.round(220 + ds * 30 + proximity * 5)), ltG = Math.min(255, Math.round(180 + ds * 25 + proximity * 10)), ltB = Math.min(255, Math.round(120 + ds * 15 + proximity * 5));
+      // Rim: brilliant warm gold edge
+      const rmR = Math.min(255, Math.round(240 + ds * 15)), rmG = Math.min(255, Math.round(190 + ds * 15 + proximity * 10)), rmB = Math.min(255, Math.round(100 + ds * 10 + proximity * 10));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2683,7 +2683,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vx = -Math.sin(ca) * cloud.orbitDist * angSpeed, vy = Math.cos(ca) * cloud.orbitDist * flatR * angSpeed;
           const speed = Math.sqrt(vx * vx + vy * vy);
           const drawW = bk.w, drawH = bk.h;
-          if (speed > 0.05) {
+          if (speed > 0.01) {
             const stretchAmt = 1 + Math.min(0.6, speed * 0.25), squeezeAmt = 1 / Math.sqrt(stretchAmt);
             const centSkew = Math.max(-0.3, Math.min(0.3, angSpeed * cloud.orbitDist * 0.0004));
             const vAngle = Math.atan2(vy, vx);
