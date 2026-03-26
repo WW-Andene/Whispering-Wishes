@@ -2832,9 +2832,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
         const xSegs = 24;
 
-        // Dark base fill below horizon
+        // Dark base fill below curved horizon — extend above edgeY to cover curve
         ctx.fillStyle = 'rgb(18,10,6)';
-        ctx.fillRect(0, edgeY, W, H - edgeY);
+        ctx.fillRect(0, edgeY - curveStr - 2, W, H - edgeY + curveStr + 2);
 
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
