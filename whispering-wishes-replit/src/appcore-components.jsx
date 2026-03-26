@@ -2244,8 +2244,23 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
     const sceneSeed = 52908;
 
+    // === Cloud system from cloud-demo ===
+    function seededRandom(seed) { var s = seed; return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+    var CLOUD_DEFS = [
+      { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.06, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
+      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.35, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
+      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.42, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
+      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.48, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
+    ];
+    function generateBalls(seed, baseRadius, cloudType) { var def = CLOUD_DEFS[cloudType]; var rng = seededRandom(seed); var balls = []; function spawnCluster(cx, cy, radius, depth, maxDepth) { balls.push({ cx: cx, cy: cy, r: radius * (0.6 + rng() * 0.5) }); if (depth >= maxDepth) return; var cc = Math.floor(2 + rng() * 3); for (var c = 0; c < cc; c++) { var a = rng() * Math.PI * 2, d = radius * (0.3 + rng() * 0.7); var nx = (rng() - 0.5) * radius * 0.4, ny = (rng() - 0.5) * radius * 0.4; spawnCluster(cx + Math.cos(a) * d + nx, cy + Math.sin(a) * d + ny, radius * (0.35 + rng() * 0.35), depth + 1, maxDepth); } } var fd = cloudType === 0 ? 1 : cloudType === 1 ? 2 : 3; var sc = cloudType === 0 ? 2 : cloudType === 1 ? 2 : cloudType === 2 ? 3 : 4; var sr = baseRadius * (cloudType === 0 ? 0.5 : 0.4); for (var s = 0; s < sc; s++) { var sa = rng() * Math.PI * 2, sd = baseRadius * rng() * 0.2; spawnCluster(Math.cos(sa) * sd, Math.sin(sa) * sd, sr * (0.7 + rng() * 0.6), 0, fd); } var wc = def.wispN + Math.floor(rng() * 3); for (var w = 0; w < wc; w++) { var wa = rng() * Math.PI * 2, wd = baseRadius * (0.4 + rng() * 0.6), wr = baseRadius * (0.05 + rng() * 0.12); balls.push({ cx: Math.cos(wa) * wd + (rng() - 0.5) * baseRadius * 0.3, cy: Math.sin(wa) * wd + (rng() - 0.5) * baseRadius * 0.3, r: wr }); } return balls; }
+    function bakeMetaball(balls, sunAngle, cloudType, depth, proximity, occlusion, resScale) { var def = CLOUD_DEFS[cloudType]; var sc = resScale || 1; var margin = 2.5, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9; for (var i = 0; i < balls.length; i++) { var b = balls[i]; minX = Math.min(minX, b.cx - b.r * margin); minY = Math.min(minY, b.cy - b.r * margin); maxX = Math.max(maxX, b.cx + b.r * margin); maxY = Math.max(maxY, b.cy + b.r * margin); } var pad = 6; var fullW = Math.ceil(maxX - minX) + pad * 2, fullH = Math.ceil(maxY - minY) + pad * 2; if (fullW <= 0 || fullH <= 0 || fullW > 800 || fullH > 800) return null; var w = Math.max(4, Math.round(fullW * sc)), h = Math.max(4, Math.round(fullH * sc)); var ox = (-minX + pad) * sc, oy = (-minY + pad) * sc; var dCvs = document.createElement("canvas"); dCvs.width = w; dCvs.height = h; var dCtx = dCvs.getContext("2d"); dCtx.globalCompositeOperation = "lighter"; var fo = def.densFall, pk = def.densPeak; for (var bi = 0; bi < balls.length; bi++) { var ball = balls[bi], bx = ox + ball.cx * sc, by = oy + ball.cy * sc, br = ball.r * def.densMul * sc; var grad = dCtx.createRadialGradient(bx, by, 0, bx, by, br); grad.addColorStop(0, "rgba(" + pk + "," + pk + "," + pk + ",1)"); grad.addColorStop(0.25, "rgba(" + pk + "," + pk + "," + pk + "," + fo[0] + ")"); grad.addColorStop(0.5, "rgba(" + pk + "," + pk + "," + pk + "," + fo[1] + ")"); grad.addColorStop(0.75, "rgba(" + pk + "," + pk + "," + pk + "," + fo[2] + ")"); grad.addColorStop(1, "rgba(0,0,0,0)"); dCtx.fillStyle = grad; dCtx.beginPath(); dCtx.arc(bx, by, br, 0, Math.PI * 2); dCtx.fill(); } var dd = dCtx.getImageData(0, 0, w, h).data; var oCvs = document.createElement("canvas"); oCvs.width = w; oCvs.height = h; var oCtx = oCvs.getContext("2d"), oD = oCtx.createImageData(w, h), od = oD.data; function dens(x, y) { return (x < 0 || x >= w || y < 0 || y >= h) ? 0 : dd[(y * w + x) * 4]; } var sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens; var lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth; var shR = Math.round(8 + ds * 12 + lr * 40), shG = Math.round(4 + ds * 6 + lr * 40), shB = Math.round(3 + ds * 4 + lr * 40); var ltR = Math.round(55 + ds * 50 + proximity * 30 + lr * 40), ltG = Math.round(32 + ds * 25 + proximity * 15 + lr * 30), ltB = Math.round(18 + ds * 14 + proximity * 8 + lr * 25); var rmR = Math.min(255, Math.round(140 + ds * 50 + proximity * 60)), rmG = Math.min(255, Math.round(80 + ds * 25 + proximity * 30)), rmB = Math.min(255, Math.round(30 + ds * 10 + proximity * 12)); for (var py = 2; py < h - 2; py++) { for (var px = 2; px < w - 2; px++) { var idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue; var thick = Math.min(1, (density - hT) / (mD - hT)); var gx = (dens(px+1,py)*2+dens(px+2,py))-(dens(px-1,py)*2+dens(px-2,py)); var gy = (dens(px,py+1)*2+dens(px,py+2))-(dens(px,py-1)*2+dens(px,py-2)); var gl = Math.sqrt(gx*gx+gy*gy), nx2 = 0, ny2 = 0; if (gl > 1) { nx2 = -gx/gl; ny2 = -gy/gl; } var sunF = (nx2*sdx+ny2*sdy)*0.5+0.5, thin = 1-thick; var rim = thin*thin*thin*Math.max(0,sunF)*0.7, sL = sunF*(0.35+thick*0.65); if (gl < 2) { sL *= 0.4; rim = 0; } if (levels <= 1) sL = 0.5; else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.2; else if (levels === 3) sL = sL > 0.6 ? 0.9 : sL > 0.3 ? 0.5 : 0.15; else { var band = sL > 0.7 ? 0.92 : sL > 0.45 ? 0.65 : sL > 0.2 ? 0.35 : 0.1; sL = band + (sL - band) * 0.3; } sL *= lr; var r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL); if (levels >= 2) { r = Math.min(255,r+Math.round(rmR*rim*0.4*lr)); g = Math.min(255,g+Math.round(rmG*rim*0.4*lr)); bv = Math.min(255,bv+Math.round(rmB*rim*0.4*lr)); } var alpha; if (def.alphaCurve===0) alpha=bAlpha*thick; else if (def.alphaCurve===1) alpha=bAlpha*thick*(0.4+thick*0.6); else alpha=bAlpha*thick*thick*(0.3+thick*0.7); od[idx]=r; od[idx+1]=g; od[idx+2]=bv; od[idx+3]=Math.round(alpha*255); } } oCtx.putImageData(oD, 0, 0); return { canvas: oCvs, ox: minX - pad, oy: minY - pad, w: fullW, h: fullH, sc: sc }; }
+    function buildCloudsForScene(W, H) { var sunX = W * 0.5, sunY = H * 0.3, sunR = H * 0.08; var minDist = sunR * 2, clouds = [], maxReach = Math.max(W, H) * 1.5, id = 0; function addC(seed, dist, angle, radius, dep, spd, cType) { var prox = Math.max(0, 1 - dist / maxReach); var balls = generateBalls(seed, radius, cType); var cx = sunX + Math.cos(angle) * dist, cy = sunY + Math.sin(angle) * dist * 0.7; var rs = cType <= 1 ? 0.5 : 1; var baked = bakeMetaball(balls, Math.atan2(sunY - cy, sunX - cx), cType, dep, prox, 0, rs); if (!baked) return; clouds.push({ id: id++, sunX: sunX, sunY: sunY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, noRefresh: cType <= 1 }); } function addHi(seed, dist, angle, radius, dep, spd, cType, layerY, layerFlat) { var prox = Math.max(0, 1 - dist / maxReach); var balls = generateBalls(seed, radius, cType); var hcx = sunX + Math.cos(angle) * dist; var hcy = layerY + Math.sin(angle) * dist * layerFlat; var rs = cType <= 1 ? 0.5 : 1; var baked = bakeMetaball(balls, Math.atan2(sunY - hcy, sunX - hcx), cType, dep, prox, 0, rs); if (!baked) return; clouds.push({ id: id++, sunX: sunX, sunY: layerY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, orbitFlatten: layerFlat, noRefresh: cType <= 1 }); } var speeds = [0.04, 0.07, 0.11, 0.18, 0.28], phases = [0, 1.0, 2.1, 3.4, 4.8]; for (var s = 0; s < 5; s++) { var nCl = 15 + Math.floor(hash(s * 100) * 10); for (var c = 0; c < nCl; c++) { var cs = s*1000+c*37, rng2 = seededRandom(cs); var dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist)); var ang = phases[s] + rng2() * Math.PI * 2, sr = rng2(), rad, cType; if (sr < 0.12) { rad = 75+rng2()*55; cType = 3; } else if (sr < 0.40) { rad = 35+rng2()*40; cType = 2; } else if (sr < 0.72) { rad = 18+rng2()*20; cType = 1; } else { rad = 8+rng2()*12; cType = 0; } var dep = Math.max(0, Math.min(1, (1-s/4)+(rng2()-0.5)*0.25)); var spd = speeds[s]/(0.5+rad/60)*(0.55+dep*0.45)/(0.3+dist/(H*0.5)); addC(cs, dist, ang, rad, dep, spd, cType); var nM = 6+Math.floor(rng2()*4); for (var m = 0; m < nM; m++) { var ms = cs+500+m*13, mr = seededRandom(ms), mRad = rad*(0.25+mr()*0.4), mType = cType>0?cType-1:0; var mDist = Math.max(minDist, dist+(mr()-0.5)*rad*4), mAng = ang+(mr()-0.5)*1.0; var mDep = Math.max(0, Math.min(1, dep+(mr()-0.5)*0.15)); addC(ms, mDist, mAng, mRad, mDep, speeds[s]/(0.5+mRad/60)*(0.55+mDep*0.45)/(0.3+mDist/(H*0.5))*1.1, mType); var nSm = 3+Math.floor(mr()*3); for (var sm = 0; sm < nSm; sm++) { var ss = ms+200+sm*7, sr2 = seededRandom(ss), sRad = mRad*(0.2+sr2()*0.35), sType = mType>0?mType-1:0; var sDist = Math.max(minDist, mDist+(sr2()-0.5)*mRad*4), sAng = mAng+(sr2()-0.5)*1.2; var sDep = Math.max(0, Math.min(1, mDep+(sr2()-0.5)*0.2)); addC(ss, sDist, sAng, sRad, sDep, speeds[s]/(0.5+sRad/60)*(0.55+sDep*0.45)/(0.3+sDist/(H*0.5))*1.3, sType); } } } } var hiSunY = sunY - H * 0.12, hiMin = minDist * 0.6, hiMax = maxReach * 0.9; var hiSp = [0.30, 0.22, 0.15, 0.10], hiPh = [0.5, 1.8, 3.3, 5.0]; for (var hs = 0; hs < 4; hs++) { var hCl = 9+Math.floor(hash(hs*200+77)*6); for (var hc = 0; hc < hCl; hc++) { var hcs = 50000+hs*1000+hc*41, hrng = seededRandom(hcs); var hDist = Math.max(hiMin, hiMin+Math.pow(hrng(),0.33)*(hiMax-hiMin)), hAng = hiPh[hs]+hrng()*Math.PI*2, hsr = hrng(); var hRad, hcT; if (hsr<0.15){hRad=30+hrng()*30;hcT=2;} else if(hsr<0.50){hRad=14+hrng()*18;hcT=1;} else{hRad=6+hrng()*10;hcT=0;} var hDep = Math.max(0, Math.min(1, (1-hs/3)+(hrng()-0.5)*0.2)); addHi(hcs, hDist, hAng, hRad, hDep, hiSp[hs]/(0.5+hRad/60)*(0.55+hDep*0.45)/(0.3+hDist/(H*0.5)), hcT, hiSunY, 0.35); var hnM = 2+Math.floor(hrng()*2); for (var hm = 0; hm < hnM; hm++) { var hms = hcs+600+hm*17, hmr = seededRandom(hms), hmRad = hRad*(0.3+hmr()*0.35), hmT = hcT>0?hcT-1:0; var hmDist = Math.max(hiMin, hDist+(hmr()-0.5)*hRad*2), hmAng = hAng+(hmr()-0.5)*0.5; addHi(hms, hmDist, hmAng, hmRad, Math.max(0,Math.min(1,hDep+(hmr()-0.5)*0.15)), hiSp[hs]/(0.5+hmRad/60)*(0.55+hDep*0.45)/(0.3+hmDist/(H*0.5))*1.15, hmT, hiSunY, 0.35); } } } var topY = sunY - H * 0.22, topMin = minDist * 0.4, topMax = maxReach * 0.95; var topSp = [0.35, 0.26, 0.18], topPh = [0.3, 2.0, 4.2]; for (var ts = 0; ts < 3; ts++) { var tCl = 8+Math.floor(hash(ts*300+99)*6); for (var tc = 0; tc < tCl; tc++) { var tcs = 70000+ts*1000+tc*47, trng = seededRandom(tcs); var tDist = Math.max(topMin, topMin+Math.pow(trng(),0.33)*(topMax-topMin)), tAng = topPh[ts]+trng()*Math.PI*2, tsr2 = trng(); var tRad, tcT; if(tsr2<0.35){tRad=10+trng()*15;tcT=1;} else{tRad=5+trng()*8;tcT=0;} var tDep = Math.max(0, Math.min(1, (1-ts/2)+(trng()-0.5)*0.15)); addHi(tcs, tDist, tAng, tRad, tDep, topSp[ts]/(0.5+tRad/60)*(0.55+tDep*0.45)/(0.3+tDist/(H*0.5)), tcT, topY, 0.2); var tnM = 1+Math.floor(trng()*2); for (var tm = 0; tm < tnM; tm++) { var tms = tcs+700+tm*19, tmr = seededRandom(tms), tmRad = tRad*(0.3+tmr()*0.4); var tmDist = Math.max(topMin, tDist+(tmr()-0.5)*tRad*3), tmAng = tAng+(tmr()-0.5)*0.6; addHi(tms, tmDist, tmAng, tmRad, Math.max(0,Math.min(1,tDep+(tmr()-0.5)*0.15)), topSp[ts]/(0.5+tmRad/60)*(0.55+tDep*0.45)/(0.3+tmDist/(H*0.5))*1.2, 0, topY, 0.2); } } } var midLo = minDist, midHi2 = maxReach * 0.85; for (var mf = 0; mf < 60; mf++) { var mfs = 90000+mf*71, mfr = seededRandom(mfs), mfDist = midLo+mfr()*(midHi2-midLo), mfAng = mfr()*Math.PI*2; var mfRad = 15+mfr()*40, mfT = mfRad>50?3:mfRad>30?2:mfRad>15?1:0, mfDep = 0.25+mfr()*0.5; addC(mfs, mfDist, mfAng, mfRad, mfDep, 0.12/(0.5+mfRad/60)*(0.55+mfDep*0.45)/(0.3+mfDist/(H*0.5)), mfT); } var outLo = minDist+(maxReach-minDist)*0.2, outHi = maxReach; for (var of2 = 0; of2 < 90; of2++) { var ofs = 80000+of2*53, ofr = seededRandom(ofs), ofDist = outLo+ofr()*(outHi-outLo), ofAng = ofr()*Math.PI*2; var ofRad = 20+ofr()*55, ofT = ofRad>50?3:ofRad>30?2:ofRad>15?1:0, ofDep = 0.1+ofr()*0.4; addC(ofs, ofDist, ofAng, ofRad, ofDep, 0.08/(0.5+ofRad/60)*(0.55+ofDep*0.45)/(0.3+ofDist/(H*0.5)), ofT); } clouds.sort(function(a, b) { return a.depth - b.depth; }); return clouds; }
+    function refreshCloud(cloud, time2, sunX, sunY) { if (cloud.noRefresh) return; var flatR = cloud.orbitFlatten || 0.7; var x = sunX + Math.cos(cloud.angle) * cloud.orbitDist; var y = cloud.sunY + Math.sin(cloud.angle) * cloud.orbitDist * flatR; var sunAngle = Math.atan2(sunY - y, sunX - x); if (!cloud._rc) cloud._rc = 0; cloud._rc++; var useBalls = cloud.balls; if (cloud._rc % 30 === 0) { var drift = time2 * 0.0001, drifted = []; for (var i = 0; i < cloud.balls.length; i++) { var b = cloud.balls[i]; if (i === 0) { drifted.push(b); continue; } drifted.push({ cx: b.cx + Math.sin(drift*3+i*1.7)*b.r*0.12, cy: b.cy + Math.cos(drift*2.3+i*2.1)*b.r*0.1, r: b.r }); } useBalls = drifted; } var baked = bakeMetaball(useBalls, sunAngle, cloud.cloudType, cloud.depth, cloud.proximity, 0); if (baked) cloud.baked = baked; }
+
     let lastFrame = 0;
-    let cloudCache = null;
+    let sceneClouds = null;
+    let cloudRefreshIdx = 0;
+    let cloudTime = 0;
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -2261,218 +2276,92 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         const hY = H; // sky covers 100%
         const rng = (i, off) => { const s = Math.sin((i + sceneSeed) * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
 
-        // --- OPAQUE SKY (lighter, more luminous) ---
-        const sk = ctx.createLinearGradient(0, 0, 0, hY);
-        sk.addColorStop(0,    'rgb(35,25,55)');
-        sk.addColorStop(0.08, 'rgb(55,35,68)');
-        sk.addColorStop(0.18, 'rgb(95,55,78)');
-        sk.addColorStop(0.30, 'rgb(155,80,82)');
-        sk.addColorStop(0.45, 'rgb(210,120,85)');
-        sk.addColorStop(0.60, 'rgb(240,160,90)');
-        sk.addColorStop(0.75, 'rgb(252,195,100)');
-        sk.addColorStop(0.88, 'rgb(255,220,120)');
-        sk.addColorStop(1,    'rgb(255,240,160)');
-        ctx.fillStyle = sk;
-        ctx.fillRect(0, 0, W, hY + 1);
-
-        // === SUN DISC with bright core ===
+        // === SKY + SUN + CLOUDS (from cloud-demo) ===
         const sunX = W * 0.5, sunY = H * 0.3;
-        const sunR = H * 0.08;
-        const sunHalo = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 5);
-        sunHalo.addColorStop(0, 'rgba(255,250,200,0.5)');
-        sunHalo.addColorStop(0.15, 'rgba(255,230,150,0.3)');
-        sunHalo.addColorStop(0.4, 'rgba(255,200,100,0.1)');
-        sunHalo.addColorStop(1, 'rgba(255,160,60,0)');
-        ctx.fillStyle = sunHalo;
-        ctx.fillRect(0, 0, W, hY + 1);
-        const sunDisc = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
-        sunDisc.addColorStop(0, 'rgba(255,255,240,0.95)');
-        sunDisc.addColorStop(0.3, 'rgba(255,245,200,0.85)');
-        sunDisc.addColorStop(0.7, 'rgba(255,225,140,0.5)');
-        sunDisc.addColorStop(1, 'rgba(255,200,100,0)');
-        ctx.fillStyle = sunDisc;
-        ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.5, 0, Math.PI * 2); ctx.fill();
+        const sunR = H * 0.06;
 
-        // === NOISY CLOUD SHAPES with fluid motion ===
-        // 2D noise via hash interpolation
-        const noise2d = (x, y) => {
-          const ix = Math.floor(x), iy = Math.floor(y);
-          const fx = x - ix, fy = y - iy;
-          const tx = fx * fx * (3 - 2 * fx), ty = fy * fy * (3 - 2 * fy);
-          const a = hash(ix * 127.1 + iy * 311.7);
-          const b = hash((ix + 1) * 127.1 + iy * 311.7);
-          const c = hash(ix * 127.1 + (iy + 1) * 311.7);
-          const d = hash((ix + 1) * 127.1 + (iy + 1) * 311.7);
-          return a + (b - a) * tx + (c - a) * ty + (a - b - c + d) * tx * ty;
-        };
-        // Fractal noise 2D — 4 octaves
-        const fnoise2 = (x, y) =>
-          noise2d(x, y) * 0.45 + noise2d(x * 2.1, y * 2.1) * 0.28 +
-          noise2d(x * 4.3, y * 4.3) * 0.17 + noise2d(x * 8.7, y * 8.7) * 0.1;
-        // Curl noise — gives a swirling flow vector from scalar noise
-        const curlFlow = (x, y) => {
-          const e = 0.01;
-          const dndx = (fnoise2(x + e, y) - fnoise2(x - e, y)) / (2 * e);
-          const dndy = (fnoise2(x, y + e) - fnoise2(x, y - e)) / (2 * e);
-          return [-dndy, dndx]; // perpendicular = curl
-        };
+        // Dark dramatic sky
+        ctx.fillStyle = 'rgb(8,6,12)'; ctx.fillRect(0, 0, W, H);
+        // Deep warm radial from sun
+        var skyR1 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, Math.max(W, H) * 0.95);
+        skyR1.addColorStop(0, 'rgba(255,200,100,0.55)'); skyR1.addColorStop(0.08, 'rgba(240,150,60,0.4)');
+        skyR1.addColorStop(0.18, 'rgba(200,80,30,0.3)'); skyR1.addColorStop(0.35, 'rgba(140,40,20,0.2)');
+        skyR1.addColorStop(0.55, 'rgba(60,15,15,0.12)'); skyR1.addColorStop(0.8, 'rgba(20,8,15,0.05)');
+        skyR1.addColorStop(1, 'rgba(8,6,12,0)');
+        ctx.fillStyle = skyR1; ctx.fillRect(0, 0, W, H);
+        // Hot inner glow
+        var skyR2 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, H * 0.35);
+        skyR2.addColorStop(0, 'rgba(255,240,180,0.6)'); skyR2.addColorStop(0.15, 'rgba(255,190,100,0.4)');
+        skyR2.addColorStop(0.4, 'rgba(220,120,50,0.15)'); skyR2.addColorStop(1, 'rgba(120,40,15,0)');
+        ctx.fillStyle = skyR2; ctx.fillRect(0, 0, W, H);
+        // Sun disc
+        var sh = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 6);
+        sh.addColorStop(0, 'rgba(255,255,220,0.7)'); sh.addColorStop(0.06, 'rgba(255,240,160,0.5)');
+        sh.addColorStop(0.15, 'rgba(255,200,80,0.3)'); sh.addColorStop(0.35, 'rgba(255,140,40,0.1)');
+        sh.addColorStop(1, 'rgba(200,60,10,0)');
+        ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H);
+        var sd = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
+        sd.addColorStop(0, 'rgba(255,255,235,1)'); sd.addColorStop(0.25, 'rgba(255,245,190,0.9)');
+        sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
+        ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
 
-        // === CACHED CLOUD SYSTEM ===
-        // Build cloud list once, cache shapes to offscreen canvases
-        if (!cloudCache || cloudCache.W !== W) {
-          cloudCache = { W, clouds: [], frame: 0 };
-          const swirlSpeeds = [0.25, 0.18, 0.13, 0.09];
-          const swirlOffsets = [0, 1.2, 2.7, 4.1];
-          let id = 0;
-          for (let sw = 0; sw < 4; sw++) {
-            const numCl = 3 + sw;
-            for (let cl = 0; cl < numCl; cl++) {
-              const s0 = sw * 1000 + cl * 137;
-              const dist = sunR * 1.5 + hash(s0 * 0.7) * H * 0.4;
-              const angleBase = (cl / numCl) * Math.PI * 2 + swirlOffsets[sw];
-              const orbitSpd = swirlSpeeds[sw] / (0.3 + dist / (H * 0.5));
-              const bR = (35 + hash(s0) * 55) * 0.65;
-              const bStr = 1.8 + hash(s0 + 5) * 1.2;
-              const bA = 0.18 + hash(s0 + 10) * 0.12;
-              // Parent
-              cloudCache.clouds.push({ seed: s0, dist, angleBase, orbitSpd, baseR: bR, stretch: bStr, alpha: bA, sizeClass: 1, angleOff: 0, parent: -1, id: id++ });
-              const pIdx = cloudCache.clouds.length - 1;
-              // Medium
-              const nMed = 1 + Math.floor(hash(s0 + 20) * 2);
-              for (let m = 0; m < nMed; m++) {
-                const ms = s0 + m * 31 + 200;
-                const mAO = (hash(ms) - 0.5) * 1.2;
-                const mDO = bR * (0.6 + hash(ms + 1) * 0.8);
-                const mR = bR * (0.4 + hash(ms + 2) * 0.3);
-                cloudCache.clouds.push({ seed: ms, dist: mDO, angleBase: mAO, orbitSpd: orbitSpd * 1.1, baseR: mR, stretch: 1.3 + hash(ms + 3) * 1.5, alpha: bA * (0.6 + hash(ms + 4) * 0.3), sizeClass: 0.5, angleOff: mAO * 0.3, parent: pIdx, id: id++ });
-                const mIdx = cloudCache.clouds.length - 1;
-                // Small wisps
-                const nSm = Math.floor(hash(ms + 30) * 2);
-                for (let s = 0; s < nSm; s++) {
-                  const ss = ms + s * 47 + 400;
-                  const sAO = (hash(ss) - 0.5) * 2.5;
-                  const sDO = mR * (1 + hash(ss + 1) * 2);
-                  cloudCache.clouds.push({ seed: ss, dist: sDO, angleBase: sAO, orbitSpd: orbitSpd * 1.3, baseR: mR * (0.2 + hash(ss + 2) * 0.3), stretch: 1.5 + hash(ss + 3) * 2, alpha: bA * 0.5 * (0.3 + hash(ss + 4) * 0.3), sizeClass: 0.15, angleOff: sAO * 0.2, parent: mIdx, id: id++ });
-                }
-              }
-            }
-          }
-          // Create offscreen canvas per cloud
-          for (const c of cloudCache.clouds) {
-            const pad = c.baseR * (c.stretch + 1) * 1.5;
-            const cw = Math.ceil(pad * 2), ch = Math.ceil(c.baseR * 2);
-            const osc = document.createElement('canvas');
-            osc.width = cw; osc.height = ch;
-            c.osc = osc; c.oscW = cw; c.oscH = ch; c.dirty = true;
-          }
-        }
+        // === CLOUDS — build once, refresh staggered ===
+        if (!sceneClouds) sceneClouds = buildCloudsForScene(W, H);
+        cloudTime += 50;
+        var rPerF = 20;
+        for (var ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
+        cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
 
-        // Render cloud shape to offscreen canvas
-        const renderCloudShape = (c, t) => {
-          const oc = c.osc.getContext('2d');
-          oc.clearRect(0, 0, c.oscW, c.oscH);
-          const cx = c.oscW / 2, cy = c.oscH / 2;
-          const segs = c.sizeClass > 0.3 ? 36 : 20;
-          const noiseAmt = c.baseR * (0.5 + (1 - c.sizeClass) * 0.8);
-          const passes = c.sizeClass > 0.3 ? 3 : 1;
-
-          oc.save();
-          oc.translate(cx, cy);
-          oc.scale(c.stretch, 1);
-
-          // Outer haze
-          oc.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            let px = Math.cos(a) * c.baseR;
-            let py = Math.sin(a) * c.baseR * 0.45;
-            const wx = (px + c.seed) * 0.02, wy = (py + c.seed * 0.7) * 0.02;
-            const [fx, fy] = curlFlow(wx + t * 0.002, wy + t * 0.0015);
-            px += fx * noiseAmt * 1.2; py += fy * noiseAmt * 1.2;
-            if (passes > 1) {
-              const [fx2, fy2] = curlFlow(wx * 2.5 + t * 0.003, wy * 2.3 - t * 0.0025);
-              px += fx2 * noiseAmt * 0.4; py += fy2 * noiseAmt * 0.4;
-              const [fx3, fy3] = curlFlow(wx * 5 - t * 0.004, wy * 4.5 + t * 0.0025);
-              px += fx3 * noiseAmt * 0.15 * (1 + (1 - c.sizeClass));
-              py += fy3 * noiseAmt * 0.15 * (1 + (1 - c.sizeClass));
-            }
-            i === 0 ? oc.moveTo(px, py) : oc.lineTo(px, py);
-          }
-          oc.closePath();
-          oc.fillStyle = `rgba(12,6,3,${(c.alpha * 0.4).toFixed(3)})`;
-          oc.fill();
-
-          // Inner core
-          oc.scale(0.75, 0.75);
-          oc.beginPath();
-          for (let i = 0; i <= segs; i++) {
-            const a = (i / segs) * Math.PI * 2;
-            let px = Math.cos(a) * c.baseR;
-            let py = Math.sin(a) * c.baseR * 0.45;
-            const wx = (px + c.seed) * 0.02, wy = (py + c.seed * 0.7) * 0.02;
-            const [fx, fy] = curlFlow(wx + t * 0.002, wy + t * 0.0015);
-            px += fx * noiseAmt * 0.9; py += fy * noiseAmt * 0.9;
-            if (passes > 1) {
-              const [fx2, fy2] = curlFlow(wx * 2.5 + t * 0.003, wy * 2.3 - t * 0.0025);
-              px += fx2 * noiseAmt * 0.3; py += fy2 * noiseAmt * 0.3;
-            }
-            i === 0 ? oc.moveTo(px, py) : oc.lineTo(px, py);
-          }
-          oc.closePath();
-          oc.fillStyle = `rgba(15,8,5,${c.alpha.toFixed(3)})`;
-          oc.fill();
-          oc.restore();
-          c.dirty = false;
-        };
-
-        // Staggered shape refresh — rebuild 4 clouds per frame
-        const refreshPerFrame = 4;
-        const cf = cloudCache.frame++;
-        for (let i = 0; i < refreshPerFrame; i++) {
-          const idx = (cf * refreshPerFrame + i) % cloudCache.clouds.length;
-          renderCloudShape(cloudCache.clouds[idx], time);
-        }
-        // First frame: render all
-        if (cf < 2) cloudCache.clouds.forEach(c => renderCloudShape(c, time));
-
-        // Draw cached clouds at orbital positions
-        for (const c of cloudCache.clouds) {
-          // Compute position
-          let cx, cy, tangent;
-          if (c.parent === -1) {
-            const angle = c.angleBase + time * c.orbitSpd;
-            cx = sunX + Math.cos(angle) * c.dist;
-            cy = sunY + Math.sin(angle) * c.dist * 0.5;
-            tangent = angle + Math.PI / 2;
+        // Draw clouds with velocity stretch
+        for (var di = 0; di < sceneClouds.length; di++) {
+          var cloud = sceneClouds[di], angSpeed = cloud.orbitSpeed * 0.025;
+          cloud.angle += angSpeed;
+          var ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
+          var cx = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
+          var cy = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR;
+          var bk = cloud.baked; if (!bk || !bk.canvas) continue;
+          var margin2 = Math.max(bk.w, bk.h) * 1.5;
+          if (cx + bk.ox > W + margin2 || cx + bk.ox + bk.w < -margin2 || cy + bk.oy > H + margin2 || cy + bk.oy + bk.h < -margin2) continue;
+          var vx = -Math.sin(ca)*cloud.orbitDist*angSpeed, vy = Math.cos(ca)*cloud.orbitDist*flatR*angSpeed;
+          var speed = Math.sqrt(vx*vx+vy*vy);
+          var stretchAmt = 1+Math.min(0.6,speed*0.25), squeezeAmt = 1/Math.sqrt(stretchAmt);
+          var centSkew = Math.max(-0.3, Math.min(0.3, angSpeed*cloud.orbitDist*0.0004));
+          var drawW = bk.w, drawH = bk.h;
+          if (speed > 0.01) {
+            var vAngle = Math.atan2(vy, vx);
+            var ccx = cx+bk.ox+drawW*0.5, ccy = cy+bk.oy+drawH*0.5;
+            ctx.save(); ctx.translate(ccx, ccy); ctx.rotate(vAngle);
+            ctx.transform(stretchAmt, centSkew, 0, squeezeAmt, 0, 0);
+            ctx.rotate(-vAngle); ctx.drawImage(bk.canvas, -drawW*0.5, -drawH*0.5, drawW, drawH); ctx.restore();
           } else {
-            const p = cloudCache.clouds[c.parent];
-            let px, py, pTangent;
-            if (p.parent === -1) {
-              const pAngle = p.angleBase + time * p.orbitSpd;
-              px = sunX + Math.cos(pAngle) * p.dist;
-              py = sunY + Math.sin(pAngle) * p.dist * 0.5;
-              pTangent = pAngle + Math.PI / 2;
-            } else {
-              const gp = cloudCache.clouds[p.parent];
-              const gpAngle = gp.angleBase + time * gp.orbitSpd;
-              const gpx = sunX + Math.cos(gpAngle) * gp.dist;
-              const gpy = sunY + Math.sin(gpAngle) * gp.dist * 0.5;
-              const pOrbit = gpAngle + p.angleBase + time * p.orbitSpd;
-              px = gpx + Math.cos(pOrbit) * p.dist;
-              py = gpy + Math.sin(pOrbit) * p.dist * 0.5;
-              pTangent = pOrbit + Math.PI / 2;
-            }
-            const orbit = (c.parent >= 0 ? cloudCache.clouds[c.parent].angleBase + time * cloudCache.clouds[c.parent].orbitSpd : 0) + c.angleBase + time * c.orbitSpd;
-            cx = px + Math.cos(orbit) * c.dist;
-            cy = py + Math.sin(orbit) * c.dist * 0.5;
-            tangent = (pTangent || 0) + c.angleOff;
+            ctx.drawImage(bk.canvas, cx+bk.ox, cy+bk.oy, drawW, drawH);
           }
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(tangent || 0);
-          ctx.drawImage(c.osc, -c.oscW / 2, -c.oscH / 2);
-          ctx.restore();
         }
+
+        // God rays — cone from sun downward, ON TOP of clouds
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        var rayCount = 18;
+        for (var ri2 = 0; ri2 < rayCount; ri2++) {
+          var rayRng = seededRandom(ri2 * 777 + 42);
+          var coneHalf = Math.PI * 0.35;
+          var rayAngle = Math.PI * 0.5 - coneHalf + (ri2 / (rayCount - 1)) * coneHalf * 2 + (rayRng() - 0.5) * 0.08;
+          var rayLen = (H - sunY) * (0.8 + rayRng() * 0.4), rayW = sunR * (0.15 + rayRng() * 0.5);
+          var ex = sunX + Math.cos(rayAngle) * rayLen, ey = sunY + Math.sin(rayAngle) * rayLen;
+          var rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
+          var rayAlpha = 0.02 + rayRng() * 0.04;
+          rayGrad.addColorStop(0, 'rgba(255,230,140,' + (rayAlpha * 1.5) + ')');
+          rayGrad.addColorStop(0.2, 'rgba(255,200,90,' + rayAlpha + ')');
+          rayGrad.addColorStop(0.6, 'rgba(255,150,50,' + (rayAlpha * 0.35) + ')');
+          rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
+          ctx.fillStyle = rayGrad; ctx.beginPath();
+          var perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
+          ctx.moveTo(sunX + perpX * rayW * 0.15, sunY + perpY * rayW * 0.15);
+          ctx.lineTo(sunX - perpX * rayW * 0.15, sunY - perpY * rayW * 0.15);
+          ctx.lineTo(ex - perpX * rayW * 2.5, ey - perpY * rayW * 2.5);
+          ctx.lineTo(ex + perpX * rayW * 2.5, ey + perpY * rayW * 2.5);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
