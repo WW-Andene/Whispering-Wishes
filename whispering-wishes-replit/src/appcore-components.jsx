@@ -1155,6 +1155,47 @@ const _wf1 = (x, y, t) => x * 0.012 + Math.sin(y * 0.006) * 3.0 + Math.cos(y * 0
 const _wf2 = (x, y, t) => (x * 0.007 + y * 0.009) + Math.sin(x * 0.004 - y * 0.003) * 2.2 + Math.cos(x * 0.002) * 1.2 - t * 0.25;
 const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0.004 + x * 0.003) * 1.3 - t * 0.2;
 
+// === SHARED PRE-RENDER FRAME CACHE + IndexedDB ===
+const BG_DB_NAME = 'ww-bg-cache';
+const BG_DB_VER = 1;
+function openBgDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(BG_DB_NAME, BG_DB_VER);
+    req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('frames')) db.createObjectStore('frames'); };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+async function loadBgFrames(bgId, w, h) {
+  try {
+    const db = await openBgDB();
+    const tx = db.transaction('frames', 'readonly');
+    const store = tx.objectStore('frames');
+    const meta = await new Promise((r, j) => { const q = store.get(bgId + '_meta'); q.onsuccess = () => r(q.result); q.onerror = j; });
+    if (!meta || meta.w !== w || meta.h !== h) { db.close(); return null; }
+    const blobs = await new Promise((r, j) => { const q = store.get(bgId + '_blobs'); q.onsuccess = () => r(q.result); q.onerror = j; });
+    db.close();
+    if (!blobs || blobs.length !== meta.count) return null;
+    return await Promise.all(blobs.map(b => createImageBitmap(b)));
+  } catch(e) { return null; }
+}
+async function saveBgFrames(bgId, frames, w, h) {
+  try {
+    const blobs = [];
+    for (let i = 0; i < frames.length; i++) {
+      const b = await new Promise(r => { if (frames[i].convertToBlob) frames[i].convertToBlob({ type: 'image/webp', quality: 0.75 }).then(r); else if (frames[i].toBlob) frames[i].toBlob(r, 'image/webp', 0.75); else r(null); });
+      if (b) blobs.push(b); else return;
+    }
+    const db = await openBgDB();
+    const tx = db.transaction('frames', 'readwrite');
+    const store = tx.objectStore('frames');
+    store.put({ w, h, count: blobs.length }, bgId + '_meta');
+    store.put(blobs, bgId + '_blobs');
+    await new Promise((r, j) => { tx.oncomplete = r; tx.onerror = j; });
+    db.close();
+  } catch(e) { /* non-critical */ }
+}
+
 // LAYER A: Smooth ambient glow gradient — z-index 1
 // P11-FIX: Wrapped in memo — canvas heavy lifting is in useEffect, but memo prevents
 // unnecessary React reconciliation on parent re-renders (Step 7 audit — LOW-3b)
