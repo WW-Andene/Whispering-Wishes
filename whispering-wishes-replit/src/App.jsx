@@ -189,7 +189,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   oledMode: false,
   swipeNavigation: false,
   animationsEnabled: 'on', // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
-  bgStyle: 'waves', // 'waves' | 'resonance' | 'augusta' — background animation style
+  bgStyle: 'none', // 'none' | 'waves' | 'resonance' | 'augusta' — background animation style
   theme: 'default' // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
 });
 const TRACKER_CATEGORIES = Object.freeze([
@@ -3395,12 +3395,12 @@ function WhisperingWishesInner() {
         <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
       ) : visualSettings.bgStyle === 'augusta' ? (
         <AugustaRuins oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-      ) : (
+      ) : visualSettings.bgStyle === 'waves' ? (
         <>
           <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
           <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
         </>
-      )}
+      ) : null}
       <KuroStyles oledMode={visualSettings.oledMode} />
 
       {/* Onboarding Modal */}
@@ -7876,15 +7876,20 @@ function WhisperingWishesInner() {
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <div className="flex items-center gap-3">
-                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'augusta' ? 'bg-amber-600 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle !== 'resonance' && visualSettings.bgStyle !== 'augusta' ? { background: 'var(--bg-btn)' } : undefined}>
+                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'augusta' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'waves' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
                         <Diamond size={16} />
                       </div>
                       <div>
                         <div className="text-white text-xs font-medium">Background Style</div>
-                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Resonance — Holographic rings & energy' : visualSettings.bgStyle === 'augusta' ? 'Augusta — Golden ruins & sunlight' : 'Waves — Triangle mirror wave'}</div>
+                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Resonance — Holographic rings & energy' : visualSettings.bgStyle === 'augusta' ? 'Augusta — Golden ruins & sunlight' : visualSettings.bgStyle === 'waves' ? 'Waves — Triangle mirror wave' : 'None — No background'}</div>
                       </div>
                     </div>
                     <div className="flex gap-1.5">
+                      <button
+                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'none' })}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'none' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                        style={visualSettings.bgStyle !== 'none' ? { background: 'var(--bg-btn)' } : undefined}
+                      >None</button>
                       <button
                         onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'waves' })}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'waves' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
