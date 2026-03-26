@@ -2862,61 +2862,40 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
         }
 
-        // --- Ground texture overlay — rocks, cracks, debris ON TOP of solid ground ---
-        // Scattered rocks at various depths (back to front for proper overlap)
-        for (let ti = 0; ti < 120; ti++) {
-          const rSeed = ti * 71 + sceneSeed;
-          const rDepth = hash(rSeed) * 0.85; // 0=near, 1=far
-          const rX = (hash(rSeed + 100) - 0.5) * 2; // -1 to 1 across width
-          // Project to screen
-          const wz = camZ + 0.5 + rDepth * (zFar - camZ - 0.5);
-          const wx = rX * wz * 0.8;
+        // --- Ground texture — gravel/debris particles + noise color variation ---
+        // Tiny scattered dots like gravel, not big polygons
+        for (let ti = 0; ti < 400; ti++) {
+          const rSeed = ti * 43 + sceneSeed;
+          const rDepth = hash(rSeed) * 0.7;
+          const wz = camZ + 0.3 + rDepth * (zFar - camZ - 1);
+          const wx = (hash(rSeed + 100) - 0.5) * wz * 1.4;
           const sx = projX(wx, wz);
           const sy = curveY(sx, projY(wz));
-          if (sy < edgeY - 5 || sy > H + 5 || sx < -20 || sx > W + 20) continue;
-          // Size scales with perspective
+          if (sy < edgeY - 2 || sy > H || sx < -5 || sx > W + 5) continue;
           const perspScale = focal / (wz - camZ);
-          const rockSize = (0.8 + hash(rSeed + 200) * 2.5) * perspScale * 0.15;
-          if (rockSize < 0.5) continue;
-          // Color: slightly varied from base ground at this depth
+          const dotSize = Math.max(0.5, (0.3 + hash(rSeed + 200) * 0.8) * perspScale * 0.04);
+          if (dotSize < 0.3) continue;
+          // Noise-varied color — darker or lighter than base ground
           const dT = Math.pow(rDepth, 0.6);
-          const baseR = 90 - 72 * dT, baseG = 55 - 45 * dT, baseB = 32 - 26 * dT;
-          const bright = 0.5 + hash(rSeed + 300) * 1.0;
-          const rr = Math.round(Math.min(255, baseR * bright));
-          const rg = Math.round(Math.min(255, baseG * bright));
-          const rb = Math.round(Math.min(255, baseB * bright));
-          ctx.fillStyle = `rgb(${rr},${rg},${rb})`;
-          // Draw jagged rock polygon
-          ctx.beginPath();
-          const sides = 4 + Math.floor(hash(rSeed + 400) * 3);
-          for (let si = 0; si <= sides; si++) {
-            const a = (si / sides) * Math.PI * 2;
-            const jit = 0.5 + hash(rSeed + si * 50 + 500) * 1.0;
-            const px = sx + Math.cos(a) * rockSize * jit;
-            const py = sy + Math.sin(a) * rockSize * jit * 0.5; // squish vertically for perspective
-            si === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          ctx.fill();
+          const bR = 90 - 72 * dT, bG = 55 - 45 * dT, bB = 32 - 26 * dT;
+          const bright = 0.65 + hash(rSeed + 300) * 0.7;
+          ctx.fillStyle = `rgb(${Math.round(bR * bright)},${Math.round(bG * bright)},${Math.round(bB * bright)})`;
+          ctx.fillRect(sx - dotSize * 0.5, sy - dotSize * 0.25, dotSize, dotSize * 0.5);
         }
 
-        // Subtle ground cracks / lines for texture
-        ctx.strokeStyle = 'rgba(12,6,3,0.15)';
-        ctx.lineWidth = 0.5;
-        for (let ci = 0; ci < 25; ci++) {
-          const cSeed = ci * 137 + sceneSeed + 9000;
-          const cDepth = 0.05 + hash(cSeed) * 0.6;
-          const wz = camZ + 0.5 + cDepth * (zFar - camZ - 0.5);
-          const wx = (hash(cSeed + 100) - 0.5) * wz * 1.2;
+        // Darker shadow spots — subtle depth variation
+        for (let si = 0; si < 60; si++) {
+          const sSeed = si * 97 + sceneSeed + 5000;
+          const sDepth = hash(sSeed) * 0.5;
+          const wz = camZ + 0.5 + sDepth * (zFar - camZ - 2);
+          const wx = (hash(sSeed + 100) - 0.5) * wz * 1.2;
           const sx = projX(wx, wz);
           const sy = curveY(sx, projY(wz));
-          if (sy < edgeY || sy > H) continue;
-          const len = (10 + hash(cSeed + 200) * 30) * focal / (wz - camZ) * 0.08;
-          const angle = (hash(cSeed + 300) - 0.5) * 0.6;
-          ctx.beginPath();
-          ctx.moveTo(sx - Math.cos(angle) * len, sy - Math.sin(angle) * len * 0.3);
-          ctx.lineTo(sx + Math.cos(angle) * len, sy + Math.sin(angle) * len * 0.3);
-          ctx.stroke();
+          if (sy < edgeY || sy > H || sx < 0 || sx > W) continue;
+          const perspScale = focal / (wz - camZ);
+          const spotSize = (1 + hash(sSeed + 200) * 3) * perspScale * 0.03;
+          ctx.fillStyle = 'rgba(10,5,2,0.12)';
+          ctx.fillRect(sx - spotSize, sy - spotSize * 0.3, spotSize * 2, spotSize * 0.6);
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
