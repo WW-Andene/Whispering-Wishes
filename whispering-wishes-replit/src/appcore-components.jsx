@@ -2266,6 +2266,8 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let sceneClouds = null;
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
+    let skyBuffer = null;
+    let skyFrameCount = 0;
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -2310,63 +2312,57 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         sd.addColorStop(0.6, 'rgba(255,210,110,0.5)'); sd.addColorStop(1, 'rgba(255,170,60,0)');
         ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
 
-        // === CLOUDS — build once, refresh staggered ===
+        // === SKY BUFFER — render clouds+rays to offscreen, update every 15 frames ===
         if (!sceneClouds) sceneClouds = buildCloudsForScene(W, H);
         cloudTime += 50;
-        var rPerF = 20;
-        for (var ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
-        cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
-
-        // Draw clouds with velocity stretch
-        for (var di = 0; di < sceneClouds.length; di++) {
-          var cloud = sceneClouds[di], angSpeed = cloud.orbitSpeed * 0.025;
-          cloud.angle += angSpeed;
-          var ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
-          var cx = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
-          var cy = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR;
-          var bk = cloud.baked; if (!bk || !bk.canvas) continue;
-          var margin2 = Math.max(bk.w, bk.h) * 1.5;
-          if (cx + bk.ox > W + margin2 || cx + bk.ox + bk.w < -margin2 || cy + bk.oy > H + margin2 || cy + bk.oy + bk.h < -margin2) continue;
-          var vx = -Math.sin(ca)*cloud.orbitDist*angSpeed, vy = Math.cos(ca)*cloud.orbitDist*flatR*angSpeed;
-          var speed = Math.sqrt(vx*vx+vy*vy);
-          var stretchAmt = 1+Math.min(0.6,speed*0.25), squeezeAmt = 1/Math.sqrt(stretchAmt);
-          var centSkew = Math.max(-0.3, Math.min(0.3, angSpeed*cloud.orbitDist*0.0004));
-          var drawW = bk.w, drawH = bk.h;
-          if (speed > 0.01) {
-            var vAngle = Math.atan2(vy, vx);
-            var ccx = cx+bk.ox+drawW*0.5, ccy = cy+bk.oy+drawH*0.5;
-            ctx.save(); ctx.translate(ccx, ccy); ctx.rotate(vAngle);
-            ctx.transform(stretchAmt, centSkew, 0, squeezeAmt, 0, 0);
-            ctx.rotate(-vAngle); ctx.drawImage(bk.canvas, -drawW*0.5, -drawH*0.5, drawW, drawH); ctx.restore();
-          } else {
-            ctx.drawImage(bk.canvas, cx+bk.ox, cy+bk.oy, drawW, drawH);
+        skyFrameCount++;
+        var needsSkyUpdate = !skyBuffer || skyBuffer.width !== W || skyBuffer.height !== H || skyFrameCount % 15 === 0;
+        if (needsSkyUpdate) {
+          if (!skyBuffer || skyBuffer.width !== W || skyBuffer.height !== H) { skyBuffer = document.createElement('canvas'); skyBuffer.width = W; skyBuffer.height = H; }
+          var sCtx = skyBuffer.getContext('2d');
+          sCtx.clearRect(0, 0, W, H);
+          // Refresh a few cloud shapes
+          var rPerF = 5;
+          for (var ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
+          cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
+          // Advance + draw clouds
+          for (var di = 0; di < sceneClouds.length; di++) {
+            var cloud = sceneClouds[di], angSpeed = cloud.orbitSpeed * 0.025;
+            cloud.angle += angSpeed * 15; // advance by 15 frames worth
+            var ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
+            var cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
+            var cy2 = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR;
+            var bk = cloud.baked; if (!bk || !bk.canvas) continue;
+            var margin2 = Math.max(bk.w, bk.h) * 1.5;
+            if (cx2 + bk.ox > W + margin2 || cx2 + bk.ox + bk.w < -margin2 || cy2 + bk.oy > H + margin2 || cy2 + bk.oy + bk.h < -margin2) continue;
+            sCtx.drawImage(bk.canvas, cx2 + bk.ox, cy2 + bk.oy, bk.w, bk.h);
           }
+          // God rays
+          sCtx.save(); sCtx.globalCompositeOperation = 'lighter';
+          for (var ri2 = 0; ri2 < 12; ri2++) {
+            var rayRng = seededRandom(ri2 * 777 + 42);
+            var coneHalf = Math.PI * 0.35;
+            var rayAngle = Math.PI * 0.5 - coneHalf + (ri2 / 11) * coneHalf * 2 + (rayRng() - 0.5) * 0.08;
+            var rayLen = (H - sunY) * (0.8 + rayRng() * 0.4), rayW = sunR * (0.15 + rayRng() * 0.5);
+            var ex = sunX + Math.cos(rayAngle) * rayLen, ey = sunY + Math.sin(rayAngle) * rayLen;
+            var rayGrad = sCtx.createLinearGradient(sunX, sunY, ex, ey);
+            var rayAlpha = 0.02 + rayRng() * 0.04;
+            rayGrad.addColorStop(0, 'rgba(255,230,140,' + (rayAlpha * 1.5) + ')');
+            rayGrad.addColorStop(0.2, 'rgba(255,200,90,' + rayAlpha + ')');
+            rayGrad.addColorStop(0.6, 'rgba(255,150,50,' + (rayAlpha * 0.35) + ')');
+            rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
+            sCtx.fillStyle = rayGrad; sCtx.beginPath();
+            var perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
+            sCtx.moveTo(sunX + perpX * rayW * 0.15, sunY + perpY * rayW * 0.15);
+            sCtx.lineTo(sunX - perpX * rayW * 0.15, sunY - perpY * rayW * 0.15);
+            sCtx.lineTo(ex - perpX * rayW * 2.5, ey - perpY * rayW * 2.5);
+            sCtx.lineTo(ex + perpX * rayW * 2.5, ey + perpY * rayW * 2.5);
+            sCtx.closePath(); sCtx.fill();
+          }
+          sCtx.restore();
         }
-
-        // God rays — cone from sun downward, ON TOP of clouds
-        ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        var rayCount = 18;
-        for (var ri2 = 0; ri2 < rayCount; ri2++) {
-          var rayRng = seededRandom(ri2 * 777 + 42);
-          var coneHalf = Math.PI * 0.35;
-          var rayAngle = Math.PI * 0.5 - coneHalf + (ri2 / (rayCount - 1)) * coneHalf * 2 + (rayRng() - 0.5) * 0.08;
-          var rayLen = (H - sunY) * (0.8 + rayRng() * 0.4), rayW = sunR * (0.15 + rayRng() * 0.5);
-          var ex = sunX + Math.cos(rayAngle) * rayLen, ey = sunY + Math.sin(rayAngle) * rayLen;
-          var rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          var rayAlpha = 0.02 + rayRng() * 0.04;
-          rayGrad.addColorStop(0, 'rgba(255,230,140,' + (rayAlpha * 1.5) + ')');
-          rayGrad.addColorStop(0.2, 'rgba(255,200,90,' + rayAlpha + ')');
-          rayGrad.addColorStop(0.6, 'rgba(255,150,50,' + (rayAlpha * 0.35) + ')');
-          rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
-          ctx.fillStyle = rayGrad; ctx.beginPath();
-          var perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
-          ctx.moveTo(sunX + perpX * rayW * 0.15, sunY + perpY * rayW * 0.15);
-          ctx.lineTo(sunX - perpX * rayW * 0.15, sunY - perpY * rayW * 0.15);
-          ctx.lineTo(ex - perpX * rayW * 2.5, ey - perpY * rayW * 2.5);
-          ctx.lineTo(ex + perpX * rayW * 2.5, ey + perpY * rayW * 2.5);
-          ctx.closePath(); ctx.fill();
-        }
-        ctx.restore();
+        // Normal frame: single drawImage for entire sky overlay
+        ctx.drawImage(skyBuffer, 0, 0);
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
