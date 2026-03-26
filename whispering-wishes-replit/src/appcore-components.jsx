@@ -1155,47 +1155,6 @@ const _wf1 = (x, y, t) => x * 0.012 + Math.sin(y * 0.006) * 3.0 + Math.cos(y * 0
 const _wf2 = (x, y, t) => (x * 0.007 + y * 0.009) + Math.sin(x * 0.004 - y * 0.003) * 2.2 + Math.cos(x * 0.002) * 1.2 - t * 0.25;
 const _wf3 = (x, y, t) => y * 0.011 + Math.sin(x * 0.008) * 2.5 + Math.cos(y * 0.004 + x * 0.003) * 1.3 - t * 0.2;
 
-// === SHARED PRE-RENDER FRAME CACHE + IndexedDB ===
-const BG_DB_NAME = 'ww-bg-cache';
-const BG_DB_VER = 1;
-function openBgDB() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open(BG_DB_NAME, BG_DB_VER);
-    req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('frames')) db.createObjectStore('frames'); };
-    req.onsuccess = () => res(req.result);
-    req.onerror = () => rej(req.error);
-  });
-}
-async function loadBgFrames(bgId, w, h) {
-  try {
-    const db = await openBgDB();
-    const tx = db.transaction('frames', 'readonly');
-    const store = tx.objectStore('frames');
-    const meta = await new Promise((r, j) => { const q = store.get(bgId + '_meta'); q.onsuccess = () => r(q.result); q.onerror = j; });
-    if (!meta || meta.w !== w || meta.h !== h) { db.close(); return null; }
-    const blobs = await new Promise((r, j) => { const q = store.get(bgId + '_blobs'); q.onsuccess = () => r(q.result); q.onerror = j; });
-    db.close();
-    if (!blobs || blobs.length !== meta.count) return null;
-    return await Promise.all(blobs.map(b => createImageBitmap(b)));
-  } catch(e) { return null; }
-}
-async function saveBgFrames(bgId, frames, w, h) {
-  try {
-    const blobs = [];
-    for (let i = 0; i < frames.length; i++) {
-      const b = await new Promise(r => { if (frames[i].convertToBlob) frames[i].convertToBlob({ type: 'image/webp', quality: 0.75 }).then(r); else if (frames[i].toBlob) frames[i].toBlob(r, 'image/webp', 0.75); else r(null); });
-      if (b) blobs.push(b); else return;
-    }
-    const db = await openBgDB();
-    const tx = db.transaction('frames', 'readwrite');
-    const store = tx.objectStore('frames');
-    store.put({ w, h, count: blobs.length }, bgId + '_meta');
-    store.put(blobs, bgId + '_blobs');
-    await new Promise((r, j) => { tx.oncomplete = r; tx.onerror = j; });
-    db.close();
-  } catch(e) { /* non-critical */ }
-}
-
 // LAYER A: Smooth ambient glow gradient — z-index 1
 // P11-FIX: Wrapped in memo — canvas heavy lifting is in useEffect, but memo prevents
 // unnecessary React reconciliation on parent re-renders (Step 7 audit — LOW-3b)
@@ -2299,30 +2258,71 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     const sceneSeed = 52908;
 
     // === Cloud system from cloud-demo ===
-    function seededRandom(seed) { var s = seed; return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
-    var CLOUD_DEFS = [
+    function seededRandom(seed) { let s = seed; return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+    const CLOUD_DEFS = [
       { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.06, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
       { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.35, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
       { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.42, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
       { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.48, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
     ];
-    function generateBalls(seed, baseRadius, cloudType) { var def = CLOUD_DEFS[cloudType]; var rng = seededRandom(seed); var balls = []; function spawnCluster(cx, cy, radius, depth, maxDepth) { balls.push({ cx: cx, cy: cy, r: radius * (0.6 + rng() * 0.5) }); if (depth >= maxDepth) return; var cc = Math.floor(2 + rng() * 3); for (var c = 0; c < cc; c++) { var a = rng() * Math.PI * 2, d = radius * (0.3 + rng() * 0.7); var nx = (rng() - 0.5) * radius * 0.4, ny = (rng() - 0.5) * radius * 0.4; spawnCluster(cx + Math.cos(a) * d + nx, cy + Math.sin(a) * d + ny, radius * (0.35 + rng() * 0.35), depth + 1, maxDepth); } } var fd = cloudType === 0 ? 1 : cloudType === 1 ? 2 : 3; var sc = cloudType === 0 ? 2 : cloudType === 1 ? 2 : cloudType === 2 ? 3 : 4; var sr = baseRadius * (cloudType === 0 ? 0.5 : 0.4); for (var s = 0; s < sc; s++) { var sa = rng() * Math.PI * 2, sd = baseRadius * rng() * 0.2; spawnCluster(Math.cos(sa) * sd, Math.sin(sa) * sd, sr * (0.7 + rng() * 0.6), 0, fd); } var wc = def.wispN + Math.floor(rng() * 3); for (var w = 0; w < wc; w++) { var wa = rng() * Math.PI * 2, wd = baseRadius * (0.4 + rng() * 0.6), wr = baseRadius * (0.05 + rng() * 0.12); balls.push({ cx: Math.cos(wa) * wd + (rng() - 0.5) * baseRadius * 0.3, cy: Math.sin(wa) * wd + (rng() - 0.5) * baseRadius * 0.3, r: wr }); } return balls; }
+    function generateBalls(seed, baseRadius, cloudType) {
+        const def = CLOUD_DEFS[cloudType];
+        const rng = seededRandom(seed);
+        const balls = [];
+
+        function spawnCluster(cx, cy, radius, depth, maxDepth) {
+            balls.push({ cx: cx, cy: cy, r: radius * (0.6 + rng() * 0.5) });
+            if (depth >= maxDepth) return;
+            const cc = Math.floor(2 + rng() * 3);
+            for (let c = 0; c < cc; c++) {
+                const a = rng() * Math.PI * 2;
+                const d = radius * (0.3 + rng() * 0.7);
+                const nx = (rng() - 0.5) * radius * 0.4;
+                const ny = (rng() - 0.5) * radius * 0.4;
+                spawnCluster(cx + Math.cos(a) * d + nx, cy + Math.sin(a) * d + ny, radius * (0.35 + rng() * 0.35), depth + 1, maxDepth);
+            }
+        }
+
+        const fd = cloudType === 0 ? 1 : cloudType === 1 ? 2 : 3;
+        const sc = cloudType === 0 ? 2 : cloudType === 1 ? 2 : cloudType === 2 ? 3 : 4;
+        const sr = baseRadius * (cloudType === 0 ? 0.5 : 0.4);
+        for (let s = 0; s < sc; s++) {
+            const sa = rng() * Math.PI * 2;
+            const sd = baseRadius * rng() * 0.2;
+            spawnCluster(Math.cos(sa) * sd, Math.sin(sa) * sd, sr * (0.7 + rng() * 0.6), 0, fd);
+        }
+
+        const wc = def.wispN + Math.floor(rng() * 3);
+        for (let w = 0; w < wc; w++) {
+            const wa = rng() * Math.PI * 2;
+            const wd = baseRadius * (0.4 + rng() * 0.6);
+            const wr = baseRadius * (0.05 + rng() * 0.12);
+            balls.push({
+                cx: Math.cos(wa) * wd + (rng() - 0.5) * baseRadius * 0.3,
+                cy: Math.sin(wa) * wd + (rng() - 0.5) * baseRadius * 0.3,
+                r: wr
+            });
+        }
+
+        return balls;
+    }
     function bakeMetaball(balls, sunAngle, cloudType, depth, proximity, occlusion, resScale) {
-      var def = CLOUD_DEFS[cloudType];
-      var sc = resScale || 1;
-      var margin = 2.5, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
-      for (var i = 0; i < balls.length; i++) { var b = balls[i]; minX = Math.min(minX, b.cx - b.r * margin); minY = Math.min(minY, b.cy - b.r * margin); maxX = Math.max(maxX, b.cx + b.r * margin); maxY = Math.max(maxY, b.cy + b.r * margin); }
-      var pad = 6;
-      var fullW = Math.ceil(maxX - minX) + pad * 2, fullH = Math.ceil(maxY - minY) + pad * 2;
+      const def = CLOUD_DEFS[cloudType];
+      const sc = resScale || 1;
+      const margin = 2.5;
+      let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+      for (let i = 0; i < balls.length; i++) { const b = balls[i]; minX = Math.min(minX, b.cx - b.r * margin); minY = Math.min(minY, b.cy - b.r * margin); maxX = Math.max(maxX, b.cx + b.r * margin); maxY = Math.max(maxY, b.cy + b.r * margin); }
+      const pad = 6;
+      const fullW = Math.ceil(maxX - minX) + pad * 2, fullH = Math.ceil(maxY - minY) + pad * 2;
       if (fullW <= 0 || fullH <= 0 || fullW > 800 || fullH > 800) return null;
-      var w = Math.max(4, Math.round(fullW * sc)), h = Math.max(4, Math.round(fullH * sc));
-      var ox = (-minX + pad) * sc, oy = (-minY + pad) * sc;
-      var dCvs = document.createElement("canvas"); dCvs.width = w; dCvs.height = h;
-      var dCtx = dCvs.getContext("2d"); dCtx.globalCompositeOperation = "lighter";
-      var fo = def.densFall, pk = def.densPeak;
-      for (var bi = 0; bi < balls.length; bi++) {
-        var ball = balls[bi], bx = ox + ball.cx * sc, by = oy + ball.cy * sc, br = ball.r * def.densMul * sc;
-        var grad = dCtx.createRadialGradient(bx, by, 0, bx, by, br);
+      const w = Math.max(4, Math.round(fullW * sc)), h = Math.max(4, Math.round(fullH * sc));
+      const ox = (-minX + pad) * sc, oy = (-minY + pad) * sc;
+      const dCvs = document.createElement("canvas"); dCvs.width = w; dCvs.height = h;
+      const dCtx = dCvs.getContext("2d"); dCtx.globalCompositeOperation = "lighter";
+      const fo = def.densFall, pk = def.densPeak;
+      for (let bi = 0; bi < balls.length; bi++) {
+        const ball = balls[bi], bx = ox + ball.cx * sc, by = oy + ball.cy * sc, br = ball.r * def.densMul * sc;
+        const grad = dCtx.createRadialGradient(bx, by, 0, bx, by, br);
         grad.addColorStop(0, "rgba(" + pk + "," + pk + "," + pk + ",1)");
         grad.addColorStop(0.25, "rgba(" + pk + "," + pk + "," + pk + "," + fo[0] + ")");
         grad.addColorStop(0.5, "rgba(" + pk + "," + pk + "," + pk + "," + fo[1] + ")");
@@ -2330,33 +2330,33 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         grad.addColorStop(1, "rgba(0,0,0,0)");
         dCtx.fillStyle = grad; dCtx.beginPath(); dCtx.arc(bx, by, br, 0, Math.PI * 2); dCtx.fill();
       }
-      var dd = dCtx.getImageData(0, 0, w, h).data;
-      var oCvs = document.createElement("canvas"); oCvs.width = w; oCvs.height = h;
-      var oCtx = oCvs.getContext("2d"), oD = oCtx.createImageData(w, h), od = oD.data;
+      const dd = dCtx.getImageData(0, 0, w, h).data;
+      const oCvs = document.createElement("canvas"); oCvs.width = w; oCvs.height = h;
+      const oCtx = oCvs.getContext("2d"), oD = oCtx.createImageData(w, h), od = oD.data;
       function dens(x, y) { return (x < 0 || x >= w || y < 0 || y >= h) ? 0 : dd[(y * w + x) * 4]; }
-      var sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens;
-      var lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
-      var shR = Math.round(8 + ds * 12 + lr * 40), shG = Math.round(4 + ds * 6 + lr * 40), shB = Math.round(3 + ds * 4 + lr * 40);
-      var ltR = Math.round(55 + ds * 50 + proximity * 30 + lr * 40), ltG = Math.round(32 + ds * 25 + proximity * 15 + lr * 30), ltB = Math.round(18 + ds * 14 + proximity * 8 + lr * 25);
-      var rmR = Math.min(255, Math.round(140 + ds * 50 + proximity * 60)), rmG = Math.min(255, Math.round(80 + ds * 25 + proximity * 30)), rmB = Math.min(255, Math.round(30 + ds * 10 + proximity * 12));
-      for (var py = 2; py < h - 2; py++) {
-        for (var px = 2; px < w - 2; px++) {
-          var idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
-          var thick = Math.min(1, (density - hT) / (mD - hT));
-          var gx = (dens(px+1,py)*2+dens(px+2,py))-(dens(px-1,py)*2+dens(px-2,py));
-          var gy = (dens(px,py+1)*2+dens(px,py+2))-(dens(px,py-1)*2+dens(px,py-2));
-          var gl = Math.sqrt(gx*gx+gy*gy), nx = 0, ny = 0; if (gl > 1) { nx = -gx/gl; ny = -gy/gl; }
-          var sunF = (nx*sdx+ny*sdy)*0.5+0.5, thin = 1-thick;
-          var rim = thin*thin*thin*Math.max(0,sunF)*0.7, sL = sunF*(0.35+thick*0.65);
+      const sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens;
+      const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
+      const shR = Math.round(8 + ds * 12 + lr * 40), shG = Math.round(4 + ds * 6 + lr * 40), shB = Math.round(3 + ds * 4 + lr * 40);
+      const ltR = Math.round(55 + ds * 50 + proximity * 30 + lr * 40), ltG = Math.round(32 + ds * 25 + proximity * 15 + lr * 30), ltB = Math.round(18 + ds * 14 + proximity * 8 + lr * 25);
+      const rmR = Math.min(255, Math.round(140 + ds * 50 + proximity * 60)), rmG = Math.min(255, Math.round(80 + ds * 25 + proximity * 30)), rmB = Math.min(255, Math.round(30 + ds * 10 + proximity * 12));
+      for (let py = 2; py < h - 2; py++) {
+        for (let px = 2; px < w - 2; px++) {
+          const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
+          const thick = Math.min(1, (density - hT) / (mD - hT));
+          const gx = (dens(px+1,py)*2+dens(px+2,py))-(dens(px-1,py)*2+dens(px-2,py));
+          const gy = (dens(px,py+1)*2+dens(px,py+2))-(dens(px,py-1)*2+dens(px,py-2));
+          const gl = Math.sqrt(gx*gx+gy*gy); let nx = 0, ny = 0; if (gl > 1) { nx = -gx/gl; ny = -gy/gl; }
+          const sunF = (nx*sdx+ny*sdy)*0.5+0.5, thin = 1-thick;
+          let rim = thin*thin*thin*Math.max(0,sunF)*0.7, sL = sunF*(0.35+thick*0.65);
           if (gl < 2) { sL *= 0.4; rim = 0; }
           if (levels <= 1) sL = 0.5;
           else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.2;
           else if (levels === 3) sL = sL > 0.6 ? 0.9 : sL > 0.3 ? 0.5 : 0.15;
-          else { var band = sL > 0.7 ? 0.92 : sL > 0.45 ? 0.65 : sL > 0.2 ? 0.35 : 0.1; sL = band + (sL - band) * 0.3; }
+          else { const band = sL > 0.7 ? 0.92 : sL > 0.45 ? 0.65 : sL > 0.2 ? 0.35 : 0.1; sL = band + (sL - band) * 0.3; }
           sL *= lr;
-          var r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL);
+          let r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL);
           if (levels >= 2) { r = Math.min(255,r+Math.round(rmR*rim*0.4*lr)); g = Math.min(255,g+Math.round(rmG*rim*0.4*lr)); bv = Math.min(255,bv+Math.round(rmB*rim*0.4*lr)); }
-          var alpha; if (def.alphaCurve===0) alpha=bAlpha*thick; else if (def.alphaCurve===1) alpha=bAlpha*thick*(0.4+thick*0.6); else alpha=bAlpha*thick*thick*(0.3+thick*0.7);
+          let alpha; if (def.alphaCurve===0) alpha=bAlpha*thick; else if (def.alphaCurve===1) alpha=bAlpha*thick*(0.4+thick*0.6); else alpha=bAlpha*thick*thick*(0.3+thick*0.7);
           od[idx]=r; od[idx+1]=g; od[idx+2]=bv; od[idx+3]=Math.round(alpha*255);
         }
       }
@@ -2364,10 +2364,202 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       return { canvas: oCvs, ox: minX - pad, oy: minY - pad, w: fullW, h: fullH, sc: sc };
     }
 
-    function buildCloudsForScene(W, H) { var sunX = W * 0.5, sunY = H * 0.3, sunR = H * 0.08; var minDist = sunR * 2, clouds = [], maxReach = Math.max(W, H) * 1.5, id = 0;
-    function getCachedBake(seed, balls, sunAngle, cType, dep, prox, rs) { return bakeMetaball(balls, sunAngle, cType, dep, prox, 0, rs); }
-    function addC(seed, dist, angle, radius, dep, spd, cType) { var prox = Math.max(0, 1 - dist / maxReach); var balls = generateBalls(seed, radius, cType); var cx = sunX + Math.cos(angle) * dist, cy = sunY + Math.sin(angle) * dist * 0.7; var rs = 1; var baked = getCachedBake(seed, balls, Math.atan2(sunY - cy, sunX - cx), cType, dep, prox, rs); if (!baked) return; clouds.push({ id: id++, sunX: sunX, sunY: sunY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, noRefresh: cType <= 1 }); } function addHi(seed, dist, angle, radius, dep, spd, cType, layerY, layerFlat) { var prox = Math.max(0, 1 - dist / maxReach); var balls = generateBalls(seed, radius, cType); var hcx = sunX + Math.cos(angle) * dist; var hcy = layerY + Math.sin(angle) * dist * layerFlat; var rs = 1; var baked = getCachedBake(seed, balls, Math.atan2(sunY - hcy, sunX - hcx), cType, dep, prox, rs); if (!baked) return; clouds.push({ id: id++, sunX: sunX, sunY: layerY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, orbitFlatten: layerFlat, noRefresh: cType <= 1 }); } var speeds = [0.04, 0.07, 0.11, 0.18, 0.28], phases = [0, 1.0, 2.1, 3.4, 4.8]; for (var s = 0; s < 5; s++) { var nCl = 15 + Math.floor(hash(s * 100) * 10); for (var c = 0; c < nCl; c++) { var cs = s*1000+c*37, rng2 = seededRandom(cs); var dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist)); var ang = phases[s] + rng2() * Math.PI * 2, sr = rng2(), rad, cType; if (sr < 0.12) { rad = 75+rng2()*55; cType = 3; } else if (sr < 0.40) { rad = 35+rng2()*40; cType = 2; } else if (sr < 0.72) { rad = 18+rng2()*20; cType = 1; } else { rad = 8+rng2()*12; cType = 0; } var dep = Math.max(0, Math.min(1, (1-s/4)+(rng2()-0.5)*0.25)); var spd = speeds[s]/(0.5+rad/60)*(0.55+dep*0.45)/(0.3+dist/(H*0.5)); addC(cs, dist, ang, rad, dep, spd, cType); var nM = 6+Math.floor(rng2()*4); for (var m = 0; m < nM; m++) { var ms = cs+500+m*13, mr = seededRandom(ms), mRad = rad*(0.25+mr()*0.4), mType = cType>0?cType-1:0; var mDist = Math.max(minDist, dist+(mr()-0.5)*rad*4), mAng = ang+(mr()-0.5)*1.0; var mDep = Math.max(0, Math.min(1, dep+(mr()-0.5)*0.15)); addC(ms, mDist, mAng, mRad, mDep, speeds[s]/(0.5+mRad/60)*(0.55+mDep*0.45)/(0.3+mDist/(H*0.5))*1.1, mType); var nSm = 3+Math.floor(mr()*3); for (var sm = 0; sm < nSm; sm++) { var ss = ms+200+sm*7, sr2 = seededRandom(ss), sRad = mRad*(0.2+sr2()*0.35), sType = mType>0?mType-1:0; var sDist = Math.max(minDist, mDist+(sr2()-0.5)*mRad*4), sAng = mAng+(sr2()-0.5)*1.2; var sDep = Math.max(0, Math.min(1, mDep+(sr2()-0.5)*0.2)); addC(ss, sDist, sAng, sRad, sDep, speeds[s]/(0.5+sRad/60)*(0.55+sDep*0.45)/(0.3+sDist/(H*0.5))*1.3, sType); } } } } var hiSunY = sunY - H * 0.12, hiMin = minDist * 0.6, hiMax = maxReach * 0.9; var hiSp = [0.30, 0.22, 0.15, 0.10], hiPh = [0.5, 1.8, 3.3, 5.0]; for (var hs = 0; hs < 4; hs++) { var hCl = 9+Math.floor(hash(hs*200+77)*6); for (var hc = 0; hc < hCl; hc++) { var hcs = 50000+hs*1000+hc*41, hrng = seededRandom(hcs); var hDist = Math.max(hiMin, hiMin+Math.pow(hrng(),0.33)*(hiMax-hiMin)), hAng = hiPh[hs]+hrng()*Math.PI*2, hsr = hrng(); var hRad, hcT; if (hsr<0.15){hRad=30+hrng()*30;hcT=2;} else if(hsr<0.50){hRad=14+hrng()*18;hcT=1;} else{hRad=6+hrng()*10;hcT=0;} var hDep = Math.max(0, Math.min(1, (1-hs/3)+(hrng()-0.5)*0.2)); addHi(hcs, hDist, hAng, hRad, hDep, hiSp[hs]/(0.5+hRad/60)*(0.55+hDep*0.45)/(0.3+hDist/(H*0.5)), hcT, hiSunY, 0.35); var hnM = 2+Math.floor(hrng()*2); for (var hm = 0; hm < hnM; hm++) { var hms = hcs+600+hm*17, hmr = seededRandom(hms), hmRad = hRad*(0.3+hmr()*0.35), hmT = hcT>0?hcT-1:0; var hmDist = Math.max(hiMin, hDist+(hmr()-0.5)*hRad*2), hmAng = hAng+(hmr()-0.5)*0.5; addHi(hms, hmDist, hmAng, hmRad, Math.max(0,Math.min(1,hDep+(hmr()-0.5)*0.15)), hiSp[hs]/(0.5+hmRad/60)*(0.55+hDep*0.45)/(0.3+hmDist/(H*0.5))*1.15, hmT, hiSunY, 0.35); } } } var topY = sunY - H * 0.22, topMin = minDist * 0.4, topMax = maxReach * 0.95; var topSp = [0.35, 0.26, 0.18], topPh = [0.3, 2.0, 4.2]; for (var ts = 0; ts < 3; ts++) { var tCl = 8+Math.floor(hash(ts*300+99)*6); for (var tc = 0; tc < tCl; tc++) { var tcs = 70000+ts*1000+tc*47, trng = seededRandom(tcs); var tDist = Math.max(topMin, topMin+Math.pow(trng(),0.33)*(topMax-topMin)), tAng = topPh[ts]+trng()*Math.PI*2, tsr2 = trng(); var tRad, tcT; if(tsr2<0.35){tRad=10+trng()*15;tcT=1;} else{tRad=5+trng()*8;tcT=0;} var tDep = Math.max(0, Math.min(1, (1-ts/2)+(trng()-0.5)*0.15)); addHi(tcs, tDist, tAng, tRad, tDep, topSp[ts]/(0.5+tRad/60)*(0.55+tDep*0.45)/(0.3+tDist/(H*0.5)), tcT, topY, 0.2); var tnM = 1+Math.floor(trng()*2); for (var tm = 0; tm < tnM; tm++) { var tms = tcs+700+tm*19, tmr = seededRandom(tms), tmRad = tRad*(0.3+tmr()*0.4); var tmDist = Math.max(topMin, tDist+(tmr()-0.5)*tRad*3), tmAng = tAng+(tmr()-0.5)*0.6; addHi(tms, tmDist, tmAng, tmRad, Math.max(0,Math.min(1,tDep+(tmr()-0.5)*0.15)), topSp[ts]/(0.5+tmRad/60)*(0.55+tDep*0.45)/(0.3+tmDist/(H*0.5))*1.2, 0, topY, 0.2); } } } var midLo = minDist, midHi2 = maxReach * 0.85; for (var mf = 0; mf < 60; mf++) { var mfs = 90000+mf*71, mfr = seededRandom(mfs), mfDist = midLo+mfr()*(midHi2-midLo), mfAng = mfr()*Math.PI*2; var mfRad = 15+mfr()*40, mfT = mfRad>50?3:mfRad>30?2:mfRad>15?1:0, mfDep = 0.25+mfr()*0.5; addC(mfs, mfDist, mfAng, mfRad, mfDep, 0.12/(0.5+mfRad/60)*(0.55+mfDep*0.45)/(0.3+mfDist/(H*0.5)), mfT); } var outLo = minDist+(maxReach-minDist)*0.2, outHi = maxReach; for (var of2 = 0; of2 < 90; of2++) { var ofs = 80000+of2*53, ofr = seededRandom(ofs), ofDist = outLo+ofr()*(outHi-outLo), ofAng = ofr()*Math.PI*2; var ofRad = 20+ofr()*55, ofT = ofRad>50?3:ofRad>30?2:ofRad>15?1:0, ofDep = 0.1+ofr()*0.4; addC(ofs, ofDist, ofAng, ofRad, ofDep, 0.08/(0.5+ofRad/60)*(0.55+ofDep*0.45)/(0.3+ofDist/(H*0.5)), ofT); } clouds.sort(function(a, b) { return a.depth - b.depth; }); return clouds; }
-    function refreshCloud(cloud, time2, sunX, sunY) { if (cloud.noRefresh) return; var flatR = cloud.orbitFlatten || 0.7; var x = sunX + Math.cos(cloud.angle) * cloud.orbitDist; var y = cloud.sunY + Math.sin(cloud.angle) * cloud.orbitDist * flatR; var sunAngle = Math.atan2(sunY - y, sunX - x); if (!cloud._rc) cloud._rc = 0; cloud._rc++; var useBalls = cloud.balls; if (cloud._rc % 30 === 0) { var drift = time2 * 0.0001, drifted = []; for (var i = 0; i < cloud.balls.length; i++) { var b = cloud.balls[i]; if (i === 0) { drifted.push(b); continue; } drifted.push({ cx: b.cx + Math.sin(drift*3+i*1.7)*b.r*0.12, cy: b.cy + Math.cos(drift*2.3+i*2.1)*b.r*0.1, r: b.r }); } useBalls = drifted; } var baked = bakeMetaball(useBalls, sunAngle, cloud.cloudType, cloud.depth, cloud.proximity, 0); if (baked) cloud.baked = baked; }
+    function buildCloudsForScene(W, H) {
+        const sunX = W * 0.5;
+        const sunY = H * 0.3;
+        const sunR = H * 0.08;
+        const minDist = sunR * 2;
+        const clouds = [];
+        const maxReach = Math.max(W, H) * 1.5;
+        let id = 0;
+
+        function getCachedBake(seed, balls, sunAngle, cType, dep, prox, rs) {
+            return bakeMetaball(balls, sunAngle, cType, dep, prox, 0, rs);
+        }
+
+        function addC(seed, dist, angle, radius, dep, spd, cType) {
+            const prox = Math.max(0, 1 - dist / maxReach);
+            const balls = generateBalls(seed, radius, cType);
+            const cx = sunX + Math.cos(angle) * dist;
+            const cy = sunY + Math.sin(angle) * dist * 0.7;
+            const rs = 1;
+            const baked = getCachedBake(seed, balls, Math.atan2(sunY - cy, sunX - cx), cType, dep, prox, rs);
+            if (!baked) return;
+            clouds.push({ id: id++, sunX: sunX, sunY: sunY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, noRefresh: cType <= 1 });
+        }
+
+        function addHi(seed, dist, angle, radius, dep, spd, cType, layerY, layerFlat) {
+            const prox = Math.max(0, 1 - dist / maxReach);
+            const balls = generateBalls(seed, radius, cType);
+            const hcx = sunX + Math.cos(angle) * dist;
+            const hcy = layerY + Math.sin(angle) * dist * layerFlat;
+            const rs = 1;
+            const baked = getCachedBake(seed, balls, Math.atan2(sunY - hcy, sunX - hcx), cType, dep, prox, rs);
+            if (!baked) return;
+            clouds.push({ id: id++, sunX: sunX, sunY: layerY, orbitDist: dist, angle: angle, orbitSpeed: spd, balls: balls, baked: baked, seed: seed, depth: dep, proximity: prox, baseRadius: radius, cloudType: cType, orbitFlatten: layerFlat, noRefresh: cType <= 1 });
+        }
+
+        const speeds = [0.04, 0.07, 0.11, 0.18, 0.28];
+        const phases = [0, 1.0, 2.1, 3.4, 4.8];
+        for (let s = 0; s < 5; s++) {
+            const nCl = 15 + Math.floor(hash(s * 100) * 10);
+            for (let c = 0; c < nCl; c++) {
+                const cs = s * 1000 + c * 37;
+                const rng2 = seededRandom(cs);
+                const dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist));
+                const ang = phases[s] + rng2() * Math.PI * 2;
+                const sr = rng2();
+                let rad, cType;
+                if (sr < 0.12) { rad = 75 + rng2() * 55; cType = 3; }
+                else if (sr < 0.40) { rad = 35 + rng2() * 40; cType = 2; }
+                else if (sr < 0.72) { rad = 18 + rng2() * 20; cType = 1; }
+                else { rad = 8 + rng2() * 12; cType = 0; }
+                const dep = Math.max(0, Math.min(1, (1 - s / 4) + (rng2() - 0.5) * 0.25));
+                const spd = speeds[s] / (0.5 + rad / 60) * (0.55 + dep * 0.45) / (0.3 + dist / (H * 0.5));
+                addC(cs, dist, ang, rad, dep, spd, cType);
+                const nM = 6 + Math.floor(rng2() * 4);
+                for (let m = 0; m < nM; m++) {
+                    const ms = cs + 500 + m * 13;
+                    const mr = seededRandom(ms);
+                    const mRad = rad * (0.25 + mr() * 0.4);
+                    const mType = cType > 0 ? cType - 1 : 0;
+                    const mDist = Math.max(minDist, dist + (mr() - 0.5) * rad * 4);
+                    const mAng = ang + (mr() - 0.5) * 1.0;
+                    const mDep = Math.max(0, Math.min(1, dep + (mr() - 0.5) * 0.15));
+                    addC(ms, mDist, mAng, mRad, mDep, speeds[s] / (0.5 + mRad / 60) * (0.55 + mDep * 0.45) / (0.3 + mDist / (H * 0.5)) * 1.1, mType);
+                    const nSm = 3 + Math.floor(mr() * 3);
+                    for (let sm = 0; sm < nSm; sm++) {
+                        const ss = ms + 200 + sm * 7;
+                        const sr2 = seededRandom(ss);
+                        const sRad = mRad * (0.2 + sr2() * 0.35);
+                        const sType = mType > 0 ? mType - 1 : 0;
+                        const sDist = Math.max(minDist, mDist + (sr2() - 0.5) * mRad * 4);
+                        const sAng = mAng + (sr2() - 0.5) * 1.2;
+                        const sDep = Math.max(0, Math.min(1, mDep + (sr2() - 0.5) * 0.2));
+                        addC(ss, sDist, sAng, sRad, sDep, speeds[s] / (0.5 + sRad / 60) * (0.55 + sDep * 0.45) / (0.3 + sDist / (H * 0.5)) * 1.3, sType);
+                    }
+                }
+            }
+        }
+
+        const hiSunY = sunY - H * 0.12;
+        const hiMin = minDist * 0.6;
+        const hiMax = maxReach * 0.9;
+        const hiSp = [0.30, 0.22, 0.15, 0.10];
+        const hiPh = [0.5, 1.8, 3.3, 5.0];
+        for (let hs = 0; hs < 4; hs++) {
+            const hCl = 9 + Math.floor(hash(hs * 200 + 77) * 6);
+            for (let hc = 0; hc < hCl; hc++) {
+                const hcs = 50000 + hs * 1000 + hc * 41;
+                const hrng = seededRandom(hcs);
+                const hDist = Math.max(hiMin, hiMin + Math.pow(hrng(), 0.33) * (hiMax - hiMin));
+                const hAng = hiPh[hs] + hrng() * Math.PI * 2;
+                const hsr = hrng();
+                let hRad, hcT;
+                if (hsr < 0.15) { hRad = 30 + hrng() * 30; hcT = 2; }
+                else if (hsr < 0.50) { hRad = 14 + hrng() * 18; hcT = 1; }
+                else { hRad = 6 + hrng() * 10; hcT = 0; }
+                const hDep = Math.max(0, Math.min(1, (1 - hs / 3) + (hrng() - 0.5) * 0.2));
+                addHi(hcs, hDist, hAng, hRad, hDep, hiSp[hs] / (0.5 + hRad / 60) * (0.55 + hDep * 0.45) / (0.3 + hDist / (H * 0.5)), hcT, hiSunY, 0.35);
+                const hnM = 2 + Math.floor(hrng() * 2);
+                for (let hm = 0; hm < hnM; hm++) {
+                    const hms = hcs + 600 + hm * 17;
+                    const hmr = seededRandom(hms);
+                    const hmRad = hRad * (0.3 + hmr() * 0.35);
+                    const hmT = hcT > 0 ? hcT - 1 : 0;
+                    const hmDist = Math.max(hiMin, hDist + (hmr() - 0.5) * hRad * 2);
+                    const hmAng = hAng + (hmr() - 0.5) * 0.5;
+                    addHi(hms, hmDist, hmAng, hmRad, Math.max(0, Math.min(1, hDep + (hmr() - 0.5) * 0.15)), hiSp[hs] / (0.5 + hmRad / 60) * (0.55 + hDep * 0.45) / (0.3 + hmDist / (H * 0.5)) * 1.15, hmT, hiSunY, 0.35);
+                }
+            }
+        }
+
+        const topY = sunY - H * 0.22;
+        const topMin = minDist * 0.4;
+        const topMax = maxReach * 0.95;
+        const topSp = [0.35, 0.26, 0.18];
+        const topPh = [0.3, 2.0, 4.2];
+        for (let ts = 0; ts < 3; ts++) {
+            const tCl = 8 + Math.floor(hash(ts * 300 + 99) * 6);
+            for (let tc = 0; tc < tCl; tc++) {
+                const tcs = 70000 + ts * 1000 + tc * 47;
+                const trng = seededRandom(tcs);
+                const tDist = Math.max(topMin, topMin + Math.pow(trng(), 0.33) * (topMax - topMin));
+                const tAng = topPh[ts] + trng() * Math.PI * 2;
+                const tsr2 = trng();
+                let tRad, tcT;
+                if (tsr2 < 0.35) { tRad = 10 + trng() * 15; tcT = 1; }
+                else { tRad = 5 + trng() * 8; tcT = 0; }
+                const tDep = Math.max(0, Math.min(1, (1 - ts / 2) + (trng() - 0.5) * 0.15));
+                addHi(tcs, tDist, tAng, tRad, tDep, topSp[ts] / (0.5 + tRad / 60) * (0.55 + tDep * 0.45) / (0.3 + tDist / (H * 0.5)), tcT, topY, 0.2);
+                const tnM = 1 + Math.floor(trng() * 2);
+                for (let tm = 0; tm < tnM; tm++) {
+                    const tms = tcs + 700 + tm * 19;
+                    const tmr = seededRandom(tms);
+                    const tmRad = tRad * (0.3 + tmr() * 0.4);
+                    const tmDist = Math.max(topMin, tDist + (tmr() - 0.5) * tRad * 3);
+                    const tmAng = tAng + (tmr() - 0.5) * 0.6;
+                    addHi(tms, tmDist, tmAng, tmRad, Math.max(0, Math.min(1, tDep + (tmr() - 0.5) * 0.15)), topSp[ts] / (0.5 + tmRad / 60) * (0.55 + tDep * 0.45) / (0.3 + tmDist / (H * 0.5)) * 1.2, 0, topY, 0.2);
+                }
+            }
+        }
+
+        const midLo = minDist;
+        const midHi2 = maxReach * 0.85;
+        for (let mf = 0; mf < 60; mf++) {
+            const mfs = 90000 + mf * 71;
+            const mfr = seededRandom(mfs);
+            const mfDist = midLo + mfr() * (midHi2 - midLo);
+            const mfAng = mfr() * Math.PI * 2;
+            const mfRad = 15 + mfr() * 40;
+            const mfT = mfRad > 50 ? 3 : mfRad > 30 ? 2 : mfRad > 15 ? 1 : 0;
+            const mfDep = 0.25 + mfr() * 0.5;
+            addC(mfs, mfDist, mfAng, mfRad, mfDep, 0.12 / (0.5 + mfRad / 60) * (0.55 + mfDep * 0.45) / (0.3 + mfDist / (H * 0.5)), mfT);
+        }
+
+        const outLo = minDist + (maxReach - minDist) * 0.2;
+        const outHi = maxReach;
+        for (let of2 = 0; of2 < 90; of2++) {
+            const ofs = 80000 + of2 * 53;
+            const ofr = seededRandom(ofs);
+            const ofDist = outLo + ofr() * (outHi - outLo);
+            const ofAng = ofr() * Math.PI * 2;
+            const ofRad = 20 + ofr() * 55;
+            const ofT = ofRad > 50 ? 3 : ofRad > 30 ? 2 : ofRad > 15 ? 1 : 0;
+            const ofDep = 0.1 + ofr() * 0.4;
+            addC(ofs, ofDist, ofAng, ofRad, ofDep, 0.08 / (0.5 + ofRad / 60) * (0.55 + ofDep * 0.45) / (0.3 + ofDist / (H * 0.5)), ofT);
+        }
+
+        clouds.sort(function(a, b) { return a.depth - b.depth; });
+        return clouds;
+    }
+
+    function refreshCloud(cloud, time2, sunX, sunY) {
+        if (cloud.noRefresh) return;
+        const flatR = cloud.orbitFlatten || 0.7;
+        const x = sunX + Math.cos(cloud.angle) * cloud.orbitDist;
+        const y = cloud.sunY + Math.sin(cloud.angle) * cloud.orbitDist * flatR;
+        const sunAngle = Math.atan2(sunY - y, sunX - x);
+        if (!cloud._rc) cloud._rc = 0;
+        cloud._rc++;
+        let useBalls = cloud.balls;
+        if (cloud._rc % 30 === 0) {
+            const drift = time2 * 0.0001;
+            const drifted = [];
+            for (let i = 0; i < cloud.balls.length; i++) {
+                const b = cloud.balls[i];
+                if (i === 0) { drifted.push(b); continue; }
+                drifted.push({
+                    cx: b.cx + Math.sin(drift * 3 + i * 1.7) * b.r * 0.12,
+                    cy: b.cy + Math.cos(drift * 2.3 + i * 2.1) * b.r * 0.1,
+                    r: b.r
+                });
+            }
+            useBalls = drifted;
+        }
+        const baked = bakeMetaball(useBalls, sunAngle, cloud.cloudType, cloud.depth, cloud.proximity, 0);
+        if (baked) cloud.baked = baked;
+    }
 
     let lastFrame = 0;
     let sceneClouds = null;
@@ -2376,6 +2568,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     const honourFps = bgFps || (isFull ? 30 : 15);
     const honourInterval = Math.round(1000 / honourFps);
+
+    const rng = (i, off) => { const s = Math.sin((i + sceneSeed) * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
+    const ihash = (n, off) => { let h = Math.imul(n + off, 2654435761) | 0; h = Math.imul(h ^ (h >>> 16), 0x45d9f3b); h = Math.imul(h ^ (h >>> 13), 0x45d9f3b); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -2389,7 +2584,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       {
         const W = canvas.width, H = canvas.height;
         const hY = H; // sky covers 100%
-        const rng = (i, off) => { const s = Math.sin((i + sceneSeed) * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
 
         // === SKY + SUN + CLOUDS (from cloud-demo) ===
         const sunX = W * 0.5, sunY = H * 0.3;
@@ -2532,7 +2726,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
         for (let bz = 0; bz < planeSize; ) {
-          const ihash = (n, off) => { let h = Math.imul(n + off, 2654435761) | 0; h = Math.imul(h ^ (h >>> 16), 0x45d9f3b); h = Math.imul(h ^ (h >>> 13), 0x45d9f3b); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
           const rowSpacingZ = 0.5 + ihash(swordIdx + 7000, sceneSeed) * 1.5;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = 0.5 + ihash(swordIdx + 8000, sceneSeed) * 1.5;
