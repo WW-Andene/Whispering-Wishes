@@ -2728,25 +2728,35 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         ctx.restore();
 
-        // Ambient light above clouds — warm glow that varies with cloud density
-        // Brighter in the clearing (center path), dimmer where clouds are thick
+        // Dynamic ambient — clouds darken the sky behind them
+        // First pass: draw dark shadow under each cloud to occlude the bright sky
         ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
-        // Main ambient from sun — washes over the cloud layer
-        const ambR = ctx.createRadialGradient(sunX, sunY, sunR * 2, sunX, sunY, Math.max(W, H) * 0.7);
-        ambR.addColorStop(0, 'rgba(255,220,140,0.06)');
-        ambR.addColorStop(0.2, 'rgba(255,180,90,0.04)');
-        ambR.addColorStop(0.5, 'rgba(200,120,50,0.02)');
-        ambR.addColorStop(1, 'rgba(100,50,20,0)');
-        ctx.fillStyle = ambR; ctx.fillRect(0, 0, W, H);
-        // Horizon ambient — warm light scattering along the horizon line
-        const horizY = H * 0.75;
-        const horizAmb = ctx.createLinearGradient(0, horizY - H * 0.15, 0, horizY + H * 0.05);
-        horizAmb.addColorStop(0, 'rgba(255,200,100,0)');
-        horizAmb.addColorStop(0.4, 'rgba(255,180,80,0.03)');
-        horizAmb.addColorStop(0.7, 'rgba(255,160,60,0.05)');
-        horizAmb.addColorStop(1, 'rgba(200,100,30,0)');
-        ctx.fillStyle = horizAmb; ctx.fillRect(0, horizY - H * 0.15, W, H * 0.2);
+        ctx.globalCompositeOperation = 'multiply';
+        if (sceneClouds) {
+          for (let di = 0; di < sceneClouds.length; di++) {
+            const cl = sceneClouds[di];
+            const bk = cl.baked; if (!bk) continue;
+            const ca = cl.angle, flatR = cl.orbitFlatten || 0.7;
+            const clx = cl.sunX + Math.cos(ca) * cl.orbitDist;
+            const cly = cl.sunY + Math.sin(ca) * cl.orbitDist * flatR;
+            // Skip offscreen
+            const m2 = Math.max(bk.w, bk.h) * 2;
+            if (clx + bk.ox > W + m2 || clx + bk.ox + bk.w < -m2 || cly + bk.oy > H + m2 || cly + bk.oy + bk.h < -m2) continue;
+            // Cloud shadow — darkens sky proportional to cloud size and type
+            const shadowR = Math.max(bk.w, bk.h) * 0.7;
+            const cx3 = clx + bk.ox + bk.w * 0.5;
+            const cy3 = cly + bk.oy + bk.h * 0.5;
+            // Bigger/denser clouds darken more
+            const darkness = cl.cloudType >= 3 ? 0.7 : cl.cloudType >= 2 ? 0.78 : cl.cloudType >= 1 ? 0.85 : 0.92;
+            const dStr = Math.round(darkness * 255);
+            const shadowGrad = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, shadowR);
+            shadowGrad.addColorStop(0, 'rgb(' + dStr + ',' + dStr + ',' + dStr + ')');
+            shadowGrad.addColorStop(0.6, 'rgb(' + Math.round(darkness * 255 + (255 - darkness * 255) * 0.5) + ',' + Math.round(darkness * 255 + (255 - darkness * 255) * 0.5) + ',' + Math.round(darkness * 255 + (255 - darkness * 255) * 0.5) + ')');
+            shadowGrad.addColorStop(1, 'rgb(255,255,255)');
+            ctx.fillStyle = shadowGrad;
+            ctx.beginPath(); ctx.arc(cx3, cy3, shadowR, 0, Math.PI * 2); ctx.fill();
+          }
+        }
         ctx.restore();
 
         // Sun lens flare — circles along the sun-to-center axis
