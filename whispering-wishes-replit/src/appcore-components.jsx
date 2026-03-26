@@ -21,6 +21,9 @@ import {
 } from './appcore-engine.js';
 import { useFocusTrap, useEscapeKey, FocusTrapModal } from './appcore-providers.jsx';
 
+// Deterministic pseudo-random number generator (used by background animations)
+function seededRandom(seed) { let s = seed; return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
+
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 // AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
 const hideOnError = (e) => {
@@ -312,7 +315,24 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                   const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
                   if (!lvl) return null;
                   const stats = Object.entries(lvl).map(([k, v]) => {
-                    const labels = { atkPct: 'ATK%', critRate: 'Crit Rate', critDmg: 'Crit DMG', elemDmg: 'Elem DMG', skillDmg: 'Skill DMG', basicDmg: 'Basic DMG', heavyDmg: 'Heavy DMG', libDmg: 'Lib DMG', echoDmg: 'Echo DMG', deepen: 'Deepen', defIgnore: 'DEF Ignore', defShred: 'DEF Shred', resShred: 'RES Shred', totalMult: 'Total Mult', allDmg: 'All DMG', coordDmg: 'Coord DMG' };
+                    const labels = {
+                      atkPct: 'ATK%',
+                      critRate: 'Crit Rate',
+                      critDmg: 'Crit DMG',
+                      elemDmg: 'Elem DMG',
+                      skillDmg: 'Skill DMG',
+                      basicDmg: 'Basic DMG',
+                      heavyDmg: 'Heavy DMG',
+                      libDmg: 'Lib DMG',
+                      echoDmg: 'Echo DMG',
+                      deepen: 'Deepen',
+                      defIgnore: 'DEF Ignore',
+                      defShred: 'DEF Shred',
+                      resShred: 'RES Shred',
+                      totalMult: 'Total Mult',
+                      allDmg: 'All DMG',
+                      coordDmg: 'Coord DMG',
+                    };
                     return (labels[k] || k) + ' +' + v + '%';
                   }).join(', ');
                   return (
@@ -2258,7 +2278,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     const sceneSeed = 52908;
 
     // === Cloud system from cloud-demo ===
-    function seededRandom(seed) { let s = seed; return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
     const CLOUD_DEFS = [
       { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.06, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
       { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.35, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },

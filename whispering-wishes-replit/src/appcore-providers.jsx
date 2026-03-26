@@ -42,6 +42,40 @@ const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
 const PWAContext = createContext(null);
 const usePWA = () => useContext(PWAContext);
 
+// Meta tag definitions for PWA support
+const PWA_META_TAGS = [
+  { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+  { name: 'mobile-web-app-capable', content: 'yes' },
+  { name: 'apple-mobile-web-app-capable', content: 'yes' },
+  { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+  { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
+  { name: 'theme-color', content: '#edaf18' },
+  { name: 'msapplication-TileColor', content: '#edaf18' },
+  { name: 'msapplication-navbutton-color', content: '#edaf18' }
+];
+
+/** Inject PWA meta tags into document head (skips if already present) */
+function injectMetaTags() {
+  PWA_META_TAGS.forEach(({ name, content }) => {
+    if (!document.querySelector(`meta[name="${name}"]`)) {
+      const meta = document.createElement('meta');
+      meta.name = name;
+      meta.content = content;
+      meta.setAttribute('data-ww', 'true');
+      document.head.appendChild(meta);
+    }
+  });
+}
+
+/** Remove injected PWA meta tags from document head (preserves viewport) */
+function removeMetaTags() {
+  PWA_META_TAGS.forEach(({ name }) => {
+    if (name === 'viewport') return; // Never remove viewport meta
+    const el = document.querySelector(`meta[name="${name}"][data-ww="true"]`);
+    if (el) el.remove();
+  });
+}
+
 // PWA Provider Component
 const PWAProvider = ({ children }) => {
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -76,29 +110,8 @@ const PWAProvider = ({ children }) => {
     
     // Manifest is injected by WhisperingWishesInner (with proper icon setup)
     // Only inject meta tags here
-    
-    // Add meta tags for PWA
-    const metaTags = [
-      { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-      { name: 'mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-      { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
-      { name: 'theme-color', content: '#edaf18' },
-      { name: 'msapplication-TileColor', content: '#edaf18' },
-      { name: 'msapplication-navbutton-color', content: '#edaf18' }
-    ];
-    
-    metaTags.forEach(({ name, content }) => {
-      if (!document.querySelector(`meta[name="${name}"]`)) {
-        const meta = document.createElement('meta');
-        meta.name = name;
-        meta.content = content;
-        meta.setAttribute('data-ww', 'true');
-        document.head.appendChild(meta);
-      }
-    });
-    
+    injectMetaTags();
+
     // P14-FIX: HIGH-6 — Register service worker from a proper static file instead of blob URL.
     // Blob URLs bypass CSP, are invisible to security scanners, and prevent proper SW update lifecycle.
     // The static /sw.js file works in all browsers (Firefox, Safari, Chrome).
@@ -118,18 +131,13 @@ const PWAProvider = ({ children }) => {
           console.info('[WW] Service worker not registered:', err.message);
         });
     }
-    
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      // Clean up only our injected DOM elements — except viewport which is critical
-      metaTags.forEach(({ name }) => {
-        if (name === 'viewport') return; // Never remove viewport meta
-        const el = document.querySelector(`meta[name="${name}"][data-ww="true"]`);
-        if (el) el.remove();
-      });
+      removeMetaTags();
     };
   }, []);
   
