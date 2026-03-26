@@ -2870,9 +2870,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
         for (let bz = 0; bz < planeSize; ) {
-          const rowSpacingZ = 0.5 + ihash(swordIdx + 7000, sceneSeed) * 1.5;
+          const rowSpacingZ = 1.0 + ihash(swordIdx + 7000, sceneSeed) * 3.0;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
-            const cellSpacingX = 0.5 + ihash(swordIdx + 8000, sceneSeed) * 1.5;
+            const cellSpacingX = 1.0 + ihash(swordIdx + 8000, sceneSeed) * 3.0;
             const jx = bx + (ihash(swordIdx, sceneSeed + 101) - 0.5) * cellSpacingX * 0.3;
             const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3 + 0.03;
             swordIdx++;
@@ -2882,9 +2882,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const distZ = jz - camZ;
             const visibleHalfX = distZ * (W * 0.6) / focal + 2;
             if (Math.abs(jx) > visibleHalfX) continue;
-            // Halve sword density in the far 2/3 of the field
-            const thirdZ = camZ + (planeSize - camZ) * 0.33;
-            if (jz > thirdZ && (swordIdx & 1)) continue;
 
             // Clearing — based on view angle, not absolute X
             const dz = jz - camZ;
