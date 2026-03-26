@@ -2741,23 +2741,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         if (sceneClouds) {
           for (let di = 0; di < sceneClouds.length; di++) {
             const cl = sceneClouds[di];
+            // Skip fume and small — too transparent to occlude light
+            if (cl.cloudType <= 1) continue;
             const bk = cl.baked; if (!bk) continue;
             const ca = cl.angle, flatR = cl.orbitFlatten || 0.7;
             const clx = cl.sunX + Math.cos(ca) * cl.orbitDist;
             const cly = cl.sunY + Math.sin(ca) * cl.orbitDist * flatR;
-            // Skip offscreen
             const m2 = Math.max(bk.w, bk.h) * 2;
             if (clx + bk.ox > W + m2 || clx + bk.ox + bk.w < -m2 || cly + bk.oy > H + m2 || cly + bk.oy + bk.h < -m2) continue;
-            // Cloud shadow — darkens sky proportional to cloud size and type
-            const shadowR = Math.max(bk.w, bk.h) * 0.7;
+            const shadowR = Math.max(bk.w, bk.h) * 0.5;
             const cx3 = clx + bk.ox + bk.w * 0.5;
             const cy3 = cly + bk.oy + bk.h * 0.5;
-            // Bigger/denser clouds darken more
-            const darkness = cl.cloudType >= 3 ? 0.7 : cl.cloudType >= 2 ? 0.78 : cl.cloudType >= 1 ? 0.85 : 0.92;
+            // Only medium and big clouds darken — and less aggressively
+            const darkness = cl.cloudType >= 3 ? 0.82 : 0.88;
             const dStr = Math.round(darkness * 255);
+            const midStr = Math.round(darkness * 255 + (255 - darkness * 255) * 0.6);
             const shadowGrad = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, shadowR);
             shadowGrad.addColorStop(0, 'rgb(' + dStr + ',' + dStr + ',' + dStr + ')');
-            shadowGrad.addColorStop(0.6, 'rgb(' + Math.round(darkness * 255 + (255 - darkness * 255) * 0.5) + ',' + Math.round(darkness * 255 + (255 - darkness * 255) * 0.5) + ',' + Math.round(darkness * 255 + (255 - darkness * 255) * 0.5) + ')');
+            shadowGrad.addColorStop(0.5, 'rgb(' + midStr + ',' + midStr + ',' + midStr + ')');
             shadowGrad.addColorStop(1, 'rgb(255,255,255)');
             ctx.fillStyle = shadowGrad;
             ctx.beginPath(); ctx.arc(cx3, cy3, shadowR, 0, Math.PI * 2); ctx.fill();
