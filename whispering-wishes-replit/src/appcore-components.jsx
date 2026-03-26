@@ -2588,6 +2588,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     let lastFrame = 0;
     let sceneClouds = null;
+    let cloudBuildPending = false;
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
     let skyCache = null; // pre-baked sky gradient canvas
@@ -2664,7 +2665,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.drawImage(skyCache, 0, 0);
 
         // === LIVE CLOUD RENDERING ===
-        if (!sceneClouds) sceneClouds = buildCloudsForScene(W, H);
+        // Build clouds async — don't block first frame
+        if (!sceneClouds && !cloudBuildPending) {
+          cloudBuildPending = true;
+          setTimeout(() => { sceneClouds = buildCloudsForScene(W, H); }, 0);
+        }
+        if (sceneClouds) {
         cloudTime += honourInterval;
         // Refresh a few cloud shapes
         const rPerF = 2;
@@ -2734,6 +2740,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         ctx.restore();
 
+        } // end if (sceneClouds)
         // Dynamic ambient — clouds darken the sky behind them
         // First pass: draw dark shadow under each cloud to occlude the bright sky
         ctx.save();
@@ -2829,7 +2836,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const curveY = (sx, sy) => sy - curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
+        const zNear = camZ + 0.5, zFar = 50, zSlices = 60;
         const xSegs = 24;
 
         // Dark base fill below curved horizon — extend above edgeY to cover curve
