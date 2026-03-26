@@ -2855,6 +2855,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
+          // Skip strips that project entirely below screen
+          const stripTopY = curveY(W * 0.5, projY(wz1));
+          if (stripTopY > H + 10) continue;
+
           const depthT = Math.pow(t0, 0.6);
           const baseR = 90 - 72 * depthT;
           const baseG = 55 - 45 * depthT;
