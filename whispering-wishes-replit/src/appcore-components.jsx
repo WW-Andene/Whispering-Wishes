@@ -2862,6 +2862,63 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
         }
 
+        // --- Ground texture overlay — rocks, cracks, debris ON TOP of solid ground ---
+        // Scattered rocks at various depths (back to front for proper overlap)
+        for (let ti = 0; ti < 120; ti++) {
+          const rSeed = ti * 71 + sceneSeed;
+          const rDepth = hash(rSeed) * 0.85; // 0=near, 1=far
+          const rX = (hash(rSeed + 100) - 0.5) * 2; // -1 to 1 across width
+          // Project to screen
+          const wz = camZ + 0.5 + rDepth * (zFar - camZ - 0.5);
+          const wx = rX * wz * 0.8;
+          const sx = projX(wx, wz);
+          const sy = curveY(sx, projY(wz));
+          if (sy < edgeY - 5 || sy > H + 5 || sx < -20 || sx > W + 20) continue;
+          // Size scales with perspective
+          const perspScale = focal / (wz - camZ);
+          const rockSize = (0.8 + hash(rSeed + 200) * 2.5) * perspScale * 0.15;
+          if (rockSize < 0.5) continue;
+          // Color: slightly varied from base ground at this depth
+          const dT = Math.pow(rDepth, 0.6);
+          const baseR = 90 - 72 * dT, baseG = 55 - 45 * dT, baseB = 32 - 26 * dT;
+          const bright = 0.5 + hash(rSeed + 300) * 1.0;
+          const rr = Math.round(Math.min(255, baseR * bright));
+          const rg = Math.round(Math.min(255, baseG * bright));
+          const rb = Math.round(Math.min(255, baseB * bright));
+          ctx.fillStyle = `rgb(${rr},${rg},${rb})`;
+          // Draw jagged rock polygon
+          ctx.beginPath();
+          const sides = 4 + Math.floor(hash(rSeed + 400) * 3);
+          for (let si = 0; si <= sides; si++) {
+            const a = (si / sides) * Math.PI * 2;
+            const jit = 0.5 + hash(rSeed + si * 50 + 500) * 1.0;
+            const px = sx + Math.cos(a) * rockSize * jit;
+            const py = sy + Math.sin(a) * rockSize * jit * 0.5; // squish vertically for perspective
+            si === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Subtle ground cracks / lines for texture
+        ctx.strokeStyle = 'rgba(12,6,3,0.15)';
+        ctx.lineWidth = 0.5;
+        for (let ci = 0; ci < 25; ci++) {
+          const cSeed = ci * 137 + sceneSeed + 9000;
+          const cDepth = 0.05 + hash(cSeed) * 0.6;
+          const wz = camZ + 0.5 + cDepth * (zFar - camZ - 0.5);
+          const wx = (hash(cSeed + 100) - 0.5) * wz * 1.2;
+          const sx = projX(wx, wz);
+          const sy = curveY(sx, projY(wz));
+          if (sy < edgeY || sy > H) continue;
+          const len = (10 + hash(cSeed + 200) * 30) * focal / (wz - camZ) * 0.08;
+          const angle = (hash(cSeed + 300) - 0.5) * 0.6;
+          ctx.beginPath();
+          ctx.moveTo(sx - Math.cos(angle) * len, sy - Math.sin(angle) * len * 0.3);
+          ctx.lineTo(sx + Math.cos(angle) * len, sy + Math.sin(angle) * len * 0.3);
+          ctx.stroke();
+        }
+
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
         const baseSpacing = 1;
