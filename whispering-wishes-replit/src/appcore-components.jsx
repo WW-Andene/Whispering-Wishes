@@ -1222,10 +1222,10 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let animId;
     const BLUR_SCALE = 0.08; // Canvas downscale factor for blur buffer
     let w, h, bw, bh;
-
+    
     // OLED mode uses darker base color
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,6)';
-
+    
     // Full mode: boost glow intensity
     const isFull = animationsEnabled === 'full';
     const glowAlphaMax = isFull ? 0.45 : 0.3;
@@ -1247,123 +1247,12 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     init();
     window.addEventListener('resize', init);
 
-    // === Pre-render frame cache ===
-    let bgFrames = null, bgFrameIdx = 0, bgPrerendering = false, bgCacheChecked = false, bgCacheLoading = false, bgPreQueue = null;
-
     let lastFrame = 0;
-
-    // Render one glow frame to the given target context at the given time
-    const renderGlowFrame = (tCtx, tW, tH, time) => {
-      const lbw = Math.ceil(tW * BLUR_SCALE);
-      const lbh = Math.ceil(tH * BLUR_SCALE);
-      const lbuf = document.createElement('canvas');
-      lbuf.width = lbw; lbuf.height = lbh;
-      const lbctx = lbuf.getContext('2d');
-      if (!lbctx) return;
-      lbctx.fillStyle = bgColor;
-      lbctx.fillRect(0, 0, lbw, lbh);
-
-      const gs = 2;
-      for (let by = 0; by < lbh; by += gs) {
-        for (let bx = 0; bx < lbw; bx += gs) {
-          const sx = bx / BLUR_SCALE;
-          const sy = by / BLUR_SCALE;
-
-          const h1 = Math.sin(_wf1(sx, sy, time));
-          const h2 = Math.sin(_wf2(sx, sy, time));
-          const h3 = Math.sin(_wf3(sx, sy, time));
-          const totalH = h1 * 0.7 + h2 * 0.5 + h3 * 0.4;
-
-          const d = 10;
-          const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5 + (Math.sin(_wf3(sx+d,sy,time))-h3)*0.4;
-          const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5 + (Math.sin(_wf3(sx,sy+d,time))-h3)*0.4;
-          const tilt = Math.sqrt(slX*slX + slY*slY);
-
-          const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
-          const peak = Math.max(0, totalH / 1.5) * peakMul;
-          const gI = spec * specMul + peak;
-
-          if (gI > 0.008) {
-            const a = Math.min(gI * glowAlphaScale, glowAlphaMax);
-            const blend = Math.max(0, Math.min(1, (totalH + 1.6) / 3.2));
-            const rr = Math.round(Math.min(255, (6 + blend * 25) * colorBoost));
-            const gg = Math.round(Math.min(255, (12 + blend * 40) * colorBoost));
-            const bb = Math.round(Math.min(255, (45 + blend * 70) * colorBoost));
-            lbctx.fillStyle = `rgba(${rr},${gg},${bb},${a})`;
-            lbctx.fillRect(bx, by, gs, gs);
-          }
-        }
-      }
-
-      tCtx.clearRect(0, 0, tW, tH);
-      tCtx.filter = 'blur(20px)';
-      tCtx.drawImage(lbuf, 0, 0, lbw, lbh, 0, 0, tW, tH);
-      tCtx.filter = 'none';
-      lbuf.width = 0; lbuf.height = 0;
-    };
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
       if (t - lastFrame < 66) return;
       lastFrame = t;
-      const W = w, H = h;
-
-      // === Pre-rendered frame cache (GIF-like playback) ===
-      const totalBgFrames = 80;
-      const bgScale = 0.33;
-
-      // Try loading from IndexedDB cache first
-      if (!bgFrames && !bgPrerendering && !bgCacheChecked && !bgCacheLoading) {
-        bgCacheLoading = true;
-        var cacheW = Math.ceil(W * bgScale), cacheH = Math.ceil(H * bgScale);
-        loadBgFrames('glow', cacheW, cacheH).then(function(cached) {
-          bgCacheChecked = true;
-          bgCacheLoading = false;
-          if (cached) { bgFrames = cached; }
-        });
-      }
-
-      // Start pre-rendering if cache miss and not loading
-      if (!bgFrames && !bgPrerendering && bgCacheChecked && !bgCacheLoading) {
-        bgPrerendering = true;
-        bgPreQueue = {
-          frameIdx: 0, totalFrames: totalBgFrames,
-          W: W, H: H,
-          sW: Math.ceil(W * bgScale), sH: Math.ceil(H * bgScale),
-          frames: [], time: 0
-        };
-      }
-
-      // Staggered pre-render: render 2 frames per real frame
-      if (bgPreQueue && !bgFrames) {
-        var q = bgPreQueue;
-        var framesPerTick = 2;
-        for (var fi = 0; fi < framesPerTick && q.frameIdx < q.totalFrames; fi++) {
-          var fCvs = document.createElement('canvas');
-          fCvs.width = q.sW; fCvs.height = q.sH;
-          var fCtx = fCvs.getContext('2d');
-          renderGlowFrame(fCtx, q.sW, q.sH, q.time);
-          q.time += 66 * 0.00075; // advance by one frame's worth of time
-          q.frames.push(fCvs);
-          q.frameIdx++;
-        }
-        if (q.frameIdx >= q.totalFrames) {
-          bgFrames = q.frames;
-          saveBgFrames('glow', q.frames, q.sW, q.sH);
-          bgPreQueue = null;
-          bgPrerendering = false;
-        }
-      }
-
-      // Playback: cycle through pre-rendered frames
-      if (bgFrames && bgFrames.length > 0) {
-        ctx.clearRect(0, 0, W, H);
-        ctx.drawImage(bgFrames[bgFrameIdx % bgFrames.length], 0, 0, W, H);
-        bgFrameIdx++;
-        return;
-      }
-
-      // Fallback: live render while pre-rendering
       const time = t * 0.00075; // 25% slower
       bctx.fillStyle = bgColor;
       bctx.fillRect(0, 0, bw, bh);
@@ -1440,12 +1329,12 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     // P12-FIX: getContext can return null in low-memory / restricted environments (Step 12 audit — LOW-12p)
     if (!ctx) return;
     let animId;
-
+    
     const TW = 36;
     const TH = 31;
     const HALF = TW / 2;
     let w, h, cols, rows, seeds;
-
+    
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
@@ -1458,7 +1347,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
     init();
     window.addEventListener('resize', init);
-
+    
     // Full mode: boost specular and peak intensity
     const isFull = animationsEnabled === 'full';
     const twSpecMul = isFull ? 0.65 : 0.45;
@@ -1467,138 +1356,12 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const twAlphaMax = isFull ? 0.35 : 0.25;
     const twColorBoost = isFull ? 1.3 : 1.0;
 
-    // === Pre-render frame cache ===
-    let bgFrames = null, bgFrameIdx = 0, bgPrerendering = false, bgCacheChecked = false, bgCacheLoading = false, bgPreQueue = null;
-
-    // Render one triangle frame to the given target context at the given time
-    const renderTriangleFrame = (tCtx, tW, tH, time) => {
-      const tCols = Math.ceil(tW / HALF) + 4;
-      const tRows = Math.ceil(tH / TH) + 4;
-      tCtx.clearRect(0, 0, tW, tH);
-
-      for (let r = -1; r < tRows; r++) {
-        for (let c = -1; c < tCols; c++) {
-          const isUp = ((c + r) % 2 + 2) % 2 === 0;
-          const cx = c * HALF;
-          const cy = r * TH + (isUp ? TH * 0.33 : TH * 0.66);
-
-          if (cx < -HALF || cx > tW + HALF || cy < -TH || cy > tH + TH) continue;
-
-          const seedIdx = ((r + 1) * tCols + (c + 1));
-          const seed = seedIdx >= 0 && seedIdx < seeds.length ? seeds[seedIdx] : 0;
-
-          const so = seed * 0.05;
-
-          const v1 = Math.sin(_wf1(cx, cy, time) + so);
-          const v2 = Math.sin(_wf2(cx, cy, time) + so * 0.7);
-          const v3 = Math.sin(_wf3(cx, cy, time) + so * 0.5);
-          const totalH = v1 * 0.7 + v2 * 0.5 + v3 * 0.4;
-
-          const dd = 4;
-          const hR = Math.sin(_wf1(cx+dd,cy,time)+so)*0.7 + Math.sin(_wf2(cx+dd,cy,time)+so*0.7)*0.5 + Math.sin(_wf3(cx+dd,cy,time)+so*0.5)*0.4;
-          const hD = Math.sin(_wf1(cx,cy+dd,time)+so)*0.7 + Math.sin(_wf2(cx,cy+dd,time)+so*0.7)*0.5 + Math.sin(_wf3(cx,cy+dd,time)+so*0.5)*0.4;
-          const slopeX = hR - totalH;
-          const slopeY = hD - totalH;
-          const tilt = Math.sqrt(slopeX * slopeX + slopeY * slopeY);
-
-          const specular = Math.pow(Math.max(0, 1 - tilt * 3.5), 5);
-          const peakGlow = Math.max(0, totalH / 2.0) * twPeakMul;
-
-          const intensity = specular * twSpecMul + peakGlow;
-          if (intensity < 0.015) continue;
-
-          const x = c * HALF;
-          const y = r * TH;
-          tCtx.beginPath();
-          if (isUp) {
-            tCtx.moveTo(x - HALF, y + TH);
-            tCtx.lineTo(x, y);
-            tCtx.lineTo(x + HALF, y + TH);
-          } else {
-            tCtx.moveTo(x - HALF, y);
-            tCtx.lineTo(x + HALF, y);
-            tCtx.lineTo(x, y + TH);
-          }
-          tCtx.closePath();
-
-          const sp = Math.min(specular * 3, 1);
-          const ri = Math.round(Math.min(255, (60 + sp * 120) * twColorBoost));
-          const gi = Math.round(Math.min(255, (85 + sp * 100) * twColorBoost));
-          const bi = Math.round(Math.min(255, (150 + sp * 80) * twColorBoost));
-          const alpha = Math.min(intensity * twAlphaScale, twAlphaMax);
-          tCtx.fillStyle = `rgba(${ri},${gi},${bi},${alpha})`;
-          tCtx.fill();
-        }
-      }
-    };
-
     let lastFrame = 0;
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
       if (t - lastFrame < 66) return;
       lastFrame = t;
-      const W = w, H = h;
-
-      // === Pre-rendered frame cache (GIF-like playback) ===
-      const totalBgFrames = 80;
-      const bgScale = 0.33;
-
-      // Try loading from IndexedDB cache first
-      if (!bgFrames && !bgPrerendering && !bgCacheChecked && !bgCacheLoading) {
-        bgCacheLoading = true;
-        var cacheW = Math.ceil(W * bgScale), cacheH = Math.ceil(H * bgScale);
-        loadBgFrames('triangle', cacheW, cacheH).then(function(cached) {
-          bgCacheChecked = true;
-          bgCacheLoading = false;
-          if (cached) { bgFrames = cached; }
-        });
-      }
-
-      // Start pre-rendering if cache miss and not loading
-      if (!bgFrames && !bgPrerendering && bgCacheChecked && !bgCacheLoading) {
-        bgPrerendering = true;
-        bgPreQueue = {
-          frameIdx: 0, totalFrames: totalBgFrames,
-          W: W, H: H,
-          sW: Math.ceil(W * bgScale), sH: Math.ceil(H * bgScale),
-          frames: [], time: 0
-        };
-      }
-
-      // Staggered pre-render: render 2 frames per real frame
-      if (bgPreQueue && !bgFrames) {
-        var q = bgPreQueue;
-        var framesPerTick = 2;
-        for (var fi = 0; fi < framesPerTick && q.frameIdx < q.totalFrames; fi++) {
-          var fCvs = document.createElement('canvas');
-          fCvs.width = q.sW; fCvs.height = q.sH;
-          var fCtx = fCvs.getContext('2d');
-          fCtx.save();
-          fCtx.scale(bgScale, bgScale);
-          renderTriangleFrame(fCtx, W, H, q.time);
-          fCtx.restore();
-          q.time += 66 * 0.00075; // advance by one frame's worth of time
-          q.frames.push(fCvs);
-          q.frameIdx++;
-        }
-        if (q.frameIdx >= q.totalFrames) {
-          bgFrames = q.frames;
-          saveBgFrames('triangle', q.frames, q.sW, q.sH);
-          bgPreQueue = null;
-          bgPrerendering = false;
-        }
-      }
-
-      // Playback: cycle through pre-rendered frames
-      if (bgFrames && bgFrames.length > 0) {
-        ctx.clearRect(0, 0, W, H);
-        ctx.drawImage(bgFrames[bgFrameIdx % bgFrames.length], 0, 0, W, H);
-        bgFrameIdx++;
-        return;
-      }
-
-      // Fallback: live render while pre-rendering
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.00075; // 25% slower
 
@@ -1663,7 +1426,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
       }
     };
     animId = requestAnimationFrame(draw);
-
+    
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
@@ -1692,9 +1455,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    let ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const mainCtx = ctx; // keep reference to main canvas context
     let animId;
 
     const isFull = animationsEnabled === 'full';
@@ -1750,13 +1512,14 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       };
     };
 
-    // === Pre-render frame cache ===
-    let bgFrames = null, bgFrameIdx = 0, bgPrerendering = false, bgCacheChecked = false, bgCacheLoading = false, bgPreQueue = null;
-
     let lastFrame = 0;
 
-    // Core resonance rendering logic — draws to ctx using w,h from closure
-    const renderResonanceFrame = (time) => {
+    const draw = (t) => {
+      animId = requestAnimationFrame(draw);
+      if (t - lastFrame < 50) return;
+      lastFrame = t;
+      const time = t * 0.00075; // 25% slower globally
+
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
@@ -2470,78 +2233,6 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.restore();
         }
       }
-    };
-
-    const draw = (t) => {
-      animId = requestAnimationFrame(draw);
-      if (t - lastFrame < 50) return;
-      lastFrame = t;
-      const W = w, H = h;
-
-      // === Pre-rendered frame cache (GIF-like playback) ===
-      const totalBgFrames = 80;
-      const bgScale = 0.33;
-
-      // Try loading from IndexedDB cache first
-      if (!bgFrames && !bgPrerendering && !bgCacheChecked && !bgCacheLoading) {
-        bgCacheLoading = true;
-        var cacheW = Math.ceil(W * bgScale), cacheH = Math.ceil(H * bgScale);
-        loadBgFrames('resonance', cacheW, cacheH).then(function(cached) {
-          bgCacheChecked = true;
-          bgCacheLoading = false;
-          if (cached) { bgFrames = cached; }
-        });
-      }
-
-      // Start pre-rendering if cache miss and not loading
-      if (!bgFrames && !bgPrerendering && bgCacheChecked && !bgCacheLoading) {
-        bgPrerendering = true;
-        bgPreQueue = {
-          frameIdx: 0, totalFrames: totalBgFrames,
-          W: W, H: H,
-          sW: Math.ceil(W * bgScale), sH: Math.ceil(H * bgScale),
-          frames: [], time: 0
-        };
-      }
-
-      // Staggered pre-render: render 2 frames per real frame
-      if (bgPreQueue && !bgFrames) {
-        var q = bgPreQueue;
-        var framesPerTick = 2;
-        for (var fi = 0; fi < framesPerTick && q.frameIdx < q.totalFrames; fi++) {
-          var fCvs = document.createElement('canvas');
-          fCvs.width = q.sW; fCvs.height = q.sH;
-          var fCtx = fCvs.getContext('2d');
-          fCtx.save();
-          fCtx.scale(bgScale, bgScale);
-          // Temporarily swap ctx so renderResonanceFrame draws to the offscreen canvas
-          ctx = fCtx;
-          renderResonanceFrame(q.time);
-          ctx = mainCtx;
-          fCtx.restore();
-          q.time += 50 * 0.00075; // advance by one frame's worth of time
-          q.frames.push(fCvs);
-          q.frameIdx++;
-        }
-        if (q.frameIdx >= q.totalFrames) {
-          bgFrames = q.frames;
-          saveBgFrames('resonance', q.frames, q.sW, q.sH);
-          bgPreQueue = null;
-          bgPrerendering = false;
-        }
-      }
-
-      // Playback: cycle through pre-rendered frames
-      if (bgFrames && bgFrames.length > 0) {
-        ctx.clearRect(0, 0, W, H);
-        ctx.drawImage(bgFrames[bgFrameIdx % bgFrames.length], 0, 0, W, H);
-        bgFrameIdx++;
-        return;
-      }
-
-      // Fallback: live render while pre-rendering
-      const time = t * 0.00075; // 25% slower globally
-      renderResonanceFrame(time);
     };
     animId = requestAnimationFrame(draw);
 
