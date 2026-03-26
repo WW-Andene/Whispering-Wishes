@@ -2314,15 +2314,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
       var ox = (-minX + pad) * sc, oy = (-minY + pad) * sc;
       var cvs = document.createElement("canvas"); cvs.width = w; cvs.height = h;
       var ct = cvs.getContext("2d");
+      ct.globalCompositeOperation = "lighter";
       var ds = 1 - depth, lr = 1 - (occlusion || 0) * 0.7;
       var shR = Math.round(8+ds*15+lr*30), shG = Math.round(4+ds*8+lr*25), shB = Math.round(3+ds*5+lr*20);
       var ltR = Math.round(45+ds*50+proximity*30), ltG = Math.round(25+ds*25+proximity*15), ltB = Math.round(14+ds*14+proximity*8);
       var rmR = Math.min(255,Math.round(120+ds*50+proximity*50)), rmG = Math.min(255,Math.round(65+ds*25+proximity*25)), rmB = Math.min(255,Math.round(25+ds*10+proximity*10));
       var sdx = Math.cos(sunAngle)*sc, sdy = Math.sin(sunAngle)*sc, bA = def.baseAlpha, dm = def.densMul;
       var lightOff = Math.max(2, Math.min(8, fullW*0.04));
-      for (var bi = 0; bi < balls.length; bi++) { var b = balls[bi], bx = ox+b.cx*sc, by = oy+b.cy*sc, br = b.r*dm*sc; var a = bA*(0.02+(bi<balls.length*0.5?0.03:0.015)); var g = ct.createRadialGradient(bx,by,0,bx,by,br); g.addColorStop(0,'rgba('+shR+','+shG+','+shB+','+a+')'); g.addColorStop(0.5,'rgba('+shR+','+shG+','+shB+','+(a*0.5)+')'); g.addColorStop(1,'rgba('+shR+','+shG+','+shB+',0)'); ct.fillStyle=g; ct.beginPath(); ct.arc(bx,by,br,0,Math.PI*2); ct.fill(); }
-      for (var bi2 = 0; bi2 < balls.length; bi2++) { var b2 = balls[bi2], bx2 = ox+b2.cx*sc+sdx*lightOff, by2 = oy+b2.cy*sc+sdy*lightOff, br2 = b2.r*dm*sc*0.8; var a2 = bA*(0.015+(bi2<balls.length*0.4?0.025:0.01)); var g2 = ct.createRadialGradient(bx2,by2,0,bx2,by2,br2); g2.addColorStop(0,'rgba('+ltR+','+ltG+','+ltB+','+a2+')'); g2.addColorStop(0.4,'rgba('+ltR+','+ltG+','+ltB+','+(a2*0.4)+')'); g2.addColorStop(1,'rgba('+ltR+','+ltG+','+ltB+',0)'); ct.fillStyle=g2; ct.beginPath(); ct.arc(bx2,by2,br2,0,Math.PI*2); ct.fill(); }
-      if (cloudType >= 2) { var ro = lightOff*1.5; for (var bi3=0;bi3<balls.length;bi3++){var b3=balls[bi3];if(b3.r<balls[0].r*0.3)continue;var bx3=ox+b3.cx*sc+sdx*ro,by3=oy+b3.cy*sc+sdy*ro,br3=b3.r*dm*sc*0.6,a3=bA*0.008;var g3=ct.createRadialGradient(bx3,by3,br3*0.7,bx3,by3,br3);g3.addColorStop(0,'rgba('+rmR+','+rmG+','+rmB+','+a3+')');g3.addColorStop(1,'rgba('+rmR+','+rmG+','+rmB+',0)');ct.fillStyle=g3;ct.beginPath();ct.arc(bx3,by3,br3,0,Math.PI*2);ct.fill();} }
+      // Shadow pass — accumulated density via lighter compositing
+      for (var bi = 0; bi < balls.length; bi++) { var b = balls[bi], bx = ox+b.cx*sc, by = oy+b.cy*sc, br = b.r*dm*sc; var a = 0.12 + bA * 0.15; var g = ct.createRadialGradient(bx,by,0,bx,by,br); g.addColorStop(0,'rgba('+shR+','+shG+','+shB+','+a+')'); g.addColorStop(0.4,'rgba('+shR+','+shG+','+shB+','+(a*0.6)+')'); g.addColorStop(0.7,'rgba('+shR+','+shG+','+shB+','+(a*0.2)+')'); g.addColorStop(1,'rgba('+shR+','+shG+','+shB+',0)'); ct.fillStyle=g; ct.beginPath(); ct.arc(bx,by,br,0,Math.PI*2); ct.fill(); }
+      // Light pass — offset toward sun
+      for (var bi2 = 0; bi2 < balls.length; bi2++) { var b2 = balls[bi2], bx2 = ox+b2.cx*sc+sdx*lightOff, by2 = oy+b2.cy*sc+sdy*lightOff, br2 = b2.r*dm*sc*0.85; var a2 = 0.08 + bA * 0.1; var g2 = ct.createRadialGradient(bx2,by2,0,bx2,by2,br2); g2.addColorStop(0,'rgba('+ltR+','+ltG+','+ltB+','+a2+')'); g2.addColorStop(0.35,'rgba('+ltR+','+ltG+','+ltB+','+(a2*0.5)+')'); g2.addColorStop(0.7,'rgba('+ltR+','+ltG+','+ltB+','+(a2*0.15)+')'); g2.addColorStop(1,'rgba('+ltR+','+ltG+','+ltB+',0)'); ct.fillStyle=g2; ct.beginPath(); ct.arc(bx2,by2,br2,0,Math.PI*2); ct.fill(); }
+      // Rim pass
+      if (cloudType >= 2) { var ro = lightOff*1.5; for (var bi3=0;bi3<balls.length;bi3++){var b3=balls[bi3];if(b3.r<balls[0].r*0.3)continue;var bx3=ox+b3.cx*sc+sdx*ro,by3=oy+b3.cy*sc+sdy*ro,br3=b3.r*dm*sc*0.6,a3=0.04+bA*0.03;var g3=ct.createRadialGradient(bx3,by3,br3*0.5,bx3,by3,br3);g3.addColorStop(0,'rgba('+rmR+','+rmG+','+rmB+','+a3+')');g3.addColorStop(1,'rgba('+rmR+','+rmG+','+rmB+',0)');ct.fillStyle=g3;ct.beginPath();ct.arc(bx3,by3,br3,0,Math.PI*2);ct.fill();} }
       return { canvas: cvs, ox: minX - pad, oy: minY - pad, w: fullW, h: fullH, sc: sc };
     }
     function buildCloudsForScene(W, H) { var sunX = W * 0.5, sunY = H * 0.3, sunR = H * 0.08; var minDist = sunR * 2, clouds = [], maxReach = Math.max(W, H) * 1.5, id = 0;
