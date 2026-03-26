@@ -2975,10 +2975,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          const darkSide = 'rgb(15,8,5)';
-          const lightSide = 'rgb(45,28,16)';
-          // Lighter side faces center (x=0, z=max) — combines position and Y rotation
-          const toSunAngle = Math.atan2(-s.wx, 20);  // angle from sword to sun direction
+          // Dynamic sword shading — based on position relative to sun
+          const sdx = s.scrX - sunX, sdy = s.scrY - sunY;
+          const sunDist = Math.sqrt(sdx * sdx + sdy * sdy);
+          const sunProx = Math.max(0, 1 - sunDist / (Math.max(W, H) * 0.8));
+          const warmth = sunProx * sunProx; // stronger near sun
+          const dR = Math.round(10 + warmth * 35), dG = Math.round(5 + warmth * 18), dB = Math.round(3 + warmth * 8);
+          const lR = Math.round(30 + warmth * 50), lG = Math.round(16 + warmth * 25), lB = Math.round(8 + warmth * 14);
+          const darkSide = `rgb(${dR},${dG},${dB})`;
+          const lightSide = `rgb(${lR},${lG},${lB})`;
+          const toSunAngle = Math.atan2(-s.wx, 20);
           const leftLight = Math.sin(s.yAngle - toSunAngle) > 0;
 
           // Blade — split into two halves along Y axis
