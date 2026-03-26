@@ -2866,7 +2866,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           for (let j = 0; j < xSegs; j++) {
             const cellNoise = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.13);
-            const bright = 0.82 + cellNoise * 0.36;
+            // Less noise on near cells (big on screen), more on far cells (tiny)
+            const noiseAmt = 0.08 + depthT * 0.28;
+            const bright = 1 - noiseAmt + cellNoise * noiseAmt * 2;
             ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
             ctx.beginPath();
             const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
