@@ -7881,66 +7881,56 @@ function WhisperingWishesInner() {
                       <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
                         <Diamond size={16} />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="text-white text-xs font-medium">Background Style</div>
-                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Resonance — Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Honour — Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Reflect — Triangle mirror wave' : 'None — No background'}</div>
+                        <div className="text-gray-400 text-[10px] truncate">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
                       </div>
                     </div>
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'none' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'none' ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'none' ? { background: 'var(--bg-btn)' } : undefined}
-                      >None</button>
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'reflect' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'reflect' ? { background: 'var(--bg-btn)' } : undefined}
-                      >Reflect</button>
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'resonance' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'resonance' ? { background: 'var(--bg-btn)' } : undefined}
-                      >Resonance</button>
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'honour' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'honour' ? { background: 'var(--bg-btn)' } : undefined}
-                      >Honour</button>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[
+                        { id: 'none', label: 'None', color: 'bg-gray-600' },
+                        { id: 'reflect', label: 'Reflect', color: 'bg-purple-500' },
+                        { id: 'resonance', label: 'Resonance', color: 'bg-blue-500' },
+                        { id: 'honour', label: 'Honour', color: 'bg-amber-600' },
+                      ].map(bg => (
+                        <button key={bg.id}
+                          onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id })}
+                          className={`py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
+                          style={visualSettings.bgStyle !== bg.id ? { background: 'var(--bg-btn)' } : undefined}
+                        >{bg.label}</button>
+                      ))}
                     </div>
                     {visualSettings.bgStyle !== 'none' && (
-                      <>
-                        <div className="flex items-center gap-2 mt-2.5">
-                          <div className="text-gray-500 text-[9px] w-[52px] shrink-0">Resolution</div>
-                          <div className="flex gap-1">
+                      <div className="mt-2.5 pt-2.5 border-t border-white/5 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">Resolution</div>
+                          <div className="flex gap-1 flex-1">
                             {[25, 50, 100, 200].map(res => {
-                              const isAuto = visualSettings.bgResolution === null;
                               const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
-                              const isActive = isAuto ? res === autoVal : visualSettings.bgResolution === res;
+                              const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
                               return <button key={res}
-                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === (visualSettings.animationsEnabled === 'full' ? 100 : 50) ? null : res })}
-                                className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-purple-500/80 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
+                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                 style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                               >{res}%</button>;
                             })}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <div className="text-gray-500 text-[9px] w-[52px] shrink-0">FPS</div>
-                          <div className="flex gap-1">
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">FPS</div>
+                          <div className="flex gap-1 flex-1">
                             {[15, 30, 45, 60].map(fps => {
-                              const isAuto = visualSettings.bgFps === null;
                               const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
-                              const isActive = isAuto ? fps === autoVal : visualSettings.bgFps === fps;
+                              const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
                               return <button key={fps}
-                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === (visualSettings.animationsEnabled === 'full' ? 30 : 15) ? null : fps })}
-                                className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-purple-500/80 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
+                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                 style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                               >{fps}</button>;
                             })}
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 )}
