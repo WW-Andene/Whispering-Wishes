@@ -2881,6 +2881,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
         }
 
+        // Cover stretched near-camera grid cells with gradient fade
+        const groundFadeStart = H * 0.82;
+        const groundFade = ctx.createLinearGradient(0, groundFadeStart, 0, H);
+        groundFade.addColorStop(0, 'rgba(18,10,6,0)');
+        groundFade.addColorStop(0.25, 'rgba(18,10,6,0.6)');
+        groundFade.addColorStop(1, 'rgba(18,10,6,1)');
+        ctx.fillStyle = groundFade;
+        ctx.fillRect(0, groundFadeStart, W, H - groundFadeStart);
+
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
         const baseSpacing = 1;
