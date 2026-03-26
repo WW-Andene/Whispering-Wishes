@@ -2355,9 +2355,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       function dens(x, y) { return (x < 0 || x >= w || y < 0 || y >= h) ? 0 : dd[(y * w + x) * 4]; }
       const sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens;
       const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
-      const shR = Math.round(8 + ds * 12 + lr * 40), shG = Math.round(4 + ds * 6 + lr * 40), shB = Math.round(3 + ds * 4 + lr * 40);
-      const ltR = Math.round(55 + ds * 50 + proximity * 30 + lr * 40), ltG = Math.round(32 + ds * 25 + proximity * 15 + lr * 30), ltB = Math.round(18 + ds * 14 + proximity * 8 + lr * 25);
-      const rmR = Math.min(255, Math.round(140 + ds * 50 + proximity * 60)), rmG = Math.min(255, Math.round(80 + ds * 25 + proximity * 30)), rmB = Math.min(255, Math.round(30 + ds * 10 + proximity * 12));
+      // Sunset palette — shadows are warm dark orange, never cold/black
+      // Even the darkest cloud underside gets warm ambient from the orange sky
+      const shR = Math.round(80 + ds * 30 + lr * 25), shG = Math.round(35 + ds * 15 + lr * 15), shB = Math.round(15 + ds * 8 + lr * 10);
+      // Lit side — bright warm white/gold from direct sunlight
+      const ltR = Math.round(180 + ds * 40 + proximity * 25 + lr * 10), ltG = Math.round(130 + ds * 30 + proximity * 20 + lr * 10), ltB = Math.round(70 + ds * 20 + proximity * 10 + lr * 10);
+      // Rim — brilliant warm edge where sun peeks around cloud
+      const rmR = Math.min(255, Math.round(220 + ds * 30 + proximity * 5)), rmG = Math.min(255, Math.round(160 + ds * 25 + proximity * 10)), rmB = Math.min(255, Math.round(80 + ds * 15 + proximity * 10));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
