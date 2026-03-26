@@ -2882,6 +2882,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             swordIdx++;
             bx += cellSpacingX;
             if (jz - camZ < 0.02) continue;  // skip swords behind/too close to camera
+            // Behind camera zone (z<8): only center strip, no outer edges
+            if (jz < camZ && Math.abs(jx) > 12.5) continue;
             // Skip swords outside the view frustum (green safe zone)
             const distZ = jz - camZ;
             const visibleHalfX = distZ * (W * 0.6) / focal + 2;
