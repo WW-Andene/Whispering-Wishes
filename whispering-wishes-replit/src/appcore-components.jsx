@@ -2265,8 +2265,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
     let skyBuffer = null;
-    let cloudWorkerPending = false;
-    let cloudWorker = null;
 
     const draw = (t) => {
       animId = requestAnimationFrame(draw);
@@ -2312,16 +2310,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         ctx.fillStyle = sd; ctx.beginPath(); ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2); ctx.fill();
 
         // === HALF-RES SKY BUFFER — clouds + god rays every frame ===
-        if (!sceneClouds && !cloudWorkerPending) {
-          cloudWorkerPending = true;
-          try {
-            var cw = new Worker(new URL('./cloud-worker.js', import.meta.url), { type: 'module' });
-            cw.onmessage = function(e) { if (e.data.type === 'built') { sceneClouds = e.data.clouds; cw.terminate(); } };
-            cw.postMessage({ type: 'build', W: W, H: H });
-            cloudWorker = cw;
-          } catch(e2) { sceneClouds = buildCloudsForScene(W, H); }
-        }
-        if (sceneClouds) {
+        if (!sceneClouds) sceneClouds = buildCloudsForScene(W, H);
         cloudTime += 50;
         var halfW = Math.ceil(W / 2), halfH = Math.ceil(H / 2);
         if (!skyBuffer || skyBuffer.width !== halfW || skyBuffer.height !== halfH) {
@@ -2388,7 +2377,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
         sCtx.restore(); // undo scale(0.5)
         // Composite half-res sky buffer onto main canvas scaled up
         ctx.drawImage(skyBuffer, 0, 0, W, H);
-        } // end sceneClouds check
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
@@ -2631,7 +2619,6 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
-      if (cloudWorker) cloudWorker.terminate();
     };
   }, [oledMode, animationsEnabled]);
 
