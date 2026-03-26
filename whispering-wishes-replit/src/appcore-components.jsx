@@ -2355,10 +2355,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       function dens(x, y) { return (x < 0 || x >= w || y < 0 || y >= h) ? 0 : dd[(y * w + x) * 4]; }
       const sdx = Math.cos(sunAngle), sdy = Math.sin(sunAngle), levels = def.depthLevels, bAlpha = def.baseAlpha, hT = def.hazeThresh, mD = def.maxDens;
       const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
-      // Original cloud-demo palette — proven to look good
-      const shR = Math.round(8 + ds * 12 + lr * 40), shG = Math.round(4 + ds * 6 + lr * 40), shB = Math.round(3 + ds * 4 + lr * 40);
-      const ltR = Math.round(55 + ds * 50 + proximity * 30 + lr * 40), ltG = Math.round(32 + ds * 25 + proximity * 15 + lr * 30), ltB = Math.round(18 + ds * 14 + proximity * 8 + lr * 25);
-      const rmR = Math.min(255, Math.round(140 + ds * 50 + proximity * 60)), rmG = Math.min(255, Math.round(80 + ds * 25 + proximity * 30)), rmB = Math.min(255, Math.round(30 + ds * 10 + proximity * 12));
+      // Sunset palette — matching warm amber-brown reference
+      // Shadow: deep warm brown (like dark amber/chocolate, not olive)
+      const shR = Math.round(50 + ds * 15 + lr * 10), shG = Math.round(20 + ds * 8 + lr * 5), shB = Math.round(8 + ds * 4 + lr * 3);
+      // Lit: warm golden amber (NOT cream-white — warm gold like the reference)
+      const ltR = Math.min(255, Math.round(190 + ds * 30 + proximity * 10)), ltG = Math.min(255, Math.round(120 + ds * 20 + proximity * 8)), ltB = Math.min(255, Math.round(55 + ds * 10 + proximity * 5));
+      // Rim: bright warm orange-gold edge
+      const rmR = Math.min(255, Math.round(220 + ds * 20)), rmG = Math.min(255, Math.round(150 + ds * 15 + proximity * 8)), rmB = Math.min(255, Math.round(60 + ds * 10 + proximity * 5));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2369,11 +2372,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sunF = (nx*sdx+ny*sdy)*0.5+0.5, thin = 1-thick;
           let rim = thin*thin*thin*Math.max(0,sunF)*0.7, sL = sunF*(0.35+thick*0.65);
           if (gl < 2) { sL *= 0.4; rim = 0; }
-          // Original cloud-demo banding — proven depth perception
-          if (levels <= 1) sL = 0.5;
-          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.2;
-          else if (levels === 3) sL = sL > 0.6 ? 0.9 : sL > 0.3 ? 0.5 : 0.15;
-          else { const band = sL > 0.7 ? 0.92 : sL > 0.45 ? 0.65 : sL > 0.2 ? 0.35 : 0.1; sL = band + (sL - band) * 0.3; }
+          // Banded shading — 5 bands: sun-facing → 1 deep → 2 stacked → 3 stacked → 4+
+          // Floor at 0.25 (4+ only), 3 stacked = 0.38 (warmer than before)
+          if (levels <= 1) sL = 0.55;
+          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.4;
+          else if (levels === 3) sL = sL > 0.6 ? 0.88 : sL > 0.3 ? 0.55 : 0.38;
+          else { sL = sL > 0.65 ? 0.9 : sL > 0.48 ? 0.68 : sL > 0.3 ? 0.48 : sL > 0.15 ? 0.38 : 0.25; }
           sL *= lr;
           let r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL);
           if (levels >= 2) { r = Math.min(255,r+Math.round(rmR*rim*0.4*lr)); g = Math.min(255,g+Math.round(rmG*rim*0.4*lr)); bv = Math.min(255,bv+Math.round(rmB*rim*0.4*lr)); }
