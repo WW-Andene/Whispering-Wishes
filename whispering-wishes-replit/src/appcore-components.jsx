@@ -2872,12 +2872,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
             ctx.beginPath();
             const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
-            ctx.moveTo(x0, curveY(x0, projY(wz1)));
-            ctx.lineTo(xM, curveY(xM, projY(wz1)));
-            ctx.lineTo(x1, curveY(x1, projY(wz1)));
-            ctx.lineTo(x1, curveY(x1, projY(wz0)));
-            ctx.lineTo(xM, curveY(xM, projY(wz0)));
-            ctx.lineTo(x0, curveY(x0, projY(wz0)));
+            const y1t = projY(wz1), y0t = projY(wz0), yMt = (y1t + y0t) * 0.5;
+            // Top edge (curved)
+            ctx.moveTo(x0, curveY(x0, y1t));
+            ctx.lineTo(xM, curveY(xM, y1t));
+            ctx.lineTo(x1, curveY(x1, y1t));
+            // Right edge (curved via mid-point)
+            ctx.lineTo(x1, curveY(x1, yMt));
+            // Bottom edge (curved)
+            ctx.lineTo(x1, curveY(x1, y0t));
+            ctx.lineTo(xM, curveY(xM, y0t));
+            ctx.lineTo(x0, curveY(x0, y0t));
+            // Left edge (curved via mid-point)
+            ctx.lineTo(x0, curveY(x0, yMt));
             ctx.closePath();
             ctx.fill();
           }
