@@ -1220,14 +1220,14 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const bctx = buf.getContext('2d');
     if (!bctx) return;
     let animId;
-    const BLUR_SCALE = 1; // Full resolution
+    const isFull = animationsEnabled === 'full';
+    const BLUR_SCALE = isFull ? 1 : 0.5; // Full res in full mode, 50% in on mode
     let w, h, bw, bh;
-    
+
     // OLED mode uses darker base color
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,6)';
-    
+
     // Full mode: boost glow intensity
-    const isFull = animationsEnabled === 'full';
     const glowAlphaMax = isFull ? 0.45 : 0.3;
     const glowAlphaScale = isFull ? 1.0 : 0.7;
     const specMul = isFull ? 0.45 : 0.3;
@@ -1329,17 +1329,21 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     // P12-FIX: getContext can return null in low-memory / restricted environments (Step 12 audit — LOW-12p)
     if (!ctx) return;
     let animId;
-    
+    const isFull = animationsEnabled === 'full';
+    const triScale = isFull ? 1 : 0.5;
+
     const TW = 36;
     const TH = 31;
     const HALF = TW / 2;
     let w, h, cols, rows, seeds;
-    
+
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = Math.ceil(w * triScale);
+      canvas.height = Math.ceil(h * triScale);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
       cols = Math.ceil(w / HALF) + 4;
       rows = Math.ceil(h / TH) + 4;
       seeds = new Float32Array(cols * rows);
@@ -1347,9 +1351,6 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
     };
     init();
     window.addEventListener('resize', init);
-    
-    // Full mode: boost specular and peak intensity
-    const isFull = animationsEnabled === 'full';
     const twSpecMul = isFull ? 0.65 : 0.45;
     const twPeakMul = isFull ? 0.18 : 0.12;
     const twAlphaScale = isFull ? 0.6 : 0.45;
@@ -1362,6 +1363,8 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
       animId = requestAnimationFrame(draw);
       if (t - lastFrame < 33) return;
       lastFrame = t;
+      ctx.save();
+      ctx.scale(triScale, triScale);
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.00075; // 25% slower
 
@@ -1424,9 +1427,10 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.fill();
         }
       }
+      ctx.restore();
     };
     animId = requestAnimationFrame(draw);
-    
+
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
@@ -1460,6 +1464,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     let animId;
 
     const isFull = animationsEnabled === 'full';
+    const resScale = isFull ? 1 : 0.5;
     const alphaScale = isFull ? 1.5 : 1.0;
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(3,4,12)';
 
@@ -1468,8 +1473,10 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = Math.ceil(w * resScale);
+      canvas.height = Math.ceil(h * resScale);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
     };
     init();
     window.addEventListener('resize', init);
@@ -1520,6 +1527,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
       lastFrame = t;
       const time = t * 0.00075; // 25% slower globally
 
+      ctx.save();
+      ctx.scale(resScale, resScale);
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, w, h);
 
@@ -2233,6 +2242,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on' }) => {
           ctx.restore();
         }
       }
+      ctx.restore();
     };
     animId = requestAnimationFrame(draw);
 
