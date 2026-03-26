@@ -2832,13 +2832,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
         const xSegs = 12;
 
-        // Dark base fill — extend above edgeY to cover curve dip
+        // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
-        ctx.fillRect(0, edgeY - curveStr - 5, W, H - edgeY + curveStr + 5);
+        ctx.fillRect(0, edgeY, W, H - edgeY);
 
-        // Draw ground with per-cell color variation (cracked earth look)
-        const xCells = 8;
-        const cellSubdiv = 3; // subdivisions per cell edge to follow curve
+        // Draw ground strips with per-cell color variation (cracked earth look)
+        const xCells = 8; // horizontal cells per strip
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
@@ -2846,27 +2845,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const depthT = Math.pow(t0, 0.6);
           const bR = 90 - 72 * depthT, bG = 55 - 45 * depthT, bB = 32 - 26 * depthT;
 
+          // Draw each cell in the strip with slightly varied color
           for (let j = 0; j < xCells; j++) {
             const x0 = W * j / xCells, x1 = W * (j + 1) / xCells;
+            // Hash-based brightness variation per cell
             const cellHash = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.1);
-            const bright = 0.82 + cellHash * 0.36;
+            const bright = 0.82 + cellHash * 0.36; // 0.82-1.18
             const cr = Math.round(Math.min(255, bR * bright));
             const cg = Math.round(Math.min(255, bG * bright));
             const cb = Math.round(Math.min(255, bB * bright));
             ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
             ctx.beginPath();
-            // Top edge — subdivided to follow curve
-            for (let s = 0; s <= cellSubdiv; s++) {
-              const sx = x0 + (x1 - x0) * s / cellSubdiv;
-              const sy = curveY(sx, projY(wz1));
-              s === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
-            }
-            // Bottom edge — subdivided, reversed
-            for (let s = cellSubdiv; s >= 0; s--) {
-              const sx = x0 + (x1 - x0) * s / cellSubdiv;
-              const sy = curveY(sx, projY(wz0));
-              ctx.lineTo(sx, sy);
-            }
+            // Top edge with curve
+            const sy0L = curveY(x0, projY(wz1));
+            const sy0R = curveY(x1, projY(wz1));
+            const sy1L = curveY(x0, projY(wz0));
+            const sy1R = curveY(x1, projY(wz0));
+            ctx.moveTo(x0, sy0L);
+            ctx.lineTo(x1, sy0R);
+            ctx.lineTo(x1, sy1R);
+            ctx.lineTo(x0, sy1L);
             ctx.closePath();
             ctx.fill();
           }
