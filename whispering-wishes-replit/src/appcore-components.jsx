@@ -2862,42 +2862,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
         }
 
-        // --- Ground texture — gravel/debris particles + noise color variation ---
-        // Tiny scattered dots like gravel, not big polygons
-        for (let ti = 0; ti < 400; ti++) {
-          const rSeed = ti * 43 + sceneSeed;
-          const rDepth = hash(rSeed) * 0.7;
-          const wz = camZ + 0.3 + rDepth * (zFar - camZ - 1);
-          const wx = (hash(rSeed + 100) - 0.5) * wz * 1.4;
-          const sx = projX(wx, wz);
-          const sy = curveY(sx, projY(wz));
-          if (sy < edgeY - 2 || sy > H || sx < -5 || sx > W + 5) continue;
-          const perspScale = focal / (wz - camZ);
-          const dotSize = Math.max(0.5, (0.3 + hash(rSeed + 200) * 0.8) * perspScale * 0.04);
-          if (dotSize < 0.3) continue;
-          // Noise-varied color — darker or lighter than base ground
-          const dT = Math.pow(rDepth, 0.6);
-          const bR = 90 - 72 * dT, bG = 55 - 45 * dT, bB = 32 - 26 * dT;
-          const bright = 0.65 + hash(rSeed + 300) * 0.7;
-          ctx.fillStyle = `rgb(${Math.round(bR * bright)},${Math.round(bG * bright)},${Math.round(bB * bright)})`;
-          ctx.fillRect(sx - dotSize * 0.5, sy - dotSize * 0.25, dotSize, dotSize * 0.5);
-        }
-
-        // Darker shadow spots — subtle depth variation
-        for (let si = 0; si < 60; si++) {
-          const sSeed = si * 97 + sceneSeed + 5000;
-          const sDepth = hash(sSeed) * 0.5;
-          const wz = camZ + 0.5 + sDepth * (zFar - camZ - 2);
-          const wx = (hash(sSeed + 100) - 0.5) * wz * 1.2;
-          const sx = projX(wx, wz);
-          const sy = curveY(sx, projY(wz));
-          if (sy < edgeY || sy > H || sx < 0 || sx > W) continue;
-          const perspScale = focal / (wz - camZ);
-          const spotSize = (1 + hash(sSeed + 200) * 3) * perspScale * 0.03;
-          ctx.fillStyle = 'rgba(10,5,2,0.12)';
-          ctx.fillRect(sx - spotSize, sy - spotSize * 0.3, spotSize * 2, spotSize * 0.6);
-        }
-
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
         const baseSpacing = 1;
