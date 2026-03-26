@@ -1283,7 +1283,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       buf.width = 0;
       buf.height = 0;
     };
-  }, [oledMode, animationsEnabled]);
+  }, [oledMode, animationsEnabled, bgResolution, bgFps]);
   
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
@@ -1416,7 +1416,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolut
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
     };
-  }, [oledMode, animationsEnabled]);
+  }, [oledMode, animationsEnabled, bgResolution, bgFps]);
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 2, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
@@ -2232,7 +2232,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
     };
-  }, [oledMode, animationsEnabled]);
+  }, [oledMode, animationsEnabled, bgResolution, bgFps]);
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
@@ -2933,7 +2933,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', init);
     };
-  }, [oledMode, animationsEnabled]);
+  }, [oledMode, animationsEnabled, bgResolution, bgFps]);
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });

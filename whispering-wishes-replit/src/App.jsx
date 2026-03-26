@@ -422,7 +422,7 @@ function WhisperingWishesInner() {
         setVisualSettings(prev => {
           const merged = { ...prev };
           for (const key of Object.keys(prev)) {
-            if (parsed[key] !== undefined && parsed[key] !== null) merged[key] = parsed[key];
+            if (parsed[key] !== undefined) merged[key] = parsed[key];
           }
           // Clamp numeric values to valid ranges
           merged.collectionZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, merged.collectionZoom || 120));
