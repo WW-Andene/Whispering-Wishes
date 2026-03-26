@@ -2822,7 +2822,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillRect(0, hazeY, W, H - hazeY);
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
-        const edgeY = H * 0.82; // horizon line — lower to cover curve
+        const edgeY = H * 0.75; // horizon line
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
@@ -2839,9 +2839,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
         const xSegs = 24;
 
-        // Dark base fill below horizon
+        // Dark base fill — follows the curved horizon, not a straight line
         ctx.fillStyle = 'rgb(18,10,6)';
-        ctx.fillRect(0, edgeY, W, H - edgeY);
+        ctx.beginPath();
+        for (let j = 0; j <= xSegs; j++) {
+          const sx = W * j / xSegs;
+          const sy = curveY(sx, edgeY);
+          j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+        }
+        ctx.lineTo(W, H); ctx.lineTo(0, H);
+        ctx.closePath(); ctx.fill();
 
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
