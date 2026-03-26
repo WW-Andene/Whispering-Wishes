@@ -2591,7 +2591,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
     let skyCache = null; // pre-baked sky gradient canvas
-    let groundCache = null; // pre-baked ground texture
 
     const honourFps = bgFps || (isFull ? 30 : 15);
     const honourInterval = Math.round(1000 / honourFps);
@@ -2833,85 +2832,35 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
         const xSegs = 12;
 
-        // --- Painted ground texture — baked once to offscreen canvas ---
-        const groundH = H - edgeY + 20; // extra margin
-        if (!groundCache || groundCache.width !== W || groundCache.height !== Math.ceil(groundH)) {
-          const gW = W, gH = Math.ceil(groundH);
-          groundCache = document.createElement('canvas'); groundCache.width = gW; groundCache.height = gH;
-          const gc = groundCache.getContext('2d');
-          // Base depth strips (same perspective as before)
-          gc.fillStyle = 'rgb(18,10,6)';
-          gc.fillRect(0, 0, gW, gH);
-          for (let i = zSlices - 1; i >= 0; i--) {
-            const t0 = i / zSlices, t1 = (i + 1) / zSlices;
-            const wz0 = zNear * Math.pow(zFar / zNear, t0);
-            const wz1 = zNear * Math.pow(zFar / zNear, t1);
-            const depthT = Math.pow(t0, 0.6);
-            const bR = Math.round(90 - 72 * depthT);
-            const bG = Math.round(55 - 45 * depthT);
-            const bB = Math.round(32 - 26 * depthT);
-            gc.fillStyle = `rgb(${bR},${bG},${bB})`;
-            gc.beginPath();
-            for (let j = 0; j <= xSegs; j++) {
-              const sx = gW * j / xSegs;
-              const sy = curveY(sx, projY(wz1)) - edgeY + 20;
-              j === 0 ? gc.moveTo(sx, sy) : gc.lineTo(sx, sy);
-            }
-            for (let j = xSegs; j >= 0; j--) {
-              const sx = gW * j / xSegs;
-              const sy = curveY(sx, projY(wz0)) - edgeY + 20;
-              gc.lineTo(sx, sy);
-            }
-            gc.closePath();
-            gc.fill();
+        // Dark base fill below horizon
+        ctx.fillStyle = 'rgb(18,10,6)';
+        ctx.fillRect(0, edgeY, W, H - edgeY);
+
+        for (let i = zSlices - 1; i >= 0; i--) {
+          const t0 = i / zSlices, t1 = (i + 1) / zSlices;
+          const wz0 = zNear * Math.pow(zFar / zNear, t0);
+          const wz1 = zNear * Math.pow(zFar / zNear, t1);
+
+          const depthT = Math.pow(t0, 0.6);
+          const r = Math.round(90 - 72 * depthT);
+          const g = Math.round(55 - 45 * depthT);
+          const b = Math.round(32 - 26 * depthT);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+
+          ctx.beginPath();
+          for (let j = 0; j <= xSegs; j++) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz1));
+            j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
           }
-          // Paint noise patches — soft blotchy color variation like painted ground
-          for (let p = 0; p < 200; p++) {
-            const pSeed = p * 59 + sceneSeed + 3000;
-            const px = hash(pSeed) * gW;
-            const py = hash(pSeed + 100) * gH;
-            const pSize = 5 + hash(pSeed + 200) * 30;
-            // Sample base color at this Y position (depth)
-            const yFrac = Math.min(1, py / gH);
-            const dT = Math.pow(1 - yFrac, 0.8);
-            const bR = 90 - 72 * dT, bG = 55 - 45 * dT, bB = 32 - 26 * dT;
-            // Vary brightness — some patches darker, some lighter
-            const bright = 0.7 + hash(pSeed + 300) * 0.6;
-            const pR = Math.round(Math.min(255, bR * bright));
-            const pG = Math.round(Math.min(255, bG * bright));
-            const pB = Math.round(Math.min(255, bB * bright));
-            const pAlpha = 0.15 + hash(pSeed + 400) * 0.25;
-            const grad = gc.createRadialGradient(px, py, 0, px, py, pSize);
-            grad.addColorStop(0, `rgba(${pR},${pG},${pB},${pAlpha})`);
-            grad.addColorStop(0.6, `rgba(${pR},${pG},${pB},${pAlpha * 0.3})`);
-            grad.addColorStop(1, `rgba(${pR},${pG},${pB},0)`);
-            gc.fillStyle = grad;
-            gc.fillRect(px - pSize, py - pSize, pSize * 2, pSize * 2);
+          for (let j = xSegs; j >= 0; j--) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz0));
+            ctx.lineTo(sx, sy);
           }
-          // Paint crack lines — thin dark perspective lines
-          gc.strokeStyle = 'rgba(12,6,3,0.2)';
-          for (let c = 0; c < 40; c++) {
-            const cSeed = c * 131 + sceneSeed + 7000;
-            const cx = hash(cSeed) * gW;
-            const cy = hash(cSeed + 100) * gH * 0.8;
-            const cLen = 3 + hash(cSeed + 200) * 15 * (1 + cy / gH);
-            const cAngle = (hash(cSeed + 300) - 0.5) * 1.5;
-            gc.lineWidth = 0.3 + hash(cSeed + 400) * 0.7;
-            gc.beginPath();
-            gc.moveTo(cx, cy);
-            // Crack with 2-3 segments for organic feel
-            let lx = cx, ly = cy;
-            const segs = 2 + Math.floor(hash(cSeed + 500) * 2);
-            for (let s = 0; s < segs; s++) {
-              lx += Math.cos(cAngle + (hash(cSeed + s * 50 + 600) - 0.5)) * cLen / segs;
-              ly += Math.sin(cAngle + (hash(cSeed + s * 50 + 700) - 0.5) * 0.3) * cLen / segs;
-              gc.lineTo(lx, ly);
-            }
-            gc.stroke();
-          }
+          ctx.closePath();
+          ctx.fill();
         }
-        // Draw cached ground texture
-        ctx.drawImage(groundCache, 0, edgeY - 20);
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
