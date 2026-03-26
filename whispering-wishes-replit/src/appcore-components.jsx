@@ -2207,7 +2207,7 @@ ResonanceField.displayName = 'ResonanceField';
 
 // LAYER ALT-2: Augusta Ruins — Ancient golden ruins with sun glow, mist, and floating dust
 // Inspired by Rinascita: warm amber tones, stone pillars/arches, atmospheric haze, golden sunlight
-const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
+const Honour = memo(({ oledMode, animationsEnabled = 'on' }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
     if (animationsEnabled === 'off' || animationsEnabled === false) {
@@ -2652,7 +2652,7 @@ const AugustaRuins = memo(({ oledMode, animationsEnabled = 'on' }) => {
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{zIndex: 1, willChange: 'transform'}} aria-hidden="true" role="presentation" />;
 });
-AugustaRuins.displayName = 'AugustaRuins';
+Honour.displayName = 'Honour';
 
 // §BANNER_PARTICLES: Theme-driven particle overlay — each banner gets a fitting visual personality
 // Character-specific theme overrides (matched to their banner art mood)
@@ -4023,7 +4023,7 @@ export {
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
   AppErrorBoundary, TabErrorBoundary,
-  BackgroundGlow, TriangleMirrorWave, ResonanceField, AugustaRuins,
+  BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,
   VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
