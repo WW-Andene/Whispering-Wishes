@@ -2728,6 +2728,65 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         ctx.restore();
 
+        // Ambient light above clouds — warm glow that varies with cloud density
+        // Brighter in the clearing (center path), dimmer where clouds are thick
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        // Main ambient from sun — washes over the cloud layer
+        const ambR = ctx.createRadialGradient(sunX, sunY, sunR * 2, sunX, sunY, Math.max(W, H) * 0.7);
+        ambR.addColorStop(0, 'rgba(255,220,140,0.06)');
+        ambR.addColorStop(0.2, 'rgba(255,180,90,0.04)');
+        ambR.addColorStop(0.5, 'rgba(200,120,50,0.02)');
+        ambR.addColorStop(1, 'rgba(100,50,20,0)');
+        ctx.fillStyle = ambR; ctx.fillRect(0, 0, W, H);
+        // Horizon ambient — warm light scattering along the horizon line
+        const horizY = H * 0.75;
+        const horizAmb = ctx.createLinearGradient(0, horizY - H * 0.15, 0, horizY + H * 0.05);
+        horizAmb.addColorStop(0, 'rgba(255,200,100,0)');
+        horizAmb.addColorStop(0.4, 'rgba(255,180,80,0.03)');
+        horizAmb.addColorStop(0.7, 'rgba(255,160,60,0.05)');
+        horizAmb.addColorStop(1, 'rgba(200,100,30,0)');
+        ctx.fillStyle = horizAmb; ctx.fillRect(0, horizY - H * 0.15, W, H * 0.2);
+        ctx.restore();
+
+        // Sun lens flare — circles along the sun-to-center axis
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const flareCX = W * 0.5, flareCY = H * 0.5;
+        // Flare axis: from sun through screen center and beyond
+        const flareDX = flareCX - sunX, flareDY = flareCY - sunY;
+        const flareLen = Math.sqrt(flareDX * flareDX + flareDY * flareDY);
+        const flareNX = flareDX / flareLen, flareNY = flareDY / flareLen;
+        // Flare elements at different positions along the axis
+        const flareElements = [
+          { t: 0.3, r: sunR * 0.8, a: 0.025, cr: 255, cg: 220, cb: 140 },
+          { t: 0.5, r: sunR * 0.4, a: 0.04, cr: 255, cg: 200, cb: 100 },
+          { t: 0.7, r: sunR * 1.2, a: 0.015, cr: 255, cg: 180, cb: 80 },
+          { t: 0.9, r: sunR * 0.3, a: 0.05, cr: 255, cg: 240, cb: 180 },
+          { t: 1.2, r: sunR * 0.6, a: 0.02, cr: 200, cg: 150, cb: 60 },
+          { t: 1.5, r: sunR * 1.5, a: 0.01, cr: 255, cg: 160, cb: 50 },
+          { t: 1.8, r: sunR * 0.25, a: 0.04, cr: 255, cg: 255, cb: 200 },
+        ];
+        for (const fe of flareElements) {
+          const fx = sunX + flareNX * flareLen * fe.t;
+          const fy = sunY + flareNY * flareLen * fe.t;
+          const fg = ctx.createRadialGradient(fx, fy, 0, fx, fy, fe.r);
+          fg.addColorStop(0, 'rgba(' + fe.cr + ',' + fe.cg + ',' + fe.cb + ',' + fe.a + ')');
+          fg.addColorStop(0.5, 'rgba(' + fe.cr + ',' + fe.cg + ',' + fe.cb + ',' + (fe.a * 0.3) + ')');
+          fg.addColorStop(1, 'rgba(' + fe.cr + ',' + fe.cg + ',' + fe.cb + ',0)');
+          ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(fx, fy, fe.r, 0, Math.PI * 2); ctx.fill();
+        }
+        // Anamorphic streak — horizontal line through sun
+        const streakGrad = ctx.createLinearGradient(sunX - W * 0.4, sunY, sunX + W * 0.4, sunY);
+        streakGrad.addColorStop(0, 'rgba(255,200,100,0)');
+        streakGrad.addColorStop(0.3, 'rgba(255,220,140,0.02)');
+        streakGrad.addColorStop(0.5, 'rgba(255,240,180,0.04)');
+        streakGrad.addColorStop(0.7, 'rgba(255,220,140,0.02)');
+        streakGrad.addColorStop(1, 'rgba(255,200,100,0)');
+        ctx.fillStyle = streakGrad;
+        ctx.fillRect(sunX - W * 0.4, sunY - sunR * 0.3, W * 0.8, sunR * 0.6);
+        ctx.restore();
+
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
         const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
