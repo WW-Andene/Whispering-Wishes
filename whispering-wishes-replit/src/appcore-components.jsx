@@ -2832,80 +2832,35 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
         const xSegs = 12;
 
-        // Dark base fill — extend above edgeY to cover curve dip
+        // Dark base fill below horizon
         ctx.fillStyle = 'rgb(18,10,6)';
-        ctx.fillRect(0, edgeY - curveStr - 5, W, H - edgeY + curveStr + 5);
+        ctx.fillRect(0, edgeY, W, H - edgeY);
 
-        // Draw ground with per-cell color variation (cracked earth look)
-        const xCells = 8;
-        const cellSubdiv = 3; // subdivisions per cell edge to follow curve
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
+
           const depthT = Math.pow(t0, 0.6);
-          const bR = 90 - 72 * depthT, bG = 55 - 45 * depthT, bB = 32 - 26 * depthT;
+          const r = Math.round(90 - 72 * depthT);
+          const g = Math.round(55 - 45 * depthT);
+          const b = Math.round(32 - 26 * depthT);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
 
-          for (let j = 0; j < xCells; j++) {
-            const x0 = W * j / xCells, x1 = W * (j + 1) / xCells;
-            const cellHash = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.1);
-            const bright = 0.82 + cellHash * 0.36;
-            const cr = Math.round(Math.min(255, bR * bright));
-            const cg = Math.round(Math.min(255, bG * bright));
-            const cb = Math.round(Math.min(255, bB * bright));
-            ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
-            ctx.beginPath();
-            // Top edge — subdivided to follow curve
-            for (let s = 0; s <= cellSubdiv; s++) {
-              const sx = x0 + (x1 - x0) * s / cellSubdiv;
-              const sy = curveY(sx, projY(wz1));
-              s === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
-            }
-            // Bottom edge — subdivided, reversed
-            for (let s = cellSubdiv; s >= 0; s--) {
-              const sx = x0 + (x1 - x0) * s / cellSubdiv;
-              const sy = curveY(sx, projY(wz0));
-              ctx.lineTo(sx, sy);
-            }
-            ctx.closePath();
-            ctx.fill();
-          }
-        }
-
-        // Perspective crack lines — follow the 3D ground plane
-        ctx.save();
-        for (let ci = 0; ci < 50; ci++) {
-          const cSeed = ci * 97 + sceneSeed + 4000;
-          // Random world-space position
-          const cwz = camZ + 0.5 + hash(cSeed) * 30;
-          const cwx = (hash(cSeed + 100) - 0.5) * cwz * 1.5;
-          // Project start point
-          const csx = projX(cwx, cwz);
-          const csy = curveY(csx, projY(cwz));
-          if (csy < edgeY - 5 || csy > H + 5 || csx < -20 || csx > W + 20) continue;
-          // Crack direction — mostly horizontal with slight angle
-          const cAngle = (hash(cSeed + 200) - 0.5) * 0.8;
-          const cWorldLen = 0.3 + hash(cSeed + 300) * 1.5;
-          // Project end point
-          const cwx2 = cwx + Math.cos(cAngle) * cWorldLen;
-          const cwz2 = cwz + Math.sin(cAngle) * cWorldLen * 0.3;
-          const csx2 = projX(cwx2, cwz2);
-          const csy2 = curveY(csx2, projY(cwz2));
-          // Depth-based opacity and width
-          const cDepth = (cwz - camZ) / (zFar - camZ);
-          const cAlpha = 0.15 * (1 - cDepth * 0.7);
-          const cWidth = Math.max(0.3, (1.5 - cDepth) * 0.8);
-          ctx.strokeStyle = `rgba(8,4,2,${cAlpha.toFixed(2)})`;
-          ctx.lineWidth = cWidth;
           ctx.beginPath();
-          ctx.moveTo(csx, csy);
-          // Mid-point with slight jitter for organic feel
-          const cmx = (csx + csx2) * 0.5 + (hash(cSeed + 400) - 0.5) * 3;
-          const cmy = (csy + csy2) * 0.5 + (hash(cSeed + 500) - 0.5) * 1;
-          ctx.quadraticCurveTo(cmx, cmy, csx2, csy2);
-          ctx.stroke();
+          for (let j = 0; j <= xSegs; j++) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz1));
+            j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+          }
+          for (let j = xSegs; j >= 0; j--) {
+            const sx = W * j / xSegs;
+            const sy = curveY(sx, projY(wz0));
+            ctx.lineTo(sx, sy);
+          }
+          ctx.closePath();
+          ctx.fill();
         }
-        ctx.restore();
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
