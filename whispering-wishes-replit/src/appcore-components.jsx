@@ -2304,8 +2304,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     const CLOUD_DEFS = [
       { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.06, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
       { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.42, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
-      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.52, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
-      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.58, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
+      { name: "medium", wispN: 7, densMul: 2.3, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.52, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
+      { name: "big", wispN: 10, densMul: 2.5, densPeak: 100, densFall: [0.50, 0.22, 0.07], baseAlpha: 0.58, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
     ];
     function generateBalls(seed, baseRadius, cloudType) {
         const def = CLOUD_DEFS[cloudType];
@@ -2315,7 +2315,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         function spawnCluster(cx, cy, radius, depth, maxDepth) {
             balls.push({ cx: cx, cy: cy, r: radius * (0.6 + rng() * 0.5) });
             if (depth >= maxDepth) return;
-            const cc = Math.floor(2 + rng() * 3);
+            const cc = Math.floor(3 + rng() * 3);
             for (let c = 0; c < cc; c++) {
                 const a = rng() * Math.PI * 2;
                 const d = radius * (0.3 + rng() * 0.7);
@@ -2326,7 +2326,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
 
         const fd = cloudType === 0 ? 1 : cloudType === 1 ? 2 : 3;
-        const sc = cloudType === 0 ? 2 : cloudType === 1 ? 2 : cloudType === 2 ? 3 : 4;
+        const sc = cloudType === 0 ? 2 : cloudType === 1 ? 2 : cloudType === 2 ? 4 : 5;
         const sr = baseRadius * (cloudType === 0 ? 0.5 : 0.4);
         for (let s = 0; s < sc; s++) {
             const sa = rng() * Math.PI * 2;
@@ -2466,7 +2466,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             for (let c = 0; c < nCl; c++) {
                 const cs = s * 1000 + c * 37;
                 const rng2 = seededRandom(cs);
-                const dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist));
+                const dist = Math.max(minDist, minDist + Math.pow(rng2(), 0.6) * (maxReach - minDist));
                 const ang = phases[s] + rng2() * Math.PI * 2;
                 const sr = rng2();
                 let rad, cType;
@@ -2500,6 +2500,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                     }
                 }
             }
+        }
+
+        // Dedicated outer ring clouds
+        const outerMin = maxReach * 0.65, outerMax = maxReach * 0.95;
+        for (let oc = 0; oc < 18; oc++) {
+            const ocs = 80000 + oc * 53;
+            const orn = seededRandom(ocs);
+            const oDist = outerMin + orn() * (outerMax - outerMin);
+            const oAng = orn() * Math.PI * 2;
+            const osr = orn();
+            let oRad, ocT;
+            if (osr < 0.2) { oRad = 70 + orn() * 60; ocT = 3; }
+            else if (osr < 0.5) { oRad = 40 + orn() * 40; ocT = 2; }
+            else if (osr < 0.8) { oRad = 20 + orn() * 25; ocT = 1; }
+            else { oRad = 10 + orn() * 14; ocT = 0; }
+            const oDep = 0.15 + orn() * 0.3;
+            addC(ocs, oDist, oAng, oRad, oDep, 0.03 / (0.5 + oRad / 60) * (0.55 + oDep * 0.45), ocT);
         }
 
         const hiSunY = sunY - H * 0.12;
