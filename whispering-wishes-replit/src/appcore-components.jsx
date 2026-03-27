@@ -2833,7 +2833,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz, wx) => {
           const wy = wx !== undefined ? groundCurve * wx * wx : 0;
-          return edgeY + (camH + wy) * focal / (wz - camZ);
+          return edgeY + (camH - wy) * focal / (wz - camZ);
         };
 
         // --- Draw curved ground strips ---
