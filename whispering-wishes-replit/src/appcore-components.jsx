@@ -2420,7 +2420,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const clouds = [];
         // Limit maxReach to what's actually visible — orbit must intersect screen
         const screenDiag = Math.sqrt((W * 0.5) * (W * 0.5) + Math.max(sunY, H - sunY) * Math.max(sunY, H - sunY));
-        const maxReach = screenDiag + 150; // + margin for cloud size
+        const maxReach = screenDiag + 250; // + margin for cloud size
         let id = 0;
 
         function getCachedBake(seed, balls, sunAngle, cType, dep, prox, rs) {
@@ -2466,7 +2466,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             for (let c = 0; c < nCl; c++) {
                 const cs = s * 1000 + c * 37;
                 const rng2 = seededRandom(cs);
-                const dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist));
+                const dist = Math.max(minDist, minDist + Math.sqrt(rng2()) * (maxReach - minDist));
                 const ang = phases[s] + (c / nCl) * Math.PI * 2 + (rng2() - 0.5) * (Math.PI * 2 / nCl) * 1.5;
                 const sr = rng2();
                 let rad, cType;
@@ -2569,7 +2569,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         for (let mf = 0; mf < 60; mf++) {
             const mfs = 90000 + mf * 71;
             const mfr = seededRandom(mfs);
-            const mfDist = midLo + mfr() * (midHi2 - midLo);
+            const mfDist = midLo + Math.sqrt(mfr()) * (midHi2 - midLo);
             const mfAng = (mf / 60) * Math.PI * 2 + (mfr() - 0.5) * (Math.PI * 2 / 60) * 1.5;
             const mfRad = 15 + mfr() * 40;
             const mfT = mfRad > 50 ? 3 : mfRad > 30 ? 2 : mfRad > 15 ? 1 : 0;
@@ -2582,7 +2582,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         for (let of2 = 0; of2 < 90; of2++) {
             const ofs = 80000 + of2 * 53;
             const ofr = seededRandom(ofs);
-            const ofDist = outLo + ofr() * (outHi - outLo);
+            const ofDist = outLo + Math.sqrt(ofr()) * (outHi - outLo);
             const ofAng = (of2 / 90) * Math.PI * 2 + (ofr() - 0.5) * (Math.PI * 2 / 90) * 1.5;
             const ofRad = 20 + ofr() * 55;
             const ofT = ofRad > 50 ? 3 : ofRad > 30 ? 2 : ofRad > 15 ? 1 : 0;
