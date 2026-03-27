@@ -3213,8 +3213,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           else if (zoneT < 0.4) zoneDensity = 0.7;     // zone 2c
           else if (zoneT < 0.45) zoneDensity = 0.8;    // zone 2d
           else if (zoneT < 0.5) zoneDensity = 0.9;     // zone 2e
-          else if (zoneT < 0.75) zoneDensity = 1.0;    // zone 3
-          else zoneDensity = 1.3;                       // zone 4
+          else if (zoneT < 0.75) zoneDensity = 1.5;    // zone 3
+          else zoneDensity = 2.0;                       // zone 4
           const rowSpacingZ = (2.0 + ihash(swordIdx + 7000, sceneSeed) * 6.0) * zoneDensity;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = (2.0 + ihash(swordIdx + 8000, sceneSeed) * 6.0) * zoneDensity;
