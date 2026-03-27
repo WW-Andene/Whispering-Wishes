@@ -2874,14 +2874,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
-            const contrast=0.4+dT*0.6,warmShift=(1-dT)*22,baseVal=14+dC*52;
-            const t0r=baseVal*0.6+warmShift*0.35, t0g=baseVal*0.48+warmShift*0.18, t0b=baseVal*0.4+warmShift*0.08;
-            const t1r=baseVal*0.8+warmShift*0.4, t1g=baseVal*0.65+warmShift*0.22, t1b=baseVal*0.5+warmShift*0.1;
+            const contrast=0.55+dT*0.45,warmShift=(1-dT)*28,baseVal=18+dC*62;
+            const t0r=baseVal*0.55+warmShift*0.3, t0g=baseVal*0.42+warmShift*0.14, t0b=baseVal*0.35+warmShift*0.06;
+            const t1r=baseVal*0.78+warmShift*0.4, t1g=baseVal*0.6+warmShift*0.2, t1b=baseVal*0.42+warmShift*0.08;
             // Mid-tone: warm amber influenced by sun — distinct from shadow and highlight
-            const tmR=baseVal*0.95+warmShift*0.65, tmG=baseVal*0.72+warmShift*0.38, tmB=baseVal*0.42+warmShift*0.06;
+            const tmR=baseVal*1.0+warmShift*0.72, tmG=baseVal*0.72+warmShift*0.4, tmB=baseVal*0.35+warmShift*0.04;
             // Light tones: amber ember glow — warm orange-amber, suppressed blue
-            const t2r=baseVal*1.2+warmShift*0.7, t2g=baseVal*0.82+warmShift*0.35, t2b=baseVal*0.38+warmShift*0.04;
-            const t3r=baseVal*1.45+warmShift*0.85, t3g=baseVal*0.95+warmShift*0.42, t3b=baseVal*0.35+warmShift*0.02;
+            const t2r=baseVal*1.3+warmShift*0.85, t2g=baseVal*0.88+warmShift*0.45, t2b=baseVal*0.32+warmShift*0.02;
+            const t3r=baseVal*1.6+warmShift*1.0, t3g=baseVal*1.05+warmShift*0.52, t3b=baseVal*0.3+warmShift*0.01;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
