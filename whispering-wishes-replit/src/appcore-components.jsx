@@ -2837,7 +2837,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         };
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
+        const zNear = camZ + 0.05, zFar = 50, zSlices = 120;
         const xSegs = 24;
 
         // Dark base fill — follows the curved horizon, not a straight line
