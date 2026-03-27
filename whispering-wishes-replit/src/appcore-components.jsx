@@ -2866,7 +2866,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const noiseAmt = 0.08 + depthT * 0.28;
             const bright = 1 - noiseAmt + cellNoise * noiseAmt * 2;
             ctx.beginPath();
-            const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
+            const x0 = W * j / xSegs - 0.5, x1 = W * (j + 1) / xSegs + 0.5, xM = (x0 + x1) * 0.5;
             // Per-vertex 3D height noise — uses world coords for continuity across Z
             const hN = 0.06;
             const wz1R = Math.round(wz1 * 3), wz0R = Math.round(wz0 * 3); // quantize Z for hash
