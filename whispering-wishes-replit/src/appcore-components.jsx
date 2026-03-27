@@ -2462,12 +2462,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const speeds = [0.04, 0.07, 0.11, 0.18, 0.28];
         const phases = [0, 1.0, 2.1, 3.4, 4.8];
         for (let s = 0; s < 5; s++) {
-            const nCl = 8 + Math.floor(hash(s * 100) * 5);
+            const nCl = 16 + Math.floor(hash(s * 100) * 10);
             for (let c = 0; c < nCl; c++) {
                 const cs = s * 1000 + c * 37;
                 const rng2 = seededRandom(cs);
                 const dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist));
-                const ang = phases[s] + rng2() * Math.PI * 2;
+                const ang = phases[s] + (c / nCl) * Math.PI * 2 + (rng2() - 0.5) * (Math.PI * 2 / nCl) * 1.5;
                 const sr = rng2();
                 let rad, cType;
                 if (sr < 0.12) { rad = 110 + rng2() * 80; cType = 3; }
@@ -2508,12 +2508,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const hiSp = [0.30, 0.22, 0.15, 0.10];
         const hiPh = [0.5, 1.8, 3.3, 5.0];
         for (let hs = 0; hs < 4; hs++) {
-            const hCl = 5 + Math.floor(hash(hs * 200 + 77) * 3);
+            const hCl = 10 + Math.floor(hash(hs * 200 + 77) * 6);
             for (let hc = 0; hc < hCl; hc++) {
                 const hcs = 50000 + hs * 1000 + hc * 41;
                 const hrng = seededRandom(hcs);
                 const hDist = Math.max(hiMin, hiMin + Math.pow(hrng(), 0.33) * (hiMax - hiMin));
-                const hAng = hiPh[hs] + hrng() * Math.PI * 2;
+                const hAng = hiPh[hs] + (hc / hCl) * Math.PI * 2 + (hrng() - 0.5) * (Math.PI * 2 / hCl) * 1.5;
                 const hsr = hrng();
                 let hRad, hcT;
                 if (hsr < 0.15) { hRad = 30 + hrng() * 30; hcT = 2; }
@@ -2540,12 +2540,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const topSp = [0.35, 0.26, 0.18];
         const topPh = [0.3, 2.0, 4.2];
         for (let ts = 0; ts < 3; ts++) {
-            const tCl = 4 + Math.floor(hash(ts * 300 + 99) * 3);
+            const tCl = 8 + Math.floor(hash(ts * 300 + 99) * 6);
             for (let tc = 0; tc < tCl; tc++) {
                 const tcs = 70000 + ts * 1000 + tc * 47;
                 const trng = seededRandom(tcs);
                 const tDist = Math.max(topMin, topMin + Math.pow(trng(), 0.33) * (topMax - topMin));
-                const tAng = topPh[ts] + (tc / tCl) * Math.PI * 2 + (trng() - 0.5) * 0.5;
+                const tAng = topPh[ts] + (tc / tCl) * Math.PI * 2 + (trng() - 0.5) * (Math.PI * 2 / tCl) * 1.5;
                 const tsr2 = trng();
                 let tRad, tcT;
                 if (tsr2 < 0.35) { tRad = 10 + trng() * 15; tcT = 1; }
@@ -2566,11 +2566,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         const midLo = minDist;
         const midHi2 = maxReach * 0.85;
-        for (let mf = 0; mf < 30; mf++) {
+        for (let mf = 0; mf < 60; mf++) {
             const mfs = 90000 + mf * 71;
             const mfr = seededRandom(mfs);
             const mfDist = midLo + mfr() * (midHi2 - midLo);
-            const mfAng = mfr() * Math.PI * 2;
+            const mfAng = (mf / 60) * Math.PI * 2 + (mfr() - 0.5) * (Math.PI * 2 / 60) * 1.5;
             const mfRad = 15 + mfr() * 40;
             const mfT = mfRad > 50 ? 3 : mfRad > 30 ? 2 : mfRad > 15 ? 1 : 0;
             const mfDep = 0.25 + mfr() * 0.5;
@@ -2579,11 +2579,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         const outLo = minDist + (maxReach - minDist) * 0.2;
         const outHi = maxReach;
-        for (let of2 = 0; of2 < 45; of2++) {
+        for (let of2 = 0; of2 < 90; of2++) {
             const ofs = 80000 + of2 * 53;
             const ofr = seededRandom(ofs);
             const ofDist = outLo + ofr() * (outHi - outLo);
-            const ofAng = ofr() * Math.PI * 2;
+            const ofAng = (of2 / 90) * Math.PI * 2 + (ofr() - 0.5) * (Math.PI * 2 / 90) * 1.5;
             const ofRad = 20 + ofr() * 55;
             const ofT = ofRad > 50 ? 3 : ofRad > 30 ? 2 : ofRad > 15 ? 1 : 0;
             const ofDep = 0.1 + ofr() * 0.4;
