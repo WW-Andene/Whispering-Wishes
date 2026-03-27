@@ -2863,10 +2863,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           for (let j = 0; j < xSegs; j++) {
             const cellNoise = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.13);
-            // Less noise on near cells (big on screen), more on far cells (tiny)
             const noiseAmt = 0.08 + depthT * 0.28;
             const bright = 1 - noiseAmt + cellNoise * noiseAmt * 2;
-            ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
             ctx.beginPath();
             const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
             // Per-vertex 3D height noise — uses world coords for continuity across Z
@@ -2884,6 +2882,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const bx0 = (x0 - W * 0.5) * (wz0 - camZ) / focal;
             const bxM = (xM - W * 0.5) * (wz0 - camZ) / focal;
             const bx1 = (x1 - W * 0.5) * (wz0 - camZ) / focal;
+            // Slope-based lighting: sun is above-center, slopes facing sun = lighter
+            const slopeX = (h10 - h00 + h11 - h01) * 0.5; // X slope
+            const slopeZ = (h01 - h00 + h11 - h10) * 0.5; // Z slope
+            // Sun direction: from above and slightly behind camera (0, -1, -0.3)
+            const sunDot = Math.max(0, -slopeZ * 0.8 + 0.3); // facing camera+up = lit
+            const shade = bright * (0.7 + sunDot * 0.6);
+            ctx.fillStyle = `rgb(${Math.round(baseR * shade)},${Math.round(baseG * shade)},${Math.round(baseB * shade)})`;
             ctx.moveTo(x0, projY(wz1, wx0) - h00 * focal / (wz1 - camZ));
             ctx.lineTo(xM, projY(wz1, wxM) - hM0 * focal / (wz1 - camZ));
             ctx.lineTo(x1, projY(wz1, wx1) - h10 * focal / (wz1 - camZ));
@@ -2893,6 +2898,61 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath();
             ctx.fill();
           }
+        }
+
+        // --- Gravel + rocks scattered on ground ---
+        // Small gravel — tiny fillRect dots
+        for (let gi = 0; gi < 150; gi++) {
+          const gSeed = gi * 47 + sceneSeed + 2000;
+          const gwz = camZ + 0.5 + hash(gSeed) * 25;
+          const gwx = (hash(gSeed + 100) - 0.5) * gwz * 1.2;
+          const gsx = projX(gwx, gwz);
+          const gsy = projY(gwz, gwx);
+          if (gsy < edgeY - 5 || gsy > H || gsx < 0 || gsx > W) continue;
+          const gScale = focal / (gwz - camZ);
+          const gSize = Math.max(0.5, (0.3 + hash(gSeed + 200) * 0.5) * gScale * 0.02);
+          if (gSize < 0.4) continue;
+          const gDepth = Math.pow((gwz - camZ) / (zFar - camZ), 0.6);
+          const gBright = 0.5 + hash(gSeed + 300) * 0.8;
+          const gr = Math.round((90 - 72 * gDepth) * gBright);
+          const gg = Math.round((55 - 45 * gDepth) * gBright);
+          const gb = Math.round((32 - 26 * gDepth) * gBright);
+          ctx.fillStyle = `rgb(${gr},${gg},${gb})`;
+          ctx.fillRect(gsx - gSize * 0.5, gsy - gSize * 0.25, gSize, gSize * 0.5);
+        }
+        // Medium rocks — small polygons, only near camera
+        for (let ri = 0; ri < 30; ri++) {
+          const rSeed = ri * 83 + sceneSeed + 5000;
+          const rwz = camZ + 0.3 + hash(rSeed) * 8;
+          const rwx = (hash(rSeed + 100) - 0.5) * rwz * 1.0;
+          const rsx = projX(rwx, rwz);
+          const rsy = projY(rwz, rwx);
+          if (rsy < edgeY - 5 || rsy > H || rsx < 0 || rsx > W) continue;
+          const rScale = focal / (rwz - camZ);
+          const rSize = (0.5 + hash(rSeed + 200) * 1.0) * rScale * 0.02;
+          if (rSize < 1) continue;
+          const rDepth = Math.pow((rwz - camZ) / (zFar - camZ), 0.6);
+          const rBright = 0.4 + hash(rSeed + 300) * 0.6;
+          const rr = Math.round((90 - 72 * rDepth) * rBright);
+          const rg = Math.round((55 - 45 * rDepth) * rBright);
+          const rb = Math.round((32 - 26 * rDepth) * rBright);
+          ctx.fillStyle = `rgb(${rr},${rg},${rb})`;
+          ctx.beginPath();
+          const sides = 4 + Math.floor(hash(rSeed + 400) * 2);
+          for (let si = 0; si <= sides; si++) {
+            const a = (si / sides) * Math.PI * 2;
+            const jit = 0.6 + hash(rSeed + si * 37 + 500) * 0.8;
+            const px = rsx + Math.cos(a) * rSize * jit;
+            const py = rsy + Math.sin(a) * rSize * jit * 0.4;
+            si === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+          // Rock highlight — sun-facing top edge
+          const hlSize = rSize * 0.6;
+          const hlBright = Math.min(1.4, rBright + 0.4);
+          ctx.fillStyle = `rgb(${Math.round((90 - 72 * rDepth) * hlBright)},${Math.round((55 - 45 * rDepth) * hlBright)},${Math.round((32 - 26 * rDepth) * hlBright)})`;
+          ctx.fillRect(rsx - hlSize * 0.5, rsy - rSize * 0.4, hlSize, rSize * 0.2);
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
