@@ -2275,7 +2275,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
-    const sceneSeed = 38471;
+    const sceneSeed = 52908;
 
     // === Cloud system from cloud-demo ===
     const CLOUD_DEFS = [
@@ -2665,7 +2665,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.drawImage(skyCache, 0, 0);
 
         // === LIVE CLOUD RENDERING ===
-        // Build clouds async — don't block first frame
         if (!sceneClouds && !cloudBuildPending) {
           cloudBuildPending = true;
           setTimeout(() => { sceneClouds = buildCloudsForScene(W, H); }, 0);
@@ -2739,8 +2738,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-
         } // end if (sceneClouds)
+
         // Dynamic ambient — clouds darken the sky behind them
         // First pass: draw dark shadow under each cloud to occlude the bright sky
         ctx.save();
@@ -2822,14 +2821,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillRect(0, hazeY, W, H - hazeY);
 
         // === FLAT 3D GROUND PLANE (100m × 100m) + 500 SWORDS ===
-        const edgeY = H * 0.75; // horizon line
+        const edgeY = H * 0.75; // horizon line — 25% from bottom
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
         const camZ = 8;
         const camH = 0.7;
-        // Ground curves in world space — dips down at the sides like a cylinder
-        const groundCurve = 0.008; // curvature amount
+        const groundCurve = 0.008;
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
         const projY = (wz, wx) => {
           const wy = wx !== undefined ? groundCurve * wx * wx : 0;
@@ -2837,143 +2835,61 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         };
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.05, zFar = 50, zSlices = 120;
-        const xSegs = 24;
+        const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
+        const xSegs = 12;
 
-        // Dark base fill — follows the curved horizon, not a straight line
+        // Dark base fill — follows curve
         ctx.fillStyle = 'rgb(18,10,6)';
         ctx.beginPath();
         for (let j = 0; j <= xSegs; j++) {
           const sx = W * j / xSegs;
-          const wx = (sx - W * 0.5) * (zFar - camZ) / focal; const sy = projY(zFar, wx);
-          j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+          const wx = (sx - W * 0.5) * (zFar - camZ) / focal;
+          j === 0 ? ctx.moveTo(sx, projY(zFar, wx)) : ctx.lineTo(sx, projY(zFar, wx));
         }
         ctx.lineTo(W, H); ctx.lineTo(0, H);
         ctx.closePath(); ctx.fill();
 
+        // Smooth ground strips — full width, no cell splitting
         for (let i = zSlices - 1; i >= 0; i--) {
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
           const depthT = Math.pow(t0, 0.6);
-          const baseR = 90 - 72 * depthT;
-          const baseG = 55 - 45 * depthT;
-          const baseB = 32 - 26 * depthT;
+          const r = Math.round(90 - 72 * depthT);
+          const g = Math.round(55 - 45 * depthT);
+          const b = Math.round(32 - 26 * depthT);
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
 
-          for (let j = 0; j < xSegs; j++) {
-            // Smooth noise — sample world coords, interpolate for gradual variation
-            const cwx = (j - xSegs * 0.5) * wz1 * 0.08;
-            const cwz = wz1 * 0.15;
-            // 2-octave value noise for smooth terrain color
-            const n1 = hash(Math.floor(cwx) * 127.1 + Math.floor(cwz) * 311.7 + sceneSeed);
-            const n2 = hash(Math.floor(cwx + 1) * 127.1 + Math.floor(cwz) * 311.7 + sceneSeed);
-            const n3 = hash(Math.floor(cwx) * 127.1 + Math.floor(cwz + 1) * 311.7 + sceneSeed);
-            const n4 = hash(Math.floor(cwx + 1) * 127.1 + Math.floor(cwz + 1) * 311.7 + sceneSeed);
-            const fx = cwx - Math.floor(cwx), fz = cwz - Math.floor(cwz);
-            const tx = fx * fx * (3 - 2 * fx), tz = fz * fz * (3 - 2 * fz);
-            const cellNoise = (n1 * (1 - tx) + n2 * tx) * (1 - tz) + (n3 * (1 - tx) + n4 * tx) * tz;
-            // Second octave at higher frequency
-            const cwx2 = cwx * 2.3 + 50, cwz2 = cwz * 2.3 + 50;
-            const m1 = hash(Math.floor(cwx2) * 73.3 + Math.floor(cwz2) * 197.5 + sceneSeed);
-            const m2 = hash(Math.floor(cwx2 + 1) * 73.3 + Math.floor(cwz2) * 197.5 + sceneSeed);
-            const m3 = hash(Math.floor(cwx2) * 73.3 + Math.floor(cwz2 + 1) * 197.5 + sceneSeed);
-            const m4 = hash(Math.floor(cwx2 + 1) * 73.3 + Math.floor(cwz2 + 1) * 197.5 + sceneSeed);
-            const fx2 = cwx2 - Math.floor(cwx2), fz2 = cwz2 - Math.floor(cwz2);
-            const tx2 = fx2 * fx2 * (3 - 2 * fx2), tz2 = fz2 * fz2 * (3 - 2 * fz2);
-            const cellNoise2 = (m1 * (1 - tx2) + m2 * tx2) * (1 - tz2) + (m3 * (1 - tx2) + m4 * tx2) * tz2;
-            const smoothNoise = cellNoise * 0.65 + cellNoise2 * 0.35;
-            const noiseAmt = 0.1 + depthT * 0.25;
-            const bright = 1 - noiseAmt + smoothNoise * noiseAmt * 2;
-            ctx.beginPath();
-            const x0 = W * j / xSegs - 0.5, x1 = W * (j + 1) / xSegs + 0.5, xM = (x0 + x1) * 0.5;
-            // Per-vertex 3D height noise — uses world coords for continuity across Z
-            const hN = 0.06;
-            const wz1R = Math.round(wz1 * 3), wz0R = Math.round(wz0 * 3); // quantize Z for hash
-            const h00 = hash(wz1R * 73.1 + j * 191.3 + sceneSeed * 0.7) * hN;
-            const h10 = hash(wz1R * 73.1 + (j+1) * 191.3 + sceneSeed * 0.7) * hN;
-            const hM0 = (h00 + h10) * 0.5 + (hash(wz1R * 53 + j * 171 + sceneSeed) - 0.5) * hN * 0.3;
-            const h01 = hash(wz0R * 73.1 + j * 191.3 + sceneSeed * 0.7) * hN;
-            const h11 = hash(wz0R * 73.1 + (j+1) * 191.3 + sceneSeed * 0.7) * hN;
-            const hM1 = (h01 + h11) * 0.5 + (hash(wz0R * 53 + j * 171 + sceneSeed) - 0.5) * hN * 0.3;
-            const wx0 = (x0 - W * 0.5) * (wz1 - camZ) / focal;
-            const wxM = (xM - W * 0.5) * (wz1 - camZ) / focal;
-            const wx1 = (x1 - W * 0.5) * (wz1 - camZ) / focal;
-            const bx0 = (x0 - W * 0.5) * (wz0 - camZ) / focal;
-            const bxM = (xM - W * 0.5) * (wz0 - camZ) / focal;
-            const bx1 = (x1 - W * 0.5) * (wz0 - camZ) / focal;
-            // Slope-based lighting: sun is above-center, slopes facing sun = lighter
-            const slopeX = (h10 - h00 + h11 - h01) * 0.5; // X slope
-            const slopeZ = (h01 - h00 + h11 - h10) * 0.5; // Z slope
-            // Sun direction: from above and slightly behind camera (0, -1, -0.3)
-            const sunDot = Math.max(0, -slopeZ * 0.8 + 0.3); // facing camera+up = lit
-            const shade = bright * (0.7 + sunDot * 0.6);
-            ctx.fillStyle = `rgb(${Math.round(baseR * shade)},${Math.round(baseG * shade)},${Math.round(baseB * shade)})`;
-            ctx.moveTo(x0, projY(wz1, wx0) - h00 * focal / (wz1 - camZ));
-            ctx.lineTo(xM, projY(wz1, wxM) - hM0 * focal / (wz1 - camZ));
-            ctx.lineTo(x1, projY(wz1, wx1) - h10 * focal / (wz1 - camZ));
-            ctx.lineTo(x1, projY(wz0, bx1) - h11 * focal / (wz0 - camZ));
-            ctx.lineTo(xM, projY(wz0, bxM) - hM1 * focal / (wz0 - camZ));
-            ctx.lineTo(x0, projY(wz0, bx0) - h01 * focal / (wz0 - camZ));
-            ctx.closePath();
-            ctx.fill();
-          }
-        }
-
-        // --- Gravel + rocks scattered on ground ---
-        // Small gravel — tiny fillRect dots
-        for (let gi = 0; gi < 150; gi++) {
-          const gSeed = gi * 47 + sceneSeed + 2000;
-          const gwz = camZ + 0.5 + hash(gSeed) * 25;
-          const gwx = (hash(gSeed + 100) - 0.5) * gwz * 1.2;
-          const gsx = projX(gwx, gwz);
-          const gsy = projY(gwz, gwx);
-          if (gsy < edgeY - 5 || gsy > H || gsx < 0 || gsx > W) continue;
-          const gScale = focal / (gwz - camZ);
-          const gSize = Math.max(0.5, (0.3 + hash(gSeed + 200) * 0.5) * gScale * 0.02);
-          if (gSize < 0.4) continue;
-          const gDepth = Math.pow((gwz - camZ) / (zFar - camZ), 0.6);
-          const gBright = 0.5 + hash(gSeed + 300) * 0.8;
-          const gr = Math.round((90 - 72 * gDepth) * gBright);
-          const gg = Math.round((55 - 45 * gDepth) * gBright);
-          const gb = Math.round((32 - 26 * gDepth) * gBright);
-          ctx.fillStyle = `rgb(${gr},${gg},${gb})`;
-          ctx.fillRect(gsx - gSize * 0.5, gsy - gSize * 0.25, gSize, gSize * 0.5);
-        }
-        // Medium rocks — small polygons, only near camera
-        for (let ri = 0; ri < 30; ri++) {
-          const rSeed = ri * 83 + sceneSeed + 5000;
-          const rwz = camZ + 0.3 + hash(rSeed) * 8;
-          const rwx = (hash(rSeed + 100) - 0.5) * rwz * 1.0;
-          const rsx = projX(rwx, rwz);
-          const rsy = projY(rwz, rwx);
-          if (rsy < edgeY - 5 || rsy > H || rsx < 0 || rsx > W) continue;
-          const rScale = focal / (rwz - camZ);
-          const rSize = (0.5 + hash(rSeed + 200) * 1.0) * rScale * 0.02;
-          if (rSize < 1) continue;
-          const rDepth = Math.pow((rwz - camZ) / (zFar - camZ), 0.6);
-          const rBright = 0.4 + hash(rSeed + 300) * 0.6;
-          const rr = Math.round((90 - 72 * rDepth) * rBright);
-          const rg = Math.round((55 - 45 * rDepth) * rBright);
-          const rb = Math.round((32 - 26 * rDepth) * rBright);
-          ctx.fillStyle = `rgb(${rr},${rg},${rb})`;
           ctx.beginPath();
-          const sides = 4 + Math.floor(hash(rSeed + 400) * 2);
-          for (let si = 0; si <= sides; si++) {
-            const a = (si / sides) * Math.PI * 2;
-            const jit = 0.6 + hash(rSeed + si * 37 + 500) * 0.8;
-            const px = rsx + Math.cos(a) * rSize * jit;
-            const py = rsy + Math.sin(a) * rSize * jit * 0.4;
-            si === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          for (let j = 0; j <= xSegs; j++) {
+            const sx = W * j / xSegs;
+            const wx = (sx - W * 0.5) * (wz1 - camZ) / focal;
+            j === 0 ? ctx.moveTo(sx, projY(wz1, wx)) : ctx.lineTo(sx, projY(wz1, wx));
+          }
+          for (let j = xSegs; j >= 0; j--) {
+            const sx = W * j / xSegs;
+            const wx = (sx - W * 0.5) * (wz0 - camZ) / focal;
+            ctx.lineTo(sx, projY(wz0, wx));
           }
           ctx.closePath();
           ctx.fill();
-          // Rock highlight — sun-facing top edge
-          const hlSize = rSize * 0.6;
-          const hlBright = Math.min(1.4, rBright + 0.4);
-          ctx.fillStyle = `rgb(${Math.round((90 - 72 * rDepth) * hlBright)},${Math.round((55 - 45 * rDepth) * hlBright)},${Math.round((32 - 26 * rDepth) * hlBright)})`;
-          ctx.fillRect(rsx - hlSize * 0.5, rsy - rSize * 0.4, hlSize, rSize * 0.2);
         }
+
+        // 3D ground lighting — radial warm glow from sun's ground projection
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const sunGroundX = W * 0.5; // sun is directly above center
+        const sunGroundY = edgeY + 5; // just below horizon
+        const lightR = Math.max(W, H) * 0.6;
+        const groundLight = ctx.createRadialGradient(sunGroundX, sunGroundY, 0, sunGroundX, sunGroundY, lightR);
+        groundLight.addColorStop(0, 'rgba(180,120,50,0.12)');
+        groundLight.addColorStop(0.3, 'rgba(140,80,30,0.06)');
+        groundLight.addColorStop(0.7, 'rgba(80,40,15,0.02)');
+        groundLight.addColorStop(1, 'rgba(30,15,5,0)');
+        ctx.fillStyle = groundLight;
+        ctx.fillRect(0, edgeY - 10, W, H - edgeY + 10);
+        ctx.restore();
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
@@ -2982,27 +2898,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         let swordIdx = 0;
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
-        for (let bz = -7; bz < planeSize; ) {
-          // 4 density zones: +66%, +33%, normal, -33% (from z=-7 to z=50)
-          const zoneStart = -7;
-          const zoneT = (bz - zoneStart) / (planeSize - zoneStart);
-          const zoneDensity = zoneT < 0.25 ? 0.34 : zoneT < 0.5 ? 0.67 : zoneT < 0.75 ? 1.0 : 1.33;
-          const rowSpacingZ = (1.0 + ihash(swordIdx + 7000, sceneSeed) * 3.0) * zoneDensity;
+        for (let bz = 0; bz < planeSize; ) {
+          const rowSpacingZ = 0.5 + ihash(swordIdx + 7000, sceneSeed) * 1.5;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
-            const cellSpacingX = (1.0 + ihash(swordIdx + 8000, sceneSeed) * 3.0) * zoneDensity;
+            const cellSpacingX = 0.5 + ihash(swordIdx + 8000, sceneSeed) * 1.5;
             const jx = bx + (ihash(swordIdx, sceneSeed + 101) - 0.5) * cellSpacingX * 0.3;
             const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3 + 0.03;
             swordIdx++;
             bx += cellSpacingX;
-            if (jz - camZ < 0.02) continue;  // skip swords behind/too close to camera
-            // Behind camera zone (z<8): only center strip, no outer edges
-            if (jz < camZ && Math.abs(jx) > 12.5) continue;
-            // Skip swords outside the view frustum (green safe zone)
-            const distZ = jz - camZ;
-            const visibleHalfX = distZ * (W * 0.6) / focal + 2;
-            if (Math.abs(jx) > visibleHalfX) continue;
-            // Reduce density near center from z=14 onward (past teardrop)
-            if (jz > 14 && Math.abs(jx) < 1.5 && (swordIdx & 3) === 0) continue;
+            if (jz - camZ < 0.02) continue;  // skip swords too close
+            // Halve sword density in the far half of the field
+            const midZ = camZ + (planeSize - camZ) * 0.5;
+            if (jz > midZ && (swordIdx & 1)) continue;
 
             // Clearing — based on view angle, not absolute X
             const dz = jz - camZ;
@@ -3074,25 +2981,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
           // Metallic sword shading — sun proximity + direction
-          const sdx = s.scrX - sunX, sdy = s.scrY - sunY;
-          const sunDist = Math.sqrt(sdx * sdx + sdy * sdy);
-          const sunProx = Math.max(0, 1 - sunDist / (Math.max(W, H) * 0.7));
-          const lit = sunProx * sunProx;
-          // Sun side: which edge faces the sun (screen-space)
-          const leftCatch = s.scrX > sunX;
-          // Dark side: cool steel grey + warm tint from sun
+          const sdx2 = s.scrX - sunX, sdy2 = s.scrY - sunY;
+          const sunDist2 = Math.sqrt(sdx2 * sdx2 + sdy2 * sdy2);
+          const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
+          const lit = sunProx2 * sunProx2;
+          const leftLight = s.scrX > sunX;
           const dR = Math.round(20 + lit * 30), dG = Math.round(20 + lit * 18), dB = Math.round(22 + lit * 8);
-          // Light side: brighter steel + strong warm reflection
           const lR = Math.round(55 + lit * 100), lG = Math.round(52 + lit * 60), lB = Math.round(55 + lit * 25);
-          const leftColor = leftCatch ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB})`;
-          const rightColor = leftCatch ? `rgb(${lR},${lG},${lB})` : `rgb(${dR},${dG},${dB})`;
-          const swordBase = `rgb(${dR},${dG},${dB})`;
+          const darkSide = `rgb(${dR},${dG},${dB})`;
+          const lightSide = `rgb(${lR},${lG},${lB})`;
 
           // Blade — split into two halves along Y axis
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
           // Left half
-          ctx.fillStyle = leftColor;
+          ctx.fillStyle = leftLight ? lightSide : darkSide;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3103,7 +3006,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = rightColor;
+          ctx.fillStyle = leftLight ? darkSide : lightSide;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3113,7 +3016,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          ctx.fillStyle = swordBase;
+          ctx.fillStyle = darkSide;
           // Guard — varies per sword
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
@@ -3147,7 +3050,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           }
           ctx.fill();
-          ctx.fillStyle = swordBase;
           // Grip — straight rectangle (overlap into guard and pommel)
           const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
