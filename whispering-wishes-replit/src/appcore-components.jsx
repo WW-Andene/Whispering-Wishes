@@ -2869,12 +2869,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
             ctx.beginPath();
             const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
-            ctx.moveTo(x0, projY(wz1, (x0 - W * 0.5) * (wz1 - camZ) / focal));
-            ctx.lineTo(xM, projY(wz1, (xM - W * 0.5) * (wz1 - camZ) / focal));
-            ctx.lineTo(x1, projY(wz1, (x1 - W * 0.5) * (wz1 - camZ) / focal));
-            ctx.lineTo(x1, projY(wz0, (x1 - W * 0.5) * (wz0 - camZ) / focal));
-            ctx.lineTo(xM, projY(wz0, (xM - W * 0.5) * (wz0 - camZ) / focal));
-            ctx.lineTo(x0, projY(wz0, (x0 - W * 0.5) * (wz0 - camZ) / focal));
+            // Per-vertex tiny height noise — 3D terrain bumps
+            const hN = 0.06; // height noise scale
+            const h00 = hash(i * 73.1 + j * 191.3 + sceneSeed * 0.7) * hN;
+            const h10 = hash(i * 73.1 + (j+1) * 191.3 + sceneSeed * 0.7) * hN;
+            const hM0 = (h00 + h10) * 0.5 + (hash(i * 53 + j * 171 + sceneSeed) - 0.5) * hN * 0.3;
+            const h01 = hash((i+1) * 73.1 + j * 191.3 + sceneSeed * 0.7) * hN;
+            const h11 = hash((i+1) * 73.1 + (j+1) * 191.3 + sceneSeed * 0.7) * hN;
+            const hM1 = (h01 + h11) * 0.5 + (hash((i+1) * 53 + j * 171 + sceneSeed) - 0.5) * hN * 0.3;
+            const wx0 = (x0 - W * 0.5) * (wz1 - camZ) / focal;
+            const wxM = (xM - W * 0.5) * (wz1 - camZ) / focal;
+            const wx1 = (x1 - W * 0.5) * (wz1 - camZ) / focal;
+            const bx0 = (x0 - W * 0.5) * (wz0 - camZ) / focal;
+            const bxM = (xM - W * 0.5) * (wz0 - camZ) / focal;
+            const bx1 = (x1 - W * 0.5) * (wz0 - camZ) / focal;
+            ctx.moveTo(x0, projY(wz1, wx0) - h00 * focal / (wz1 - camZ));
+            ctx.lineTo(xM, projY(wz1, wxM) - hM0 * focal / (wz1 - camZ));
+            ctx.lineTo(x1, projY(wz1, wx1) - h10 * focal / (wz1 - camZ));
+            ctx.lineTo(x1, projY(wz0, bx1) - h11 * focal / (wz0 - camZ));
+            ctx.lineTo(xM, projY(wz0, bxM) - hM1 * focal / (wz0 - camZ));
+            ctx.lineTo(x0, projY(wz0, bx0) - h01 * focal / (wz0 - camZ));
             ctx.closePath();
             ctx.fill();
           }
