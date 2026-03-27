@@ -2303,9 +2303,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     // === Cloud system from cloud-demo ===
     const CLOUD_DEFS = [
       { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.06, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
-      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.35, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
-      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.42, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
-      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.48, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
+      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.42, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
+      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.52, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
+      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.58, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
     ];
     function generateBalls(seed, baseRadius, cloudType) {
         const def = CLOUD_DEFS[cloudType];
@@ -2398,9 +2398,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Banded shading — 5 bands: sun-facing → 1 deep → 2 stacked → 3 stacked → 4+
           // Floor at 0.25 (4+ only), 3 stacked = 0.38 (warmer than before)
           if (levels <= 1) sL = 0.55;
-          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.4;
-          else if (levels === 3) sL = sL > 0.6 ? 0.88 : sL > 0.3 ? 0.55 : 0.38;
-          else { sL = sL > 0.65 ? 0.9 : sL > 0.48 ? 0.68 : sL > 0.3 ? 0.48 : sL > 0.15 ? 0.38 : 0.25; }
+          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.35;
+          else if (levels === 3) sL = sL > 0.6 ? 0.88 : sL > 0.3 ? 0.50 : 0.32;
+          else { sL = sL > 0.65 ? 0.9 : sL > 0.48 ? 0.65 : sL > 0.3 ? 0.42 : sL > 0.15 ? 0.32 : 0.22; }
           sL *= lr;
           let r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL);
           if (levels >= 2) { r = Math.min(255,r+Math.round(rmR*rim*0.4*lr)); g = Math.min(255,g+Math.round(rmG*rim*0.4*lr)); bv = Math.min(255,bv+Math.round(rmB*rim*0.4*lr)); }
