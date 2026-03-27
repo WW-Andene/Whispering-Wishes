@@ -2879,8 +2879,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const t1r=baseVal*0.8+warmShift*0.4, t1g=baseVal*0.65+warmShift*0.22, t1b=baseVal*0.5+warmShift*0.1;
             // Mid-tone: warm amber influenced by sun — distinct from shadow and highlight
             const tmR=baseVal*0.95+warmShift*0.65, tmG=baseVal*0.72+warmShift*0.38, tmB=baseVal*0.42+warmShift*0.06;
-            const t2r=baseVal*1.05+warmShift*0.45, t2g=baseVal*0.85+warmShift*0.28, t2b=baseVal*0.6+warmShift*0.12;
-            const t3r=baseVal*1.25+warmShift*0.55, t3g=baseVal*0.98+warmShift*0.32, t3b=baseVal*0.65+warmShift*0.14;
+            // Light tones: amber ember glow — warm orange-amber, suppressed blue
+            const t2r=baseVal*1.2+warmShift*0.7, t2g=baseVal*0.82+warmShift*0.35, t2b=baseVal*0.38+warmShift*0.04;
+            const t3r=baseVal*1.45+warmShift*0.85, t3g=baseVal*0.95+warmShift*0.42, t3b=baseVal*0.35+warmShift*0.02;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
