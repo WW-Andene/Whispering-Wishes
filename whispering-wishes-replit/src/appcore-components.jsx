@@ -2462,7 +2462,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const speeds = [0.04, 0.07, 0.11, 0.18, 0.28];
         const phases = [0, 1.0, 2.1, 3.4, 4.8];
         for (let s = 0; s < 5; s++) {
-            const nCl = 15 + Math.floor(hash(s * 100) * 10);
+            const nCl = 8 + Math.floor(hash(s * 100) * 5);
             for (let c = 0; c < nCl; c++) {
                 const cs = s * 1000 + c * 37;
                 const rng2 = seededRandom(cs);
@@ -2470,14 +2470,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const ang = phases[s] + rng2() * Math.PI * 2;
                 const sr = rng2();
                 let rad, cType;
-                if (sr < 0.12) { rad = 75 + rng2() * 55; cType = 3; }
-                else if (sr < 0.40) { rad = 35 + rng2() * 40; cType = 2; }
-                else if (sr < 0.72) { rad = 18 + rng2() * 20; cType = 1; }
-                else { rad = 8 + rng2() * 12; cType = 0; }
+                if (sr < 0.12) { rad = 110 + rng2() * 80; cType = 3; }
+                else if (sr < 0.40) { rad = 55 + rng2() * 60; cType = 2; }
+                else if (sr < 0.72) { rad = 28 + rng2() * 30; cType = 1; }
+                else { rad = 14 + rng2() * 18; cType = 0; }
                 const dep = Math.max(0, Math.min(1, (1 - s / 4) + (rng2() - 0.5) * 0.25));
                 const spd = speeds[s] / (0.5 + rad / 60) * (0.55 + dep * 0.45) / (0.3 + dist / (H * 0.5));
                 addC(cs, dist, ang, rad, dep, spd, cType);
-                const nM = 6 + Math.floor(rng2() * 4);
+                const nM = 3 + Math.floor(rng2() * 2);
                 for (let m = 0; m < nM; m++) {
                     const ms = cs + 500 + m * 13;
                     const mr = seededRandom(ms);
@@ -2487,7 +2487,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                     const mAng = ang + (mr() - 0.5) * 1.0;
                     const mDep = Math.max(0, Math.min(1, dep + (mr() - 0.5) * 0.15));
                     addC(ms, mDist, mAng, mRad, mDep, speeds[s] / (0.5 + mRad / 60) * (0.55 + mDep * 0.45) / (0.3 + mDist / (H * 0.5)) * 1.1, mType);
-                    const nSm = 3 + Math.floor(mr() * 3);
+                    const nSm = 1 + Math.floor(mr() * 2);
                     for (let sm = 0; sm < nSm; sm++) {
                         const ss = ms + 200 + sm * 7;
                         const sr2 = seededRandom(ss);
@@ -2508,7 +2508,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const hiSp = [0.30, 0.22, 0.15, 0.10];
         const hiPh = [0.5, 1.8, 3.3, 5.0];
         for (let hs = 0; hs < 4; hs++) {
-            const hCl = 9 + Math.floor(hash(hs * 200 + 77) * 6);
+            const hCl = 5 + Math.floor(hash(hs * 200 + 77) * 3);
             for (let hc = 0; hc < hCl; hc++) {
                 const hcs = 50000 + hs * 1000 + hc * 41;
                 const hrng = seededRandom(hcs);
@@ -2521,7 +2521,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 else { hRad = 6 + hrng() * 10; hcT = 0; }
                 const hDep = Math.max(0, Math.min(1, (1 - hs / 3) + (hrng() - 0.5) * 0.2));
                 addHi(hcs, hDist, hAng, hRad, hDep, hiSp[hs] / (0.5 + hRad / 60) * (0.55 + hDep * 0.45) / (0.3 + hDist / (H * 0.5)), hcT, hiSunY, 0.35);
-                const hnM = 2 + Math.floor(hrng() * 2);
+                const hnM = 1 + Math.floor(hrng() * 1);
                 for (let hm = 0; hm < hnM; hm++) {
                     const hms = hcs + 600 + hm * 17;
                     const hmr = seededRandom(hms);
@@ -2540,7 +2540,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const topSp = [0.35, 0.26, 0.18];
         const topPh = [0.3, 2.0, 4.2];
         for (let ts = 0; ts < 3; ts++) {
-            const tCl = 8 + Math.floor(hash(ts * 300 + 99) * 6);
+            const tCl = 4 + Math.floor(hash(ts * 300 + 99) * 3);
             for (let tc = 0; tc < tCl; tc++) {
                 const tcs = 70000 + ts * 1000 + tc * 47;
                 const trng = seededRandom(tcs);
@@ -2566,7 +2566,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         const midLo = minDist;
         const midHi2 = maxReach * 0.85;
-        for (let mf = 0; mf < 60; mf++) {
+        for (let mf = 0; mf < 30; mf++) {
             const mfs = 90000 + mf * 71;
             const mfr = seededRandom(mfs);
             const mfDist = midLo + mfr() * (midHi2 - midLo);
@@ -2579,7 +2579,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         const outLo = minDist + (maxReach - minDist) * 0.2;
         const outHi = maxReach;
-        for (let of2 = 0; of2 < 90; of2++) {
+        for (let of2 = 0; of2 < 45; of2++) {
             const ofs = 80000 + of2 * 53;
             const ofr = seededRandom(ofs);
             const ofDist = outLo + ofr() * (outHi - outLo);
@@ -2988,21 +2988,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               disintegrateAt: 0,
             };
             if (type === 0) {
-              p.baseSize = 6 + _bgHash(s+12) * 12; p.vy *= 0.7; p.curl = (_bgHash(s+14) - 0.5) * 0.45;
+              p.baseSize = 10 + _bgHash(s+12) * 20; p.vy *= 0.7; p.curl = (_bgHash(s+14) - 0.5) * 0.45;
               p.disintegrateAt = 0.45 + _bgHash(s+15) * 0.25;
               const fragCount = 4 + Math.floor(_bgHash(s+16) * 5);
               for (let f = 0; f < fragCount; f++) p.fragments.push({ offX: (_bgHash(s+f*7+40)-0.5) * p.baseSize * 0.7, offY: (_bgHash(s+f*7+41)-0.5) * p.baseSize * 0.5, vx: 0.2 + _bgHash(s+f*7+42) * 0.5, vy: -(0.1 + _bgHash(s+f*7+43) * 0.3), size: 2.5 + _bgHash(s+f*7+44) * 5, rot: _bgHash(s+f*7+45) * Math.PI * 2, delay: _bgHash(s+f*7+46) * 0.3, active: false, x: 0, y: 0 });
             } else if (type === 1) {
-              p.baseSize = 6 + _bgHash(s+12) * 14; p.vx *= 1.1;
+              p.baseSize = 10 + _bgHash(s+12) * 22; p.vx *= 1.1;
               p.disintegrateAt = 0.5 + _bgHash(s+15) * 0.25;
               const fragCount = 2 + Math.floor(_bgHash(s+16) * 3);
               for (let f = 0; f < fragCount; f++) p.fragments.push({ offX: (_bgHash(s+f*7+40)-0.5) * p.baseSize, offY: (_bgHash(s+f*7+41)-0.5) * p.baseSize * 0.5, vx: 0.15 + _bgHash(s+f*7+42) * 0.4, vy: -(0.05 + _bgHash(s+f*7+43) * 0.2), size: 1.5 + _bgHash(s+f*7+44) * 3.5, rot: _bgHash(s+f*7+45) * Math.PI * 2, delay: _bgHash(s+f*7+46) * 0.25, active: false, x: 0, y: 0 });
             } else if (type === 2) {
-              p.baseSize = 3 + _bgHash(s+12) * 7; p.vx *= 1.5; p.vy *= 1.5;
+              p.baseSize = 5 + _bgHash(s+12) * 12; p.vx *= 1.5; p.vy *= 1.5;
               p.disintegrateAt = 0.6 + _bgHash(s+15) * 0.2;
             } else {
               const sizeRoll = _bgHash(s+12);
-              p.baseSize = sizeRoll < 0.12 ? (8 + _bgHash(s+13) * 5) : sizeRoll < 0.35 ? (3 + _bgHash(s+13) * 4) : (1 + sizeRoll * 3);
+              p.baseSize = sizeRoll < 0.12 ? (14 + _bgHash(s+13) * 8) : sizeRoll < 0.35 ? (5 + _bgHash(s+13) * 7) : (2 + sizeRoll * 5);
               p.vx *= 1.6 + _bgHash(s+16) * 0.8; p.vy *= 1.5 + _bgHash(s+17) * 0.6; p.vx += _bgHash(s+15) * 0.8;
               p.disintegrateAt = 0.65 + _bgHash(s+15) * 0.2;
             }
@@ -3021,10 +3021,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             return p;
           };
           const _particles = [];
-          for (let i2 = 0; i2 < 80; i2++) _particles.push(_createParticle(W, H, i2*97+13000, 1));
-          for (let i2 = 0; i2 < 100; i2++) _particles.push(_createParticle(W, H, i2*79+15000, 2));
-          for (let i2 = 0; i2 < 140; i2++) _particles.push(_createParticle(W, H, i2*67+17000, 3));
-          for (let i2 = 0; i2 < 60; i2++) _particles.push(_createParticle(W, H, i2*53+19000, 3));
+          for (let i2 = 0; i2 < 40; i2++) _particles.push(_createParticle(W, H, i2*97+13000, 1));
+          for (let i2 = 0; i2 < 50; i2++) _particles.push(_createParticle(W, H, i2*79+15000, 2));
+          for (let i2 = 0; i2 < 70; i2++) _particles.push(_createParticle(W, H, i2*67+17000, 3));
+          for (let i2 = 0; i2 < 30; i2++) _particles.push(_createParticle(W, H, i2*53+19000, 3));
           for (const pp of _particles) {
             const stagger = Math.random() * pp.maxLife * 0.8;
             pp.life = stagger; pp.x += pp.vx * stagger; pp.y += pp.vy * stagger;
