@@ -2875,13 +2875,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
             const contrast=0.55+dT*0.45,warmShift=(1-dT)*35,baseVal=35+dC*85;
-            const t0r=baseVal*0.55+warmShift*0.3, t0g=baseVal*0.42+warmShift*0.14, t0b=baseVal*0.35+warmShift*0.06;
-            const t1r=baseVal*0.78+warmShift*0.4, t1g=baseVal*0.6+warmShift*0.2, t1b=baseVal*0.42+warmShift*0.08;
+            const t0r=baseVal*0.58+warmShift*0.3, t0g=baseVal*0.48+warmShift*0.18, t0b=baseVal*0.38+warmShift*0.08;
+            const t1r=baseVal*0.78+warmShift*0.4, t1g=baseVal*0.65+warmShift*0.24, t1b=baseVal*0.48+warmShift*0.1;
             // Mid-tone: warm amber influenced by sun — distinct from shadow and highlight
-            const tmR=baseVal*1.0+warmShift*0.72, tmG=baseVal*0.72+warmShift*0.4, tmB=baseVal*0.35+warmShift*0.04;
-            // Light tones: amber ember glow — warm orange-amber, suppressed blue
-            const t2r=baseVal*1.3+warmShift*0.85, t2g=baseVal*0.88+warmShift*0.45, t2b=baseVal*0.32+warmShift*0.02;
-            const t3r=baseVal*1.6+warmShift*1.0, t3g=baseVal*1.05+warmShift*0.52, t3b=baseVal*0.3+warmShift*0.01;
+            const tmR=baseVal*1.0+warmShift*0.65, tmG=baseVal*0.78+warmShift*0.4, tmB=baseVal*0.45+warmShift*0.08;
+            // Light tones: amber ember glow — warm, not oversaturated
+            const t2r=baseVal*1.22+warmShift*0.75, t2g=baseVal*0.92+warmShift*0.48, t2b=baseVal*0.52+warmShift*0.1;
+            const t3r=baseVal*1.42+warmShift*0.88, t3g=baseVal*1.08+warmShift*0.55, t3b=baseVal*0.55+warmShift*0.12;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
@@ -2895,10 +2895,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               let rr=tones[ti][0],gg=tones[ti][1],bb=tones[ti][2];
               // Soil variation
               const sA=(_bgFbm(nx*2.8,dT*1.8,2,SEED+1000)-0.5)*2,sB=(_bgFbm(nx*1.5,dT*1.0,2,SEED+2000)-0.5)*2;
-              rr+=(sA*5+sB*4)*dC;gg+=(sA*2+sB*1.5)*dC;bb+=(sA*-1+sB*-0.5)*dC;
-              const sc2=_bgFbm(nx*3,dT*2,2,SEED+3000);if(sc2<0.28){const s2=Math.pow((0.28-sc2)/0.28,1.3)*0.22;rr*=(1-s2);gg*=(1-s2);bb*=(1-s2);}
-              // Cracks
-              const cn=_bgFbm(nx*10,dT*7,2,SEED+7000),ce=Math.abs(cn-0.5);if(ce<0.014){const cs=(1-ce/0.014);rr=rr*(1-cs*0.55)+tones[0][0]*cs*0.55;gg=gg*(1-cs*0.55)+tones[0][1]*cs*0.55;bb=bb*(1-cs*0.55)+tones[0][2]*cs*0.55;}
+              rr+=(sA*3+sB*2.5)*dC;gg+=(sA*1.5+sB*1)*dC;bb+=(sA*-0.5+sB*-0.3)*dC;
+              const sc2=_bgFbm(nx*3,dT*2,2,SEED+3000);if(sc2<0.25){const s2=Math.pow((0.25-sc2)/0.25,1.5)*0.12;rr*=(1-s2);gg*=(1-s2);bb*=(1-s2);}
+              // Cracks — subtle
+              const cn=_bgFbm(nx*10,dT*7,2,SEED+7000),ce=Math.abs(cn-0.5);if(ce<0.01){const cs=(1-ce/0.01);rr=rr*(1-cs*0.3)+tones[0][0]*cs*0.3;gg=gg*(1-cs*0.3)+tones[0][1]*cs*0.3;bb=bb*(1-cs*0.3)+tones[0][2]*cs*0.3;}
               // Curve clip highlight + edges
               const hg2=Math.pow(Math.max(0,1-dT*6),3),scx=Math.exp(-Math.pow((nx-0.5)*2,2));
               rr+=hg2*scx*35;gg+=hg2*scx*22;bb+=hg2*scx*8;
@@ -2925,7 +2925,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           gctx.imageSmoothingEnabled=true;gctx.drawImage(gC, 0, edgeY - curveH, W, groundH + curveH);
           // Edge detection overlay
           const eC2=document.createElement("canvas");eC2.width=gW;eC2.height=gHt;const ec2=eC2.getContext("2d"),eImg2=ec2.createImageData(gW,gHt),ed2=eImg2.data;
-          for(let py=1;py<gHt-1;py++){for(let px=1;px<gW-1;px++){const getL=(x,y)=>{const i2=(y*gW+x)*4;return gd[i2]*0.3+gd[i2+1]*0.59+gd[i2+2]*0.11;};const gx2=getL(px+1,py)-getL(px-1,py),gy2=getL(px,py+1)-getL(px,py-1),edge=Math.sqrt(gx2*gx2+gy2*gy2),dT2=py/gHt,threshold=6+dT2*10;if(edge>threshold){const strength=Math.min(1,(edge-threshold)/(threshold*0.7)),a=Math.round(strength*40*(0.3+dT2*0.7)),idx2=(py*gW+px)*4;ed2[idx2]=10;ed2[idx2+1]=8;ed2[idx2+2]=6;ed2[idx2+3]=a;}}}
+          for(let py=1;py<gHt-1;py++){for(let px=1;px<gW-1;px++){const getL=(x,y)=>{const i2=(y*gW+x)*4;return gd[i2]*0.3+gd[i2+1]*0.59+gd[i2+2]*0.11;};const gx2=getL(px+1,py)-getL(px-1,py),gy2=getL(px,py+1)-getL(px,py-1),edge=Math.sqrt(gx2*gx2+gy2*gy2),dT2=py/gHt,threshold=6+dT2*10;if(edge>threshold){const strength=Math.min(1,(edge-threshold)/(threshold*0.7)),a=Math.round(strength*22*(0.3+dT2*0.7)),idx2=(py*gW+px)*4;ed2[idx2]=10;ed2[idx2+1]=8;ed2[idx2+2]=6;ed2[idx2+3]=a;}}}
           ec2.putImageData(eImg2,0,0);gctx.imageSmoothingEnabled=true;gctx.drawImage(eC2, 0, edgeY - curveH, W, groundH + curveH);
           // Top texture — sample from mid rows
           const topRows = Math.min(Math.round(gHt * 0.35), gHt);
