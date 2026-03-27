@@ -2467,7 +2467,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const cs = s * 1000 + c * 37;
                 const rng2 = seededRandom(cs);
                 const dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist));
-                const ang = phases[s] + rng2() * Math.PI * 2;
+                const ang = phases[s] + (c / nCl) * Math.PI * 2 + (rng2() - 0.5) * 0.8;
                 const sr = rng2();
                 let rad, cType;
                 if (sr < 0.12) { rad = 110 + rng2() * 80; cType = 3; }
@@ -2513,7 +2513,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const hcs = 50000 + hs * 1000 + hc * 41;
                 const hrng = seededRandom(hcs);
                 const hDist = Math.max(hiMin, hiMin + Math.pow(hrng(), 0.33) * (hiMax - hiMin));
-                const hAng = hiPh[hs] + hrng() * Math.PI * 2;
+                const hAng = hiPh[hs] + (hc / hCl) * Math.PI * 2 + (hrng() - 0.5) * 0.6;
                 const hsr = hrng();
                 let hRad, hcT;
                 if (hsr < 0.15) { hRad = 30 + hrng() * 30; hcT = 2; }
@@ -2545,7 +2545,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const tcs = 70000 + ts * 1000 + tc * 47;
                 const trng = seededRandom(tcs);
                 const tDist = Math.max(topMin, topMin + Math.pow(trng(), 0.33) * (topMax - topMin));
-                const tAng = topPh[ts] + trng() * Math.PI * 2;
+                const tAng = topPh[ts] + (tc / tCl) * Math.PI * 2 + (trng() - 0.5) * 0.5;
                 const tsr2 = trng();
                 let tRad, tcT;
                 if (tsr2 < 0.35) { tRad = 10 + trng() * 15; tcT = 1; }
@@ -2887,8 +2887,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const bx2=(hL-hR)*bs,by2=(hU-hD)*bs,bl=Math.sqrt(bx2*bx2+by2*by2+1);
               const rawDot=Math.max(0,(bx2/bl)*snx+(by2/bl)*sny+(1/bl)*snz);
               const shifted=rawDot+(brushMap[py*gW+px]-0.5)*0.1;
-              let ti=shifted>0.62?3:shifted>0.38?2:shifted>0.16?1:0;
-              let rr=tones[ti][0],gg=tones[ti][1],bb=tones[ti][2];
+              // Smooth interpolation between tones instead of hard bands
+              const st = Math.max(0, Math.min(1, shifted));
+              const tF = st * 3; // 0-3 across 4 tones
+              const ti = Math.min(2, Math.floor(tF));
+              const tBlend = tF - ti;
+              let rr = tones[ti][0] + (tones[ti+1][0] - tones[ti][0]) * tBlend;
+              let gg = tones[ti][1] + (tones[ti+1][1] - tones[ti][1]) * tBlend;
+              let bb = tones[ti][2] + (tones[ti+1][2] - tones[ti][2]) * tBlend;
+              // Sun position influence — warm highlight near sun's ground projection
+              const sunGx = 0.5, sunGy = 0; // sun above center
+              const sDx = nx - sunGx, sDy = dT - sunGy;
+              const sunInf = Math.exp(-(sDx * sDx * 3 + sDy * sDy * 2)) * 0.15;
+              rr += sunInf * 80; gg += sunInf * 45; bb += sunInf * 15;
               // Soil variation
               const sA=(_bgFbm(nx*2.8,dT*1.8,2,SEED+1000)-0.5)*2,sB=(_bgFbm(nx*1.5,dT*1.0,2,SEED+2000)-0.5)*2;
               rr+=(sA*5+sB*4)*dC;gg+=(sA*2+sB*1.5)*dC;bb+=(sA*-1+sB*-0.5)*dC;
