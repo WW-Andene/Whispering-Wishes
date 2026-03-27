@@ -2564,30 +2564,39 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
         }
 
-        const midLo = minDist;
-        const midHi2 = maxReach * 0.85;
-        for (let mf = 0; mf < 60; mf++) {
-            const mfs = 90000 + mf * 71;
-            const mfr = seededRandom(mfs);
-            const mfDist = midLo + Math.sqrt(mfr()) * (midHi2 - midLo);
-            const mfAng = (mf / 60) * Math.PI * 2 + (mfr() - 0.5) * (Math.PI * 2 / 60) * 1.5;
-            const mfRad = 15 + mfr() * 40;
-            const mfT = mfRad > 50 ? 3 : mfRad > 30 ? 2 : mfRad > 15 ? 1 : 0;
-            const mfDep = 0.25 + mfr() * 0.5;
-            addC(mfs, mfDist, mfAng, mfRad, mfDep, 0.12 / (0.5 + mfRad / 60) * (0.55 + mfDep * 0.45) / (0.3 + mfDist / (H * 0.5)), mfT);
-        }
-
-        const outLo = minDist + (maxReach - minDist) * 0.2;
-        const outHi = maxReach;
-        for (let of2 = 0; of2 < 90; of2++) {
-            const ofs = 80000 + of2 * 53;
-            const ofr = seededRandom(ofs);
-            const ofDist = outLo + Math.sqrt(ofr()) * (outHi - outLo);
-            const ofAng = (of2 / 90) * Math.PI * 2 + (ofr() - 0.5) * (Math.PI * 2 / 90) * 1.5;
-            const ofRad = 20 + ofr() * 55;
-            const ofT = ofRad > 50 ? 3 : ofRad > 30 ? 2 : ofRad > 15 ? 1 : 0;
-            const ofDep = 0.1 + ofr() * 0.4;
-            addC(ofs, ofDist, ofAng, ofRad, ofDep, 0.08 / (0.5 + ofRad / 60) * (0.55 + ofDep * 0.45) / (0.3 + ofDist / (H * 0.5)), ofT);
+        // Screen-space grid fill — place clouds across visible sky area
+        // Convert screen position to orbit params around sun
+        const skyBot = H * 0.72; // just above horizon
+        const flatR = 0.7;
+        const gCols = 8, gRows = 6;
+        let gIdx = 0;
+        for (let gr = 0; gr < gRows; gr++) {
+            for (let gc2 = 0; gc2 < gCols; gc2++) {
+                const gs = 90000 + gIdx * 71;
+                const grng = seededRandom(gs);
+                // Target screen position with jitter
+                const sx = ((gc2 + 0.15 + grng() * 0.7) / gCols) * W;
+                const sy = ((gr + 0.15 + grng() * 0.7) / gRows) * skyBot;
+                // Convert to orbit distance + angle from sun center
+                const dx = sx - sunX, dy = (sy - sunY) / flatR;
+                const gDist = Math.max(minDist, Math.sqrt(dx * dx + dy * dy));
+                const gAng = Math.atan2(dy, dx);
+                const gRad = 18 + grng() * 50;
+                const gT = gRad > 55 ? 3 : gRad > 35 ? 2 : gRad > 18 ? 1 : 0;
+                const gDep = 0.15 + grng() * 0.55;
+                const gSpd = 0.08 / (0.5 + gRad / 60) * (0.55 + gDep * 0.45) / (0.3 + gDist / (H * 0.5));
+                addC(gs, gDist, gAng, gRad, gDep, gSpd, gT);
+                // Companion cloud nearby
+                const cs2 = gs + 500;
+                const crng = seededRandom(cs2);
+                const cRad = gRad * (0.3 + crng() * 0.4);
+                const cT2 = gT > 0 ? gT - 1 : 0;
+                const cDist = Math.max(minDist, gDist + (crng() - 0.5) * gRad * 3);
+                const cAng2 = gAng + (crng() - 0.5) * 0.8;
+                const cDep = Math.max(0, Math.min(1, gDep + (crng() - 0.5) * 0.2));
+                addC(cs2, cDist, cAng2, cRad, cDep, 0.1 / (0.5 + cRad / 60) * (0.55 + cDep * 0.45) / (0.3 + cDist / (H * 0.5)), cT2);
+                gIdx++;
+            }
         }
 
         clouds.sort(function(a, b) { return a.depth - b.depth; });
