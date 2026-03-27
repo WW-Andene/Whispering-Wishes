@@ -2837,8 +2837,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         };
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.3, zFar = 50, zSlices = 120;
-        const xSegs = 40;
+        const zNear = camZ + 0.05, zFar = 50, zSlices = 60;
+        const xSegs = 24;
 
         // Dark base fill — follows the curved horizon, not a straight line
         ctx.fillStyle = 'rgb(18,10,6)';
@@ -2855,10 +2855,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const t0 = i / zSlices, t1 = (i + 1) / zSlices;
           const wz0 = zNear * Math.pow(zFar / zNear, t0);
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
-
-          // Skip strips that project entirely below screen
-          const stripTopY = projY(wz1, 0);
-          if (stripTopY > H + 10) continue;
 
           const depthT = Math.pow(t0, 0.6);
           const baseR = 90 - 72 * depthT;
