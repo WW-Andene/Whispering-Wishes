@@ -3203,9 +3203,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
         for (let bz = 0; bz < planeSize; ) {
-          const rowSpacingZ = 1.0 + ihash(swordIdx + 7000, sceneSeed) * 3.0;
+          // 4 density zones: nearest dense, farthest sparse
+          const zoneStart = -7;
+          const zoneT = (bz - zoneStart) / (planeSize - zoneStart);
+          const zoneDensity = zoneT < 0.25 ? 0.5 : zoneT < 0.5 ? 0.75 : zoneT < 0.75 ? 1.0 : 1.3;
+          const rowSpacingZ = (1.0 + ihash(swordIdx + 7000, sceneSeed) * 3.0) * zoneDensity;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
-            const cellSpacingX = 1.0 + ihash(swordIdx + 8000, sceneSeed) * 3.0;
+            const cellSpacingX = (1.0 + ihash(swordIdx + 8000, sceneSeed) * 3.0) * zoneDensity;
             const jx = bx + (ihash(swordIdx, sceneSeed + 101) - 0.5) * cellSpacingX * 0.3;
             const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3 + 0.03;
             swordIdx++;
