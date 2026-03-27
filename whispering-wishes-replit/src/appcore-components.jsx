@@ -2263,6 +2263,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     let animId;
+    let groundCache = null;
+    let honourParticles = null;
 
     const isFull = animationsEnabled === 'full';
     const alphaScale = isFull ? 1.4 : 1.0;
@@ -2600,8 +2602,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
     let skyCache = null;
-    let groundCache = null;
-    let honourParticles = null;
 
     const honourFps = bgFps || (isFull ? 30 : 15);
     const honourInterval = Math.round(1000 / honourFps);
