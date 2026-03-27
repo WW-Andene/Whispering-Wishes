@@ -2600,9 +2600,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
     let skyCache = null;
-    let groundCache = null; // baked heightmap ground from ground-background.jsx
-    let groundTexture = null; // pre-baked sky gradient canvas
-    let honourParticles = null; // ember/spark particle array
+    let groundCache = null;
+    let honourParticles = null;
 
     const honourFps = bgFps || (isFull ? 30 : 15);
     const honourInterval = Math.round(1000 / honourFps);
