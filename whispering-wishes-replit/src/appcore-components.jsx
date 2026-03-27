@@ -2862,9 +2862,29 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const baseB = 32 - 26 * depthT;
 
           for (let j = 0; j < xSegs; j++) {
-            const cellNoise = hash(i * 127.1 + j * 311.7 + sceneSeed * 0.13);
-            const noiseAmt = 0.08 + depthT * 0.28;
-            const bright = 1 - noiseAmt + cellNoise * noiseAmt * 2;
+            // Smooth noise — sample world coords, interpolate for gradual variation
+            const cwx = (j - xSegs * 0.5) * wz1 * 0.08;
+            const cwz = wz1 * 0.15;
+            // 2-octave value noise for smooth terrain color
+            const n1 = hash(Math.floor(cwx) * 127.1 + Math.floor(cwz) * 311.7 + sceneSeed);
+            const n2 = hash(Math.floor(cwx + 1) * 127.1 + Math.floor(cwz) * 311.7 + sceneSeed);
+            const n3 = hash(Math.floor(cwx) * 127.1 + Math.floor(cwz + 1) * 311.7 + sceneSeed);
+            const n4 = hash(Math.floor(cwx + 1) * 127.1 + Math.floor(cwz + 1) * 311.7 + sceneSeed);
+            const fx = cwx - Math.floor(cwx), fz = cwz - Math.floor(cwz);
+            const tx = fx * fx * (3 - 2 * fx), tz = fz * fz * (3 - 2 * fz);
+            const cellNoise = (n1 * (1 - tx) + n2 * tx) * (1 - tz) + (n3 * (1 - tx) + n4 * tx) * tz;
+            // Second octave at higher frequency
+            const cwx2 = cwx * 2.3 + 50, cwz2 = cwz * 2.3 + 50;
+            const m1 = hash(Math.floor(cwx2) * 73.3 + Math.floor(cwz2) * 197.5 + sceneSeed);
+            const m2 = hash(Math.floor(cwx2 + 1) * 73.3 + Math.floor(cwz2) * 197.5 + sceneSeed);
+            const m3 = hash(Math.floor(cwx2) * 73.3 + Math.floor(cwz2 + 1) * 197.5 + sceneSeed);
+            const m4 = hash(Math.floor(cwx2 + 1) * 73.3 + Math.floor(cwz2 + 1) * 197.5 + sceneSeed);
+            const fx2 = cwx2 - Math.floor(cwx2), fz2 = cwz2 - Math.floor(cwz2);
+            const tx2 = fx2 * fx2 * (3 - 2 * fx2), tz2 = fz2 * fz2 * (3 - 2 * fz2);
+            const cellNoise2 = (m1 * (1 - tx2) + m2 * tx2) * (1 - tz2) + (m3 * (1 - tx2) + m4 * tx2) * tz2;
+            const smoothNoise = cellNoise * 0.65 + cellNoise2 * 0.35;
+            const noiseAmt = 0.1 + depthT * 0.25;
+            const bright = 1 - noiseAmt + smoothNoise * noiseAmt * 2;
             ctx.beginPath();
             const x0 = W * j / xSegs - 0.5, x1 = W * (j + 1) / xSegs + 0.5, xM = (x0 + x1) * 0.5;
             // Per-vertex 3D height noise — uses world coords for continuity across Z
