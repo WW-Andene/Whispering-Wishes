@@ -2380,11 +2380,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       const lr = 1 - (occlusion || 0) * 0.7, ds = 1 - depth;
       // Sunset palette — matching warm amber-brown reference
       // Shadow: deep warm brown (like dark amber/chocolate, not olive)
-      const shR = Math.round(50 + ds * 15 + lr * 10), shG = Math.round(16 + ds * 6 + lr * 4), shB = Math.round(5 + ds * 3 + lr * 2);
-      // Lit: warm golden amber (NOT cream-white — warm gold like the reference)
-      const ltR = Math.min(255, Math.round(210 + ds * 30 + proximity * 10)), ltG = Math.min(255, Math.round(140 + ds * 20 + proximity * 8)), ltB = Math.min(255, Math.round(70 + ds * 10 + proximity * 5));
-      // Rim: bright warm orange-gold edge
-      const rmR = Math.min(255, Math.round(220 + ds * 20)), rmG = Math.min(255, Math.round(150 + ds * 15 + proximity * 8)), rmB = Math.min(255, Math.round(60 + ds * 10 + proximity * 5));
+      // Brighter amber palette + per-cloud brightness variation
+      const bVar = 0.8 + hash(depth * 127 + proximity * 311) * 0.4;
+      const shR = Math.round((65 + ds * 20 + lr * 15) * bVar), shG = Math.round((25 + ds * 10 + lr * 6) * bVar), shB = Math.round((8 + ds * 4 + lr * 3) * bVar);
+      const ltR = Math.min(255, Math.round((235 + ds * 20 + proximity * 10) * bVar)), ltG = Math.min(255, Math.round((165 + ds * 20 + proximity * 10) * bVar)), ltB = Math.min(255, Math.round((85 + ds * 12 + proximity * 6) * bVar));
+      const rmR = Math.min(255, Math.round((245 + ds * 10) * bVar)), rmG = Math.min(255, Math.round((175 + ds * 15 + proximity * 8) * bVar)), rmB = Math.min(255, Math.round((75 + ds * 10 + proximity * 5) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2698,8 +2698,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const speed = Math.sqrt(vx * vx + vy * vy);
           const drawW = bk.w, drawH = bk.h;
           if (speed > 0.01) {
-            const stretchAmt = 1 + Math.min(0.6, speed * 0.25), squeezeAmt = 1 / Math.sqrt(stretchAmt);
-            const centSkew = Math.max(-0.3, Math.min(0.3, angSpeed * cloud.orbitDist * 0.0004));
+            const stretchAmt = 1 + Math.min(1.2, speed * 0.5), squeezeAmt = 1 / Math.sqrt(stretchAmt);
+            const centSkew = Math.max(-0.5, Math.min(0.5, angSpeed * cloud.orbitDist * 0.001));
             const vAngle = Math.atan2(vy, vx);
             const ccx = cx2 + bk.ox + drawW * 0.5, ccy = cy2 + bk.oy + drawH * 0.5;
             ctx.save(); ctx.translate(ccx, ccy); ctx.rotate(vAngle);
