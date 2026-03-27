@@ -27,8 +27,8 @@ function seededRandom(seed) { let s = seed; return function() { s = (s * 9301 + 
 // Noise functions for baked ground rendering
 const _bgHash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
 function valueNoise(x,y,freq,seed){const fx=x*freq,fy=y*freq,ix=Math.floor(fx),iy=Math.floor(fy),tx=fx-ix,ty=fy-iy,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty);const n00=_bgHash((ix+iy*137)*7+seed),n10=_bgHash(((ix+1)+iy*137)*7+seed),n01=_bgHash((ix+(iy+1)*137)*7+seed),n11=_bgHash(((ix+1)+(iy+1)*137)*7+seed);return(n00+(n10-n00)*sx)+((n01+(n11-n01)*sx)-(n00+(n10-n00)*sx))*sy;}
-function fbm(x,y,oct,seed){let v=0,a=0.5,f=1,t=0;for(let i=0;i<oct;i++){v+=valueNoise(x,y,f,seed+i*1000)*a;t+=a;a*=0.5;f*=2.1;}return v/t;}
-function ridged(x,y,oct,seed){let v=0,a=0.5,f=1,t=0;for(let i=0;i<oct;i++){const n=1-Math.abs(valueNoise(x,y,f,seed+i*1000)*2-1);v+=n*n*a;t+=a;a*=0.45;f*=2.2;}return v/t;}
+function _bgFbm(x,y,oct,seed){let v=0,a=0.5,f=1,t=0;for(let i=0;i<oct;i++){v+=valueNoise(x,y,f,seed+i*1000)*a;t+=a;a*=0.5;f*=2.1;}return v/t;}
+function _bgRidged(x,y,oct,seed){let v=0,a=0.5,f=1,t=0;for(let i=0;i<oct;i++){const n=1-Math.abs(valueNoise(x,y,f,seed+i*1000)*2-1);v+=n*n*a;t+=a;a*=0.45;f*=2.2;}return v/t;}
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 // AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
@@ -2847,14 +2847,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let i=0;i<12;i++)feats.push({cx:0.04+_bgHash(i*97+300)*0.92,cy:0.03+_bgHash(i*97+301)*0.8,rx:0.018+_bgHash(i*97+302)*0.04,ry:0.012+_bgHash(i*97+303)*0.03,h:-(0.12+_bgHash(i*97+304)*0.22)});
           feats.push({cx:-0.05,cy:0.85,rx:0.2,ry:0.15,h:0.35},{cx:1.05,cy:0.82,rx:0.18,ry:0.18,h:0.3},{cx:0.5,cy:0.22,rx:0.2,ry:0.16,h:-0.1});
           for(let py=0;py<gHt;py++){const ny=py/gHt,ds=0.7+ny*1.2;for(let px=0;px<gW;px++){const nx=px/gW;
-            let h=fbm(nx*2.2,ny*1.3,2,SEED+800)*0.4+fbm(nx*4.5,ny*3,2,SEED+200)*0.3*ds+ridged(nx*3.5,ny*2.5,2,SEED+500)*0.18*ds+fbm(nx*9,ny*6,2,SEED+300)*0.1*ds;
-            const pb=fbm(nx*35,ny*22,1,SEED+900);if(pb>0.74)h+=(pb-0.74)*0.35*ds;
-            const hn=fbm(nx*28,ny*18,1,SEED+1100);if(hn<0.22)h-=(0.22-hn)*0.3*ds;
+            let h=_bgFbm(nx*2.2,ny*1.3,2,SEED+800)*0.4+_bgFbm(nx*4.5,ny*3,2,SEED+200)*0.3*ds+_bgRidged(nx*3.5,ny*2.5,2,SEED+500)*0.18*ds+_bgFbm(nx*9,ny*6,2,SEED+300)*0.1*ds;
+            const pb=_bgFbm(nx*35,ny*22,1,SEED+900);if(pb>0.74)h+=(pb-0.74)*0.35*ds;
+            const hn=_bgFbm(nx*28,ny*18,1,SEED+1100);if(hn<0.22)h-=(0.22-hn)*0.3*ds;
             for(const f of feats){const dx=(nx-f.cx)/f.rx,dy=(ny-f.cy)/f.ry,d2=dx*dx+dy*dy;if(d2<4){const tt=Math.max(0,1-Math.sqrt(d2)/2);h+=f.h*tt*tt*(3-2*tt);}}
             hMap[py*gW+px]=h;
           }}
           const brushMap=new Float32Array(gW*gHt);
-          for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=fbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
+          for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
             const contrast=0.4+dT*0.6,warmShift=(1-dT)*22,baseVal=14+dC*52;
@@ -2873,11 +2873,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               let ti=shifted>0.62?3:shifted>0.38?2:shifted>0.16?1:0;
               let rr=tones[ti][0],gg=tones[ti][1],bb=tones[ti][2];
               // Soil variation
-              const sA=(fbm(nx*2.8,dT*1.8,2,SEED+1000)-0.5)*2,sB=(fbm(nx*1.5,dT*1.0,2,SEED+2000)-0.5)*2;
+              const sA=(_bgFbm(nx*2.8,dT*1.8,2,SEED+1000)-0.5)*2,sB=(_bgFbm(nx*1.5,dT*1.0,2,SEED+2000)-0.5)*2;
               rr+=(sA*5+sB*4)*dC;gg+=(sA*2+sB*1.5)*dC;bb+=(sA*-1+sB*-0.5)*dC;
-              const sc2=fbm(nx*3,dT*2,2,SEED+3000);if(sc2<0.28){const s2=Math.pow((0.28-sc2)/0.28,1.3)*0.22;rr*=(1-s2);gg*=(1-s2);bb*=(1-s2);}
+              const sc2=_bgFbm(nx*3,dT*2,2,SEED+3000);if(sc2<0.28){const s2=Math.pow((0.28-sc2)/0.28,1.3)*0.22;rr*=(1-s2);gg*=(1-s2);bb*=(1-s2);}
               // Cracks
-              const cn=fbm(nx*10,dT*7,2,SEED+7000),ce=Math.abs(cn-0.5);if(ce<0.014){const cs=(1-ce/0.014);rr=rr*(1-cs*0.55)+tones[0][0]*cs*0.55;gg=gg*(1-cs*0.55)+tones[0][1]*cs*0.55;bb=bb*(1-cs*0.55)+tones[0][2]*cs*0.55;}
+              const cn=_bgFbm(nx*10,dT*7,2,SEED+7000),ce=Math.abs(cn-0.5);if(ce<0.014){const cs=(1-ce/0.014);rr=rr*(1-cs*0.55)+tones[0][0]*cs*0.55;gg=gg*(1-cs*0.55)+tones[0][1]*cs*0.55;bb=bb*(1-cs*0.55)+tones[0][2]*cs*0.55;}
               // Curve clip highlight + edges
               const hg2=Math.pow(Math.max(0,1-dT*6),3),scx=Math.exp(-Math.pow((nx-0.5)*2,2));
               rr+=hg2*scx*35;gg+=hg2*scx*22;bb+=hg2*scx*8;
@@ -2891,9 +2891,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const base = edgeY - curveH * Math.pow((x / W - 0.5) * 2, 2);
             if (!noisy) return base;
             const ix = x / W;
-            const n1 = fbm(ix * 6, 0.5, 3, SEED + 6000) * 12 - 6;
-            const n2 = fbm(ix * 15, 0.5, 2, SEED + 6100) * 5 - 2.5;
-            const n3 = ridged(ix * 10, 0.5, 2, SEED + 6200) * 4 - 2;
+            const n1 = _bgFbm(ix * 6, 0.5, 3, SEED + 6000) * 12 - 6;
+            const n2 = _bgFbm(ix * 15, 0.5, 2, SEED + 6100) * 5 - 2.5;
+            const n3 = _bgRidged(ix * 10, 0.5, 2, SEED + 6200) * 4 - 2;
             return base + n1 + n2 + n3;
           };
           // Draw ground clipped to curve
