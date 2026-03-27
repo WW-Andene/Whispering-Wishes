@@ -2298,7 +2298,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
-    const sceneSeed = 52908;
+    const sceneSeed = 61742;
 
     // === Cloud system from cloud-demo ===
     const CLOUD_DEFS = [
