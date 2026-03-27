@@ -2467,7 +2467,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const cs = s * 1000 + c * 37;
                 const rng2 = seededRandom(cs);
                 const dist = Math.max(minDist, minDist + rng2() * (maxReach - minDist));
-                const ang = phases[s] + (c / nCl) * Math.PI * 2 + (rng2() - 0.5) * 0.8;
+                const ang = phases[s] + rng2() * Math.PI * 2;
                 const sr = rng2();
                 let rad, cType;
                 if (sr < 0.12) { rad = 110 + rng2() * 80; cType = 3; }
@@ -2513,7 +2513,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const hcs = 50000 + hs * 1000 + hc * 41;
                 const hrng = seededRandom(hcs);
                 const hDist = Math.max(hiMin, hiMin + Math.pow(hrng(), 0.33) * (hiMax - hiMin));
-                const hAng = hiPh[hs] + (hc / hCl) * Math.PI * 2 + (hrng() - 0.5) * 0.6;
+                const hAng = hiPh[hs] + hrng() * Math.PI * 2;
                 const hsr = hrng();
                 let hRad, hcT;
                 if (hsr < 0.15) { hRad = 30 + hrng() * 30; hcT = 2; }
@@ -2877,9 +2877,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const contrast=0.4+dT*0.6,warmShift=(1-dT)*22,baseVal=14+dC*52;
             const t0r=baseVal*0.6+warmShift*0.35, t0g=baseVal*0.48+warmShift*0.18, t0b=baseVal*0.4+warmShift*0.08;
             const t1r=baseVal*0.8+warmShift*0.4, t1g=baseVal*0.65+warmShift*0.22, t1b=baseVal*0.5+warmShift*0.1;
+            // Mid-tone: warm amber influenced by sun — distinct from shadow and highlight
+            const tmR=baseVal*0.95+warmShift*0.65, tmG=baseVal*0.72+warmShift*0.38, tmB=baseVal*0.42+warmShift*0.06;
             const t2r=baseVal*1.05+warmShift*0.45, t2g=baseVal*0.85+warmShift*0.28, t2b=baseVal*0.6+warmShift*0.12;
             const t3r=baseVal*1.25+warmShift*0.55, t3g=baseVal*0.98+warmShift*0.32, t3b=baseVal*0.65+warmShift*0.14;
-            const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
+            const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
               const bs=6+dT*14,hL=(gH3(px-2,py)+gH3(px-1,py))*0.5,hR=(gH3(px+2,py)+gH3(px+1,py))*0.5;
@@ -2887,19 +2889,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const bx2=(hL-hR)*bs,by2=(hU-hD)*bs,bl=Math.sqrt(bx2*bx2+by2*by2+1);
               const rawDot=Math.max(0,(bx2/bl)*snx+(by2/bl)*sny+(1/bl)*snz);
               const shifted=rawDot+(brushMap[py*gW+px]-0.5)*0.1;
-              // Smooth interpolation between tones instead of hard bands
-              const st = Math.max(0, Math.min(1, shifted));
-              const tF = st * 3; // 0-3 across 4 tones
-              const ti = Math.min(2, Math.floor(tF));
-              const tBlend = tF - ti;
-              let rr = tones[ti][0] + (tones[ti+1][0] - tones[ti][0]) * tBlend;
-              let gg = tones[ti][1] + (tones[ti+1][1] - tones[ti][1]) * tBlend;
-              let bb = tones[ti][2] + (tones[ti+1][2] - tones[ti][2]) * tBlend;
-              // Sun position influence — warm highlight near sun's ground projection
-              const sunGx = 0.5, sunGy = 0; // sun above center
-              const sDx = nx - sunGx, sDy = dT - sunGy;
-              const sunInf = Math.exp(-(sDx * sDx * 3 + sDy * sDy * 2)) * 0.15;
-              rr += sunInf * 80; gg += sunInf * 45; bb += sunInf * 15;
+              // 5 hard bands: deep shadow / shadow / warm mid / light / highlight
+              const ti=shifted>0.72?4:shifted>0.52?3:shifted>0.32?2:shifted>0.14?1:0;
+              let rr=tones[ti][0],gg=tones[ti][1],bb=tones[ti][2];
               // Soil variation
               const sA=(_bgFbm(nx*2.8,dT*1.8,2,SEED+1000)-0.5)*2,sB=(_bgFbm(nx*1.5,dT*1.0,2,SEED+2000)-0.5)*2;
               rr+=(sA*5+sB*4)*dC;gg+=(sA*2+sB*1.5)*dC;bb+=(sA*-1+sB*-0.5)*dC;
