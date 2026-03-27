@@ -2418,7 +2418,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.08;
         const minDist = sunR * 2;
         const clouds = [];
-        const maxReach = Math.max(W, H) * 1.5;
+        // Limit maxReach to what's actually visible — orbit must intersect screen
+        const screenDiag = Math.sqrt((W * 0.5) * (W * 0.5) + Math.max(sunY, H - sunY) * Math.max(sunY, H - sunY));
+        const maxReach = screenDiag + 150; // + margin for cloud size
         let id = 0;
 
         function getCachedBake(seed, balls, sunAngle, cType, dep, prox, rs) {
@@ -2426,6 +2428,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
 
         function addC(seed, dist, angle, radius, dep, spd, cType) {
+            // Skip if orbit never intersects screen (orbit ellipse fully off-screen)
+            const flatR = 0.7;
+            const orbitLeft = sunX - dist, orbitRight = sunX + dist;
+            const orbitTop = sunY - dist * flatR, orbitBot = sunY + dist * flatR;
+            const margin = radius * 3;
+            if (orbitRight + margin < 0 || orbitLeft - margin > W || orbitBot + margin < 0 || orbitTop - margin > H) return;
             const prox = Math.max(0, 1 - dist / maxReach);
             const balls = generateBalls(seed, radius, cType);
             const cx = sunX + Math.cos(angle) * dist;
@@ -2437,6 +2445,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
 
         function addHi(seed, dist, angle, radius, dep, spd, cType, layerY, layerFlat) {
+            const orbitLeft = sunX - dist, orbitRight = sunX + dist;
+            const orbitTop = layerY - dist * layerFlat, orbitBot = layerY + dist * layerFlat;
+            const margin = radius * 3;
+            if (orbitRight + margin < 0 || orbitLeft - margin > W || orbitBot + margin < 0 || orbitTop - margin > H) return;
             const prox = Math.max(0, 1 - dist / maxReach);
             const balls = generateBalls(seed, radius, cType);
             const hcx = sunX + Math.cos(angle) * dist;
