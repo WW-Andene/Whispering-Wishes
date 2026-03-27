@@ -2618,14 +2618,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       lastFrame = t;
       const time = t * 0.0005;
 
+      // (all pre-battleground effects removed — only sky + sun in battleground)
+
       ctx.save();
       ctx.scale(honourScale, honourScale);
 
-      // (all pre-battleground effects removed — only sky + sun in battleground)
-
       // ===== BATTLEGROUND — ground-plan projected sword field =====
       {
-        const W = canvas.width, H = canvas.height;
+        const W = w, H = h;
         const hY = H; // sky covers 100%
 
         // === SKY + SUN + CLOUDS (from cloud-demo) ===
@@ -3376,7 +3376,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
 
       } // end BATTLEGROUND block
-      ctx.restore(); // undo honourScale
+      ctx.restore();
     };
 
     animId = requestAnimationFrame(draw);
