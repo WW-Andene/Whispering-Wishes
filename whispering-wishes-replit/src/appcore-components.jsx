@@ -3211,9 +3211,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             swordIdx++;
             bx += cellSpacingX;
             if (jz - camZ < 0.02) continue;  // skip swords too close
-            // Halve sword density in the far half of the field
-            const midZ = camZ + (planeSize - camZ) * 0.5;
-            if (jz > midZ && (swordIdx & 1)) continue;
+            // Halve swords in far zone (z > 25)
+            if (jz > 25 && (swordIdx & 1)) continue;
 
             // Clearing — based on view angle, not absolute X
             const dz = jz - camZ;
