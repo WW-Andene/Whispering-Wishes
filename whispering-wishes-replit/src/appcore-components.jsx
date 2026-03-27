@@ -2826,14 +2826,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const focal = W * 0.8;
 
         // Flat ground — no bowl, wy = 0 everywhere
-        const camZ = 8;  // camera position in the field
+        const camZ = 8;
         const camH = 0.7;
+        // Ground curves in world space — dips down at the sides like a cylinder
+        const groundCurve = 0.008; // curvature amount
         const projX = (wx, wz) => W * 0.5 + wx * focal / (wz - camZ);
-        const projY = (wz) => edgeY + camH * focal / (wz - camZ);
-
-        // Ground curve — horizon dips at edges
-        const curveStr = H * 0.08;
-        const curveY = (sx, sy) => sy - curveStr * Math.pow((sx - W * 0.5) / (W * 0.5), 2);
+        const projY = (wz, wx) => {
+          const wy = wx !== undefined ? groundCurve * wx * wx : 0;
+          return edgeY + (camH + wy) * focal / (wz - camZ);
+        };
 
         // --- Draw curved ground strips ---
         const zNear = camZ + 0.3, zFar = 50, zSlices = 120;
@@ -2844,7 +2845,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.beginPath();
         for (let j = 0; j <= xSegs; j++) {
           const sx = W * j / xSegs;
-          const sy = curveY(sx, edgeY);
+          const wx = (sx - W * 0.5) * (zFar - camZ) / focal; const sy = projY(zFar, wx);
           j === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
         }
         ctx.lineTo(W, H); ctx.lineTo(0, H);
@@ -2856,7 +2857,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const wz1 = zNear * Math.pow(zFar / zNear, t1);
 
           // Skip strips that project entirely below screen
-          const stripTopY = curveY(W * 0.5, projY(wz1));
+          const stripTopY = projY(wz1, 0);
           if (stripTopY > H + 10) continue;
 
           const depthT = Math.pow(t0, 0.6);
@@ -2872,12 +2873,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillStyle = `rgb(${Math.round(baseR * bright)},${Math.round(baseG * bright)},${Math.round(baseB * bright)})`;
             ctx.beginPath();
             const x0 = W * j / xSegs, x1 = W * (j + 1) / xSegs, xM = (x0 + x1) * 0.5;
-            ctx.moveTo(x0, curveY(x0, projY(wz1)));
-            ctx.lineTo(xM, curveY(xM, projY(wz1)));
-            ctx.lineTo(x1, curveY(x1, projY(wz1)));
-            ctx.lineTo(x1, curveY(x1, projY(wz0)));
-            ctx.lineTo(xM, curveY(xM, projY(wz0)));
-            ctx.lineTo(x0, curveY(x0, projY(wz0)));
+            ctx.moveTo(x0, projY(wz1, (x0 - W * 0.5) * (wz1 - camZ) / focal));
+            ctx.lineTo(xM, projY(wz1, (xM - W * 0.5) * (wz1 - camZ) / focal));
+            ctx.lineTo(x1, projY(wz1, (x1 - W * 0.5) * (wz1 - camZ) / focal));
+            ctx.lineTo(x1, projY(wz0, (x1 - W * 0.5) * (wz0 - camZ) / focal));
+            ctx.lineTo(xM, projY(wz0, (xM - W * 0.5) * (wz0 - camZ) / focal));
+            ctx.lineTo(x0, projY(wz0, (x0 - W * 0.5) * (wz0 - camZ) / focal));
             ctx.closePath();
             ctx.fill();
           }
@@ -2931,13 +2932,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
             // Project to screen + ground curve
             const scrX = projX(jx, jz);
-            const scrY = curveY(scrX, projY(jz));
+            const scrY = projY(jz, jx);
             if (scrX < -200 || scrX > W + 200 || scrY < -200 || scrY > H + 200) continue;
 
             const size = 2.8 * focal / (jz - camZ);
 
             // Curve lean — swords follow the ground curve outward at edges
-            const curveLean = -2 * curveStr * (scrX - W * 0.5) / (W * 0.5 * W * 0.5) * 0.3;
+            const curveLean = -2 * groundCurve * jx * 0.3;
 
             // Random lean + curve lean
             let lh = (swordIdx * 2654435761 + 4829) | 0; lh = Math.imul(lh ^ (lh >>> 16), 0x119de1f3); lh = Math.imul(lh ^ (lh >>> 13), 0x45d9f3b); lh = lh ^ (lh >>> 16);
