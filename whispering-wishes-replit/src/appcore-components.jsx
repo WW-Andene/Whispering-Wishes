@@ -2265,6 +2265,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let animId;
     let groundCache = null;
     let honourParticles = null;
+    let lastFrame = 0;
+    let sceneClouds = null;
+    let cloudBuildPending = false;
+    let cloudRefreshIdx = 0;
+    let cloudTime = 0;
+    let skyCache = null;
 
     const isFull = animationsEnabled === 'full';
     const alphaScale = isFull ? 1.4 : 1.0;
@@ -2602,13 +2608,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const baked = bakeMetaball(useBalls, sunAngle, cloud.cloudType, cloud.depth, cloud.proximity, 0);
         if (baked) cloud.baked = baked;
     }
-
-    let lastFrame = 0;
-    let sceneClouds = null;
-    let cloudBuildPending = false;
-    let cloudRefreshIdx = 0;
-    let cloudTime = 0;
-    let skyCache = null;
 
     const rng = (i, off) => { const s = Math.sin((i + sceneSeed) * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
     const ihash = (n, off) => { let h = Math.imul(n + off, 2654435761) | 0; h = Math.imul(h ^ (h >>> 16), 0x45d9f3b); h = Math.imul(h ^ (h >>> 13), 0x45d9f3b); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
