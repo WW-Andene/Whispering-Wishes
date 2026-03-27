@@ -3208,13 +3208,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           let zoneDensity;
           if (zoneT < 0.125) zoneDensity = 0.2;       // zone 1a: z=7-12.4, tightest
           else if (zoneT < 0.25) zoneDensity = 0.35;   // zone 1b: z=12.4-17.75
-          else if (zoneT < 0.3) zoneDensity = 0.5;     // zone 2a
-          else if (zoneT < 0.35) zoneDensity = 0.6;    // zone 2b
-          else if (zoneT < 0.4) zoneDensity = 0.7;     // zone 2c
-          else if (zoneT < 0.45) zoneDensity = 0.8;    // zone 2d
-          else if (zoneT < 0.5) zoneDensity = 0.9;     // zone 2e
-          else if (zoneT < 0.75) zoneDensity = 1.5;    // zone 3
-          else zoneDensity = 2.0;                       // zone 4
+          else {
+            // zones 2-4 (z=17.75-50): even spread from 0.5 to 2.0
+            const farT = (zoneT - 0.25) / 0.75; // 0 at zone 2 start, 1 at zone 4 end
+            zoneDensity = 0.5 + farT * 1.5;
+          }
           const rowSpacingZ = (2.0 + ihash(swordIdx + 7000, sceneSeed) * 6.0) * zoneDensity;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
             const cellSpacingX = (2.0 + ihash(swordIdx + 8000, sceneSeed) * 6.0) * zoneDensity;
