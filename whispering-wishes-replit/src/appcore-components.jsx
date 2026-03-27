@@ -2874,7 +2874,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
-            const contrast=0.55+dT*0.45,warmShift=(1-dT)*28,baseVal=18+dC*62;
+            const contrast=0.55+dT*0.45,warmShift=(1-dT)*35,baseVal=35+dC*85;
             const t0r=baseVal*0.55+warmShift*0.3, t0g=baseVal*0.42+warmShift*0.14, t0b=baseVal*0.35+warmShift*0.06;
             const t1r=baseVal*0.78+warmShift*0.4, t1g=baseVal*0.6+warmShift*0.2, t1b=baseVal*0.42+warmShift*0.08;
             // Mid-tone: warm amber influenced by sun — distinct from shadow and highlight
