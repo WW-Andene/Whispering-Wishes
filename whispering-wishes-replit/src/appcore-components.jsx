@@ -2270,15 +2270,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     const alphaScale = isFull ? 1.4 : 1.0;
     const bgBase = oledMode ? [0, 0, 0] : [12, 8, 4];
 
+    const honourScale = (bgResolution || (isFull ? 100 : 50)) / 100;
+    const honourFps = bgFps || (isFull ? 30 : 15);
+    const honourInterval = Math.round(1000 / honourFps);
+
     let w, h;
 
     const init = () => {
       w = window.innerWidth;
       h = window.innerHeight;
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = Math.ceil(w * honourScale);
+      canvas.height = Math.ceil(h * honourScale);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
       groundCache = null;
       honourParticles = null;
+      skyCache = null;
     };
     init();
     window.addEventListener('resize', init);
@@ -2603,9 +2610,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let cloudTime = 0;
     let skyCache = null;
 
-    const honourFps = bgFps || (isFull ? 30 : 15);
-    const honourInterval = Math.round(1000 / honourFps);
-
     const rng = (i, off) => { const s = Math.sin((i + sceneSeed) * 217.3 + off * 341.7) * 73291.9; return s - Math.floor(s); };
     const ihash = (n, off) => { let h = Math.imul(n + off, 2654435761) | 0; h = Math.imul(h ^ (h >>> 16), 0x45d9f3b); h = Math.imul(h ^ (h >>> 13), 0x45d9f3b); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 
@@ -2614,6 +2618,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       if (t - lastFrame < honourInterval) return;
       lastFrame = t;
       const time = t * 0.0005;
+
+      ctx.save();
+      ctx.scale(honourScale, honourScale);
 
       // (all pre-battleground effects removed — only sky + sun in battleground)
 
@@ -3370,6 +3377,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
 
       } // end BATTLEGROUND block
+      ctx.restore(); // undo honourScale
     };
 
     animId = requestAnimationFrame(draw);
