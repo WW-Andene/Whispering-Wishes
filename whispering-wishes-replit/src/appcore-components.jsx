@@ -2591,7 +2591,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     let cloudBuildPending = false;
     let cloudRefreshIdx = 0;
     let cloudTime = 0;
-    let skyCache = null; // pre-baked sky gradient canvas
+    let skyCache = null;
+    let groundTexture = null; // pre-baked sky gradient canvas
 
     const honourFps = bgFps || (isFull ? 30 : 15);
     const honourInterval = Math.round(1000 / honourFps);
@@ -2835,7 +2836,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         };
 
         // --- Draw curved ground strips ---
-        const zNear = camZ + 0.05, zFar = 50, zSlices = 30;
+        const zNear = camZ + 0.05, zFar = 50, zSlices = 200;
         const xSegs = 12;
 
         // Dark base fill — follows curve
@@ -2890,6 +2891,37 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillStyle = groundLight;
         ctx.fillRect(0, edgeY - 10, W, H - edgeY + 10);
         ctx.restore();
+
+        // Baked dirt/dust noise texture overlaid on ground
+        if (!groundTexture || groundTexture.width !== W) {
+          groundTexture = document.createElement('canvas');
+          groundTexture.width = W; groundTexture.height = Math.ceil(H * 0.3);
+          const gtx = groundTexture.getContext('2d');
+          const gW = groundTexture.width, gH = groundTexture.height;
+          // Paint soft noise blotches — varying brightness for natural ground
+          for (let p = 0; p < 300; p++) {
+            const pSeed = p * 59 + sceneSeed + 8000;
+            const px = hash(pSeed) * gW;
+            const py = hash(pSeed + 100) * gH;
+            const pSize = 3 + hash(pSeed + 200) * 20;
+            const pBright = hash(pSeed + 300);
+            const pAlpha = 0.03 + pBright * 0.05;
+            // Alternately lighten or darken
+            if (pBright > 0.5) {
+              const grad = gtx.createRadialGradient(px, py, 0, px, py, pSize);
+              grad.addColorStop(0, `rgba(120,80,40,${pAlpha})`);
+              grad.addColorStop(1, 'rgba(120,80,40,0)');
+              gtx.fillStyle = grad;
+            } else {
+              const grad = gtx.createRadialGradient(px, py, 0, px, py, pSize);
+              grad.addColorStop(0, `rgba(5,3,1,${pAlpha})`);
+              grad.addColorStop(1, 'rgba(5,3,1,0)');
+              gtx.fillStyle = grad;
+            }
+            gtx.beginPath(); gtx.arc(px, py, pSize, 0, Math.PI * 2); gtx.fill();
+          }
+        }
+        ctx.drawImage(groundTexture, 0, edgeY - 5, W, H * 0.3);
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
         const planeSize = 50;
