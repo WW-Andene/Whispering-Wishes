@@ -3206,9 +3206,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 4 density zones from camera (z=8) to far (z=50)
           const zoneT = Math.max(0, (bz - 7) / (planeSize - 7));
           const zoneDensity = zoneT < 0.25 ? 0.5 : zoneT < 0.5 ? 0.75 : zoneT < 0.75 ? 1.0 : 1.3;
-          const rowSpacingZ = (1.0 + ihash(swordIdx + 7000, sceneSeed) * 3.0) * zoneDensity;
+          const rowSpacingZ = (2.0 + ihash(swordIdx + 7000, sceneSeed) * 6.0) * zoneDensity;
           for (let bx = -planeSize / 2; bx < planeSize / 2; ) {
-            const cellSpacingX = (1.0 + ihash(swordIdx + 8000, sceneSeed) * 3.0) * zoneDensity;
+            const cellSpacingX = (2.0 + ihash(swordIdx + 8000, sceneSeed) * 6.0) * zoneDensity;
             const jx = bx + (ihash(swordIdx, sceneSeed + 101) - 0.5) * cellSpacingX * 0.3;
             const jz = bz + (ihash(swordIdx, sceneSeed + 100) - 0.5) * rowSpacingZ * 0.3 + 0.03;
             swordIdx++;
