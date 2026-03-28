@@ -3628,12 +3628,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const crossW = bScale * 0.7;
           ctx.fillRect(bScrX - crossW / 2, crossY - barThick / 2, crossW, barThick);
 
-          // Small end dots
-          const dotR = barThick * 0.8;
-          ctx.beginPath(); ctx.arc(bScrX - crossW / 2, crossY, dotR, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(bScrX + crossW / 2, crossY, dotR, 0, Math.PI * 2); ctx.fill();
-          // Top dot on vertical arm
-          ctx.beginPath(); ctx.arc(bScrX, poleTop - armH, dotR, 0, Math.PI * 2); ctx.fill();
+          // Diamond end caps
+          const diaR = barThick * 1.2;
+          for (const dx of [bScrX - crossW / 2, bScrX + crossW / 2]) {
+            ctx.beginPath();
+            ctx.moveTo(dx, crossY - diaR); ctx.lineTo(dx + diaR, crossY);
+            ctx.lineTo(dx, crossY + diaR); ctx.lineTo(dx - diaR, crossY);
+            ctx.closePath(); ctx.fill();
+          }
+          // Top diamond on vertical arm
+          ctx.beginPath();
+          ctx.moveTo(bScrX, poleTop - armH - diaR); ctx.lineTo(bScrX + diaR, poleTop - armH);
+          ctx.lineTo(bScrX, poleTop - armH + diaR); ctx.lineTo(bScrX - diaR, poleTop - armH);
+          ctx.closePath(); ctx.fill();
 
           // Vertical ridged columns
           const ridgeTop = crossY + barThick / 2;
