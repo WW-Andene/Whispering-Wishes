@@ -3585,7 +3585,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // === BANNER — simple pole with hanging drape cloth ===
+        // === BANNER — simple pole, static hanging tapestry with emblem ===
         {
           const bWx = 0.5, bWz = 22;
           const bScrX = projX(bWx, bWz);
@@ -3595,7 +3595,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const poleW = Math.max(1, bScale * 0.035);
           const poleBury = bScale * 0.3;
           const poleTop = bScrY - poleH + poleBury;
-          const waveT = cloudTime * 0.6;
           const bannerLean = -0.06;
 
           ctx.save();
@@ -3603,7 +3602,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.rotate(bannerLean);
           ctx.translate(-bScrX, -bScrY);
 
-          // Simple dark pole shaft
+          // Plain pole shaft — no tip, no ornaments
           const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
           shaftGrad.addColorStop(0, 'rgb(25,14,8)');
           shaftGrad.addColorStop(0.35, 'rgb(50,30,16)');
@@ -3613,111 +3612,108 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // Simple pointed tip
-          const tipH = bScale * 0.2;
-          ctx.fillStyle = 'rgb(55,35,18)';
-          ctx.beginPath();
-          ctx.moveTo(bScrX, poleTop - tipH);
-          ctx.lineTo(bScrX - poleW * 0.8, poleTop);
-          ctx.lineTo(bScrX + poleW * 0.8, poleTop);
-          ctx.closePath();
-          ctx.fill();
-
-          // Short crossbar near top for drape
-          const crossY = poleTop + tipH * 0.5;
+          // Short crossbar near top
+          const crossY = poleTop + bScale * 0.05;
           const crossW = bScale * 0.55;
           const crossH = Math.max(1, poleW * 0.6);
           ctx.fillStyle = 'rgb(50,30,16)';
           ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
 
-          // --- Hanging drape cloth — like a tapestry ---
+          // --- Static hanging tapestry ---
           const dTop = crossY + crossH * 0.5;
-          const dW = crossW * 0.92;
+          const dW = crossW * 0.9;
           const dH = bScale * 1.8;
           const dL = bScrX - dW / 2, dR = bScrX + dW / 2;
-          const steps = 20;
 
+          // Slightly organic shape — not a perfect rectangle
           function drapePath() {
             ctx.beginPath();
-            // Top edge — taut across crossbar
             ctx.moveTo(dL, dTop);
             ctx.lineTo(dR, dTop);
-            // Right edge — drapes down with wave
-            for (let i = 0; i <= steps; i++) {
-              const t = i / steps;
-              const y = dTop + t * dH;
-              const wave = Math.sin(t * 3.5 + waveT * 0.8 + 0.5) * bScale * 0.025 * Math.sqrt(t);
-              const sag = Math.sin(t * Math.PI) * bScale * 0.02;
-              ctx.lineTo(dR + wave + sag, y);
-            }
-            // Bottom edge — slightly irregular with gentle scallops
-            const bY = dTop + dH;
-            const bWave = Math.sin(waveT * 0.5) * bScale * 0.015;
-            ctx.lineTo(dR + bWave, bY + bScale * 0.02);
-            ctx.lineTo(bScrX + dW * 0.2, bY + bScale * 0.05 + Math.sin(waveT * 0.7) * bScale * 0.01);
-            ctx.lineTo(bScrX, bY + bScale * 0.03);
-            ctx.lineTo(bScrX - dW * 0.2, bY + bScale * 0.05 + Math.sin(waveT * 0.7 + 1) * bScale * 0.01);
-            ctx.lineTo(dL - bWave, bY + bScale * 0.02);
-            // Left edge — drapes back up
-            for (let i = steps; i >= 0; i--) {
-              const t = i / steps;
-              const y = dTop + t * dH;
-              const wave = Math.sin(t * 3.5 + waveT * 0.8) * bScale * 0.025 * Math.sqrt(t);
-              const sag = Math.sin(t * Math.PI) * bScale * 0.02;
-              ctx.lineTo(dL + wave - sag, y);
-            }
+            // Right edge — very slight belly outward
+            ctx.bezierCurveTo(dR + bScale * 0.012, dTop + dH * 0.3, dR + bScale * 0.008, dTop + dH * 0.7, dR - bScale * 0.005, dTop + dH);
+            // Bottom — slight unevenness, not straight
+            ctx.lineTo(dR - bScale * 0.01, dTop + dH + bScale * 0.015);
+            ctx.lineTo(bScrX + dW * 0.15, dTop + dH + bScale * 0.025);
+            ctx.lineTo(bScrX, dTop + dH + bScale * 0.018);
+            ctx.lineTo(bScrX - dW * 0.15, dTop + dH + bScale * 0.025);
+            ctx.lineTo(dL + bScale * 0.01, dTop + dH + bScale * 0.015);
+            ctx.lineTo(dL + bScale * 0.005, dTop + dH);
+            // Left edge — slight belly
+            ctx.bezierCurveTo(dL - bScale * 0.008, dTop + dH * 0.7, dL - bScale * 0.012, dTop + dH * 0.3, dL, dTop);
             ctx.closePath();
           }
 
-          // Deep red-brown fill — like aged tapestry
+          // Deep red fill
           drapePath();
           const dGrad = ctx.createLinearGradient(0, dTop, 0, dTop + dH);
-          dGrad.addColorStop(0, 'rgb(145,32,22)');
-          dGrad.addColorStop(0.3, 'rgb(130,25,18)');
-          dGrad.addColorStop(0.6, 'rgb(110,20,14)');
-          dGrad.addColorStop(1, 'rgb(85,15,10)');
+          dGrad.addColorStop(0, 'rgb(148,32,22)');
+          dGrad.addColorStop(0.3, 'rgb(132,26,18)');
+          dGrad.addColorStop(0.7, 'rgb(112,20,14)');
+          dGrad.addColorStop(1, 'rgb(88,15,10)');
           ctx.fillStyle = dGrad;
           ctx.fill();
 
-          // Vertical drape folds — soft highlight and shadow strips
+          // Static fabric folds — fixed highlight/shadow strips
           ctx.save();
           drapePath(); ctx.clip();
-          for (let fi = 0; fi < 6; fi++) {
-            const fX = dL + (fi + 0.5) * (dW / 6);
-            const fWv = Math.sin(fi * 1.7 + waveT * 0.5) * bScale * 0.015;
-            const fW2 = bScale * 0.08;
-            // Light fold
-            const hlA = 0.05 + Math.sin(fi * 2.1 + waveT * 0.3) * 0.035;
-            const hl = ctx.createLinearGradient(fX + fWv - fW2, 0, fX + fWv + fW2, 0);
-            hl.addColorStop(0, 'rgba(255,170,100,0)');
-            hl.addColorStop(0.5, 'rgba(255,170,100,' + hlA + ')');
-            hl.addColorStop(1, 'rgba(255,170,100,0)');
+          for (let fi = 0; fi < 5; fi++) {
+            const fX = dL + (fi + 0.5) * (dW / 5);
+            const fW2 = bScale * 0.06;
+            // Highlight
+            const hlA = 0.04 + (fi % 2) * 0.02;
+            const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
+            hl.addColorStop(0, 'rgba(255,160,90,0)');
+            hl.addColorStop(0.5, 'rgba(255,160,90,' + hlA + ')');
+            hl.addColorStop(1, 'rgba(255,160,90,0)');
             ctx.fillStyle = hl;
-            ctx.fillRect(fX + fWv - fW2, dTop, fW2 * 2, dH);
-            // Shadow fold (offset)
-            const shX = fX + fWv + fW2 * 0.8;
-            const shA = hlA * 0.6;
-            const sh = ctx.createLinearGradient(shX - fW2 * 0.5, 0, shX + fW2 * 0.5, 0);
+            ctx.fillRect(fX - fW2, dTop, fW2 * 2, dH);
+            // Shadow
+            const shX = fX + fW2 * 0.7;
+            const sh = ctx.createLinearGradient(shX - fW2 * 0.4, 0, shX + fW2 * 0.4, 0);
             sh.addColorStop(0, 'rgba(0,0,0,0)');
-            sh.addColorStop(0.5, 'rgba(0,0,0,' + shA + ')');
+            sh.addColorStop(0.5, 'rgba(0,0,0,' + (hlA * 0.5) + ')');
             sh.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = sh;
-            ctx.fillRect(shX - fW2 * 0.5, dTop, fW2, dH);
+            ctx.fillRect(shX - fW2 * 0.4, dTop, fW2 * 0.8, dH);
           }
-          // Top gather shadows — cloth bunches where it hangs from crossbar
-          for (let gi = 0; gi < 4; gi++) {
-            const gx = dL + (gi + 0.5) * (dW / 4);
-            const gGrad = ctx.createRadialGradient(gx, dTop, 0, gx, dTop + bScale * 0.15, bScale * 0.12);
-            gGrad.addColorStop(0, 'rgba(0,0,0,0.06)');
-            gGrad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gGrad;
-            ctx.fillRect(gx - bScale * 0.12, dTop, bScale * 0.24, bScale * 0.15);
+
+          // --- Emblem / logo — sun-star with circle (like WuWa crest) ---
+          const emCx = bScrX, emCy = dTop + dH * 0.38;
+          const emR = dW * 0.28;
+          // Outer circle
+          ctx.strokeStyle = 'rgba(210,155,50,0.55)';
+          ctx.lineWidth = Math.max(0.8, bScale * 0.015);
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR, 0, Math.PI * 2); ctx.stroke();
+          // Sun rays — 8 pointed star
+          ctx.fillStyle = 'rgba(210,155,50,0.4)';
+          for (let ri = 0; ri < 8; ri++) {
+            const ang = ri * Math.PI / 4;
+            const rayL = emR * 1.35;
+            const rayW = emR * 0.18;
+            ctx.save();
+            ctx.translate(emCx, emCy);
+            ctx.rotate(ang);
+            ctx.beginPath();
+            ctx.moveTo(0, -rayW);
+            ctx.lineTo(rayL, 0);
+            ctx.lineTo(0, rayW);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
           }
+          // Inner circle fill
+          ctx.fillStyle = 'rgba(210,155,50,0.2)';
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.55, 0, Math.PI * 2); ctx.fill();
+          // Inner dot
+          ctx.fillStyle = 'rgba(210,155,50,0.45)';
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.15, 0, Math.PI * 2); ctx.fill();
+
           ctx.restore();
 
           // Gold trim border
           drapePath();
-          ctx.strokeStyle = 'rgb(180,135,40)';
+          ctx.strokeStyle = 'rgb(185,140,42)';
           ctx.lineWidth = Math.max(1, bScale * 0.025);
           ctx.stroke();
 
