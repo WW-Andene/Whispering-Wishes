@@ -3664,66 +3664,106 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — 3D mesh-style rendering ===
-          // Blade left half — diamond cross-section gradient
-          const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
-          if (leftLight) {
-            blGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-            blGL.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-            blGL.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
-          } else {
-            blGL.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-            blGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-            blGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+          // === LONGSWORD — cracked/chipped blade ===
+          // Seeded RNG for this sword's damage pattern
+          var _cs = (s.idx * 2246822519 + 314159) | 0;
+          var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
+          _cr(); _cr();
+          // Generate jagged edge notches (chips in the blade edge)
+          var _hw = bladeW / 2;
+          var _nNotches = 4 + (_cr() * 4 | 0); // 4-7 notches per side
+          var _notchesL = [], _notchesR = [];
+          for (var _ni = 0; _ni < _nNotches; _ni++) {
+            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.85 + guardH); // along blade
+            var _nd = _hw * (0.15 + _cr() * 0.3); // notch depth (15-45% of half-width)
+            var _nh = bladeH * (0.02 + _cr() * 0.04); // notch height
+            if (_cr() > 0.4) _notchesL.push({ y: _ny, d: _nd, h: _nh });
+            if (_cr() > 0.4) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
+          _notchesL.sort(function(a,b){ return a.y - b.y; });
+          _notchesR.sort(function(a,b){ return a.y - b.y; });
+          // Left half with chipped edge
+          const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
+          if (leftLight) { blGL.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);blGL.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);blGL.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
+          else { blGL.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);blGL.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);blGL.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
           ctx.fillStyle = blGL;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            -bladeW * 0.5, tipEnd - pomDia,
-                            -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath();
-          ctx.fill();
-          // Blade right half — diamond cross-section gradient
-          const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
-          if (leftLight) {
-            blGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-            blGR.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-            blGR.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
-          } else {
-            blGR.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-            blGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-            blGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+          // Left edge: tip down to guard with notches
+          ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(-_hw, tipEnd);
+          // Walk down left edge, adding notch indentations
+          var _prevY = tipEnd;
+          for (var _li = 0; _li < _notchesL.length; _li++) {
+            var _n = _notchesL[_li];
+            if (_n.y <= _prevY) continue;
+            ctx.lineTo(-_hw, _n.y);
+            ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
+            ctx.lineTo(-_hw, _n.y + _n.h);
+            _prevY = _n.y + _n.h;
           }
+          ctx.lineTo(-_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Right half with chipped edge
+          const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
+          if (leftLight) { blGR.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);blGR.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);blGR.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
+          else { blGR.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);blGR.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);blGR.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
           ctx.fillStyle = blGR;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            bladeW * 0.5, tipEnd - pomDia,
-                            bladeW / 2, tipEnd);
-          ctx.lineTo(bladeW / 2, guardH);
+          ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(_hw, tipEnd);
+          _prevY = tipEnd;
+          for (var _ri = 0; _ri < _notchesR.length; _ri++) {
+            var _nr = _notchesR[_ri];
+            if (_nr.y <= _prevY) continue;
+            ctx.lineTo(_hw, _nr.y);
+            ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
+            ctx.lineTo(_hw, _nr.y + _nr.h);
+            _prevY = _nr.y + _nr.h;
+          }
+          ctx.lineTo(_hw, guardH);
           ctx.lineTo(0, guardH);
-          ctx.closePath();
-          ctx.fill();
-          // Center ridge — specular highlight line
+          ctx.closePath(); ctx.fill();
+          // Center ridge
           ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
           ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+          // Fuller grooves
+          var fullerOff = bladeW * 0.18;
+          ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
           ctx.beginPath();
-          ctx.moveTo(0, -bladeH + 1);
-          ctx.lineTo(0, guardH);
+          ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
+          ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
           ctx.stroke();
-          // Fuller grooves — thin dark channels
-          const fullerOff = bladeW * 0.18;
-          ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
-          ctx.beginPath();
-          ctx.moveTo(-fullerOff, -bladeH * 0.88);
-          ctx.lineTo(-fullerOff, guardH);
-          ctx.moveTo(fullerOff, -bladeH * 0.88);
-          ctx.lineTo(fullerOff, guardH);
-          ctx.stroke();
+          // Crack lines on blade surface — thin dark diagonal lines
+          var _nCrackLines = 3 + (_cr() * 3 | 0); // 3-5 crack lines
+          ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+          ctx.lineWidth = Math.max(0.5, bladeW * 0.04);
+          for (var _cli = 0; _cli < _nCrackLines; _cli++) {
+            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
+            var _cw = _hw * (0.3 + _cr() * 0.7); // how far across blade
+            var _cdir = _cr() > 0.5 ? 1 : -1;
+            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1); // gentle diagonal
+            // 2-3 segment zigzag crack line
+            ctx.beginPath();
+            ctx.moveTo(_cdir * -_cw, _cy);
+            ctx.lineTo((_cr() - 0.5) * _hw * 0.4, _cy + _cdy * 0.5);
+            ctx.lineTo(_cdir * _cw, _cy + _cdy);
+            ctx.stroke();
+          }
+          // Bright edge on some cracks (light catching fracture edge)
+          ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.15+lit*0.2)+')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
+          for (var _cli2 = 0; _cli2 < 2; _cli2++) {
+            var _cy2 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
+            var _cw2 = _hw * (0.4 + _cr() * 0.5);
+            ctx.beginPath();
+            ctx.moveTo(-_cw2, _cy2);
+            ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
+            ctx.stroke();
+          }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
           const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
