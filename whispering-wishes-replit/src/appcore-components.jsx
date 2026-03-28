@@ -2384,8 +2384,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       const bVar = 0.75 + hash(depth * 127 + proximity * 311) * 0.5;
       // Dramatic dark palette — near-black shadows, deep crimson mids, fiery highlights
       const shR = Math.round((3 + ds * 2 + lr * 1) * bVar), shG = Math.round((1 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
-      const ltR = Math.min(255, Math.round((90 + ds * 8 + proximity * 6) * bVar)), ltG = Math.min(255, Math.round((32 + ds * 5 + proximity * 3) * bVar)), ltB = Math.min(255, Math.round((8 + ds * 2 + proximity * 1) * bVar));
-      const rmR = Math.min(255, Math.round((110 + ds * 4) * bVar)), rmG = Math.min(255, Math.round((40 + ds * 4 + proximity * 3) * bVar)), rmB = Math.min(255, Math.round((10 + ds * 2 + proximity * 1) * bVar));
+      const ltR = Math.min(255, Math.round((95 + ds * 8 + proximity * 6) * bVar)), ltG = Math.min(255, Math.round((62 + ds * 6 + proximity * 4) * bVar)), ltB = Math.min(255, Math.round((32 + ds * 4 + proximity * 3) * bVar));
+      const rmR = Math.min(255, Math.round((120 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((78 + ds * 5 + proximity * 4) * bVar)), rmB = Math.min(255, Math.round((40 + ds * 3 + proximity * 2) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
