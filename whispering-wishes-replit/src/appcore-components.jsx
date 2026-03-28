@@ -3759,9 +3759,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath(); ctx.fill();
 
           // Triangle outline below the gold — inverted V shape
-          const outRow = Math.round(gridY * 0.19);
+          const outRow = Math.round(gridY * 0.30);
           const outL = gp(0, outRow), outR = gp(gridX, outRow);
-          const outM = gp(Math.round(gridX / 2), triRow);
+          const outPeak = Math.round(gridY * 0.16);
+          const outM = gp(Math.round(gridX / 2), outPeak);
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
           ctx.beginPath();
