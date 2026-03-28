@@ -3465,14 +3465,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const guardR = bladeW * 1.15;
           const guardTh = t * 0.015; // thinner guard
           const gripL = t * 0.18;
-          const gripW2 = bladeW * 0.75;
+          const gripW2 = bladeW * 1.0;
           const pomBallR = bladeW * 0.7;
           const knobR = gripW2 * 0.3;
 
           const bury = bladeL * 0.4;
           const bladeTip = -bladeL + bury;
           const bladeBase = bury;
-          const gripTop = bladeBase + guardTh + guardR * 0.5; // below guard dome
+          const gripTop = bladeBase + guardTh + guardR; // fully below guard dome
           const gripBot2 = gripTop + gripL;
           const pomCY = gripBot2 + pomBallR * 0.8;
           const knobY = pomCY + pomBallR + knobR * 0.5;
