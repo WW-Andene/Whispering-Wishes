@@ -3329,48 +3329,44 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          // === AMBER GLOW BEHIND SWORD ===
-          // X: wx<0 → glow shifts left, wx>0 → glow shifts right
+          // === AIRBRUSH GLOW — spray amber on sword contour ===
+          // X: wx<0 → spray on RIGHT edge, wx>0 → spray on LEFT edge
           const xNorm = Math.max(-1, Math.min(1, s.wx / 25));
-          const glowOffX = xNorm * bladeW * 3;
-          // Z: close → top only, far → whole sword
+          const spraySide = -xNorm; // +1 = right side, -1 = left side
+          // Z: close → top only, far → extends down whole sword
           const zT = Math.max(0, Math.min(1, (s.wz - 8) / 42));
-          // Coverage: how far down the glow extends (0=none, 1=full)
-          const coverage = zT < 0.4 ? 0.15 + zT * 1.5 : 0.75 + (zT - 0.4) * 0.42;
-          const glowScale = 1.3 + zT * 0.2;
-          const glowAlpha = 0.25 + lit * 0.2;
-          // Draw glow — enlarged offset amber silhouette clipped by coverage
-          ctx.save();
-          ctx.translate(glowOffX, 0);
-          ctx.scale(glowScale, glowScale);
-          // Clip to coverage height (top of sword down to coverage fraction)
-          const swordTop = -bladeH - pomDia;
-          const swordBot = gripBot + pomDia * 1.5;
-          const swordFullH = swordBot - swordTop;
-          const clipBot = swordTop + swordFullH * coverage;
-          ctx.beginPath();
-          ctx.rect(-guardW, swordTop - 10, guardW * 2, clipBot - swordTop + 10);
-          ctx.clip();
-          // Draw full sword shape as amber glow
-          ctx.fillStyle = 'rgba(255,140,30,' + glowAlpha + ')';
-          ctx.beginPath();
-          // Blade
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.3, -bladeH + pomDia * 0.5, -bladeW * 0.55, tipEnd - pomDia, -bladeW * 0.55, tipEnd);
-          ctx.lineTo(-bladeW * 0.55, ov);
-          ctx.lineTo(bladeW * 0.55, ov);
-          ctx.lineTo(bladeW * 0.55, tipEnd);
-          ctx.bezierCurveTo(bladeW * 0.55, tipEnd - pomDia, bladeW * 0.3, -bladeH + pomDia * 0.5, 0, -bladeH);
-          ctx.closePath();
-          ctx.fill();
-          // Guard
-          ctx.fillRect(-guardW * 0.55, -guardH * 0.3, guardW * 1.1, guardH * 1.6);
-          // Grip + pommel
-          ctx.fillRect(-gripW * 0.45, guardH - 1, gripW * 0.9, gripH + 2);
-          ctx.beginPath();
-          ctx.arc(0, gripBot + pomRy, pomRy * 1.2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
+          const glowAlpha = 0.25 + lit * 0.3;
+          const sprayR = Math.max(bladeW * 2, guardW * 0.8);
+          // Spray positions along the sword edge — airbrush blobs
+          const sprays = [];
+          // Top: pommel area — always present
+          sprays.push({ x: spraySide * pomRy * 1.5, y: gripBot + pomRy, r: sprayR * 1.3, a: glowAlpha });
+          // Guard ends
+          sprays.push({ x: spraySide * guardW * 0.4, y: guardH * 0.5, r: sprayR * 1.0, a: glowAlpha * 0.8 });
+          // Mid blade — fades based on z distance
+          if (zT > 0.15) {
+            const midA = glowAlpha * Math.min(1, (zT - 0.15) * 2);
+            sprays.push({ x: spraySide * bladeW * 0.8, y: tipEnd * 0.4, r: sprayR * 1.1, a: midA });
+          }
+          // Lower blade — only for far swords
+          if (zT > 0.4) {
+            const farA = glowAlpha * Math.min(1, (zT - 0.4) * 2.5);
+            sprays.push({ x: spraySide * bladeW * 0.6, y: tipEnd * 0.7, r: sprayR * 0.9, a: farA });
+            sprays.push({ x: spraySide * bladeW * 0.4, y: tipEnd, r: sprayR * 0.7, a: farA * 0.7 });
+          }
+          // Draw airbrush blobs
+          for (let sp = 0; sp < sprays.length; sp++) {
+            const spr = sprays[sp];
+            const ag = ctx.createRadialGradient(spr.x, spr.y, 0, spr.x, spr.y, spr.r);
+            ag.addColorStop(0, 'rgba(255,140,30,' + spr.a + ')');
+            ag.addColorStop(0.4, 'rgba(255,120,20,' + (spr.a * 0.5) + ')');
+            ag.addColorStop(0.7, 'rgba(255,100,15,' + (spr.a * 0.15) + ')');
+            ag.addColorStop(1, 'rgba(255,80,10,0)');
+            ctx.fillStyle = ag;
+            ctx.beginPath();
+            ctx.arc(spr.x, spr.y, spr.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
 
           // === NORMAL SWORD FILL ===
           // Left half
