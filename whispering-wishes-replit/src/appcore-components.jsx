@@ -2664,7 +2664,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v11) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v12) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
@@ -2710,83 +2710,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
-          // === STATIC ORANGE LIGHTNING across the sky ===
-          let _ls = 91827364;
-          const lRng = () => { _ls = (_ls * 1103515245 + 12345) & 0x7fffffff; return _ls / 0x7fffffff; };
-          // Build jagged bolt as array of points
-          function boltPts(x0, y0, x1, y1, depth, maxD, out) {
-            if (depth >= maxD) { out.push(x1, y1); return; }
-            const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-            const dx = x1 - x0, dy = y1 - y0;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            const jitter = len * (0.2 + depth * 0.05);
-            const ox = mx + (lRng() - 0.5) * jitter;
-            const oy = my + (lRng() - 0.5) * jitter;
-            boltPts(x0, y0, ox, oy, depth + 1, maxD, out);
-            boltPts(ox, oy, x1, y1, depth + 1, maxD, out);
-          }
-          const nBolts = 6;
-          sc.save();
-          sc.lineCap = 'round'; sc.lineJoin = 'round';
-          for (let bi = 0; bi < nBolts; bi++) {
-            _ls = 91827364 + bi * 77777;
-            const sx = lRng() * W;
-            const sy = lRng() * H * 0.4;
-            const ang = (lRng() - 0.5) * 1.2 + Math.PI * 0.5;
-            const bLen = H * (0.15 + lRng() * 0.35);
-            const ex = sx + Math.cos(ang) * bLen;
-            const ey = sy + Math.sin(ang) * bLen;
-            // Build bolt points
-            const bSeed = _ls;
-            const pts = [sx, sy];
-            _ls = bSeed;
-            boltPts(sx, sy, ex, ey, 0, 5, pts);
-            // Branch from midpoint
-            const mi = Math.floor(pts.length / 4) * 2;
-            const bmx = pts[mi], bmy = pts[mi + 1];
-            const bAng = ang + (lRng() - 0.5) * 1.0;
-            const brLen = bLen * (0.2 + lRng() * 0.25);
-            const brPts = [bmx, bmy];
-            boltPts(bmx, bmy, bmx + Math.cos(bAng) * brLen, bmy + Math.sin(bAng) * brLen, 0, 3, brPts);
-            // Helper to stroke a point array
-            function strokePts(arr, ctx2) {
-              ctx2.beginPath();
-              ctx2.moveTo(arr[0], arr[1]);
-              for (let i = 2; i < arr.length; i += 2) ctx2.lineTo(arr[i], arr[i + 1]);
-              ctx2.stroke();
-            }
-            // Layer 1: wide glow (use shadowBlur instead of filter)
-            sc.shadowColor = 'rgba(255,140,40,0.8)';
-            sc.shadowBlur = 12;
-            sc.globalAlpha = 0.35;
-            sc.strokeStyle = 'rgb(255,130,30)';
-            sc.lineWidth = 6;
-            strokePts(pts, sc);
-            sc.globalAlpha = 0.2;
-            sc.lineWidth = 4;
-            strokePts(brPts, sc);
-            // Layer 2: mid
-            sc.shadowBlur = 5;
-            sc.globalAlpha = 0.5;
-            sc.strokeStyle = 'rgb(255,180,80)';
-            sc.lineWidth = 2.5;
-            strokePts(pts, sc);
-            sc.globalAlpha = 0.3;
-            sc.lineWidth = 1.5;
-            strokePts(brPts, sc);
-            // Layer 3: core
-            sc.shadowBlur = 0;
-            sc.globalAlpha = 0.8;
-            sc.strokeStyle = 'rgb(255,240,210)';
-            sc.lineWidth = 1.2;
-            strokePts(pts, sc);
-            sc.globalAlpha = 0.5;
-            sc.lineWidth = 0.8;
-            strokePts(brPts, sc);
-          }
-          sc.shadowBlur = 0; sc.shadowColor = 'transparent';
-          sc.restore();
-          skyCache._v11 = true;
+          skyCache._v12 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
@@ -2885,6 +2809,54 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Layer 5: front clouds
         drawCloudRange(splits[2], sceneClouds.length);
         } // end if (sceneClouds)
+
+        // === ANIMATED STATIC ELECTRICITY crackling through clouds ===
+        if (sceneClouds) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.lineCap = 'round';
+          // Pick cloud pairs near each other, draw small arcs between/around them
+          var et = cloudTime * 2.5; // faster than cloud movement
+          for (var ei = 0; ei < sceneClouds.length; ei += 3) {
+            var cl1 = sceneClouds[ei];
+            if (!cl1 || !cl1.baked) continue;
+            var ca1 = cl1.angle, flat1 = cl1.orbitFlatten || 0.7;
+            var cx1 = cl1.sunX + Math.cos(ca1) * cl1.orbitDist;
+            var cy1 = cl1.sunY + Math.sin(ca1) * cl1.orbitDist * flat1;
+            // Arc appears/disappears based on time — each spark lives briefly
+            var sparkPhase = Math.sin(et * 0.3 + ei * 1.7) * Math.sin(et * 0.17 + ei * 2.3);
+            if (sparkPhase < 0.3) continue; // only visible part of the time
+            var alpha = (sparkPhase - 0.3) * 1.4;
+            // Small jagged arc near cloud edge
+            var arcLen = cl1.baked.w * (0.3 + Math.sin(ei * 3.7) * 0.2);
+            var arcAng = et * 0.4 + ei * 2.1;
+            var ax0 = cx1 + cl1.baked.ox + cl1.baked.w * 0.5 + Math.cos(arcAng) * arcLen * 0.5;
+            var ay0 = cy1 + cl1.baked.oy + cl1.baked.h * 0.5 + Math.sin(arcAng) * arcLen * 0.3;
+            // 3-5 segment jagged path
+            var nSeg = 3 + ((ei * 7 + Math.floor(et * 2)) % 3);
+            ctx.beginPath();
+            ctx.moveTo(ax0, ay0);
+            var _es = (ei * 1640531527 + Math.floor(et * 3)) | 0;
+            for (var si = 1; si <= nSeg; si++) {
+              _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13);
+              var erx = ((_es >>> 0) % 1000) / 1000 - 0.5;
+              _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13);
+              var ery = ((_es >>> 0) % 1000) / 1000 - 0.5;
+              var segX = ax0 + (si / nSeg) * arcLen * Math.cos(arcAng + 0.5) + erx * arcLen * 0.4;
+              var segY = ay0 + (si / nSeg) * arcLen * Math.sin(arcAng + 0.5) + ery * arcLen * 0.3;
+              ctx.lineTo(segX, segY);
+            }
+            // Glow layer
+            ctx.strokeStyle = 'rgba(255,150,50,' + (alpha * 0.25) + ')';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            // Core layer
+            ctx.strokeStyle = 'rgba(255,220,160,' + (alpha * 0.6) + ')';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
 
         // Dynamic ambient — clouds darken the sky behind them
         // First pass: draw dark shadow under each cloud to occlude the bright sky
@@ -3423,44 +3395,36 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Sort back-to-front
         swords.sort((a, b) => b.wz - a.wz);
 
-        // Blade fracture — jagged cracks across blade
-        function drawFractures(ctx2, idx, bW, bH, gH2, lR2, lG2, lB22, dR2, dG2, dB2, lit2) {
-          // Simple seeded hash
+        // Blade fracture — split blade into displaced floating shards
+        // Returns array of {y, offX, offY} crack positions for use in blade drawing
+        function getFractures(idx, bH, gH) {
           var fs = idx * 2246822519 + 314159;
           function fr() { fs = (fs * 1103515245 + 12345) & 0x7fffffff; return fs / 0x7fffffff; }
           fr(); fr();
-          var nc = 2 + (fr() * 3 | 0);
-          var hw = bW / 2;
+          var nc = 2 + (fr() * 2 | 0); // 2-3 cracks
+          var cracks = [];
           for (var ci = 0; ci < nc; ci++) {
-            var t = 0.1 + fr() * 0.75;
-            var cy = -bH + t * (bH + gH2);
-            var wt2 = Math.min(1, t * 1.5);
-            var lw = hw * wt2;
-            // 4-6 segment jagged line
-            var ns = 3 + (fr() * 3 | 0);
-            var px = new Array(ns + 1), py = new Array(ns + 1);
-            for (var si = 0; si <= ns; si++) {
-              px[si] = -lw + (si / ns) * lw * 2;
-              py[si] = cy + (fr() - 0.5) * bW * 0.8;
-            }
-            // Dark crack
-            ctx2.strokeStyle = 'rgba(2,1,0,0.85)';
-            ctx2.lineWidth = Math.max(1, bW * 0.12);
-            ctx2.beginPath();
-            ctx2.moveTo(px[0], py[0]);
-            for (var pi = 1; pi <= ns; pi++) ctx2.lineTo(px[pi], py[pi]);
-            ctx2.stroke();
-            // Bright edge
-            var br2 = Math.min(255, lR2 + 100);
-            var bg2 = Math.min(255, lG2 + 90);
-            var bb2 = Math.min(255, lB22 + 70);
-            ctx2.strokeStyle = 'rgba(' + br2 + ',' + bg2 + ',' + bb2 + ',' + (0.4 + lit2 * 0.4) + ')';
-            ctx2.lineWidth = Math.max(0.5, bW * 0.05);
-            ctx2.beginPath();
-            ctx2.moveTo(px[0], py[0] - Math.max(0.5, bW * 0.06));
-            for (var pi2 = 1; pi2 <= ns; pi2++) ctx2.lineTo(px[pi2], py[pi2] - Math.max(0.5, bW * 0.06));
-            ctx2.stroke();
+            var t = 0.15 + ci * (0.6 / nc) + fr() * (0.5 / nc);
+            cracks.push({
+              y: -bH + t * (bH + gH),         // Y position of crack
+              offX: (fr() - 0.5) * 3.0,        // fragment X displacement (pixels)
+              offY: (fr() - 0.5) * 2.0,        // fragment Y displacement
+              ang: (fr() - 0.5) * 0.04         // slight rotation per shard
+            });
           }
+          cracks.sort(function(a, b) { return a.y - b.y; });
+          return cracks;
+        }
+        // Draw a blade segment clipped between y0 and y1, offset by dx/dy
+        function drawBladeSegment(ctx2, y0, y1, dx, dy, ang, bladeDrawFn) {
+          ctx2.save();
+          ctx2.beginPath();
+          ctx2.rect(-50, y0, 100, y1 - y0);
+          ctx2.clip();
+          ctx2.translate(dx, dy);
+          ctx2.rotate(ang);
+          bladeDrawFn();
+          ctx2.restore();
         }
 
         for (const s of swords) {
@@ -3529,7 +3493,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGB = (lightB + darkB) * 0.4;
             const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
             const gripBr = 0.05 + lit * 0.08;
-            // Blade left — 3D gradient
+            // Gladius blade — fractured floating shards
             const gBlGL = ctx.createLinearGradient(0, 0, -gBW, 0);
             if (leftLight) {
               gBlGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
@@ -3540,15 +3504,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               gBlGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
               gBlGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
             }
-            ctx.fillStyle = gBlGL;
-            ctx.beginPath();
-            ctx.moveTo(0, gTip);
-            ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
-            ctx.quadraticCurveTo(-gBW * 1.08, (gTaperY + gBase) * 0.5, -gBW * 0.95, gBase);
-            ctx.lineTo(0, gBase);
-            ctx.closePath();
-            ctx.fill();
-            // Blade right — 3D gradient
             const gBlGR = ctx.createLinearGradient(0, 0, gBW, 0);
             if (leftLight) {
               gBlGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
@@ -3559,23 +3514,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               gBlGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
               gBlGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
             }
-            ctx.fillStyle = gBlGR;
-            ctx.beginPath();
-            ctx.moveTo(0, gTip);
-            ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
-            ctx.quadraticCurveTo(gBW * 1.08, (gTaperY + gBase) * 0.5, gBW * 0.95, gBase);
-            ctx.lineTo(0, gBase);
-            ctx.closePath();
-            ctx.fill();
-            // Center ridge highlight
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-            ctx.lineWidth = Math.max(0.3, gBW * 0.08);
-            ctx.beginPath();
-            ctx.moveTo(0, gTip + 1);
-            ctx.lineTo(0, gBase);
-            ctx.stroke();
-            // Blade fractures
-            drawFractures(ctx, s.idx, gBW * 2, gBL, 0, lR, lG, lB2, dR, dG, dB, lit);
+            const gRidgeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+            const drawGladiusBlade = () => {
+              ctx.fillStyle = gBlGL;
+              ctx.beginPath();
+              ctx.moveTo(0, gTip);
+              ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
+              ctx.quadraticCurveTo(-gBW * 1.08, (gTaperY + gBase) * 0.5, -gBW * 0.95, gBase);
+              ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
+              ctx.fillStyle = gBlGR;
+              ctx.beginPath();
+              ctx.moveTo(0, gTip);
+              ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
+              ctx.quadraticCurveTo(gBW * 1.08, (gTaperY + gBase) * 0.5, gBW * 0.95, gBase);
+              ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
+              ctx.strokeStyle = gRidgeStyle; ctx.lineWidth = Math.max(0.3, gBW * 0.08);
+              ctx.beginPath(); ctx.moveTo(0, gTip + 1); ctx.lineTo(0, gBase); ctx.stroke();
+            };
+            const gCracks = getFractures(s.idx, gBL, 0);
+            const gBounds = [-gBL - 5];
+            for (var gci = 0; gci < gCracks.length; gci++) gBounds.push(gCracks[gci].y);
+            gBounds.push(5);
+            for (var gsi = 0; gsi < gBounds.length - 1; gsi++) {
+              var gc = gCracks[Math.min(gsi, gCracks.length - 1)];
+              var gdx = gsi === 0 ? 0 : gc.offX;
+              var gdy = gsi === 0 ? 0 : gc.offY;
+              var gda = gsi === 0 ? 0 : gc.ang;
+              drawBladeSegment(ctx, gBounds[gsi], gBounds[gsi + 1], gdx, gdy, gda, drawGladiusBlade);
+            }
             // Grip (drawn before guard) — cylindrical gradient
             const gGripGrad = ctx.createLinearGradient(-gGripW, 0, gGripW, 0);
             const gkR = Math.round(20 + 40 * gripBr), gkG = Math.round(12 + 20 * gripBr), gkB = Math.round(8 + 10 * gripBr);
@@ -3631,8 +3597,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — 3D mesh-style rendering ===
-          // Blade left half — diamond cross-section gradient
+          // === LONGSWORD — 3D fractured blade ===
           const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
           if (leftLight) {
             blGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
@@ -3643,17 +3608,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             blGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
             blGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
           }
-          ctx.fillStyle = blGL;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            -bladeW * 0.5, tipEnd - pomDia,
-                            -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath();
-          ctx.fill();
-          // Blade right half — diamond cross-section gradient
           const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
           if (leftLight) {
             blGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
@@ -3664,35 +3618,42 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             blGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
             blGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
           }
-          ctx.fillStyle = blGR;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            bladeW * 0.5, tipEnd - pomDia,
-                            bladeW / 2, tipEnd);
-          ctx.lineTo(bladeW / 2, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath();
-          ctx.fill();
-          // Center ridge — specular highlight line
-          ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH + 1);
-          ctx.lineTo(0, guardH);
-          ctx.stroke();
-          // Fuller grooves — thin dark channels
+          const ridgeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
           const fullerOff = bladeW * 0.18;
-          ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
-          ctx.beginPath();
-          ctx.moveTo(-fullerOff, -bladeH * 0.88);
-          ctx.lineTo(-fullerOff, guardH);
-          ctx.moveTo(fullerOff, -bladeH * 0.88);
-          ctx.lineTo(fullerOff, guardH);
-          ctx.stroke();
-          // Blade fractures
-          drawFractures(ctx, s.idx, bladeW, bladeH, guardH, lR, lG, lB2, dR, dG, dB, lit);
+          // Full blade draw function (both halves + ridge + fuller)
+          const drawFullBlade = () => {
+            ctx.fillStyle = blGL;
+            ctx.beginPath();
+            ctx.moveTo(0, -bladeH);
+            ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5, -bladeW * 0.5, tipEnd - pomDia, -bladeW / 2, tipEnd);
+            ctx.lineTo(-bladeW / 2, guardH); ctx.lineTo(0, guardH);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = blGR;
+            ctx.beginPath();
+            ctx.moveTo(0, -bladeH);
+            ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5, bladeW * 0.5, tipEnd - pomDia, bladeW / 2, tipEnd);
+            ctx.lineTo(bladeW / 2, guardH); ctx.lineTo(0, guardH);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = ridgeStyle; ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+            ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
+            ctx.beginPath();
+            ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
+            ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
+            ctx.stroke();
+          };
+          // Draw blade in fractured segments
+          const cracks = getFractures(s.idx, bladeH, guardH);
+          const boundaries = [-bladeH - 5];
+          for (var ci = 0; ci < cracks.length; ci++) boundaries.push(cracks[ci].y);
+          boundaries.push(guardH + 5);
+          for (var si = 0; si < boundaries.length - 1; si++) {
+            var crack = cracks[Math.min(si, cracks.length - 1)];
+            var dx = si === 0 ? 0 : crack.offX;
+            var dy = si === 0 ? 0 : crack.offY;
+            var da = si === 0 ? 0 : crack.ang;
+            drawBladeSegment(ctx, boundaries[si], boundaries[si + 1], dx, dy, da, drawFullBlade);
+          }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
           const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
