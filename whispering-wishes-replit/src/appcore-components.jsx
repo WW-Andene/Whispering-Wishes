@@ -3702,11 +3702,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Pole shaft
           const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
-          shaftGrad.addColorStop(0, 'rgb(40,24,12)');
-          shaftGrad.addColorStop(0.35, 'rgb(65,40,22)');
-          shaftGrad.addColorStop(0.5, 'rgb(80,52,28)');
-          shaftGrad.addColorStop(0.65, 'rgb(65,40,22)');
-          shaftGrad.addColorStop(1, 'rgb(40,24,12)');
+          shaftGrad.addColorStop(0, 'rgb(120,80,20)');
+          shaftGrad.addColorStop(0.35, 'rgb(180,135,35)');
+          shaftGrad.addColorStop(0.5, 'rgb(220,180,65)');
+          shaftGrad.addColorStop(0.65, 'rgb(180,135,35)');
+          shaftGrad.addColorStop(1, 'rgb(120,80,20)');
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
