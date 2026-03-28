@@ -3585,7 +3585,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // === BANNER — simple pole, static hanging tapestry with emblem ===
+        // === BANNER — pole with crest ornament + veil cloth ===
         {
           const bWx = 0.5, bWz = 22;
           const bScrX = projX(bWx, bWz);
@@ -3596,13 +3596,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const poleBury = bScale * 0.3;
           const poleTop = bScrY - poleH + poleBury;
           const bannerLean = -0.06;
+          const wt = cloudTime * 0.5;
 
           ctx.save();
           ctx.translate(bScrX, bScrY);
           ctx.rotate(bannerLean);
           ctx.translate(-bScrX, -bScrY);
 
-          // Plain pole shaft — no tip, no ornaments
+          // -- Pole shaft --
           const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
           shaftGrad.addColorStop(0, 'rgb(25,14,8)');
           shaftGrad.addColorStop(0.35, 'rgb(50,30,16)');
@@ -3612,121 +3613,82 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // === Ornate pole top — spear blade + medallion + bracket ===
-          const goldD = 'rgb(120,80,15)', goldM = 'rgb(200,155,45)', goldH = 'rgb(245,210,90)', goldL = 'rgb(160,115,25)';
+          // == ORNAMENT: arrowhead above round crest with star ==
+          const gD = 'rgb(120,80,15)', gM = 'rgb(200,155,45)', gH = 'rgb(245,210,90)';
 
-          // Tall spear blade — narrow, elongated like a lance head
-          const bladeH = bScale * 0.45;
-          const bladeW = poleW * 2;
-          const bladeGrad = ctx.createLinearGradient(bScrX - bladeW, 0, bScrX + bladeW, 0);
-          bladeGrad.addColorStop(0, 'rgb(130,125,115)');
-          bladeGrad.addColorStop(0.35, 'rgb(190,185,175)');
-          bladeGrad.addColorStop(0.5, 'rgb(220,218,210)');
-          bladeGrad.addColorStop(0.65, 'rgb(190,185,175)');
-          bladeGrad.addColorStop(1, 'rgb(130,125,115)');
-          ctx.fillStyle = bladeGrad;
+          // Arrowhead / spear point
+          const arrH = bScale * 0.35, arrW = bScale * 0.08;
+          const arrTop = poleTop - arrH;
+          const arrGrad = ctx.createLinearGradient(bScrX - arrW, 0, bScrX + arrW, 0);
+          arrGrad.addColorStop(0, 'rgb(140,135,125)'); arrGrad.addColorStop(0.4, 'rgb(210,205,195)');
+          arrGrad.addColorStop(0.5, 'rgb(230,228,220)'); arrGrad.addColorStop(0.6, 'rgb(210,205,195)');
+          arrGrad.addColorStop(1, 'rgb(140,135,125)');
+          ctx.fillStyle = arrGrad;
           ctx.beginPath();
-          ctx.moveTo(bScrX, poleTop - bladeH);
-          ctx.bezierCurveTo(bScrX + bladeW * 0.3, poleTop - bladeH * 0.5, bScrX + bladeW * 0.5, poleTop - bladeH * 0.15, bScrX + bladeW * 0.3, poleTop + bladeH * 0.05);
-          ctx.lineTo(bScrX + poleW * 0.4, poleTop);
-          ctx.lineTo(bScrX - poleW * 0.4, poleTop);
-          ctx.lineTo(bScrX - bladeW * 0.3, poleTop + bladeH * 0.05);
-          ctx.bezierCurveTo(bScrX - bladeW * 0.5, poleTop - bladeH * 0.15, bScrX - bladeW * 0.3, poleTop - bladeH * 0.5, bScrX, poleTop - bladeH);
+          ctx.moveTo(bScrX, arrTop);
+          ctx.lineTo(bScrX + arrW, poleTop - arrH * 0.15);
+          ctx.lineTo(bScrX + arrW * 0.6, poleTop - arrH * 0.1);
+          ctx.lineTo(bScrX + poleW * 0.5, poleTop);
+          ctx.lineTo(bScrX - poleW * 0.5, poleTop);
+          ctx.lineTo(bScrX - arrW * 0.6, poleTop - arrH * 0.1);
+          ctx.lineTo(bScrX - arrW, poleTop - arrH * 0.15);
           ctx.closePath();
           ctx.fill();
-          // Blade center ridge highlight
-          ctx.strokeStyle = 'rgba(255,255,245,0.3)';
-          ctx.lineWidth = Math.max(0.5, poleW * 0.15);
-          ctx.beginPath();
-          ctx.moveTo(bScrX, poleTop - bladeH * 0.9);
-          ctx.lineTo(bScrX, poleTop);
-          ctx.stroke();
 
-          // Circular medallion/shield — behind the crossbar area
-          const medY = poleTop + bScale * 0.08;
-          const medR = bScale * 0.18;
-          // Medallion backing — dark circle
-          const medBg = ctx.createRadialGradient(bScrX - medR * 0.2, medY - medR * 0.2, 0, bScrX, medY, medR);
-          medBg.addColorStop(0, 'rgb(55,35,15)');
-          medBg.addColorStop(0.7, 'rgb(40,25,10)');
-          medBg.addColorStop(1, 'rgb(25,15,6)');
-          ctx.fillStyle = medBg;
-          ctx.beginPath(); ctx.arc(bScrX, medY, medR, 0, Math.PI * 2); ctx.fill();
-          // Gold rim
-          ctx.strokeStyle = goldM;
-          ctx.lineWidth = Math.max(1, bScale * 0.015);
+          // Round crest / shield — below arrowhead, on the pole
+          const crestY = poleTop + bScale * 0.06;
+          const crestR = bScale * 0.12;
+          // Dark backing
+          ctx.fillStyle = 'rgb(35,20,10)';
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR, 0, Math.PI * 2); ctx.fill();
+          // Gold outer rim
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.012);
           ctx.stroke();
           // Inner gold ring
-          ctx.strokeStyle = goldL;
-          ctx.lineWidth = Math.max(0.5, bScale * 0.008);
-          ctx.beginPath(); ctx.arc(bScrX, medY, medR * 0.75, 0, Math.PI * 2); ctx.stroke();
-          // Star emblem on medallion — 6-pointed
-          ctx.fillStyle = goldM;
-          for (let si = 0; si < 6; si++) {
-            const sAng = si * Math.PI / 3 - Math.PI / 6;
-            const sLen = medR * 0.6;
-            const sW2 = medR * 0.15;
-            ctx.save();
-            ctx.translate(bScrX, medY);
-            ctx.rotate(sAng);
-            ctx.beginPath();
-            ctx.moveTo(0, -sW2);
-            ctx.lineTo(sLen, 0);
-            ctx.lineTo(0, sW2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
+          ctx.strokeStyle = gD; ctx.lineWidth = Math.max(0.5, bScale * 0.006);
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.7, 0, Math.PI * 2); ctx.stroke();
+          // 5-pointed star
+          ctx.fillStyle = gM;
+          ctx.beginPath();
+          for (let si = 0; si < 10; si++) {
+            const sAng = si * Math.PI / 5 - Math.PI / 2;
+            const sR = si % 2 === 0 ? crestR * 0.55 : crestR * 0.22;
+            const sx = bScrX + Math.cos(sAng) * sR, sy = crestY + Math.sin(sAng) * sR;
+            if (si === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
           }
-          // Star center dot
-          ctx.fillStyle = goldH;
-          ctx.beginPath(); ctx.arc(bScrX, medY, medR * 0.12, 0, Math.PI * 2); ctx.fill();
+          ctx.closePath(); ctx.fill();
+          // Center dot
+          ctx.fillStyle = gH;
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.08, 0, Math.PI * 2); ctx.fill();
 
-          // Decorative bracket wings — extend from medallion sides
-          const wingW = bScale * 0.22;
-          const wingH = bScale * 0.06;
-          ctx.fillStyle = goldD;
-          // Left wing
-          ctx.beginPath();
-          ctx.moveTo(bScrX - medR * 0.8, medY - wingH * 0.3);
-          ctx.bezierCurveTo(bScrX - medR - wingW * 0.5, medY - wingH, bScrX - medR - wingW, medY - wingH * 0.3, bScrX - medR - wingW, medY + wingH * 0.2);
-          ctx.bezierCurveTo(bScrX - medR - wingW * 0.7, medY + wingH, bScrX - medR * 0.8, medY + wingH * 0.5, bScrX - medR * 0.6, medY + wingH * 0.3);
-          ctx.closePath();
-          ctx.fill();
-          // Right wing
-          ctx.beginPath();
-          ctx.moveTo(bScrX + medR * 0.8, medY - wingH * 0.3);
-          ctx.bezierCurveTo(bScrX + medR + wingW * 0.5, medY - wingH, bScrX + medR + wingW, medY - wingH * 0.3, bScrX + medR + wingW, medY + wingH * 0.2);
-          ctx.bezierCurveTo(bScrX + medR + wingW * 0.7, medY + wingH, bScrX + medR * 0.8, medY + wingH * 0.5, bScrX + medR * 0.6, medY + wingH * 0.3);
-          ctx.closePath();
-          ctx.fill();
-
-          // Crossbar — where cloth attaches, below medallion
-          const crossY = medY + medR + bScale * 0.02;
-          const crossW = bScale * 0.55;
-          const crossH = Math.max(1.5, poleW * 0.7);
+          // Small horizontal bar where cloth attaches
+          const crossY = crestY + crestR + bScale * 0.015;
+          const crossW = bScale * 0.5;
           ctx.fillStyle = 'rgb(50,30,16)';
-          ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
+          ctx.fillRect(bScrX - crossW / 2, crossY - poleW * 0.3, crossW, poleW * 0.6);
 
-          // --- Cloth blowing to the side like reference — same shape, wind motion ---
-          const dTop = crossY + crossH * 0.5;
-          const dW = crossW * 0.9;
+          // == VEIL CLOTH — 80 segments, 3-layer wind, flows like silk ==
+          const dTop = crossY + poleW * 0.3;
+          const dW = crossW * 0.88;
           const dH = bScale * 1.8;
           const dL0 = bScrX - dW / 2, dR0 = bScrX + dW / 2;
-          const wt = cloudTime * 0.5;
-          const segs = 40;
+          const segs = 80;
 
-          // Wind: whole cloth pushed to the right, more at bottom
+          // 3-layer wind displacement
           function windX(t) {
-            const push = t * t * bScale * 0.55 * (0.6 + Math.sin(wt * 0.35) * 0.4);
-            const ripple = Math.sin(t * 5 - wt * 2.0) * t * bScale * 0.06
-                         + Math.sin(t * 3 - wt * 1.2 + 1.5) * t * bScale * 0.04;
-            return push + ripple;
+            const gust = 0.6 + Math.sin(wt * 0.35) * 0.4;
+            const push = t * t * bScale * 0.55 * gust;
+            const w1 = Math.sin(t * 6.5 - wt * 2.5) * t * bScale * 0.07;
+            const w2 = Math.sin(t * 3.8 - wt * 1.4 + 1.5) * t * bScale * 0.045;
+            const w3 = Math.sin(t * 10 - wt * 3.2 + 0.7) * t * t * bScale * 0.025;
+            return push + w1 + w2 + w3;
           }
           function windY(t) {
-            return Math.sin(t * 4.5 - wt * 1.8) * t * bScale * 0.025;
+            return Math.sin(t * 5.5 - wt * 2.0) * t * bScale * 0.03
+                 + Math.sin(t * 8 - wt * 2.8 + 1) * t * t * bScale * 0.015;
           }
 
-          function drapePath() {
+          function veilPath() {
             ctx.beginPath();
             ctx.moveTo(dL0, dTop);
             ctx.lineTo(dR0, dTop);
@@ -3735,9 +3697,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(dR0 + windX(t), dTop + t * dH + windY(t));
             }
             const bwx = windX(1), bwy = windY(1);
-            ctx.lineTo(dR0 + bwx - dW * 0.3, dTop + dH + bwy + bScale * 0.03);
-            ctx.lineTo(dL0 + bwx + dW * 0.3, dTop + dH + bwy + bScale * 0.03);
-            ctx.lineTo(dL0 + windX(1), dTop + dH + bwy);
+            ctx.lineTo(dL0 + bwx, dTop + dH + bwy);
             for (let i = segs; i >= 1; i--) {
               const t = i / segs;
               ctx.lineTo(dL0 + windX(t), dTop + t * dH + windY(t));
@@ -3746,7 +3706,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
 
           // Deep red fill
-          drapePath();
+          veilPath();
           const dGrad = ctx.createLinearGradient(0, dTop, 0, dTop + dH);
           dGrad.addColorStop(0, 'rgb(148,32,22)');
           dGrad.addColorStop(0.3, 'rgb(132,26,18)');
@@ -3755,69 +3715,52 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = dGrad;
           ctx.fill();
 
-          // Animated fabric folds — shift with wind
+          // 20 animated fold layers
           ctx.save();
-          drapePath(); ctx.clip();
-          const dL = bScrX - dW / 2, dR = bScrX + dW / 2;
-          for (let fi = 0; fi < 10; fi++) {
-            const fX = dL + (fi + 0.5) * (dW / 10) + Math.sin(fi * 1.7 + wt * 0.6) * bScale * 0.02;
-            const fW2 = bScale * 0.035;
-            // Highlight
-            const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.4) * 0.03;
+          veilPath(); ctx.clip();
+          for (let fi = 0; fi < 20; fi++) {
+            const fX = dL0 + (fi + 0.5) * (dW / 20) + Math.sin(fi * 1.7 + wt * 0.6) * bScale * 0.015;
+            const fW2 = bScale * 0.02;
+            const hlA = 0.035 + Math.sin(fi * 2.1 + wt * 0.4) * 0.025;
             const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
             hl.addColorStop(0, 'rgba(255,160,90,0)');
             hl.addColorStop(0.5, 'rgba(255,160,90,' + hlA + ')');
             hl.addColorStop(1, 'rgba(255,160,90,0)');
             ctx.fillStyle = hl;
-            ctx.fillRect(fX - fW2, dTop, fW2 * 2, dH);
-            // Shadow
-            const shX = fX + fW2 * 0.7;
-            const sh = ctx.createLinearGradient(shX - fW2 * 0.4, 0, shX + fW2 * 0.4, 0);
+            ctx.fillRect(fX - fW2, dTop, fW2 * 2, dH * 1.5);
+            const shX = fX + fW2 * 0.6;
+            const sh = ctx.createLinearGradient(shX - fW2 * 0.3, 0, shX + fW2 * 0.3, 0);
             sh.addColorStop(0, 'rgba(0,0,0,0)');
-            sh.addColorStop(0.5, 'rgba(0,0,0,' + (hlA * 0.5) + ')');
+            sh.addColorStop(0.5, 'rgba(0,0,0,' + (hlA * 0.4) + ')');
             sh.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = sh;
-            ctx.fillRect(shX - fW2 * 0.4, dTop, fW2 * 0.8, dH);
+            ctx.fillRect(shX - fW2 * 0.3, dTop, fW2 * 0.6, dH * 1.5);
           }
 
-          // --- Emblem / logo — sun-star with circle (follows cloth) ---
-          const emT = 0.38;
+          // Emblem on cloth — follows wind
+          const emT = 0.35;
           const emCx = bScrX + windX(emT), emCy = dTop + emT * dH + windY(emT);
-          const emR = dW * 0.28;
-          // Outer circle
-          ctx.strokeStyle = 'rgba(210,155,50,0.55)';
-          ctx.lineWidth = Math.max(0.8, bScale * 0.015);
+          const emR = dW * 0.25;
+          ctx.strokeStyle = 'rgba(210,155,50,0.5)';
+          ctx.lineWidth = Math.max(0.6, bScale * 0.01);
           ctx.beginPath(); ctx.arc(emCx, emCy, emR, 0, Math.PI * 2); ctx.stroke();
-          // Sun rays — 8 pointed star
-          ctx.fillStyle = 'rgba(210,155,50,0.4)';
+          ctx.fillStyle = 'rgba(210,155,50,0.35)';
           for (let ri = 0; ri < 8; ri++) {
             const ang = ri * Math.PI / 4;
-            const rayL = emR * 1.35;
-            const rayW = emR * 0.18;
-            ctx.save();
-            ctx.translate(emCx, emCy);
-            ctx.rotate(ang);
-            ctx.beginPath();
-            ctx.moveTo(0, -rayW);
-            ctx.lineTo(rayL, 0);
-            ctx.lineTo(0, rayW);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
+            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
+            ctx.beginPath(); ctx.moveTo(0, -emR * 0.15); ctx.lineTo(emR * 1.2, 0); ctx.lineTo(0, emR * 0.15);
+            ctx.closePath(); ctx.fill(); ctx.restore();
           }
-          // Inner circle fill
-          ctx.fillStyle = 'rgba(210,155,50,0.2)';
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.55, 0, Math.PI * 2); ctx.fill();
-          // Inner dot
-          ctx.fillStyle = 'rgba(210,155,50,0.45)';
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.15, 0, Math.PI * 2); ctx.fill();
-
+          ctx.fillStyle = 'rgba(210,155,50,0.15)';
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(210,155,50,0.4)';
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.12, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
 
-          // Gold trim border
-          drapePath();
+          // Gold trim
+          veilPath();
           ctx.strokeStyle = 'rgb(185,140,42)';
-          ctx.lineWidth = Math.max(1, bScale * 0.025);
+          ctx.lineWidth = Math.max(1, bScale * 0.02);
           ctx.stroke();
 
           ctx.restore();
