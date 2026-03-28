@@ -3772,19 +3772,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const outM = gp(Math.round(gridX / 2), outOff); // peak shifted down from top
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
-          ctx.beginPath();
-          ctx.moveTo(outL.x, outL.y); ctx.lineTo(outM.x, outM.y); ctx.lineTo(outR.x, outR.y);
-          ctx.stroke();
-
-          // Straight gold line at the bottom
+          // Triangle outline + side lines down to bottom = connected frame
           const botRow = Math.round(gridY - outOff);
           const botL = gp(0, botRow), botR = gp(gridX, botRow);
           ctx.beginPath();
-          ctx.moveTo(botL.x, botL.y); ctx.lineTo(botR.x, botR.y);
+          // Left side down
+          ctx.moveTo(botL.x, botL.y); ctx.lineTo(outL.x, outL.y);
+          // Triangle V
+          ctx.lineTo(outM.x, outM.y);
+          ctx.lineTo(outR.x, outR.y);
+          // Right side down
+          ctx.lineTo(botR.x, botR.y);
+          // Bottom line
+          ctx.lineTo(botL.x, botL.y);
           ctx.stroke();
 
+          // Small 4-branch star below triangle peak
+          const starY = outM.y + bScale * 0.08;
+          const starR = bScale * 0.04;
+          ctx.fillStyle = 'rgba(210,165,50,0.5)';
+          for (let si = 0; si < 4; si++) {
+            const sAng = si * Math.PI / 2 - Math.PI / 2;
+            ctx.save(); ctx.translate(outM.x, starY); ctx.rotate(sAng);
+            ctx.beginPath(); ctx.moveTo(0, -starR * 0.25); ctx.lineTo(starR, 0); ctx.lineTo(0, starR * 0.25);
+            ctx.closePath(); ctx.fill(); ctx.restore();
+          }
+
           // Emblem — griffin in sunburst
-          const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.55));
+          const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.5));
           const emCx = emPt.x, emCy = emPt.y, emS = dW * 0.35;
           const eA = 'rgba(210,155,50,';
           // Sunburst rays behind griffin
@@ -3845,15 +3860,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           cBg.addColorStop(0, 'rgb(120,30,18)'); cBg.addColorStop(0.6, 'rgb(95,22,12)'); cBg.addColorStop(1, 'rgb(75,16,8)');
           ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.015); ctx.stroke();
+          ctx.strokeStyle = gM; ctx.lineWidth = barThick; ctx.stroke();
+          // 4-branch star
           ctx.fillStyle = gM;
-          for (let si = 0; si < 8; si++) {
-            const sAng = si * Math.PI / 4 - Math.PI / 2, sLen = crestR * 0.7, sW = crestR * 0.13;
+          for (let si = 0; si < 4; si++) {
+            const sAng = si * Math.PI / 2 - Math.PI / 2, sLen = crestR * 0.7, sW = crestR * 0.15;
             ctx.save(); ctx.translate(bScrX, crossY); ctx.rotate(sAng);
             ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath(); ctx.fill(); ctx.restore();
           }
           ctx.fillStyle = gH;
-          ctx.beginPath(); ctx.arc(bScrX, crossY, crestR * 0.15, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(bScrX, crossY, crestR * 0.12, 0, Math.PI * 2); ctx.fill();
 
           } catch(e) { /* prevent rotation leak */ }
           ctx.restore();
