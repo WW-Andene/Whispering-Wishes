@@ -3646,28 +3646,41 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = 'rgb(50,30,16)';
           ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
 
-          // --- Static hanging tapestry ---
+          // --- Hanging tapestry — animated with wind/embers ---
           const dTop = crossY + crossH * 0.5;
           const dW = crossW * 0.9;
           const dH = bScale * 1.8;
           const dL = bScrX - dW / 2, dR = bScrX + dW / 2;
+          const wt = cloudTime * 0.5;
 
-          // Slightly organic shape — not a perfect rectangle
           function drapePath() {
             ctx.beginPath();
             ctx.moveTo(dL, dTop);
             ctx.lineTo(dR, dTop);
-            // Right edge — very slight belly outward
-            ctx.bezierCurveTo(dR + bScale * 0.012, dTop + dH * 0.3, dR + bScale * 0.008, dTop + dH * 0.7, dR - bScale * 0.005, dTop + dH);
-            // Bottom — slight unevenness, not straight
-            ctx.lineTo(dR - bScale * 0.01, dTop + dH + bScale * 0.015);
-            ctx.lineTo(bScrX + dW * 0.15, dTop + dH + bScale * 0.025);
-            ctx.lineTo(bScrX, dTop + dH + bScale * 0.018);
-            ctx.lineTo(bScrX - dW * 0.15, dTop + dH + bScale * 0.025);
-            ctx.lineTo(dL + bScale * 0.01, dTop + dH + bScale * 0.015);
-            ctx.lineTo(dL + bScale * 0.005, dTop + dH);
-            // Left edge — slight belly
-            ctx.bezierCurveTo(dL - bScale * 0.008, dTop + dH * 0.7, dL - bScale * 0.012, dTop + dH * 0.3, dL, dTop);
+            // Right edge — waves driven by cloudTime (wind)
+            const rW1 = Math.sin(wt * 0.8 + 0.5) * bScale * 0.025;
+            const rW2 = Math.sin(wt * 0.5 + 2) * bScale * 0.018;
+            ctx.bezierCurveTo(
+              dR + bScale * 0.01 + rW1, dTop + dH * 0.3,
+              dR + rW2, dTop + dH * 0.7,
+              dR - bScale * 0.005 + rW2 * 0.6, dTop + dH
+            );
+            // Bottom — billows with wind
+            const bW = Math.sin(wt * 0.6 + 1) * bScale * 0.015;
+            ctx.lineTo(dR + bW, dTop + dH + bScale * 0.025);
+            ctx.lineTo(bScrX + dW * 0.15 + bW * 0.7, dTop + dH + bScale * 0.04 + Math.sin(wt * 0.7) * bScale * 0.01);
+            ctx.lineTo(bScrX + bW * 0.4, dTop + dH + bScale * 0.03);
+            ctx.lineTo(bScrX - dW * 0.15 + bW * 0.7, dTop + dH + bScale * 0.04 + Math.sin(wt * 0.7 + 1.5) * bScale * 0.01);
+            ctx.lineTo(dL + bW, dTop + dH + bScale * 0.025);
+            ctx.lineTo(dL + bScale * 0.005 + rW2 * 0.6, dTop + dH);
+            // Left edge
+            const lW1 = Math.sin(wt * 0.8 + 0.8) * bScale * 0.025;
+            const lW2 = Math.sin(wt * 0.5 + 2.3) * bScale * 0.018;
+            ctx.bezierCurveTo(
+              dL - bScale * 0.01 + lW2, dTop + dH * 0.7,
+              dL - bScale * 0.01 + lW1, dTop + dH * 0.3,
+              dL, dTop
+            );
             ctx.closePath();
           }
 
@@ -3681,14 +3694,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = dGrad;
           ctx.fill();
 
-          // Static fabric folds — fixed highlight/shadow strips
+          // Animated fabric folds — highlight/shadow shift with wind
           ctx.save();
           drapePath(); ctx.clip();
           for (let fi = 0; fi < 5; fi++) {
-            const fX = dL + (fi + 0.5) * (dW / 5);
+            const fX = dL + (fi + 0.5) * (dW / 5) + Math.sin(fi * 1.7 + wt * 0.4) * bScale * 0.012;
             const fW2 = bScale * 0.06;
             // Highlight
-            const hlA = 0.04 + (fi % 2) * 0.02;
+            const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.3) * 0.025;
             const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
             hl.addColorStop(0, 'rgba(255,160,90,0)');
             hl.addColorStop(0.5, 'rgba(255,160,90,' + hlA + ')');
