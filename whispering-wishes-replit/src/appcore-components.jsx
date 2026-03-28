@@ -2298,7 +2298,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
-    const sceneSeed = 29483;
+    const sceneSeed = 47291;
 
     // === Cloud system from cloud-demo ===
     const CLOUD_DEFS = [
@@ -3414,26 +3414,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.fill();
 
-          // Faded amber light reflection on sword silhouette
+          // Faded amber light reflection on sword edge
           if (lit > 0.05) {
-            const glowA = lit * 0.35;
-            const glowW = Math.max(1, bladeW * 0.6);
-            ctx.save();
-            ctx.globalAlpha = glowA;
-            ctx.shadowColor = 'rgba(255,170,50,0.8)';
-            ctx.shadowBlur = glowW * 3;
-            ctx.strokeStyle = 'rgba(255,180,60,' + (glowA * 0.6) + ')';
-            ctx.lineWidth = glowW * 0.4;
-            // Trace full sword outline on sun-facing side
-            ctx.beginPath();
-            ctx.moveTo(0, -bladeH);
             const es = leftLight ? -1 : 1;
-            ctx.bezierCurveTo(es * bladeW * 0.25, -bladeH + pomDia * 0.5,
-                              es * bladeW * 0.5, tipEnd - pomDia,
-                              es * bladeW / 2, tipEnd);
-            ctx.lineTo(es * bladeW / 2, ov);
+            // Outer soft glow — wide, very transparent
+            ctx.strokeStyle = 'rgba(255,160,40,' + (lit * 0.12) + ')';
+            ctx.lineWidth = Math.max(2, bladeW * 1.2);
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(es * bladeW / 2, ov);
+            ctx.lineTo(es * bladeW / 2, tipEnd);
+            ctx.bezierCurveTo(es * bladeW * 0.25, tipEnd + pomDia * 0.3, 0, -bladeH + pomDia * 0.3, 0, -bladeH);
             ctx.stroke();
-            ctx.restore();
+            // Inner brighter edge — thin, slightly more opaque
+            ctx.strokeStyle = 'rgba(255,200,80,' + (lit * 0.25) + ')';
+            ctx.lineWidth = Math.max(0.5, bladeW * 0.3);
+            ctx.beginPath();
+            ctx.moveTo(es * bladeW / 2, ov);
+            ctx.lineTo(es * bladeW / 2, tipEnd);
+            ctx.bezierCurveTo(es * bladeW * 0.25, tipEnd + pomDia * 0.3, 0, -bladeH + pomDia * 0.3, 0, -bladeH);
+            ctx.stroke();
           }
 
           ctx.restore();
