@@ -3465,38 +3465,35 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const guardR = bladeW * 1.15;
           const guardTh = t * 0.015; // thinner guard
           const gripL = t * 0.18;
-          const gripW2 = bladeW * 0.55;
-          const pomR = guardR;
-          const pomTh = guardTh;
-          const knobR = gripW2 * 0.4;
+          const gripW2 = bladeW * 0.75;
+          const pomBallR = bladeW * 0.7;
+          const knobR = gripW2 * 0.3;
 
           const bury = bladeL * 0.4;
           const bladeTip = -bladeL + bury;
           const bladeBase = bury;
-          const guardY = bladeBase + guardTh * 0.5;
-          const gripTop = bladeBase + guardTh;
+          const gripTop = bladeBase + guardTh + guardR * 0.5; // below guard dome
           const gripBot2 = gripTop + gripL;
-          const pomY = gripBot2 + pomTh * 0.5;
-          const knobY = gripBot2 + pomTh + knobR;
+          const pomCY = gripBot2 + pomBallR * 0.8;
+          const knobY = pomCY + pomBallR + knobR * 0.5;
 
-          // Blade left — light steel, slight outward curve on edge
+          // Blade left — light steel, curved taper + outward edge
+          const taperY = bladeTip + bladeL - taperAt;
           ctx.fillStyle = 'rgb(175,168,155)';
           ctx.beginPath();
           ctx.moveTo(0, bladeTip);
-          ctx.lineTo(-bladeW * 0.15, bladeTip + (bladeL - taperAt) * 0.3);
-          ctx.lineTo(-bladeW, bladeTip + bladeL - taperAt);
-          ctx.quadraticCurveTo(-bladeW * 1.08, (bladeTip + bladeL - taperAt + bladeBase) * 0.5, -bladeW * 0.95, bladeBase);
+          ctx.quadraticCurveTo(-bladeW * 0.4, bladeTip + (bladeL - taperAt) * 0.4, -bladeW, taperY);
+          ctx.quadraticCurveTo(-bladeW * 1.08, (taperY + bladeBase) * 0.5, -bladeW * 0.95, bladeBase);
           ctx.lineTo(0, bladeBase);
           ctx.closePath();
           ctx.fill();
 
-          // Blade right — dark steel, same outward curve
+          // Blade right — dark steel
           ctx.fillStyle = 'rgb(100,95,88)';
           ctx.beginPath();
           ctx.moveTo(0, bladeTip);
-          ctx.lineTo(bladeW * 0.15, bladeTip + (bladeL - taperAt) * 0.3);
-          ctx.lineTo(bladeW, bladeTip + bladeL - taperAt);
-          ctx.quadraticCurveTo(bladeW * 1.08, (bladeTip + bladeL - taperAt + bladeBase) * 0.5, bladeW * 0.95, bladeBase);
+          ctx.quadraticCurveTo(bladeW * 0.4, bladeTip + (bladeL - taperAt) * 0.4, bladeW, taperY);
+          ctx.quadraticCurveTo(bladeW * 1.08, (taperY + bladeBase) * 0.5, bladeW * 0.95, bladeBase);
           ctx.lineTo(0, bladeBase);
           ctx.closePath();
           ctx.fill();
@@ -3530,10 +3527,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
 
-          // Pommel disc
+          // Pommel — round ball
           ctx.fillStyle = 'rgb(85,70,50)';
           ctx.beginPath();
-          ctx.ellipse(0, pomY, pomR, pomTh * 0.5, 0, 0, Math.PI * 2);
+          ctx.arc(0, pomCY, pomBallR, 0, Math.PI * 2);
+          ctx.fill();
+          // Pommel highlight
+          ctx.fillStyle = 'rgba(140,125,100,0.4)';
+          ctx.beginPath();
+          ctx.arc(-pomBallR * 0.2, pomCY - pomBallR * 0.25, pomBallR * 0.3, 0, Math.PI * 2);
           ctx.fill();
 
           // Top knob
