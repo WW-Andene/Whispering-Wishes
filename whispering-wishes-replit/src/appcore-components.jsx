@@ -2889,15 +2889,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
-            const contrast=0.6+dT*0.4,warmShift=(1-dT)*25,baseVal=18+dC*55;
-            // Deep dramatic ground — dark shadows, fiery highlights
-            const t0r=baseVal*0.35+warmShift*0.2, t0g=baseVal*0.22+warmShift*0.08, t0b=baseVal*0.18+warmShift*0.03;
-            const t1r=baseVal*0.55+warmShift*0.32, t1g=baseVal*0.38+warmShift*0.14, t1b=baseVal*0.28+warmShift*0.05;
-            // Mid-tone: deep amber
-            const tmR=baseVal*0.8+warmShift*0.5, tmG=baseVal*0.52+warmShift*0.25, tmB=baseVal*0.3+warmShift*0.06;
-            // Light tones: fiery ember glow
-            const t2r=baseVal*1.1+warmShift*0.7, t2g=baseVal*0.72+warmShift*0.35, t2b=baseVal*0.32+warmShift*0.06;
-            const t3r=baseVal*1.4+warmShift*0.9, t3g=baseVal*0.9+warmShift*0.45, t3b=baseVal*0.35+warmShift*0.08;
+            const contrast=0.6+dT*0.4,warmShift=(1-dT)*32,baseVal=30+dC*75;
+            // Ground matching sky — brighter, warm amber
+            const t0r=baseVal*0.42+warmShift*0.25, t0g=baseVal*0.28+warmShift*0.12, t0b=baseVal*0.2+warmShift*0.04;
+            const t1r=baseVal*0.62+warmShift*0.38, t1g=baseVal*0.44+warmShift*0.18, t1b=baseVal*0.3+warmShift*0.06;
+            // Mid-tone: warm amber
+            const tmR=baseVal*0.85+warmShift*0.55, tmG=baseVal*0.58+warmShift*0.3, tmB=baseVal*0.34+warmShift*0.08;
+            // Light tones: bright amber
+            const t2r=baseVal*1.15+warmShift*0.75, t2g=baseVal*0.78+warmShift*0.4, t2b=baseVal*0.38+warmShift*0.1;
+            const t3r=baseVal*1.45+warmShift*0.95, t3g=baseVal*0.95+warmShift*0.5, t3b=baseVal*0.42+warmShift*0.12;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
@@ -2974,7 +2974,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           gctx.fillStyle=gShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.globalCompositeOperation="multiply";
           const amberShade=gctx.createLinearGradient(0,edgeY-curveH,0,edgeY+groundH);
-          amberShade.addColorStop(0,"rgba(200,150,80,1)");amberShade.addColorStop(0.3,"rgba(180,120,55,1)");amberShade.addColorStop(0.7,"rgba(150,90,35,1)");amberShade.addColorStop(1,"rgba(120,65,25,1)");
+          amberShade.addColorStop(0,"rgba(240,200,130,1)");amberShade.addColorStop(0.3,"rgba(225,175,100,1)");amberShade.addColorStop(0.7,"rgba(200,145,70,1)");amberShade.addColorStop(1,"rgba(175,115,50,1)");
           gctx.fillStyle=amberShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.restore();
           } // end if gW>=4&&gHt>=4
