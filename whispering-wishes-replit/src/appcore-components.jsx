@@ -3679,24 +3679,43 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const gridY = Math.max(2, Math.round(dH / cellSize));
 
           // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
-          // Each cell is independent — own displacement from rest position
-          // Anchored at top (v=0), more freedom at bottom (v=1)
+          // Cloth surface — continuous wave field like Reflect background
+          // Wave functions tuned for flag pixel scale (not screen scale)
+          // These create traveling folds that BEND the cloth shape
+          const _fw1 = (px, py, t) => px * 0.08 + Math.sin(py * 0.04) * 2.0 + Math.cos(py * 0.02 + px * 0.01) * 1.0 - t * 0.25;
+          const _fw2 = (px, py, t) => (px * 0.05 + py * 0.06) + Math.sin(px * 0.03 - py * 0.02) * 1.5 - t * 0.18;
+          const _fw3 = (px, py, t) => py * 0.07 + Math.sin(px * 0.05) * 1.8 + Math.cos(py * 0.03 + px * 0.02) * 0.9 - t * 0.14;
+
           function gridPt(gx, gy) {
             const u = gx / gridX, v = gy / gridY;
-            // Unique phase per cell so neighbors differ
-            const cellId = gx * 31 + gy * 17;
             const freedom = v * v;
-            // Each cell responds to wind independently
-            const dx = Math.sin(cellId * 0.37 + wt * 0.267) * freedom * bScale * 0.12
-                     + Math.sin(cellId * 0.13 + wt * 0.167 + 1.7) * freedom * bScale * 0.08
-                     + freedom * bScale * 0.16 * (0.5 + Math.sin(wt * 0.1) * 0.3);
-            const dy = Math.sin(cellId * 0.23 + wt * 0.2 + 0.9) * freedom * bScale * 0.08
-                     + Math.sin(cellId * 0.41 + wt * 0.117 + 2.1) * freedom * bScale * 0.05;
-            const dz = Math.sin(cellId * 0.19 + wt * 0.15 + 1.3) * freedom * 0.24;
-            const zScale = 1 + dz * 0.25;
-            const baseX = bScrX + (u - 0.5) * dW * zScale + dx;
-            const baseY = dTop + v * dH + dy;
-            return { x: baseX, y: baseY, z: dz };
+            // Pixel position on cloth for wave sampling
+            const px = u * dW, py = v * dH;
+            // 3 wave heights — create actual surface undulation
+            const h1 = Math.sin(_fw1(px, py, wt));
+            const h2 = Math.sin(_fw2(px, py, wt));
+            const h3 = Math.sin(_fw3(px, py, wt));
+            const totalH = h1 * 0.5 + h2 * 0.35 + h3 * 0.25;
+            // Slope via finite differences — where slope is steep, cloth folds
+            const dd = 2;
+            const hR = Math.sin(_fw1(px+dd,py,wt))*0.5 + Math.sin(_fw2(px+dd,py,wt))*0.35 + Math.sin(_fw3(px+dd,py,wt))*0.25;
+            const hD = Math.sin(_fw1(px,py+dd,wt))*0.5 + Math.sin(_fw2(px,py+dd,wt))*0.35 + Math.sin(_fw3(px,py+dd,wt))*0.25;
+            const slopeX = hR - totalH;
+            const slopeY = hD - totalH;
+            // X: wave height bends the cloth sideways (folds!) + gentle wind
+            const windPush = freedom * bScale * 0.06 * (0.5 + Math.sin(wt * 0.1) * 0.3);
+            const foldX = totalH * freedom * bScale * 0.1;
+            // Y: slope pushes cloth up/down creating visible ripples in silhouette
+            const foldY = slopeY * freedom * bScale * 0.8;
+            // Z: wave height = depth — crests come toward viewer, troughs recede
+            const wz = totalH * freedom * 0.2;
+            // Z affects local width — crests wider (cloth billows), troughs narrower
+            const zScale = 1 + wz * 0.4;
+            // Slope also shifts columns — steeper slope = more horizontal offset
+            const slopeShift = slopeX * freedom * bScale * 0.6;
+            const baseX = bScrX + (u - 0.5) * dW * zScale + windPush + foldX + slopeShift;
+            const baseY = dTop + v * dH + foldY;
+            return { x: baseX, y: baseY, z: wz };
           }
 
           // Draw cloth row by row — each row shaded by its Z depth
