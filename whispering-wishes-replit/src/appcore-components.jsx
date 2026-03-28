@@ -3628,29 +3628,30 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const crossW = bScale * 0.7;
           ctx.fillRect(bScrX - crossW / 2, crossY - barThick / 2, crossW, barThick);
 
-          // Spearhead end caps — elongated outward
-          const diaR = barThick * 1.2;
-          const diaL = barThick * 2.5; // long axis (outward point)
-          // Left crossbar end — point left
+          // Diamond 💎 end caps — point outward AND inward
+          const diaW = barThick * 1.2;  // width (perpendicular)
+          const diaOut = barThick * 2.2; // long outward point
+          const diaIn = barThick * 1.0;  // shorter inward point
+          // Left — points left
           ctx.beginPath();
-          ctx.moveTo(bScrX - crossW / 2 - diaL, crossY);
-          ctx.lineTo(bScrX - crossW / 2, crossY - diaR);
-          ctx.lineTo(bScrX - crossW / 2 + diaR * 0.5, crossY);
-          ctx.lineTo(bScrX - crossW / 2, crossY + diaR);
+          ctx.moveTo(bScrX - crossW / 2 - diaOut, crossY);
+          ctx.lineTo(bScrX - crossW / 2, crossY - diaW);
+          ctx.lineTo(bScrX - crossW / 2 + diaIn, crossY);
+          ctx.lineTo(bScrX - crossW / 2, crossY + diaW);
           ctx.closePath(); ctx.fill();
-          // Right crossbar end — point right
+          // Right — points right
           ctx.beginPath();
-          ctx.moveTo(bScrX + crossW / 2 + diaL, crossY);
-          ctx.lineTo(bScrX + crossW / 2, crossY - diaR);
-          ctx.lineTo(bScrX + crossW / 2 - diaR * 0.5, crossY);
-          ctx.lineTo(bScrX + crossW / 2, crossY + diaR);
+          ctx.moveTo(bScrX + crossW / 2 + diaOut, crossY);
+          ctx.lineTo(bScrX + crossW / 2, crossY - diaW);
+          ctx.lineTo(bScrX + crossW / 2 - diaIn, crossY);
+          ctx.lineTo(bScrX + crossW / 2, crossY + diaW);
           ctx.closePath(); ctx.fill();
-          // Top vertical arm — point up
+          // Top — points up
           ctx.beginPath();
-          ctx.moveTo(bScrX, poleTop - armH - diaL);
-          ctx.lineTo(bScrX + diaR, poleTop - armH);
-          ctx.lineTo(bScrX, poleTop - armH + diaR * 0.5);
-          ctx.lineTo(bScrX - diaR, poleTop - armH);
+          ctx.moveTo(bScrX, poleTop - armH - diaOut);
+          ctx.lineTo(bScrX + diaW, poleTop - armH);
+          ctx.lineTo(bScrX, poleTop - armH + diaIn);
+          ctx.lineTo(bScrX - diaW, poleTop - armH);
           ctx.closePath(); ctx.fill();
 
           // Vertical ridged columns
@@ -3778,20 +3779,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Triangle outline below the gold — inverted V shape
           // Triangle outline below gold — same shape, shifted down uniformly
+          // Outline frame — parallel to gold triangle, same padding all around
           const outOff = Math.round(gridY * 0.06);
-          const sidePad = Math.max(1, Math.round(gridX * outOff / gridY)); // same padding ratio on sides
-          const outL = gp(sidePad, triRow + outOff), outR = gp(gridX - sidePad, triRow + outOff);
+          const sidePad = Math.max(1, Math.round(gridX * 0.06));
+          // Triangle outline: same shape as gold, shifted down by outOff
+          const outL = gp(sidePad, triRow + outOff);
+          const outR = gp(gridX - sidePad, triRow + outOff);
           const outM = gp(Math.round(gridX / 2), outOff);
-          ctx.strokeStyle = 'rgba(210,165,50,0.45)';
-          ctx.lineWidth = Math.max(0.8, bScale * 0.008);
+          // Bottom line
           const botRow = Math.round(gridY - outOff);
           const botL = gp(sidePad, botRow), botR = gp(gridX - sidePad, botRow);
+          ctx.strokeStyle = 'rgba(210,165,50,0.45)';
+          ctx.lineWidth = Math.max(0.8, bScale * 0.008);
           ctx.beginPath();
-          ctx.moveTo(botL.x, botL.y); ctx.lineTo(outL.x, outL.y);
+          // Bottom left → up left side → triangle V → down right side → bottom right → close
+          ctx.moveTo(botL.x, botL.y);
+          ctx.lineTo(outL.x, outL.y);
           ctx.lineTo(outM.x, outM.y);
           ctx.lineTo(outR.x, outR.y);
           ctx.lineTo(botR.x, botR.y);
-          ctx.lineTo(botL.x, botL.y);
+          ctx.closePath();
           ctx.stroke();
 
           // Small 4-branch star below triangle peak
