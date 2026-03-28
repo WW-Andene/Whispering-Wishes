@@ -2656,14 +2656,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.06;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v3) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v4) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
           sk.addColorStop(0,"rgb(15,6,2)");sk.addColorStop(0.2,"rgb(18,7,3)");sk.addColorStop(0.4,"rgb(22,9,3)");
-          sk.addColorStop(0.55,"rgb(28,11,4)");sk.addColorStop(0.65,"rgb(38,16,5)");sk.addColorStop(0.75,"rgb(70,30,9)");
-          sk.addColorStop(0.83,"rgb(150,65,18)");sk.addColorStop(0.9,"rgb(225,120,32)");sk.addColorStop(0.96,"rgb(255,170,55)");sk.addColorStop(1,"rgb(255,195,72)");
+          sk.addColorStop(0.6,"rgb(28,11,4)");sk.addColorStop(0.75,"rgb(38,16,5)");sk.addColorStop(0.85,"rgb(55,24,7)");
+          sk.addColorStop(0.9,"rgb(130,55,15)");sk.addColorStop(0.94,"rgb(210,105,28)");sk.addColorStop(0.97,"rgb(255,165,50)");sk.addColorStop(1,"rgb(255,195,72)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
@@ -2685,7 +2685,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
-          skyCache._v3 = true;
+          skyCache._v4 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
