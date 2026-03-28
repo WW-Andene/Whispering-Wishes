@@ -3427,6 +3427,49 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Sort back-to-front
         swords.sort((a, b) => b.wz - a.wz);
 
+        // Blade fracture — jagged cracks with fragment displacement
+        function drawFractures(ctx, idx, bW, bH, guardH, lR, lG, lB2, dR, dG, dB, lit) {
+          // Per-sword seeded RNG
+          let _fs = (idx * 2246822519 + 314159) | 0;
+          const fRng = () => { _fs = Math.imul(_fs ^ (_fs >>> 16), 0x45d9f3b); _fs = _fs ^ (_fs >>> 13); return ((_fs >>> 0) % 10000) / 10000; };
+          fRng(); fRng(); // warm up
+          const nCracks = 2 + Math.floor(fRng() * 3); // 2-4 cracks per blade
+          const halfW = bW / 2;
+          for (let ci = 0; ci < nCracks; ci++) {
+            // Crack position along blade (10%-85% from tip)
+            const t = 0.1 + fRng() * 0.75;
+            const cy = -bH + t * (bH + guardH);
+            // Blade width at this height (narrows toward tip)
+            const wt = Math.min(1, t * 1.5);
+            const localW = halfW * wt;
+            // Jagged crack path from left edge to right edge
+            const nSeg = 3 + Math.floor(fRng() * 3);
+            const pts = [];
+            for (let si = 0; si <= nSeg; si++) {
+              const u = si / nSeg;
+              const px = -localW + u * localW * 2;
+              const py = cy + (fRng() - 0.5) * bW * 0.6;
+              pts.push({ x: px, y: py });
+            }
+            // Fragment offset — slight displacement on one side of crack
+            const fragOff = (fRng() - 0.5) * bW * 0.15;
+            // Dark crack gap
+            ctx.strokeStyle = `rgba(5,2,1,${0.5 + fRng() * 0.3})`;
+            ctx.lineWidth = Math.max(0.5, bW * 0.06);
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y + fragOff);
+            for (let pi = 1; pi < pts.length; pi++) ctx.lineTo(pts[pi].x, pts[pi].y);
+            ctx.stroke();
+            // Bright exposed edge — catches light
+            ctx.strokeStyle = `rgba(${Math.min(255,lR+90)},${Math.min(255,lG+80)},${Math.min(255,lB2+60)},${0.2 + lit * 0.35})`;
+            ctx.lineWidth = Math.max(0.3, bW * 0.025);
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y + fragOff - bW * 0.02);
+            for (let pi = 1; pi < pts.length; pi++) ctx.lineTo(pts[pi].x, pts[pi].y - bW * 0.02);
+            ctx.stroke();
+          }
+        }
+
         for (const s of swords) {
           // Sword type — hash independent of position grid
           let th = (s.idx * 1640531527 + 2747636419) | 0; th = Math.imul(th ^ (th >>> 16), 0x45d9f3b); th = th ^ (th >>> 13);
@@ -3538,6 +3581,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.moveTo(0, gTip + 1);
             ctx.lineTo(0, gBase);
             ctx.stroke();
+            // Blade fractures
+            drawFractures(ctx, s.idx, gBW * 2, gBL, 0, lR, lG, lB2, dR, dG, dB, lit);
             // Grip (drawn before guard) — cylindrical gradient
             const gGripGrad = ctx.createLinearGradient(-gGripW, 0, gGripW, 0);
             const gkR = Math.round(20 + 40 * gripBr), gkG = Math.round(12 + 20 * gripBr), gkB = Math.round(8 + 10 * gripBr);
@@ -3653,6 +3698,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.moveTo(fullerOff, -bladeH * 0.88);
           ctx.lineTo(fullerOff, guardH);
           ctx.stroke();
+          // Blade fractures
+          drawFractures(ctx, s.idx, bladeW, bladeH, guardH, lR, lG, lB2, dR, dG, dB, lit);
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
           const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
