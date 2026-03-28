@@ -3417,53 +3417,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // Sword sky-color outline glow — position-dependent placement
-        // Drawn in screen space after all swords, uses 'lighter' blend
+        // Sword amber light reflection — screen-space glow pass
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';
         for (let si2 = 0; si2 < swords.length; si2++) {
           const sw = swords[si2];
-          const overall2 = sw.size * (40 / 2.8);
-          const visH = overall2 * 0.5;
-          const bladeW2 = overall2 * (8 / 114.7) * 0.434;
-          // Sky-reflected color — warm amber from sky palette
-          const cr = 255, cg = 170, cb = 55;
-
-          // X position: wx -25..0..25
-          // -25 to 0: glow shifts to RIGHT edge
-          // 0 to 25: glow shifts to LEFT edge
-          const xNorm = Math.max(-1, Math.min(1, sw.wx / 25));
-          // offset: at center (0) → centered, at edges → shifted to opposite side
-          const glowOffX = -xNorm * bladeW2 * 4;
-
-          // Z position: coverage control
-          // Before z25 (close): only top. At center: full. After z25 (far): top extending down
-          const zNorm = Math.max(0, Math.min(1, (sw.wz - 8) / 42)); // 0=close, 1=far
-          let topFade, botFade;
-          if (zNorm < 0.4) {
-            // Close: light mostly on top, fades quickly
-            topFade = 0;
-            botFade = 0.2 + zNorm * 1.5; // 0.2 to 0.8 — how far down glow reaches
-          } else {
-            // Far: starts at top, extends toward full sword
-            topFade = 0;
-            botFade = 0.8 + (zNorm - 0.4) * 0.33; // 0.8 to 1.0
-          }
-
-          const glowA = 0.22 + zNorm * 0.12;
-          const glowW = Math.max(2, bladeW2 * 3);
-
-          // Vertical gradient with coverage
-          const gx = sw.scrX + glowOffX;
-          const gy0 = sw.scrY - visH;
-          const gy1 = sw.scrY - visH * (1 - botFade);
-          const gg = ctx.createLinearGradient(gx, gy0, gx, gy1);
-          gg.addColorStop(0, 'rgba(' + cr + ',' + cg + ',' + cb + ',0)');
-          gg.addColorStop(0.15, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + glowA + ')');
-          gg.addColorStop(0.5, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (glowA * 0.7) + ')');
-          gg.addColorStop(1, 'rgba(' + cr + ',' + cg + ',' + cb + ',0)');
+          const sdx3 = sw.scrX - sunX, sdy3 = sw.scrY - sunY;
+          const sDist3 = Math.sqrt(sdx3 * sdx3 + sdy3 * sdy3);
+          const sLit = Math.max(0, 1 - sDist3 / (Math.max(W, H) * 0.7));
+          if (sLit < 0.08) continue;
+          const sSize = sw.size;
+          const overall2 = sSize * (40 / 2.8);
+          const visH = overall2 * 0.45;
+          const glowAlpha = sLit * sLit * 0.18;
+          const glowWidth = Math.max(1, sSize * 0.8);
+          // Vertical amber line at sword position
+          const gg = ctx.createLinearGradient(sw.scrX, sw.scrY - visH, sw.scrX, sw.scrY);
+          gg.addColorStop(0, 'rgba(255,180,60,0)');
+          gg.addColorStop(0.3, 'rgba(255,170,50,' + glowAlpha + ')');
+          gg.addColorStop(0.7, 'rgba(255,150,40,' + (glowAlpha * 0.6) + ')');
+          gg.addColorStop(1, 'rgba(255,130,30,0)');
           ctx.fillStyle = gg;
-          ctx.fillRect(gx - glowW, gy0, glowW * 2, gy1 - gy0);
+          ctx.fillRect(sw.scrX - glowWidth, sw.scrY - visH, glowWidth * 2, visH);
         }
         ctx.restore();
 
