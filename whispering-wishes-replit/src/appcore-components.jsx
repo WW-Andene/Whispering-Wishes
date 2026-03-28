@@ -3679,42 +3679,33 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const gridY = Math.max(2, Math.round(dH / cellSize));
 
           // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
-          // Row 0 = anchored at crossbar, row gridY = free bottom
-          // Per-row wave: each row has its own phase offset propagating down
-          // Traveling wave functions — same approach as Reflect background
-          // Waves propagate ACROSS the cloth surface, not just wobble per-point
-          const clothW1 = (u, v, t) => u * 4.5 + Math.sin(v * 2.5) * 1.5 + Math.cos(v * 1.2 + u * 0.8) * 0.8 - t * 1.4;
-          const clothW2 = (u, v, t) => (u * 2.5 + v * 3.5) + Math.sin(u * 1.5 - v * 1.2) * 1.1 - t * 1.0;
-          const clothW3 = (u, v, t) => v * 5.0 + Math.sin(u * 3.0) * 1.2 + Math.cos(v * 1.5 + u * 1.0) * 0.7 - t * 0.8;
+          // Chain simulation — each row drags behind the one above
+          // Like a rope/whip: row 0 anchored, each row follows with delay
+          // Precompute per-row X,Y,Z offsets as a chain
+          const rowOffsets = new Array(gridY + 1);
+          rowOffsets[0] = { x: 0, y: 0, z: 0 }; // row 0 = anchored
+          const windBase = bScale * 0.15 * (0.6 + Math.sin(wt * 0.3) * 0.35);
+          for (let gy = 1; gy <= gridY; gy++) {
+            const prev = rowOffsets[gy - 1];
+            const rowT = gy / gridY;
+            // Wind force on this segment — slight random per-row
+            const segWind = windBase + Math.sin(gy * 0.8 - wt * 0.7) * bScale * 0.03;
+            // Each row adds to previous — chain accumulation
+            const dx = segWind + Math.sin(gy * 1.1 - wt * 1.2) * bScale * 0.02;
+            const dy = Math.sin(gy * 0.9 - wt * 0.9 + 1.5) * bScale * 0.015;
+            const dz = Math.sin(gy * 0.7 - wt * 0.6 + 0.8) * 0.02;
+            rowOffsets[gy] = { x: prev.x + dx, y: prev.y + dy, z: prev.z + dz };
+          }
 
           function gridPt(gx, gy) {
             const u = gx / gridX, v = gy / gridY;
-            const freedom = v; // anchored at top, free at bottom
-
-            // Combined wave height from 3 traveling waves
-            const h1 = Math.sin(clothW1(u, v, wt));
-            const h2 = Math.sin(clothW2(u, v, wt));
-            const h3 = Math.sin(clothW3(u, v, wt));
-            const totalH = h1 * 0.5 + h2 * 0.35 + h3 * 0.25;
-
-            // X displacement: wind push + wave-driven lateral motion
-            const gust = 0.6 + Math.sin(wt * 0.35) * 0.35;
-            const windPush = freedom * bScale * 0.4 * gust;
-            const waveX = totalH * freedom * bScale * 0.12;
-            // Cross-wave: wave 2 pushes sideways
-            const crossX = h2 * freedom * bScale * 0.06;
-
-            // Y displacement: vertical ripple from waves
-            const waveY = (h1 * 0.3 + h3 * 0.4) * freedom * bScale * 0.06;
-
-            // Z: depth billow from wave height — affects scale + shading
-            const wz = totalH * freedom * 0.15;
-            const zScale = 1 + wz * 0.25;
-
-            const centerX = bScrX + windPush + waveX + crossX;
+            const ro = rowOffsets[gy];
+            // Z affects width scale
+            const zScale = 1 + ro.z * 0.3;
+            const centerX = bScrX + ro.x;
             const baseX = centerX + (u - 0.5) * dW * zScale;
-            const baseY = dTop + v * dH + waveY;
-            return { x: baseX, y: baseY, z: wz };
+            const baseY = dTop + v * dH + ro.y;
+            return { x: baseX, y: baseY, z: ro.z };
           }
 
           // Draw cloth row by row — each row shaded by its Z depth
