@@ -3473,31 +3473,30 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           return segs;
         }
         // Clip to a segment bounded by jagged crack lines
-        function clipFragment(ctx2, frag, bW) {
+        // Polygon: top edge (crack or flat) → right side down → bottom edge (crack or flat) → left side up
+        function clipFragment(ctx2, frag) {
           var w = frag.wide;
           ctx2.beginPath();
+          // Top edge: far-left → follow top crack left-to-right → far-right
           if (frag.topCrack) {
-            // Start from top-left corner, follow top crack left→right
-            ctx2.moveTo(frag.topCrack[0].x, frag.topCrack[0].y);
-            for (var i = 1; i < frag.topCrack.length; i++) ctx2.lineTo(frag.topCrack[i].x, frag.topCrack[i].y);
-            // Go to top-right far corner
-            ctx2.lineTo(w, frag.topCrack[frag.topCrack.length-1].y - 5);
+            ctx2.moveTo(-w, frag.topCrack[0].y);
+            for (var i = 0; i < frag.topCrack.length; i++) ctx2.lineTo(frag.topCrack[i].x, frag.topCrack[i].y);
+            ctx2.lineTo(w, frag.topCrack[frag.topCrack.length - 1].y);
           } else {
             ctx2.moveTo(-w, frag.topY);
             ctx2.lineTo(w, frag.topY);
           }
+          // Right side: go down to bottom edge level
           if (frag.botCrack) {
-            // Go down to bottom-right, follow bottom crack right→left
-            ctx2.lineTo(w, frag.botCrack[frag.botCrack.length-1].y + 5);
+            ctx2.lineTo(w, frag.botCrack[frag.botCrack.length - 1].y);
+            // Bottom edge: follow bottom crack right-to-left
             for (var j = frag.botCrack.length - 1; j >= 0; j--) ctx2.lineTo(frag.botCrack[j].x, frag.botCrack[j].y);
-            ctx2.lineTo(-w, frag.botCrack[0].y + 5);
+            ctx2.lineTo(-w, frag.botCrack[0].y);
           } else {
             ctx2.lineTo(w, frag.botY);
             ctx2.lineTo(-w, frag.botY);
           }
-          if (frag.topCrack) {
-            ctx2.lineTo(-w, frag.topCrack[0].y - 5);
-          }
+          // Left side: closes back up to start
           ctx2.closePath();
           ctx2.clip();
         }
@@ -3573,7 +3572,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             for (var _gfi = 0; _gfi < glFrags.length; _gfi++) {
               var gf = glFrags[_gfi];
               ctx.save();
-              clipFragment(ctx, gf, gBW * 2);
+              clipFragment(ctx, gf);
               ctx.translate(gf.dx, gf.dy);
               ctx.rotate(gf.r);
               // Left
@@ -3662,7 +3661,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _fi = 0; _fi < lsFrags.length; _fi++) {
             var frag = lsFrags[_fi];
             ctx.save();
-            clipFragment(ctx, frag, bladeW);
+            clipFragment(ctx, frag);
             ctx.translate(frag.dx, frag.dy);
             ctx.rotate(frag.r);
             // Left half
