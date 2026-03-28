@@ -2701,7 +2701,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
         // Draw clouds with velocity stretch
         for (let di = 0; di < sceneClouds.length; di++) {
-          const cloud = sceneClouds[di], angSpeed = Math.max(0.0004, cloud.orbitSpeed * 0.025);
+          const cloud = sceneClouds[di], rawAng = cloud.orbitSpeed * 0.025, angSpeed = Math.max(0.3 / Math.max(50, cloud.orbitDist), rawAng);
           cloud.angle += angSpeed;
           const ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
           const cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
@@ -3414,30 +3414,33 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.fill();
 
-          // Faded amber light reflection on sword silhouette
-          if (lit > 0.05) {
-            const glowA = lit * 0.35;
-            const glowW = Math.max(1, bladeW * 0.6);
-            ctx.save();
-            ctx.globalAlpha = glowA;
-            ctx.shadowColor = 'rgba(255,170,50,0.8)';
-            ctx.shadowBlur = glowW * 3;
-            ctx.strokeStyle = 'rgba(255,180,60,' + (glowA * 0.6) + ')';
-            ctx.lineWidth = glowW * 0.4;
-            // Trace full sword outline on sun-facing side
-            ctx.beginPath();
-            ctx.moveTo(0, -bladeH);
-            const es = leftLight ? -1 : 1;
-            ctx.bezierCurveTo(es * bladeW * 0.25, -bladeH + pomDia * 0.5,
-                              es * bladeW * 0.5, tipEnd - pomDia,
-                              es * bladeW / 2, tipEnd);
-            ctx.lineTo(es * bladeW / 2, ov);
-            ctx.stroke();
-            ctx.restore();
-          }
-
           ctx.restore();
         }
+
+        // Sword amber light reflection — screen-space glow pass
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (let si2 = 0; si2 < swords.length; si2++) {
+          const sw = swords[si2];
+          const sdx3 = sw.scrX - sunX, sdy3 = sw.scrY - sunY;
+          const sDist3 = Math.sqrt(sdx3 * sdx3 + sdy3 * sdy3);
+          const sLit = Math.max(0, 1 - sDist3 / (Math.max(W, H) * 0.7));
+          if (sLit < 0.08) continue;
+          const sSize = sw.size;
+          const overall2 = sSize * (40 / 2.8);
+          const visH = overall2 * 0.45;
+          const glowAlpha = sLit * sLit * 0.18;
+          const glowWidth = Math.max(1, sSize * 0.8);
+          // Vertical amber line at sword position
+          const gg = ctx.createLinearGradient(sw.scrX, sw.scrY - visH, sw.scrX, sw.scrY);
+          gg.addColorStop(0, 'rgba(255,180,60,0)');
+          gg.addColorStop(0.3, 'rgba(255,170,50,' + glowAlpha + ')');
+          gg.addColorStop(0.7, 'rgba(255,150,40,' + (glowAlpha * 0.6) + ')');
+          gg.addColorStop(1, 'rgba(255,130,30,0)');
+          ctx.fillStyle = gg;
+          ctx.fillRect(sw.scrX - glowWidth, sw.scrY - visH, glowWidth * 2, visH);
+        }
+        ctx.restore();
 
         // Full-scene dramatic vignette
         ctx.save();
