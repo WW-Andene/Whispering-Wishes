@@ -3758,7 +3758,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.moveTo(tr.x, tr.y); ctx.lineTo(tm.x, tm.y); ctx.lineTo(br.x, br.y);
           ctx.closePath(); ctx.fill();
 
-          // Cloth emblem — crossed swords
+          // Triangle outline below the gold — inverted V shape
+          const outRow = Math.round(gridY * 0.28);
+          const outL = gp(0, outRow), outR = gp(gridX, outRow);
+          const outM = gp(Math.round(gridX / 2), triRow);
+          ctx.strokeStyle = 'rgba(210,165,50,0.45)';
+          ctx.lineWidth = Math.max(0.8, bScale * 0.008);
+          ctx.beginPath();
+          ctx.moveTo(outL.x, outL.y); ctx.lineTo(outM.x, outM.y); ctx.lineTo(outR.x, outR.y);
+          ctx.stroke();
           const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.33));
           const emCx = emPt.x, emCy = emPt.y, emS = dW * 0.3;
           const eA = 'rgba(210,155,50,';
