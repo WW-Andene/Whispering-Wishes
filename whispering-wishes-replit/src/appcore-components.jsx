@@ -3585,7 +3585,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // === BANNER — pole with crest ornament + veil cloth ===
+        // === BANNER — pole with round crest + vertical-only cloth ===
         {
           const bWx = 0.5, bWz = 22;
           const bScrX = projX(bWx, bWz);
@@ -3597,253 +3597,147 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const poleTop = bScrY - poleH + poleBury;
           const bannerLean = -0.06;
           const wt = cloudTime * 0.5;
+          const gD = 'rgb(140,95,25)', gM = 'rgb(200,155,45)', gH = 'rgb(245,215,100)';
 
           ctx.save();
           ctx.translate(bScrX, bScrY);
           ctx.rotate(bannerLean);
           ctx.translate(-bScrX, -bScrY);
 
-          // -- Pole shaft --
+          // Pole shaft
           const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
-          shaftGrad.addColorStop(0, 'rgb(25,14,8)');
-          shaftGrad.addColorStop(0.35, 'rgb(50,30,16)');
-          shaftGrad.addColorStop(0.5, 'rgb(65,40,22)');
-          shaftGrad.addColorStop(0.65, 'rgb(50,30,16)');
-          shaftGrad.addColorStop(1, 'rgb(25,14,8)');
+          shaftGrad.addColorStop(0, 'rgb(40,24,12)');
+          shaftGrad.addColorStop(0.35, 'rgb(65,40,22)');
+          shaftGrad.addColorStop(0.5, 'rgb(80,52,28)');
+          shaftGrad.addColorStop(0.65, 'rgb(65,40,22)');
+          shaftGrad.addColorStop(1, 'rgb(40,24,12)');
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // == ORNAMENT: large spearhead + shield crest with detailed emblem ==
-          const gD = 'rgb(120,80,15)', gM = 'rgb(200,155,45)', gH = 'rgb(245,210,90)';
-
-          // Large spearhead
-          const arrH = bScale * 0.5, arrW = bScale * 0.12;
-          const arrTop = poleTop - arrH;
-          const arrGrad = ctx.createLinearGradient(bScrX - arrW, 0, bScrX + arrW, 0);
-          arrGrad.addColorStop(0, 'rgb(130,125,115)'); arrGrad.addColorStop(0.3, 'rgb(195,190,180)');
-          arrGrad.addColorStop(0.48, 'rgb(230,228,220)'); arrGrad.addColorStop(0.52, 'rgb(240,238,232)');
-          arrGrad.addColorStop(0.7, 'rgb(195,190,180)'); arrGrad.addColorStop(1, 'rgb(130,125,115)');
-          ctx.fillStyle = arrGrad;
-          ctx.beginPath();
-          ctx.moveTo(bScrX, arrTop);
-          ctx.bezierCurveTo(bScrX + arrW * 0.2, arrTop + arrH * 0.3, bScrX + arrW, arrTop + arrH * 0.6, bScrX + arrW * 0.7, arrTop + arrH * 0.85);
-          ctx.lineTo(bScrX + poleW * 0.5, poleTop);
-          ctx.lineTo(bScrX - poleW * 0.5, poleTop);
-          ctx.lineTo(bScrX - arrW * 0.7, arrTop + arrH * 0.85);
-          ctx.bezierCurveTo(bScrX - arrW, arrTop + arrH * 0.6, bScrX - arrW * 0.2, arrTop + arrH * 0.3, bScrX, arrTop);
-          ctx.closePath();
-          ctx.fill();
-          // Center ridge
-          ctx.strokeStyle = 'rgba(255,255,250,0.25)';
-          ctx.lineWidth = Math.max(0.5, poleW * 0.2);
-          ctx.beginPath(); ctx.moveTo(bScrX, arrTop + arrH * 0.1); ctx.lineTo(bScrX, poleTop); ctx.stroke();
-
-          // Shield crest — larger
-          const crestY = poleTop + bScale * 0.1;
+          // Round gold crest at pole top (no blade)
+          const crestY = poleTop;
           const crestR = bScale * 0.18;
-          // Dark backing with warm tint
           const cBg = ctx.createRadialGradient(bScrX, crestY, 0, bScrX, crestY, crestR);
-          cBg.addColorStop(0, 'rgb(50,28,12)'); cBg.addColorStop(0.7, 'rgb(38,22,10)'); cBg.addColorStop(1, 'rgb(28,16,6)');
+          cBg.addColorStop(0, 'rgb(100,65,20)'); cBg.addColorStop(0.6, 'rgb(80,50,15)'); cBg.addColorStop(1, 'rgb(65,40,12)');
           ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crestY, crestR, 0, Math.PI * 2); ctx.fill();
-          // Thick gold outer rim
-          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1.5, bScale * 0.018);
-          ctx.stroke();
-          // Second rim
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1.5, bScale * 0.02); ctx.stroke();
           ctx.strokeStyle = gD; ctx.lineWidth = Math.max(0.8, bScale * 0.008);
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.82, 0, Math.PI * 2); ctx.stroke();
-          // Inner ring
-          ctx.strokeStyle = 'rgba(200,155,45,0.5)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.55, 0, Math.PI * 2); ctx.stroke();
-
-          // Detailed star emblem — 8-pointed with inner/outer layers
-          // Outer rays
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.78, 0, Math.PI * 2); ctx.stroke();
+          // 8 main star rays
           ctx.fillStyle = gM;
           for (let si = 0; si < 8; si++) {
-            const sAng = si * Math.PI / 4 - Math.PI / 2;
-            const sLen = crestR * 0.72, sW = crestR * 0.12;
+            const sAng = si * Math.PI / 4 - Math.PI / 2, sLen = crestR * 0.68, sW = crestR * 0.12;
             ctx.save(); ctx.translate(bScrX, crestY); ctx.rotate(sAng);
-            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath();
-            ctx.fill(); ctx.restore();
+            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath(); ctx.fill(); ctx.restore();
           }
-          // Inner diamond rays (rotated 22.5°)
+          // 8 offset rays
           ctx.fillStyle = 'rgba(200,155,45,0.6)';
           for (let si = 0; si < 8; si++) {
-            const sAng = si * Math.PI / 4 - Math.PI / 2 + Math.PI / 8;
-            const sLen = crestR * 0.45, sW = crestR * 0.08;
+            const sAng = si * Math.PI / 4 - Math.PI / 2 + Math.PI / 8, sLen = crestR * 0.42, sW = crestR * 0.08;
             ctx.save(); ctx.translate(bScrX, crestY); ctx.rotate(sAng);
-            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath();
-            ctx.fill(); ctx.restore();
+            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath(); ctx.fill(); ctx.restore();
           }
-          // Center circle
-          ctx.fillStyle = gD;
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.18, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(200,155,45,0.5)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.3, 0, Math.PI * 2); ctx.stroke();
           ctx.fillStyle = gH;
           ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.1, 0, Math.PI * 2); ctx.fill();
 
-          // Bracket wings from crest sides
-          ctx.fillStyle = gD;
-          for (let side = -1; side <= 1; side += 2) {
-            const wX = bScrX + side * crestR * 0.9;
-            const wW = bScale * 0.12;
-            ctx.beginPath();
-            ctx.moveTo(wX, crestY - bScale * 0.02);
-            ctx.bezierCurveTo(wX + side * wW * 0.5, crestY - bScale * 0.04, wX + side * wW, crestY - bScale * 0.01, wX + side * wW, crestY + bScale * 0.01);
-            ctx.bezierCurveTo(wX + side * wW, crestY + bScale * 0.03, wX + side * wW * 0.3, crestY + bScale * 0.04, wX, crestY + bScale * 0.02);
-            ctx.closePath(); ctx.fill();
+          // Gold crossbar with end caps
+          const crossY = crestY + crestR + bScale * 0.025;
+          const crossW = bScale * 0.6;
+          const crossH = Math.max(2, poleW * 0.8);
+          const cbGrad = ctx.createLinearGradient(bScrX - crossW / 2, 0, bScrX + crossW / 2, 0);
+          cbGrad.addColorStop(0, gD); cbGrad.addColorStop(0.3, gM); cbGrad.addColorStop(0.5, gH);
+          cbGrad.addColorStop(0.7, gM); cbGrad.addColorStop(1, gD);
+          ctx.fillStyle = cbGrad;
+          ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
+          const capR = crossH * 1.2;
+          ctx.fillStyle = gM;
+          ctx.beginPath(); ctx.arc(bScrX - crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(bScrX + crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
+
+          // Vertical ridged columns
+          const ridgeTop = crossY + crossH / 2;
+          const ridgeH = bScale * 0.12;
+          const ridgeW = crossW * 0.85;
+          for (let ri = 0; ri < 7; ri++) {
+            const rx = bScrX - ridgeW / 2 + (ri + 0.5) * (ridgeW / 7);
+            const rw = ridgeW / 7 * 0.5;
+            const rGrad = ctx.createLinearGradient(rx - rw, 0, rx + rw, 0);
+            rGrad.addColorStop(0, gD); rGrad.addColorStop(0.5, gM); rGrad.addColorStop(1, gD);
+            ctx.fillStyle = rGrad;
+            ctx.fillRect(rx - rw, ridgeTop, rw * 2, ridgeH);
           }
 
-          // Crossbar where cloth attaches
-          const crossY = crestY + crestR + bScale * 0.02;
-          const crossW = bScale * 0.5;
-          ctx.fillStyle = 'rgb(50,30,16)';
-          ctx.fillRect(bScrX - crossW / 2, crossY - poleW * 0.3, crossW, poleW * 0.6);
-
-          // == VEIL CLOTH — 80 segments, 3-layer wind, flows like silk ==
-          const dTop = crossY + poleW * 0.3;
-          const dW = crossW * 0.88;
-          const dH = bScale * 1.8;
+          // Cloth — vertical articulation only
+          const dTop = ridgeTop + ridgeH;
+          const dW = crossW * 0.85;
+          const dH = bScale * 1.6;
           const dL0 = bScrX - dW / 2, dR0 = bScrX + dW / 2;
           const segs = 80;
 
-          // Strong wind — cloth flies out to the side, not just wobbles
-          function windX(t) {
-            // Constant strong push + gusting — cloth actually goes sideways
-            const gust = 0.7 + Math.sin(wt * 0.35) * 0.3;
-            const push = t * bScale * 0.8 * gust;
-            // Ripple on top
-            const w1 = Math.sin(t * 6.5 - wt * 2.5) * t * bScale * 0.06;
-            const w2 = Math.sin(t * 3.8 - wt * 1.4 + 1.5) * t * bScale * 0.04;
-            const w3 = Math.sin(t * 10 - wt * 3.2 + 0.7) * t * bScale * 0.02;
-            return push + w1 + w2 + w3;
-          }
           function windY(t) {
-            // Cloth lifts as it blows — doesn't just hang straight down
-            const lift = -t * bScale * 0.25 * (0.7 + Math.sin(wt * 0.35) * 0.3);
-            return lift + Math.sin(t * 5.5 - wt * 2.0) * t * bScale * 0.04
-                 + Math.sin(t * 8 - wt * 2.8 + 1) * t * bScale * 0.02;
+            return Math.sin(t * 5 - wt * 1.5) * t * bScale * 0.06
+                 + Math.sin(t * 3 - wt * 0.8 + 1.2) * t * bScale * 0.04
+                 + Math.sin(t * 8 - wt * 2.5 + 0.5) * t * t * bScale * 0.025;
           }
 
           function veilPath() {
             ctx.beginPath();
-            ctx.moveTo(dL0, dTop);
-            ctx.lineTo(dR0, dTop);
-            for (let i = 1; i <= segs; i++) {
-              const t = i / segs;
-              ctx.lineTo(dR0 + windX(t), dTop + t * dH + windY(t));
-            }
-            const bwx = windX(1), bwy = windY(1);
-            ctx.lineTo(dL0 + bwx, dTop + dH + bwy);
-            for (let i = segs; i >= 1; i--) {
-              const t = i / segs;
-              ctx.lineTo(dL0 + windX(t), dTop + t * dH + windY(t));
-            }
+            ctx.moveTo(dL0, dTop); ctx.lineTo(dR0, dTop);
+            for (let i = 1; i <= segs; i++) { const t = i / segs; ctx.lineTo(dR0, dTop + t * dH + windY(t)); }
+            ctx.lineTo(dL0, dTop + dH + windY(1));
+            for (let i = segs; i >= 1; i--) { const t = i / segs; ctx.lineTo(dL0, dTop + t * dH + windY(t)); }
             ctx.closePath();
           }
 
-          // Deep red fill
           veilPath();
           const dGrad = ctx.createLinearGradient(0, dTop, 0, dTop + dH);
-          dGrad.addColorStop(0, 'rgb(148,32,22)');
-          dGrad.addColorStop(0.3, 'rgb(132,26,18)');
-          dGrad.addColorStop(0.7, 'rgb(112,20,14)');
-          dGrad.addColorStop(1, 'rgb(88,15,10)');
-          ctx.fillStyle = dGrad;
-          ctx.fill();
+          dGrad.addColorStop(0, 'rgb(165,48,28)'); dGrad.addColorStop(0.3, 'rgb(148,38,22)');
+          dGrad.addColorStop(0.7, 'rgb(125,28,16)'); dGrad.addColorStop(1, 'rgb(100,22,12)');
+          ctx.fillStyle = dGrad; ctx.fill();
 
-          // 20 animated fold layers
-          ctx.save();
-          veilPath(); ctx.clip();
+          // 20 fold layers
+          ctx.save(); veilPath(); ctx.clip();
           for (let fi = 0; fi < 20; fi++) {
-            const fX = dL0 + (fi + 0.5) * (dW / 20) + Math.sin(fi * 1.7 + wt * 0.6) * bScale * 0.015;
-            const fW2 = bScale * 0.02;
-            const hlA = 0.035 + Math.sin(fi * 2.1 + wt * 0.4) * 0.025;
+            const fX = dL0 + (fi + 0.5) * (dW / 20), fW2 = bScale * 0.018;
+            const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.4) * 0.025;
             const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
-            hl.addColorStop(0, 'rgba(255,160,90,0)');
-            hl.addColorStop(0.5, 'rgba(255,160,90,' + hlA + ')');
-            hl.addColorStop(1, 'rgba(255,160,90,0)');
-            ctx.fillStyle = hl;
-            ctx.fillRect(fX - fW2, dTop, fW2 * 2, dH * 1.5);
-            const shX = fX + fW2 * 0.6;
+            hl.addColorStop(0, 'rgba(255,170,100,0)'); hl.addColorStop(0.5, 'rgba(255,170,100,' + hlA + ')'); hl.addColorStop(1, 'rgba(255,170,100,0)');
+            ctx.fillStyle = hl; ctx.fillRect(fX - fW2, dTop, fW2 * 2, dH * 1.3);
+            const shX = fX + fW2 * 0.6, shA = hlA * 0.3;
             const sh = ctx.createLinearGradient(shX - fW2 * 0.3, 0, shX + fW2 * 0.3, 0);
-            sh.addColorStop(0, 'rgba(0,0,0,0)');
-            sh.addColorStop(0.5, 'rgba(0,0,0,' + (hlA * 0.4) + ')');
-            sh.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = sh;
-            ctx.fillRect(shX - fW2 * 0.3, dTop, fW2 * 0.6, dH * 1.5);
+            sh.addColorStop(0, 'rgba(80,20,5,0)'); sh.addColorStop(0.5, 'rgba(80,20,5,' + shA + ')'); sh.addColorStop(1, 'rgba(80,20,5,0)');
+            ctx.fillStyle = sh; ctx.fillRect(shX - fW2 * 0.3, dTop, fW2 * 0.6, dH * 1.3);
           }
 
-          // Emblem on cloth — sun-beast crest, follows wind
-          const emT = 0.35;
-          const emCx = bScrX + windX(emT), emCy = dTop + emT * dH + windY(emT);
-          const emR = dW * 0.32;
-          const eCol = 'rgba(210,155,50,';
-          // Outer wavy flame rays — like a sun with organic tendrils
-          ctx.fillStyle = eCol + '0.3)';
-          for (let ri = 0; ri < 12; ri++) {
-            const ang = ri * Math.PI / 6;
-            const rayLen = emR * (1.1 + (ri % 2) * 0.25);
-            const rayW = emR * 0.14;
-            const curve = (ri % 2 === 0) ? 0.15 : -0.1;
-            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
-            ctx.beginPath();
-            ctx.moveTo(emR * 0.35, -rayW);
-            ctx.bezierCurveTo(rayLen * 0.5, -rayW + curve * emR, rayLen * 0.8, curve * emR * 0.5, rayLen, 0);
-            ctx.bezierCurveTo(rayLen * 0.8, -curve * emR * 0.5, rayLen * 0.5, rayW - curve * emR, emR * 0.35, rayW);
-            ctx.closePath(); ctx.fill();
-            ctx.restore();
+          // Cloth emblem — same star as crest, follows vertical sway
+          const emCy = dTop + 0.33 * dH + windY(0.33), emR = dW * 0.28;
+          const eA = 'rgba(210,155,50,';
+          ctx.strokeStyle = eA + '0.45)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
+          ctx.beginPath(); ctx.arc(bScrX, emCy, emR, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = eA + '0.35)';
+          for (let ri = 0; ri < 8; ri++) {
+            const ang = ri * Math.PI / 4 - Math.PI / 2, rLen = emR * 0.85, rW = emR * 0.12;
+            ctx.save(); ctx.translate(bScrX, emCy); ctx.rotate(ang);
+            ctx.beginPath(); ctx.moveTo(0, -rW); ctx.lineTo(rLen, 0); ctx.lineTo(0, rW); ctx.closePath(); ctx.fill(); ctx.restore();
           }
-          // Outer circle
-          ctx.strokeStyle = eCol + '0.45)';
-          ctx.lineWidth = Math.max(0.8, bScale * 0.012);
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.75, 0, Math.PI * 2); ctx.stroke();
-          // Inner filled circle
-          ctx.fillStyle = eCol + '0.12)';
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.7, 0, Math.PI * 2); ctx.fill();
-          // Beast silhouette — stylized rearing lion/wolf shape
-          ctx.fillStyle = eCol + '0.4)';
-          const bx = emCx, by = emCy;
-          const bs = emR * 0.45;
-          ctx.beginPath();
-          // Body — sitting/rearing pose
-          ctx.moveTo(bx - bs * 0.3, by + bs * 0.6);
-          // Back legs
-          ctx.lineTo(bx - bs * 0.4, by + bs * 0.4);
-          ctx.lineTo(bx - bs * 0.5, by + bs * 0.1);
-          // Back arch
-          ctx.bezierCurveTo(bx - bs * 0.45, by - bs * 0.2, bx - bs * 0.3, by - bs * 0.5, bx - bs * 0.1, by - bs * 0.6);
-          // Head
-          ctx.bezierCurveTo(bx, by - bs * 0.7, bx + bs * 0.15, by - bs * 0.75, bx + bs * 0.2, by - bs * 0.6);
-          // Snout
-          ctx.lineTo(bx + bs * 0.35, by - bs * 0.5);
-          ctx.lineTo(bx + bs * 0.25, by - bs * 0.4);
-          // Chest
-          ctx.bezierCurveTo(bx + bs * 0.3, by - bs * 0.2, bx + bs * 0.35, by, bx + bs * 0.4, by + bs * 0.15);
-          // Front legs
-          ctx.lineTo(bx + bs * 0.5, by + bs * 0.5);
-          ctx.lineTo(bx + bs * 0.35, by + bs * 0.6);
-          ctx.lineTo(bx + bs * 0.3, by + bs * 0.3);
-          // Belly
-          ctx.bezierCurveTo(bx + bs * 0.1, by + bs * 0.35, bx - bs * 0.1, by + bs * 0.4, bx - bs * 0.2, by + bs * 0.55);
-          ctx.closePath(); ctx.fill();
-          // Tail — curving up
-          ctx.strokeStyle = eCol + '0.35)';
-          ctx.lineWidth = Math.max(0.8, bs * 0.08);
-          ctx.beginPath();
-          ctx.moveTo(bx - bs * 0.5, by + bs * 0.1);
-          ctx.bezierCurveTo(bx - bs * 0.7, by - bs * 0.1, bx - bs * 0.6, by - bs * 0.5, bx - bs * 0.35, by - bs * 0.65);
-          ctx.stroke();
-          // Inner ring
-          ctx.strokeStyle = eCol + '0.3)';
-          ctx.lineWidth = Math.max(0.5, bScale * 0.006);
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.45, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = eA + '0.2)';
+          for (let ri = 0; ri < 8; ri++) {
+            const ang = ri * Math.PI / 4 - Math.PI / 2 + Math.PI / 8, rLen = emR * 0.55, rW = emR * 0.08;
+            ctx.save(); ctx.translate(bScrX, emCy); ctx.rotate(ang);
+            ctx.beginPath(); ctx.moveTo(0, -rW); ctx.lineTo(rLen, 0); ctx.lineTo(0, rW); ctx.closePath(); ctx.fill(); ctx.restore();
+          }
+          ctx.strokeStyle = eA + '0.3)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
+          ctx.beginPath(); ctx.arc(bScrX, emCy, emR * 0.35, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = eA + '0.4)';
+          ctx.beginPath(); ctx.arc(bScrX, emCy, emR * 0.1, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
 
           // Gold trim
           veilPath();
-          ctx.strokeStyle = 'rgb(185,140,42)';
-          ctx.lineWidth = Math.max(1, bScale * 0.02);
-          ctx.stroke();
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02); ctx.stroke();
 
           ctx.restore();
         }
