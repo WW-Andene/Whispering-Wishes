@@ -3585,6 +3585,37 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
+        // God ray directed at the flag
+        {
+          const flagScrX = projX(0.5, 22);
+          const flagScrY = projY(22, 0.5);
+          const rayAng = Math.atan2(flagScrY - sunY, flagScrX - sunX);
+          const rayLen = Math.sqrt((flagScrX - sunX) ** 2 + (flagScrY - sunY) ** 2) * 1.15;
+          const rayW = sunR * 0.8;
+          const rex = sunX + Math.cos(rayAng) * rayLen;
+          const rey = sunY + Math.sin(rayAng) * rayLen;
+          const rpx = -Math.sin(rayAng), rpy = Math.cos(rayAng);
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.filter = 'blur(' + Math.max(2, Math.round(H * 0.012)) + 'px)';
+          const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
+          rG.addColorStop(0, 'rgba(255,235,180,0.06)');
+          rG.addColorStop(0.1, 'rgba(255,220,150,0.12)');
+          rG.addColorStop(0.3, 'rgba(255,200,120,0.18)');
+          rG.addColorStop(0.5, 'rgba(255,190,105,0.14)');
+          rG.addColorStop(0.7, 'rgba(255,180,90,0.08)');
+          rG.addColorStop(1, 'rgba(255,165,70,0)');
+          ctx.fillStyle = rG;
+          ctx.beginPath();
+          ctx.moveTo(sunX + rpx * rayW * 0.1, sunY + rpy * rayW * 0.1);
+          ctx.lineTo(sunX - rpx * rayW * 0.1, sunY - rpy * rayW * 0.1);
+          ctx.lineTo(rex - rpx * rayW * 2.5, rey - rpy * rayW * 2.5);
+          ctx.lineTo(rex + rpx * rayW * 2.5, rey + rpy * rayW * 2.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
         // === BANNER — pole with round crest + vertical-only cloth ===
         {
           const bWx = 0.5, bWz = 22;
