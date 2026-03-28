@@ -3612,37 +3612,98 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // Spearhead ornament at pole top
-          const tipH = bScale * 0.25;
-          const tipW = poleW * 2.5;
-          const tipGrad = ctx.createLinearGradient(bScrX - tipW, 0, bScrX + tipW, 0);
-          tipGrad.addColorStop(0, 'rgb(100,70,15)');
-          tipGrad.addColorStop(0.35, 'rgb(200,155,45)');
-          tipGrad.addColorStop(0.5, 'rgb(240,205,85)');
-          tipGrad.addColorStop(0.65, 'rgb(200,155,45)');
-          tipGrad.addColorStop(1, 'rgb(100,70,15)');
-          ctx.fillStyle = tipGrad;
+          // === Ornate pole top — spear blade + medallion + bracket ===
+          const goldD = 'rgb(120,80,15)', goldM = 'rgb(200,155,45)', goldH = 'rgb(245,210,90)', goldL = 'rgb(160,115,25)';
+
+          // Tall spear blade — narrow, elongated like a lance head
+          const bladeH = bScale * 0.45;
+          const bladeW = poleW * 2;
+          const bladeGrad = ctx.createLinearGradient(bScrX - bladeW, 0, bScrX + bladeW, 0);
+          bladeGrad.addColorStop(0, 'rgb(130,125,115)');
+          bladeGrad.addColorStop(0.35, 'rgb(190,185,175)');
+          bladeGrad.addColorStop(0.5, 'rgb(220,218,210)');
+          bladeGrad.addColorStop(0.65, 'rgb(190,185,175)');
+          bladeGrad.addColorStop(1, 'rgb(130,125,115)');
+          ctx.fillStyle = bladeGrad;
           ctx.beginPath();
-          ctx.moveTo(bScrX, poleTop - tipH);
-          ctx.lineTo(bScrX - tipW * 0.5, poleTop + tipH * 0.1);
-          ctx.lineTo(bScrX - poleW * 0.4, poleTop);
+          ctx.moveTo(bScrX, poleTop - bladeH);
+          ctx.bezierCurveTo(bScrX + bladeW * 0.3, poleTop - bladeH * 0.5, bScrX + bladeW * 0.5, poleTop - bladeH * 0.15, bScrX + bladeW * 0.3, poleTop + bladeH * 0.05);
           ctx.lineTo(bScrX + poleW * 0.4, poleTop);
-          ctx.lineTo(bScrX + tipW * 0.5, poleTop + tipH * 0.1);
+          ctx.lineTo(bScrX - poleW * 0.4, poleTop);
+          ctx.lineTo(bScrX - bladeW * 0.3, poleTop + bladeH * 0.05);
+          ctx.bezierCurveTo(bScrX - bladeW * 0.5, poleTop - bladeH * 0.15, bScrX - bladeW * 0.3, poleTop - bladeH * 0.5, bScrX, poleTop - bladeH);
           ctx.closePath();
           ctx.fill();
-          // Gold ball under spearhead
-          const ballR = poleW * 1.1;
-          const ballGrad = ctx.createRadialGradient(bScrX - ballR * 0.25, poleTop - ballR * 0.2, 0, bScrX, poleTop, ballR);
-          ballGrad.addColorStop(0, 'rgb(245,210,90)');
-          ballGrad.addColorStop(0.6, 'rgb(200,155,45)');
-          ballGrad.addColorStop(1, 'rgb(120,80,15)');
-          ctx.fillStyle = ballGrad;
-          ctx.beginPath(); ctx.arc(bScrX, poleTop, ballR, 0, Math.PI * 2); ctx.fill();
+          // Blade center ridge highlight
+          ctx.strokeStyle = 'rgba(255,255,245,0.3)';
+          ctx.lineWidth = Math.max(0.5, poleW * 0.15);
+          ctx.beginPath();
+          ctx.moveTo(bScrX, poleTop - bladeH * 0.9);
+          ctx.lineTo(bScrX, poleTop);
+          ctx.stroke();
 
-          // Short crossbar near top
-          const crossY = poleTop + bScale * 0.05;
+          // Circular medallion/shield — behind the crossbar area
+          const medY = poleTop + bScale * 0.08;
+          const medR = bScale * 0.18;
+          // Medallion backing — dark circle
+          const medBg = ctx.createRadialGradient(bScrX - medR * 0.2, medY - medR * 0.2, 0, bScrX, medY, medR);
+          medBg.addColorStop(0, 'rgb(55,35,15)');
+          medBg.addColorStop(0.7, 'rgb(40,25,10)');
+          medBg.addColorStop(1, 'rgb(25,15,6)');
+          ctx.fillStyle = medBg;
+          ctx.beginPath(); ctx.arc(bScrX, medY, medR, 0, Math.PI * 2); ctx.fill();
+          // Gold rim
+          ctx.strokeStyle = goldM;
+          ctx.lineWidth = Math.max(1, bScale * 0.015);
+          ctx.stroke();
+          // Inner gold ring
+          ctx.strokeStyle = goldL;
+          ctx.lineWidth = Math.max(0.5, bScale * 0.008);
+          ctx.beginPath(); ctx.arc(bScrX, medY, medR * 0.75, 0, Math.PI * 2); ctx.stroke();
+          // Star emblem on medallion — 6-pointed
+          ctx.fillStyle = goldM;
+          for (let si = 0; si < 6; si++) {
+            const sAng = si * Math.PI / 3 - Math.PI / 6;
+            const sLen = medR * 0.6;
+            const sW2 = medR * 0.15;
+            ctx.save();
+            ctx.translate(bScrX, medY);
+            ctx.rotate(sAng);
+            ctx.beginPath();
+            ctx.moveTo(0, -sW2);
+            ctx.lineTo(sLen, 0);
+            ctx.lineTo(0, sW2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          }
+          // Star center dot
+          ctx.fillStyle = goldH;
+          ctx.beginPath(); ctx.arc(bScrX, medY, medR * 0.12, 0, Math.PI * 2); ctx.fill();
+
+          // Decorative bracket wings — extend from medallion sides
+          const wingW = bScale * 0.22;
+          const wingH = bScale * 0.06;
+          ctx.fillStyle = goldD;
+          // Left wing
+          ctx.beginPath();
+          ctx.moveTo(bScrX - medR * 0.8, medY - wingH * 0.3);
+          ctx.bezierCurveTo(bScrX - medR - wingW * 0.5, medY - wingH, bScrX - medR - wingW, medY - wingH * 0.3, bScrX - medR - wingW, medY + wingH * 0.2);
+          ctx.bezierCurveTo(bScrX - medR - wingW * 0.7, medY + wingH, bScrX - medR * 0.8, medY + wingH * 0.5, bScrX - medR * 0.6, medY + wingH * 0.3);
+          ctx.closePath();
+          ctx.fill();
+          // Right wing
+          ctx.beginPath();
+          ctx.moveTo(bScrX + medR * 0.8, medY - wingH * 0.3);
+          ctx.bezierCurveTo(bScrX + medR + wingW * 0.5, medY - wingH, bScrX + medR + wingW, medY - wingH * 0.3, bScrX + medR + wingW, medY + wingH * 0.2);
+          ctx.bezierCurveTo(bScrX + medR + wingW * 0.7, medY + wingH, bScrX + medR * 0.8, medY + wingH * 0.5, bScrX + medR * 0.6, medY + wingH * 0.3);
+          ctx.closePath();
+          ctx.fill();
+
+          // Crossbar — where cloth attaches, below medallion
+          const crossY = medY + medR + bScale * 0.02;
           const crossW = bScale * 0.55;
-          const crossH = Math.max(1, poleW * 0.6);
+          const crossH = Math.max(1.5, poleW * 0.7);
           ctx.fillStyle = 'rgb(50,30,16)';
           ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
 
