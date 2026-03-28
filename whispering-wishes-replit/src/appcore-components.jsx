@@ -3402,7 +3402,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGuardR = gBW * 1.15, gGuardTh = gO * 0.015;
             const gGripL = gO * 0.13, gGripW = gBW * 0.9;
             const gPomR = gBW * 0.7, gKnobR = gGripW * 0.3;
-            // Base at y=0 (ground level), tip at y=-gBL (up)
             const gTip = -gBL, gBase = 0;
             const gGripTop = gBase + gGuardTh + gGuardR - gGripW * 0.3;
             const gGripBot = gGripTop + gGripL;
@@ -3412,8 +3411,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGB = (lightB + darkB) * 0.4;
             const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
             const gripBr = 0.05 + lit * 0.08;
-            // Blade left
-            ctx.fillStyle = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
+            // Blade left — 3D gradient
+            const gBlGL = ctx.createLinearGradient(0, 0, -gBW, 0);
+            if (leftLight) {
+              gBlGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
+              gBlGL.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
+              gBlGL.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+            } else {
+              gBlGL.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
+              gBlGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
+              gBlGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+            }
+            ctx.fillStyle = gBlGL;
             ctx.beginPath();
             ctx.moveTo(0, gTip);
             ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
@@ -3421,8 +3430,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.lineTo(0, gBase);
             ctx.closePath();
             ctx.fill();
-            // Blade right
-            ctx.fillStyle = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
+            // Blade right — 3D gradient
+            const gBlGR = ctx.createLinearGradient(0, 0, gBW, 0);
+            if (leftLight) {
+              gBlGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
+              gBlGR.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
+              gBlGR.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+            } else {
+              gBlGR.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
+              gBlGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
+              gBlGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+            }
+            ctx.fillStyle = gBlGR;
             ctx.beginPath();
             ctx.moveTo(0, gTip);
             ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
@@ -3430,8 +3449,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.lineTo(0, gBase);
             ctx.closePath();
             ctx.fill();
-            // Grip (drawn before guard)
-            ctx.fillStyle = `rgb(${Math.round(20 + 40 * gripBr)},${Math.round(12 + 20 * gripBr)},${Math.round(8 + 10 * gripBr)})`;
+            // Center ridge highlight
+            ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+            ctx.lineWidth = Math.max(0.3, gBW * 0.08);
+            ctx.beginPath();
+            ctx.moveTo(0, gTip + 1);
+            ctx.lineTo(0, gBase);
+            ctx.stroke();
+            // Grip (drawn before guard) — cylindrical gradient
+            const gGripGrad = ctx.createLinearGradient(-gGripW, 0, gGripW, 0);
+            const gkR = Math.round(20 + 40 * gripBr), gkG = Math.round(12 + 20 * gripBr), gkB = Math.round(8 + 10 * gripBr);
+            gGripGrad.addColorStop(0, `rgb(${Math.max(0,gkR-10)},${Math.max(0,gkG-6)},${Math.max(0,gkB-4)})`);
+            gGripGrad.addColorStop(0.35, `rgb(${gkR},${gkG},${gkB})`);
+            gGripGrad.addColorStop(0.5, `rgb(${Math.min(255,gkR+12)},${Math.min(255,gkG+8)},${Math.min(255,gkB+5)})`);
+            gGripGrad.addColorStop(0.65, `rgb(${gkR},${gkG},${gkB})`);
+            gGripGrad.addColorStop(1, `rgb(${Math.max(0,gkR-10)},${Math.max(0,gkG-6)},${Math.max(0,gkB-4)})`);
+            ctx.fillStyle = gGripGrad;
             ctx.beginPath();
             const gg2 = gGripTop, ggl = gGripL;
             ctx.moveTo(-gGripW * 0.9, gg2);
@@ -3446,27 +3479,51 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.quadraticCurveTo(gGripW * 0.5, gg2 + ggl * 0.1, gGripW * 0.9, gg2);
             ctx.closePath();
             ctx.fill();
-            // Guard on top
-            ctx.fillStyle = `rgb(${gGR2},${gGG2},${gGBl})`;
+            // Guard on top — 3D gradient
+            const gGuardGrad = ctx.createLinearGradient(0, gBase - gGuardTh, 0, gBase + gGuardTh + gGuardR);
+            gGuardGrad.addColorStop(0, `rgb(${Math.min(255,gGR2+20)},${Math.min(255,gGG2+15)},${Math.min(255,gGBl+10)})`);
+            gGuardGrad.addColorStop(0.5, `rgb(${gGR2},${gGG2},${gGBl})`);
+            gGuardGrad.addColorStop(1, `rgb(${Math.max(0,gGR2-12)},${Math.max(0,gGG2-8)},${Math.max(0,gGBl-5)})`);
+            ctx.fillStyle = gGuardGrad;
             ctx.beginPath();
             ctx.moveTo(-gGuardR, gBase);
             ctx.lineTo(gGuardR, gBase);
             ctx.arc(0, gBase + gGuardTh, gGuardR, 0, Math.PI);
             ctx.closePath();
             ctx.fill();
-            // Pommel
-            ctx.fillStyle = `rgb(${gGR2},${gGG2},${gGBl})`;
+            // Pommel — radial gradient for sphere
+            const gPomGrad = ctx.createRadialGradient(-gPomR * 0.25, gPomCY - gPomR * 0.25, 0, 0, gPomCY, gPomR);
+            gPomGrad.addColorStop(0, `rgb(${Math.min(255,gGR2+30)},${Math.min(255,gGG2+22)},${Math.min(255,gGBl+12)})`);
+            gPomGrad.addColorStop(0.5, `rgb(${gGR2},${gGG2},${gGBl})`);
+            gPomGrad.addColorStop(1, `rgb(${Math.max(0,gGR2-15)},${Math.max(0,gGG2-10)},${Math.max(0,gGBl-6)})`);
+            ctx.fillStyle = gPomGrad;
             ctx.beginPath();
             ctx.arc(0, gPomCY, gPomR, 0, Math.PI * 2);
             ctx.fill();
-            // Knob
+            // Knob — radial gradient
+            const gKnobGrad = ctx.createRadialGradient(-gKnobR * 0.2, gKnobY - gKnobR * 0.2, 0, 0, gKnobY, gKnobR);
+            gKnobGrad.addColorStop(0, `rgb(${Math.min(255,gGR2+25)},${Math.min(255,gGG2+18)},${Math.min(255,gGBl+10)})`);
+            gKnobGrad.addColorStop(0.6, `rgb(${gGR2},${gGG2},${gGBl})`);
+            gKnobGrad.addColorStop(1, `rgb(${Math.max(0,gGR2-12)},${Math.max(0,gGG2-8)},${Math.max(0,gGBl-5)})`);
+            ctx.fillStyle = gKnobGrad;
             ctx.beginPath();
             ctx.arc(0, gKnobY, gKnobR, 0, Math.PI * 2);
             ctx.fill();
           } else {
 
-          // Left half
-          ctx.fillStyle = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
+          // === LONGSWORD — 3D mesh-style rendering ===
+          // Blade left half — diamond cross-section gradient
+          const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
+          if (leftLight) {
+            blGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
+            blGL.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
+            blGL.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+          } else {
+            blGL.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
+            blGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
+            blGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+          }
+          ctx.fillStyle = blGL;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3476,8 +3533,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, guardH);
           ctx.closePath();
           ctx.fill();
-          // Right half
-          ctx.fillStyle = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
+          // Blade right half — diamond cross-section gradient
+          const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
+          if (leftLight) {
+            blGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
+            blGR.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
+            blGR.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+          } else {
+            blGR.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
+            blGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
+            blGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+          }
+          ctx.fillStyle = blGR;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3487,13 +3554,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, guardH);
           ctx.closePath();
           ctx.fill();
-          // Guard — darker, between both faces
+          // Center ridge — specular highlight line
+          ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH + 1);
+          ctx.lineTo(0, guardH);
+          ctx.stroke();
+          // Fuller grooves — thin dark channels
+          const fullerOff = bladeW * 0.18;
+          ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(-fullerOff, -bladeH * 0.88);
+          ctx.lineTo(-fullerOff, guardH);
+          ctx.moveTo(fullerOff, -bladeH * 0.88);
+          ctx.lineTo(fullerOff, guardH);
+          ctx.stroke();
+          // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
-          ctx.fillStyle = `rgb(${Math.round(15 + 165 * gB)},${Math.round(12 + 113 * gB)},${Math.round(10 + 40 * gB)})`;
+          const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
+          const guardGrad = ctx.createLinearGradient(0, -guardH * 0.5, 0, guardH * 1.5);
+          guardGrad.addColorStop(0, `rgb(${Math.min(255,gR3+20)},${Math.min(255,gG3+15)},${Math.min(255,gBl3+10)})`);
+          guardGrad.addColorStop(0.5, `rgb(${gR3},${gG3},${gBl3})`);
+          guardGrad.addColorStop(1, `rgb(${Math.max(0,gR3-12)},${Math.max(0,gG3-8)},${Math.max(0,gBl3-5)})`);
+          ctx.fillStyle = guardGrad;
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
           if (guardType === 1) {
-            // Tapered — wider at ends, narrow in middle, spans 0 to guardH
             const endH = guardH * 2;
             ctx.moveTo(-guardW / 2, guardH / 2 - endH / 2);
             ctx.lineTo(-guardW / 2, guardH / 2 + endH / 2);
@@ -3502,7 +3590,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved down — both edges curved
             ctx.moveTo(-guardW / 2, 0);
             ctx.lineTo(-guardW / 2, guardH);
             ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
@@ -3510,7 +3597,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
             ctx.closePath();
           } else if (guardType === 3) {
-            // Three segmented — center block + two end blocks
             const segW = guardW * 0.12;
             const segH = guardH * 1.5;
             ctx.rect(-guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
@@ -3518,23 +3604,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           } else {
-            // Straight with smooth flared ends, slightly convex sides
             const gHalf = guardW / 2;
             const flareH = guardH * 1.2;
             const mid = guardH / 2;
-            // Top edge: center → left end (convex bulge outward)
             ctx.moveTo(-gHalf * 0.65, -ov);
             ctx.quadraticCurveTo(-gHalf * 0.85, -flareH * 0.4, -gHalf, -flareH / 2);
-            // Left side: slightly convex outward
             ctx.quadraticCurveTo(-gHalf * 1.06, mid, -gHalf, flareH / 2 + guardH);
-            // Bottom edge: left end → center
             ctx.quadraticCurveTo(-gHalf * 0.85, guardH + flareH * 0.4, -gHalf * 0.65, guardH + ov);
-            // Bottom center → right
             ctx.lineTo(gHalf * 0.65, guardH + ov);
             ctx.quadraticCurveTo(gHalf * 0.85, guardH + flareH * 0.4, gHalf, flareH / 2 + guardH);
-            // Right side: slightly convex outward
             ctx.quadraticCurveTo(gHalf * 1.06, mid, gHalf, -flareH / 2);
-            // Top edge: right end → center
             ctx.quadraticCurveTo(gHalf * 0.85, -flareH * 0.4, gHalf * 0.65, -ov);
             ctx.closePath();
           }
@@ -3542,7 +3621,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Pommel type determines grip shape
           let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
           const pommelType = (ph >>> 0) % 2;
-          // Grip — tapers toward pommel if round
+          // Grip — cylindrical gradient
+          const gripGrad = ctx.createLinearGradient(-gripW / 2, 0, gripW / 2, 0);
+          const gripBrL = gB * 0.6;
+          const grR = Math.round(15 + 100 * gripBrL), grG = Math.round(12 + 68 * gripBrL), grBl = Math.round(10 + 24 * gripBrL);
+          gripGrad.addColorStop(0, `rgb(${Math.max(0,grR-10)},${Math.max(0,grG-6)},${Math.max(0,grBl-4)})`);
+          gripGrad.addColorStop(0.35, `rgb(${grR},${grG},${grBl})`);
+          gripGrad.addColorStop(0.5, `rgb(${Math.min(255,grR+12)},${Math.min(255,grG+8)},${Math.min(255,grBl+5)})`);
+          gripGrad.addColorStop(0.65, `rgb(${grR},${grG},${grBl})`);
+          gripGrad.addColorStop(1, `rgb(${Math.max(0,grR-10)},${Math.max(0,grG-6)},${Math.max(0,grBl-4)})`);
+          ctx.fillStyle = gripGrad;
           if (pommelType === 1) {
             const taperW = gripW * 0.65;
             ctx.beginPath();
@@ -3555,25 +3643,30 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           } else {
             ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 3);
           }
-          // Pommel
+          // Pommel — radial gradient for sphere/volume
           ctx.beginPath();
           if (pommelType === 1) {
-            // Circle — overlaps tapered grip end
+            const pomGrad = ctx.createRadialGradient(-pomRy * 0.25, gripBot + pomRy * 0.5 - pomRy * 0.25, 0, 0, gripBot + pomRy * 0.5, pomRy);
+            pomGrad.addColorStop(0, `rgb(${Math.min(255,gR3+30)},${Math.min(255,gG3+22)},${Math.min(255,gBl3+12)})`);
+            pomGrad.addColorStop(0.5, `rgb(${gR3},${gG3},${gBl3})`);
+            pomGrad.addColorStop(1, `rgb(${Math.max(0,gR3-15)},${Math.max(0,gG3-10)},${Math.max(0,gBl3-6)})`);
+            ctx.fillStyle = pomGrad;
             ctx.arc(0, gripBot + pomRy * 0.5, pomRy, 0, Math.PI * 2);
           } else {
-            // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
-            const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
-            const fanTopW = bladeW * 0.8;   // half-width at top
+            const fanBotW = gripW * 0.6;
+            const fanTopW = bladeW * 0.8;
             const fanH = pomDia;
-            ctx.moveTo(-fanBotW, gripBot);  // flat bottom-left (grip connection)
-            ctx.lineTo(fanBotW, gripBot);   // flat bottom-right
-            // Right side — curves inward
+            const fanGrad = ctx.createLinearGradient(0, gripBot, 0, gripBot + fanH);
+            fanGrad.addColorStop(0, `rgb(${Math.min(255,gR3+18)},${Math.min(255,gG3+12)},${Math.min(255,gBl3+8)})`);
+            fanGrad.addColorStop(0.5, `rgb(${gR3},${gG3},${gBl3})`);
+            fanGrad.addColorStop(1, `rgb(${Math.max(0,gR3-12)},${Math.max(0,gG3-8)},${Math.max(0,gBl3-5)})`);
+            ctx.fillStyle = fanGrad;
+            ctx.moveTo(-fanBotW, gripBot);
+            ctx.lineTo(fanBotW, gripBot);
             ctx.quadraticCurveTo(fanBotW * 0.5, gripBot + fanH * 0.5,
                                   fanTopW, gripBot + fanH);
-            // Top — curves outward (away from grip)
             ctx.quadraticCurveTo(0, gripBot + fanH + fanH * 0.5,
                                   -fanTopW, gripBot + fanH);
-            // Left side — curves inward
             ctx.quadraticCurveTo(-fanBotW * 0.5, gripBot + fanH * 0.5,
                                   -fanBotW, gripBot);
             ctx.closePath();
