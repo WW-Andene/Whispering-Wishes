@@ -2699,6 +2699,38 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const rPerF = 2;
         for (let ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
         cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
+        // God rays — BEFORE clouds so clouds occlude them
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        const rayCount = 12;
+        const rayCenterAngle = Math.PI * 0.5;
+        const rayConeSpread = Math.PI * 0.55;
+        for (let ri2 = 0; ri2 < rayCount; ri2++) {
+          const rayRng = seededRandom(ri2 * 777 + 42);
+          const t = (ri2 + rayRng() * 0.6 - 0.3) / (rayCount - 1);
+          const rayAngle = rayCenterAngle - rayConeSpread * 0.5 + t * rayConeSpread;
+          const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
+          const rayW = sunR * (0.3 + rayRng() * 1.2);
+          const ex = sunX + Math.cos(rayAngle) * rayLen;
+          const ey = sunY + Math.sin(rayAngle) * rayLen;
+          const rayAlpha = 0.06 + rayRng() * 0.09;
+          const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
+          rayGrad.addColorStop(0, 'rgba(255,250,230,' + (rayAlpha * 1.5) + ')');
+          rayGrad.addColorStop(0.1, 'rgba(255,242,205,' + (rayAlpha * 1.2) + ')');
+          rayGrad.addColorStop(0.35, 'rgba(255,230,175,' + (rayAlpha * 0.7) + ')');
+          rayGrad.addColorStop(0.6, 'rgba(255,215,145,' + (rayAlpha * 0.3) + ')');
+          rayGrad.addColorStop(0.85, 'rgba(255,195,115,' + (rayAlpha * 0.1) + ')');
+          rayGrad.addColorStop(1, 'rgba(255,180,100,0)');
+          ctx.fillStyle = rayGrad;
+          ctx.beginPath();
+          const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
+          ctx.moveTo(sunX + perpX * rayW * 0.1, sunY + perpY * rayW * 0.1);
+          ctx.lineTo(sunX - perpX * rayW * 0.1, sunY - perpY * rayW * 0.1);
+          ctx.lineTo(ex - perpX * rayW * 3.5, ey - perpY * rayW * 3.5);
+          ctx.lineTo(ex + perpX * rayW * 3.5, ey + perpY * rayW * 3.5);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+
         // Draw clouds with velocity stretch
         for (let di = 0; di < sceneClouds.length; di++) {
           const cloud = sceneClouds[di], rawAng = cloud.orbitSpeed * 0.025, angSpeed = Math.max(0.3 / Math.max(50, cloud.orbitDist), rawAng);
@@ -2724,45 +2756,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.drawImage(bkSrc, cx2 + bk.ox, cy2 + bk.oy, drawW, drawH);
           }
         }
-        // God rays — fan downward from sun toward ground, matching camera angle
-        ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        const rayCount = 12;
-        // Rays fan from sun downward toward the ground plane
-        // Camera looks up at sun (sun at 30% height, horizon at 75%)
-        // Center ray direction: straight down from sun to ground center
-        const rayCenterAngle = Math.PI * 0.5; // straight down
-        const rayConeSpread = Math.PI * 0.55; // wide fan covering most of the ground
-        for (let ri2 = 0; ri2 < rayCount; ri2++) {
-          const rayRng = seededRandom(ri2 * 777 + 42);
-          // Distribute rays across the cone with randomized spacing
-          const t = (ri2 + rayRng() * 0.6 - 0.3) / (rayCount - 1);
-          const rayAngle = rayCenterAngle - rayConeSpread * 0.5 + t * rayConeSpread;
-          // Rays extend from sun all the way to bottom of screen
-          const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
-          // Width varies — some thick, some thin, like real crepuscular rays
-          const rayW = sunR * (0.3 + rayRng() * 1.2);
-          const ex = sunX + Math.cos(rayAngle) * rayLen;
-          const ey = sunY + Math.sin(rayAngle) * rayLen;
-          // Bright white-gold — hope through darkness
-          const rayAlpha = 0.06 + rayRng() * 0.09;
-          const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          rayGrad.addColorStop(0, 'rgba(255,250,230,' + (rayAlpha * 1.5) + ')');
-          rayGrad.addColorStop(0.1, 'rgba(255,242,205,' + (rayAlpha * 1.2) + ')');
-          rayGrad.addColorStop(0.35, 'rgba(255,230,175,' + (rayAlpha * 0.7) + ')');
-          rayGrad.addColorStop(0.6, 'rgba(255,215,145,' + (rayAlpha * 0.3) + ')');
-          rayGrad.addColorStop(0.85, 'rgba(255,195,115,' + (rayAlpha * 0.1) + ')');
-          rayGrad.addColorStop(1, 'rgba(255,180,100,0)');
-          ctx.fillStyle = rayGrad;
-          ctx.beginPath();
-          const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
-          // Narrow at sun, widens as it reaches the ground
-          ctx.moveTo(sunX + perpX * rayW * 0.1, sunY + perpY * rayW * 0.1);
-          ctx.lineTo(sunX - perpX * rayW * 0.1, sunY - perpY * rayW * 0.1);
-          ctx.lineTo(ex - perpX * rayW * 3.5, ey - perpY * rayW * 3.5);
-          ctx.lineTo(ex + perpX * rayW * 3.5, ey + perpY * rayW * 3.5);
-          ctx.closePath(); ctx.fill();
-        }
-        ctx.restore();
         } // end if (sceneClouds)
 
         // Dynamic ambient — clouds darken the sky behind them
@@ -2890,7 +2883,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
-            const contrast=0.6+dT*0.4,warmShift=(1-dT)*32,baseVal=30+dC*75;
+            const contrast=0.6+dT*0.4,warmShift=(1-dT)*38,baseVal=40+dC*90;
             // Ground matching sky — brighter, warm amber
             const t0r=baseVal*0.42+warmShift*0.25, t0g=baseVal*0.28+warmShift*0.12, t0b=baseVal*0.2+warmShift*0.04;
             const t1r=baseVal*0.62+warmShift*0.38, t1g=baseVal*0.44+warmShift*0.18, t1b=baseVal*0.3+warmShift*0.06;
