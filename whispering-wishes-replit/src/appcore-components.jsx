@@ -3564,51 +3564,65 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGB = (lightB + darkB) * 0.4;
             const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
             const gripBr = 0.05 + lit * 0.08;
-            // Blade left — 3D gradient
-            const gBlGL = ctx.createLinearGradient(0, 0, -gBW, 0);
-            if (leftLight) {
-              gBlGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-              gBlGL.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-              gBlGL.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
-            } else {
-              gBlGL.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-              gBlGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-              gBlGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+            // Gladius — fractured blade
+            var _gcs = (s.idx * 2246822519 + 777) | 0;
+            var _gcr = function() { _gcs = (_gcs * 1103515245 + 12345) & 0x7fffffff; return _gcs / 0x7fffffff; };
+            _gcr(); _gcr();
+            var _gnc = 2 + (_gcr() * 3 | 0);
+            var _gcrackYs = [];
+            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + (0.08 + _gcr() * 0.84) * gBL);
+            _gcrackYs.sort(function(a, b) { return a - b; });
+            var _gcracks = [];
+            for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
+              var _gy = _gcrackYs[_gci2];
+              var _gdiag = gBL * (0.04 + _gcr() * 0.08);
+              var _gdir = _gcr() > 0.5 ? 1 : -1;
+              var _gw2 = gBW * Math.min(1, (_gy + gBL) / gBL * 1.8);
+              _gcracks.push([
+                { x: -_gw2 * 1.3, y: _gy - _gdir * _gdiag },
+                { x: (_gcr() - 0.5) * _gw2, y: _gy + (_gcr() - 0.5) * _gdiag * 0.5 },
+                { x: _gw2 * 1.3, y: _gy + _gdir * _gdiag }
+              ]);
             }
-            ctx.fillStyle = gBlGL;
-            ctx.beginPath();
-            ctx.moveTo(0, gTip);
-            ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
-            ctx.quadraticCurveTo(-gBW * 1.08, (gTaperY + gBase) * 0.5, -gBW * 0.95, gBase);
-            ctx.lineTo(0, gBase);
-            ctx.closePath();
-            ctx.fill();
-            // Blade right — 3D gradient
-            const gBlGR = ctx.createLinearGradient(0, 0, gBW, 0);
-            if (leftLight) {
-              gBlGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-              gBlGR.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-              gBlGR.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
-            } else {
-              gBlGR.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-              gBlGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-              gBlGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+            var _gfdx = [0], _gfdy = [0], _gfr = [0];
+            for (var _gfi = 0; _gfi < _gnc; _gfi++) {
+              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * 2 * (0.4 + _gcr() * 0.9));
+              _gfdy.push((_gcr() - 0.5) * gBW * 0.8);
+              _gfr.push((_gcr() - 0.5) * 0.1);
             }
-            ctx.fillStyle = gBlGR;
-            ctx.beginPath();
-            ctx.moveTo(0, gTip);
-            ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
-            ctx.quadraticCurveTo(gBW * 1.08, (gTaperY + gBase) * 0.5, gBW * 0.95, gBase);
-            ctx.lineTo(0, gBase);
-            ctx.closePath();
-            ctx.fill();
-            // Center ridge highlight
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-            ctx.lineWidth = Math.max(0.3, gBW * 0.08);
-            ctx.beginPath();
-            ctx.moveTo(0, gTip + 1);
-            ctx.lineTo(0, gBase);
-            ctx.stroke();
+            var _gbwAt = function(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); };
+            var _gcolL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
+            var _gcolR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+            for (var _gsi = 0; _gsi <= _gnc; _gsi++) {
+              var _gtop = _gsi > 0 ? _gcracks[_gsi - 1] : null;
+              var _gbot = _gsi < _gnc ? _gcracks[_gsi] : null;
+              ctx.save();
+              ctx.translate(_gfdx[_gsi], _gfdy[_gsi]);
+              ctx.rotate(_gfr[_gsi]);
+              var _gtY = _gtop ? Math.min(_gtop[0].y, _gtop[1].y, _gtop[2].y) : -gBL;
+              var _gbY = _gbot ? Math.max(_gbot[0].y, _gbot[1].y, _gbot[2].y) : 0;
+              var _gtW = _gbwAt(_gtY), _gbW3 = _gbwAt(_gbY);
+              ctx.fillStyle = _gcolL;
+              ctx.beginPath();
+              if (_gtop) { ctx.moveTo(Math.min(_gtop[0].x,-_gtW),_gtop[0].y); ctx.lineTo(Math.min(_gtop[1].x,0),_gtop[1].y); ctx.lineTo(Math.min(_gtop[2].x,0),_gtop[2].y); }
+              else ctx.moveTo(0, -gBL);
+              if (_gbot) { ctx.lineTo(Math.min(_gbot[2].x,0),_gbot[2].y); ctx.lineTo(Math.min(_gbot[1].x,0),_gbot[1].y); ctx.lineTo(Math.min(_gbot[0].x,-_gbW3),_gbot[0].y); }
+              else { ctx.lineTo(0,0); ctx.lineTo(-_gbW3,0); }
+              if (_gtop) ctx.lineTo(-_gtW,_gtY);
+              ctx.closePath(); ctx.fill();
+              ctx.fillStyle = _gcolR;
+              ctx.beginPath();
+              if (_gtop) { ctx.moveTo(Math.max(_gtop[2].x,_gtW),_gtop[2].y); ctx.lineTo(Math.max(_gtop[1].x,0),_gtop[1].y); ctx.lineTo(Math.max(_gtop[0].x,0),_gtop[0].y); }
+              else ctx.moveTo(0, -gBL);
+              if (_gbot) { ctx.lineTo(Math.max(_gbot[0].x,0),_gbot[0].y); ctx.lineTo(Math.max(_gbot[1].x,0),_gbot[1].y); ctx.lineTo(Math.max(_gbot[2].x,_gbW3),_gbot[2].y); }
+              else { ctx.lineTo(_gbW3,0); ctx.lineTo(0,0); }
+              if (_gtop) ctx.lineTo(_gtW,_gtY);
+              ctx.closePath(); ctx.fill();
+              ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
+              ctx.lineWidth = Math.max(0.3, gBW * 0.08);
+              ctx.beginPath(); ctx.moveTo(0,_gtY+1); ctx.lineTo(0,_gbY); ctx.stroke();
+              ctx.restore();
+            }
             // Grip (drawn before guard) — cylindrical gradient
             const gGripGrad = ctx.createLinearGradient(-gGripW, 0, gGripW, 0);
             const gkR = Math.round(20 + 40 * gripBr), gkG = Math.round(12 + 20 * gripBr), gkB = Math.round(8 + 10 * gripBr);
@@ -3664,66 +3678,76 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — 3D mesh-style rendering ===
-          // Blade left half — diamond cross-section gradient
-          const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
-          if (leftLight) {
-            blGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-            blGL.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-            blGL.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
-          } else {
-            blGL.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-            blGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-            blGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
+          // === LONGSWORD — fractured 3D blade ===
+          var _cs = (s.idx * 2246822519 + 314159) | 0;
+          var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
+          _cr(); _cr();
+          var _nc = 2 + (_cr() * 3 | 0); // 2-4 cracks
+          var _hw = bladeW / 2;
+          var _totalH = bladeH + guardH;
+          // Fully random crack Y positions (sorted), with big diagonal jitter
+          var _crackYs = [];
+          for (var _ci = 0; _ci < _nc; _ci++) {
+            _crackYs.push(-bladeH + (0.08 + _cr() * 0.84) * _totalH); // 8%-92% of blade
           }
-          ctx.fillStyle = blGL;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            -bladeW * 0.5, tipEnd - pomDia,
-                            -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath();
-          ctx.fill();
-          // Blade right half — diamond cross-section gradient
-          const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
-          if (leftLight) {
-            blGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-            blGR.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-            blGR.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
-          } else {
-            blGR.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-            blGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-            blGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
+          _crackYs.sort(function(a, b) { return a - b; });
+          // Build zigzag crack paths — strong diagonal (left Y differs from right Y)
+          var _cracks = [];
+          for (var _ci2 = 0; _ci2 < _nc; _ci2++) {
+            var _y = _crackYs[_ci2];
+            var _diag = _totalH * (0.04 + _cr() * 0.08); // 4-12% blade height diagonal
+            var _dir = _cr() > 0.5 ? 1 : -1; // diagonal direction
+            var _w = _hw * Math.min(1, (_y + bladeH) / _totalH * 1.8);
+            _cracks.push([
+              { x: -_w * 1.3, y: _y - _dir * _diag },
+              { x: (_cr() - 0.5) * _w, y: _y + (_cr() - 0.5) * _diag * 0.5 },
+              { x: _w * 1.3, y: _y + _dir * _diag }
+            ]);
           }
-          ctx.fillStyle = blGR;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
-                            bladeW * 0.5, tipEnd - pomDia,
-                            bladeW / 2, tipEnd);
-          ctx.lineTo(bladeW / 2, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath();
-          ctx.fill();
-          // Center ridge — specular highlight line
-          ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH + 1);
-          ctx.lineTo(0, guardH);
-          ctx.stroke();
-          // Fuller grooves — thin dark channels
-          const fullerOff = bladeW * 0.18;
-          ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
-          ctx.beginPath();
-          ctx.moveTo(-fullerOff, -bladeH * 0.88);
-          ctx.lineTo(-fullerOff, guardH);
-          ctx.moveTo(fullerOff, -bladeH * 0.88);
-          ctx.lineTo(fullerOff, guardH);
-          ctx.stroke();
+          // Fragment offsets — first stays, rest drift
+          var _fdx = [0], _fdy = [0], _fr = [0];
+          for (var _fi = 0; _fi < _nc; _fi++) {
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.4 + _cr() * 0.9));
+            _fdy.push((_cr() - 0.5) * bladeW * 0.4);
+            _fr.push((_cr() - 0.5) * 0.1);
+          }
+          var _bwAt = function(y) { return _hw * Math.max(0, Math.min(1, (y + bladeH) / _totalH)); };
+          var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
+          var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+          // Draw each fragment
+          for (var _si = 0; _si <= _nc; _si++) {
+            var _top = _si > 0 ? _cracks[_si - 1] : null;
+            var _bot = _si < _nc ? _cracks[_si] : null;
+            ctx.save();
+            ctx.translate(_fdx[_si], _fdy[_si]);
+            ctx.rotate(_fr[_si]);
+            var _topY = _top ? Math.min(_top[0].y, _top[1].y, _top[2].y) : -bladeH;
+            var _botY = _bot ? Math.max(_bot[0].y, _bot[1].y, _bot[2].y) : guardH;
+            var _tW = _bwAt(_topY), _bW2 = _bwAt(_botY);
+            // Left half
+            ctx.fillStyle = _colL;
+            ctx.beginPath();
+            if (_top) { ctx.moveTo(Math.min(_top[0].x, -_tW), _top[0].y); ctx.lineTo(Math.min(_top[1].x, 0), _top[1].y); ctx.lineTo(Math.min(_top[2].x, 0), _top[2].y); }
+            else { ctx.moveTo(0, -bladeH); }
+            if (_bot) { ctx.lineTo(Math.min(_bot[2].x, 0), _bot[2].y); ctx.lineTo(Math.min(_bot[1].x, 0), _bot[1].y); ctx.lineTo(Math.min(_bot[0].x, -_bW2), _bot[0].y); }
+            else { ctx.lineTo(0, guardH); ctx.lineTo(-_bW2, guardH); }
+            if (_top) ctx.lineTo(-_tW, _topY);
+            ctx.closePath(); ctx.fill();
+            // Right half
+            ctx.fillStyle = _colR;
+            ctx.beginPath();
+            if (_top) { ctx.moveTo(Math.max(_top[2].x, _tW), _top[2].y); ctx.lineTo(Math.max(_top[1].x, 0), _top[1].y); ctx.lineTo(Math.max(_top[0].x, 0), _top[0].y); }
+            else { ctx.moveTo(0, -bladeH); }
+            if (_bot) { ctx.lineTo(Math.max(_bot[0].x, 0), _bot[0].y); ctx.lineTo(Math.max(_bot[1].x, 0), _bot[1].y); ctx.lineTo(Math.max(_bot[2].x, _bW2), _bot[2].y); }
+            else { ctx.lineTo(_bW2, guardH); ctx.lineTo(0, guardH); }
+            if (_top) ctx.lineTo(_tW, _topY);
+            ctx.closePath(); ctx.fill();
+            // Ridge per piece
+            ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
+            ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+            ctx.beginPath(); ctx.moveTo(0, _topY + 1); ctx.lineTo(0, _botY); ctx.stroke();
+            ctx.restore();
+          }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
           const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
