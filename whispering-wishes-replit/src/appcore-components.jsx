@@ -3646,41 +3646,50 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = 'rgb(50,30,16)';
           ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
 
-          // --- Hanging tapestry — animated with wind/embers ---
+          // --- Hanging veil/ribbon — flowing in wind ---
           const dTop = crossY + crossH * 0.5;
           const dW = crossW * 0.9;
           const dH = bScale * 1.8;
-          const dL = bScrX - dW / 2, dR = bScrX + dW / 2;
           const wt = cloudTime * 0.5;
+          const segs = 16;
+
+          // Compute per-segment horizontal displacement — anchored at top, free at bottom
+          // Like a ribbon: waves propagate down with increasing amplitude
+          function getWave(t) {
+            const amp = t * t * bScale * 0.12;
+            return Math.sin(t * 4.5 - wt * 1.2) * amp
+                 + Math.sin(t * 2.8 - wt * 0.7 + 1.5) * amp * 0.5
+                 + Math.sin(t * 7 - wt * 1.8 + 0.8) * amp * 0.2;
+          }
 
           function drapePath() {
             ctx.beginPath();
-            ctx.moveTo(dL, dTop);
-            ctx.lineTo(dR, dTop);
-            // Right edge — waves driven by cloudTime (wind)
-            const rW1 = Math.sin(wt * 0.8 + 0.5) * bScale * 0.025;
-            const rW2 = Math.sin(wt * 0.5 + 2) * bScale * 0.018;
-            ctx.bezierCurveTo(
-              dR + bScale * 0.01 + rW1, dTop + dH * 0.3,
-              dR + rW2, dTop + dH * 0.7,
-              dR - bScale * 0.005 + rW2 * 0.6, dTop + dH
-            );
-            // Bottom — billows with wind
-            const bW = Math.sin(wt * 0.6 + 1) * bScale * 0.015;
-            ctx.lineTo(dR + bW, dTop + dH + bScale * 0.025);
-            ctx.lineTo(bScrX + dW * 0.15 + bW * 0.7, dTop + dH + bScale * 0.04 + Math.sin(wt * 0.7) * bScale * 0.01);
-            ctx.lineTo(bScrX + bW * 0.4, dTop + dH + bScale * 0.03);
-            ctx.lineTo(bScrX - dW * 0.15 + bW * 0.7, dTop + dH + bScale * 0.04 + Math.sin(wt * 0.7 + 1.5) * bScale * 0.01);
-            ctx.lineTo(dL + bW, dTop + dH + bScale * 0.025);
-            ctx.lineTo(dL + bScale * 0.005 + rW2 * 0.6, dTop + dH);
-            // Left edge
-            const lW1 = Math.sin(wt * 0.8 + 0.8) * bScale * 0.025;
-            const lW2 = Math.sin(wt * 0.5 + 2.3) * bScale * 0.018;
-            ctx.bezierCurveTo(
-              dL - bScale * 0.01 + lW2, dTop + dH * 0.7,
-              dL - bScale * 0.01 + lW1, dTop + dH * 0.3,
-              dL, dTop
-            );
+            // Top edge — fixed to crossbar
+            const tL = bScrX - dW / 2, tR = bScrX + dW / 2;
+            ctx.moveTo(tL, dTop);
+            ctx.lineTo(tR, dTop);
+            // Right edge going down — each segment displaced by wave
+            for (let i = 1; i <= segs; i++) {
+              const t = i / segs;
+              const y = dTop + t * dH;
+              const wx = getWave(t);
+              const widthSwell = 1 + Math.sin(t * Math.PI) * 0.06 * Math.sin(wt * 0.9);
+              ctx.lineTo(tR * widthSwell - (bScrX * widthSwell - bScrX) + wx, y);
+            }
+            // Bottom edge — flows with the wave at full amplitude
+            const botW = getWave(1);
+            const botW2 = getWave(0.95);
+            ctx.lineTo(bScrX + dW * 0.15 + botW, dTop + dH + bScale * 0.03);
+            ctx.lineTo(bScrX + botW * 0.8, dTop + dH + bScale * 0.02);
+            ctx.lineTo(bScrX - dW * 0.15 + botW2, dTop + dH + bScale * 0.03);
+            // Left edge going back up
+            for (let i = segs; i >= 1; i--) {
+              const t = i / segs;
+              const y = dTop + t * dH;
+              const wx = getWave(t);
+              const widthSwell = 1 + Math.sin(t * Math.PI) * 0.06 * Math.sin(wt * 0.9);
+              ctx.lineTo(tL * widthSwell - (bScrX * widthSwell - bScrX) + wx, y);
+            }
             ctx.closePath();
           }
 
@@ -3694,14 +3703,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = dGrad;
           ctx.fill();
 
-          // Animated fabric folds — highlight/shadow shift with wind
+          // Animated fabric folds — shift with wind
           ctx.save();
           drapePath(); ctx.clip();
+          const dL = bScrX - dW / 2, dR = bScrX + dW / 2;
           for (let fi = 0; fi < 5; fi++) {
-            const fX = dL + (fi + 0.5) * (dW / 5) + Math.sin(fi * 1.7 + wt * 0.4) * bScale * 0.012;
+            const fX = dL + (fi + 0.5) * (dW / 5) + Math.sin(fi * 1.7 + wt * 0.6) * bScale * 0.02;
             const fW2 = bScale * 0.06;
             // Highlight
-            const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.3) * 0.025;
+            const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.4) * 0.03;
             const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
             hl.addColorStop(0, 'rgba(255,160,90,0)');
             hl.addColorStop(0.5, 'rgba(255,160,90,' + hlA + ')');
