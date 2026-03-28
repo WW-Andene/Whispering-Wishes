@@ -3679,33 +3679,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const gridY = Math.max(2, Math.round(dH / cellSize));
 
           // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
-          // Chain simulation — each row drags behind the one above
-          // Like a rope/whip: row 0 anchored, each row follows with delay
-          // Precompute per-row X,Y,Z offsets as a chain
-          const rowOffsets = new Array(gridY + 1);
-          rowOffsets[0] = { x: 0, y: 0, z: 0 }; // row 0 = anchored
-          const windBase = bScale * 0.15 * (0.6 + Math.sin(wt * 0.3) * 0.35);
-          for (let gy = 1; gy <= gridY; gy++) {
-            const prev = rowOffsets[gy - 1];
-            const rowT = gy / gridY;
-            // Wind force on this segment — slight random per-row
-            const segWind = windBase + Math.sin(gy * 0.8 - wt * 0.7) * bScale * 0.03;
-            // Each row adds to previous — chain accumulation
-            const dx = segWind + Math.sin(gy * 1.1 - wt * 1.2) * bScale * 0.02;
-            const dy = Math.sin(gy * 0.9 - wt * 0.9 + 1.5) * bScale * 0.015;
-            const dz = Math.sin(gy * 0.7 - wt * 0.6 + 0.8) * 0.02;
-            rowOffsets[gy] = { x: prev.x + dx, y: prev.y + dy, z: prev.z + dz };
-          }
-
+          // Each cell is independent — own displacement from rest position
+          // Anchored at top (v=0), more freedom at bottom (v=1)
           function gridPt(gx, gy) {
             const u = gx / gridX, v = gy / gridY;
-            const ro = rowOffsets[gy];
-            // Z affects width scale
-            const zScale = 1 + ro.z * 0.3;
-            const centerX = bScrX + ro.x;
-            const baseX = centerX + (u - 0.5) * dW * zScale;
-            const baseY = dTop + v * dH + ro.y;
-            return { x: baseX, y: baseY, z: ro.z };
+            // Unique phase per cell so neighbors differ
+            const cellId = gx * 31 + gy * 17;
+            const freedom = v * v;
+            // Each cell responds to wind independently
+            const dx = Math.sin(cellId * 0.37 + wt * 0.8) * freedom * bScale * 0.06
+                     + Math.sin(cellId * 0.13 + wt * 0.5 + 1.7) * freedom * bScale * 0.04
+                     + freedom * bScale * 0.08 * (0.5 + Math.sin(wt * 0.3) * 0.3);
+            const dy = Math.sin(cellId * 0.23 + wt * 0.6 + 0.9) * freedom * bScale * 0.04
+                     + Math.sin(cellId * 0.41 + wt * 0.35 + 2.1) * freedom * bScale * 0.025;
+            const dz = Math.sin(cellId * 0.19 + wt * 0.45 + 1.3) * freedom * 0.12;
+            const zScale = 1 + dz * 0.25;
+            const baseX = bScrX + (u - 0.5) * dW * zScale + dx;
+            const baseY = dTop + v * dH + dy;
+            return { x: baseX, y: baseY, z: dz };
           }
 
           // Draw cloth row by row — each row shaded by its Z depth
