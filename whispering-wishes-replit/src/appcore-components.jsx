@@ -2302,10 +2302,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     // === Cloud system from cloud-demo ===
     const CLOUD_DEFS = [
-      { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.10, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
-      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.55, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
-      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.65, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
-      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.72, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
+      { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.18, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
+      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.78, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
+      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.88, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
+      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.95, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
     ];
     function generateBalls(seed, baseRadius, cloudType) {
         const def = CLOUD_DEFS[cloudType];
@@ -2417,7 +2417,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunX = W * 0.5;
         const sunY = H * 0.3;
         const sunR = H * 0.08;
-        const minDist = sunR * 2;
+        const minDist = sunR * 1.2;
         const clouds = [];
         // Limit maxReach to what's actually visible — orbit must intersect screen
         const screenDiag = Math.sqrt((W * 0.5) * (W * 0.5) + Math.max(sunY, H - sunY) * Math.max(sunY, H - sunY));
@@ -2471,10 +2471,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const ang = phases[s] + (c / nCl) * Math.PI * 2 + (rng2() - 0.5) * (Math.PI * 2 / nCl) * 1.5;
                 const sr = rng2();
                 let rad, cType;
-                if (sr < 0.12) { rad = 110 + rng2() * 80; cType = 3; }
-                else if (sr < 0.40) { rad = 55 + rng2() * 60; cType = 2; }
-                else if (sr < 0.72) { rad = 28 + rng2() * 30; cType = 1; }
-                else { rad = 14 + rng2() * 18; cType = 0; }
+                if (sr < 0.18) { rad = 130 + rng2() * 100; cType = 3; }
+                else if (sr < 0.48) { rad = 65 + rng2() * 70; cType = 2; }
+                else if (sr < 0.78) { rad = 35 + rng2() * 35; cType = 1; }
+                else { rad = 16 + rng2() * 20; cType = 0; }
                 const dep = Math.max(0, Math.min(1, (1 - s / 4) + (rng2() - 0.5) * 0.25));
                 const spd = speeds[s] / (0.5 + rad / 60) * (0.55 + dep * 0.45) / (0.3 + dist / (H * 0.5));
                 addC(cs, dist, ang, rad, dep, spd, cType);
@@ -2583,8 +2583,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const dx = sx - sunX, dy = (sy - sunY) / flatR;
                 const gDist = Math.max(minDist, Math.sqrt(dx * dx + dy * dy));
                 const gAng = Math.atan2(dy, dx);
-                const gRad = 18 + grng() * 50;
-                const gT = gRad > 55 ? 3 : gRad > 35 ? 2 : gRad > 18 ? 1 : 0;
+                const gRad = 25 + grng() * 75;
+                const gT = gRad > 70 ? 3 : gRad > 45 ? 2 : gRad > 25 ? 1 : 0;
                 const gDep = 0.15 + grng() * 0.55;
                 const gSpd = 0.08 / (0.5 + gRad / 60) * (0.55 + gDep * 0.45) / (0.3 + gDist / (H * 0.5));
                 addC(gs, gDist, gAng, gRad, gDep, gSpd, gT);
