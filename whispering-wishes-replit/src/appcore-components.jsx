@@ -2727,47 +2727,58 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
           }
         }
-        // Find split point — clouds sorted by depth, rays sit at depth 0.5
-        let raySplit = 0;
+        // Interleave clouds and rays at multiple depth layers
+        // ray<cloud<ray<cloud<ray pattern
+        const depthCuts = [0.3, 0.6]; // 3 cloud layers, rays between each
+        const splits = [0, 0, sceneClouds.length];
         for (let di = 0; di < sceneClouds.length; di++) {
-          if (sceneClouds[di].depth >= 0.5) { raySplit = di; break; }
-          if (di === sceneClouds.length - 1) raySplit = sceneClouds.length;
+          if (splits[1] === 0 && sceneClouds[di].depth >= depthCuts[0]) splits[1] = di;
+          if (sceneClouds[di].depth >= depthCuts[1]) { splits[2] = di; break; }
         }
-        // Back clouds
-        drawCloudRange(0, raySplit);
-        // God rays
-        ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        const rayCount = 12;
-        const rayCenterAngle = Math.PI * 0.5;
-        const rayConeSpread = Math.PI * 0.55;
-        for (let ri2 = 0; ri2 < rayCount; ri2++) {
-          const rayRng = seededRandom(ri2 * 777 + 42);
-          const t = (ri2 + rayRng() * 0.6 - 0.3) / (rayCount - 1);
-          const rayAngle = rayCenterAngle - rayConeSpread * 0.5 + t * rayConeSpread;
-          const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
-          const rayW = sunR * (0.3 + rayRng() * 1.2);
-          const ex = sunX + Math.cos(rayAngle) * rayLen;
-          const ey = sunY + Math.sin(rayAngle) * rayLen;
-          const rayAlpha = 0.06 + rayRng() * 0.09;
-          const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          rayGrad.addColorStop(0, 'rgba(255,250,230,' + (rayAlpha * 1.5) + ')');
-          rayGrad.addColorStop(0.1, 'rgba(255,242,205,' + (rayAlpha * 1.2) + ')');
-          rayGrad.addColorStop(0.35, 'rgba(255,230,175,' + (rayAlpha * 0.7) + ')');
-          rayGrad.addColorStop(0.6, 'rgba(255,215,145,' + (rayAlpha * 0.3) + ')');
-          rayGrad.addColorStop(0.85, 'rgba(255,195,115,' + (rayAlpha * 0.1) + ')');
-          rayGrad.addColorStop(1, 'rgba(255,180,100,0)');
-          ctx.fillStyle = rayGrad;
-          ctx.beginPath();
-          const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
-          ctx.moveTo(sunX + perpX * rayW * 0.1, sunY + perpY * rayW * 0.1);
-          ctx.lineTo(sunX - perpX * rayW * 0.1, sunY - perpY * rayW * 0.1);
-          ctx.lineTo(ex - perpX * rayW * 3.5, ey - perpY * rayW * 3.5);
-          ctx.lineTo(ex + perpX * rayW * 3.5, ey + perpY * rayW * 3.5);
-          ctx.closePath(); ctx.fill();
+        // Ray drawing function
+        function drawRays(alphaScale) {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter';
+          const rCount = 12;
+          const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
+          for (let ri2 = 0; ri2 < rCount; ri2++) {
+            const rRng = seededRandom(ri2 * 777 + 42);
+            const t2 = (ri2 + rRng() * 0.6 - 0.3) / (rCount - 1);
+            const rAng = rCenter - rSpread * 0.5 + t2 * rSpread;
+            const rLen = (H - sunY) * (1.0 + rRng() * 0.3);
+            const rW2 = sunR * (0.3 + rRng() * 1.2);
+            const rex = sunX + Math.cos(rAng) * rLen;
+            const rey = sunY + Math.sin(rAng) * rLen;
+            const rA = (0.05 + rRng() * 0.08) * alphaScale;
+            const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
+            rG.addColorStop(0, 'rgba(255,252,235,' + (rA * 1.5) + ')');
+            rG.addColorStop(0.1, 'rgba(255,245,210,' + (rA * 1.2) + ')');
+            rG.addColorStop(0.3, 'rgba(255,235,180,' + (rA * 0.8) + ')');
+            rG.addColorStop(0.55, 'rgba(255,220,150,' + (rA * 0.35) + ')');
+            rG.addColorStop(0.8, 'rgba(255,200,120,' + (rA * 0.12) + ')');
+            rG.addColorStop(1, 'rgba(255,180,100,0)');
+            ctx.fillStyle = rG;
+            ctx.beginPath();
+            const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
+            ctx.moveTo(sunX + rpx * rW2 * 0.1, sunY + rpy * rW2 * 0.1);
+            ctx.lineTo(sunX - rpx * rW2 * 0.1, sunY - rpy * rW2 * 0.1);
+            ctx.lineTo(rex - rpx * rW2 * 4, rey - rpy * rW2 * 4);
+            ctx.lineTo(rex + rpx * rW2 * 4, rey + rpy * rW2 * 4);
+            ctx.closePath(); ctx.fill();
+          }
+          ctx.restore();
         }
-        ctx.restore();
-        // Front clouds
-        drawCloudRange(raySplit, sceneClouds.length);
+        // Layer 0: rays behind all clouds
+        drawRays(0.5);
+        // Layer 1: back clouds
+        drawCloudRange(0, splits[1]);
+        // Layer 2: rays between cloud layers
+        drawRays(0.7);
+        // Layer 3: mid clouds
+        drawCloudRange(splits[1], splits[2]);
+        // Layer 4: rays in front of mid clouds
+        drawRays(0.4);
+        // Layer 5: front clouds
+        drawCloudRange(splits[2], sceneClouds.length);
         } // end if (sceneClouds)
 
         // Dynamic ambient — clouds darken the sky behind them
