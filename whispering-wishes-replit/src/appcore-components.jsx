@@ -3371,12 +3371,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved down — flat ends, spans 0 to guardH
-            ctx.moveTo(-guardW / 2, 0);
+            // Curved down — extends above 0 to connect with blade
+            ctx.moveTo(-guardW / 2, -ov);
             ctx.lineTo(-guardW / 2, guardH);
             ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
-            ctx.lineTo(guardW / 2, 0);
-            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
+            ctx.lineTo(guardW / 2, -ov);
+            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, -ov);
             ctx.closePath();
           } else if (guardType === 3) {
             // Three segmented — center block + two end blocks
@@ -3388,18 +3388,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           } else {
             // Straight (default)
-            ctx.rect(-guardW / 2, 0, guardW, guardH);
+            ctx.rect(-guardW / 2, -ov, guardW, guardH + ov);
           }
           ctx.fill();
-          // Grip — straight rectangle (overlap into guard and pommel)
-          ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
-          // Pommel — sits directly on grip
+          // Grip — overlaps into guard and pommel
+          ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 3);
+          // Pommel — overlaps grip end
           let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
           const pommelType = (ph >>> 0) % 2;
           ctx.beginPath();
           if (pommelType === 1) {
-            // Circle
-            ctx.arc(0, gripBot + pomRy, pomRy, 0, Math.PI * 2);
+            // Circle — center pulled up to overlap grip
+            ctx.arc(0, gripBot + pomRy * 0.6, pomRy, 0, Math.PI * 2);
           } else {
             // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
             const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
