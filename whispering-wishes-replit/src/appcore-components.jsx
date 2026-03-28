@@ -3614,37 +3614,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // Round gold crest at pole top (no blade)
-          const crestY = poleTop;
-          const crestR = bScale * 0.18;
-          const cBg = ctx.createRadialGradient(bScrX, crestY, 0, bScrX, crestY, crestR);
-          cBg.addColorStop(0, 'rgb(100,65,20)'); cBg.addColorStop(0.6, 'rgb(80,50,15)'); cBg.addColorStop(1, 'rgb(65,40,12)');
-          ctx.fillStyle = cBg;
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1.5, bScale * 0.02); ctx.stroke();
-          ctx.strokeStyle = gD; ctx.lineWidth = Math.max(0.8, bScale * 0.008);
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.78, 0, Math.PI * 2); ctx.stroke();
-          // 8 main star rays
-          ctx.fillStyle = gM;
-          for (let si = 0; si < 8; si++) {
-            const sAng = si * Math.PI / 4 - Math.PI / 2, sLen = crestR * 0.68, sW = crestR * 0.12;
-            ctx.save(); ctx.translate(bScrX, crestY); ctx.rotate(sAng);
-            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath(); ctx.fill(); ctx.restore();
-          }
-          // 8 offset rays
-          ctx.fillStyle = 'rgba(200,155,45,0.6)';
-          for (let si = 0; si < 8; si++) {
-            const sAng = si * Math.PI / 4 - Math.PI / 2 + Math.PI / 8, sLen = crestR * 0.42, sW = crestR * 0.08;
-            ctx.save(); ctx.translate(bScrX, crestY); ctx.rotate(sAng);
-            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath(); ctx.fill(); ctx.restore();
-          }
-          ctx.strokeStyle = 'rgba(200,155,45,0.5)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.3, 0, Math.PI * 2); ctx.stroke();
-          ctx.fillStyle = gH;
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.1, 0, Math.PI * 2); ctx.fill();
-
-          // Gold crossbar with end caps
-          const crossY = crestY + crestR + bScale * 0.025;
+          // Gold crossbar with end caps — drawn first, crest on top
+          const crossY = poleTop + bScale * 0.04;
           const crossW = bScale * 0.6;
           const crossH = Math.max(2, poleW * 0.8);
           const cbGrad = ctx.createLinearGradient(bScrX - crossW / 2, 0, bScrX + crossW / 2, 0);
@@ -3656,6 +3627,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = gM;
           ctx.beginPath(); ctx.arc(bScrX - crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
           ctx.beginPath(); ctx.arc(bScrX + crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
+
+          // Small gold crest — centered on pole/crossbar intersection
+          const crestR = bScale * 0.08;
+          const cBg = ctx.createRadialGradient(bScrX, crossY, 0, bScrX, crossY, crestR);
+          cBg.addColorStop(0, 'rgb(100,65,20)'); cBg.addColorStop(0.6, 'rgb(80,50,15)'); cBg.addColorStop(1, 'rgb(65,40,12)');
+          ctx.fillStyle = cBg;
+          ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.012); ctx.stroke();
+          // Star rays
+          ctx.fillStyle = gM;
+          for (let si = 0; si < 8; si++) {
+            const sAng = si * Math.PI / 4 - Math.PI / 2, sLen = crestR * 0.7, sW = crestR * 0.13;
+            ctx.save(); ctx.translate(bScrX, crossY); ctx.rotate(sAng);
+            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath(); ctx.fill(); ctx.restore();
+          }
+          ctx.fillStyle = gH;
+          ctx.beginPath(); ctx.arc(bScrX, crossY, crestR * 0.15, 0, Math.PI * 2); ctx.fill();
 
           // Vertical ridged columns
           const ridgeTop = crossY + crossH / 2;
@@ -3699,9 +3687,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const hR = Math.sin(_fw1(px+dd,py,wt))*0.5+Math.sin(_fw2(px+dd,py,wt))*0.35+Math.sin(_fw3(px+dd,py,wt))*0.25;
               const hD = Math.sin(_fw1(px,py+dd,wt))*0.5+Math.sin(_fw2(px,py+dd,wt))*0.35+Math.sin(_fw3(px,py+dd,wt))*0.25;
               const slopeX = hR - totalH, slopeY = hD - totalH;
-              const windPush = freedom * bScale * 0.06 * (0.5 + Math.sin(wt * 0.035) * 0.3);
+              const gust = 0.5 + Math.sin(wt * 0.035) * 0.3;
+              const windPush = freedom * bScale * 0.06 * gust;
               const foldX = totalH * freedom * bScale * 0.1;
-              const foldY = slopeY * freedom * bScale * 0.8;
+              // Y: slope ripple + wind LIFT (cloth rises, doesn't just hang)
+              const windLift = -freedom * bScale * 0.15 * gust;
+              const foldY = slopeY * freedom * bScale * 0.8 + windLift;
               const wz = totalH * freedom * 0.2;
               const zScale = 1 + wz * 0.4;
               const slopeShift = slopeX * freedom * bScale * 0.6;
