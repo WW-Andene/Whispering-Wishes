@@ -2756,6 +2756,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Ray drawing function
         function drawRays(alphaScale) {
           ctx.save(); ctx.globalCompositeOperation = 'lighter';
+          ctx.filter = 'blur(' + Math.max(2, Math.round(H * 0.008)) + 'px)';
           const rCount = 12;
           const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
           for (let ri2 = 0; ri2 < rCount; ri2++) {
@@ -2763,24 +2764,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const t2 = (ri2 + rRng() * 0.6 - 0.3) / (rCount - 1);
             const rAng = rCenter - rSpread * 0.5 + t2 * rSpread;
             const rLen = (H - sunY) * (1.0 + rRng() * 0.3);
-            const rW2 = sunR * (0.3 + rRng() * 1.2);
+            const rW2 = sunR * (0.15 + rRng() * 0.45);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
             const rA = (0.10 + rRng() * 0.12) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
-            rG.addColorStop(0, 'rgba(255,240,190,' + (rA * 1.3) + ')');
-            rG.addColorStop(0.15, 'rgba(255,225,155,' + (rA * 1.0) + ')');
-            rG.addColorStop(0.35, 'rgba(255,210,125,' + (rA * 0.6) + ')');
-            rG.addColorStop(0.55, 'rgba(255,195,100,' + (rA * 0.3) + ')');
-            rG.addColorStop(0.75, 'rgba(255,180,75,' + (rA * 0.1) + ')');
-            rG.addColorStop(1, 'rgba(255,165,55,0)');
+            rG.addColorStop(0, 'rgba(255,190,110,' + (rA * 1.3) + ')');
+            rG.addColorStop(0.15, 'rgba(255,170,85,' + (rA * 1.0) + ')');
+            rG.addColorStop(0.35, 'rgba(255,150,65,' + (rA * 0.6) + ')');
+            rG.addColorStop(0.55, 'rgba(255,135,50,' + (rA * 0.3) + ')');
+            rG.addColorStop(0.75, 'rgba(255,120,38,' + (rA * 0.1) + ')');
+            rG.addColorStop(1, 'rgba(255,105,28,0)');
             ctx.fillStyle = rG;
             ctx.beginPath();
             const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
-            ctx.moveTo(sunX + rpx * rW2 * 0.15, sunY + rpy * rW2 * 0.15);
-            ctx.lineTo(sunX - rpx * rW2 * 0.15, sunY - rpy * rW2 * 0.15);
-            ctx.lineTo(rex - rpx * rW2 * 5, rey - rpy * rW2 * 5);
-            ctx.lineTo(rex + rpx * rW2 * 5, rey + rpy * rW2 * 5);
+            ctx.moveTo(sunX + rpx * rW2 * 0.1, sunY + rpy * rW2 * 0.1);
+            ctx.lineTo(sunX - rpx * rW2 * 0.1, sunY - rpy * rW2 * 0.1);
+            ctx.lineTo(rex - rpx * rW2 * 2.2, rey - rpy * rW2 * 2.2);
+            ctx.lineTo(rex + rpx * rW2 * 2.2, rey + rpy * rW2 * 2.2);
             ctx.closePath(); ctx.fill();
           }
           ctx.restore();
