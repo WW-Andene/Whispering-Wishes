@@ -3459,12 +3459,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.translate(W * 0.5, H * 0.77);
           ctx.rotate(0.02);
 
-          const bladeL = t * 0.63;
+          const bladeL = t * 0.67;
           const bladeW = t * 0.048;
           const taperAt = bladeL * 0.65;
-          const guardR = bladeW * 1.15; // blade almost same width as guard
-          const guardTh = t * 0.025;
-          const gripL = t * 0.18; // shorter handle
+          const guardR = bladeW * 1.15;
+          const guardTh = t * 0.015; // thinner guard
+          const gripL = t * 0.18;
           const gripW2 = bladeW * 0.55;
           const pomR = guardR;
           const pomTh = guardTh;
@@ -3479,34 +3479,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const pomY = gripBot2 + pomTh * 0.5;
           const knobY = gripBot2 + pomTh + knobR;
 
-          // Blade left — light steel, slight waist then widens
+          // Blade left — light steel, slight outward curve on edge
           ctx.fillStyle = 'rgb(175,168,155)';
           ctx.beginPath();
           ctx.moveTo(0, bladeTip);
           ctx.lineTo(-bladeW * 0.15, bladeTip + (bladeL - taperAt) * 0.3);
           ctx.lineTo(-bladeW, bladeTip + bladeL - taperAt);
-          ctx.quadraticCurveTo(-bladeW * 0.88, bladeTip + bladeL - taperAt * 0.35, -bladeW * 0.92, bladeBase);
+          ctx.quadraticCurveTo(-bladeW * 1.08, (bladeTip + bladeL - taperAt + bladeBase) * 0.5, -bladeW * 0.95, bladeBase);
           ctx.lineTo(0, bladeBase);
           ctx.closePath();
           ctx.fill();
 
-          // Blade right — dark steel, same waist shape
+          // Blade right — dark steel, same outward curve
           ctx.fillStyle = 'rgb(100,95,88)';
           ctx.beginPath();
           ctx.moveTo(0, bladeTip);
           ctx.lineTo(bladeW * 0.15, bladeTip + (bladeL - taperAt) * 0.3);
           ctx.lineTo(bladeW, bladeTip + bladeL - taperAt);
-          ctx.quadraticCurveTo(bladeW * 0.88, bladeTip + bladeL - taperAt * 0.35, bladeW * 0.92, bladeBase);
+          ctx.quadraticCurveTo(bladeW * 1.08, (bladeTip + bladeL - taperAt + bladeBase) * 0.5, bladeW * 0.95, bladeBase);
           ctx.lineTo(0, bladeBase);
           ctx.closePath();
           ctx.fill();
 
-          // Guard — half circle (dome facing blade)
+          // Guard — half circle (dome facing grip)
           ctx.fillStyle = 'rgb(95,78,55)';
           ctx.beginPath();
-          ctx.arc(0, bladeBase, guardR, Math.PI, 0); // half circle dome
-          ctx.lineTo(guardR, bladeBase + guardTh);
-          ctx.lineTo(-guardR, bladeBase + guardTh);
+          ctx.moveTo(-guardR, bladeBase);
+          ctx.lineTo(guardR, bladeBase);
+          ctx.arc(0, bladeBase + guardTh, guardR, 0, Math.PI);
           ctx.closePath();
           ctx.fill();
 
