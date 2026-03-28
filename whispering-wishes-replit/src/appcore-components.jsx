@@ -3778,23 +3778,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Triangle outline below the gold — inverted V shape
           // Triangle outline below gold — same shape, shifted down uniformly
-          const outOff = Math.round(gridY * 0.06); // gap below the gold triangle
-          const outL = gp(0, triRow + outOff), outR = gp(gridX, triRow + outOff);
-          const outM = gp(Math.round(gridX / 2), outOff); // peak shifted down from top
+          const outOff = Math.round(gridY * 0.06);
+          const sidePad = Math.max(1, Math.round(gridX * outOff / gridY)); // same padding ratio on sides
+          const outL = gp(sidePad, triRow + outOff), outR = gp(gridX - sidePad, triRow + outOff);
+          const outM = gp(Math.round(gridX / 2), outOff);
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
-          // Triangle outline + side lines down to bottom = connected frame
           const botRow = Math.round(gridY - outOff);
-          const botL = gp(0, botRow), botR = gp(gridX, botRow);
+          const botL = gp(sidePad, botRow), botR = gp(gridX - sidePad, botRow);
           ctx.beginPath();
-          // Left side down
           ctx.moveTo(botL.x, botL.y); ctx.lineTo(outL.x, outL.y);
-          // Triangle V
           ctx.lineTo(outM.x, outM.y);
           ctx.lineTo(outR.x, outR.y);
-          // Right side down
           ctx.lineTo(botR.x, botR.y);
-          // Bottom line
           ctx.lineTo(botL.x, botL.y);
           ctx.stroke();
 
