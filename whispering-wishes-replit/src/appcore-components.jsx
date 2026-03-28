@@ -3371,12 +3371,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved down — flat top connects to blade, curves down at ends
-            ctx.moveTo(-guardW / 2, -ov);
+            // Curved down — both edges curved
+            ctx.moveTo(-guardW / 2, 0);
             ctx.lineTo(-guardW / 2, guardH);
             ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
-            ctx.lineTo(guardW / 2, -ov);
-            ctx.lineTo(-guardW / 2, -ov);
+            ctx.lineTo(guardW / 2, 0);
+            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
             ctx.closePath();
           } else if (guardType === 3) {
             // Three segmented — center block + two end blocks
