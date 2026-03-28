@@ -3012,21 +3012,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rl = rayLandings[li];
             const poolX = rl.x;
             const poolW = rl.w * 2.5;
-            const poolH = H * 0.12;
+            const poolH = H * 0.08;
             const poolAlpha = rl.alpha * 2.5;
-            // Elliptical light pool on ground plane
+            // Light pool as horizontal gradient rect — no scale transform
             const pg = ctx.createRadialGradient(poolX, groundY, 0, poolX, groundY, poolW);
             pg.addColorStop(0, 'rgba(255,245,210,' + Math.min(0.35, poolAlpha * 1.5) + ')');
             pg.addColorStop(0.3, 'rgba(255,235,180,' + Math.min(0.2, poolAlpha * 0.9) + ')');
             pg.addColorStop(0.6, 'rgba(255,220,150,' + Math.min(0.08, poolAlpha * 0.3) + ')');
             pg.addColorStop(1, 'rgba(255,200,120,0)');
-            ctx.save();
-            ctx.scale(1, poolH / poolW);
             ctx.fillStyle = pg;
-            ctx.beginPath();
-            ctx.arc(poolX, groundY * (poolW / poolH), poolW, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+            ctx.fillRect(poolX - poolW, groundY - poolH, poolW * 2, poolH * 2);
           }
           ctx.restore();
         }
