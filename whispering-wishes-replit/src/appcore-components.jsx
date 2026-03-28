@@ -2661,9 +2661,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
-          sk.addColorStop(0,"rgb(1,0,0)");sk.addColorStop(0.15,"rgb(3,1,1)");sk.addColorStop(0.3,"rgb(8,2,1)");
-          sk.addColorStop(0.45,"rgb(20,5,2)");sk.addColorStop(0.58,"rgb(55,12,4)");sk.addColorStop(0.68,"rgb(120,28,6)");
-          sk.addColorStop(0.78,"rgb(190,55,10)");sk.addColorStop(0.86,"rgb(240,100,20)");sk.addColorStop(0.93,"rgb(255,150,40)");sk.addColorStop(1,"rgb(255,180,55)");
+          sk.addColorStop(0,"rgb(1,0,0)");sk.addColorStop(0.15,"rgb(3,1,1)");sk.addColorStop(0.3,"rgb(8,3,1)");
+          sk.addColorStop(0.45,"rgb(22,8,3)");sk.addColorStop(0.58,"rgb(60,22,6)");sk.addColorStop(0.68,"rgb(130,50,12)");
+          sk.addColorStop(0.78,"rgb(200,90,20)");sk.addColorStop(0.86,"rgb(240,135,35)");sk.addColorStop(0.93,"rgb(255,175,60)");sk.addColorStop(1,"rgb(255,200,80)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
@@ -2748,14 +2748,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rW2 = sunR * (0.3 + rRng() * 1.2);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
-            const rA = (0.14 + rRng() * 0.18) * alphaScale;
+            const rA = (0.08 + rRng() * 0.10) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
-            rG.addColorStop(0, 'rgba(255,240,180,' + (rA * 1.8) + ')');
-            rG.addColorStop(0.08, 'rgba(255,225,140,' + (rA * 1.5) + ')');
-            rG.addColorStop(0.25, 'rgba(255,210,110,' + (rA * 1.0) + ')');
-            rG.addColorStop(0.5, 'rgba(255,195,85,' + (rA * 0.5) + ')');
-            rG.addColorStop(0.75, 'rgba(255,175,60,' + (rA * 0.2) + ')');
-            rG.addColorStop(1, 'rgba(255,155,40,0)');
+            rG.addColorStop(0, 'rgba(255,240,180,' + (rA * 1.5) + ')');
+            rG.addColorStop(0.1, 'rgba(255,225,150,' + (rA * 1.2) + ')');
+            rG.addColorStop(0.25, 'rgba(255,210,120,' + (rA * 0.8) + ')');
+            rG.addColorStop(0.45, 'rgba(255,195,95,' + (rA * 0.4) + ')');
+            rG.addColorStop(0.7, 'rgba(255,180,70,' + (rA * 0.15) + ')');
+            rG.addColorStop(1, 'rgba(255,160,50,0)');
             ctx.fillStyle = rG;
             ctx.beginPath();
             const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
