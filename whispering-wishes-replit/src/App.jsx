@@ -82,7 +82,7 @@ import {
   BackgroundGlow,
   TriangleMirrorWave,
   ResonanceField,
-  AugustaRuins,
+  Honour,
   KuroSelect,
   CollectionGridSection,
   CharacterDetailModal,
@@ -189,7 +189,9 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   oledMode: false,
   swipeNavigation: false,
   animationsEnabled: 'on', // 'off' | 'on' | 'full' (full = 2x intensity); overridden at mount via matchMedia listener
-  bgStyle: 'waves', // 'waves' | 'resonance' | 'augusta' — background animation style
+  bgStyle: 'none', // 'none' | 'reflect' | 'resonance' | 'honour' — background animation style
+  bgResolution: null, // null = auto (50% on, 100% full) | 25 | 50 | 100 | 200
+  bgFps: null, // null = auto (15 on, 30 full) | 15 | 30 | 45 | 60
   theme: 'default' // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
 });
 const TRACKER_CATEGORIES = Object.freeze([
@@ -420,7 +422,7 @@ function WhisperingWishesInner() {
         setVisualSettings(prev => {
           const merged = { ...prev };
           for (const key of Object.keys(prev)) {
-            if (parsed[key] !== undefined && parsed[key] !== null) merged[key] = parsed[key];
+            if (parsed[key] !== undefined) merged[key] = parsed[key];
           }
           // Clamp numeric values to valid ranges
           merged.collectionZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, merged.collectionZoom || 120));
@@ -2291,15 +2293,54 @@ function WhisperingWishesInner() {
     const tList = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
     const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
     const beginnerHist = state.profile.beginner?.history||[];
-    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...beginnerHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
-    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...beginnerHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
-    const countUniqueOwned = (h,r,isChar) => new Set(h.filter(p=>p.rarity===r&&p.name&&(isChar?ALL_CHARACTERS.has(p.name):!ALL_CHARACTERS.has(p.name))).map(p=>p.name)).size;
-    const c5=countUniqueOwned(charHist,5,true), c4=countUniqueOwned(charHist,4,true), w5=countUniqueOwned(weapHist,5,false), w4=countUniqueOwned(weapHist,4,false), w3=countUniqueOwned(weapHist,3,false), w2=countUniqueOwned(weapHist,2,false), w1=countUniqueOwned(weapHist,1,false);
-    const newestRes = [...new Set(charHist.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse();
-    const fiveStarPulls = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
-    const histBuckets = {}; fiveStarPulls.forEach(p=>{if(p.pity>80){histBuckets['81+']=(histBuckets['81+']??0)+1;}else{const b=Math.floor((p.pity-1)/10)*10+1;histBuckets[`${b}-${b+9}`]=(histBuckets[`${b}-${b+9}`]??0)+1;}});
-    const histLabels = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`); if(histBuckets['81+'])histLabels.push('81+'); histLabels.forEach(b=>{if(!histBuckets[b])histBuckets[b]=0;});
-    const histSummary = fiveStarPulls.length>=2?{max:Math.max(...Object.values(histBuckets),1),avg:(fiveStarPulls.reduce((s,p)=>s+p.pity,0)/fiveStarPulls.length).toFixed(1),lo:Math.min(...fiveStarPulls.map(p=>p.pity)),hi:Math.max(...fiveStarPulls.map(p=>p.pity))}:null;
+    const charHist = [
+      ...(state.profile.featured?.history || []),
+      ...(state.profile.standardChar?.history || []),
+      ...beginnerHist.filter(p => p.name && ALL_CHARACTERS.has(p.name))
+    ];
+    const weapHist = [
+      ...(state.profile.weapon?.history || []),
+      ...(state.profile.standardWeap?.history || []),
+      ...beginnerHist.filter(p => p.name && !ALL_CHARACTERS.has(p.name))
+    ];
+
+    const countUniqueOwned = (h, r, isChar) =>
+      new Set(h.filter(p => p.rarity === r && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name))).map(p => p.name)).size;
+
+    const c5 = countUniqueOwned(charHist, 5, true);
+    const c4 = countUniqueOwned(charHist, 4, true);
+    const w5 = countUniqueOwned(weapHist, 5, false);
+    const w4 = countUniqueOwned(weapHist, 4, false);
+    const w3 = countUniqueOwned(weapHist, 3, false);
+    const w2 = countUniqueOwned(weapHist, 2, false);
+    const w1 = countUniqueOwned(weapHist, 1, false);
+
+    const newestRes = [...new Set(
+      charHist.filter(p => (p.rarity === 5 || p.rarity === 4) && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)
+    )].reverse();
+
+    const fiveStarPulls = [...charHist, ...weapHist].filter(p => p.rarity === 5 && p.pity > 0);
+
+    const histBuckets = {};
+    fiveStarPulls.forEach(p => {
+      if (p.pity > 80) {
+        histBuckets['81+'] = (histBuckets['81+'] ?? 0) + 1;
+      } else {
+        const b = Math.floor((p.pity - 1) / 10) * 10 + 1;
+        histBuckets[`${b}-${b + 9}`] = (histBuckets[`${b}-${b + 9}`] ?? 0) + 1;
+      }
+    });
+
+    const histLabels = Array.from({ length: 8 }, (_, i) => `${i * 10 + 1}-${(i + 1) * 10}`);
+    if (histBuckets['81+']) histLabels.push('81+');
+    histLabels.forEach(b => { if (!histBuckets[b]) histBuckets[b] = 0; });
+
+    const histSummary = fiveStarPulls.length >= 2 ? {
+      max: Math.max(...Object.values(histBuckets), 1),
+      avg: (fiveStarPulls.reduce((s, p) => s + p.pity, 0) / fiveStarPulls.length).toFixed(1),
+      lo: Math.min(...fiveStarPulls.map(p => p.pity)),
+      hi: Math.max(...fiveStarPulls.map(p => p.pity))
+    } : null;
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
       {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
@@ -3392,15 +3433,15 @@ function WhisperingWishesInner() {
   return (
     <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {visualSettings.bgStyle === 'resonance' ? (
-        <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-      ) : visualSettings.bgStyle === 'augusta' ? (
-        <AugustaRuins oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-      ) : (
+        <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
+      ) : visualSettings.bgStyle === 'honour' ? (
+        <Honour oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
+      ) : visualSettings.bgStyle === 'reflect' ? (
         <>
-          <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
-          <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} />
+          <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
+          <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
         </>
-      )}
+      ) : null}
       <KuroStyles oledMode={visualSettings.oledMode} />
 
       {/* Onboarding Modal */}
@@ -7874,33 +7915,62 @@ function WhisperingWishesInner() {
 
                 {/* Background Style Selector */}
                 {visualSettings.animationsEnabled !== 'off' && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'augusta' ? 'bg-amber-600 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle !== 'resonance' && visualSettings.bgStyle !== 'augusta' ? { background: 'var(--bg-btn)' } : undefined}>
+                  <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
                         <Diamond size={16} />
                       </div>
                       <div>
                         <div className="text-white text-xs font-medium">Background Style</div>
-                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Resonance — Holographic rings & energy' : visualSettings.bgStyle === 'augusta' ? 'Augusta — Golden ruins & sunlight' : 'Waves — Triangle mirror wave'}</div>
+                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
                       </div>
                     </div>
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'waves' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'waves' ? 'bg-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'waves' ? { background: 'var(--bg-btn)' } : undefined}
-                      >Waves</button>
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'resonance' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'resonance' ? { background: 'var(--bg-btn)' } : undefined}
-                      >Resonance</button>
-                      <button
-                        onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: 'augusta' })}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === 'augusta' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'}`}
-                        style={visualSettings.bgStyle !== 'augusta' ? { background: 'var(--bg-btn)' } : undefined}
-                      >Augusta</button>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[
+                        { id: 'none', label: 'None', color: 'bg-gray-600' },
+                        { id: 'reflect', label: 'Reflect', color: 'bg-purple-500' },
+                        { id: 'resonance', label: 'Resonance', color: 'bg-blue-500' },
+                        { id: 'honour', label: 'Honour', color: 'bg-amber-600' },
+                      ].map(bg => (
+                        <button key={bg.id}
+                          onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id })}
+                          className={`py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
+                          style={visualSettings.bgStyle !== bg.id ? { background: 'var(--bg-btn)' } : undefined}
+                        >{bg.label}</button>
+                      ))}
                     </div>
+                    {visualSettings.bgStyle !== 'none' && (
+                      <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">Resolution</div>
+                          <div className="flex gap-1 flex-1">
+                            {[25, 50, 100, 200].map(res => {
+                              const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
+                              const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
+                              return <button key={res}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
+                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                              >{res}%</button>;
+                            })}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">FPS</div>
+                          <div className="flex gap-1 flex-1">
+                            {[15, 30, 45, 60].map(fps => {
+                              const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
+                              const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
+                              return <button key={fps}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
+                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                              >{fps}</button>;
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

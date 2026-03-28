@@ -70,6 +70,17 @@ const getRecurringEventEnd = (currentEnd, resetType, server) => {
   return new Date(end + cycles * cycleMs).toISOString();
 };
 
+// Iterative DST correction: verify offset at estimated UTC and correct if needed
+const _correctDSTOffset = (server, localEstimate, serverOffset) => {
+  let resetOffsetAtTarget = getServerOffset(server, localEstimate - serverOffset * 3600000);
+  let utc = localEstimate - resetOffsetAtTarget * 3600000;
+  const verifiedOffset = getServerOffset(server, utc);
+  if (verifiedOffset !== resetOffsetAtTarget) {
+    utc = localEstimate - verifiedOffset * 3600000;
+  }
+  return utc;
+};
+
 // Next daily reset: 04:00 in server's local timezone
 const getNextDailyReset = (server) => {
   const serverOffset = getServerOffset(server);
@@ -93,13 +104,7 @@ const getNextDailyReset = (server) => {
   }
   
   // Iterative DST correction: initial estimate may use wrong offset near DST transition
-  let resetOffsetAtTarget = getServerOffset(server, reset - serverOffset * 3600000);
-  let resetUtc = reset - resetOffsetAtTarget * 3600000;
-  // Second pass: verify offset at the corrected UTC (handles DST boundary ±1h)
-  const verifiedOffset = getServerOffset(server, resetUtc);
-  if (verifiedOffset !== resetOffsetAtTarget) {
-    resetUtc = reset - verifiedOffset * 3600000;
-  }
+  const resetUtc = _correctDSTOffset(server, reset, serverOffset);
   return new Date(resetUtc).toISOString();
 };
 
@@ -135,12 +140,7 @@ const getNextWeeklyReset = (server) => {
   const mondayLocal = Date.UTC(year, month, day + daysToMon, 4, 0, 0, 0);
   
   // Iterative DST correction: verify offset at the estimated UTC time
-  let resetOffsetAtTarget = getServerOffset(server, mondayLocal - serverOffset * 3600000);
-  let mondayUtc = mondayLocal - resetOffsetAtTarget * 3600000;
-  const verifiedOffset = getServerOffset(server, mondayUtc);
-  if (verifiedOffset !== resetOffsetAtTarget) {
-    mondayUtc = mondayLocal - verifiedOffset * 3600000;
-  }
+  const mondayUtc = _correctDSTOffset(server, mondayLocal, serverOffset);
   return new Date(mondayUtc).toISOString();
 };
 
