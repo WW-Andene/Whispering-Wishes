@@ -3587,7 +3587,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // === BANNER — ornate gold pole with horizontal flag ===
         {
-          const bWx = 0, bWz = 14;
+          const bWx = 0.5, bWz = 22;
           const bScrX = projX(bWx, bWz);
           const bScrY = projY(bWz, bWx);
           const bScale = 2.8 * focal / (bWz - camZ);
@@ -3596,8 +3596,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const poleTop = bScrY - poleH;
           const waveT = cloudTime * 0.6;
           const goldL = 'rgb(160,115,25)', goldM = 'rgb(210,165,50)', goldH = 'rgb(245,210,90)', goldD = 'rgb(120,80,15)';
+          const bannerLean = -0.08;
 
           ctx.save();
+          // Slight lean
+          ctx.translate(bScrX, bScrY);
+          ctx.rotate(bannerLean);
+          ctx.translate(-bScrX, -bScrY);
 
           // --- Ornate gold pole ---
           // Main shaft with gold cylindrical shading
@@ -3671,25 +3676,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const flagW = bScale * 1.5;
           const steps = 24;
 
-          // Build flag path — wavy top, swallowtail end, wavy bottom
+          // Build flag path — loose wavy cloth, swallowtail end
           function flagPath() {
             ctx.beginPath();
             ctx.moveTo(bScrX - poleW * 0.3, flagAttachY);
             for (let i = 0; i <= steps; i++) {
               const t = i / steps;
               const x = bScrX - poleW * 0.3 - t * flagW;
-              const wv = Math.sin(t * 4 + waveT) * bScale * 0.035 * t;
+              const sag = t * t * bScale * 0.06;
+              const wv = Math.sin(t * 5.5 + waveT) * bScale * 0.07 * t + Math.sin(t * 2.3 + waveT * 0.7) * bScale * 0.03 * t + sag;
               ctx.lineTo(x, flagAttachY + wv);
             }
             const tailX = bScrX - poleW * 0.3 - flagW;
-            const tw = Math.sin(waveT * 0.9) * bScale * 0.025;
-            ctx.lineTo(tailX + tw - bScale * 0.12, flagAttachY + flagH * 0.18);
-            ctx.lineTo(tailX + tw + bScale * 0.08, flagAttachY + flagH * 0.5);
-            ctx.lineTo(tailX + tw - bScale * 0.12, flagAttachY + flagH * 0.82);
+            const tw = Math.sin(waveT * 0.9) * bScale * 0.04;
+            const sagEnd = bScale * 0.06;
+            ctx.lineTo(tailX + tw - bScale * 0.14, flagAttachY + flagH * 0.2 + sagEnd);
+            ctx.lineTo(tailX + tw + bScale * 0.06, flagAttachY + flagH * 0.5 + sagEnd);
+            ctx.lineTo(tailX + tw - bScale * 0.14, flagAttachY + flagH * 0.8 + sagEnd);
             for (let i = steps; i >= 0; i--) {
               const t = i / steps;
               const x = bScrX - poleW * 0.3 - t * flagW;
-              const wv = Math.sin(t * 4 + waveT + 1.0) * bScale * 0.035 * t;
+              const sag = t * t * bScale * 0.04;
+              const wv = Math.sin(t * 5.5 + waveT + 1.3) * bScale * 0.06 * t + Math.sin(t * 2.8 + waveT * 0.6 + 0.8) * bScale * 0.025 * t + sag;
               ctx.lineTo(x, flagAttachY + flagH + wv);
             }
             ctx.closePath();
