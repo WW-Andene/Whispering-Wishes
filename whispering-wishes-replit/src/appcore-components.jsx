@@ -3652,13 +3652,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const dH = bScale * 1.8;
           const dL0 = bScrX - dW / 2, dR0 = bScrX + dW / 2;
           const wt = cloudTime * 0.5;
-          const segs = 20;
+          const segs = 40;
 
           // Wind: whole cloth pushed to the right, more at bottom
           function windX(t) {
-            const push = t * t * bScale * 1.1 * (0.6 + Math.sin(wt * 0.35) * 0.4);
-            const ripple = Math.sin(t * 5 - wt * 2.0) * t * bScale * 0.12
-                         + Math.sin(t * 3 - wt * 1.2 + 1.5) * t * bScale * 0.08;
+            const push = t * t * bScale * 0.55 * (0.6 + Math.sin(wt * 0.35) * 0.4);
+            const ripple = Math.sin(t * 5 - wt * 2.0) * t * bScale * 0.06
+                         + Math.sin(t * 3 - wt * 1.2 + 1.5) * t * bScale * 0.04;
             return push + ripple;
           }
           function windY(t) {
@@ -3698,9 +3698,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.save();
           drapePath(); ctx.clip();
           const dL = bScrX - dW / 2, dR = bScrX + dW / 2;
-          for (let fi = 0; fi < 5; fi++) {
-            const fX = dL + (fi + 0.5) * (dW / 5) + Math.sin(fi * 1.7 + wt * 0.6) * bScale * 0.02;
-            const fW2 = bScale * 0.06;
+          for (let fi = 0; fi < 10; fi++) {
+            const fX = dL + (fi + 0.5) * (dW / 10) + Math.sin(fi * 1.7 + wt * 0.6) * bScale * 0.02;
+            const fW2 = bScale * 0.035;
             // Highlight
             const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.4) * 0.03;
             const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
