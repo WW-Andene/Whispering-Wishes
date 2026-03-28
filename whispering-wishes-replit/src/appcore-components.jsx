@@ -3780,7 +3780,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.translate(-bScrX, -bScrY);
           try {
 
-          // Pole shaft
+          // Pole shaft — drawn in two parts (above + below cloth) so flag covers it
           const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
           shaftGrad.addColorStop(0, 'rgb(120,80,20)');
           shaftGrad.addColorStop(0.35, 'rgb(180,135,35)');
@@ -3788,7 +3788,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           shaftGrad.addColorStop(0.65, 'rgb(180,135,35)');
           shaftGrad.addColorStop(1, 'rgb(120,80,20)');
           ctx.fillStyle = shaftGrad;
-          ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
+          // Upper pole (above cloth region) — drawn now
+          ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, bScale * 0.04 + poleW / 2);
+          // Lower pole will be drawn after cloth
 
           // Gold arms — same thickness as pole for both vertical and horizontal
           const barThick = poleW;
@@ -4052,6 +4054,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (let gx = gridX - 1; gx >= 0; gx--) { const p = gp(gx, gridY); ctx.lineTo(p.x, p.y); }
           for (let gy = gridY - 1; gy >= 0; gy--) { const p = gp(0, gy); ctx.lineTo(p.x, p.y); }
           ctx.closePath(); ctx.stroke();
+
+          // Lower pole shaft — below cloth, drawn after flag so it doesn't show through
+          ctx.fillStyle = shaftGrad;
+          const clothBot = dTop + dH;
+          ctx.fillRect(bScrX - poleW / 2, clothBot, poleW, poleTop + poleH - clothBot);
 
           // Gold crest — on top of everything, centered on crossbar
           const crestR = bScale * 0.12;
