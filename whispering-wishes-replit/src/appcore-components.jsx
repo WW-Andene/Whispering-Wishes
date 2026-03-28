@@ -3568,14 +3568,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _gcs = (s.idx * 2246822519 + 777) | 0;
             var _gcr = function() { _gcs = (_gcs * 1103515245 + 12345) & 0x7fffffff; return _gcs / 0x7fffffff; };
             _gcr(); _gcr();
-            var _gnc = 2 + (_gcr() * 3 | 0);
+            var _gnc = 2 + (_gcr() * 2 | 0);
             var _gcrackYs = [];
-            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + (0.08 + _gcr() * 0.84) * gBL);
+            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + (0.15 + _gcr() * 0.65) * gBL);
             _gcrackYs.sort(function(a, b) { return a - b; });
             var _gcracks = [];
             for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
               var _gy = _gcrackYs[_gci2];
-              var _gdiag = gBL * (0.04 + _gcr() * 0.08);
+              var _gdiag = gBL * (0.02 + _gcr() * 0.04);
               var _gdir = _gcr() > 0.5 ? 1 : -1;
               var _gw2 = gBW * Math.min(1, (_gy + gBL) / gBL * 1.8);
               _gcracks.push([
@@ -3586,9 +3586,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
             var _gfdx = [0], _gfdy = [0], _gfr = [0];
             for (var _gfi = 0; _gfi < _gnc; _gfi++) {
-              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * 2 * (0.4 + _gcr() * 0.9));
-              _gfdy.push((_gcr() - 0.5) * gBW * 0.8);
-              _gfr.push((_gcr() - 0.5) * 0.1);
+              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * 2 * (0.2 + _gcr() * 0.4));
+              _gfdy.push((_gcr() - 0.5) * gBW * 0.4);
+              _gfr.push((_gcr() - 0.5) * 0.04);
             }
             var _gbwAt = function(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); };
             var _gcolL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
@@ -3682,20 +3682,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
-          var _nc = 2 + (_cr() * 3 | 0); // 2-4 cracks
+          var _nc = 2 + (_cr() * 2 | 0); // 2-3 cracks
           var _hw = bladeW / 2;
           var _totalH = bladeH + guardH;
-          // Fully random crack Y positions (sorted), with big diagonal jitter
+          // Random crack Y positions within 15%-80% of blade
           var _crackYs = [];
           for (var _ci = 0; _ci < _nc; _ci++) {
-            _crackYs.push(-bladeH + (0.08 + _cr() * 0.84) * _totalH); // 8%-92% of blade
+            _crackYs.push(-bladeH + (0.15 + _cr() * 0.65) * _totalH);
           }
           _crackYs.sort(function(a, b) { return a - b; });
           // Build zigzag crack paths — strong diagonal (left Y differs from right Y)
           var _cracks = [];
           for (var _ci2 = 0; _ci2 < _nc; _ci2++) {
             var _y = _crackYs[_ci2];
-            var _diag = _totalH * (0.04 + _cr() * 0.08); // 4-12% blade height diagonal
+            var _diag = _totalH * (0.02 + _cr() * 0.04); // 2-6% blade height diagonal
             var _dir = _cr() > 0.5 ? 1 : -1; // diagonal direction
             var _w = _hw * Math.min(1, (_y + bladeH) / _totalH * 1.8);
             _cracks.push([
@@ -3707,9 +3707,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Fragment offsets — first stays, rest drift
           var _fdx = [0], _fdy = [0], _fr = [0];
           for (var _fi = 0; _fi < _nc; _fi++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.4 + _cr() * 0.9));
-            _fdy.push((_cr() - 0.5) * bladeW * 0.4);
-            _fr.push((_cr() - 0.5) * 0.1);
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.2 + _cr() * 0.4));
+            _fdy.push((_cr() - 0.5) * bladeW * 0.2);
+            _fr.push((_cr() - 0.5) * 0.04);
           }
           var _bwAt = function(y) { return _hw * Math.max(0, Math.min(1, (y + bladeH) / _totalH)); };
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
