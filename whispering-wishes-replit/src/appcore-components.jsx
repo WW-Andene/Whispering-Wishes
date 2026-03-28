@@ -3585,106 +3585,155 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // === BANNER — center of battlefield (horizontal flag on pole) ===
+        // === BANNER — ornate gold pole with horizontal flag ===
         {
           const bWx = 0, bWz = 14;
           const bScrX = projX(bWx, bWz);
           const bScrY = projY(bWz, bWx);
           const bScale = 2.8 * focal / (bWz - camZ);
           const poleH = bScale * 2.8;
-          const poleW = Math.max(1.2, bScale * 0.045);
+          const poleW = Math.max(1.5, bScale * 0.05);
           const poleTop = bScrY - poleH;
           const waveT = cloudTime * 0.6;
+          const goldL = 'rgb(160,115,25)', goldM = 'rgb(210,165,50)', goldH = 'rgb(245,210,90)', goldD = 'rgb(120,80,15)';
 
           ctx.save();
-          // Pole — dark brown wood shaft
-          const poleGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
-          poleGrad.addColorStop(0, 'rgb(30,16,8)');
-          poleGrad.addColorStop(0.3, 'rgb(55,32,18)');
-          poleGrad.addColorStop(0.5, 'rgb(72,45,25)');
-          poleGrad.addColorStop(0.7, 'rgb(55,32,18)');
-          poleGrad.addColorStop(1, 'rgb(30,16,8)');
-          ctx.fillStyle = poleGrad;
+
+          // --- Ornate gold pole ---
+          // Main shaft with gold cylindrical shading
+          const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
+          shaftGrad.addColorStop(0, goldD);
+          shaftGrad.addColorStop(0.25, goldL);
+          shaftGrad.addColorStop(0.45, goldH);
+          shaftGrad.addColorStop(0.55, goldM);
+          shaftGrad.addColorStop(0.75, goldL);
+          shaftGrad.addColorStop(1, goldD);
+          ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // Spearhead tip — small pointed
-          const tipH = bScale * 0.3;
-          const tipW = poleW * 2.2;
-          ctx.fillStyle = 'rgb(150,145,130)';
+          // Decorative gold bulbs along pole (ornamental rings)
+          const bulbR = poleW * 1.3;
+          const bulbPositions = [0.15, 0.4, 0.65, 0.85];
+          for (const bp of bulbPositions) {
+            const by = poleTop + poleH * bp;
+            const bGrad = ctx.createRadialGradient(bScrX - bulbR * 0.2, by - bulbR * 0.2, 0, bScrX, by, bulbR);
+            bGrad.addColorStop(0, goldH);
+            bGrad.addColorStop(0.5, goldM);
+            bGrad.addColorStop(1, goldD);
+            ctx.fillStyle = bGrad;
+            ctx.beginPath(); ctx.ellipse(bScrX, by, bulbR, bulbR * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+          }
+
+          // Ornate finial/spearhead — flame-shaped gold tip
+          const tipH = bScale * 0.4;
+          const tipW = poleW * 3;
+          // Outer flame shape
           ctx.beginPath();
           ctx.moveTo(bScrX, poleTop - tipH);
-          ctx.lineTo(bScrX - tipW / 2, poleTop + tipH * 0.15);
-          ctx.lineTo(bScrX, poleTop);
-          ctx.lineTo(bScrX + tipW / 2, poleTop + tipH * 0.15);
+          ctx.bezierCurveTo(bScrX + tipW * 0.15, poleTop - tipH * 0.5, bScrX + tipW * 0.5, poleTop - tipH * 0.1, bScrX + tipW * 0.3, poleTop + tipH * 0.15);
+          ctx.bezierCurveTo(bScrX + tipW * 0.15, poleTop + tipH * 0.05, bScrX + poleW * 0.6, poleTop, bScrX + poleW * 0.5, poleTop);
+          ctx.lineTo(bScrX - poleW * 0.5, poleTop);
+          ctx.bezierCurveTo(bScrX - poleW * 0.6, poleTop, bScrX - tipW * 0.15, poleTop + tipH * 0.05, bScrX - tipW * 0.3, poleTop + tipH * 0.15);
+          ctx.bezierCurveTo(bScrX - tipW * 0.5, poleTop - tipH * 0.1, bScrX - tipW * 0.15, poleTop - tipH * 0.5, bScrX, poleTop - tipH);
           ctx.closePath();
+          const tipGrad = ctx.createLinearGradient(bScrX - tipW * 0.3, 0, bScrX + tipW * 0.3, 0);
+          tipGrad.addColorStop(0, goldD);
+          tipGrad.addColorStop(0.3, goldH);
+          tipGrad.addColorStop(0.5, 'rgb(255,230,120)');
+          tipGrad.addColorStop(0.7, goldM);
+          tipGrad.addColorStop(1, goldD);
+          ctx.fillStyle = tipGrad;
           ctx.fill();
-          // Gold collar under spearhead
-          ctx.fillStyle = 'rgb(175,135,45)';
-          ctx.fillRect(bScrX - poleW * 0.8, poleTop, poleW * 1.6, poleW * 0.8);
 
-          // Horizontal flag — extends left from pole near top
-          const flagAttachY = poleTop + tipH * 0.6;
-          const flagH = bScale * 0.65;
-          const flagW = bScale * 1.6;
+          // Gold collar ring under finial
+          const collarY = poleTop;
+          const collarR = poleW * 1.5;
+          const cGrad = ctx.createRadialGradient(bScrX - collarR * 0.2, collarY, 0, bScrX, collarY, collarR);
+          cGrad.addColorStop(0, goldH); cGrad.addColorStop(0.6, goldM); cGrad.addColorStop(1, goldD);
+          ctx.fillStyle = cGrad;
+          ctx.beginPath(); ctx.ellipse(bScrX, collarY, collarR, collarR * 0.5, 0, 0, Math.PI * 2); ctx.fill();
 
-          // Flag shape — attached at right (pole), waves out to the left
-          // Top edge with wave
-          ctx.beginPath();
-          ctx.moveTo(bScrX, flagAttachY);
-          const steps = 20;
-          for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const x = bScrX - t * flagW;
-            const wTop = Math.sin(t * 3.5 + waveT) * bScale * 0.04 * t;
-            ctx.lineTo(x, flagAttachY + wTop);
+          // Silver/metal base plate
+          const baseW = poleW * 3, baseH = poleW * 1.5;
+          const baseY = bScrY - baseH * 0.3;
+          const baseGrad = ctx.createLinearGradient(bScrX - baseW, 0, bScrX + baseW, 0);
+          baseGrad.addColorStop(0, 'rgb(60,60,65)');
+          baseGrad.addColorStop(0.3, 'rgb(130,130,140)');
+          baseGrad.addColorStop(0.5, 'rgb(170,170,180)');
+          baseGrad.addColorStop(0.7, 'rgb(130,130,140)');
+          baseGrad.addColorStop(1, 'rgb(60,60,65)');
+          ctx.fillStyle = baseGrad;
+          ctx.beginPath(); ctx.ellipse(bScrX, baseY, baseW, baseH, 0, 0, Math.PI * 2); ctx.fill();
+
+          // --- Horizontal flag — extends left from near top ---
+          const flagAttachY = poleTop + tipH * 0.3;
+          const flagH = bScale * 0.6;
+          const flagW = bScale * 1.5;
+          const steps = 24;
+
+          // Build flag path — wavy top, swallowtail end, wavy bottom
+          function flagPath() {
+            ctx.beginPath();
+            ctx.moveTo(bScrX - poleW * 0.3, flagAttachY);
+            for (let i = 0; i <= steps; i++) {
+              const t = i / steps;
+              const x = bScrX - poleW * 0.3 - t * flagW;
+              const wv = Math.sin(t * 4 + waveT) * bScale * 0.035 * t;
+              ctx.lineTo(x, flagAttachY + wv);
+            }
+            const tailX = bScrX - poleW * 0.3 - flagW;
+            const tw = Math.sin(waveT * 0.9) * bScale * 0.025;
+            ctx.lineTo(tailX + tw - bScale * 0.12, flagAttachY + flagH * 0.18);
+            ctx.lineTo(tailX + tw + bScale * 0.08, flagAttachY + flagH * 0.5);
+            ctx.lineTo(tailX + tw - bScale * 0.12, flagAttachY + flagH * 0.82);
+            for (let i = steps; i >= 0; i--) {
+              const t = i / steps;
+              const x = bScrX - poleW * 0.3 - t * flagW;
+              const wv = Math.sin(t * 4 + waveT + 1.0) * bScale * 0.035 * t;
+              ctx.lineTo(x, flagAttachY + flagH + wv);
+            }
+            ctx.closePath();
           }
-          // Swallowtail — two pointed tails at the end
-          const tailX = bScrX - flagW;
-          const tailWave = Math.sin(waveT * 0.9) * bScale * 0.03;
-          const midY = flagAttachY + flagH * 0.5;
-          ctx.lineTo(tailX + tailWave - bScale * 0.15, flagAttachY + flagH * 0.15);
-          ctx.lineTo(tailX + tailWave + bScale * 0.1, midY);
-          ctx.lineTo(tailX + tailWave - bScale * 0.15, flagAttachY + flagH * 0.85);
-          // Bottom edge with wave back to pole
-          for (let i = steps; i >= 0; i--) {
-            const t = i / steps;
-            const x = bScrX - t * flagW;
-            const wBot = Math.sin(t * 3.5 + waveT + 1.2) * bScale * 0.04 * t;
-            ctx.lineTo(x, flagAttachY + flagH + wBot);
-          }
-          ctx.closePath();
 
           // Red fill
-          const flagGrad = ctx.createLinearGradient(bScrX, flagAttachY, bScrX - flagW, flagAttachY);
-          flagGrad.addColorStop(0, 'rgb(165,28,22)');
-          flagGrad.addColorStop(0.4, 'rgb(155,22,18)');
-          flagGrad.addColorStop(0.7, 'rgb(140,18,14)');
-          flagGrad.addColorStop(1, 'rgb(120,14,10)');
-          ctx.fillStyle = flagGrad;
+          flagPath();
+          const fGrad = ctx.createLinearGradient(bScrX, flagAttachY, bScrX - flagW, flagAttachY);
+          fGrad.addColorStop(0, 'rgb(175,30,22)');
+          fGrad.addColorStop(0.3, 'rgb(165,25,18)');
+          fGrad.addColorStop(0.6, 'rgb(148,20,15)');
+          fGrad.addColorStop(1, 'rgb(125,15,10)');
+          ctx.fillStyle = fGrad;
           ctx.fill();
 
-          // Orange border trim
-          ctx.strokeStyle = 'rgb(210,120,30)';
-          ctx.lineWidth = Math.max(1, bScale * 0.025);
-          ctx.stroke();
-
-          // Cloth fold highlights
+          // Cloth fold highlights + shadow
           ctx.save();
-          ctx.clip();
-          for (let fi = 0; fi < 4; fi++) {
-            const fT = (fi + 0.5) / 4;
-            const fX = bScrX - fT * flagW;
-            const fWv = Math.sin(fi * 2.1 + waveT * 0.8) * bScale * 0.02;
-            const fGrad = ctx.createLinearGradient(0, flagAttachY, 0, flagAttachY + flagH);
-            const fA = 0.04 + Math.sin(fi * 1.8 + waveT * 0.5) * 0.03;
-            fGrad.addColorStop(0, 'rgba(255,160,80,0)');
-            fGrad.addColorStop(0.4, 'rgba(255,160,80,' + fA + ')');
-            fGrad.addColorStop(0.6, 'rgba(255,160,80,' + fA + ')');
-            fGrad.addColorStop(1, 'rgba(255,160,80,0)');
-            ctx.fillStyle = fGrad;
-            ctx.fillRect(fX + fWv - bScale * 0.12, flagAttachY, bScale * 0.24, flagH);
+          flagPath(); ctx.clip();
+          for (let fi = 0; fi < 5; fi++) {
+            const fT = (fi + 0.5) / 5;
+            const fX = bScrX - poleW * 0.3 - fT * flagW;
+            const fWv = Math.sin(fi * 2.3 + waveT * 0.7) * bScale * 0.02;
+            // Highlight
+            const hlGrad = ctx.createLinearGradient(0, flagAttachY, 0, flagAttachY + flagH);
+            const hlA = 0.06 + Math.sin(fi * 1.9 + waveT * 0.4) * 0.04;
+            hlGrad.addColorStop(0, 'rgba(255,180,100,0)');
+            hlGrad.addColorStop(0.35, 'rgba(255,180,100,' + hlA + ')');
+            hlGrad.addColorStop(0.65, 'rgba(255,180,100,' + hlA * 0.5 + ')');
+            hlGrad.addColorStop(1, 'rgba(255,180,100,0)');
+            ctx.fillStyle = hlGrad;
+            ctx.fillRect(fX + fWv - bScale * 0.1, flagAttachY, bScale * 0.2, flagH);
           }
           ctx.restore();
+
+          // Gold border trim (thick)
+          flagPath();
+          ctx.strokeStyle = goldM;
+          ctx.lineWidth = Math.max(1.5, bScale * 0.035);
+          ctx.stroke();
+          // Inner orange border
+          flagPath();
+          ctx.strokeStyle = 'rgb(220,130,30)';
+          ctx.lineWidth = Math.max(0.8, bScale * 0.015);
+          ctx.stroke();
 
           ctx.restore();
         }
