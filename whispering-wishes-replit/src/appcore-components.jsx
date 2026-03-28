@@ -2699,7 +2699,43 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const rPerF = 2;
         for (let ri = 0; ri < rPerF; ri++) { refreshCloud(sceneClouds[(cloudRefreshIdx + ri) % sceneClouds.length], cloudTime, sunX, sunY); }
         cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
-        // God rays — BEFORE clouds so clouds occlude them
+        // Draw clouds interleaved with god rays by depth
+        // Back clouds (depth < 0.5) → god rays → front clouds (depth >= 0.5)
+        function drawCloudRange(startIdx, endIdx) {
+          for (let di = startIdx; di < endIdx; di++) {
+            const cloud = sceneClouds[di], rawAng = cloud.orbitSpeed * 0.025, angSpeed = Math.max(0.3 / Math.max(50, cloud.orbitDist), rawAng);
+            cloud.angle += angSpeed;
+            const ca = cloud.angle, flatR2 = cloud.orbitFlatten || 0.7;
+            const cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
+            const cy2 = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR2;
+            const bk = cloud.baked; const bkSrc = bk && (bk.bitmap || bk.canvas); if (!bkSrc) continue;
+            const margin2 = Math.max(bk.w, bk.h) * 1.5;
+            if (cx2 + bk.ox > W + margin2 || cx2 + bk.ox + bk.w < -margin2 || cy2 + bk.oy > H + margin2 || cy2 + bk.oy + bk.h < -margin2) continue;
+            const vx = -Math.sin(ca) * cloud.orbitDist * angSpeed, vy = Math.cos(ca) * cloud.orbitDist * flatR2 * angSpeed;
+            const speed = Math.sqrt(vx * vx + vy * vy);
+            const drawW = bk.w, drawH = bk.h;
+            if (speed > 0.01) {
+              const stretchAmt = 1 + Math.min(1.2, speed * 0.5), squeezeAmt = 1 / Math.sqrt(stretchAmt);
+              const centSkew = Math.max(-0.5, Math.min(0.5, angSpeed * cloud.orbitDist * 0.001));
+              const vAngle = Math.atan2(vy, vx);
+              const ccx = cx2 + bk.ox + drawW * 0.5, ccy = cy2 + bk.oy + drawH * 0.5;
+              ctx.save(); ctx.translate(ccx, ccy); ctx.rotate(vAngle);
+              ctx.transform(stretchAmt, centSkew, 0, squeezeAmt, 0, 0);
+              ctx.rotate(-vAngle); ctx.drawImage(bkSrc, -drawW * 0.5, -drawH * 0.5, drawW, drawH); ctx.restore();
+            } else {
+              ctx.drawImage(bkSrc, cx2 + bk.ox, cy2 + bk.oy, drawW, drawH);
+            }
+          }
+        }
+        // Find split point — clouds sorted by depth, rays sit at depth 0.5
+        let raySplit = 0;
+        for (let di = 0; di < sceneClouds.length; di++) {
+          if (sceneClouds[di].depth >= 0.5) { raySplit = di; break; }
+          if (di === sceneClouds.length - 1) raySplit = sceneClouds.length;
+        }
+        // Back clouds
+        drawCloudRange(0, raySplit);
+        // God rays
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
         const rayCount = 12;
         const rayCenterAngle = Math.PI * 0.5;
@@ -2730,32 +2766,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-
-        // Draw clouds with velocity stretch
-        for (let di = 0; di < sceneClouds.length; di++) {
-          const cloud = sceneClouds[di], rawAng = cloud.orbitSpeed * 0.025, angSpeed = Math.max(0.3 / Math.max(50, cloud.orbitDist), rawAng);
-          cloud.angle += angSpeed;
-          const ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
-          const cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
-          const cy2 = cloud.sunY + Math.sin(ca) * cloud.orbitDist * flatR;
-          const bk = cloud.baked; const bkSrc = bk && (bk.bitmap || bk.canvas); if (!bkSrc) continue;
-          const margin2 = Math.max(bk.w, bk.h) * 1.5;
-          if (cx2 + bk.ox > W + margin2 || cx2 + bk.ox + bk.w < -margin2 || cy2 + bk.oy > H + margin2 || cy2 + bk.oy + bk.h < -margin2) continue;
-          const vx = -Math.sin(ca) * cloud.orbitDist * angSpeed, vy = Math.cos(ca) * cloud.orbitDist * flatR * angSpeed;
-          const speed = Math.sqrt(vx * vx + vy * vy);
-          const drawW = bk.w, drawH = bk.h;
-          if (speed > 0.01) {
-            const stretchAmt = 1 + Math.min(1.2, speed * 0.5), squeezeAmt = 1 / Math.sqrt(stretchAmt);
-            const centSkew = Math.max(-0.5, Math.min(0.5, angSpeed * cloud.orbitDist * 0.001));
-            const vAngle = Math.atan2(vy, vx);
-            const ccx = cx2 + bk.ox + drawW * 0.5, ccy = cy2 + bk.oy + drawH * 0.5;
-            ctx.save(); ctx.translate(ccx, ccy); ctx.rotate(vAngle);
-            ctx.transform(stretchAmt, centSkew, 0, squeezeAmt, 0, 0);
-            ctx.rotate(-vAngle); ctx.drawImage(bkSrc, -drawW * 0.5, -drawH * 0.5, drawW, drawH); ctx.restore();
-          } else {
-            ctx.drawImage(bkSrc, cx2 + bk.ox, cy2 + bk.oy, drawW, drawH);
-          }
-        }
+        // Front clouds
+        drawCloudRange(raySplit, sceneClouds.length);
         } // end if (sceneClouds)
 
         // Dynamic ambient — clouds darken the sky behind them
