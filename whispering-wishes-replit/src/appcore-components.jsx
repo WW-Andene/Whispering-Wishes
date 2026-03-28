@@ -2383,9 +2383,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       // Brighter amber palette + per-cloud brightness variation
       const bVar = 0.75 + hash(depth * 127 + proximity * 311) * 0.5;
       // Dramatic dark palette — near-black shadows, deep crimson mids, fiery highlights
-      const shR = Math.round((5 + ds * 3 + lr * 2) * bVar), shG = Math.round((2 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
-      const ltR = Math.min(255, Math.round((150 + ds * 10 + proximity * 8) * bVar)), ltG = Math.min(255, Math.round((55 + ds * 8 + proximity * 5) * bVar)), ltB = Math.min(255, Math.round((12 + ds * 3 + proximity * 2) * bVar));
-      const rmR = Math.min(255, Math.round((180 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((65 + ds * 6 + proximity * 4) * bVar)), rmB = Math.min(255, Math.round((15 + ds * 3 + proximity * 2) * bVar));
+      const shR = Math.round((3 + ds * 2 + lr * 1) * bVar), shG = Math.round((1 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
+      const ltR = Math.min(255, Math.round((90 + ds * 8 + proximity * 6) * bVar)), ltG = Math.min(255, Math.round((32 + ds * 5 + proximity * 3) * bVar)), ltB = Math.min(255, Math.round((8 + ds * 2 + proximity * 1) * bVar));
+      const rmR = Math.min(255, Math.round((110 + ds * 4) * bVar)), rmG = Math.min(255, Math.round((40 + ds * 4 + proximity * 3) * bVar)), rmB = Math.min(255, Math.round((10 + ds * 2 + proximity * 1) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2656,14 +2656,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.06;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v4) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v5) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
           sk.addColorStop(0,"rgb(15,6,2)");sk.addColorStop(0.2,"rgb(18,7,3)");sk.addColorStop(0.4,"rgb(22,9,3)");
-          sk.addColorStop(0.6,"rgb(28,11,4)");sk.addColorStop(0.75,"rgb(38,16,5)");sk.addColorStop(0.85,"rgb(55,24,7)");
-          sk.addColorStop(0.9,"rgb(130,55,15)");sk.addColorStop(0.94,"rgb(210,105,28)");sk.addColorStop(0.97,"rgb(255,165,50)");sk.addColorStop(1,"rgb(255,195,72)");
+          sk.addColorStop(0.6,"rgb(28,11,4)");sk.addColorStop(0.75,"rgb(32,13,4)");sk.addColorStop(0.875,"rgb(38,16,5)");
+          sk.addColorStop(0.9375,"rgb(55,24,7)");sk.addColorStop(0.96,"rgb(130,55,15)");sk.addColorStop(0.98,"rgb(210,105,28)");sk.addColorStop(1,"rgb(255,185,60)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
@@ -2678,14 +2678,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           sd.addColorStop(0,"rgba(255,255,240,1)");sd.addColorStop(0.3,"rgba(255,250,200,0.9)");sd.addColorStop(0.6,"rgba(255,225,140,0.5)");sd.addColorStop(1,"rgba(255,190,80,0)");
           sc.fillStyle=sd;sc.beginPath();sc.arc(sunX,sunY,sunR*1.8,0,Math.PI*2);sc.fill();
           // Horizon haze band — warm glow at horizon
-          const hz=sc.createLinearGradient(0,H*0.55,0,H*0.78);
-          hz.addColorStop(0,"rgba(200,80,20,0)");hz.addColorStop(0.3,"rgba(220,100,25,0.1)");hz.addColorStop(0.6,"rgba(240,125,35,0.18)");hz.addColorStop(1,"rgba(250,145,45,0.25)");
-          sc.fillStyle=hz;sc.fillRect(0,H*0.55,W,H*0.78-H*0.55);
+          const hz=sc.createLinearGradient(0,H*0.88,0,H);
+          hz.addColorStop(0,"rgba(200,80,20,0)");hz.addColorStop(0.3,"rgba(220,100,25,0.08)");hz.addColorStop(0.6,"rgba(240,125,35,0.14)");hz.addColorStop(1,"rgba(250,145,45,0.2)");
+          sc.fillStyle=hz;sc.fillRect(0,H*0.88,W,H*0.12);
           // Edge vignette on sky — darken corners/edges
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
-          skyCache._v4 = true;
+          skyCache._v5 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
