@@ -3783,13 +3783,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // The gold triangle: edges at (0, triRow) and (gridX, triRow), peak at (gridX/2, 0)
           // Outline: same shape shrunk inward by pad on all sides
           const pad = Math.round(gridY * 0.05);
-          // Compute padX so outline diagonal is parallel to gold diagonal
-          // Gold: (0, triRow) → (gridX/2, 0), slope = triRow / (gridX/2)
-          // Inset by pad vertically means the outline peak is at row=pad
-          // For parallel: padX = pad * (gridX/2) / triRow
-          const padX = Math.max(1, Math.round(pad * (gridX / 2) / Math.max(1, triRow)));
+          const padX = Math.max(1, Math.round(gridX * 0.08));
+          // Peak: shifted down by pad from row 0
           const oMid = gp(Math.round(gridX / 2), pad);
+          // Triangle sides: same row as gold (triRow), inset from edges by padX
+          const oTL = gp(padX, triRow);
+          const oTR = gp(gridX - padX, triRow);
+          // Bottom corners: inset from bottom by pad, inset from edges by padX
           const botRow = gridY - pad;
+          const oBL = gp(padX, botRow);
+          const oBR = gp(gridX - padX, botRow);
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
           ctx.beginPath();
@@ -3881,7 +3884,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           cBg.addColorStop(0, 'rgb(120,30,18)'); cBg.addColorStop(0.6, 'rgb(95,22,12)'); cBg.addColorStop(1, 'rgb(75,16,8)');
           ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(0.8, barThick * 0.5); ctx.stroke();
+          ctx.strokeStyle = gM; ctx.lineWidth = barThick; ctx.stroke();
           // 4-branch star
           ctx.fillStyle = gM;
           for (let si = 0; si < 4; si++) {
