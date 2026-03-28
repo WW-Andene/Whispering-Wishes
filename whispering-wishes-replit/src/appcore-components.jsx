@@ -3314,24 +3314,38 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          // Metallic sword shading — sun proximity + direction
+          // 3D-informed lighting — per-face dot product with sun direction
           const sdx2 = s.scrX - sunX, sdy2 = s.scrY - sunY;
           const sunDist2 = Math.sqrt(sdx2 * sdx2 + sdy2 * sdy2);
           const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
           const lit = sunProx2 * sunProx2;
-          const leftLight = s.scrX > sunX;
+          // Normalized light direction from sword toward sun (screen space)
+          const lx = sunDist2 > 1 ? (sunX - s.scrX) / sunDist2 : 0;
+          // Face normals in screen space, accounting for Y rotation
+          // Left face normal X = -sin(yAngle), Right = sin(yAngle)
+          const sinY = Math.sin(s.yAngle);
+          const leftDot = Math.max(0, -lx * sinY);
+          const rightDot = Math.max(0, lx * sinY);
+          // Per-face brightness: dot product * sun proximity + ambient
+          const ambient = 0.12;
+          const leftBright = ambient + leftDot * lit * 0.88;
+          const rightBright = ambient + rightDot * lit * 0.88;
+          // Ambient color: warm dark amber (sky reflected). Lit color: bright metallic amber
+          const ambR = 18, ambG = 14, ambB = 10;
+          const litR = 170, litG = 120, litB = 55;
+          const leftR = Math.round(ambR + (litR - ambR) * leftBright);
+          const leftG = Math.round(ambG + (litG - ambG) * leftBright);
+          const leftB = Math.round(ambB + (litB - ambB) * leftBright);
+          const rightR = Math.round(ambR + (litR - ambR) * rightBright);
+          const rightG = Math.round(ambG + (litG - ambG) * rightBright);
+          const rightB = Math.round(ambB + (litB - ambB) * rightBright);
 
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          const dR = Math.round(20 + lit * 30), dG = Math.round(20 + lit * 18), dB = Math.round(22 + lit * 8);
-          const lR = Math.round(55 + lit * 100), lG = Math.round(52 + lit * 60), lB = Math.round(55 + lit * 25);
-          const darkSide = `rgb(${dR},${dG},${dB})`;
-          const lightSide = `rgb(${lR},${lG},${lB})`;
-
           // Left half
-          ctx.fillStyle = leftLight ? lightSide : darkSide;
+          ctx.fillStyle = `rgb(${leftR},${leftG},${leftB})`;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3342,7 +3356,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = leftLight ? darkSide : lightSide;
+          ctx.fillStyle = `rgb(${rightR},${rightG},${rightB})`;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3352,7 +3366,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          ctx.fillStyle = darkSide;
+          // Guard — average of both face brightnesses
+          const guardBright = (leftBright + rightBright) * 0.5 + 0.05;
+          ctx.fillStyle = `rgb(${Math.round(ambR + (litR - ambR) * guardBright)},${Math.round(ambG + (litG - ambG) * guardBright)},${Math.round(ambB + (litB - ambB) * guardBright)})`;
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
           if (guardType === 1) {
