@@ -2756,7 +2756,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Ray drawing function
         function drawRays(alphaScale) {
           ctx.save(); ctx.globalCompositeOperation = 'lighter';
-          ctx.filter = 'blur(' + Math.max(2, Math.round(H * 0.008)) + 'px)';
+          ctx.filter = 'blur(' + Math.max(3, Math.round(H * 0.014)) + 'px)';
           const rCount = 12;
           const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
           for (let ri2 = 0; ri2 < rCount; ri2++) {
@@ -2764,7 +2764,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const t2 = (ri2 + rRng() * 0.6 - 0.3) / (rCount - 1);
             const rAng = rCenter - rSpread * 0.5 + t2 * rSpread;
             const rLen = (H - sunY) * (1.0 + rRng() * 0.3);
-            const rW2 = sunR * (0.22 + rRng() * 0.6);
+            const rW2 = sunR * (0.15 + rRng() * 0.45);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
             const rA = (0.10 + rRng() * 0.12) * alphaScale;
