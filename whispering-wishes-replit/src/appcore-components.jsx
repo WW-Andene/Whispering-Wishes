@@ -3620,7 +3620,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const crossY = poleTop + bScale * 0.04;
 
           // Vertical arm above
-          const armH = bScale * 0.35;
+          const armH = bScale * 0.2;
           ctx.fillStyle = gM;
           ctx.fillRect(bScrX - barThick / 2, poleTop - armH, barThick, armH);
 
@@ -3694,27 +3694,49 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           function gp(gx, gy) { return pts[gy * (gridX + 1) + gx]; }
 
-          // Draw as TRIANGLES — 2 per cell, smoother deformation than quads
+          // Draw as TRIANGLES with sun lighting
+          // Sun direction toward flag (sun is at W*0.5, H*0.3)
+          const sunDx = sunX - bScrX, sunDy = sunY - (dTop + dH * 0.5);
+          const sunDist = Math.sqrt(sunDx * sunDx + sunDy * sunDy) || 1;
+          const snx = sunDx / sunDist, sny = sunDy / sunDist;
+          // Shadow color, lit color, rim color
+          const shCol = [65, 12, 8];
+          const ltCol = [195, 65, 35];
+          const rimCol = [255, 180, 100];
+
+          function triColor(p0, p1, p2, v0) {
+            // Surface normal from cross product of edges + Z
+            const ex1 = p1.x - p0.x, ey1 = p1.y - p0.y, ez1 = (p1.z - p0.z) * 200;
+            const ex2 = p2.x - p0.x, ey2 = p2.y - p0.y, ez2 = (p2.z - p0.z) * 200;
+            let nx = ey1 * ez2 - ez1 * ey2, ny = ez1 * ex2 - ex1 * ez2, nz = ex1 * ey2 - ey1 * ex2;
+            const nl = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1;
+            nx /= nl; ny /= nl; nz /= nl;
+            // Dot with sun direction (2D projected + Z facing camera)
+            const ndot = nx * snx + ny * sny;
+            const sunFace = ndot * 0.5 + 0.5; // 0=shadow, 1=lit
+            // Z facing: positive Z = toward viewer = brighter
+            const avgZ = (p0.z + p1.z + p2.z) / 3;
+            const zFace = 0.5 + avgZ * 1.5;
+            // Combined light
+            const light = Math.max(0, Math.min(1, sunFace * 0.6 + zFace * 0.4));
+            // Thin edge rim (high slope = edge)
+            const tilt = Math.sqrt(nx*nx + ny*ny);
+            const rim = Math.pow(Math.max(0, tilt - 0.3) / 0.7, 2) * 0.3 * Math.max(0, sunFace);
+            const r = Math.round(Math.min(255, shCol[0] + (ltCol[0] - shCol[0]) * light + rimCol[0] * rim));
+            const g = Math.round(Math.min(255, shCol[1] + (ltCol[1] - shCol[1]) * light + rimCol[1] * rim));
+            const b = Math.round(Math.min(255, shCol[2] + (ltCol[2] - shCol[2]) * light + rimCol[2] * rim));
+            return 'rgb(' + r + ',' + g + ',' + b + ')';
+          }
+
           for (let gy = 0; gy < gridY; gy++) {
+            const v0 = gy / gridY;
             for (let gx = 0; gx < gridX; gx++) {
               const p00 = gp(gx, gy), p10 = gp(gx+1, gy), p01 = gp(gx, gy+1), p11 = gp(gx+1, gy+1);
-              // Per-triangle Z for shading
-              const z1 = (p00.z + p10.z + p01.z) / 3;
-              const z2 = (p10.z + p11.z + p01.z) / 3;
-              const v0 = gy / gridY;
-              // Triangle A: top-left
-              const zL1 = 0.5 + z1 * 2;
-              const r1 = Math.round(Math.min(255, Math.max(60, (165 - v0*65) * (0.7 + zL1*0.6))));
-              const g1 = Math.round(Math.min(80, Math.max(12, (48 - v0*26) * (0.7 + zL1*0.6))));
-              const b1 = Math.round(Math.min(50, Math.max(8, (28 - v0*16) * (0.7 + zL1*0.6))));
-              ctx.fillStyle = 'rgb('+r1+','+g1+','+b1+')';
+              // Triangle A
+              ctx.fillStyle = triColor(p00, p10, p01, v0);
               ctx.beginPath(); ctx.moveTo(p00.x,p00.y); ctx.lineTo(p10.x,p10.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
-              // Triangle B: bottom-right
-              const zL2 = 0.5 + z2 * 2;
-              const r2 = Math.round(Math.min(255, Math.max(60, (165 - v0*65) * (0.7 + zL2*0.6))));
-              const g2 = Math.round(Math.min(80, Math.max(12, (48 - v0*26) * (0.7 + zL2*0.6))));
-              const b2 = Math.round(Math.min(50, Math.max(8, (28 - v0*16) * (0.7 + zL2*0.6))));
-              ctx.fillStyle = 'rgb('+r2+','+g2+','+b2+')';
+              // Triangle B
+              ctx.fillStyle = triColor(p10, p11, p01, v0);
               ctx.beginPath(); ctx.moveTo(p10.x,p10.y); ctx.lineTo(p11.x,p11.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
             }
           }
