@@ -3670,74 +3670,115 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillRect(rx - rw, ridgeTop, rw * 2, ridgeH);
           }
 
-          // Cloth — vertical articulation only
+          // Cloth — 2D grid mesh, every point moves X and Y
           const dTop = ridgeTop + ridgeH;
           const dW = crossW * 0.85;
           const dH = bScale * 1.6;
-          const dL0 = bScrX - dW / 2, dR0 = bScrX + dW / 2;
-          const segs = 80;
+          const gridX = 16, gridY = 40; // 16 columns × 40 rows = 640 points
 
-          function windY(t) {
-            return Math.sin(t * 5 - wt * 1.5) * t * bScale * 0.06
-                 + Math.sin(t * 3 - wt * 0.8 + 1.2) * t * bScale * 0.04
-                 + Math.sin(t * 8 - wt * 2.5 + 0.5) * t * t * bScale * 0.025;
+          // Compute displaced grid point
+          function gridPt(gx, gy) {
+            const u = gx / gridX, v = gy / gridY; // u: 0-1 across, v: 0-1 down
+            const baseX = bScrX - dW / 2 + u * dW;
+            const baseY = dTop + v * dH;
+            // Horizontal displacement — wind pushes sideways, more at bottom, varies across width
+            const hPush = v * v * bScale * 0.35 * (0.65 + Math.sin(wt * 0.35) * 0.35);
+            const hRipple = Math.sin(v * 5 - wt * 2.0 + u * 1.5) * v * bScale * 0.05
+                          + Math.sin(v * 3 - wt * 1.2 + u * 2.5) * v * bScale * 0.03
+                          + Math.sin(u * 4 + v * 2 - wt * 1.8) * v * bScale * 0.02;
+            // Vertical displacement — ripple waves
+            const vRipple = Math.sin(v * 6 - wt * 1.5 + u * 2) * v * bScale * 0.04
+                          + Math.sin(v * 3.5 - wt * 0.9 + u * 1.2) * v * bScale * 0.03
+                          + Math.sin(u * 3 + v * 8 - wt * 2.5) * v * v * bScale * 0.015;
+            return [baseX + hPush + hRipple, baseY + vRipple];
           }
 
-          function veilPath() {
-            ctx.beginPath();
-            ctx.moveTo(dL0, dTop); ctx.lineTo(dR0, dTop);
-            for (let i = 1; i <= segs; i++) { const t = i / segs; ctx.lineTo(dR0, dTop + t * dH + windY(t)); }
-            ctx.lineTo(dL0, dTop + dH + windY(1));
-            for (let i = segs; i >= 1; i--) { const t = i / segs; ctx.lineTo(dL0, dTop + t * dH + windY(t)); }
-            ctx.closePath();
+          // Draw cloth as filled quad strips row by row
+          for (let gy = 0; gy < gridY; gy++) {
+            const v0 = gy / gridY, v1 = (gy + 1) / gridY;
+            // Color for this row
+            const rVal = Math.round(165 - v0 * 65);
+            const gVal = Math.round(48 - v0 * 26);
+            const bVal = Math.round(28 - v0 * 16);
+            ctx.fillStyle = 'rgb(' + rVal + ',' + gVal + ',' + bVal + ')';
+            for (let gx = 0; gx < gridX; gx++) {
+              const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
+              const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
+              ctx.beginPath();
+              ctx.moveTo(p00[0], p00[1]);
+              ctx.lineTo(p10[0], p10[1]);
+              ctx.lineTo(p11[0], p11[1]);
+              ctx.lineTo(p01[0], p01[1]);
+              ctx.closePath();
+              ctx.fill();
+            }
           }
 
-          veilPath();
-          const dGrad = ctx.createLinearGradient(0, dTop, 0, dTop + dH);
-          dGrad.addColorStop(0, 'rgb(165,48,28)'); dGrad.addColorStop(0.3, 'rgb(148,38,22)');
-          dGrad.addColorStop(0.7, 'rgb(125,28,16)'); dGrad.addColorStop(1, 'rgb(100,22,12)');
-          ctx.fillStyle = dGrad; ctx.fill();
-
-          // 20 fold layers
-          ctx.save(); veilPath(); ctx.clip();
-          for (let fi = 0; fi < 20; fi++) {
-            const fX = dL0 + (fi + 0.5) * (dW / 20), fW2 = bScale * 0.018;
-            const hlA = 0.04 + Math.sin(fi * 2.1 + wt * 0.4) * 0.025;
-            const hl = ctx.createLinearGradient(fX - fW2, 0, fX + fW2, 0);
-            hl.addColorStop(0, 'rgba(255,170,100,0)'); hl.addColorStop(0.5, 'rgba(255,170,100,' + hlA + ')'); hl.addColorStop(1, 'rgba(255,170,100,0)');
-            ctx.fillStyle = hl; ctx.fillRect(fX - fW2, dTop, fW2 * 2, dH * 1.3);
-            const shX = fX + fW2 * 0.6, shA = hlA * 0.3;
-            const sh = ctx.createLinearGradient(shX - fW2 * 0.3, 0, shX + fW2 * 0.3, 0);
-            sh.addColorStop(0, 'rgba(80,20,5,0)'); sh.addColorStop(0.5, 'rgba(80,20,5,' + shA + ')'); sh.addColorStop(1, 'rgba(80,20,5,0)');
-            ctx.fillStyle = sh; ctx.fillRect(shX - fW2 * 0.3, dTop, fW2 * 0.6, dH * 1.3);
+          // Fold shading overlay — per-column highlight/shadow based on local curvature
+          for (let gx = 0; gx < gridX; gx++) {
+            const u = (gx + 0.5) / gridX;
+            // Sample horizontal neighbors to get local normal
+            const pL = gridPt(gx, gridY * 0.5), pR = gridPt(gx + 1, gridY * 0.5);
+            const dx = pR[0] - pL[0];
+            const foldLight = dx / (dW / gridX); // >1 means stretched = highlight, <1 = compressed = shadow
+            const hlA = Math.max(0, (foldLight - 0.9) * 0.15);
+            const shA = Math.max(0, (1.1 - foldLight) * 0.08);
+            if (hlA > 0.001) {
+              ctx.fillStyle = 'rgba(255,170,100,' + hlA + ')';
+              // Draw highlight strip along this column
+              for (let gy = 0; gy < gridY; gy++) {
+                const p0 = gridPt(gx, gy), p1 = gridPt(gx, gy + 1);
+                const p2 = gridPt(gx + 1, gy + 1), p3 = gridPt(gx + 1, gy);
+                ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p3[0], p3[1]);
+                ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p1[0], p1[1]); ctx.closePath(); ctx.fill();
+              }
+            }
+            if (shA > 0.001) {
+              ctx.fillStyle = 'rgba(80,20,5,' + shA + ')';
+              for (let gy = 0; gy < gridY; gy++) {
+                const p0 = gridPt(gx, gy), p1 = gridPt(gx, gy + 1);
+                const p2 = gridPt(gx + 1, gy + 1), p3 = gridPt(gx + 1, gy);
+                ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p3[0], p3[1]);
+                ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p1[0], p1[1]); ctx.closePath(); ctx.fill();
+              }
+            }
           }
 
-          // Cloth emblem — same star as crest, follows vertical sway
-          const emCy = dTop + 0.33 * dH + windY(0.33), emR = dW * 0.28;
+          // Cloth emblem — follows grid displacement at center
+          const emPt = gridPt(gridX / 2, Math.round(gridY * 0.33));
+          const emCx = emPt[0], emCy = emPt[1], emR = dW * 0.28;
           const eA = 'rgba(210,155,50,';
           ctx.strokeStyle = eA + '0.45)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
-          ctx.beginPath(); ctx.arc(bScrX, emCy, emR, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR, 0, Math.PI * 2); ctx.stroke();
           ctx.fillStyle = eA + '0.35)';
           for (let ri = 0; ri < 8; ri++) {
             const ang = ri * Math.PI / 4 - Math.PI / 2, rLen = emR * 0.85, rW = emR * 0.12;
-            ctx.save(); ctx.translate(bScrX, emCy); ctx.rotate(ang);
+            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
             ctx.beginPath(); ctx.moveTo(0, -rW); ctx.lineTo(rLen, 0); ctx.lineTo(0, rW); ctx.closePath(); ctx.fill(); ctx.restore();
           }
           ctx.fillStyle = eA + '0.2)';
           for (let ri = 0; ri < 8; ri++) {
             const ang = ri * Math.PI / 4 - Math.PI / 2 + Math.PI / 8, rLen = emR * 0.55, rW = emR * 0.08;
-            ctx.save(); ctx.translate(bScrX, emCy); ctx.rotate(ang);
+            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
             ctx.beginPath(); ctx.moveTo(0, -rW); ctx.lineTo(rLen, 0); ctx.lineTo(0, rW); ctx.closePath(); ctx.fill(); ctx.restore();
           }
           ctx.strokeStyle = eA + '0.3)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
-          ctx.beginPath(); ctx.arc(bScrX, emCy, emR * 0.35, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.35, 0, Math.PI * 2); ctx.stroke();
           ctx.fillStyle = eA + '0.4)';
-          ctx.beginPath(); ctx.arc(bScrX, emCy, emR * 0.1, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.1, 0, Math.PI * 2); ctx.fill();
 
-          // Gold trim
-          veilPath();
-          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02); ctx.stroke();
+          // Gold trim — outline using grid edge points
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02);
+          ctx.beginPath();
+          // Top edge
+          for (let gx = 0; gx <= gridX; gx++) { const p = gridPt(gx, 0); if (gx === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); }
+          // Right edge
+          for (let gy = 1; gy <= gridY; gy++) { const p = gridPt(gridX, gy); ctx.lineTo(p[0], p[1]); }
+          // Bottom edge
+          for (let gx = gridX - 1; gx >= 0; gx--) { const p = gridPt(gx, gridY); ctx.lineTo(p[0], p[1]); }
+          // Left edge
+          for (let gy = gridY - 1; gy >= 0; gy--) { const p = gridPt(0, gy); ctx.lineTo(p[0], p[1]); }
+          ctx.closePath(); ctx.stroke();
 
           ctx.restore();
         }
