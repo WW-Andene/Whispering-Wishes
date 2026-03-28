@@ -2664,7 +2664,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v10) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v9) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
@@ -2756,10 +2756,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const ex = sx + Math.cos(ang) * bLen;
             const ey = sy + Math.sin(ang) * bLen;
             // Outer glow
-            sc.globalAlpha = 0.25 + lRng() * 0.15;
+            sc.globalAlpha = 0.12 + lRng() * 0.08;
             sc.strokeStyle = 'rgb(255,140,40)';
-            sc.lineWidth = 8 + lRng() * 6;
-            sc.filter = 'blur(5px)';
+            sc.lineWidth = 6 + lRng() * 4;
+            sc.filter = 'blur(4px)';
             sc.beginPath();
             sc.moveTo(sx, sy);
             _ls = 91827364 + bi * 77777; // reset per bolt for reproducibility
@@ -2769,9 +2769,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             boltPath(sc, sx, sy, ex, ey, 0, 5);
             sc.stroke();
             // Mid glow
-            sc.globalAlpha = 0.4 + lRng() * 0.15;
+            sc.globalAlpha = 0.2 + lRng() * 0.1;
             sc.strokeStyle = 'rgb(255,180,80)';
-            sc.lineWidth = 3.5;
+            sc.lineWidth = 2.5;
             sc.filter = 'blur(2px)';
             sc.beginPath();
             sc.moveTo(sx, sy);
@@ -2779,9 +2779,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             boltPath(sc, sx, sy, ex, ey, 0, 5);
             sc.stroke();
             // Core — bright white-orange
-            sc.globalAlpha = 0.6 + lRng() * 0.2;
-            sc.strokeStyle = 'rgb(255,235,200)';
-            sc.lineWidth = 1.5;
+            sc.globalAlpha = 0.35 + lRng() * 0.15;
+            sc.strokeStyle = 'rgb(255,225,180)';
+            sc.lineWidth = 1;
             sc.filter = 'none';
             sc.beginPath();
             sc.moveTo(sx, sy);
@@ -2790,7 +2790,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             sc.stroke();
           }
           sc.restore();
-          skyCache._v10 = true;
+          skyCache._v9 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
@@ -3454,15 +3454,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             // Fragment offset — slight displacement on one side of crack
             const fragOff = (fRng() - 0.5) * bW * 0.15;
             // Dark crack gap
-            ctx.strokeStyle = `rgba(5,2,1,${0.6 + fRng() * 0.3})`;
-            ctx.lineWidth = Math.max(0.8, bW * 0.1);
+            ctx.strokeStyle = `rgba(5,2,1,${0.5 + fRng() * 0.3})`;
+            ctx.lineWidth = Math.max(0.5, bW * 0.06);
             ctx.beginPath();
             ctx.moveTo(pts[0].x, pts[0].y + fragOff);
             for (let pi = 1; pi < pts.length; pi++) ctx.lineTo(pts[pi].x, pts[pi].y);
             ctx.stroke();
             // Bright exposed edge — catches light
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+90)},${Math.min(255,lG+80)},${Math.min(255,lB2+60)},${0.35 + lit * 0.4})`;
-            ctx.lineWidth = Math.max(0.5, bW * 0.05);
+            ctx.strokeStyle = `rgba(${Math.min(255,lR+90)},${Math.min(255,lG+80)},${Math.min(255,lB2+60)},${0.2 + lit * 0.35})`;
+            ctx.lineWidth = Math.max(0.3, bW * 0.025);
             ctx.beginPath();
             ctx.moveTo(pts[0].x, pts[0].y + fragOff - bW * 0.02);
             for (let pi = 1; pi < pts.length; pi++) ctx.lineTo(pts[pi].x, pts[pi].y - bW * 0.02);
@@ -3968,15 +3968,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const b = Math.round(Math.min(255, shCol[2] + (ltCol[2] - shCol[2]) * light + rimCol[2] * rim));
             return 'rgb(' + r + ',' + g + ',' + b + ')';
           }
-
-          // Solid cloth backdrop — fills subpixel gaps between triangles
-          ctx.fillStyle = 'rgb(100,30,18)';
-          ctx.beginPath();
-          for (let gx = 0; gx <= gridX; gx++) { const p = gp(gx, 0); if (gx === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }
-          for (let gy = 1; gy <= gridY; gy++) { const p = gp(gridX, gy); ctx.lineTo(p.x, p.y); }
-          for (let gx = gridX - 1; gx >= 0; gx--) { const p = gp(gx, gridY); ctx.lineTo(p.x, p.y); }
-          for (let gy = gridY - 1; gy >= 0; gy--) { const p = gp(0, gy); ctx.lineTo(p.x, p.y); }
-          ctx.closePath(); ctx.fill();
 
           for (let gy = 0; gy < gridY; gy++) {
             const v0 = gy / gridY;
