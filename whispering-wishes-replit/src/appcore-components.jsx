@@ -2569,7 +2569,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Convert screen position to orbit params around sun
         const skyBot = H * 0.72; // just above horizon
         const flatR = 0.7;
-        const gCols = 8, gRows = 8;
+        const gCols = 8, gRows = 16;
         let gIdx = 0;
         for (let gr = 0; gr < gRows; gr++) {
             for (let gc2 = 0; gc2 < gCols; gc2++) {
@@ -2661,9 +2661,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
-          sk.addColorStop(0,"rgb(8,4,2)");sk.addColorStop(0.1,"rgb(18,8,4)");sk.addColorStop(0.2,"rgb(40,14,6)");
-          sk.addColorStop(0.35,"rgb(85,28,10)");sk.addColorStop(0.5,"rgb(140,50,15)");sk.addColorStop(0.65,"rgb(190,80,25)");
-          sk.addColorStop(0.78,"rgb(220,120,40)");sk.addColorStop(0.88,"rgb(240,160,60)");sk.addColorStop(1,"rgb(250,190,80)");
+          sk.addColorStop(0,"rgb(4,2,1)");sk.addColorStop(0.1,"rgb(10,4,2)");sk.addColorStop(0.2,"rgb(25,8,3)");
+          sk.addColorStop(0.35,"rgb(55,18,6)");sk.addColorStop(0.5,"rgb(100,35,10)");sk.addColorStop(0.65,"rgb(160,60,18)");
+          sk.addColorStop(0.78,"rgb(200,95,30)");sk.addColorStop(0.88,"rgb(230,140,50)");sk.addColorStop(1,"rgb(245,180,70)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
@@ -2683,7 +2683,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           sc.fillStyle=hz;sc.fillRect(0,H*0.55,W,H*0.78-H*0.55);
           // Edge vignette on sky — darken corners/edges
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
-          vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.4,"rgba(0,0,0,0)");vig.addColorStop(0.7,"rgba(5,2,1,0.3)");vig.addColorStop(0.85,"rgba(5,2,1,0.55)");vig.addColorStop(1,"rgba(5,2,1,0.75)");
+          vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.3,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(5,2,1,0.25)");vig.addColorStop(0.75,"rgba(5,2,1,0.55)");vig.addColorStop(0.9,"rgba(3,1,0,0.78)");vig.addColorStop(1,"rgba(2,1,0,0.88)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
         }
         ctx.drawImage(skyCache, 0, 0);
@@ -2724,41 +2724,59 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.drawImage(bkSrc, cx2 + bk.ox, cy2 + bk.oy, drawW, drawH);
           }
         }
-        // God rays — fan downward from sun toward ground, matching camera angle
+        // God rays — bright hopeful light descending through dark sky
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        const rayCount = 12;
-        // Rays fan from sun downward toward the ground plane
-        // Camera looks up at sun (sun at 30% height, horizon at 75%)
-        // Center ray direction: straight down from sun to ground center
-        const rayCenterAngle = Math.PI * 0.5; // straight down
-        const rayConeSpread = Math.PI * 0.55; // wide fan covering most of the ground
+        const rayCount = 16;
+        const rayCenterAngle = Math.PI * 0.5;
+        const rayConeSpread = Math.PI * 0.6;
         for (let ri2 = 0; ri2 < rayCount; ri2++) {
           const rayRng = seededRandom(ri2 * 777 + 42);
-          // Distribute rays across the cone with randomized spacing
-          const t = (ri2 + rayRng() * 0.6 - 0.3) / (rayCount - 1);
+          const t = (ri2 + rayRng() * 0.5 - 0.25) / (rayCount - 1);
           const rayAngle = rayCenterAngle - rayConeSpread * 0.5 + t * rayConeSpread;
-          // Rays extend from sun all the way to bottom of screen
-          const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
-          // Width varies — some thick, some thin, like real crepuscular rays
-          const rayW = sunR * (0.3 + rayRng() * 1.2);
+          const rayLen = (H - sunY) * (1.1 + rayRng() * 0.3);
+          const rayW = sunR * (0.4 + rayRng() * 1.5);
           const ex = sunX + Math.cos(rayAngle) * rayLen;
           const ey = sunY + Math.sin(rayAngle) * rayLen;
-          // Warm golden color, varying opacity
-          const rayAlpha = 0.03 + rayRng() * 0.05;
+          // Bright white-gold — hope through darkness
+          const rayAlpha = 0.06 + rayRng() * 0.10;
           const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          rayGrad.addColorStop(0, 'rgba(255,240,170,' + (rayAlpha * 1.2) + ')');
-          rayGrad.addColorStop(0.15, 'rgba(255,215,120,' + rayAlpha + ')');
-          rayGrad.addColorStop(0.5, 'rgba(255,180,70,' + (rayAlpha * 0.4) + ')');
-          rayGrad.addColorStop(0.8, 'rgba(255,140,40,' + (rayAlpha * 0.12) + ')');
-          rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
+          rayGrad.addColorStop(0, 'rgba(255,252,235,' + (rayAlpha * 1.5) + ')');
+          rayGrad.addColorStop(0.1, 'rgba(255,245,210,' + (rayAlpha * 1.2) + ')');
+          rayGrad.addColorStop(0.3, 'rgba(255,235,180,' + (rayAlpha * 0.8) + ')');
+          rayGrad.addColorStop(0.55, 'rgba(255,220,150,' + (rayAlpha * 0.4) + ')');
+          rayGrad.addColorStop(0.8, 'rgba(255,200,120,' + (rayAlpha * 0.15) + ')');
+          rayGrad.addColorStop(1, 'rgba(255,180,100,0)');
           ctx.fillStyle = rayGrad;
           ctx.beginPath();
           const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
-          // Narrow at sun, widens as it reaches the ground
-          ctx.moveTo(sunX + perpX * rayW * 0.1, sunY + perpY * rayW * 0.1);
-          ctx.lineTo(sunX - perpX * rayW * 0.1, sunY - perpY * rayW * 0.1);
-          ctx.lineTo(ex - perpX * rayW * 3.5, ey - perpY * rayW * 3.5);
-          ctx.lineTo(ex + perpX * rayW * 3.5, ey + perpY * rayW * 3.5);
+          ctx.moveTo(sunX + perpX * rayW * 0.08, sunY + perpY * rayW * 0.08);
+          ctx.lineTo(sunX - perpX * rayW * 0.08, sunY - perpY * rayW * 0.08);
+          ctx.lineTo(ex - perpX * rayW * 4, ey - perpY * rayW * 4);
+          ctx.lineTo(ex + perpX * rayW * 4, ey + perpY * rayW * 4);
+          ctx.closePath(); ctx.fill();
+        }
+        // Second pass — fewer bright accent rays for emphasis
+        for (let ri3 = 0; ri3 < 6; ri3++) {
+          const rRng = seededRandom(ri3 * 1337 + 99);
+          const t2 = (ri3 + rRng() * 0.4) / 5;
+          const rAng = rayCenterAngle - rayConeSpread * 0.35 + t2 * rayConeSpread * 0.7;
+          const rLen = (H - sunY) * (1.2 + rRng() * 0.2);
+          const rW = sunR * (0.8 + rRng() * 1.8);
+          const rex = sunX + Math.cos(rAng) * rLen;
+          const rey = sunY + Math.sin(rAng) * rLen;
+          const rA = 0.04 + rRng() * 0.06;
+          const rGrad = ctx.createLinearGradient(sunX, sunY, rex, rey);
+          rGrad.addColorStop(0, 'rgba(255,255,245,' + (rA * 1.8) + ')');
+          rGrad.addColorStop(0.2, 'rgba(255,248,220,' + (rA * 1.0) + ')');
+          rGrad.addColorStop(0.5, 'rgba(255,240,190,' + (rA * 0.35) + ')');
+          rGrad.addColorStop(1, 'rgba(255,220,160,0)');
+          ctx.fillStyle = rGrad;
+          ctx.beginPath();
+          const px2 = -Math.sin(rAng), py2 = Math.cos(rAng);
+          ctx.moveTo(sunX + px2 * rW * 0.05, sunY + py2 * rW * 0.05);
+          ctx.lineTo(sunX - px2 * rW * 0.05, sunY - py2 * rW * 0.05);
+          ctx.lineTo(rex - px2 * rW * 3, rey - py2 * rW * 3);
+          ctx.lineTo(rex + px2 * rW * 3, rey + py2 * rW * 3);
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
@@ -3421,10 +3439,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.save();
         const scVig = ctx.createRadialGradient(W*0.5, H*0.3, H*0.1, W*0.5, H*0.5, Math.max(W,H)*0.8);
         scVig.addColorStop(0, "rgba(0,0,0,0)");
-        scVig.addColorStop(0.35, "rgba(0,0,0,0)");
-        scVig.addColorStop(0.6, "rgba(3,1,0,0.2)");
-        scVig.addColorStop(0.8, "rgba(5,2,1,0.45)");
-        scVig.addColorStop(1, "rgba(5,2,1,0.7)");
+        scVig.addColorStop(0.3, "rgba(0,0,0,0)");
+        scVig.addColorStop(0.55, "rgba(3,1,0,0.15)");
+        scVig.addColorStop(0.7, "rgba(5,2,1,0.4)");
+        scVig.addColorStop(0.85, "rgba(5,2,1,0.65)");
+        scVig.addColorStop(1, "rgba(3,1,0,0.82)");
         ctx.fillStyle = scVig;
         ctx.fillRect(0, 0, W, H);
         ctx.restore();
