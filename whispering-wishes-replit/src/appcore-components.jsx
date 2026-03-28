@@ -3681,17 +3681,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _cmx = (_cr() - 0.5) * _hw * 0.4;
             _crLines.push({ y: _cy, w: _cw, dir: _cdir, dy: _cdy, mx: _cmx });
           }
-          // Pick 2-3 main breaks (subset of crack lines) for floating gaps
+          // Pick 2-3 main breaks — keep bottom 6.25% of blade always attached to guard
           _crLines.sort(function(a, b) { return a.y - b.y; });
+          var _minBreakY = guardH - _totalH * 0.0625; // breaks can't be in bottom 6.25%
           var _nBreaks = Math.min(_crLines.length, 2 + (_cr() * 2 | 0));
-          var _breakYs = [];
-          var _breakStep = Math.floor(_crLines.length / _nBreaks);
+          var _breakCracks = []; // store full crack data for break lines
+          var _breakStep = Math.max(1, Math.floor(_crLines.length / _nBreaks));
           for (var _bki = 0; _bki < _nBreaks; _bki++) {
-            _breakYs.push(_crLines[Math.min(_bki * _breakStep, _crLines.length - 1)].y);
+            var _bCrack = _crLines[Math.min(_bki * _breakStep, _crLines.length - 1)];
+            if (_bCrack.y < _minBreakY) _breakCracks.push(_bCrack);
           }
           // Fragment offsets — first stays, rest hover slightly
+          var _nBk = _breakCracks.length;
           var _fdx = [0], _fdy = [0], _frot = [0];
-          for (var _fi3 = 0; _fi3 < _nBreaks; _fi3++) {
+          for (var _fi3 = 0; _fi3 < _nBk; _fi3++) {
             _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.15 + _cr() * 0.2));
             _fdy.push((_cr() - 0.5) * bladeW * 0.12);
             _frot.push((_cr() - 0.5) * 0.015);
@@ -3712,14 +3715,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _colL, _colR;
           if (leftLight) { _colL = 'rgb('+lR+','+lG+','+lB2+')'; _colR = 'rgb('+dR+','+dG+','+dB+')'; }
           else { _colL = 'rgb('+dR+','+dG+','+dB+')'; _colR = 'rgb('+lR+','+lG+','+lB2+')'; }
-          // Draw blade in segments with gaps at break points
+          // Draw blade in segments with diagonal gaps following crack lines
           var _segBounds = [-bladeH];
-          for (var _sb = 0; _sb < _nBreaks; _sb++) _segBounds.push(_breakYs[_sb]);
+          for (var _sb = 0; _sb < _nBk; _sb++) _segBounds.push(_breakCracks[_sb].y);
           _segBounds.push(guardH);
-          for (var _si = 0; _si <= _nBreaks; _si++) {
+          for (var _si = 0; _si <= _nBk; _si++) {
             var _yT = _segBounds[_si], _yB = _segBounds[_si + 1];
-            var _gap = bladeW * 0.12; // gap between pieces
-            var _yTd = _si === 0 ? _yT : _yT + _gap; // add gap at top of non-first pieces
+            // Gap follows crack diagonal — offset Y by crack's dy
+            var _gapAmt = bladeW * 0.12;
+            var _yTd = _si === 0 ? _yT : _yT + _gapAmt;
             var _wT = _hw * Math.max(0.05, Math.min(1, (_yTd + bladeH) / _totalH));
             var _wB = _hw * Math.max(0.05, Math.min(1, (_yB + bladeH) / _totalH));
             ctx.save();
@@ -3783,19 +3787,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _cy3 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
             ctx.beginPath(); ctx.moveTo(-_hw*0.6, _cy3); ctx.lineTo(_hw*0.6, _cy3 + bladeW*0.15); ctx.stroke();
           }
-          // Floating shards near notches
+          // Floating shards — pointy side parallel to the notch it came from
           var _shBr = 0.3 + lit * 0.4;
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
           for (var _sli = 0; _sli < _notchesL.length; _sli++) {
             var _sn = _notchesL[_sli]; var _sg = _hw * (0.1+_cr()*0.12);
             var _wS = _hw * Math.max(0.05, (_sn.y+bladeH)/_totalH);
-            ctx.beginPath(); ctx.moveTo(-_wS-_sg, _sn.y); ctx.lineTo(-_wS-_sg-_sn.d*0.5, _sn.y+_sn.h*0.4); ctx.lineTo(-_wS-_sg-_sn.d*0.15, _sn.y+_sn.h*0.8); ctx.closePath(); ctx.fill();
+            // Shard mirrors the notch shape: pointy tip matches notch peak direction
+            ctx.beginPath();
+            ctx.moveTo(-_wS-_sg, _sn.y);                              // top edge (parallel to notch top)
+            ctx.lineTo(-_wS-_sg-_sn.d*0.6, _sn.y+_sn.h*0.4);        // pointy tip (parallel to notch peak)
+            ctx.lineTo(-_wS-_sg, _sn.y+_sn.h);                       // bottom edge (parallel to notch bottom)
+            ctx.closePath(); ctx.fill();
           }
           for (var _sri = 0; _sri < _notchesR.length; _sri++) {
             var _snr = _notchesR[_sri]; var _sgR = _hw * (0.1+_cr()*0.12);
             var _wSR = _hw * Math.max(0.05, (_snr.y+bladeH)/_totalH);
-            ctx.beginPath(); ctx.moveTo(_wSR+_sgR, _snr.y); ctx.lineTo(_wSR+_sgR+_snr.d*0.5, _snr.y+_snr.h*0.4); ctx.lineTo(_wSR+_sgR+_snr.d*0.15, _snr.y+_snr.h*0.8); ctx.closePath(); ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(_wSR+_sgR, _snr.y);
+            ctx.lineTo(_wSR+_sgR+_snr.d*0.6, _snr.y+_snr.h*0.4);
+            ctx.lineTo(_wSR+_sgR, _snr.y+_snr.h);
+            ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
