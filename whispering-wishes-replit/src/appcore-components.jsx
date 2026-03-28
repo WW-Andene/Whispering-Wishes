@@ -2748,14 +2748,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rW2 = sunR * (0.3 + rRng() * 1.2);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
-            const rA = (0.05 + rRng() * 0.08) * alphaScale;
+            const rA = (0.10 + rRng() * 0.14) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
-            rG.addColorStop(0, 'rgba(255,252,235,' + (rA * 1.5) + ')');
-            rG.addColorStop(0.1, 'rgba(255,245,210,' + (rA * 1.2) + ')');
-            rG.addColorStop(0.3, 'rgba(255,235,180,' + (rA * 0.8) + ')');
-            rG.addColorStop(0.55, 'rgba(255,220,150,' + (rA * 0.35) + ')');
-            rG.addColorStop(0.8, 'rgba(255,200,120,' + (rA * 0.12) + ')');
-            rG.addColorStop(1, 'rgba(255,180,100,0)');
+            rG.addColorStop(0, 'rgba(255,240,180,' + (rA * 1.8) + ')');
+            rG.addColorStop(0.08, 'rgba(255,225,140,' + (rA * 1.5) + ')');
+            rG.addColorStop(0.25, 'rgba(255,210,110,' + (rA * 1.0) + ')');
+            rG.addColorStop(0.5, 'rgba(255,195,85,' + (rA * 0.5) + ')');
+            rG.addColorStop(0.75, 'rgba(255,175,60,' + (rA * 0.2) + ')');
+            rG.addColorStop(1, 'rgba(255,155,40,0)');
             ctx.fillStyle = rG;
             ctx.beginPath();
             const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
@@ -2768,15 +2768,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
         // Layer 0: rays behind all clouds
-        drawRays(0.5);
+        drawRays(0.6);
         // Layer 1: back clouds
         drawCloudRange(0, splits[1]);
         // Layer 2: rays between cloud layers
-        drawRays(0.7);
+        drawRays(1.0);
         // Layer 3: mid clouds
         drawCloudRange(splits[1], splits[2]);
         // Layer 4: rays in front of mid clouds
-        drawRays(0.4);
+        drawRays(0.5);
         // Layer 5: front clouds
         drawCloudRange(splits[2], sceneClouds.length);
         } // end if (sceneClouds)
