@@ -3387,8 +3387,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           } else {
-            // Straight (default)
-            ctx.rect(-guardW / 2, -ov, guardW, guardH + ov);
+            // Straight with flared ends
+            const gHalf = guardW / 2;
+            const flareH = guardH * 1.2;
+            ctx.moveTo(-gHalf, -flareH / 2);
+            ctx.lineTo(-gHalf * 0.7, -ov);
+            ctx.lineTo(gHalf * 0.7, -ov);
+            ctx.lineTo(gHalf, -flareH / 2);
+            ctx.lineTo(gHalf, flareH / 2 + guardH);
+            ctx.lineTo(gHalf * 0.7, guardH + ov);
+            ctx.lineTo(-gHalf * 0.7, guardH + ov);
+            ctx.lineTo(-gHalf, flareH / 2 + guardH);
+            ctx.closePath();
           }
           ctx.fill();
           // Pommel type determines grip shape
