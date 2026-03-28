@@ -3335,11 +3335,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const gripBot = guardH + gripH;
 
           if (isGladius) {
-            // Gladius proportions from overall size
-            const gBL = overall * 0.72, gBW = overall * 0.048;
+            // Gladius proportions — scaled up to match longsword visual size
+            const gO = overall * 1.4;
+            const gBL = gO * 0.72, gBW = gO * 0.048;
             const gTaperAt = gBL * 0.65;
-            const gGuardR = gBW * 1.15, gGuardTh = overall * 0.015;
-            const gGripL = overall * 0.13, gGripW = gBW * 0.9;
+            const gGuardR = gBW * 1.15, gGuardTh = gO * 0.015;
+            const gGripL = gO * 0.13, gGripW = gBW * 0.9;
             const gPomR = gBW * 0.7, gKnobR = gGripW * 0.3;
             const gBury = gBL * 0.55;
             const gTip = -gBL + gBury, gBase = gBury;
