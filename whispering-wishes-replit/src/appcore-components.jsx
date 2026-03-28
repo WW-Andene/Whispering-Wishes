@@ -3679,90 +3679,68 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const gridY = Math.max(2, Math.round(dH / cellSize));
 
           // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
-          // Cloth surface — continuous wave field like Reflect background
-          // Wave functions tuned for flag pixel scale (not screen scale)
-          // These create traveling folds that BEND the cloth shape
-          const _fw1 = (px, py, t) => px * 0.08 + Math.sin(py * 0.04) * 2.0 + Math.cos(py * 0.02 + px * 0.01) * 1.0 - t * 0.25;
-          const _fw2 = (px, py, t) => (px * 0.05 + py * 0.06) + Math.sin(px * 0.03 - py * 0.02) * 1.5 - t * 0.18;
-          const _fw3 = (px, py, t) => py * 0.07 + Math.sin(px * 0.05) * 1.8 + Math.cos(py * 0.03 + px * 0.02) * 0.9 - t * 0.14;
+          // Wave field — slow traveling folds across cloth surface
+          const _fw1 = (px, py, t) => px * 0.08 + Math.sin(py * 0.04) * 2.0 + Math.cos(py * 0.02 + px * 0.01) * 1.0 - t * 0.08;
+          const _fw2 = (px, py, t) => (px * 0.05 + py * 0.06) + Math.sin(px * 0.03 - py * 0.02) * 1.5 - t * 0.06;
+          const _fw3 = (px, py, t) => py * 0.07 + Math.sin(px * 0.05) * 1.8 + Math.cos(py * 0.03 + px * 0.02) * 0.9 - t * 0.045;
 
-          function gridPt(gx, gy) {
-            const u = gx / gridX, v = gy / gridY;
-            const freedom = v * v;
-            // Pixel position on cloth for wave sampling
-            const px = u * dW, py = v * dH;
-            // 3 wave heights — create actual surface undulation
-            const h1 = Math.sin(_fw1(px, py, wt));
-            const h2 = Math.sin(_fw2(px, py, wt));
-            const h3 = Math.sin(_fw3(px, py, wt));
-            const totalH = h1 * 0.5 + h2 * 0.35 + h3 * 0.25;
-            // Slope via finite differences — where slope is steep, cloth folds
-            const dd = 2;
-            const hR = Math.sin(_fw1(px+dd,py,wt))*0.5 + Math.sin(_fw2(px+dd,py,wt))*0.35 + Math.sin(_fw3(px+dd,py,wt))*0.25;
-            const hD = Math.sin(_fw1(px,py+dd,wt))*0.5 + Math.sin(_fw2(px,py+dd,wt))*0.35 + Math.sin(_fw3(px,py+dd,wt))*0.25;
-            const slopeX = hR - totalH;
-            const slopeY = hD - totalH;
-            // X: wave height bends the cloth sideways (folds!) + gentle wind
-            const windPush = freedom * bScale * 0.06 * (0.5 + Math.sin(wt * 0.1) * 0.3);
-            const foldX = totalH * freedom * bScale * 0.1;
-            // Y: slope pushes cloth up/down creating visible ripples in silhouette
-            const foldY = slopeY * freedom * bScale * 0.8;
-            // Z: wave height = depth — crests come toward viewer, troughs recede
-            const wz = totalH * freedom * 0.2;
-            // Z affects local width — crests wider (cloth billows), troughs narrower
-            const zScale = 1 + wz * 0.4;
-            // Slope also shifts columns — steeper slope = more horizontal offset
-            const slopeShift = slopeX * freedom * bScale * 0.6;
-            const baseX = bScrX + (u - 0.5) * dW * zScale + windPush + foldX + slopeShift;
-            const baseY = dTop + v * dH + foldY;
-            return { x: baseX, y: baseY, z: wz };
-          }
-
-          // Draw cloth row by row — each row shaded by its Z depth
-          for (let gy = 0; gy < gridY; gy++) {
-            const v0 = gy / gridY;
-            const midPt = gridPt(Math.round(gridX / 2), gy);
-            const rowZ = midPt.z;
-            // Z affects brightness: positive z = lit face, negative = shadow
-            const zLight = 0.5 + rowZ * 2;
-            const rVal = Math.round(Math.min(255, Math.max(60, (165 - v0 * 65) * (0.7 + zLight * 0.6))));
-            const gVal2 = Math.round(Math.min(80, Math.max(12, (48 - v0 * 26) * (0.7 + zLight * 0.6))));
-            const bVal2 = Math.round(Math.min(50, Math.max(8, (28 - v0 * 16) * (0.7 + zLight * 0.6))));
-            ctx.fillStyle = 'rgb(' + rVal + ',' + gVal2 + ',' + bVal2 + ')';
-            for (let gx = 0; gx < gridX; gx++) {
-              const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
-              const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
-              ctx.beginPath();
-              ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
-              ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
-              ctx.closePath(); ctx.fill();
+          // Precompute grid points into flat array for performance
+          const pts = new Array((gridX + 1) * (gridY + 1));
+          for (let gy = 0; gy <= gridY; gy++) {
+            for (let gx = 0; gx <= gridX; gx++) {
+              const u = gx / gridX, v = gy / gridY;
+              const freedom = v; // linear — whole flag moves, not just bottom
+              const px = u * dW, py = v * dH;
+              const h1 = Math.sin(_fw1(px, py, wt));
+              const h2 = Math.sin(_fw2(px, py, wt));
+              const h3 = Math.sin(_fw3(px, py, wt));
+              const totalH = h1 * 0.5 + h2 * 0.35 + h3 * 0.25;
+              const dd = 2;
+              const hR = Math.sin(_fw1(px+dd,py,wt))*0.5+Math.sin(_fw2(px+dd,py,wt))*0.35+Math.sin(_fw3(px+dd,py,wt))*0.25;
+              const hD = Math.sin(_fw1(px,py+dd,wt))*0.5+Math.sin(_fw2(px,py+dd,wt))*0.35+Math.sin(_fw3(px,py+dd,wt))*0.25;
+              const slopeX = hR - totalH, slopeY = hD - totalH;
+              const windPush = freedom * bScale * 0.06 * (0.5 + Math.sin(wt * 0.035) * 0.3);
+              const foldX = totalH * freedom * bScale * 0.1;
+              const foldY = slopeY * freedom * bScale * 0.8;
+              const wz = totalH * freedom * 0.2;
+              const zScale = 1 + wz * 0.4;
+              const slopeShift = slopeX * freedom * bScale * 0.6;
+              pts[gy * (gridX + 1) + gx] = {
+                x: bScrX + (u - 0.5) * dW * zScale + windPush + foldX + slopeShift,
+                y: dTop + v * dH + foldY,
+                z: wz
+              };
             }
-            // Per-row fold highlight when row billows toward viewer
-            if (rowZ > 0.02) {
-              ctx.fillStyle = 'rgba(255,170,100,' + (rowZ * 0.25) + ')';
-              for (let gx = 0; gx < gridX; gx++) {
-                const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
-                const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
-                ctx.beginPath();
-                ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
-                ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
-                ctx.closePath(); ctx.fill();
-              }
-            } else if (rowZ < -0.02) {
-              ctx.fillStyle = 'rgba(40,10,5,' + (-rowZ * 0.2) + ')';
-              for (let gx = 0; gx < gridX; gx++) {
-                const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
-                const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
-                ctx.beginPath();
-                ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
-                ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
-                ctx.closePath(); ctx.fill();
-              }
+          }
+          function gp(gx, gy) { return pts[gy * (gridX + 1) + gx]; }
+
+          // Draw as TRIANGLES — 2 per cell, smoother deformation than quads
+          for (let gy = 0; gy < gridY; gy++) {
+            for (let gx = 0; gx < gridX; gx++) {
+              const p00 = gp(gx, gy), p10 = gp(gx+1, gy), p01 = gp(gx, gy+1), p11 = gp(gx+1, gy+1);
+              // Per-triangle Z for shading
+              const z1 = (p00.z + p10.z + p01.z) / 3;
+              const z2 = (p10.z + p11.z + p01.z) / 3;
+              const v0 = gy / gridY;
+              // Triangle A: top-left
+              const zL1 = 0.5 + z1 * 2;
+              const r1 = Math.round(Math.min(255, Math.max(60, (165 - v0*65) * (0.7 + zL1*0.6))));
+              const g1 = Math.round(Math.min(80, Math.max(12, (48 - v0*26) * (0.7 + zL1*0.6))));
+              const b1 = Math.round(Math.min(50, Math.max(8, (28 - v0*16) * (0.7 + zL1*0.6))));
+              ctx.fillStyle = 'rgb('+r1+','+g1+','+b1+')';
+              ctx.beginPath(); ctx.moveTo(p00.x,p00.y); ctx.lineTo(p10.x,p10.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
+              // Triangle B: bottom-right
+              const zL2 = 0.5 + z2 * 2;
+              const r2 = Math.round(Math.min(255, Math.max(60, (165 - v0*65) * (0.7 + zL2*0.6))));
+              const g2 = Math.round(Math.min(80, Math.max(12, (48 - v0*26) * (0.7 + zL2*0.6))));
+              const b2 = Math.round(Math.min(50, Math.max(8, (28 - v0*16) * (0.7 + zL2*0.6))));
+              ctx.fillStyle = 'rgb('+r2+','+g2+','+b2+')';
+              ctx.beginPath(); ctx.moveTo(p10.x,p10.y); ctx.lineTo(p11.x,p11.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
             }
           }
 
           // Cloth emblem — follows grid displacement at center
-          const emPt = gridPt(Math.round(gridX / 2), Math.round(gridY * 0.33));
+          const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.33));
           const emCx = emPt.x, emCy = emPt.y, emR = dW * 0.28;
           const eA = 'rgba(210,155,50,';
           ctx.strokeStyle = eA + '0.45)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
@@ -3787,10 +3765,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Gold trim — outline using grid edge points
           ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02);
           ctx.beginPath();
-          for (let gx = 0; gx <= gridX; gx++) { const p = gridPt(gx, 0); if (gx === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }
-          for (let gy = 1; gy <= gridY; gy++) { const p = gridPt(gridX, gy); ctx.lineTo(p.x, p.y); }
-          for (let gx = gridX - 1; gx >= 0; gx--) { const p = gridPt(gx, gridY); ctx.lineTo(p.x, p.y); }
-          for (let gy = gridY - 1; gy >= 0; gy--) { const p = gridPt(0, gy); ctx.lineTo(p.x, p.y); }
+          for (let gx = 0; gx <= gridX; gx++) { const p = gp(gx, 0); if (gx === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }
+          for (let gy = 1; gy <= gridY; gy++) { const p = gp(gridX, gy); ctx.lineTo(p.x, p.y); }
+          for (let gx = gridX - 1; gx >= 0; gx--) { const p = gp(gx, gridY); ctx.lineTo(p.x, p.y); }
+          for (let gy = gridY - 1; gy >= 0; gy--) { const p = gp(0, gy); ctx.lineTo(p.x, p.y); }
           ctx.closePath(); ctx.stroke();
 
           ctx.restore();
