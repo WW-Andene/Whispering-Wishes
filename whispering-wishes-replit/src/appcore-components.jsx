@@ -3670,11 +3670,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillRect(rx - rw, ridgeTop, rw * 2, ridgeH);
           }
 
-          // Cloth — 2D grid mesh, every point moves X and Y
+          // Cloth — 2D grid mesh, sized to ~10px cells
           const dTop = ridgeTop + ridgeH;
           const dW = crossW * 0.85;
           const dH = bScale * 1.6;
-          const gridX = 16, gridY = 40; // 16 columns × 40 rows = 640 points
+          const cellSize = 10;
+          const gridX = Math.max(2, Math.round(dW / cellSize));
+          const gridY = Math.max(2, Math.round(dH / cellSize));
 
           // Compute displaced grid point
           function gridPt(gx, gy) {
