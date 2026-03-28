@@ -3777,47 +3777,61 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.moveTo(tr.x, tr.y); ctx.lineTo(tm.x, tm.y); ctx.lineTo(br.x, br.y);
           ctx.closePath(); ctx.fill();
 
-          // Triangle outline below the gold — inverted V shape
-          // Triangle outline below gold — same shape, shifted down uniformly
-          // Outline frame — exact same shape as gold triangle, inset uniformly
-          // The gold triangle: edges at (0, triRow) and (gridX, triRow), peak at (gridX/2, 0)
-          // Outline: same shape shrunk inward by pad on all sides
-          const pad = Math.round(gridY * 0.05);
-          const padX = Math.max(1, Math.round(gridX * 0.08));
-          // Peak: shifted down by pad from row 0
-          const oMid = gp(Math.round(gridX / 2), pad);
-          // Triangle sides: same row as gold (triRow), inset from edges by padX
-          const oTL = gp(padX, triRow);
-          const oTR = gp(gridX - padX, triRow);
-          // Bottom corners: inset from bottom by pad, inset from edges by padX
-          const botRow = gridY - pad;
-          const oBL = gp(padX, botRow);
-          const oBR = gp(gridX - padX, botRow);
+          // Outline frame — perpendicular inset from gold triangle edges
+          // Gold triangle: peak at (gridX/2, 0), base corners at (0, triRow) and (gridX, triRow)
+          // Use anchor grid points for cloth deformation, draw straight lines between them
+          const padPx = bScale * 0.04; // uniform perpendicular padding in pixels
+          // Get gold triangle anchor positions from cloth grid
+          const gPeak = gp(Math.round(gridX / 2), 0);
+          const gBL = gp(0, triRow);
+          const gBR = gp(gridX, triRow);
+          const gBotL = gp(0, gridY);
+          const gBotR = gp(gridX, gridY);
+          // Compute perpendicular inset for left triangle edge (peak -> bottom-left)
+          const lDx = gBL.x - gPeak.x, lDy = gBL.y - gPeak.y;
+          const lLen = Math.sqrt(lDx * lDx + lDy * lDy) || 1;
+          const lNx = -lDy / lLen, lNy = lDx / lLen; // inward normal (points right)
+          // Compute perpendicular inset for right triangle edge (peak -> bottom-right)
+          const rDx = gBR.x - gPeak.x, rDy = gBR.y - gPeak.y;
+          const rLen = Math.sqrt(rDx * rDx + rDy * rDy) || 1;
+          const rNx = rDy / rLen, rNy = -rDx / rLen; // inward normal (points left)
+          // Outline peak — shift down from gold peak by averaging both normals
+          const oPeak = { x: gPeak.x, y: gPeak.y + padPx / Math.max(0.3, Math.abs((lNy + rNy) / 2)) * Math.abs(lNy) };
+          // Actually, just offset peak down by pad along the bisector
+          const oPeakX = gPeak.x;
+          const oPeakY = gPeak.y + padPx / Math.sin(Math.atan2(Math.abs(lDx), lDy) || 0.5);
+          // Outline left triangle corner — inset from gold base-left
+          const oTLx = gBL.x + lNx * padPx;
+          const oTLy = gBL.y + lNy * padPx;
+          // Outline right triangle corner — inset from gold base-right
+          const oTRx = gBR.x + rNx * padPx;
+          const oTRy = gBR.y + rNy * padPx;
+          // Bottom corners — inset from cloth bottom corners
+          const oBLx = gBotL.x + padPx;
+          const oBLy = gBotL.y - padPx;
+          const oBRx = gBotR.x - padPx;
+          const oBRy = gBotR.y - padPx;
+          // Side lines: connect triangle base corners to bottom corners (same X inset)
+          const sideLx = oTLx; // keep same X as triangle corner for parallel side
+          const sideRx = oTRx;
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
           ctx.beginPath();
-          // Bottom-left, up left side following cloth
-          let p = gp(padX, botRow);
-          ctx.moveTo(p.x, p.y);
-          for (let gy = botRow - 1; gy >= triRow; gy--) { p = gp(padX, gy); ctx.lineTo(p.x, p.y); }
-          // Triangle V — left side up to peak
-          ctx.lineTo(oMid.x, oMid.y);
-          // Peak down to right side
-          p = gp(gridX - padX, triRow);
-          ctx.lineTo(p.x, p.y);
-          // Right side down following cloth
-          for (let gy = triRow + 1; gy <= botRow; gy++) { p = gp(gridX - padX, gy); ctx.lineTo(p.x, p.y); }
-          // Bottom line
-          ctx.closePath();
+          ctx.moveTo(oBLx, oBLy);
+          ctx.lineTo(oTLx, oTLy);   // left side up
+          ctx.lineTo(oPeakX, oPeakY); // left triangle edge to peak
+          ctx.lineTo(oTRx, oTRy);   // peak to right triangle corner
+          ctx.lineTo(oBRx, oBRy);   // right side down
+          ctx.closePath();           // bottom line
           ctx.stroke();
 
           // Small 4-branch star below triangle peak
-          const starY = oMid.y + bScale * 0.08;
+          const starY = oPeakY + bScale * 0.08;
           const starR = bScale * 0.04;
           ctx.fillStyle = 'rgba(210,165,50,0.5)';
           for (let si = 0; si < 4; si++) {
             const sAng = si * Math.PI / 2 - Math.PI / 2;
-            ctx.save(); ctx.translate(oMid.x, starY); ctx.rotate(sAng);
+            ctx.save(); ctx.translate(oPeakX, starY); ctx.rotate(sAng);
             ctx.beginPath(); ctx.moveTo(0, -starR * 0.25); ctx.lineTo(starR, 0); ctx.lineTo(0, starR * 0.25);
             ctx.closePath(); ctx.fill(); ctx.restore();
           }
@@ -3884,7 +3898,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           cBg.addColorStop(0, 'rgb(120,30,18)'); cBg.addColorStop(0.6, 'rgb(95,22,12)'); cBg.addColorStop(1, 'rgb(75,16,8)');
           ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = gM; ctx.lineWidth = barThick; ctx.stroke();
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(0.8, barThick * 0.5); ctx.stroke();
           // 4-branch star
           ctx.fillStyle = gM;
           for (let si = 0; si < 4; si++) {
