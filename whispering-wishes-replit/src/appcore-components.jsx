@@ -3664,130 +3664,135 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — fractured blade with chipped edges + floating pieces ===
+          // === LONGSWORD — cracked/chipped blade ===
+          // Seeded RNG for this sword's damage pattern
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
+          // Generate jagged edge notches (chips in the blade edge)
           var _hw = bladeW / 2;
-          var _totalH = bladeH + guardH;
-          // 2-3 break points — evenly spaced with jitter
-          var _nc = 2 + (_cr() * 2 | 0);
-          var _segH = _totalH * 0.7 / _nc;
-          var _breakYs = [];
-          for (var _bi3 = 0; _bi3 < _nc; _bi3++) {
-            _breakYs.push(-bladeH + _totalH * 0.12 + _bi3 * _segH + _cr() * _segH * 0.5);
+          var _nNotches = 4 + (_cr() * 4 | 0); // 4-7 notches per side
+          var _notchesL = [], _notchesR = [];
+          for (var _ni = 0; _ni < _nNotches; _ni++) {
+            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.85 + guardH); // along blade
+            var _nd = _hw * (0.15 + _cr() * 0.3); // notch depth (15-45% of half-width)
+            var _nh = bladeH * (0.02 + _cr() * 0.04); // notch height
+            if (_cr() > 0.4) _notchesL.push({ y: _ny, d: _nd, h: _nh });
+            if (_cr() > 0.4) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
-          // Fragment offsets — first stays, rest hover slightly offset
-          var _fdx = [0], _fdy = [0], _frot = [0];
-          for (var _fi3 = 0; _fi3 < _nc; _fi3++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.15 + _cr() * 0.25));
-            _fdy.push((_cr() - 0.5) * bladeW * 0.15);
-            _frot.push((_cr() - 0.5) * 0.02);
+          _notchesL.sort(function(a,b){ return a.y - b.y; });
+          _notchesR.sort(function(a,b){ return a.y - b.y; });
+          // Left half with chipped edge
+          const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
+          if (leftLight) { blGL.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);blGL.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);blGL.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
+          else { blGL.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);blGL.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);blGL.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
+          ctx.fillStyle = blGL;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          // Left edge: tip down to guard with notches
+          ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(-_hw, tipEnd);
+          // Walk down left edge, adding notch indentations
+          var _prevY = tipEnd;
+          for (var _li = 0; _li < _notchesL.length; _li++) {
+            var _n = _notchesL[_li];
+            if (_n.y <= _prevY) continue;
+            ctx.lineTo(-_hw, _n.y);
+            ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
+            ctx.lineTo(-_hw, _n.y + _n.h);
+            _prevY = _n.y + _n.h;
           }
-          // Colors
-          var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
-          var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
-          // Generate 1-2 notches per segment per side
-          var _allNotchesL = [], _allNotchesR = [];
-          for (var _nsi = 0; _nsi < _nc + 1; _nsi++) {
-            var _yTop2 = _nsi === 0 ? -bladeH * 0.8 : _breakYs[_nsi - 1];
-            var _yBot2 = _nsi < _nc ? _breakYs[_nsi] : guardH;
-            var _segLen = _yBot2 - _yTop2;
-            if (_segLen < bladeH * 0.05) continue;
-            var _nn = 1 + (_cr() * 2 | 0);
-            for (var _nni = 0; _nni < _nn; _nni++) {
-              var _ny2 = _yTop2 + _cr() * _segLen * 0.8 + _segLen * 0.1;
-              var _nd2 = _hw * (0.15 + _cr() * 0.3);
-              var _nh2 = _segLen * (0.06 + _cr() * 0.1);
-              if (_cr() > 0.3) _allNotchesL.push({ y: _ny2, d: _nd2, h: _nh2, seg: _nsi });
-              if (_cr() > 0.3) _allNotchesR.push({ y: _ny2 + (_cr()-0.5)*_nh2*0.5, d: _nd2, h: _nh2, seg: _nsi });
-            }
+          ctx.lineTo(-_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Right half with chipped edge
+          const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
+          if (leftLight) { blGR.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);blGR.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);blGR.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
+          else { blGR.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);blGR.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);blGR.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
+          ctx.fillStyle = blGR;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(_hw, tipEnd);
+          _prevY = tipEnd;
+          for (var _ri = 0; _ri < _notchesR.length; _ri++) {
+            var _nr = _notchesR[_ri];
+            if (_nr.y <= _prevY) continue;
+            ctx.lineTo(_hw, _nr.y);
+            ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
+            ctx.lineTo(_hw, _nr.y + _nr.h);
+            _prevY = _nr.y + _nr.h;
           }
-          // Draw each blade piece
-          var _segBounds = [-bladeH];
-          for (var _sb = 0; _sb < _nc; _sb++) _segBounds.push(_breakYs[_sb]);
-          _segBounds.push(guardH);
-          for (var _si2 = 0; _si2 <= _nc; _si2++) {
-            var _yT = _segBounds[_si2], _yB = _segBounds[_si2 + 1];
-            var _wT = _hw * Math.max(0, Math.min(1, (_yT + bladeH) / _totalH));
-            var _wB = _hw * Math.max(0, Math.min(1, (_yB + bladeH) / _totalH));
-            ctx.save();
-            ctx.translate(_fdx[_si2], _fdy[_si2]);
-            ctx.rotate(_frot[_si2]);
-            // Left half with notches
-            ctx.fillStyle = _colL;
-            ctx.beginPath();
-            if (_si2 === 0) { ctx.moveTo(0, -bladeH); ctx.lineTo(-_wT * 0.5, -bladeH * 0.7); }
-            else { ctx.moveTo(0, _yT); }
-            ctx.lineTo(-_wT, _yT + (_yB - _yT) * 0.05);
-            // Add notches on left edge for this segment
-            var _pY = _yT;
-            for (var _nli = 0; _nli < _allNotchesL.length; _nli++) {
-              var _nl = _allNotchesL[_nli];
-              if (_nl.seg !== _si2 || _nl.y <= _pY) continue;
-              ctx.lineTo(-_wT + (_wT - _wB) * ((_nl.y - _yT) / (_yB - _yT)), _nl.y);
-              var _wAtN = _wT + (_wB - _wT) * ((_nl.y - _yT) / (_yB - _yT));
-              ctx.lineTo(-_wAtN + _nl.d, _nl.y + _nl.h * 0.4);
-              ctx.lineTo(-_wAtN, _nl.y + _nl.h);
-              _pY = _nl.y + _nl.h;
-            }
-            ctx.lineTo(-_wB, _yB);
-            ctx.lineTo(0, _yB);
-            ctx.closePath(); ctx.fill();
-            // Right half with notches
-            ctx.fillStyle = _colR;
-            ctx.beginPath();
-            if (_si2 === 0) { ctx.moveTo(0, -bladeH); ctx.lineTo(_wT * 0.5, -bladeH * 0.7); }
-            else { ctx.moveTo(0, _yT); }
-            ctx.lineTo(_wT, _yT + (_yB - _yT) * 0.05);
-            _pY = _yT;
-            for (var _nri = 0; _nri < _allNotchesR.length; _nri++) {
-              var _nrr = _allNotchesR[_nri];
-              if (_nrr.seg !== _si2 || _nrr.y <= _pY) continue;
-              var _wAtNR = _wT + (_wB - _wT) * ((_nrr.y - _yT) / (_yB - _yT));
-              ctx.lineTo(_wAtNR, _nrr.y);
-              ctx.lineTo(_wAtNR - _nrr.d, _nrr.y + _nrr.h * 0.4);
-              ctx.lineTo(_wAtNR, _nrr.y + _nrr.h);
-              _pY = _nrr.y + _nrr.h;
-            }
-            ctx.lineTo(_wB, _yB);
-            ctx.lineTo(0, _yB);
-            ctx.closePath(); ctx.fill();
-            // Ridge per piece
-            ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            ctx.beginPath(); ctx.moveTo(0, _yT + 1); ctx.lineTo(0, _yB); ctx.stroke();
-            ctx.restore();
-          }
-          // Crack lines on surface
-          ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+          ctx.lineTo(_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Center ridge
+          ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+          // Fuller grooves
+          var fullerOff = bladeW * 0.18;
+          ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
+          ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
+          ctx.stroke();
+          // Crack lines on blade surface — thin dark diagonal lines
+          var _nCrackLines = 3 + (_cr() * 3 | 0); // 3-5 crack lines
+          ctx.strokeStyle = 'rgba(0,0,0,0.4)';
           ctx.lineWidth = Math.max(0.5, bladeW * 0.04);
-          for (var _cli = 0; _cli < 3; _cli++) {
-            var _cy = -bladeH * 0.7 + _cr() * bladeH * 0.6;
+          for (var _cli = 0; _cli < _nCrackLines; _cli++) {
+            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
+            var _cw = _hw * (0.3 + _cr() * 0.7); // how far across blade
             var _cdir = _cr() > 0.5 ? 1 : -1;
+            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1); // gentle diagonal
+            // 2-3 segment zigzag crack line
             ctx.beginPath();
-            ctx.moveTo(_cdir * -_hw * 0.8, _cy);
-            ctx.lineTo(0, _cy + bladeW * 0.15 * (_cr() > 0.5 ? 1 : -1));
-            ctx.lineTo(_cdir * _hw * 0.8, _cy + bladeW * 0.25 * (_cr() > 0.5 ? 1 : -1));
+            ctx.moveTo(_cdir * -_cw, _cy);
+            ctx.lineTo((_cr() - 0.5) * _hw * 0.4, _cy + _cdy * 0.5);
+            ctx.lineTo(_cdir * _cw, _cy + _cdy);
             ctx.stroke();
           }
-          // Floating shards near notches
-          var _shBr = 0.3 + lit * 0.4;
-          var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
-          for (var _sli = 0; _sli < _allNotchesL.length; _sli++) {
-            var _sn = _allNotchesL[_sli];
-            var _sg = _hw * (0.1 + _cr() * 0.12);
-            var _wAtS = _hw * Math.max(0, Math.min(1, (_sn.y + bladeH) / _totalH));
-            ctx.fillStyle = _shCol; ctx.beginPath();
-            ctx.moveTo(-_wAtS - _sg, _sn.y); ctx.lineTo(-_wAtS - _sg - _sn.d*0.5, _sn.y + _sn.h*0.4); ctx.lineTo(-_wAtS - _sg - _sn.d*0.15, _sn.y + _sn.h*0.8);
+          // Bright edge on some cracks (light catching fracture edge)
+          ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.15+lit*0.2)+')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
+          for (var _cli2 = 0; _cli2 < 2; _cli2++) {
+            var _cy2 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
+            var _cw2 = _hw * (0.4 + _cr() * 0.5);
+            ctx.beginPath();
+            ctx.moveTo(-_cw2, _cy2);
+            ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
+            ctx.stroke();
+          }
+          // Floating shards — broken-off chips hover near the blade edge
+          var _shardBr = 0.3 + lit * 0.4;
+          var _shardCol = 'rgb('+Math.round(30+180*_shardBr)+','+Math.round(22+130*_shardBr)+','+Math.round(14+60*_shardBr)+')';
+          for (var _sli = 0; _sli < _notchesL.length; _sli++) {
+            var _sn = _notchesL[_sli];
+            var _gap = _hw * (0.12 + _cr() * 0.15); // hover gap
+            var _sx = -_hw - _gap;
+            var _sy = _sn.y + _sn.h * 0.1;
+            var _sw = _sn.d * (0.6 + _cr() * 0.3);
+            var _sh = _sn.h * (0.5 + _cr() * 0.4);
+            ctx.fillStyle = _shardCol;
+            ctx.beginPath();
+            ctx.moveTo(_sx, _sy);
+            ctx.lineTo(_sx - _sw * 0.6, _sy + _sh * 0.4);
+            ctx.lineTo(_sx - _sw * 0.2, _sy + _sh);
             ctx.closePath(); ctx.fill();
           }
-          for (var _sri = 0; _sri < _allNotchesR.length; _sri++) {
-            var _snr = _allNotchesR[_sri];
-            var _sgR = _hw * (0.1 + _cr() * 0.12);
-            var _wAtSR = _hw * Math.max(0, Math.min(1, (_snr.y + bladeH) / _totalH));
-            ctx.fillStyle = _shCol; ctx.beginPath();
-            ctx.moveTo(_wAtSR + _sgR, _snr.y); ctx.lineTo(_wAtSR + _sgR + _snr.d*0.5, _snr.y + _snr.h*0.4); ctx.lineTo(_wAtSR + _sgR + _snr.d*0.15, _snr.y + _snr.h*0.8);
+          for (var _sri = 0; _sri < _notchesR.length; _sri++) {
+            var _snr = _notchesR[_sri];
+            var _gapR = _hw * (0.12 + _cr() * 0.15);
+            var _sxr = _hw + _gapR;
+            var _syr = _snr.y + _snr.h * 0.1;
+            var _swr = _snr.d * (0.6 + _cr() * 0.3);
+            var _shr = _snr.h * (0.5 + _cr() * 0.4);
+            ctx.fillStyle = _shardCol;
+            ctx.beginPath();
+            ctx.moveTo(_sxr, _syr);
+            ctx.lineTo(_sxr + _swr * 0.6, _syr + _shr * 0.4);
+            ctx.lineTo(_sxr + _swr * 0.2, _syr + _shr);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
