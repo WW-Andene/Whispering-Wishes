@@ -3441,14 +3441,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var t = 0.12 + ci * (0.65 / nc) + fr() * (0.2 / nc);
             var baseY = -bH + t * (bH + gH);
             var wAtCrack = hw * Math.min(1, t * 1.8);
-            // 4-6 jagged points from left edge to right edge
-            var nPts = 4 + (ci % 3);
+            // 3-5 jagged points — zigzag with big Y variation relative to blade height
+            var nPts = 3 + (ci % 3);
             var pts = [];
             for (var pi = 0; pi <= nPts; pi++) {
               var u = pi / nPts;
               pts.push({
                 x: -wAtCrack * 1.5 + u * wAtCrack * 3,
-                y: baseY + (fr() - 0.5) * bW * 0.8
+                y: baseY + (fr() - 0.5) * bH * 0.12
               });
             }
             cracks.push(pts);
