@@ -3681,40 +3681,40 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
           // Row 0 = anchored at crossbar, row gridY = free bottom
           // Per-row wave: each row has its own phase offset propagating down
-          function rowWave(row) {
-            const v = row / gridY;
-            const freedom = v; // linear — even mid-rows move significantly
-            const rowPhase = row * 0.7;
-            // X: strong wind push + large ripple — cloth visibly blows sideways
-            const gust = 0.65 + Math.sin(wt * 0.35) * 0.35;
-            const wx = freedom * bScale * 0.5 * gust
-                     + Math.sin(rowPhase - wt * 2.0) * v * bScale * 0.08
-                     + Math.sin(rowPhase * 0.6 - wt * 1.2) * v * bScale * 0.05;
-            // Y: vertical ripple
-            const wy = Math.sin(rowPhase * 1.3 - wt * 1.5) * v * bScale * 0.06
-                     + Math.sin(rowPhase * 0.4 - wt * 0.8 + 1.2) * v * bScale * 0.04;
-            // Z: depth billow (positive = toward viewer = bigger+brighter, negative = away = smaller+darker)
-            const wz = Math.sin(rowPhase * 0.9 - wt * 1.0 + 0.5) * v * 0.15
-                     + Math.sin(rowPhase * 0.3 - wt * 0.5 + 2) * v * 0.08;
-            return { x: wx, y: wy, z: wz };
-          }
+          // Traveling wave functions — same approach as Reflect background
+          // Waves propagate ACROSS the cloth surface, not just wobble per-point
+          const clothW1 = (u, v, t) => u * 4.5 + Math.sin(v * 2.5) * 1.5 + Math.cos(v * 1.2 + u * 0.8) * 0.8 - t * 1.4;
+          const clothW2 = (u, v, t) => (u * 2.5 + v * 3.5) + Math.sin(u * 1.5 - v * 1.2) * 1.1 - t * 1.0;
+          const clothW3 = (u, v, t) => v * 5.0 + Math.sin(u * 3.0) * 1.2 + Math.cos(v * 1.5 + u * 1.0) * 0.7 - t * 0.8;
 
-          // Compute grid point — row wave + per-point column ripple
           function gridPt(gx, gy) {
             const u = gx / gridX, v = gy / gridY;
-            const rw = rowWave(gy);
-            // Per-point displacement — varies by both column and row
-            const ptPhase = gx * 1.3 + gy * 0.5;
-            const ptX = Math.sin(ptPhase - wt * 1.8 + u * 3) * v * bScale * 0.04
-                      + Math.sin(ptPhase * 0.7 + wt * 1.1) * v * bScale * 0.025;
-            const ptY = Math.sin(ptPhase * 1.1 - wt * 1.4 + u * 2) * v * bScale * 0.03
-                      + Math.sin(ptPhase * 0.5 + wt * 0.7 + 1.5) * v * bScale * 0.02;
-            // Z affects scale
-            const zScale = 1 + rw.z * 0.3;
-            const centerX = bScrX + rw.x;
-            const baseX = centerX + (u - 0.5) * dW * zScale + ptX;
-            const baseY = dTop + v * dH + rw.y + ptY;
-            return { x: baseX, y: baseY, z: rw.z };
+            const freedom = v; // anchored at top, free at bottom
+
+            // Combined wave height from 3 traveling waves
+            const h1 = Math.sin(clothW1(u, v, wt));
+            const h2 = Math.sin(clothW2(u, v, wt));
+            const h3 = Math.sin(clothW3(u, v, wt));
+            const totalH = h1 * 0.5 + h2 * 0.35 + h3 * 0.25;
+
+            // X displacement: wind push + wave-driven lateral motion
+            const gust = 0.6 + Math.sin(wt * 0.35) * 0.35;
+            const windPush = freedom * bScale * 0.4 * gust;
+            const waveX = totalH * freedom * bScale * 0.12;
+            // Cross-wave: wave 2 pushes sideways
+            const crossX = h2 * freedom * bScale * 0.06;
+
+            // Y displacement: vertical ripple from waves
+            const waveY = (h1 * 0.3 + h3 * 0.4) * freedom * bScale * 0.06;
+
+            // Z: depth billow from wave height — affects scale + shading
+            const wz = totalH * freedom * 0.15;
+            const zScale = 1 + wz * 0.25;
+
+            const centerX = bScrX + windPush + waveX + crossX;
+            const baseX = centerX + (u - 0.5) * dW * zScale;
+            const baseY = dTop + v * dH + waveY;
+            return { x: baseX, y: baseY, z: wz };
           }
 
           // Draw cloth row by row — each row shaded by its Z depth
