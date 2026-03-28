@@ -3699,26 +3699,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sunDx = sunX - bScrX, sunDy = sunY - (dTop + dH * 0.5);
           const sunDist = Math.sqrt(sunDx * sunDx + sunDy * sunDy) || 1;
           const snx = sunDx / sunDist, sny = sunDy / sunDist;
-          // Base colors: red cloth
-          const shRed = [65, 12, 8], ltRed = [195, 65, 35];
-          // Gold for top corners + border motif
-          const shGold = [120, 80, 15], ltGold = [245, 210, 90];
+          // Shadow color, lit color, rim color
+          const shCol = [65, 12, 8];
+          const ltCol = [195, 65, 35];
           const rimCol = [255, 180, 100];
 
           function triColor(p0, p1, p2, v0, u0) {
-            // Motif: gold corners at top, triangular red point at top-center
-            // Top 15%: gold at edges (u<0.15 or u>0.85), red triangle in middle
-            // The triangle narrows from full width at v=0.15 to a point at v=0
-            let isGold = false;
-            if (v0 < 0.15) {
-              const triW = v0 / 0.15; // 0 at top → 1 at 15%
-              const edgeDist = Math.abs(u0 - 0.5) * 2; // 0=center, 1=edge
-              if (edgeDist > triW) isGold = true;
-            }
-            // Gold border: edges of cloth
-            if (u0 < 0.04 || u0 > 0.96 || v0 < 0.01 || v0 > 0.985) isGold = true;
-            const shCol = isGold ? shGold : shRed;
-            const ltCol = isGold ? ltGold : ltRed;
             // Surface normal from cross product of edges + Z
             const ex1 = p1.x - p0.x, ey1 = p1.y - p0.y, ez1 = (p1.z - p0.z) * 200;
             const ex2 = p2.x - p0.x, ey2 = p2.y - p0.y, ez2 = (p2.z - p0.z) * 200;
@@ -3755,6 +3741,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.beginPath(); ctx.moveTo(p10.x,p10.y); ctx.lineTo(p11.x,p11.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
             }
           }
+
+          // Gold motif overlay — painted on top of cloth mesh
+          // Top gold triangle corners: two triangles in the top corners
+          ctx.fillStyle = 'rgba(210,165,50,0.55)';
+          const tl = gp(0, 0), tr = gp(gridX, 0);
+          const tm = gp(Math.round(gridX / 2), 0);
+          const triRow = Math.round(gridY * 0.15);
+          const bl = gp(0, triRow), br = gp(gridX, triRow);
+          // Left gold corner triangle
+          ctx.beginPath();
+          ctx.moveTo(tl.x, tl.y); ctx.lineTo(tm.x, tm.y); ctx.lineTo(bl.x, bl.y);
+          ctx.closePath(); ctx.fill();
+          // Right gold corner triangle
+          ctx.beginPath();
+          ctx.moveTo(tr.x, tr.y); ctx.lineTo(tm.x, tm.y); ctx.lineTo(br.x, br.y);
+          ctx.closePath(); ctx.fill();
 
           // Cloth emblem — crossed swords
           const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.33));
