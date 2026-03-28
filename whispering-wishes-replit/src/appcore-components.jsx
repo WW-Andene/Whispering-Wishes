@@ -3687,12 +3687,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const cellId = gx * 31 + gy * 17;
             const freedom = v * v;
             // Each cell responds to wind independently
-            const dx = Math.sin(cellId * 0.37 + wt * 0.8) * freedom * bScale * 0.06
-                     + Math.sin(cellId * 0.13 + wt * 0.5 + 1.7) * freedom * bScale * 0.04
-                     + freedom * bScale * 0.08 * (0.5 + Math.sin(wt * 0.3) * 0.3);
-            const dy = Math.sin(cellId * 0.23 + wt * 0.6 + 0.9) * freedom * bScale * 0.04
-                     + Math.sin(cellId * 0.41 + wt * 0.35 + 2.1) * freedom * bScale * 0.025;
-            const dz = Math.sin(cellId * 0.19 + wt * 0.45 + 1.3) * freedom * 0.12;
+            const dx = Math.sin(cellId * 0.37 + wt * 0.267) * freedom * bScale * 0.12
+                     + Math.sin(cellId * 0.13 + wt * 0.167 + 1.7) * freedom * bScale * 0.08
+                     + freedom * bScale * 0.16 * (0.5 + Math.sin(wt * 0.1) * 0.3);
+            const dy = Math.sin(cellId * 0.23 + wt * 0.2 + 0.9) * freedom * bScale * 0.08
+                     + Math.sin(cellId * 0.41 + wt * 0.117 + 2.1) * freedom * bScale * 0.05;
+            const dz = Math.sin(cellId * 0.19 + wt * 0.15 + 1.3) * freedom * 0.24;
             const zScale = 1 + dz * 0.25;
             const baseX = bScrX + (u - 0.5) * dW * zScale + dx;
             const baseY = dTop + v * dH + dy;
