@@ -2756,7 +2756,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Ray drawing function
         function drawRays(alphaScale, group) {
           ctx.save(); ctx.globalCompositeOperation = 'lighter';
-          ctx.filter = 'blur(' + Math.max(5, Math.round(H * 0.025)) + 'px)';
+          ctx.filter = 'blur(' + Math.max(3, Math.round(H * 0.016)) + 'px)';
           const rCount = 12;
           const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
           for (let ri2 = 0; ri2 < rCount; ri2++) {
