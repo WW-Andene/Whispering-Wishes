@@ -3314,38 +3314,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          // 3D-informed lighting — per-face dot product with sun direction
+          // 3D-informed lighting — yAngle face catch + sun direction
           const sdx2 = s.scrX - sunX, sdy2 = s.scrY - sunY;
           const sunDist2 = Math.sqrt(sdx2 * sdx2 + sdy2 * sdy2);
           const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
           const lit = sunProx2 * sunProx2;
-          // Normalized light direction from sword toward sun (screen space)
-          const lx = sunDist2 > 1 ? (sunX - s.scrX) / sunDist2 : 0;
-          // Face normals in screen space, accounting for Y rotation
-          // Left face normal X = -sin(yAngle), Right = sin(yAngle)
-          const sinY = Math.sin(s.yAngle);
-          const leftDot = Math.max(0, -lx * sinY);
-          const rightDot = Math.max(0, lx * sinY);
-          // Per-face brightness: dot product * sun proximity + ambient
-          const ambient = 0.12;
-          const leftBright = ambient + leftDot * lit * 0.88;
-          const rightBright = ambient + rightDot * lit * 0.88;
-          // Ambient color: warm dark amber (sky reflected). Lit color: bright metallic amber
-          const ambR = 18, ambG = 14, ambB = 10;
-          const litR = 170, litG = 120, litB = 55;
-          const leftR = Math.round(ambR + (litR - ambR) * leftBright);
-          const leftG = Math.round(ambG + (litG - ambG) * leftBright);
-          const leftB = Math.round(ambB + (litB - ambB) * leftBright);
-          const rightR = Math.round(ambR + (litR - ambR) * rightBright);
-          const rightG = Math.round(ambG + (litG - ambG) * rightBright);
-          const rightB = Math.round(ambB + (litB - ambB) * rightBright);
+          const leftLight = s.scrX > sunX;
+          // yAngle modulates how much the lit face catches light
+          const faceCatch = 0.4 + Math.sin(s.yAngle) * 0.6;
+          // Light face: bright, modulated by face angle and sun proximity
+          const lightB = (0.25 + lit * 0.75) * faceCatch;
+          // Dark face: low ambient + faint warm reflected sky
+          const darkB = 0.08 + lit * 0.12 + (1 - faceCatch) * 0.06;
+          // Lerp between dark ambient (15,12,10) and lit amber (180,125,50)
+          const lR = Math.round(15 + 165 * lightB), lG = Math.round(12 + 113 * lightB), lB2 = Math.round(10 + 40 * lightB);
+          const dR = Math.round(15 + 165 * darkB), dG = Math.round(12 + 113 * darkB), dB = Math.round(10 + 40 * darkB);
 
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
           const gripBot = guardH + gripH;
 
           // Left half
-          ctx.fillStyle = `rgb(${leftR},${leftG},${leftB})`;
+          ctx.fillStyle = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3356,7 +3346,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = `rgb(${rightR},${rightG},${rightB})`;
+          ctx.fillStyle = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3366,9 +3356,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          // Guard — average of both face brightnesses
-          const guardBright = (leftBright + rightBright) * 0.5 + 0.05;
-          ctx.fillStyle = `rgb(${Math.round(ambR + (litR - ambR) * guardBright)},${Math.round(ambG + (litG - ambG) * guardBright)},${Math.round(ambB + (litB - ambB) * guardBright)})`;
+          // Guard — darker, between both faces
+          const gB = (lightB + darkB) * 0.4;
+          ctx.fillStyle = `rgb(${Math.round(15 + 165 * gB)},${Math.round(12 + 113 * gB)},${Math.round(10 + 40 * gB)})`;
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
           if (guardType === 1) {
