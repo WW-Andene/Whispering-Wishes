@@ -3387,17 +3387,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
             ctx.rect(-guardW / 2, 0, guardW, guardH);
           } else {
-            // Straight with flared ends
+            // Straight with smooth flared ends, slightly convex sides
             const gHalf = guardW / 2;
             const flareH = guardH * 1.2;
-            ctx.moveTo(-gHalf, -flareH / 2);
-            ctx.lineTo(-gHalf * 0.7, -ov);
-            ctx.lineTo(gHalf * 0.7, -ov);
-            ctx.lineTo(gHalf, -flareH / 2);
-            ctx.lineTo(gHalf, flareH / 2 + guardH);
-            ctx.lineTo(gHalf * 0.7, guardH + ov);
-            ctx.lineTo(-gHalf * 0.7, guardH + ov);
-            ctx.lineTo(-gHalf, flareH / 2 + guardH);
+            const mid = guardH / 2;
+            // Top edge: center → left end (convex bulge outward)
+            ctx.moveTo(-gHalf * 0.65, -ov);
+            ctx.quadraticCurveTo(-gHalf * 0.85, -flareH * 0.4, -gHalf, -flareH / 2);
+            // Left side: slightly convex outward
+            ctx.quadraticCurveTo(-gHalf * 1.06, mid, -gHalf, flareH / 2 + guardH);
+            // Bottom edge: left end → center
+            ctx.quadraticCurveTo(-gHalf * 0.85, guardH + flareH * 0.4, -gHalf * 0.65, guardH + ov);
+            // Bottom center → right
+            ctx.lineTo(gHalf * 0.65, guardH + ov);
+            ctx.quadraticCurveTo(gHalf * 0.85, guardH + flareH * 0.4, gHalf, flareH / 2 + guardH);
+            // Right side: slightly convex outward
+            ctx.quadraticCurveTo(gHalf * 1.06, mid, gHalf, -flareH / 2);
+            // Top edge: right end → center
+            ctx.quadraticCurveTo(gHalf * 0.85, -flareH * 0.4, gHalf * 0.65, -ov);
             ctx.closePath();
           }
           ctx.fill();
