@@ -3783,32 +3783,52 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.moveTo(botL.x, botL.y); ctx.lineTo(botR.x, botR.y);
           ctx.stroke();
 
-          const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.33));
-          const emCx = emPt.x, emCy = emPt.y, emS = dW * 0.3;
+          // Emblem — griffin in sunburst
+          const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.55));
+          const emCx = emPt.x, emCy = emPt.y, emS = dW * 0.35;
           const eA = 'rgba(210,155,50,';
+          // Sunburst rays behind griffin
+          ctx.fillStyle = eA + '0.2)';
+          for (let ri = 0; ri < 12; ri++) {
+            const ang = ri * Math.PI / 6, rLen = emS * 1.3, rW = emS * 0.12;
+            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
+            ctx.beginPath(); ctx.moveTo(emS*0.3,-rW); ctx.lineTo(rLen,0); ctx.lineTo(emS*0.3,rW);
+            ctx.closePath(); ctx.fill(); ctx.restore();
+          }
           // Outer circle
           ctx.strokeStyle = eA + '0.4)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
-          ctx.beginPath(); ctx.arc(emCx, emCy, emS, 0, Math.PI * 2); ctx.stroke();
-          // Crossed blades
-          ctx.strokeStyle = eA + '0.55)'; ctx.lineWidth = Math.max(1, bScale * 0.012);
-          ctx.beginPath(); ctx.moveTo(emCx - emS * 0.7, emCy - emS * 0.7); ctx.lineTo(emCx + emS * 0.7, emCy + emS * 0.7); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(emCx + emS * 0.7, emCy - emS * 0.7); ctx.lineTo(emCx - emS * 0.7, emCy + emS * 0.7); ctx.stroke();
-          // Guards — small perpendicular lines at 40% from center
-          ctx.lineWidth = Math.max(0.8, bScale * 0.008);
-          const gOff = emS * 0.3, gLen = emS * 0.2;
-          // Sword 1 guards
-          ctx.beginPath(); ctx.moveTo(emCx - gOff - gLen * 0.7, emCy - gOff + gLen * 0.7); ctx.lineTo(emCx - gOff + gLen * 0.7, emCy - gOff - gLen * 0.7); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(emCx + gOff - gLen * 0.7, emCy + gOff + gLen * 0.7); ctx.lineTo(emCx + gOff + gLen * 0.7, emCy + gOff - gLen * 0.7); ctx.stroke();
-          // Sword 2 guards
-          ctx.beginPath(); ctx.moveTo(emCx + gOff + gLen * 0.7, emCy - gOff + gLen * 0.7); ctx.lineTo(emCx + gOff - gLen * 0.7, emCy - gOff - gLen * 0.7); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(emCx - gOff + gLen * 0.7, emCy + gOff + gLen * 0.7); ctx.lineTo(emCx - gOff - gLen * 0.7, emCy + gOff - gLen * 0.7); ctx.stroke();
-          // Pommels — small dots at blade ends
-          ctx.fillStyle = eA + '0.5)';
-          const pomR = Math.max(0.8, emS * 0.08);
-          ctx.beginPath(); ctx.arc(emCx - emS * 0.7, emCy - emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(emCx + emS * 0.7, emCy - emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(emCx - emS * 0.7, emCy + emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.arc(emCx + emS * 0.7, emCy + emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(emCx, emCy, emS * 0.85, 0, Math.PI * 2); ctx.stroke();
+          // Griffin — rearing, facing right
+          const gs = emS * 0.55;
+          ctx.fillStyle = eA + '0.45)'; ctx.strokeStyle = eA + '0.5)'; ctx.lineWidth = Math.max(0.8, bScale * 0.007);
+          ctx.beginPath();
+          ctx.moveTo(emCx-gs*0.4,emCy+gs*0.9);
+          ctx.lineTo(emCx-gs*0.5,emCy+gs*0.5); ctx.lineTo(emCx-gs*0.6,emCy+gs*0.3);
+          ctx.bezierCurveTo(emCx-gs*0.55,emCy-gs*0.1,emCx-gs*0.35,emCy-gs*0.4,emCx-gs*0.1,emCy-gs*0.55);
+          ctx.bezierCurveTo(emCx+gs*0.05,emCy-gs*0.7,emCx+gs*0.25,emCy-gs*0.8,emCx+gs*0.35,emCy-gs*0.65);
+          ctx.lineTo(emCx+gs*0.55,emCy-gs*0.55); ctx.lineTo(emCx+gs*0.4,emCy-gs*0.5);
+          ctx.bezierCurveTo(emCx+gs*0.35,emCy-gs*0.3,emCx+gs*0.4,emCy-gs*0.05,emCx+gs*0.45,emCy+gs*0.15);
+          ctx.lineTo(emCx+gs*0.65,emCy+gs*0.05); ctx.lineTo(emCx+gs*0.7,emCy+gs*0.15); ctx.lineTo(emCx+gs*0.5,emCy+gs*0.25);
+          ctx.lineTo(emCx+gs*0.45,emCy+gs*0.5); ctx.lineTo(emCx+gs*0.35,emCy+gs*0.9);
+          ctx.bezierCurveTo(emCx+gs*0.1,emCy+gs*0.85,emCx-gs*0.15,emCy+gs*0.9,emCx-gs*0.4,emCy+gs*0.9);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Wing
+          ctx.fillStyle = eA + '0.3)';
+          ctx.beginPath();
+          ctx.moveTo(emCx-gs*0.2,emCy-gs*0.35);
+          ctx.bezierCurveTo(emCx-gs*0.4,emCy-gs*0.8,emCx-gs*0.05,emCy-gs*1.0,emCx+gs*0.15,emCy-gs*0.85);
+          ctx.bezierCurveTo(emCx+gs*0.3,emCy-gs*0.7,emCx+gs*0.2,emCy-gs*0.5,emCx+gs*0.05,emCy-gs*0.35);
+          ctx.bezierCurveTo(emCx-gs*0.05,emCy-gs*0.25,emCx-gs*0.15,emCy-gs*0.3,emCx-gs*0.2,emCy-gs*0.35);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Tail
+          ctx.strokeStyle = eA + '0.4)'; ctx.lineWidth = Math.max(0.8, bScale * 0.008);
+          ctx.beginPath();
+          ctx.moveTo(emCx-gs*0.6,emCy+gs*0.3);
+          ctx.bezierCurveTo(emCx-gs*0.8,emCy+gs*0.1,emCx-gs*0.85,emCy-gs*0.2,emCx-gs*0.65,emCy-gs*0.45);
+          ctx.stroke();
+          // Eye
+          ctx.fillStyle = eA + '0.7)';
+          ctx.beginPath(); ctx.arc(emCx+gs*0.2,emCy-gs*0.6,gs*0.06,0,Math.PI*2); ctx.fill();
 
           // Gold trim — outline using grid edge points
           ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02);
