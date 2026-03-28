@@ -2653,10 +2653,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // === SKY + SUN + CLOUDS (from cloud-demo) ===
         const sunX = W * 0.5, sunY = H * 0.3;
-        const sunR = H * 0.06;
+        const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v5) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v6) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
@@ -2665,18 +2665,35 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           sk.addColorStop(0.6,"rgb(28,11,4)");sk.addColorStop(0.75,"rgb(32,13,4)");sk.addColorStop(0.875,"rgb(38,16,5)");
           sk.addColorStop(0.9375,"rgb(55,24,7)");sk.addColorStop(0.96,"rgb(130,55,15)");sk.addColorStop(0.98,"rgb(210,105,28)");sk.addColorStop(1,"rgb(255,185,60)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
-          // Sun warm radial glow — intense fire
-          const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
-          sg.addColorStop(0,"rgba(255,200,100,0.85)");sg.addColorStop(0.05,"rgba(255,150,50,0.65)");sg.addColorStop(0.12,"rgba(255,90,25,0.4)");sg.addColorStop(0.22,"rgba(180,40,8,0.2)");sg.addColorStop(0.35,"rgba(80,15,3,0.08)");sg.addColorStop(0.5,"rgba(20,4,1,0.02)");sg.addColorStop(1,"rgba(2,0,0,0)");
-          sc.fillStyle=sg;sc.fillRect(0,0,W,H);
-          // Hot inner glow — brighter core
-          const sg2=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,H*0.22);
-          sg2.addColorStop(0,"rgba(255,240,190,0.75)");sg2.addColorStop(0.15,"rgba(255,200,100,0.5)");sg2.addColorStop(0.4,"rgba(255,140,50,0.2)");sg2.addColorStop(0.7,"rgba(180,60,15,0.05)");sg2.addColorStop(1,"rgba(100,20,5,0)");
+          // === SUPERNOVA SUN ===
+          // Layer 1: Far-reaching atmospheric bloom
+          const sg0=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.7);
+          sg0.addColorStop(0,"rgba(255,180,80,0.6)");sg0.addColorStop(0.03,"rgba(255,140,50,0.45)");sg0.addColorStop(0.08,"rgba(255,100,30,0.28)");sg0.addColorStop(0.15,"rgba(200,60,12,0.15)");sg0.addColorStop(0.25,"rgba(120,30,5,0.07)");sg0.addColorStop(0.4,"rgba(50,10,2,0.03)");sg0.addColorStop(0.6,"rgba(15,3,0,0.01)");sg0.addColorStop(1,"rgba(2,0,0,0)");
+          sc.fillStyle=sg0;sc.fillRect(0,0,W,H);
+          // Layer 2: Intense mid corona — amber fire ring
+          const sg1=sc.createRadialGradient(sunX,sunY,sunR*0.3,sunX,sunY,H*0.32);
+          sg1.addColorStop(0,"rgba(255,220,140,0.9)");sg1.addColorStop(0.06,"rgba(255,180,80,0.75)");sg1.addColorStop(0.15,"rgba(255,130,45,0.5)");sg1.addColorStop(0.3,"rgba(230,80,18,0.25)");sg1.addColorStop(0.5,"rgba(160,40,6,0.1)");sg1.addColorStop(0.75,"rgba(80,15,2,0.03)");sg1.addColorStop(1,"rgba(20,4,0,0)");
+          sc.fillStyle=sg1;sc.fillRect(0,0,W,H);
+          // Layer 3: Hot plasma shell — gives corona visible edge/structure
+          const sg2=sc.createRadialGradient(sunX,sunY,sunR*0.5,sunX,sunY,sunR*3.5);
+          sg2.addColorStop(0,"rgba(255,245,200,0.95)");sg2.addColorStop(0.12,"rgba(255,225,150,0.8)");sg2.addColorStop(0.25,"rgba(255,190,90,0.55)");sg2.addColorStop(0.4,"rgba(255,145,55,0.3)");sg2.addColorStop(0.6,"rgba(220,90,20,0.12)");sg2.addColorStop(0.8,"rgba(150,45,8,0.04)");sg2.addColorStop(1,"rgba(80,20,3,0)");
           sc.fillStyle=sg2;sc.fillRect(0,0,W,H);
-          // Sun disc core
-          const sd = sc.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR);
-          sd.addColorStop(0,"rgba(255,255,240,1)");sd.addColorStop(0.3,"rgba(255,250,200,0.9)");sd.addColorStop(0.6,"rgba(255,225,140,0.5)");sd.addColorStop(1,"rgba(255,190,80,0)");
-          sc.fillStyle=sd;sc.beginPath();sc.arc(sunX,sunY,sunR*1.8,0,Math.PI*2);sc.fill();
+          // Layer 4: Overblown white-hot disc core
+          const sd = sc.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*1.2);
+          sd.addColorStop(0,"rgba(255,255,252,1)");sd.addColorStop(0.2,"rgba(255,255,240,1)");sd.addColorStop(0.45,"rgba(255,248,210,0.95)");sd.addColorStop(0.65,"rgba(255,235,170,0.7)");sd.addColorStop(0.8,"rgba(255,210,120,0.35)");sd.addColorStop(1,"rgba(255,180,70,0)");
+          sc.fillStyle=sd;sc.beginPath();sc.arc(sunX,sunY,sunR*1.2,0,Math.PI*2);sc.fill();
+          // Layer 5: Nuance — slight asymmetric flare (plasma tendril feel)
+          sc.save();sc.globalCompositeOperation='lighter';
+          for(let fi=0;fi<5;fi++){
+            const fAng=Math.PI*0.25+fi*Math.PI*0.38,fLen=sunR*(2.2+fi*0.4),fW=sunR*(0.35+fi*0.1);
+            const fx2=sunX+Math.cos(fAng)*fLen*0.3,fy2=sunY+Math.sin(fAng)*fLen*0.3;
+            const fg2=sc.createRadialGradient(fx2,fy2,0,fx2,fy2,fLen);
+            const fA=0.08-fi*0.012;
+            fg2.addColorStop(0,'rgba(255,230,160,'+fA+')');fg2.addColorStop(0.3,'rgba(255,180,80,'+(fA*0.6)+')');fg2.addColorStop(0.7,'rgba(200,90,20,'+(fA*0.2)+')');fg2.addColorStop(1,'rgba(100,30,5,0)');
+            sc.save();sc.translate(fx2,fy2);sc.rotate(fAng);sc.scale(1,fW/fLen);sc.translate(-fx2,-fy2);
+            sc.fillStyle=fg2;sc.beginPath();sc.arc(fx2,fy2,fLen,0,Math.PI*2);sc.fill();sc.restore();
+          }
+          sc.restore();
           // Horizon haze band — warm glow at horizon
           const hz=sc.createLinearGradient(0,H*0.88,0,H);
           hz.addColorStop(0,"rgba(200,80,20,0)");hz.addColorStop(0.3,"rgba(220,100,25,0.08)");hz.addColorStop(0.6,"rgba(240,125,35,0.14)");hz.addColorStop(1,"rgba(250,145,45,0.2)");
@@ -2685,7 +2702,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
-          skyCache._v5 = true;
+          skyCache._v6 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
@@ -2841,15 +2858,27 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           fg.addColorStop(1, 'rgba(' + fe.cr + ',' + fe.cg + ',' + fe.cb + ',0)');
           ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(fx, fy, fe.r, 0, Math.PI * 2); ctx.fill();
         }
-        // Anamorphic streak — horizontal line through sun
-        const streakGrad = ctx.createLinearGradient(sunX - W * 0.4, sunY, sunX + W * 0.4, sunY);
+        // Anamorphic streak — wide supernova bloom line through sun
+        const streakW = W * 0.5;
+        const streakGrad = ctx.createLinearGradient(sunX - streakW, sunY, sunX + streakW, sunY);
         streakGrad.addColorStop(0, 'rgba(255,200,100,0)');
-        streakGrad.addColorStop(0.3, 'rgba(255,220,140,0.02)');
-        streakGrad.addColorStop(0.5, 'rgba(255,240,180,0.04)');
-        streakGrad.addColorStop(0.7, 'rgba(255,220,140,0.02)');
+        streakGrad.addColorStop(0.2, 'rgba(255,210,130,0.015)');
+        streakGrad.addColorStop(0.4, 'rgba(255,230,160,0.05)');
+        streakGrad.addColorStop(0.5, 'rgba(255,245,200,0.08)');
+        streakGrad.addColorStop(0.6, 'rgba(255,230,160,0.05)');
+        streakGrad.addColorStop(0.8, 'rgba(255,210,130,0.015)');
         streakGrad.addColorStop(1, 'rgba(255,200,100,0)');
         ctx.fillStyle = streakGrad;
-        ctx.fillRect(sunX - W * 0.4, sunY - sunR * 0.3, W * 0.8, sunR * 0.6);
+        ctx.fillRect(sunX - streakW, sunY - sunR * 0.15, streakW * 2, sunR * 0.3);
+        // Wider soft bloom streak
+        const streakGrad2 = ctx.createLinearGradient(sunX - streakW, sunY, sunX + streakW, sunY);
+        streakGrad2.addColorStop(0, 'rgba(255,180,80,0)');
+        streakGrad2.addColorStop(0.35, 'rgba(255,200,110,0.02)');
+        streakGrad2.addColorStop(0.5, 'rgba(255,220,150,0.035)');
+        streakGrad2.addColorStop(0.65, 'rgba(255,200,110,0.02)');
+        streakGrad2.addColorStop(1, 'rgba(255,180,80,0)');
+        ctx.fillStyle = streakGrad2;
+        ctx.fillRect(sunX - streakW, sunY - sunR * 0.6, streakW * 2, sunR * 1.2);
         ctx.restore();
 
         // Atmospheric haze near horizon
