@@ -2664,7 +2664,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v10) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v11) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
@@ -2711,86 +2711,82 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
           // === STATIC ORANGE LIGHTNING across the sky ===
-          // Seeded RNG for deterministic bolts
           let _ls = 91827364;
           const lRng = () => { _ls = (_ls * 1103515245 + 12345) & 0x7fffffff; return _ls / 0x7fffffff; };
-          // Generate jagged bolt path from start to end
-          function boltPath(sc2, x0, y0, x1, y1, depth, maxD) {
-            if (depth >= maxD) {
-              sc2.lineTo(x1, y1);
-              return;
-            }
+          // Build jagged bolt as array of points
+          function boltPts(x0, y0, x1, y1, depth, maxD, out) {
+            if (depth >= maxD) { out.push(x1, y1); return; }
             const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
             const dx = x1 - x0, dy = y1 - y0;
             const len = Math.sqrt(dx * dx + dy * dy);
-            const jitter = len * (0.15 + depth * 0.05);
+            const jitter = len * (0.2 + depth * 0.05);
             const ox = mx + (lRng() - 0.5) * jitter;
             const oy = my + (lRng() - 0.5) * jitter;
-            boltPath(sc2, x0, y0, ox, oy, depth + 1, maxD);
-            // Branch chance on early subdivisions
-            if (depth < maxD - 1 && lRng() < 0.35) {
-              const bAng = (lRng() - 0.5) * 1.2;
-              const bLen = len * (0.25 + lRng() * 0.3);
-              const bx = ox + Math.cos(bAng + Math.atan2(dy, dx)) * bLen;
-              const by = oy + Math.sin(bAng + Math.atan2(dy, dx)) * bLen;
-              sc.save();
-              sc.beginPath();
-              sc.moveTo(ox, oy);
-              boltPath(sc, ox, oy, bx, by, depth + 1, maxD);
-              sc.globalAlpha *= 0.5;
-              sc.stroke();
-              sc.restore();
-            }
-            boltPath(sc2, ox, oy, x1, y1, depth + 1, maxD);
+            boltPts(x0, y0, ox, oy, depth + 1, maxD, out);
+            boltPts(ox, oy, x1, y1, depth + 1, maxD, out);
           }
-          // Draw 5-7 bolts across the upper sky
-          const nBolts = 5 + Math.floor(lRng() * 3);
+          const nBolts = 6;
           sc.save();
-          sc.lineCap = 'round';
-          sc.lineJoin = 'round';
+          sc.lineCap = 'round'; sc.lineJoin = 'round';
           for (let bi = 0; bi < nBolts; bi++) {
+            _ls = 91827364 + bi * 77777;
             const sx = lRng() * W;
-            const sy = lRng() * H * 0.45;
-            const ang = (lRng() - 0.5) * 1.5 + Math.PI * 0.5;
+            const sy = lRng() * H * 0.4;
+            const ang = (lRng() - 0.5) * 1.2 + Math.PI * 0.5;
             const bLen = H * (0.15 + lRng() * 0.35);
             const ex = sx + Math.cos(ang) * bLen;
             const ey = sy + Math.sin(ang) * bLen;
-            // Outer glow
-            sc.globalAlpha = 0.25 + lRng() * 0.15;
-            sc.strokeStyle = 'rgb(255,140,40)';
-            sc.lineWidth = 8 + lRng() * 6;
-            sc.filter = 'blur(5px)';
-            sc.beginPath();
-            sc.moveTo(sx, sy);
-            _ls = 91827364 + bi * 77777; // reset per bolt for reproducibility
-            // re-seed for this bolt
-            const bSeed = 91827364 + bi * 77777;
+            // Build bolt points
+            const bSeed = _ls;
+            const pts = [sx, sy];
             _ls = bSeed;
-            boltPath(sc, sx, sy, ex, ey, 0, 5);
-            sc.stroke();
-            // Mid glow
-            sc.globalAlpha = 0.4 + lRng() * 0.15;
+            boltPts(sx, sy, ex, ey, 0, 5, pts);
+            // Branch from midpoint
+            const mi = Math.floor(pts.length / 4) * 2;
+            const bmx = pts[mi], bmy = pts[mi + 1];
+            const bAng = ang + (lRng() - 0.5) * 1.0;
+            const brLen = bLen * (0.2 + lRng() * 0.25);
+            const brPts = [bmx, bmy];
+            boltPts(bmx, bmy, bmx + Math.cos(bAng) * brLen, bmy + Math.sin(bAng) * brLen, 0, 3, brPts);
+            // Helper to stroke a point array
+            function strokePts(arr, ctx2) {
+              ctx2.beginPath();
+              ctx2.moveTo(arr[0], arr[1]);
+              for (let i = 2; i < arr.length; i += 2) ctx2.lineTo(arr[i], arr[i + 1]);
+              ctx2.stroke();
+            }
+            // Layer 1: wide glow (use shadowBlur instead of filter)
+            sc.shadowColor = 'rgba(255,140,40,0.8)';
+            sc.shadowBlur = 12;
+            sc.globalAlpha = 0.35;
+            sc.strokeStyle = 'rgb(255,130,30)';
+            sc.lineWidth = 6;
+            strokePts(pts, sc);
+            sc.globalAlpha = 0.2;
+            sc.lineWidth = 4;
+            strokePts(brPts, sc);
+            // Layer 2: mid
+            sc.shadowBlur = 5;
+            sc.globalAlpha = 0.5;
             sc.strokeStyle = 'rgb(255,180,80)';
-            sc.lineWidth = 3.5;
-            sc.filter = 'blur(2px)';
-            sc.beginPath();
-            sc.moveTo(sx, sy);
-            _ls = bSeed;
-            boltPath(sc, sx, sy, ex, ey, 0, 5);
-            sc.stroke();
-            // Core — bright white-orange
-            sc.globalAlpha = 0.6 + lRng() * 0.2;
-            sc.strokeStyle = 'rgb(255,235,200)';
+            sc.lineWidth = 2.5;
+            strokePts(pts, sc);
+            sc.globalAlpha = 0.3;
             sc.lineWidth = 1.5;
-            sc.filter = 'none';
-            sc.beginPath();
-            sc.moveTo(sx, sy);
-            _ls = bSeed;
-            boltPath(sc, sx, sy, ex, ey, 0, 5);
-            sc.stroke();
+            strokePts(brPts, sc);
+            // Layer 3: core
+            sc.shadowBlur = 0;
+            sc.globalAlpha = 0.8;
+            sc.strokeStyle = 'rgb(255,240,210)';
+            sc.lineWidth = 1.2;
+            strokePts(pts, sc);
+            sc.globalAlpha = 0.5;
+            sc.lineWidth = 0.8;
+            strokePts(brPts, sc);
           }
+          sc.shadowBlur = 0; sc.shadowColor = 'transparent';
           sc.restore();
-          skyCache._v10 = true;
+          skyCache._v11 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
@@ -3427,46 +3423,43 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Sort back-to-front
         swords.sort((a, b) => b.wz - a.wz);
 
-        // Blade fracture — jagged cracks with fragment displacement
-        function drawFractures(ctx, idx, bW, bH, guardH, lR, lG, lB2, dR, dG, dB, lit) {
-          // Per-sword seeded RNG
-          let _fs = (idx * 2246822519 + 314159) | 0;
-          const fRng = () => { _fs = Math.imul(_fs ^ (_fs >>> 16), 0x45d9f3b); _fs = _fs ^ (_fs >>> 13); return ((_fs >>> 0) % 10000) / 10000; };
-          fRng(); fRng(); // warm up
-          const nCracks = 2 + Math.floor(fRng() * 3); // 2-4 cracks per blade
-          const halfW = bW / 2;
-          for (let ci = 0; ci < nCracks; ci++) {
-            // Crack position along blade (10%-85% from tip)
-            const t = 0.1 + fRng() * 0.75;
-            const cy = -bH + t * (bH + guardH);
-            // Blade width at this height (narrows toward tip)
-            const wt = Math.min(1, t * 1.5);
-            const localW = halfW * wt;
-            // Jagged crack path from left edge to right edge
-            const nSeg = 3 + Math.floor(fRng() * 3);
-            const pts = [];
-            for (let si = 0; si <= nSeg; si++) {
-              const u = si / nSeg;
-              const px = -localW + u * localW * 2;
-              const py = cy + (fRng() - 0.5) * bW * 0.6;
-              pts.push({ x: px, y: py });
+        // Blade fracture — jagged cracks across blade
+        function drawFractures(ctx2, idx, bW, bH, gH2, lR2, lG2, lB22, dR2, dG2, dB2, lit2) {
+          // Simple seeded hash
+          var fs = idx * 2246822519 + 314159;
+          function fr() { fs = (fs * 1103515245 + 12345) & 0x7fffffff; return fs / 0x7fffffff; }
+          fr(); fr();
+          var nc = 2 + (fr() * 3 | 0);
+          var hw = bW / 2;
+          for (var ci = 0; ci < nc; ci++) {
+            var t = 0.1 + fr() * 0.75;
+            var cy = -bH + t * (bH + gH2);
+            var wt2 = Math.min(1, t * 1.5);
+            var lw = hw * wt2;
+            // 4-6 segment jagged line
+            var ns = 3 + (fr() * 3 | 0);
+            var px = new Array(ns + 1), py = new Array(ns + 1);
+            for (var si = 0; si <= ns; si++) {
+              px[si] = -lw + (si / ns) * lw * 2;
+              py[si] = cy + (fr() - 0.5) * bW * 0.8;
             }
-            // Fragment offset — slight displacement on one side of crack
-            const fragOff = (fRng() - 0.5) * bW * 0.15;
-            // Dark crack gap
-            ctx.strokeStyle = `rgba(5,2,1,${0.6 + fRng() * 0.3})`;
-            ctx.lineWidth = Math.max(0.8, bW * 0.1);
-            ctx.beginPath();
-            ctx.moveTo(pts[0].x, pts[0].y + fragOff);
-            for (let pi = 1; pi < pts.length; pi++) ctx.lineTo(pts[pi].x, pts[pi].y);
-            ctx.stroke();
-            // Bright exposed edge — catches light
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+90)},${Math.min(255,lG+80)},${Math.min(255,lB2+60)},${0.35 + lit * 0.4})`;
-            ctx.lineWidth = Math.max(0.5, bW * 0.05);
-            ctx.beginPath();
-            ctx.moveTo(pts[0].x, pts[0].y + fragOff - bW * 0.02);
-            for (let pi = 1; pi < pts.length; pi++) ctx.lineTo(pts[pi].x, pts[pi].y - bW * 0.02);
-            ctx.stroke();
+            // Dark crack
+            ctx2.strokeStyle = 'rgba(2,1,0,0.85)';
+            ctx2.lineWidth = Math.max(1, bW * 0.12);
+            ctx2.beginPath();
+            ctx2.moveTo(px[0], py[0]);
+            for (var pi = 1; pi <= ns; pi++) ctx2.lineTo(px[pi], py[pi]);
+            ctx2.stroke();
+            // Bright edge
+            var br2 = Math.min(255, lR2 + 100);
+            var bg2 = Math.min(255, lG2 + 90);
+            var bb2 = Math.min(255, lB22 + 70);
+            ctx2.strokeStyle = 'rgba(' + br2 + ',' + bg2 + ',' + bb2 + ',' + (0.4 + lit2 * 0.4) + ')';
+            ctx2.lineWidth = Math.max(0.5, bW * 0.05);
+            ctx2.beginPath();
+            ctx2.moveTo(px[0], py[0] - Math.max(0.5, bW * 0.06));
+            for (var pi2 = 1; pi2 <= ns; pi2++) ctx2.lineTo(px[pi2], py[pi2] - Math.max(0.5, bW * 0.06));
+            ctx2.stroke();
           }
         }
 
