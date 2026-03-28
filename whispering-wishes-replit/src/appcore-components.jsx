@@ -3371,12 +3371,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved down — extends above 0 to connect with blade
+            // Curved down — flat top connects to blade, curves down at ends
             ctx.moveTo(-guardW / 2, -ov);
             ctx.lineTo(-guardW / 2, guardH);
             ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
             ctx.lineTo(guardW / 2, -ov);
-            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, -ov);
+            ctx.lineTo(-guardW / 2, -ov);
             ctx.closePath();
           } else if (guardType === 3) {
             // Three segmented — center block + two end blocks
@@ -3391,15 +3391,27 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.rect(-guardW / 2, -ov, guardW, guardH + ov);
           }
           ctx.fill();
-          // Grip — overlaps into guard and pommel
-          ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 3);
-          // Pommel — overlaps grip end
+          // Pommel type determines grip shape
           let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
           const pommelType = (ph >>> 0) % 2;
+          // Grip — tapers toward pommel if round
+          if (pommelType === 1) {
+            const taperW = gripW * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(-gripW / 2, guardH - ov);
+            ctx.lineTo(gripW / 2, guardH - ov);
+            ctx.lineTo(taperW / 2, gripBot + ov * 2);
+            ctx.lineTo(-taperW / 2, gripBot + ov * 2);
+            ctx.closePath();
+            ctx.fill();
+          } else {
+            ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 3);
+          }
+          // Pommel
           ctx.beginPath();
           if (pommelType === 1) {
-            // Circle — center pulled up to overlap grip
-            ctx.arc(0, gripBot + pomRy * 0.6, pomRy, 0, Math.PI * 2);
+            // Circle — overlaps tapered grip end
+            ctx.arc(0, gripBot + pomRy * 0.5, pomRy, 0, Math.PI * 2);
           } else {
             // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
             const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
