@@ -3682,15 +3682,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // === BANNER — pole with round crest + vertical-only cloth ===
         {
-          const bWx = 0.5, bWz = 22;
+          const bWx = 0.5, bWz = 16;
           const bScrX = projX(bWx, bWz);
           const bScrY = projY(bWz, bWx);
           const bScale = 2.8 * focal / (bWz - camZ);
-          const poleH = bScale * 3.2;
+          const poleH = bScale * 2.4;
           const poleW = Math.max(1, bScale * 0.035);
-          const poleBury = bScale * 0.3;
+          const poleBury = bScale * 0.55;
           const poleTop = bScrY - poleH + poleBury;
-          const bannerLean = -0.06;
+          const bannerLean = -0.04;
           const wt = cloudTime * 0.5;
           const gD = 'rgb(140,95,25)', gM = 'rgb(200,155,45)', gH = 'rgb(245,215,100)';
 
@@ -4001,8 +4001,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // God ray ON the flag
         {
-          const flagScrX = projX(0.5, 22);
-          const flagScrY = projY(22, 0.5);
+          const flagScrX = projX(0.5, 16);
+          const flagScrY = projY(16, 0.5);
           const rayAng = Math.atan2(flagScrY - sunY, flagScrX - sunX);
           const rayLen = Math.sqrt((flagScrX - sunX) ** 2 + (flagScrY - sunY) ** 2) * 1.15;
           const rayW = sunR * 0.8;
