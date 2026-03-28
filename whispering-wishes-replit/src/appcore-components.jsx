@@ -3613,56 +3613,88 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // == ORNAMENT: arrowhead above round crest with star ==
+          // == ORNAMENT: large spearhead + shield crest with detailed emblem ==
           const gD = 'rgb(120,80,15)', gM = 'rgb(200,155,45)', gH = 'rgb(245,210,90)';
 
-          // Arrowhead / spear point
-          const arrH = bScale * 0.35, arrW = bScale * 0.08;
+          // Large spearhead
+          const arrH = bScale * 0.5, arrW = bScale * 0.12;
           const arrTop = poleTop - arrH;
           const arrGrad = ctx.createLinearGradient(bScrX - arrW, 0, bScrX + arrW, 0);
-          arrGrad.addColorStop(0, 'rgb(140,135,125)'); arrGrad.addColorStop(0.4, 'rgb(210,205,195)');
-          arrGrad.addColorStop(0.5, 'rgb(230,228,220)'); arrGrad.addColorStop(0.6, 'rgb(210,205,195)');
-          arrGrad.addColorStop(1, 'rgb(140,135,125)');
+          arrGrad.addColorStop(0, 'rgb(130,125,115)'); arrGrad.addColorStop(0.3, 'rgb(195,190,180)');
+          arrGrad.addColorStop(0.48, 'rgb(230,228,220)'); arrGrad.addColorStop(0.52, 'rgb(240,238,232)');
+          arrGrad.addColorStop(0.7, 'rgb(195,190,180)'); arrGrad.addColorStop(1, 'rgb(130,125,115)');
           ctx.fillStyle = arrGrad;
           ctx.beginPath();
           ctx.moveTo(bScrX, arrTop);
-          ctx.lineTo(bScrX + arrW, poleTop - arrH * 0.15);
-          ctx.lineTo(bScrX + arrW * 0.6, poleTop - arrH * 0.1);
+          ctx.bezierCurveTo(bScrX + arrW * 0.2, arrTop + arrH * 0.3, bScrX + arrW, arrTop + arrH * 0.6, bScrX + arrW * 0.7, arrTop + arrH * 0.85);
           ctx.lineTo(bScrX + poleW * 0.5, poleTop);
           ctx.lineTo(bScrX - poleW * 0.5, poleTop);
-          ctx.lineTo(bScrX - arrW * 0.6, poleTop - arrH * 0.1);
-          ctx.lineTo(bScrX - arrW, poleTop - arrH * 0.15);
+          ctx.lineTo(bScrX - arrW * 0.7, arrTop + arrH * 0.85);
+          ctx.bezierCurveTo(bScrX - arrW, arrTop + arrH * 0.6, bScrX - arrW * 0.2, arrTop + arrH * 0.3, bScrX, arrTop);
           ctx.closePath();
           ctx.fill();
+          // Center ridge
+          ctx.strokeStyle = 'rgba(255,255,250,0.25)';
+          ctx.lineWidth = Math.max(0.5, poleW * 0.2);
+          ctx.beginPath(); ctx.moveTo(bScrX, arrTop + arrH * 0.1); ctx.lineTo(bScrX, poleTop); ctx.stroke();
 
-          // Round crest / shield — below arrowhead, on the pole
-          const crestY = poleTop + bScale * 0.06;
-          const crestR = bScale * 0.12;
-          // Dark backing
-          ctx.fillStyle = 'rgb(35,20,10)';
+          // Shield crest — larger
+          const crestY = poleTop + bScale * 0.1;
+          const crestR = bScale * 0.18;
+          // Dark backing with warm tint
+          const cBg = ctx.createRadialGradient(bScrX, crestY, 0, bScrX, crestY, crestR);
+          cBg.addColorStop(0, 'rgb(50,28,12)'); cBg.addColorStop(0.7, 'rgb(38,22,10)'); cBg.addColorStop(1, 'rgb(28,16,6)');
+          ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crestY, crestR, 0, Math.PI * 2); ctx.fill();
-          // Gold outer rim
-          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.012);
+          // Thick gold outer rim
+          ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1.5, bScale * 0.018);
           ctx.stroke();
-          // Inner gold ring
-          ctx.strokeStyle = gD; ctx.lineWidth = Math.max(0.5, bScale * 0.006);
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.7, 0, Math.PI * 2); ctx.stroke();
-          // 5-pointed star
-          ctx.fillStyle = gM;
-          ctx.beginPath();
-          for (let si = 0; si < 10; si++) {
-            const sAng = si * Math.PI / 5 - Math.PI / 2;
-            const sR = si % 2 === 0 ? crestR * 0.55 : crestR * 0.22;
-            const sx = bScrX + Math.cos(sAng) * sR, sy = crestY + Math.sin(sAng) * sR;
-            if (si === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-          }
-          ctx.closePath(); ctx.fill();
-          // Center dot
-          ctx.fillStyle = gH;
-          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.08, 0, Math.PI * 2); ctx.fill();
+          // Second rim
+          ctx.strokeStyle = gD; ctx.lineWidth = Math.max(0.8, bScale * 0.008);
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.82, 0, Math.PI * 2); ctx.stroke();
+          // Inner ring
+          ctx.strokeStyle = 'rgba(200,155,45,0.5)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.55, 0, Math.PI * 2); ctx.stroke();
 
-          // Small horizontal bar where cloth attaches
-          const crossY = crestY + crestR + bScale * 0.015;
+          // Detailed star emblem — 8-pointed with inner/outer layers
+          // Outer rays
+          ctx.fillStyle = gM;
+          for (let si = 0; si < 8; si++) {
+            const sAng = si * Math.PI / 4 - Math.PI / 2;
+            const sLen = crestR * 0.72, sW = crestR * 0.12;
+            ctx.save(); ctx.translate(bScrX, crestY); ctx.rotate(sAng);
+            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath();
+            ctx.fill(); ctx.restore();
+          }
+          // Inner diamond rays (rotated 22.5°)
+          ctx.fillStyle = 'rgba(200,155,45,0.6)';
+          for (let si = 0; si < 8; si++) {
+            const sAng = si * Math.PI / 4 - Math.PI / 2 + Math.PI / 8;
+            const sLen = crestR * 0.45, sW = crestR * 0.08;
+            ctx.save(); ctx.translate(bScrX, crestY); ctx.rotate(sAng);
+            ctx.beginPath(); ctx.moveTo(0, -sW); ctx.lineTo(sLen, 0); ctx.lineTo(0, sW); ctx.closePath();
+            ctx.fill(); ctx.restore();
+          }
+          // Center circle
+          ctx.fillStyle = gD;
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.18, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = gH;
+          ctx.beginPath(); ctx.arc(bScrX, crestY, crestR * 0.1, 0, Math.PI * 2); ctx.fill();
+
+          // Bracket wings from crest sides
+          ctx.fillStyle = gD;
+          for (let side = -1; side <= 1; side += 2) {
+            const wX = bScrX + side * crestR * 0.9;
+            const wW = bScale * 0.12;
+            ctx.beginPath();
+            ctx.moveTo(wX, crestY - bScale * 0.02);
+            ctx.bezierCurveTo(wX + side * wW * 0.5, crestY - bScale * 0.04, wX + side * wW, crestY - bScale * 0.01, wX + side * wW, crestY + bScale * 0.01);
+            ctx.bezierCurveTo(wX + side * wW, crestY + bScale * 0.03, wX + side * wW * 0.3, crestY + bScale * 0.04, wX, crestY + bScale * 0.02);
+            ctx.closePath(); ctx.fill();
+          }
+
+          // Crossbar where cloth attaches
+          const crossY = crestY + crestR + bScale * 0.02;
           const crossW = bScale * 0.5;
           ctx.fillStyle = 'rgb(50,30,16)';
           ctx.fillRect(bScrX - crossW / 2, crossY - poleW * 0.3, crossW, poleW * 0.6);
@@ -3674,18 +3706,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const dL0 = bScrX - dW / 2, dR0 = bScrX + dW / 2;
           const segs = 80;
 
-          // 3-layer wind displacement
+          // Strong wind — cloth flies out to the side, not just wobbles
           function windX(t) {
-            const gust = 0.6 + Math.sin(wt * 0.35) * 0.4;
-            const push = t * t * bScale * 0.55 * gust;
-            const w1 = Math.sin(t * 6.5 - wt * 2.5) * t * bScale * 0.07;
-            const w2 = Math.sin(t * 3.8 - wt * 1.4 + 1.5) * t * bScale * 0.045;
-            const w3 = Math.sin(t * 10 - wt * 3.2 + 0.7) * t * t * bScale * 0.025;
+            // Constant strong push + gusting — cloth actually goes sideways
+            const gust = 0.7 + Math.sin(wt * 0.35) * 0.3;
+            const push = t * bScale * 0.8 * gust;
+            // Ripple on top
+            const w1 = Math.sin(t * 6.5 - wt * 2.5) * t * bScale * 0.06;
+            const w2 = Math.sin(t * 3.8 - wt * 1.4 + 1.5) * t * bScale * 0.04;
+            const w3 = Math.sin(t * 10 - wt * 3.2 + 0.7) * t * bScale * 0.02;
             return push + w1 + w2 + w3;
           }
           function windY(t) {
-            return Math.sin(t * 5.5 - wt * 2.0) * t * bScale * 0.03
-                 + Math.sin(t * 8 - wt * 2.8 + 1) * t * t * bScale * 0.015;
+            // Cloth lifts as it blows — doesn't just hang straight down
+            const lift = -t * bScale * 0.25 * (0.7 + Math.sin(wt * 0.35) * 0.3);
+            return lift + Math.sin(t * 5.5 - wt * 2.0) * t * bScale * 0.04
+                 + Math.sin(t * 8 - wt * 2.8 + 1) * t * bScale * 0.02;
           }
 
           function veilPath() {
@@ -3737,24 +3773,70 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillRect(shX - fW2 * 0.3, dTop, fW2 * 0.6, dH * 1.5);
           }
 
-          // Emblem on cloth — follows wind
+          // Emblem on cloth — sun-beast crest, follows wind
           const emT = 0.35;
           const emCx = bScrX + windX(emT), emCy = dTop + emT * dH + windY(emT);
-          const emR = dW * 0.25;
-          ctx.strokeStyle = 'rgba(210,155,50,0.5)';
-          ctx.lineWidth = Math.max(0.6, bScale * 0.01);
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR, 0, Math.PI * 2); ctx.stroke();
-          ctx.fillStyle = 'rgba(210,155,50,0.35)';
-          for (let ri = 0; ri < 8; ri++) {
-            const ang = ri * Math.PI / 4;
+          const emR = dW * 0.32;
+          const eCol = 'rgba(210,155,50,';
+          // Outer wavy flame rays — like a sun with organic tendrils
+          ctx.fillStyle = eCol + '0.3)';
+          for (let ri = 0; ri < 12; ri++) {
+            const ang = ri * Math.PI / 6;
+            const rayLen = emR * (1.1 + (ri % 2) * 0.25);
+            const rayW = emR * 0.14;
+            const curve = (ri % 2 === 0) ? 0.15 : -0.1;
             ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
-            ctx.beginPath(); ctx.moveTo(0, -emR * 0.15); ctx.lineTo(emR * 1.2, 0); ctx.lineTo(0, emR * 0.15);
-            ctx.closePath(); ctx.fill(); ctx.restore();
+            ctx.beginPath();
+            ctx.moveTo(emR * 0.35, -rayW);
+            ctx.bezierCurveTo(rayLen * 0.5, -rayW + curve * emR, rayLen * 0.8, curve * emR * 0.5, rayLen, 0);
+            ctx.bezierCurveTo(rayLen * 0.8, -curve * emR * 0.5, rayLen * 0.5, rayW - curve * emR, emR * 0.35, rayW);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
           }
-          ctx.fillStyle = 'rgba(210,155,50,0.15)';
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.5, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = 'rgba(210,155,50,0.4)';
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.12, 0, Math.PI * 2); ctx.fill();
+          // Outer circle
+          ctx.strokeStyle = eCol + '0.45)';
+          ctx.lineWidth = Math.max(0.8, bScale * 0.012);
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.75, 0, Math.PI * 2); ctx.stroke();
+          // Inner filled circle
+          ctx.fillStyle = eCol + '0.12)';
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.7, 0, Math.PI * 2); ctx.fill();
+          // Beast silhouette — stylized rearing lion/wolf shape
+          ctx.fillStyle = eCol + '0.4)';
+          const bx = emCx, by = emCy;
+          const bs = emR * 0.45;
+          ctx.beginPath();
+          // Body — sitting/rearing pose
+          ctx.moveTo(bx - bs * 0.3, by + bs * 0.6);
+          // Back legs
+          ctx.lineTo(bx - bs * 0.4, by + bs * 0.4);
+          ctx.lineTo(bx - bs * 0.5, by + bs * 0.1);
+          // Back arch
+          ctx.bezierCurveTo(bx - bs * 0.45, by - bs * 0.2, bx - bs * 0.3, by - bs * 0.5, bx - bs * 0.1, by - bs * 0.6);
+          // Head
+          ctx.bezierCurveTo(bx, by - bs * 0.7, bx + bs * 0.15, by - bs * 0.75, bx + bs * 0.2, by - bs * 0.6);
+          // Snout
+          ctx.lineTo(bx + bs * 0.35, by - bs * 0.5);
+          ctx.lineTo(bx + bs * 0.25, by - bs * 0.4);
+          // Chest
+          ctx.bezierCurveTo(bx + bs * 0.3, by - bs * 0.2, bx + bs * 0.35, by, bx + bs * 0.4, by + bs * 0.15);
+          // Front legs
+          ctx.lineTo(bx + bs * 0.5, by + bs * 0.5);
+          ctx.lineTo(bx + bs * 0.35, by + bs * 0.6);
+          ctx.lineTo(bx + bs * 0.3, by + bs * 0.3);
+          // Belly
+          ctx.bezierCurveTo(bx + bs * 0.1, by + bs * 0.35, bx - bs * 0.1, by + bs * 0.4, bx - bs * 0.2, by + bs * 0.55);
+          ctx.closePath(); ctx.fill();
+          // Tail — curving up
+          ctx.strokeStyle = eCol + '0.35)';
+          ctx.lineWidth = Math.max(0.8, bs * 0.08);
+          ctx.beginPath();
+          ctx.moveTo(bx - bs * 0.5, by + bs * 0.1);
+          ctx.bezierCurveTo(bx - bs * 0.7, by - bs * 0.1, bx - bs * 0.6, by - bs * 0.5, bx - bs * 0.35, by - bs * 0.65);
+          ctx.stroke();
+          // Inner ring
+          ctx.strokeStyle = eCol + '0.3)';
+          ctx.lineWidth = Math.max(0.5, bScale * 0.006);
+          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.45, 0, Math.PI * 2); ctx.stroke();
           ctx.restore();
 
           // Gold trim
