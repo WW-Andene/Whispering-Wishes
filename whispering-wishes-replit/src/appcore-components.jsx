@@ -2661,13 +2661,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
-          sk.addColorStop(0,"rgb(8,4,2)");sk.addColorStop(0.1,"rgb(18,8,4)");sk.addColorStop(0.2,"rgb(40,14,6)");
-          sk.addColorStop(0.35,"rgb(85,28,10)");sk.addColorStop(0.5,"rgb(140,50,15)");sk.addColorStop(0.65,"rgb(190,80,25)");
-          sk.addColorStop(0.78,"rgb(220,120,40)");sk.addColorStop(0.88,"rgb(240,160,60)");sk.addColorStop(1,"rgb(250,190,80)");
+          sk.addColorStop(0,"rgb(3,1,1)");sk.addColorStop(0.08,"rgb(10,3,2)");sk.addColorStop(0.18,"rgb(35,8,4)");
+          sk.addColorStop(0.3,"rgb(90,20,8)");sk.addColorStop(0.42,"rgb(160,40,10)");sk.addColorStop(0.55,"rgb(210,70,15)");
+          sk.addColorStop(0.68,"rgb(240,110,25)");sk.addColorStop(0.8,"rgb(255,160,45)");sk.addColorStop(0.9,"rgb(255,195,70)");sk.addColorStop(1,"rgb(255,220,100)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
-          sg.addColorStop(0,"rgba(255,220,140,0.7)");sg.addColorStop(0.08,"rgba(255,180,80,0.5)");sg.addColorStop(0.2,"rgba(255,120,40,0.3)");sg.addColorStop(0.4,"rgba(200,60,15,0.12)");sg.addColorStop(0.7,"rgba(120,25,5,0.04)");sg.addColorStop(1,"rgba(40,8,2,0)");
+          sg.addColorStop(0,"rgba(255,230,150,0.8)");sg.addColorStop(0.06,"rgba(255,190,90,0.6)");sg.addColorStop(0.15,"rgba(255,140,45,0.4)");sg.addColorStop(0.3,"rgba(220,70,15,0.2)");sg.addColorStop(0.5,"rgba(150,30,5,0.08)");sg.addColorStop(1,"rgba(40,5,2,0)");
           sc.fillStyle=sg;sc.fillRect(0,0,W,H);
           // Hot inner glow — brighter core
           const sg2=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,H*0.22);
@@ -2679,11 +2679,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           sc.fillStyle=sd;sc.beginPath();sc.arc(sunX,sunY,sunR*1.8,0,Math.PI*2);sc.fill();
           // Horizon haze band — warm glow at horizon
           const hz=sc.createLinearGradient(0,H*0.55,0,H*0.78);
-          hz.addColorStop(0,"rgba(160,70,20,0)");hz.addColorStop(0.3,"rgba(180,90,25,0.08)");hz.addColorStop(0.6,"rgba(200,110,35,0.15)");hz.addColorStop(1,"rgba(220,130,45,0.22)");
+          hz.addColorStop(0,"rgba(220,100,25,0)");hz.addColorStop(0.3,"rgba(240,130,35,0.12)");hz.addColorStop(0.6,"rgba(255,160,50,0.22)");hz.addColorStop(1,"rgba(255,180,65,0.3)");
           sc.fillStyle=hz;sc.fillRect(0,H*0.55,W,H*0.78-H*0.55);
           // Edge vignette on sky — darken corners/edges
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
-          vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.4,"rgba(0,0,0,0)");vig.addColorStop(0.7,"rgba(5,2,1,0.3)");vig.addColorStop(0.85,"rgba(5,2,1,0.55)");vig.addColorStop(1,"rgba(5,2,1,0.75)");
+          vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.3,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(3,1,0,0.25)");vig.addColorStop(0.72,"rgba(4,2,1,0.5)");vig.addColorStop(0.88,"rgba(3,1,0,0.72)");vig.addColorStop(1,"rgba(2,1,0,0.88)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
         }
         ctx.drawImage(skyCache, 0, 0);
@@ -3548,10 +3548,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.save();
         const scVig = ctx.createRadialGradient(W*0.5, H*0.3, H*0.1, W*0.5, H*0.5, Math.max(W,H)*0.8);
         scVig.addColorStop(0, "rgba(0,0,0,0)");
-        scVig.addColorStop(0.35, "rgba(0,0,0,0)");
-        scVig.addColorStop(0.6, "rgba(3,1,0,0.2)");
-        scVig.addColorStop(0.8, "rgba(5,2,1,0.45)");
-        scVig.addColorStop(1, "rgba(5,2,1,0.7)");
+        scVig.addColorStop(0.3, "rgba(0,0,0,0)");
+        scVig.addColorStop(0.5, "rgba(3,1,0,0.15)");
+        scVig.addColorStop(0.65, "rgba(4,2,1,0.35)");
+        scVig.addColorStop(0.8, "rgba(4,2,1,0.6)");
+        scVig.addColorStop(1, "rgba(3,1,0,0.82)");
         ctx.fillStyle = scVig;
         ctx.fillRect(0, 0, W, H);
         ctx.restore();
