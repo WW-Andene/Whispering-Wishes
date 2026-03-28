@@ -3654,12 +3654,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const wt = cloudTime * 0.5;
           const segs = 20;
 
-          // Wind: whole cloth pushed to one side, more at bottom
+          // Wind: whole cloth pushed to the right, more at bottom
           function windX(t) {
-            const push = t * t * bScale * 0.55 * (0.6 + Math.sin(wt * 0.35) * 0.4);
-            const ripple = Math.sin(t * 5 - wt * 2.0) * t * bScale * 0.06
-                         + Math.sin(t * 3 - wt * 1.2 + 1.5) * t * bScale * 0.04;
-            return -push + ripple;
+            const push = t * t * bScale * 1.1 * (0.6 + Math.sin(wt * 0.35) * 0.4);
+            const ripple = Math.sin(t * 5 - wt * 2.0) * t * bScale * 0.12
+                         + Math.sin(t * 3 - wt * 1.2 + 1.5) * t * bScale * 0.08;
+            return push + ripple;
           }
           function windY(t) {
             return Math.sin(t * 4.5 - wt * 1.8) * t * bScale * 0.025;
@@ -3719,8 +3719,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillRect(shX - fW2 * 0.4, dTop, fW2 * 0.8, dH);
           }
 
-          // --- Emblem / logo — sun-star with circle (like WuWa crest) ---
-          const emCx = bScrX, emCy = dTop + dH * 0.38;
+          // --- Emblem / logo — sun-star with circle (follows cloth) ---
+          const emT = 0.38;
+          const emCx = bScrX + windX(emT), emCy = dTop + emT * dH + windY(emT);
           const emR = dW * 0.28;
           // Outer circle
           ctx.strokeStyle = 'rgba(210,155,50,0.55)';
