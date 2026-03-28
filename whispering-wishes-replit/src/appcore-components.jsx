@@ -3348,7 +3348,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
-          const isGladius = (s.idx * 2654435761 >>> 0) % 4 === 0; // 1/4 are gladius
+          // Sword type — hash independent of position grid
+          let th = (s.idx * 1640531527 + 2747636419) | 0; th = Math.imul(th ^ (th >>> 16), 0x45d9f3b); th = th ^ (th >>> 13);
+          const isGladius = ((th >>> 0) % 4) === 0;
           const overall = s.size;
           const bladeH = overall * (90.3 / 114.7);
           const mod = bladeH / 8;
@@ -3386,9 +3388,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const lightB = (0.25 + lit * 0.75) * faceCatch;
           // Dark face: low ambient + faint warm reflected sky
           const darkB = 0.08 + lit * 0.12 + (1 - faceCatch) * 0.06;
-          // Steel metallic — warm silver tinted by sunset, not amber
-          const lR = Math.round(30 + 195 * lightB), lG = Math.round(28 + 180 * lightB), lB2 = Math.round(26 + 150 * lightB);
-          const dR = Math.round(18 + 95 * darkB), dG = Math.round(17 + 88 * darkB), dB = Math.round(16 + 70 * darkB);
+          // Steel metallic — sunset-tinted, warm amber highlights
+          const lR = Math.round(45 + 210 * lightB), lG = Math.round(30 + 145 * lightB), lB2 = Math.round(18 + 75 * lightB);
+          const dR = Math.round(25 + 70 * darkB), dG = Math.round(14 + 40 * darkB), dB = Math.round(8 + 20 * darkB);
 
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
