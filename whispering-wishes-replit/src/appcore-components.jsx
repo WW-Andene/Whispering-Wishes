@@ -3685,10 +3685,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const wz = totalH * freedom * 0.2;
               const zScale = 1 + wz * 0.4;
               const slopeShift = slopeX * freedom * bScale * 0.4;
-              // Bottom tapers to triangle — width narrows below 70%
-              const taper = v < 0.7 ? 1 : 1 - (v - 0.7) / 0.3;
               pts[gy * (gridX + 1) + gx] = {
-                x: bScrX + (u - 0.5) * dW * taper * zScale + windX + slopeShift,
+                x: bScrX + (u - 0.5) * dW * zScale + windX + slopeShift,
                 y: dTop + v * dH + windY,
                 z: wz
               };
@@ -3701,12 +3699,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sunDx = sunX - bScrX, sunDy = sunY - (dTop + dH * 0.5);
           const sunDist = Math.sqrt(sunDx * sunDx + sunDy * sunDy) || 1;
           const snx = sunDx / sunDist, sny = sunDy / sunDist;
-          // Shadow color, lit color, rim color
-          const shCol = [65, 12, 8];
-          const ltCol = [195, 65, 35];
+          // Base colors: red cloth
+          const shRed = [65, 12, 8], ltRed = [195, 65, 35];
+          // Gold for top corners + border motif
+          const shGold = [120, 80, 15], ltGold = [245, 210, 90];
           const rimCol = [255, 180, 100];
 
-          function triColor(p0, p1, p2, v0) {
+          function triColor(p0, p1, p2, v0, u0) {
+            // Motif: gold corners at top, triangular red point at top-center
+            // Top 15%: gold at edges (u<0.15 or u>0.85), red triangle in middle
+            // The triangle narrows from full width at v=0.15 to a point at v=0
+            let isGold = false;
+            if (v0 < 0.15) {
+              const triW = v0 / 0.15; // 0 at top → 1 at 15%
+              const edgeDist = Math.abs(u0 - 0.5) * 2; // 0=center, 1=edge
+              if (edgeDist > triW) isGold = true;
+            }
+            // Gold border: edges of cloth
+            if (u0 < 0.08 || u0 > 0.92 || v0 < 0.02 || v0 > 0.97) isGold = true;
+            const shCol = isGold ? shGold : shRed;
+            const ltCol = isGold ? ltGold : ltRed;
             // Surface normal from cross product of edges + Z
             const ex1 = p1.x - p0.x, ey1 = p1.y - p0.y, ez1 = (p1.z - p0.z) * 200;
             const ex2 = p2.x - p0.x, ey2 = p2.y - p0.y, ez2 = (p2.z - p0.z) * 200;
@@ -3734,11 +3746,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const v0 = gy / gridY;
             for (let gx = 0; gx < gridX; gx++) {
               const p00 = gp(gx, gy), p10 = gp(gx+1, gy), p01 = gp(gx, gy+1), p11 = gp(gx+1, gy+1);
+              const u0 = (gx + 0.5) / gridX;
               // Triangle A
-              ctx.fillStyle = triColor(p00, p10, p01, v0);
+              ctx.fillStyle = triColor(p00, p10, p01, v0, u0);
               ctx.beginPath(); ctx.moveTo(p00.x,p00.y); ctx.lineTo(p10.x,p10.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
               // Triangle B
-              ctx.fillStyle = triColor(p10, p11, p01, v0);
+              ctx.fillStyle = triColor(p10, p11, p01, (gy+0.5)/gridY, (gx+0.5)/gridX);
               ctx.beginPath(); ctx.moveTo(p10.x,p10.y); ctx.lineTo(p11.x,p11.y); ctx.lineTo(p01.x,p01.y); ctx.closePath(); ctx.fill();
             }
           }
@@ -3779,23 +3792,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (let gx = gridX - 1; gx >= 0; gx--) { const p = gp(gx, gridY); ctx.lineTo(p.x, p.y); }
           for (let gy = gridY - 1; gy >= 0; gy--) { const p = gp(0, gy); ctx.lineTo(p.x, p.y); }
           ctx.closePath(); ctx.stroke();
-
-          // Gold top corner accents — triangular tabs where cloth meets crossbar
-          const tl = gp(0, 0), tr = gp(gridX, 0);
-          const cornerS = bScale * 0.06;
-          ctx.fillStyle = gM;
-          // Left corner
-          ctx.beginPath();
-          ctx.moveTo(tl.x, tl.y);
-          ctx.lineTo(tl.x + cornerS, tl.y);
-          ctx.lineTo(tl.x, tl.y + cornerS);
-          ctx.closePath(); ctx.fill();
-          // Right corner
-          ctx.beginPath();
-          ctx.moveTo(tr.x, tr.y);
-          ctx.lineTo(tr.x - cornerS, tr.y);
-          ctx.lineTo(tr.x, tr.y + cornerS);
-          ctx.closePath(); ctx.fill();
 
           // Gold crest — on top of everything, centered on crossbar
           const crestR = bScale * 0.12;
