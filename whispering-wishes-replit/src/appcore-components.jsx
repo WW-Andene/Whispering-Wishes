@@ -2743,14 +2743,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const rayW = sunR * (0.3 + rayRng() * 1.2);
           const ex = sunX + Math.cos(rayAngle) * rayLen;
           const ey = sunY + Math.sin(rayAngle) * rayLen;
-          // Warm golden color, varying opacity
-          const rayAlpha = 0.03 + rayRng() * 0.05;
+          // Bright white-gold — hope through darkness
+          const rayAlpha = 0.06 + rayRng() * 0.09;
           const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          rayGrad.addColorStop(0, 'rgba(255,240,170,' + (rayAlpha * 1.2) + ')');
-          rayGrad.addColorStop(0.15, 'rgba(255,215,120,' + rayAlpha + ')');
-          rayGrad.addColorStop(0.5, 'rgba(255,180,70,' + (rayAlpha * 0.4) + ')');
-          rayGrad.addColorStop(0.8, 'rgba(255,140,40,' + (rayAlpha * 0.12) + ')');
-          rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
+          rayGrad.addColorStop(0, 'rgba(255,250,230,' + (rayAlpha * 1.5) + ')');
+          rayGrad.addColorStop(0.1, 'rgba(255,242,205,' + (rayAlpha * 1.2) + ')');
+          rayGrad.addColorStop(0.35, 'rgba(255,230,175,' + (rayAlpha * 0.7) + ')');
+          rayGrad.addColorStop(0.6, 'rgba(255,215,145,' + (rayAlpha * 0.3) + ')');
+          rayGrad.addColorStop(0.85, 'rgba(255,195,115,' + (rayAlpha * 0.1) + ')');
+          rayGrad.addColorStop(1, 'rgba(255,180,100,0)');
           ctx.fillStyle = rayGrad;
           ctx.beginPath();
           const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
