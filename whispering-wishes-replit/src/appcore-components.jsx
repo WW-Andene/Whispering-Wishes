@@ -2796,77 +2796,54 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.restore();
         }
-        // Static electricity — slow, long arcs with branches between clouds
+        // Static electricity helper — draws sparks for a cloud range
         function drawStaticSparks(startIdx, endIdx) {
           if (!sceneClouds) return;
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          var et = cloudTime * 0.15; // very slow
-          // Only 1 in 8 clouds gets a spark
-          for (var ei = startIdx; ei < endIdx; ei += 8) {
+          ctx.lineCap = 'round';
+          var et = cloudTime * 0.4; // slow drift
+          for (var ei = startIdx; ei < endIdx; ei += 4) {
             var cl1 = sceneClouds[ei];
-            if (!cl1 || !cl1.baked || cl1.cloudType < 2) continue;
+            if (!cl1 || !cl1.baked) continue;
             var ca1 = cl1.angle, flat1 = cl1.orbitFlatten || 0.7;
             var cx1 = cl1.sunX + Math.cos(ca1) * cl1.orbitDist;
             var cy1 = cl1.sunY + Math.sin(ca1) * cl1.orbitDist * flat1;
-            // Very slow pulse — visible ~20% of cycle
-            var phase = Math.sin(et * 0.08 + ei * 1.3) * Math.sin(et * 0.05 + ei * 0.9);
-            if (phase < 0.5) continue;
-            var alpha = (phase - 0.5) * 1.5;
+            // Slow fade in/out — each spark visible ~30% of time
+            var phase = Math.sin(et * 0.12 + ei * 1.7) * Math.sin(et * 0.07 + ei * 2.3);
+            if (phase < 0.4) continue;
+            var alpha = (phase - 0.4) * 1.2;
+            // Arc between cloud edge and a nearby point
             var bw = cl1.baked.w, bh = cl1.baked.h;
-            // Long arc — spans most of cloud width
-            var arcLen = Math.max(bw, bh) * (0.5 + Math.sin(ei * 3.7) * 0.2);
-            var arcAng = et * 0.04 + ei * 2.1; // very slow rotation
+            var arcLen = Math.max(bw, bh) * (0.2 + Math.sin(ei * 3.7) * 0.1);
+            // Slowly rotating start angle
+            var arcAng = et * 0.08 + ei * 2.1;
             var ox = cx1 + cl1.baked.ox + bw * 0.5;
             var oy = cy1 + cl1.baked.oy + bh * 0.5;
-            var ax0 = ox + Math.cos(arcAng) * bw * 0.3;
-            var ay0 = oy + Math.sin(arcAng) * bh * 0.2;
-            // Seed changes very slowly so arc holds shape
-            var seedT = Math.floor(et * 0.2 + ei * 0.1);
+            var ax0 = ox + Math.cos(arcAng) * bw * 0.35;
+            var ay0 = oy + Math.sin(arcAng) * bh * 0.25;
+            // 3-4 segment jagged path — seeded so it holds shape briefly
+            var seedT = Math.floor(et * 0.5 + ei * 0.3); // changes slowly
             var _es = (ei * 1640531527 + seedT * 9973) | 0;
-            function eRng() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; }
-            // Main arc — 5-7 segments for longer, more detailed path
-            var nSeg = 5 + (ei % 3);
-            var mainDir = arcAng + (eRng() - 0.5) * 0.6;
-            var mpx = [ax0], mpy = [ay0];
-            for (var si = 1; si <= nSeg; si++) {
-              var segFrac = si / nSeg;
-              mpx.push(ax0 + segFrac * arcLen * Math.cos(mainDir) + (eRng() - 0.5) * arcLen * 0.2);
-              mpy.push(ay0 + segFrac * arcLen * Math.sin(mainDir) + (eRng() - 0.5) * arcLen * 0.15);
-            }
-            // Draw main arc — glow + core
+            var nSeg = 3 + (ei % 2);
             ctx.beginPath();
-            ctx.moveTo(mpx[0], mpy[0]);
-            for (var mi = 1; mi < mpx.length; mi++) ctx.lineTo(mpx[mi], mpy[mi]);
-            ctx.strokeStyle = 'rgba(255,140,45,' + (alpha * 0.15) + ')';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,220,160,' + (alpha * 0.45) + ')';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            // 2-3 branch arms splitting from main arc
-            var nBranch = 2 + (ei % 2);
-            for (var bi = 0; bi < nBranch; bi++) {
-              var brIdx = 1 + Math.floor(eRng() * (mpx.length - 2));
-              var brAng = mainDir + (eRng() - 0.5) * 1.5;
-              var brLen = arcLen * (0.2 + eRng() * 0.3);
-              var brSegs = 3 + (bi % 2);
-              ctx.beginPath();
-              ctx.moveTo(mpx[brIdx], mpy[brIdx]);
-              for (var bsi = 1; bsi <= brSegs; bsi++) {
-                ctx.lineTo(
-                  mpx[brIdx] + (bsi / brSegs) * brLen * Math.cos(brAng) + (eRng() - 0.5) * brLen * 0.25,
-                  mpy[brIdx] + (bsi / brSegs) * brLen * Math.sin(brAng) + (eRng() - 0.5) * brLen * 0.2
-                );
-              }
-              ctx.strokeStyle = 'rgba(255,160,70,' + (alpha * 0.1) + ')';
-              ctx.lineWidth = 2;
-              ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,230,180,' + (alpha * 0.3) + ')';
-              ctx.lineWidth = 0.6;
-              ctx.stroke();
+            ctx.moveTo(ax0, ay0);
+            for (var si = 1; si <= nSeg; si++) {
+              _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13);
+              var erx = ((_es >>> 0) % 1000) / 1000 - 0.5;
+              _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13);
+              var ery = ((_es >>> 0) % 1000) / 1000 - 0.5;
+              ctx.lineTo(
+                ax0 + (si / nSeg) * arcLen * Math.cos(arcAng + 0.4) + erx * arcLen * 0.3,
+                ay0 + (si / nSeg) * arcLen * Math.sin(arcAng + 0.4) + ery * arcLen * 0.25
+              );
             }
+            ctx.strokeStyle = 'rgba(255,150,50,' + (alpha * 0.2) + ')';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,225,170,' + (alpha * 0.5) + ')';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
           }
           ctx.restore();
         }
@@ -3448,29 +3425,30 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               cpx.push(-lw + (si / ns) * lw * 2);
               cpy.push(cy + (fr() - 0.5) * bW * 0.5);
             }
-            // Dark crack gap — fully opaque black, extra wide
-            ctx2.strokeStyle = 'rgb(0,0,0)';
-            ctx2.lineWidth = Math.max(2, bW * 0.3);
+            // Dark crack gap
+            ctx2.strokeStyle = 'rgba(2,0,0,0.9)';
+            ctx2.lineWidth = Math.max(1.2, bW * 0.15);
             ctx2.beginPath();
             ctx2.moveTo(cpx[0], cpy[0]);
             for (var pi = 1; pi <= ns; pi++) ctx2.lineTo(cpx[pi], cpy[pi]);
             ctx2.stroke();
             // Bright crack edge
-            ctx2.strokeStyle = 'rgba(' + Math.min(255, lR2 + 100) + ',' + Math.min(255, lG2 + 90) + ',' + Math.min(255, lB22 + 70) + ',' + (0.5 + lit2 * 0.4) + ')';
-            ctx2.lineWidth = Math.max(1, bW * 0.08);
+            ctx2.strokeStyle = 'rgba(' + Math.min(255, lR2 + 100) + ',' + Math.min(255, lG2 + 90) + ',' + Math.min(255, lB22 + 70) + ',' + (0.3 + lit2 * 0.4) + ')';
+            ctx2.lineWidth = Math.max(0.5, bW * 0.04);
             ctx2.beginPath();
             ctx2.moveTo(cpx[0], cpy[0] - Math.max(0.8, bW * 0.08));
             for (var pi2 = 1; pi2 <= ns; pi2++) ctx2.lineTo(cpx[pi2], cpy[pi2] - Math.max(0.8, bW * 0.08));
             ctx2.stroke();
-            // Floating shard — triangular piece drifting away from crack
-            var shardX = (fr() - 0.5) * lw * 0.5;
-            var sdx = (fr() > 0.5 ? 1 : -1) * bW * (1.0 + fr() * 1.5); // big drift outward
-            var sdy = (fr() - 0.5) * bW * 1.0;
-            var shardW = lw * (0.3 + fr() * 0.4);
-            var shardH = bW * (0.6 + fr() * 0.6);
+            // Floating shard — small triangular piece drifting from crack
+            var shardX = (fr() - 0.5) * lw * 1.2;
+            var shardY = cy;
+            var sdx = (fr() - 0.5) * bW * 0.8; // drift X
+            var sdy = (fr() - 0.5) * bW * 0.5; // drift Y
+            var shardW = lw * (0.15 + fr() * 0.2);
+            var shardH = bW * (0.4 + fr() * 0.4);
             // Draw shard as displaced triangle
             ctx2.save();
-            ctx2.translate(shardX + sdx, cy + sdy);
+            ctx2.translate(shardX + sdx, shardY + sdy);
             ctx2.rotate((fr() - 0.5) * 0.3);
             var shBr = 0.3 + lit2 * 0.5;
             ctx2.fillStyle = 'rgb(' + Math.round(30 + 180 * shBr) + ',' + Math.round(22 + 130 * shBr) + ',' + Math.round(14 + 65 * shBr) + ')';
