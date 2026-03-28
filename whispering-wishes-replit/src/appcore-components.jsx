@@ -3465,7 +3465,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const guardR = bladeW * 1.15;
           const guardTh = t * 0.015;
           const gripL = t * 0.13;
-          const gripW2 = bladeW * 1.0;
+          const gripW2 = bladeW * 0.9;
           const pomBallR = bladeW * 0.7;
           const knobR = gripW2 * 0.3;
 
@@ -3499,16 +3499,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
 
-          // Guard — half circle (dome facing grip)
-          ctx.fillStyle = 'rgb(95,78,55)';
-          ctx.beginPath();
-          ctx.moveTo(-guardR, bladeBase);
-          ctx.lineTo(guardR, bladeBase);
-          ctx.arc(0, bladeBase + guardTh, guardR, 0, Math.PI);
-          ctx.closePath();
-          ctx.fill();
-
-          // Grip — turned wood with ridges, shorter
+          // Grip first (guard draws on top)
           ctx.fillStyle = 'rgb(50,22,15)';
           ctx.beginPath();
           const g = gripTop, gl = gripL;
@@ -3525,6 +3516,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.quadraticCurveTo(gripW2 * 0.4, g + gl * 0.45, gripW2 * 0.6, g + gl * 0.35);
           ctx.quadraticCurveTo(gripW2 * 1.1, g + gl * 0.25, gripW2 * 0.85, g + gl * 0.15);
           ctx.quadraticCurveTo(gripW2 * 0.5, g + gl * 0.08, gripW2 * 0.9, g);
+          ctx.closePath();
+          ctx.fill();
+
+          // Guard — half circle (dome facing grip), drawn on top
+          ctx.fillStyle = 'rgb(95,78,55)';
+          ctx.beginPath();
+          ctx.moveTo(-guardR, bladeBase);
+          ctx.lineTo(guardR, bladeBase);
+          ctx.arc(0, bladeBase + guardTh, guardR, 0, Math.PI);
           ctx.closePath();
           ctx.fill();
 
