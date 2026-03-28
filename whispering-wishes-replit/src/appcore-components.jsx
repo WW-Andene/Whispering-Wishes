@@ -3616,7 +3616,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Gold crossbar — arms extend past flag width
           const crossY = poleTop + bScale * 0.04;
-          const crossW = bScale * 0.9;
+          const crossW = bScale * 0.7;
           const crossH = Math.max(2, poleW * 0.8);
           const cbGrad = ctx.createLinearGradient(bScrX - crossW / 2, 0, bScrX + crossW / 2, 0);
           cbGrad.addColorStop(0, gD); cbGrad.addColorStop(0.3, gM); cbGrad.addColorStop(0.5, gH);
@@ -3670,19 +3670,17 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const hR = Math.sin(_fw1(px+dd,py,wt))*0.5+Math.sin(_fw2(px+dd,py,wt))*0.35+Math.sin(_fw3(px+dd,py,wt))*0.25;
               const hD = Math.sin(_fw1(px,py+dd,wt))*0.5+Math.sin(_fw2(px,py+dd,wt))*0.35+Math.sin(_fw3(px,py+dd,wt))*0.25;
               const slopeX = hR - totalH, slopeY = hD - totalH;
-              const gust = 0.5 + Math.sin(wt * 0.035) * 0.35;
-              // FLOAT: strong sideways push + upward lift — cloth actually moves
-              const windPush = freedom * bScale * 0.35 * gust;
-              const foldX = totalH * freedom * bScale * 0.08;
-              // Lift: cloth rises significantly — bottom lifts ~40% of height
-              const windLift = -freedom * bScale * 0.4 * gust;
-              const foldY = slopeY * freedom * bScale * 0.5 + windLift;
+              // Unified wind — one gust drives both push and lift coherently
+              const windStr = 0.5 + Math.sin(wt * 0.035) * 0.35;
+              // Wind blows to the right and upward at ~30° angle
+              const windX = freedom * bScale * 0.35 * windStr + totalH * freedom * bScale * 0.06;
+              const windY = -freedom * bScale * 0.2 * windStr + slopeY * freedom * bScale * 0.4;
               const wz = totalH * freedom * 0.2;
               const zScale = 1 + wz * 0.4;
-              const slopeShift = slopeX * freedom * bScale * 0.6;
+              const slopeShift = slopeX * freedom * bScale * 0.4;
               pts[gy * (gridX + 1) + gx] = {
-                x: bScrX + (u - 0.5) * dW * zScale + windPush + foldX + slopeShift,
-                y: dTop + v * dH + foldY,
+                x: bScrX + (u - 0.5) * dW * zScale + windX + slopeShift,
+                y: dTop + v * dH + windY,
                 z: wz
               };
             }
