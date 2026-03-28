@@ -3612,6 +3612,33 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
+          // Spearhead ornament at pole top
+          const tipH = bScale * 0.25;
+          const tipW = poleW * 2.5;
+          const tipGrad = ctx.createLinearGradient(bScrX - tipW, 0, bScrX + tipW, 0);
+          tipGrad.addColorStop(0, 'rgb(100,70,15)');
+          tipGrad.addColorStop(0.35, 'rgb(200,155,45)');
+          tipGrad.addColorStop(0.5, 'rgb(240,205,85)');
+          tipGrad.addColorStop(0.65, 'rgb(200,155,45)');
+          tipGrad.addColorStop(1, 'rgb(100,70,15)');
+          ctx.fillStyle = tipGrad;
+          ctx.beginPath();
+          ctx.moveTo(bScrX, poleTop - tipH);
+          ctx.lineTo(bScrX - tipW * 0.5, poleTop + tipH * 0.1);
+          ctx.lineTo(bScrX - poleW * 0.4, poleTop);
+          ctx.lineTo(bScrX + poleW * 0.4, poleTop);
+          ctx.lineTo(bScrX + tipW * 0.5, poleTop + tipH * 0.1);
+          ctx.closePath();
+          ctx.fill();
+          // Gold ball under spearhead
+          const ballR = poleW * 1.1;
+          const ballGrad = ctx.createRadialGradient(bScrX - ballR * 0.25, poleTop - ballR * 0.2, 0, bScrX, poleTop, ballR);
+          ballGrad.addColorStop(0, 'rgb(245,210,90)');
+          ballGrad.addColorStop(0.6, 'rgb(200,155,45)');
+          ballGrad.addColorStop(1, 'rgb(120,80,15)');
+          ctx.fillStyle = ballGrad;
+          ctx.beginPath(); ctx.arc(bScrX, poleTop, ballR, 0, Math.PI * 2); ctx.fill();
+
           // Short crossbar near top
           const crossY = poleTop + bScale * 0.05;
           const crossW = bScale * 0.55;
