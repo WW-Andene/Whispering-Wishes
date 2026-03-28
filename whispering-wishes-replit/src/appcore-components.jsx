@@ -3741,28 +3741,33 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
           }
 
-          // Cloth emblem — follows grid displacement at center
+          // Cloth emblem — crossed swords
           const emPt = gp(Math.round(gridX / 2), Math.round(gridY * 0.33));
-          const emCx = emPt.x, emCy = emPt.y, emR = dW * 0.28;
+          const emCx = emPt.x, emCy = emPt.y, emS = dW * 0.3;
           const eA = 'rgba(210,155,50,';
-          ctx.strokeStyle = eA + '0.45)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR, 0, Math.PI * 2); ctx.stroke();
-          ctx.fillStyle = eA + '0.35)';
-          for (let ri = 0; ri < 8; ri++) {
-            const ang = ri * Math.PI / 4 - Math.PI / 2, rLen = emR * 0.85, rW = emR * 0.12;
-            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
-            ctx.beginPath(); ctx.moveTo(0, -rW); ctx.lineTo(rLen, 0); ctx.lineTo(0, rW); ctx.closePath(); ctx.fill(); ctx.restore();
-          }
-          ctx.fillStyle = eA + '0.2)';
-          for (let ri = 0; ri < 8; ri++) {
-            const ang = ri * Math.PI / 4 - Math.PI / 2 + Math.PI / 8, rLen = emR * 0.55, rW = emR * 0.08;
-            ctx.save(); ctx.translate(emCx, emCy); ctx.rotate(ang);
-            ctx.beginPath(); ctx.moveTo(0, -rW); ctx.lineTo(rLen, 0); ctx.lineTo(0, rW); ctx.closePath(); ctx.fill(); ctx.restore();
-          }
-          ctx.strokeStyle = eA + '0.3)'; ctx.lineWidth = Math.max(0.5, bScale * 0.005);
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.35, 0, Math.PI * 2); ctx.stroke();
-          ctx.fillStyle = eA + '0.4)';
-          ctx.beginPath(); ctx.arc(emCx, emCy, emR * 0.1, 0, Math.PI * 2); ctx.fill();
+          // Outer circle
+          ctx.strokeStyle = eA + '0.4)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
+          ctx.beginPath(); ctx.arc(emCx, emCy, emS, 0, Math.PI * 2); ctx.stroke();
+          // Crossed blades
+          ctx.strokeStyle = eA + '0.55)'; ctx.lineWidth = Math.max(1, bScale * 0.012);
+          ctx.beginPath(); ctx.moveTo(emCx - emS * 0.7, emCy - emS * 0.7); ctx.lineTo(emCx + emS * 0.7, emCy + emS * 0.7); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(emCx + emS * 0.7, emCy - emS * 0.7); ctx.lineTo(emCx - emS * 0.7, emCy + emS * 0.7); ctx.stroke();
+          // Guards — small perpendicular lines at 40% from center
+          ctx.lineWidth = Math.max(0.8, bScale * 0.008);
+          const gOff = emS * 0.3, gLen = emS * 0.2;
+          // Sword 1 guards
+          ctx.beginPath(); ctx.moveTo(emCx - gOff - gLen * 0.7, emCy - gOff + gLen * 0.7); ctx.lineTo(emCx - gOff + gLen * 0.7, emCy - gOff - gLen * 0.7); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(emCx + gOff - gLen * 0.7, emCy + gOff + gLen * 0.7); ctx.lineTo(emCx + gOff + gLen * 0.7, emCy + gOff - gLen * 0.7); ctx.stroke();
+          // Sword 2 guards
+          ctx.beginPath(); ctx.moveTo(emCx + gOff + gLen * 0.7, emCy - gOff + gLen * 0.7); ctx.lineTo(emCx + gOff - gLen * 0.7, emCy - gOff - gLen * 0.7); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(emCx - gOff + gLen * 0.7, emCy + gOff + gLen * 0.7); ctx.lineTo(emCx - gOff - gLen * 0.7, emCy + gOff - gLen * 0.7); ctx.stroke();
+          // Pommels — small dots at blade ends
+          ctx.fillStyle = eA + '0.5)';
+          const pomR = Math.max(0.8, emS * 0.08);
+          ctx.beginPath(); ctx.arc(emCx - emS * 0.7, emCy - emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(emCx + emS * 0.7, emCy - emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(emCx - emS * 0.7, emCy + emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(emCx + emS * 0.7, emCy + emS * 0.7, pomR, 0, Math.PI * 2); ctx.fill();
 
           // Gold trim — outline using grid edge points
           ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02);
@@ -3836,94 +3841,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillStyle = scVig;
         ctx.fillRect(0, 0, W, H);
         ctx.restore();
-      // === TEMP EMBLEM PREVIEW — remove after picking ===
-      ctx.save();
-      const prevY = 60, prevR = 18, prevGap = prevR * 2.6;
-      const prevStartX = W / 2 - prevGap * 4.5;
-      const eCol = 'rgba(210,155,50,';
-      // Dark backdrop
-      ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fillRect(0, prevY - prevR - 10, W, prevR * 2 + 30);
-      const labels = ['Swords','Crown','Shield','Flame','Crescent','Wings','Dragon','Eye','Compass','Spiral'];
-
-      for (let ei = 0; ei < 10; ei++) {
-        const ex = prevStartX + ei * prevGap, ey = prevY;
-        // Red circle backing
-        ctx.fillStyle = 'rgb(110,22,14)';
-        ctx.beginPath(); ctx.arc(ex, ey, prevR, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = 'rgb(200,155,45)'; ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.fillStyle = eCol + '0.6)'; ctx.strokeStyle = eCol + '0.6)'; ctx.lineWidth = 1;
-        const s = prevR * 0.6;
-
-        if (ei === 0) { // Crossed swords
-          ctx.beginPath(); ctx.moveTo(ex-s, ey-s); ctx.lineTo(ex+s, ey+s); ctx.moveTo(ex+s, ey-s); ctx.lineTo(ex-s, ey+s); ctx.stroke();
-          ctx.fillStyle = eCol+'0.5)';
-          ctx.fillRect(ex-s*0.15, ey-s-2, s*0.3, 4); ctx.fillRect(ex+s-s*0.15, ey-s-2, s*0.3, 4);
-        } else if (ei === 1) { // Crown
-          ctx.beginPath(); ctx.moveTo(ex-s, ey+s*0.3); ctx.lineTo(ex-s*0.7, ey-s*0.5); ctx.lineTo(ex-s*0.3, ey); ctx.lineTo(ex, ey-s*0.8);
-          ctx.lineTo(ex+s*0.3, ey); ctx.lineTo(ex+s*0.7, ey-s*0.5); ctx.lineTo(ex+s, ey+s*0.3);
-          ctx.closePath(); ctx.fill();
-        } else if (ei === 2) { // Shield
-          ctx.beginPath(); ctx.moveTo(ex-s*0.7, ey-s*0.8); ctx.lineTo(ex+s*0.7, ey-s*0.8);
-          ctx.lineTo(ex+s*0.7, ey+s*0.1); ctx.bezierCurveTo(ex+s*0.6, ey+s*0.7, ex+s*0.2, ey+s, ex, ey+s*1.1);
-          ctx.bezierCurveTo(ex-s*0.2, ey+s, ex-s*0.6, ey+s*0.7, ex-s*0.7, ey+s*0.1);
-          ctx.closePath(); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(ex, ey-s*0.8); ctx.lineTo(ex, ey+s*1.1); ctx.stroke();
-        } else if (ei === 3) { // Flame
-          ctx.beginPath(); ctx.moveTo(ex, ey-s*1.1);
-          ctx.bezierCurveTo(ex+s*0.3, ey-s*0.5, ex+s*0.6, ey, ex+s*0.4, ey+s*0.5);
-          ctx.bezierCurveTo(ex+s*0.3, ey+s*0.8, ex+s*0.1, ey+s, ex, ey+s*0.7);
-          ctx.bezierCurveTo(ex-s*0.1, ey+s, ex-s*0.3, ey+s*0.8, ex-s*0.4, ey+s*0.5);
-          ctx.bezierCurveTo(ex-s*0.6, ey, ex-s*0.3, ey-s*0.5, ex, ey-s*1.1);
-          ctx.closePath(); ctx.fill();
-        } else if (ei === 4) { // Crescent + star
-          ctx.beginPath(); ctx.arc(ex-s*0.15, ey, s*0.7, 0, Math.PI*2); ctx.fill();
-          ctx.fillStyle = 'rgb(110,22,14)';
-          ctx.beginPath(); ctx.arc(ex+s*0.15, ey-s*0.1, s*0.55, 0, Math.PI*2); ctx.fill();
-          ctx.fillStyle = eCol+'0.6)';
-          ctx.beginPath(); for(let si=0;si<5;si++){const a=si*Math.PI*2/5-Math.PI/2,r2=si%2===0?s*0.25:s*0.1;ctx.lineTo(ex+s*0.55+Math.cos(a)*r2,ey-s*0.3+Math.sin(a)*r2);}ctx.closePath();ctx.fill();
-        } else if (ei === 5) { // Wings
-          for (let side = -1; side <= 1; side += 2) {
-            ctx.beginPath(); ctx.moveTo(ex, ey);
-            ctx.bezierCurveTo(ex+side*s*0.3, ey-s*0.8, ex+side*s*0.9, ey-s*0.9, ex+side*s*1.1, ey-s*0.3);
-            ctx.bezierCurveTo(ex+side*s*0.8, ey-s*0.1, ex+side*s*0.4, ey+s*0.1, ex, ey);
-            ctx.closePath(); ctx.fill();
-          }
-        } else if (ei === 6) { // Dragon head
-          ctx.beginPath(); ctx.moveTo(ex+s*0.8, ey-s*0.2);
-          ctx.lineTo(ex+s*0.9, ey-s*0.5); ctx.lineTo(ex+s*0.6, ey-s*0.3);
-          ctx.bezierCurveTo(ex+s*0.3, ey-s*0.8, ex-s*0.2, ey-s*0.9, ex-s*0.5, ey-s*0.6);
-          ctx.bezierCurveTo(ex-s*0.8, ey-s*0.3, ex-s*0.7, ey+s*0.2, ex-s*0.3, ey+s*0.5);
-          ctx.bezierCurveTo(ex, ey+s*0.7, ex+s*0.3, ey+s*0.5, ex+s*0.5, ey+s*0.2);
-          ctx.bezierCurveTo(ex+s*0.7, ey, ex+s*0.8, ey-s*0.1, ex+s*0.8, ey-s*0.2);
-          ctx.closePath(); ctx.fill();
-        } else if (ei === 7) { // Eye
-          ctx.beginPath();
-          ctx.moveTo(ex-s, ey);
-          ctx.bezierCurveTo(ex-s*0.5, ey-s*0.7, ex+s*0.5, ey-s*0.7, ex+s, ey);
-          ctx.bezierCurveTo(ex+s*0.5, ey+s*0.7, ex-s*0.5, ey+s*0.7, ex-s, ey);
-          ctx.closePath(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(ex, ey, s*0.3, 0, Math.PI*2); ctx.fill();
-        } else if (ei === 8) { // Compass rose
-          for(let ci=0;ci<4;ci++){const a=ci*Math.PI/2-Math.PI/2;
-            ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex+Math.cos(a-0.15)*s,ey+Math.sin(a-0.15)*s);
-            ctx.lineTo(ex+Math.cos(a)*s*1.2,ey+Math.sin(a)*s*1.2);
-            ctx.lineTo(ex+Math.cos(a+0.15)*s,ey+Math.sin(a+0.15)*s);ctx.closePath();ctx.fill();
-          }
-          ctx.strokeStyle=eCol+'0.4)';ctx.beginPath();ctx.arc(ex,ey,s*0.35,0,Math.PI*2);ctx.stroke();
-        } else if (ei === 9) { // Spiral
-          ctx.beginPath();
-          for(let si=0;si<60;si++){const a=si*0.2,r2=s*0.1+si*s*0.015;ctx.lineTo(ex+Math.cos(a)*r2,ey+Math.sin(a)*r2);}
-          ctx.strokeStyle=eCol+'0.6)';ctx.lineWidth=1.5;ctx.stroke();
-        }
-        // Label
-        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(labels[ei], ex, ey + prevR + 12);
-      }
-      ctx.restore();
-      // === END TEMP PREVIEW ===
-
       } // end BATTLEGROUND block
       ctx.restore();
     };
