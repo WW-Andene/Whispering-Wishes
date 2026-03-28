@@ -3336,7 +3336,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           if (isGladius) {
             // Gladius proportions — scaled up to match longsword visual size
-            const gO = overall * 1.4;
+            const gO = overall * 0.7;
             const gBL = gO * 0.72, gBW = gO * 0.048;
             const gTaperAt = gBL * 0.65;
             const gGuardR = gBW * 1.15, gGuardTh = gO * 0.015;
