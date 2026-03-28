@@ -2383,9 +2383,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       // Brighter amber palette + per-cloud brightness variation
       const bVar = 0.75 + hash(depth * 127 + proximity * 311) * 0.5;
       // Dramatic dark palette — near-black shadows, deep crimson mids, fiery highlights
-      const shR = Math.round((6 + ds * 4 + lr * 3) * bVar), shG = Math.round((2 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
-      const ltR = Math.min(255, Math.round((245 + ds * 10 + proximity * 10) * bVar)), ltG = Math.min(255, Math.round((85 + ds * 12 + proximity * 8) * bVar)), ltB = Math.min(255, Math.round((18 + ds * 4 + proximity * 3) * bVar));
-      const rmR = Math.min(255, Math.round((255 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((100 + ds * 8 + proximity * 5) * bVar)), rmB = Math.min(255, Math.round((22 + ds * 4 + proximity * 2) * bVar));
+      const shR = Math.round((5 + ds * 3 + lr * 2) * bVar), shG = Math.round((2 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
+      const ltR = Math.min(255, Math.round((150 + ds * 10 + proximity * 8) * bVar)), ltG = Math.min(255, Math.round((55 + ds * 8 + proximity * 5) * bVar)), ltB = Math.min(255, Math.round((12 + ds * 3 + proximity * 2) * bVar));
+      const rmR = Math.min(255, Math.round((180 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((65 + ds * 6 + proximity * 4) * bVar)), rmB = Math.min(255, Math.round((15 + ds * 3 + proximity * 2) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2661,9 +2661,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
-          sk.addColorStop(0,"rgb(8,3,2)");sk.addColorStop(0.1,"rgb(18,6,3)");sk.addColorStop(0.22,"rgb(35,12,5)");
-          sk.addColorStop(0.35,"rgb(65,25,8)");sk.addColorStop(0.48,"rgb(110,42,12)");sk.addColorStop(0.6,"rgb(160,65,18)");
-          sk.addColorStop(0.72,"rgb(210,95,25)");sk.addColorStop(0.82,"rgb(245,135,38)");sk.addColorStop(0.92,"rgb(255,175,60)");sk.addColorStop(1,"rgb(255,200,80)");
+          sk.addColorStop(0,"rgb(140,55,15)");sk.addColorStop(0.1,"rgb(155,62,18)");sk.addColorStop(0.25,"rgb(175,75,20)");
+          sk.addColorStop(0.4,"rgb(195,90,25)");sk.addColorStop(0.55,"rgb(215,110,30)");sk.addColorStop(0.7,"rgb(235,130,35)");
+          sk.addColorStop(0.82,"rgb(248,155,45)");sk.addColorStop(0.92,"rgb(255,180,60)");sk.addColorStop(1,"rgb(255,200,80)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
@@ -2748,7 +2748,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rW2 = sunR * (0.3 + rRng() * 1.2);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
-            const rA = (0.04 + rRng() * 0.06) * alphaScale;
+            const rA = (0.10 + rRng() * 0.12) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
             rG.addColorStop(0, 'rgba(255,240,190,' + (rA * 1.3) + ')');
             rG.addColorStop(0.15, 'rgba(255,225,155,' + (rA * 1.0) + ')');
