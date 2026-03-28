@@ -3576,13 +3576,17 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
               var _gy = _gcrackYs[_gci2];
               var _gw2 = gBW * Math.min(1, (_gy + gBL) / gBL * 1.8);
-              var _gdiag = gBW * 2 * (0.5 + _gcr() * 0.7);
+              var _gspan = gBW * 2 * (0.6 + _gcr() * 0.8);
               var _gdir = _gcr() > 0.5 ? 1 : -1;
-              _gcracks.push([
-                { x: -_gw2 * 1.3, y: _gy - _gdir * _gdiag * 0.5 },
-                { x: (_gcr() - 0.3) * _gw2 * 0.5, y: _gy + (_gcr() - 0.5) * _gdiag * 0.3 },
-                { x: _gw2 * 1.3, y: _gy + _gdir * _gdiag * 0.5 }
-              ]);
+              var _gyS = _gy - _gdir * _gspan * 0.5;
+              var _gyE = _gy + _gdir * _gspan * 0.5;
+              var _gnPts = 4 + (_gcr() * 3 | 0);
+              var _gpts = [];
+              for (var _gpi = 0; _gpi <= _gnPts; _gpi++) {
+                var _gt2 = _gpi / _gnPts;
+                _gpts.push({ x: -_gw2*1.3 + _gt2*_gw2*2.6, y: _gyS + _gt2*(_gyE-_gyS) + (_gcr()-0.5)*_gspan*0.15 });
+              }
+              _gcracks.push(_gpts);
             }
             var _gfdx = [0], _gfdy = [0], _gfr = [0];
             for (var _gfi = 0; _gfi < _gnc; _gfi++) {
@@ -3599,22 +3603,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.save();
               ctx.translate(_gfdx[_gsi], _gfdy[_gsi]);
               ctx.rotate(_gfr[_gsi]);
-              var _gtY = _gtop ? Math.min(_gtop[0].y, _gtop[1].y, _gtop[2].y) : -gBL;
-              var _gbY = _gbot ? Math.max(_gbot[0].y, _gbot[1].y, _gbot[2].y) : 0;
+              var _gtY = -gBL, _gbY = 0;
+              if (_gtop) { _gtY = _gtop[0].y; for(var _gk=1;_gk<_gtop.length;_gk++) if(_gtop[_gk].y<_gtY) _gtY=_gtop[_gk].y; }
+              if (_gbot) { _gbY = _gbot[0].y; for(var _gk2=1;_gk2<_gbot.length;_gk2++) if(_gbot[_gk2].y>_gbY) _gbY=_gbot[_gk2].y; }
               var _gtW = _gbwAt(_gtY), _gbW3 = _gbwAt(_gbY);
               ctx.fillStyle = _gcolL;
               ctx.beginPath();
-              if (_gtop) { ctx.moveTo(Math.min(_gtop[0].x,-_gtW),_gtop[0].y); ctx.lineTo(Math.min(_gtop[1].x,0),_gtop[1].y); ctx.lineTo(Math.min(_gtop[2].x,0),_gtop[2].y); }
+              if (_gtop) { ctx.moveTo(Math.min(_gtop[0].x,-_gtW),_gtop[0].y); for(var _gti=1;_gti<_gtop.length;_gti++) ctx.lineTo(Math.min(_gtop[_gti].x,0),_gtop[_gti].y); }
               else ctx.moveTo(0, -gBL);
-              if (_gbot) { ctx.lineTo(Math.min(_gbot[2].x,0),_gbot[2].y); ctx.lineTo(Math.min(_gbot[1].x,0),_gbot[1].y); ctx.lineTo(Math.min(_gbot[0].x,-_gbW3),_gbot[0].y); }
+              if (_gbot) { for(var _gbi=_gbot.length-1;_gbi>=0;_gbi--) ctx.lineTo(Math.min(_gbot[_gbi].x, _gbi===0?-_gbW3:0),_gbot[_gbi].y); }
               else { ctx.lineTo(0,0); ctx.lineTo(-_gbW3,0); }
               if (_gtop) ctx.lineTo(-_gtW,_gtY);
               ctx.closePath(); ctx.fill();
               ctx.fillStyle = _gcolR;
               ctx.beginPath();
-              if (_gtop) { ctx.moveTo(Math.max(_gtop[2].x,_gtW),_gtop[2].y); ctx.lineTo(Math.max(_gtop[1].x,0),_gtop[1].y); ctx.lineTo(Math.max(_gtop[0].x,0),_gtop[0].y); }
+              if (_gtop) { var _gl=_gtop.length-1; ctx.moveTo(Math.max(_gtop[_gl].x,_gtW),_gtop[_gl].y); for(var _gti2=_gl-1;_gti2>=0;_gti2--) ctx.lineTo(Math.max(_gtop[_gti2].x,0),_gtop[_gti2].y); }
               else ctx.moveTo(0, -gBL);
-              if (_gbot) { ctx.lineTo(Math.max(_gbot[0].x,0),_gbot[0].y); ctx.lineTo(Math.max(_gbot[1].x,0),_gbot[1].y); ctx.lineTo(Math.max(_gbot[2].x,_gbW3),_gbot[2].y); }
+              if (_gbot) { for(var _gbi2=0;_gbi2<_gbot.length;_gbi2++) ctx.lineTo(Math.max(_gbot[_gbi2].x, _gbi2===_gbot.length-1?_gbW3:0),_gbot[_gbi2].y); }
               else { ctx.lineTo(_gbW3,0); ctx.lineTo(0,0); }
               if (_gtop) ctx.lineTo(_gtW,_gtY);
               ctx.closePath(); ctx.fill();
@@ -3691,18 +3696,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             _crackYs.push(-bladeH + (0.15 + _cr() * 0.65) * _totalH);
           }
           _crackYs.sort(function(a, b) { return a - b; });
-          // Build zigzag crack paths — strong diagonal (left Y differs from right Y)
+          // Glass-crack paths — diagonal edge-to-edge, zigzag but never reverse
           var _cracks = [];
           for (var _ci2 = 0; _ci2 < _nc; _ci2++) {
             var _y = _crackYs[_ci2];
             var _w = _hw * Math.min(1, (_y + bladeH) / _totalH * 1.8);
-            var _diag = bladeW * (0.5 + _cr() * 0.7);
-            var _dir = _cr() > 0.5 ? 1 : -1;
-            _cracks.push([
-              { x: -_w * 1.3, y: _y - _dir * _diag * 0.5 },
-              { x: (_cr() - 0.3) * _w * 0.5, y: _y + (_cr() - 0.5) * _diag * 0.3 },
-              { x: _w * 1.3, y: _y + _dir * _diag * 0.5 }
-            ]);
+            // Overall diagonal: one edge higher, other lower
+            var _span = bladeW * (0.6 + _cr() * 0.8); // total Y span of crack
+            var _dir = _cr() > 0.5 ? 1 : -1; // which side is higher
+            var _yStart = _y - _dir * _span * 0.5;
+            var _yEnd = _y + _dir * _span * 0.5;
+            // 4-6 points along crack, progressing monotonically in Y
+            var _nPts = 4 + (_cr() * 3 | 0);
+            var _pts = [];
+            for (var _pi = 0; _pi <= _nPts; _pi++) {
+              var _t2 = _pi / _nPts;
+              // X goes from left edge to right edge
+              var _px = -_w * 1.3 + _t2 * _w * 2.6;
+              // Y progresses from yStart to yEnd with small jags (never reverses overall direction)
+              var _py = _yStart + _t2 * (_yEnd - _yStart) + (_cr() - 0.5) * _span * 0.15;
+              _pts.push({ x: _px, y: _py });
+            }
+            _cracks.push(_pts);
           }
           // Fragment offsets — first stays, rest drift
           var _fdx = [0], _fdy = [0], _fr = [0];
@@ -3721,24 +3736,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.save();
             ctx.translate(_fdx[_si], _fdy[_si]);
             ctx.rotate(_fr[_si]);
-            var _topY = _top ? Math.min(_top[0].y, _top[1].y, _top[2].y) : -bladeH;
-            var _botY = _bot ? Math.max(_bot[0].y, _bot[1].y, _bot[2].y) : guardH;
+            // Find Y bounds from variable-length crack arrays
+            var _topY = -bladeH, _botY = guardH;
+            if (_top) { _topY = _top[0].y; for (var _k=1;_k<_top.length;_k++) if(_top[_k].y<_topY) _topY=_top[_k].y; }
+            if (_bot) { _botY = _bot[0].y; for (var _k2=1;_k2<_bot.length;_k2++) if(_bot[_k2].y>_botY) _botY=_bot[_k2].y; }
             var _tW = _bwAt(_topY), _bW2 = _bwAt(_botY);
-            // Left half
+            // Left half: top crack left→right, then bottom crack right→left, left edge
             ctx.fillStyle = _colL;
             ctx.beginPath();
-            if (_top) { ctx.moveTo(Math.min(_top[0].x, -_tW), _top[0].y); ctx.lineTo(Math.min(_top[1].x, 0), _top[1].y); ctx.lineTo(Math.min(_top[2].x, 0), _top[2].y); }
+            if (_top) { ctx.moveTo(Math.min(_top[0].x, -_tW), _top[0].y); for(var _ti=1;_ti<_top.length;_ti++) ctx.lineTo(Math.min(_top[_ti].x, 0), _top[_ti].y); }
             else { ctx.moveTo(0, -bladeH); }
-            if (_bot) { ctx.lineTo(Math.min(_bot[2].x, 0), _bot[2].y); ctx.lineTo(Math.min(_bot[1].x, 0), _bot[1].y); ctx.lineTo(Math.min(_bot[0].x, -_bW2), _bot[0].y); }
+            if (_bot) { for(var _bi=_bot.length-1;_bi>=0;_bi--) ctx.lineTo(Math.min(_bot[_bi].x, _bi===0?-_bW2:0), _bot[_bi].y); }
             else { ctx.lineTo(0, guardH); ctx.lineTo(-_bW2, guardH); }
             if (_top) ctx.lineTo(-_tW, _topY);
             ctx.closePath(); ctx.fill();
-            // Right half
+            // Right half: top crack right→left, then bottom crack left→right, right edge
             ctx.fillStyle = _colR;
             ctx.beginPath();
-            if (_top) { ctx.moveTo(Math.max(_top[2].x, _tW), _top[2].y); ctx.lineTo(Math.max(_top[1].x, 0), _top[1].y); ctx.lineTo(Math.max(_top[0].x, 0), _top[0].y); }
+            if (_top) { var _last=_top.length-1; ctx.moveTo(Math.max(_top[_last].x, _tW), _top[_last].y); for(var _ti2=_last-1;_ti2>=0;_ti2--) ctx.lineTo(Math.max(_top[_ti2].x, 0), _top[_ti2].y); }
             else { ctx.moveTo(0, -bladeH); }
-            if (_bot) { ctx.lineTo(Math.max(_bot[0].x, 0), _bot[0].y); ctx.lineTo(Math.max(_bot[1].x, 0), _bot[1].y); ctx.lineTo(Math.max(_bot[2].x, _bW2), _bot[2].y); }
+            if (_bot) { for(var _bi2=0;_bi2<_bot.length;_bi2++) ctx.lineTo(Math.max(_bot[_bi2].x, _bi2===_bot.length-1?_bW2:0), _bot[_bi2].y); }
             else { ctx.lineTo(_bW2, guardH); ctx.lineTo(0, guardH); }
             if (_top) ctx.lineTo(_tW, _topY);
             ctx.closePath(); ctx.fill();
