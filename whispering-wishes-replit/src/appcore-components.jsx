@@ -3841,6 +3841,81 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         ctx.fillStyle = scVig;
         ctx.fillRect(0, 0, W, H);
         ctx.restore();
+      // === EMBLEM PREVIEW — on top of everything ===
+      {
+        const cols = 5, rows = 2, cW = Math.min(W / cols, 70), cH = cW * 1.15;
+        const startX = (W - cols * cW) / 2, startY = H * 0.35;
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(startX - 8, startY - 20, cols * cW + 16, rows * cH + 40);
+        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('PICK AN EMBLEM (1-10)', W / 2, startY - 6);
+        const eC = 'rgba(210,155,50,';
+        const names = ['Swords','Crown','Shield','Flame','Moon','Wings','Dragon','Eye','Compass','Spiral'];
+        for (let i = 0; i < 10; i++) {
+          const col = i % cols, row = Math.floor(i / cols);
+          const cx = startX + col * cW + cW / 2, cy = startY + row * cH + cW / 2;
+          const r = cW * 0.35, s = r * 0.55;
+          ctx.fillStyle = 'rgb(120,25,15)';
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgb(200,155,45)'; ctx.lineWidth = 1.5; ctx.stroke();
+          ctx.fillStyle = eC + '0.6)'; ctx.strokeStyle = eC + '0.6)'; ctx.lineWidth = 1;
+          if (i===0) { // Swords
+            ctx.beginPath();ctx.moveTo(cx-s*0.7,cy-s*0.7);ctx.lineTo(cx+s*0.7,cy+s*0.7);ctx.moveTo(cx+s*0.7,cy-s*0.7);ctx.lineTo(cx-s*0.7,cy+s*0.7);ctx.stroke();
+            ctx.lineWidth=0.8;const g=s*0.3,gl=s*0.2;
+            ctx.beginPath();ctx.moveTo(cx-g-gl*0.7,cy-g+gl*0.7);ctx.lineTo(cx-g+gl*0.7,cy-g-gl*0.7);ctx.stroke();
+            ctx.beginPath();ctx.moveTo(cx+g+gl*0.7,cy-g+gl*0.7);ctx.lineTo(cx+g-gl*0.7,cy-g-gl*0.7);ctx.stroke();
+          } else if (i===1) { // Crown
+            ctx.beginPath();ctx.moveTo(cx-s,cy+s*0.3);ctx.lineTo(cx-s*0.7,cy-s*0.5);ctx.lineTo(cx-s*0.3,cy);
+            ctx.lineTo(cx,cy-s*0.8);ctx.lineTo(cx+s*0.3,cy);ctx.lineTo(cx+s*0.7,cy-s*0.5);ctx.lineTo(cx+s,cy+s*0.3);ctx.closePath();ctx.fill();
+          } else if (i===2) { // Shield
+            ctx.strokeStyle=eC+'0.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx-s*0.7,cy-s*0.8);ctx.lineTo(cx+s*0.7,cy-s*0.8);
+            ctx.lineTo(cx+s*0.7,cy+s*0.1);ctx.bezierCurveTo(cx+s*0.6,cy+s*0.7,cx+s*0.2,cy+s,cx,cy+s*1.1);
+            ctx.bezierCurveTo(cx-s*0.2,cy+s,cx-s*0.6,cy+s*0.7,cx-s*0.7,cy+s*0.1);ctx.closePath();ctx.stroke();
+            ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(cx,cy-s*0.8);ctx.lineTo(cx,cy+s*1.1);ctx.stroke();
+          } else if (i===3) { // Flame
+            ctx.beginPath();ctx.moveTo(cx,cy-s*1.1);
+            ctx.bezierCurveTo(cx+s*0.3,cy-s*0.5,cx+s*0.6,cy,cx+s*0.4,cy+s*0.5);
+            ctx.bezierCurveTo(cx+s*0.3,cy+s*0.8,cx+s*0.1,cy+s,cx,cy+s*0.7);
+            ctx.bezierCurveTo(cx-s*0.1,cy+s,cx-s*0.3,cy+s*0.8,cx-s*0.4,cy+s*0.5);
+            ctx.bezierCurveTo(cx-s*0.6,cy,cx-s*0.3,cy-s*0.5,cx,cy-s*1.1);ctx.closePath();ctx.fill();
+          } else if (i===4) { // Crescent
+            ctx.beginPath();ctx.arc(cx-s*0.15,cy,s*0.7,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='rgb(120,25,15)';ctx.beginPath();ctx.arc(cx+s*0.2,cy-s*0.1,s*0.55,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle=eC+'0.6)';ctx.beginPath();for(let si=0;si<5;si++){const a=si*Math.PI*2/5-Math.PI/2,rr=si%2===0?s*0.22:s*0.09;ctx.lineTo(cx+s*0.5+Math.cos(a)*rr,cy-s*0.25+Math.sin(a)*rr);}ctx.closePath();ctx.fill();
+          } else if (i===5) { // Wings
+            for(let sd=-1;sd<=1;sd+=2){ctx.fillStyle=eC+'0.5)';ctx.beginPath();ctx.moveTo(cx,cy);
+              ctx.bezierCurveTo(cx+sd*s*0.3,cy-s*0.8,cx+sd*s*0.9,cy-s*0.9,cx+sd*s*1.1,cy-s*0.3);
+              ctx.bezierCurveTo(cx+sd*s*0.8,cy-s*0.1,cx+sd*s*0.4,cy+s*0.1,cx,cy);ctx.closePath();ctx.fill();}
+          } else if (i===6) { // Dragon
+            ctx.beginPath();ctx.moveTo(cx+s*0.8,cy-s*0.2);ctx.lineTo(cx+s*0.9,cy-s*0.5);ctx.lineTo(cx+s*0.6,cy-s*0.3);
+            ctx.bezierCurveTo(cx+s*0.3,cy-s*0.8,cx-s*0.2,cy-s*0.9,cx-s*0.5,cy-s*0.6);
+            ctx.bezierCurveTo(cx-s*0.8,cy-s*0.3,cx-s*0.7,cy+s*0.2,cx-s*0.3,cy+s*0.5);
+            ctx.bezierCurveTo(cx,cy+s*0.7,cx+s*0.3,cy+s*0.5,cx+s*0.5,cy+s*0.2);
+            ctx.bezierCurveTo(cx+s*0.7,cy,cx+s*0.8,cy-s*0.1,cx+s*0.8,cy-s*0.2);ctx.closePath();ctx.fill();
+            ctx.fillStyle=eC+'0.9)';ctx.beginPath();ctx.arc(cx+s*0.3,cy-s*0.35,s*0.07,0,Math.PI*2);ctx.fill();
+          } else if (i===7) { // Eye
+            ctx.strokeStyle=eC+'0.6)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(cx-s,cy);
+            ctx.bezierCurveTo(cx-s*0.5,cy-s*0.7,cx+s*0.5,cy-s*0.7,cx+s,cy);
+            ctx.bezierCurveTo(cx+s*0.5,cy+s*0.7,cx-s*0.5,cy+s*0.7,cx-s,cy);ctx.closePath();ctx.stroke();
+            ctx.fillStyle=eC+'0.5)';ctx.beginPath();ctx.arc(cx,cy,s*0.3,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle=eC+'0.8)';ctx.beginPath();ctx.arc(cx,cy,s*0.1,0,Math.PI*2);ctx.fill();
+          } else if (i===8) { // Compass
+            for(let ci=0;ci<4;ci++){const a=ci*Math.PI/2-Math.PI/2;ctx.fillStyle=eC+'0.55)';
+              ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a-0.15)*s,cy+Math.sin(a-0.15)*s);
+              ctx.lineTo(cx+Math.cos(a)*s*1.2,cy+Math.sin(a)*s*1.2);ctx.lineTo(cx+Math.cos(a+0.15)*s,cy+Math.sin(a+0.15)*s);ctx.closePath();ctx.fill();}
+            ctx.strokeStyle=eC+'0.4)';ctx.lineWidth=0.8;ctx.beginPath();ctx.arc(cx,cy,s*0.3,0,Math.PI*2);ctx.stroke();
+          } else if (i===9) { // Spiral
+            ctx.strokeStyle=eC+'0.6)';ctx.lineWidth=1.5;ctx.beginPath();
+            for(let si=0;si<60;si++){const a=si*0.2,rr=s*0.08+si*s*0.015;if(si===0)ctx.moveTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr);else ctx.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr);}ctx.stroke();
+          }
+          ctx.fillStyle='rgba(255,255,255,0.7)';ctx.font='8px sans-serif';ctx.textAlign='center';
+          ctx.fillText(names[i],cx,cy+r+10);
+          ctx.fillStyle='rgba(255,200,100,0.7)';ctx.font='bold 9px sans-serif';
+          ctx.fillText(''+(i+1),cx,cy-r-3);
+        }
+      }
+      // === END EMBLEM PREVIEW ===
+
       } // end BATTLEGROUND block
       ctx.restore();
     };
