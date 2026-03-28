@@ -3646,49 +3646,40 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = 'rgb(50,30,16)';
           ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
 
-          // --- Flag blowing sideways in wind — like a ribbon caught in a gale ---
+          // --- Cloth blowing to the side like reference — same shape, wind motion ---
           const dTop = crossY + crossH * 0.5;
           const dW = crossW * 0.9;
           const dH = bScale * 1.8;
+          const dL0 = bScrX - dW / 2, dR0 = bScrX + dW / 2;
           const wt = cloudTime * 0.5;
           const segs = 20;
-          // Wind direction: strong push to the left
-          const windStr = bScale * 0.7;
-          const windGust = 0.15 + Math.sin(wt * 0.3) * 0.1;
 
-          // Each segment: anchored at top, blown sideways + fluttering
-          function getX(t) {
-            // Base wind push — increases down the cloth (t), like drag
-            const drag = t * t * windStr * windGust;
-            // Flutter ripples on top of the drag
-            const flutter = Math.sin(t * 6 - wt * 2.5) * t * bScale * 0.08
-                          + Math.sin(t * 3.5 - wt * 1.4 + 2) * t * bScale * 0.05;
-            return -drag + flutter;
+          // Wind: whole cloth pushed to one side, more at bottom
+          function windX(t) {
+            const push = t * t * bScale * 0.55 * (0.6 + Math.sin(wt * 0.35) * 0.4);
+            const ripple = Math.sin(t * 5 - wt * 2.0) * t * bScale * 0.06
+                         + Math.sin(t * 3 - wt * 1.2 + 1.5) * t * bScale * 0.04;
+            return -push + ripple;
           }
-          function getY(t) {
-            // Cloth lifts slightly when blown — shortens vertical extent
-            const lift = t * t * windStr * windGust * 0.15;
-            return t * dH - lift + Math.sin(t * 5 - wt * 2) * t * bScale * 0.03;
+          function windY(t) {
+            return Math.sin(t * 4.5 - wt * 1.8) * t * bScale * 0.025;
           }
 
           function drapePath() {
             ctx.beginPath();
-            // Top-left corner — fixed to crossbar
-            ctx.moveTo(bScrX - dW / 2, dTop);
-            // Top-right corner
-            ctx.lineTo(bScrX + dW / 2, dTop);
-            // Right edge blowing in wind
+            ctx.moveTo(dL0, dTop);
+            ctx.lineTo(dR0, dTop);
             for (let i = 1; i <= segs; i++) {
               const t = i / segs;
-              ctx.lineTo(bScrX + dW / 2 + getX(t), dTop + getY(t));
+              ctx.lineTo(dR0 + windX(t), dTop + t * dH + windY(t));
             }
-            // Bottom edge — connects right-bottom to left-bottom
-            const bx1 = getX(1), by1 = getY(1);
-            ctx.lineTo(bScrX - dW / 2 + bx1, dTop + by1);
-            // Left edge back up
+            const bwx = windX(1), bwy = windY(1);
+            ctx.lineTo(dR0 + bwx - dW * 0.3, dTop + dH + bwy + bScale * 0.03);
+            ctx.lineTo(dL0 + bwx + dW * 0.3, dTop + dH + bwy + bScale * 0.03);
+            ctx.lineTo(dL0 + windX(1), dTop + dH + bwy);
             for (let i = segs; i >= 1; i--) {
               const t = i / segs;
-              ctx.lineTo(bScrX - dW / 2 + getX(t), dTop + getY(t));
+              ctx.lineTo(dL0 + windX(t), dTop + t * dH + windY(t));
             }
             ctx.closePath();
           }
