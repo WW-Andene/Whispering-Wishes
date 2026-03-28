@@ -3575,20 +3575,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _gcracks = [];
             for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
               var _gy = _gcrackYs[_gci2];
-              var _gdiag = gBL * (0.02 + _gcr() * 0.04);
-              var _gdir = _gcr() > 0.5 ? 1 : -1;
               var _gw2 = gBW * Math.min(1, (_gy + gBL) / gBL * 1.8);
+              var _gdiag = gBW * 2 * (0.5 + _gcr() * 0.7);
+              var _gdir = _gcr() > 0.5 ? 1 : -1;
               _gcracks.push([
-                { x: -_gw2 * 1.3, y: _gy - _gdir * _gdiag },
-                { x: (_gcr() - 0.5) * _gw2, y: _gy + (_gcr() - 0.5) * _gdiag * 0.5 },
-                { x: _gw2 * 1.3, y: _gy + _gdir * _gdiag }
+                { x: -_gw2 * 1.3, y: _gy - _gdir * _gdiag * 0.5 },
+                { x: (_gcr() - 0.3) * _gw2 * 0.5, y: _gy + (_gcr() - 0.5) * _gdiag * 0.3 },
+                { x: _gw2 * 1.3, y: _gy + _gdir * _gdiag * 0.5 }
               ]);
             }
             var _gfdx = [0], _gfdy = [0], _gfr = [0];
             for (var _gfi = 0; _gfi < _gnc; _gfi++) {
-              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * 2 * (0.2 + _gcr() * 0.4));
-              _gfdy.push((_gcr() - 0.5) * gBW * 0.4);
-              _gfr.push((_gcr() - 0.5) * 0.04);
+              _gfdx.push((_gcr() - 0.5) * gBW * 0.3);
+              _gfdy.push((_gcr() - 0.5) * gBW * 0.2);
+              _gfr.push((_gcr() - 0.5) * 0.02);
             }
             var _gbwAt = function(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); };
             var _gcolL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
@@ -3695,21 +3695,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cracks = [];
           for (var _ci2 = 0; _ci2 < _nc; _ci2++) {
             var _y = _crackYs[_ci2];
-            var _diag = _totalH * (0.02 + _cr() * 0.04); // 2-6% blade height diagonal
-            var _dir = _cr() > 0.5 ? 1 : -1; // diagonal direction
             var _w = _hw * Math.min(1, (_y + bladeH) / _totalH * 1.8);
+            var _diag = bladeW * (0.5 + _cr() * 0.7);
+            var _dir = _cr() > 0.5 ? 1 : -1;
             _cracks.push([
-              { x: -_w * 1.3, y: _y - _dir * _diag },
-              { x: (_cr() - 0.5) * _w, y: _y + (_cr() - 0.5) * _diag * 0.5 },
-              { x: _w * 1.3, y: _y + _dir * _diag }
+              { x: -_w * 1.3, y: _y - _dir * _diag * 0.5 },
+              { x: (_cr() - 0.3) * _w * 0.5, y: _y + (_cr() - 0.5) * _diag * 0.3 },
+              { x: _w * 1.3, y: _y + _dir * _diag * 0.5 }
             ]);
           }
           // Fragment offsets — first stays, rest drift
           var _fdx = [0], _fdy = [0], _fr = [0];
           for (var _fi = 0; _fi < _nc; _fi++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.2 + _cr() * 0.4));
-            _fdy.push((_cr() - 0.5) * bladeW * 0.2);
-            _fr.push((_cr() - 0.5) * 0.04);
+            _fdx.push((_cr() - 0.5) * bladeW * 0.15);
+            _fdy.push((_cr() - 0.5) * bladeW * 0.1);
+            _fr.push((_cr() - 0.5) * 0.02);
           }
           var _bwAt = function(y) { return _hw * Math.max(0, Math.min(1, (y + bladeH) / _totalH)); };
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
