@@ -3341,8 +3341,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
                             -bladeW * 0.5, tipEnd - pomDia,
                             -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, ov);
-          ctx.lineTo(0, ov);
+          ctx.lineTo(-bladeW / 2, guardH * 0.5);
+          ctx.lineTo(0, guardH * 0.5);
           ctx.closePath();
           ctx.fill();
           // Right half
@@ -3352,8 +3352,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
                             bladeW * 0.5, tipEnd - pomDia,
                             bladeW / 2, tipEnd);
-          ctx.lineTo(bladeW / 2, ov);
-          ctx.lineTo(0, ov);
+          ctx.lineTo(bladeW / 2, guardH * 0.5);
+          ctx.lineTo(0, guardH * 0.5);
           ctx.closePath();
           ctx.fill();
           // Guard — darker, between both faces
@@ -3396,7 +3396,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const pommelType = (ph >>> 0) % 2;
           // Grip — tapers toward pommel if round
           if (pommelType === 1) {
-            const taperW = gripW * 0.35;
+            const taperW = gripW * 0.65;
             ctx.beginPath();
             ctx.moveTo(-gripW / 2, guardH - ov);
             ctx.lineTo(gripW / 2, guardH - ov);
