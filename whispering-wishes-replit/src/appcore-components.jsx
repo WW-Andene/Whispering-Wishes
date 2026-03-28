@@ -3720,9 +3720,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Draw cloth row by row — each row shaded by its Z depth
           for (let gy = 0; gy < gridY; gy++) {
             const v0 = gy / gridY;
-            const rw = rowWave(gy);
+            const midPt = gridPt(Math.round(gridX / 2), gy);
+            const rowZ = midPt.z;
             // Z affects brightness: positive z = lit face, negative = shadow
-            const zLight = 0.5 + rw.z * 2;
+            const zLight = 0.5 + rowZ * 2;
             const rVal = Math.round(Math.min(255, Math.max(60, (165 - v0 * 65) * (0.7 + zLight * 0.6))));
             const gVal2 = Math.round(Math.min(80, Math.max(12, (48 - v0 * 26) * (0.7 + zLight * 0.6))));
             const bVal2 = Math.round(Math.min(50, Math.max(8, (28 - v0 * 16) * (0.7 + zLight * 0.6))));
@@ -3736,8 +3737,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.closePath(); ctx.fill();
             }
             // Per-row fold highlight when row billows toward viewer
-            if (rw.z > 0.02) {
-              ctx.fillStyle = 'rgba(255,170,100,' + (rw.z * 0.25) + ')';
+            if (rowZ > 0.02) {
+              ctx.fillStyle = 'rgba(255,170,100,' + (rowZ * 0.25) + ')';
               for (let gx = 0; gx < gridX; gx++) {
                 const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
                 const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
@@ -3746,8 +3747,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
                 ctx.closePath(); ctx.fill();
               }
-            } else if (rw.z < -0.02) {
-              ctx.fillStyle = 'rgba(40,10,5,' + (-rw.z * 0.2) + ')';
+            } else if (rowZ < -0.02) {
+              ctx.fillStyle = 'rgba(40,10,5,' + (-rowZ * 0.2) + ')';
               for (let gx = 0; gx < gridX; gx++) {
                 const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
                 const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
