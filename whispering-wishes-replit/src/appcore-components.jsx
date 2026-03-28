@@ -3320,61 +3320,36 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
           const lit = sunProx2 * sunProx2;
           const leftLight = s.scrX > sunX;
-          const dR = Math.round(20 + lit * 30), dG = Math.round(20 + lit * 18), dB = Math.round(22 + lit * 8);
-          const lR = Math.round(55 + lit * 100), lG = Math.round(52 + lit * 60), lB = Math.round(55 + lit * 25);
-          const darkSide = `rgb(${dR},${dG},${dB})`;
-          const lightSide = `rgb(${lR},${lG},${lB})`;
 
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          // === AMBER GLOW BEHIND SWORD ===
-          // X: wx<0 → glow shifts left, wx>0 → glow shifts right
-          const xNorm = Math.max(-1, Math.min(1, s.wx / 25));
-          const glowOffX = xNorm * bladeW * 3;
-          // Z: close → top only, far → whole sword
-          const zT = Math.max(0, Math.min(1, (s.wz - 8) / 42));
-          // Coverage: how far down the glow extends (0=none, 1=full)
-          const coverage = zT < 0.4 ? 0.15 + zT * 1.5 : 0.75 + (zT - 0.4) * 0.42;
-          const glowScale = 1.3 + zT * 0.2;
-          const glowAlpha = 0.25 + lit * 0.2;
-          // Draw glow — enlarged offset amber silhouette clipped by coverage
-          ctx.save();
-          ctx.translate(glowOffX, 0);
-          ctx.scale(glowScale, glowScale);
-          // Clip to coverage height (top of sword down to coverage fraction)
-          const swordTop = -bladeH - pomDia;
-          const swordBot = gripBot + pomDia * 1.5;
-          const swordFullH = swordBot - swordTop;
-          const clipBot = swordTop + swordFullH * coverage;
-          ctx.beginPath();
-          ctx.rect(-guardW, swordTop - 10, guardW * 2, clipBot - swordTop + 10);
-          ctx.clip();
-          // Draw full sword shape as amber glow
-          ctx.fillStyle = 'rgba(255,140,30,' + glowAlpha + ')';
-          ctx.beginPath();
-          // Blade
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.3, -bladeH + pomDia * 0.5, -bladeW * 0.55, tipEnd - pomDia, -bladeW * 0.55, tipEnd);
-          ctx.lineTo(-bladeW * 0.55, ov);
-          ctx.lineTo(bladeW * 0.55, ov);
-          ctx.lineTo(bladeW * 0.55, tipEnd);
-          ctx.bezierCurveTo(bladeW * 0.55, tipEnd - pomDia, bladeW * 0.3, -bladeH + pomDia * 0.5, 0, -bladeH);
-          ctx.closePath();
-          ctx.fill();
-          // Guard
-          ctx.fillRect(-guardW * 0.55, -guardH * 0.3, guardW * 1.1, guardH * 1.6);
-          // Grip + pommel
-          ctx.fillRect(-gripW * 0.45, guardH - 1, gripW * 0.9, gripH + 2);
-          ctx.beginPath();
-          ctx.arc(0, gripBot + pomRy, pomRy * 1.2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
+          // Color palette — metallic with reflected ambient light
+          const dR = Math.round(15 + lit * 20), dG = Math.round(13 + lit * 12), dB = Math.round(15 + lit * 5);
+          const mR = Math.round(35 + lit * 50), mG = Math.round(32 + lit * 30), mB = Math.round(35 + lit * 12);
+          const lR = Math.round(70 + lit * 120), lG = Math.round(65 + lit * 70), lB = Math.round(60 + lit * 25);
+          const hR = Math.min(255, Math.round(120 + lit * 135)), hG = Math.min(255, Math.round(110 + lit * 85)), hB = Math.round(90 + lit * 30);
+          // Reflected light — warm amber from sky bouncing off environment onto shadow side
+          const rR = Math.round(50 + lit * 80), rG = Math.round(30 + lit * 40), rB = Math.round(12 + lit * 10);
+
+          // Light side gradient: edge→highlight→mid (metallic gradient)
+          const lightGrad = ctx.createLinearGradient(0, 0, leftLight ? -bladeW / 2 : bladeW / 2, 0);
+          lightGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
+          lightGrad.addColorStop(0.3, `rgb(${hR},${hG},${hB})`);
+          lightGrad.addColorStop(0.7, `rgb(${lR},${lG},${lB})`);
+          lightGrad.addColorStop(1, `rgb(${mR},${mG},${mB})`);
+
+          // Dark side gradient: mid→dark→reflected light at far edge
+          const darkGrad = ctx.createLinearGradient(0, 0, leftLight ? bladeW / 2 : -bladeW / 2, 0);
+          darkGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
+          darkGrad.addColorStop(0.25, `rgb(${dR},${dG},${dB})`);
+          darkGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
+          darkGrad.addColorStop(1, `rgb(${rR},${rG},${rB})`);
 
           // === NORMAL SWORD FILL ===
           // Left half
-          ctx.fillStyle = leftLight ? lightSide : darkSide;
+          ctx.fillStyle = leftLight ? lightGrad : darkGrad;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3385,7 +3360,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = leftLight ? darkSide : lightSide;
+          ctx.fillStyle = leftLight ? darkGrad : lightGrad;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3395,8 +3370,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          ctx.fillStyle = darkSide;
           // Guard — varies per sword
+          const guardGrad = ctx.createLinearGradient(-guardW / 2, 0, guardW / 2, 0);
+          guardGrad.addColorStop(0, leftLight ? `rgb(${lR},${lG},${lB})` : `rgb(${rR},${rG},${rB})`);
+          guardGrad.addColorStop(0.3, `rgb(${dR},${dG},${dB})`);
+          guardGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
+          guardGrad.addColorStop(1, leftLight ? `rgb(${rR},${rG},${rB})` : `rgb(${lR},${lG},${lB})`);
+          ctx.fillStyle = guardGrad;
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
           if (guardType === 1) {
