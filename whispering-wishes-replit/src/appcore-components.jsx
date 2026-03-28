@@ -2701,7 +2701,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         cloudRefreshIdx = (cloudRefreshIdx + rPerF) % sceneClouds.length;
         // Draw clouds with velocity stretch
         for (let di = 0; di < sceneClouds.length; di++) {
-          const cloud = sceneClouds[di], angSpeed = cloud.orbitSpeed * 0.025;
+          const cloud = sceneClouds[di], angSpeed = Math.max(0.0004, cloud.orbitSpeed * 0.025);
           cloud.angle += angSpeed;
           const ca = cloud.angle, flatR = cloud.orbitFlatten || 0.7;
           const cx2 = cloud.sunX + Math.cos(ca) * cloud.orbitDist;
@@ -3413,6 +3413,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath();
           }
           ctx.fill();
+
+          // Faded amber light reflection on sword silhouette
+          if (lit > 0.05) {
+            const glowA = lit * 0.35;
+            const glowW = Math.max(1, bladeW * 0.6);
+            ctx.save();
+            ctx.globalAlpha = glowA;
+            ctx.shadowColor = 'rgba(255,170,50,0.8)';
+            ctx.shadowBlur = glowW * 3;
+            ctx.strokeStyle = 'rgba(255,180,60,' + (glowA * 0.6) + ')';
+            ctx.lineWidth = glowW * 0.4;
+            // Trace full sword outline on sun-facing side
+            ctx.beginPath();
+            ctx.moveTo(0, -bladeH);
+            const es = leftLight ? -1 : 1;
+            ctx.bezierCurveTo(es * bladeW * 0.25, -bladeH + pomDia * 0.5,
+                              es * bladeW * 0.5, tipEnd - pomDia,
+                              es * bladeW / 2, tipEnd);
+            ctx.lineTo(es * bladeW / 2, ov);
+            ctx.stroke();
+            ctx.restore();
+          }
 
           ctx.restore();
         }
