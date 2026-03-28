@@ -3581,6 +3581,144 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
+        // === BANNER — center of battlefield ===
+        {
+          const bWx = 0, bWz = 14;
+          const bScrX = projX(bWx, bWz);
+          const bScrY = projY(bWz, bWx);
+          const bScale = 2.8 * focal / (bWz - camZ);
+          const poleH = bScale * 4.5;
+          const poleW = Math.max(1.5, bScale * 0.06);
+          const poleTop = bScrY - poleH;
+
+          ctx.save();
+          // Pole — dark wood/metal shaft
+          const poleGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
+          poleGrad.addColorStop(0, 'rgb(35,20,12)');
+          poleGrad.addColorStop(0.3, 'rgb(65,40,22)');
+          poleGrad.addColorStop(0.5, 'rgb(85,55,30)');
+          poleGrad.addColorStop(0.7, 'rgb(65,40,22)');
+          poleGrad.addColorStop(1, 'rgb(35,20,12)');
+          ctx.fillStyle = poleGrad;
+          ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
+
+          // Spearhead tip
+          const tipH = bScale * 0.5;
+          const tipW = poleW * 2.5;
+          ctx.fillStyle = 'rgb(160,150,135)';
+          ctx.beginPath();
+          ctx.moveTo(bScrX, poleTop - tipH);
+          ctx.lineTo(bScrX - tipW / 2, poleTop + tipH * 0.3);
+          ctx.lineTo(bScrX - poleW * 0.4, poleTop);
+          ctx.lineTo(bScrX + poleW * 0.4, poleTop);
+          ctx.lineTo(bScrX + tipW / 2, poleTop + tipH * 0.3);
+          ctx.closePath();
+          ctx.fill();
+          // Spearhead highlight
+          ctx.fillStyle = 'rgba(220,210,190,0.4)';
+          ctx.beginPath();
+          ctx.moveTo(bScrX, poleTop - tipH);
+          ctx.lineTo(bScrX - tipW * 0.15, poleTop + tipH * 0.2);
+          ctx.lineTo(bScrX, poleTop);
+          ctx.closePath();
+          ctx.fill();
+
+          // Crossbar
+          const crossW = bScale * 1.2;
+          const crossH = Math.max(1.5, poleW * 0.7);
+          const crossY = poleTop + tipH * 0.5;
+          ctx.fillStyle = 'rgb(75,48,25)';
+          ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
+          // Crossbar end caps — gold
+          const capR = crossH * 1.2;
+          ctx.fillStyle = 'rgb(185,145,55)';
+          ctx.beginPath(); ctx.arc(bScrX - crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(bScrX + crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
+
+          // Hanging banner cloth — deep crimson with wave
+          const flagTop = crossY + crossH;
+          const flagH = bScale * 2.2;
+          const flagW = crossW * 0.85;
+          const flagL = bScrX - flagW / 2;
+          const flagR = bScrX + flagW / 2;
+          const waveT = cloudTime * 0.6;
+
+          // Draw banner as filled shape with wavy edges
+          ctx.beginPath();
+          ctx.moveTo(flagL, flagTop);
+          // Left edge — gentle wave
+          for (let fy = 0; fy <= 1; fy += 0.05) {
+            const wave = Math.sin(fy * 4 + waveT) * bScale * 0.08;
+            ctx.lineTo(flagL + wave, flagTop + fy * flagH);
+          }
+          // Bottom — pointed/pennant shape
+          const botWave = Math.sin(waveT * 0.8) * bScale * 0.05;
+          ctx.lineTo(bScrX + botWave, flagTop + flagH + bScale * 0.3);
+          // Right edge — wave back up
+          for (let fy = 1; fy >= 0; fy -= 0.05) {
+            const wave = Math.sin(fy * 4 + waveT + 0.5) * bScale * 0.08;
+            ctx.lineTo(flagR + wave, flagTop + fy * flagH);
+          }
+          ctx.closePath();
+
+          // Crimson fill with vertical gradient
+          const flagGrad = ctx.createLinearGradient(0, flagTop, 0, flagTop + flagH);
+          flagGrad.addColorStop(0, 'rgb(120,18,18)');
+          flagGrad.addColorStop(0.3, 'rgb(105,14,14)');
+          flagGrad.addColorStop(0.6, 'rgb(85,10,10)');
+          flagGrad.addColorStop(1, 'rgb(60,6,6)');
+          ctx.fillStyle = flagGrad;
+          ctx.fill();
+
+          // Cloth folds — lighter vertical stripes for fabric feel
+          ctx.save();
+          ctx.clip();
+          for (let fi = 0; fi < 5; fi++) {
+            const foldX = flagL + (fi + 0.5) * (flagW / 5);
+            const foldWave = Math.sin(fi * 1.7 + waveT * 0.9) * bScale * 0.04;
+            const foldGrad = ctx.createLinearGradient(foldX - bScale * 0.15, 0, foldX + bScale * 0.15, 0);
+            const fBright = 0.03 + Math.sin(fi * 2.3 + waveT * 0.5) * 0.025;
+            foldGrad.addColorStop(0, 'rgba(255,180,120,0)');
+            foldGrad.addColorStop(0.5, 'rgba(255,180,120,' + fBright + ')');
+            foldGrad.addColorStop(1, 'rgba(255,180,120,0)');
+            ctx.fillStyle = foldGrad;
+            ctx.fillRect(foldX + foldWave - bScale * 0.15, flagTop, bScale * 0.3, flagH);
+          }
+          // Gold border trim
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(185,145,55,0.5)';
+          ctx.lineWidth = Math.max(1, bScale * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(flagL, flagTop);
+          for (let fy = 0; fy <= 1; fy += 0.05) {
+            const wave = Math.sin(fy * 4 + waveT) * bScale * 0.08;
+            ctx.lineTo(flagL + wave, flagTop + fy * flagH);
+          }
+          ctx.lineTo(bScrX + botWave, flagTop + flagH + bScale * 0.3);
+          for (let fy = 1; fy >= 0; fy -= 0.05) {
+            const wave = Math.sin(fy * 4 + waveT + 0.5) * bScale * 0.08;
+            ctx.lineTo(flagR + wave, flagTop + fy * flagH);
+          }
+          ctx.closePath();
+          ctx.stroke();
+
+          // Rope tassels from crossbar ends
+          ctx.strokeStyle = 'rgba(185,145,55,0.35)';
+          ctx.lineWidth = Math.max(0.5, bScale * 0.015);
+          for (let side = -1; side <= 1; side += 2) {
+            const ropeX = bScrX + side * crossW / 2;
+            ctx.beginPath();
+            ctx.moveTo(ropeX, crossY);
+            for (let rt = 0; rt <= 1; rt += 0.1) {
+              const rx = ropeX + side * rt * bScale * 0.15 + Math.sin(rt * 5 + waveT) * bScale * 0.03;
+              const ry = crossY + rt * bScale * 0.6;
+              ctx.lineTo(rx, ry);
+            }
+            ctx.stroke();
+          }
+
+          ctx.restore();
+        }
 
         // Full-scene dramatic vignette
         ctx.save();
