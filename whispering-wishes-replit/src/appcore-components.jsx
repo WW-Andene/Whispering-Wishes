@@ -3678,77 +3678,83 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const gridX = Math.max(2, Math.round(dW / cellSize));
           const gridY = Math.max(2, Math.round(dH / cellSize));
 
-          // Compute displaced grid point
-          function gridPt(gx, gy) {
-            const u = gx / gridX, v = gy / gridY; // u: 0-1 across, v: 0-1 down
-            const baseX = bScrX - dW / 2 + u * dW;
-            const baseY = dTop + v * dH;
-            // Horizontal displacement — wind pushes sideways, more at bottom, varies across width
-            const hPush = v * v * bScale * 0.35 * (0.65 + Math.sin(wt * 0.35) * 0.35);
-            const hRipple = Math.sin(v * 5 - wt * 2.0 + u * 1.5) * v * bScale * 0.05
-                          + Math.sin(v * 3 - wt * 1.2 + u * 2.5) * v * bScale * 0.03
-                          + Math.sin(u * 4 + v * 2 - wt * 1.8) * v * bScale * 0.02;
-            // Vertical displacement — ripple waves
-            const vRipple = Math.sin(v * 6 - wt * 1.5 + u * 2) * v * bScale * 0.04
-                          + Math.sin(v * 3.5 - wt * 0.9 + u * 1.2) * v * bScale * 0.03
-                          + Math.sin(u * 3 + v * 8 - wt * 2.5) * v * v * bScale * 0.015;
-            return [baseX + hPush + hRipple, baseY + vRipple];
+          // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
+          // Row 0 = anchored at crossbar, row gridY = free bottom
+          // Per-row wave: each row has its own phase offset propagating down
+          function rowWave(row) {
+            const v = row / gridY;
+            const freedom = v * v; // bottom rows move more
+            const rowPhase = row * 0.7; // each row offset in wave phase
+            // X: wind push + per-row ripple
+            const wx = freedom * bScale * 0.4 * (0.6 + Math.sin(wt * 0.35) * 0.4)
+                     + Math.sin(rowPhase - wt * 2.0) * v * bScale * 0.06
+                     + Math.sin(rowPhase * 0.6 - wt * 1.2) * v * bScale * 0.04;
+            // Y: vertical ripple
+            const wy = Math.sin(rowPhase * 1.3 - wt * 1.5) * v * bScale * 0.05
+                     + Math.sin(rowPhase * 0.4 - wt * 0.8 + 1.2) * v * bScale * 0.03;
+            // Z: depth billow (positive = toward viewer = bigger+brighter, negative = away = smaller+darker)
+            const wz = Math.sin(rowPhase * 0.9 - wt * 1.0 + 0.5) * v * 0.15
+                     + Math.sin(rowPhase * 0.3 - wt * 0.5 + 2) * v * 0.08;
+            return { x: wx, y: wy, z: wz };
           }
 
-          // Draw cloth as filled quad strips row by row
+          // Compute grid point using row wave
+          function gridPt(gx, gy) {
+            const u = gx / gridX, v = gy / gridY;
+            const rw = rowWave(gy);
+            // Z affects scale: closer = wider, further = narrower
+            const zScale = 1 + rw.z * 0.3;
+            const centerX = bScrX + rw.x;
+            const baseX = centerX + (u - 0.5) * dW * zScale;
+            const baseY = dTop + v * dH + rw.y;
+            return { x: baseX, y: baseY, z: rw.z };
+          }
+
+          // Draw cloth row by row — each row shaded by its Z depth
           for (let gy = 0; gy < gridY; gy++) {
-            const v0 = gy / gridY, v1 = (gy + 1) / gridY;
-            // Color for this row
-            const rVal = Math.round(165 - v0 * 65);
-            const gVal = Math.round(48 - v0 * 26);
-            const bVal = Math.round(28 - v0 * 16);
-            ctx.fillStyle = 'rgb(' + rVal + ',' + gVal + ',' + bVal + ')';
+            const v0 = gy / gridY;
+            const rw = rowWave(gy);
+            // Z affects brightness: positive z = lit face, negative = shadow
+            const zLight = 0.5 + rw.z * 2;
+            const rVal = Math.round(Math.min(255, Math.max(60, (165 - v0 * 65) * (0.7 + zLight * 0.6))));
+            const gVal2 = Math.round(Math.min(80, Math.max(12, (48 - v0 * 26) * (0.7 + zLight * 0.6))));
+            const bVal2 = Math.round(Math.min(50, Math.max(8, (28 - v0 * 16) * (0.7 + zLight * 0.6))));
+            ctx.fillStyle = 'rgb(' + rVal + ',' + gVal2 + ',' + bVal2 + ')';
             for (let gx = 0; gx < gridX; gx++) {
               const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
               const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
               ctx.beginPath();
-              ctx.moveTo(p00[0], p00[1]);
-              ctx.lineTo(p10[0], p10[1]);
-              ctx.lineTo(p11[0], p11[1]);
-              ctx.lineTo(p01[0], p01[1]);
-              ctx.closePath();
-              ctx.fill();
+              ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
+              ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
+              ctx.closePath(); ctx.fill();
             }
-          }
-
-          // Fold shading overlay — per-column highlight/shadow based on local curvature
-          for (let gx = 0; gx < gridX; gx++) {
-            const u = (gx + 0.5) / gridX;
-            // Sample horizontal neighbors to get local normal
-            const pL = gridPt(gx, gridY * 0.5), pR = gridPt(gx + 1, gridY * 0.5);
-            const dx = pR[0] - pL[0];
-            const foldLight = dx / (dW / gridX); // >1 means stretched = highlight, <1 = compressed = shadow
-            const hlA = Math.max(0, (foldLight - 0.9) * 0.15);
-            const shA = Math.max(0, (1.1 - foldLight) * 0.08);
-            if (hlA > 0.001) {
-              ctx.fillStyle = 'rgba(255,170,100,' + hlA + ')';
-              // Draw highlight strip along this column
-              for (let gy = 0; gy < gridY; gy++) {
-                const p0 = gridPt(gx, gy), p1 = gridPt(gx, gy + 1);
-                const p2 = gridPt(gx + 1, gy + 1), p3 = gridPt(gx + 1, gy);
-                ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p3[0], p3[1]);
-                ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p1[0], p1[1]); ctx.closePath(); ctx.fill();
+            // Per-row fold highlight when row billows toward viewer
+            if (rw.z > 0.02) {
+              ctx.fillStyle = 'rgba(255,170,100,' + (rw.z * 0.25) + ')';
+              for (let gx = 0; gx < gridX; gx++) {
+                const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
+                const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
+                ctx.beginPath();
+                ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
+                ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
+                ctx.closePath(); ctx.fill();
               }
-            }
-            if (shA > 0.001) {
-              ctx.fillStyle = 'rgba(80,20,5,' + shA + ')';
-              for (let gy = 0; gy < gridY; gy++) {
-                const p0 = gridPt(gx, gy), p1 = gridPt(gx, gy + 1);
-                const p2 = gridPt(gx + 1, gy + 1), p3 = gridPt(gx + 1, gy);
-                ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p3[0], p3[1]);
-                ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p1[0], p1[1]); ctx.closePath(); ctx.fill();
+            } else if (rw.z < -0.02) {
+              ctx.fillStyle = 'rgba(40,10,5,' + (-rw.z * 0.2) + ')';
+              for (let gx = 0; gx < gridX; gx++) {
+                const p00 = gridPt(gx, gy), p10 = gridPt(gx + 1, gy);
+                const p01 = gridPt(gx, gy + 1), p11 = gridPt(gx + 1, gy + 1);
+                ctx.beginPath();
+                ctx.moveTo(p00.x, p00.y); ctx.lineTo(p10.x, p10.y);
+                ctx.lineTo(p11.x, p11.y); ctx.lineTo(p01.x, p01.y);
+                ctx.closePath(); ctx.fill();
               }
             }
           }
 
           // Cloth emblem — follows grid displacement at center
-          const emPt = gridPt(gridX / 2, Math.round(gridY * 0.33));
-          const emCx = emPt[0], emCy = emPt[1], emR = dW * 0.28;
+          const emPt = gridPt(Math.round(gridX / 2), Math.round(gridY * 0.33));
+          const emCx = emPt.x, emCy = emPt.y, emR = dW * 0.28;
           const eA = 'rgba(210,155,50,';
           ctx.strokeStyle = eA + '0.45)'; ctx.lineWidth = Math.max(0.8, bScale * 0.01);
           ctx.beginPath(); ctx.arc(emCx, emCy, emR, 0, Math.PI * 2); ctx.stroke();
@@ -3772,14 +3778,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Gold trim — outline using grid edge points
           ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.02);
           ctx.beginPath();
-          // Top edge
-          for (let gx = 0; gx <= gridX; gx++) { const p = gridPt(gx, 0); if (gx === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); }
-          // Right edge
-          for (let gy = 1; gy <= gridY; gy++) { const p = gridPt(gridX, gy); ctx.lineTo(p[0], p[1]); }
-          // Bottom edge
-          for (let gx = gridX - 1; gx >= 0; gx--) { const p = gridPt(gx, gridY); ctx.lineTo(p[0], p[1]); }
-          // Left edge
-          for (let gy = gridY - 1; gy >= 0; gy--) { const p = gridPt(0, gy); ctx.lineTo(p[0], p[1]); }
+          for (let gx = 0; gx <= gridX; gx++) { const p = gridPt(gx, 0); if (gx === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }
+          for (let gy = 1; gy <= gridY; gy++) { const p = gridPt(gridX, gy); ctx.lineTo(p.x, p.y); }
+          for (let gx = gridX - 1; gx >= 0; gx--) { const p = gridPt(gx, gridY); ctx.lineTo(p.x, p.y); }
+          for (let gy = gridY - 1; gy >= 0; gy--) { const p = gridPt(0, gy); ctx.lineTo(p.x, p.y); }
           ctx.closePath(); ctx.stroke();
 
           ctx.restore();
