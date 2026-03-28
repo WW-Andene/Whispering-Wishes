@@ -2664,7 +2664,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v8) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v9) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
@@ -2710,7 +2710,87 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
-          skyCache._v8 = true;
+          // === STATIC ORANGE LIGHTNING across the sky ===
+          // Seeded RNG for deterministic bolts
+          let _ls = 91827364;
+          const lRng = () => { _ls = (_ls * 1103515245 + 12345) & 0x7fffffff; return _ls / 0x7fffffff; };
+          // Generate jagged bolt path from start to end
+          function boltPath(sc2, x0, y0, x1, y1, depth, maxD) {
+            if (depth >= maxD) {
+              sc2.lineTo(x1, y1);
+              return;
+            }
+            const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+            const dx = x1 - x0, dy = y1 - y0;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            const jitter = len * (0.15 + depth * 0.05);
+            const ox = mx + (lRng() - 0.5) * jitter;
+            const oy = my + (lRng() - 0.5) * jitter;
+            boltPath(sc2, x0, y0, ox, oy, depth + 1, maxD);
+            // Branch chance on early subdivisions
+            if (depth < maxD - 1 && lRng() < 0.35) {
+              const bAng = (lRng() - 0.5) * 1.2;
+              const bLen = len * (0.25 + lRng() * 0.3);
+              const bx = ox + Math.cos(bAng + Math.atan2(dy, dx)) * bLen;
+              const by = oy + Math.sin(bAng + Math.atan2(dy, dx)) * bLen;
+              sc.save();
+              sc.beginPath();
+              sc.moveTo(ox, oy);
+              boltPath(sc, ox, oy, bx, by, depth + 1, maxD);
+              sc.globalAlpha *= 0.5;
+              sc.stroke();
+              sc.restore();
+            }
+            boltPath(sc2, ox, oy, x1, y1, depth + 1, maxD);
+          }
+          // Draw 5-7 bolts across the upper sky
+          const nBolts = 5 + Math.floor(lRng() * 3);
+          sc.save();
+          sc.lineCap = 'round';
+          sc.lineJoin = 'round';
+          for (let bi = 0; bi < nBolts; bi++) {
+            const sx = lRng() * W;
+            const sy = lRng() * H * 0.45;
+            const ang = (lRng() - 0.5) * 1.5 + Math.PI * 0.5;
+            const bLen = H * (0.15 + lRng() * 0.35);
+            const ex = sx + Math.cos(ang) * bLen;
+            const ey = sy + Math.sin(ang) * bLen;
+            // Outer glow
+            sc.globalAlpha = 0.12 + lRng() * 0.08;
+            sc.strokeStyle = 'rgb(255,140,40)';
+            sc.lineWidth = 6 + lRng() * 4;
+            sc.filter = 'blur(4px)';
+            sc.beginPath();
+            sc.moveTo(sx, sy);
+            _ls = 91827364 + bi * 77777; // reset per bolt for reproducibility
+            // re-seed for this bolt
+            const bSeed = 91827364 + bi * 77777;
+            _ls = bSeed;
+            boltPath(sc, sx, sy, ex, ey, 0, 5);
+            sc.stroke();
+            // Mid glow
+            sc.globalAlpha = 0.2 + lRng() * 0.1;
+            sc.strokeStyle = 'rgb(255,180,80)';
+            sc.lineWidth = 2.5;
+            sc.filter = 'blur(2px)';
+            sc.beginPath();
+            sc.moveTo(sx, sy);
+            _ls = bSeed;
+            boltPath(sc, sx, sy, ex, ey, 0, 5);
+            sc.stroke();
+            // Core — bright white-orange
+            sc.globalAlpha = 0.35 + lRng() * 0.15;
+            sc.strokeStyle = 'rgb(255,225,180)';
+            sc.lineWidth = 1;
+            sc.filter = 'none';
+            sc.beginPath();
+            sc.moveTo(sx, sy);
+            _ls = bSeed;
+            boltPath(sc, sx, sy, ex, ey, 0, 5);
+            sc.stroke();
+          }
+          sc.restore();
+          skyCache._v9 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
