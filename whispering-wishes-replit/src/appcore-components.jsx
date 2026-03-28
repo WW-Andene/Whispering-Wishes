@@ -3452,6 +3452,96 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
+        // === CENTERPIECE GLADIUS ===
+        {
+          const t = H * 0.38;
+          ctx.save();
+          ctx.translate(W * 0.5, H * 0.77);
+          ctx.rotate(0.02);
+
+          const bladeL = t * 0.58;
+          const bladeW = t * 0.045;
+          const taperAt = bladeL * 0.68;
+          const guardR = t * 0.055;
+          const guardTh = t * 0.02;
+          const gripL = t * 0.25;
+          const gripW2 = bladeW * 0.55;
+          const pomR = guardR;
+          const pomTh = guardTh;
+          const knobR = gripW2 * 0.4;
+
+          const bury = bladeL * 0.4;
+          const bladeTip = -bladeL + bury;
+          const bladeBase = bury;
+          const guardY = bladeBase + guardTh * 0.5;
+          const gripTop = bladeBase + guardTh;
+          const gripBot2 = gripTop + gripL;
+          const pomY = gripBot2 + pomTh * 0.5;
+          const knobY = gripBot2 + pomTh + knobR;
+
+          // Blade left — light steel
+          ctx.fillStyle = 'rgb(175,168,155)';
+          ctx.beginPath();
+          ctx.moveTo(0, bladeTip);
+          ctx.lineTo(-bladeW * 0.15, bladeTip + (bladeL - taperAt) * 0.3);
+          ctx.lineTo(-bladeW, bladeTip + bladeL - taperAt);
+          ctx.lineTo(-bladeW, bladeBase);
+          ctx.lineTo(0, bladeBase);
+          ctx.closePath();
+          ctx.fill();
+
+          // Blade right — dark steel
+          ctx.fillStyle = 'rgb(100,95,88)';
+          ctx.beginPath();
+          ctx.moveTo(0, bladeTip);
+          ctx.lineTo(bladeW * 0.15, bladeTip + (bladeL - taperAt) * 0.3);
+          ctx.lineTo(bladeW, bladeTip + bladeL - taperAt);
+          ctx.lineTo(bladeW, bladeBase);
+          ctx.lineTo(0, bladeBase);
+          ctx.closePath();
+          ctx.fill();
+
+          // Guard disc
+          ctx.fillStyle = 'rgb(95,78,55)';
+          ctx.beginPath();
+          ctx.ellipse(0, guardY, guardR, guardTh * 0.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Grip — turned wood with ridges
+          ctx.fillStyle = 'rgb(50,22,15)';
+          ctx.beginPath();
+          const g = gripTop, gl = gripL;
+          ctx.moveTo(-gripW2 * 0.9, g);
+          ctx.quadraticCurveTo(-gripW2 * 0.5, g + gl * 0.08, -gripW2 * 0.85, g + gl * 0.15);
+          ctx.quadraticCurveTo(-gripW2 * 1.1, g + gl * 0.25, -gripW2 * 0.6, g + gl * 0.35);
+          ctx.quadraticCurveTo(-gripW2 * 0.4, g + gl * 0.45, -gripW2 * 0.55, g + gl * 0.55);
+          ctx.quadraticCurveTo(-gripW2 * 0.9, g + gl * 0.65, -gripW2 * 0.65, g + gl * 0.75);
+          ctx.quadraticCurveTo(-gripW2 * 0.45, g + gl * 0.85, -gripW2 * 0.85, g + gl * 0.95);
+          ctx.lineTo(-gripW2 * 0.9, g + gl);
+          ctx.lineTo(gripW2 * 0.9, g + gl);
+          ctx.quadraticCurveTo(gripW2 * 0.45, g + gl * 0.85, gripW2 * 0.65, g + gl * 0.75);
+          ctx.quadraticCurveTo(gripW2 * 0.9, g + gl * 0.65, gripW2 * 0.55, g + gl * 0.55);
+          ctx.quadraticCurveTo(gripW2 * 0.4, g + gl * 0.45, gripW2 * 0.6, g + gl * 0.35);
+          ctx.quadraticCurveTo(gripW2 * 1.1, g + gl * 0.25, gripW2 * 0.85, g + gl * 0.15);
+          ctx.quadraticCurveTo(gripW2 * 0.5, g + gl * 0.08, gripW2 * 0.9, g);
+          ctx.closePath();
+          ctx.fill();
+
+          // Pommel disc
+          ctx.fillStyle = 'rgb(85,70,50)';
+          ctx.beginPath();
+          ctx.ellipse(0, pomY, pomR, pomTh * 0.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Top knob
+          ctx.fillStyle = 'rgb(75,62,45)';
+          ctx.beginPath();
+          ctx.arc(0, knobY, knobR, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+
         // Full-scene dramatic vignette
         ctx.save();
         const scVig = ctx.createRadialGradient(W*0.5, H*0.3, H*0.1, W*0.5, H*0.5, Math.max(W,H)*0.8);
