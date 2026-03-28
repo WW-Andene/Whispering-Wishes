@@ -3568,31 +3568,31 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _gcs = (s.idx * 2246822519 + 777) | 0;
             var _gcr = function() { _gcs = (_gcs * 1103515245 + 12345) & 0x7fffffff; return _gcs / 0x7fffffff; };
             _gcr(); _gcr();
-            var _gnc = 2 + (_gcr() * 2 | 0);
+            var _gnc = 3 + (_gcr() * 2 | 0);
             var _gcrackYs = [];
-            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + (0.15 + _gcr() * 0.65) * gBL);
+            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + (0.10 + _gcr() * 0.75) * gBL);
             _gcrackYs.sort(function(a, b) { return a - b; });
             var _gcracks = [];
             for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
               var _gy = _gcrackYs[_gci2];
               var _gw2 = gBW * Math.min(1, (_gy + gBL) / gBL * 1.8);
-              var _gspan = gBW * 2 * (0.3 + _gcr() * 0.4);
+              var _gspan = gBW * 2 * (0.2 + _gcr() * 0.3);
               var _gdir = _gcr() > 0.5 ? 1 : -1;
               var _gyS = _gy - _gdir * _gspan * 0.5;
               var _gyE = _gy + _gdir * _gspan * 0.5;
-              var _gnPts = 4 + (_gcr() * 3 | 0);
-              var _gpts = [];
-              for (var _gpi = 0; _gpi <= _gnPts; _gpi++) {
-                var _gt2 = _gpi / _gnPts;
-                _gpts.push({ x: -_gw2*1.3 + _gt2*_gw2*2.6, y: _gyS + _gt2*(_gyE-_gyS) + (_gcr()-0.5)*_gspan*0.15 });
-              }
-              _gcracks.push(_gpts);
+              var _gkx = (_gcr() * 0.6 - 0.3) * _gw2;
+              var _gky = _gyS + (_gyE - _gyS) * (0.3 + _gcr() * 0.4) + (_gcr() - 0.5) * _gspan * 0.2;
+              _gcracks.push([
+                { x: -_gw2 * 1.3, y: _gyS },
+                { x: _gkx, y: _gky },
+                { x: _gw2 * 1.3, y: _gyE }
+              ]);
             }
             var _gfdx = [0], _gfdy = [0], _gfr = [0];
             for (var _gfi = 0; _gfi < _gnc; _gfi++) {
-              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * (0.6 + _gcr() * 0.6));
-              _gfdy.push((_gcr() - 0.5) * gBW * 0.4);
-              _gfr.push((_gcr() - 0.5) * 0.03);
+              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * (0.3 + _gcr() * 0.5));
+              _gfdy.push((_gcr() - 0.5) * gBW * 0.3);
+              _gfr.push((_gcr() - 0.5) * 0.02);
             }
             var _gbwAt = function(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); };
             var _gcolL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
@@ -3683,65 +3683,59 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — fractured 3D blade ===
+          // === LONGSWORD — fractured 3D blade (glass-crack style) ===
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
-          var _nc = 2 + (_cr() * 2 | 0); // 2-3 cracks
+          var _nc = 3 + (_cr() * 2 | 0); // 3-4 cracks
           var _hw = bladeW / 2;
           var _totalH = bladeH + guardH;
-          // Random crack Y positions within 15%-80% of blade
+          // Crack Y positions spread across 10%-85% of blade
           var _crackYs = [];
           for (var _ci = 0; _ci < _nc; _ci++) {
-            _crackYs.push(-bladeH + (0.15 + _cr() * 0.65) * _totalH);
+            _crackYs.push(-bladeH + (0.10 + _cr() * 0.75) * _totalH);
           }
           _crackYs.sort(function(a, b) { return a - b; });
-          // Glass-crack paths — diagonal edge-to-edge, zigzag but never reverse
+          // Each crack: gentle diagonal (~10-20°), 3-4 zigzag points, edge to edge
           var _cracks = [];
           for (var _ci2 = 0; _ci2 < _nc; _ci2++) {
             var _y = _crackYs[_ci2];
             var _w = _hw * Math.min(1, (_y + bladeH) / _totalH * 1.8);
-            // Overall diagonal: one edge higher, other lower
-            var _span = bladeW * (0.3 + _cr() * 0.4); // gentle diagonal
-            var _dir = _cr() > 0.5 ? 1 : -1; // which side is higher
-            var _yStart = _y - _dir * _span * 0.5;
-            var _yEnd = _y + _dir * _span * 0.5;
-            // 4-6 points along crack, progressing monotonically in Y
-            var _nPts = 4 + (_cr() * 3 | 0);
-            var _pts = [];
-            for (var _pi = 0; _pi <= _nPts; _pi++) {
-              var _t2 = _pi / _nPts;
-              // X goes from left edge to right edge
-              var _px = -_w * 1.3 + _t2 * _w * 2.6;
-              // Y progresses from yStart to yEnd with small jags (never reverses overall direction)
-              var _py = _yStart + _t2 * (_yEnd - _yStart) + (_cr() - 0.5) * _span * 0.15;
-              _pts.push({ x: _px, y: _py });
-            }
-            _cracks.push(_pts);
+            var _span = bladeW * (0.2 + _cr() * 0.3); // gentle ~10-20°
+            var _dir = _cr() > 0.5 ? 1 : -1;
+            var _yS = _y - _dir * _span * 0.5;
+            var _yE = _y + _dir * _span * 0.5;
+            // 3 points: left edge, one kink, right edge
+            var _kx = (_cr() * 0.6 - 0.3) * _w;
+            var _ky = _yS + (_yE - _yS) * (0.3 + _cr() * 0.4) + (_cr() - 0.5) * _span * 0.2;
+            _cracks.push([
+              { x: -_w * 1.3, y: _yS },
+              { x: _kx, y: _ky },
+              { x: _w * 1.3, y: _yE }
+            ]);
           }
-          // Fragment offsets — first stays, rest drift
+          // Fragment offsets — first stays, rest drift slightly
           var _fdx = [0], _fdy = [0], _fr = [0];
           for (var _fi = 0; _fi < _nc; _fi++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.3 + _cr() * 0.3));
-            _fdy.push((_cr() - 0.5) * bladeW * 0.2);
-            _fr.push((_cr() - 0.5) * 0.03);
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.15 + _cr() * 0.25));
+            _fdy.push((_cr() - 0.5) * bladeW * 0.15);
+            _fr.push((_cr() - 0.5) * 0.02);
           }
           var _bwAt = function(y) { return _hw * Math.max(0, Math.min(1, (y + bladeH) / _totalH)); };
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
           var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
-          // Draw each fragment
+          // Draw each fragment piece
           for (var _si = 0; _si <= _nc; _si++) {
             var _top = _si > 0 ? _cracks[_si - 1] : null;
             var _bot = _si < _nc ? _cracks[_si] : null;
             ctx.save();
             ctx.translate(_fdx[_si], _fdy[_si]);
             ctx.rotate(_fr[_si]);
-            // Find Y bounds from variable-length crack arrays
             var _topY = -bladeH, _botY = guardH;
             if (_top) { _topY = _top[0].y; for (var _k=1;_k<_top.length;_k++) if(_top[_k].y<_topY) _topY=_top[_k].y; }
             if (_bot) { _botY = _bot[0].y; for (var _k2=1;_k2<_bot.length;_k2++) if(_bot[_k2].y>_botY) _botY=_bot[_k2].y; }
             var _tW = _bwAt(_topY), _bW2 = _bwAt(_botY);
-            // Left half: top crack left→right, then bottom crack right→left, left edge
+            // Left half
             ctx.fillStyle = _colL;
             ctx.beginPath();
             if (_top) { ctx.moveTo(Math.min(_top[0].x, -_tW), _top[0].y); for(var _ti=1;_ti<_top.length;_ti++) ctx.lineTo(Math.min(_top[_ti].x, 0), _top[_ti].y); }
@@ -3750,7 +3744,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             else { ctx.lineTo(0, guardH); ctx.lineTo(-_bW2, guardH); }
             if (_top) ctx.lineTo(-_tW, _topY);
             ctx.closePath(); ctx.fill();
-            // Right half: top crack right→left, then bottom crack left→right, right edge
+            // Right half
             ctx.fillStyle = _colR;
             ctx.beginPath();
             if (_top) { var _last=_top.length-1; ctx.moveTo(Math.max(_top[_last].x, _tW), _top[_last].y); for(var _ti2=_last-1;_ti2>=0;_ti2--) ctx.lineTo(Math.max(_top[_ti2].x, 0), _top[_ti2].y); }
@@ -3764,6 +3758,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
             ctx.beginPath(); ctx.moveTo(0, _topY + 1); ctx.lineTo(0, _botY); ctx.stroke();
             ctx.restore();
+          }
+          // Small triangular shards near some cracks
+          var _shardCol = 'rgb('+Math.round(lR*0.7+dR*0.3)+','+Math.round(lG*0.7+dG*0.3)+','+Math.round(lB2*0.7+dB*0.3)+')';
+          for (var _shi = 0; _shi < _nc; _shi++) {
+            if (_cr() > 0.4) continue; // only ~40% of cracks get a shard
+            var _sCrack = _cracks[_shi];
+            var _sPt = _sCrack[1]; // near the kink point
+            var _sDir = _cr() > 0.5 ? 1 : -1;
+            var _sW = bladeW * (0.15 + _cr() * 0.2);
+            var _sH = bladeW * (0.3 + _cr() * 0.4);
+            var _sDx = _sDir * bladeW * (0.4 + _cr() * 0.3);
+            var _sDy = (_cr() - 0.5) * bladeW * 0.3;
+            ctx.fillStyle = _shardCol;
+            ctx.beginPath();
+            ctx.moveTo(_sPt.x + _sDx, _sPt.y + _sDy);
+            ctx.lineTo(_sPt.x + _sDx + _sW * 0.5, _sPt.y + _sDy + _sH);
+            ctx.lineTo(_sPt.x + _sDx - _sW * 0.5, _sPt.y + _sDy + _sH * 0.6);
+            ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
