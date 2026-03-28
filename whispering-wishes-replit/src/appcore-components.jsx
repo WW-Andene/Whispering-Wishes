@@ -2768,7 +2768,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rW2 = sunR * (0.15 + rRng() * 0.45);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
-            const rA = (0.15 + rRng() * 0.12) * alphaScale;
+            const rA = (0.28 + rRng() * 0.18) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
             rG.addColorStop(0, 'rgba(255,190,110,' + (rA * 0.25) + ')');
             rG.addColorStop(0.1, 'rgba(255,170,85,' + (rA * 0.5) + ')');
