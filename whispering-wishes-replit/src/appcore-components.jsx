@@ -2660,14 +2660,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v7) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v8) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
           sk.addColorStop(0,"rgb(12,3,2)");sk.addColorStop(0.2,"rgb(15,4,3)");sk.addColorStop(0.4,"rgb(20,6,3)");
           sk.addColorStop(0.6,"rgb(26,8,4)");sk.addColorStop(0.75,"rgb(30,9,4)");sk.addColorStop(0.875,"rgb(38,12,5)");
-          sk.addColorStop(0.9375,"rgb(58,18,6)");sk.addColorStop(0.96,"rgb(135,42,12)");sk.addColorStop(0.98,"rgb(215,85,22)");sk.addColorStop(1,"rgb(255,145,45)");
+          sk.addColorStop(0.9375,"rgb(42,14,5)");sk.addColorStop(0.96875,"rgb(58,18,6)");sk.addColorStop(0.98,"rgb(135,42,12)");sk.addColorStop(0.99,"rgb(215,85,22)");sk.addColorStop(1,"rgb(255,145,45)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // === SUPERNOVA SUN ===
           // Layer 1: Far-reaching atmospheric bloom — deep orange
@@ -2706,7 +2706,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
           vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.35,"rgba(0,0,0,0)");vig.addColorStop(0.55,"rgba(2,1,0,0.15)");vig.addColorStop(0.7,"rgba(2,1,0,0.35)");vig.addColorStop(0.85,"rgba(1,0,0,0.55)");vig.addColorStop(1,"rgba(0,0,0,0.72)");
           sc.fillStyle=vig;sc.fillRect(0,0,W,H);
-          skyCache._v7 = true;
+          skyCache._v8 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
