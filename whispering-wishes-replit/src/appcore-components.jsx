@@ -2769,11 +2769,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rey = sunY + Math.sin(rAng) * rLen;
             const rA = (0.18 + rRng() * 0.16) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
-            rG.addColorStop(0, 'rgba(255,190,110,' + (rA * 1.3) + ')');
-            rG.addColorStop(0.15, 'rgba(255,170,85,' + (rA * 1.0) + ')');
-            rG.addColorStop(0.35, 'rgba(255,150,65,' + (rA * 0.6) + ')');
-            rG.addColorStop(0.55, 'rgba(255,135,50,' + (rA * 0.3) + ')');
-            rG.addColorStop(0.75, 'rgba(255,120,38,' + (rA * 0.1) + ')');
+            rG.addColorStop(0, 'rgba(255,190,110,' + (rA * 0.25) + ')');
+            rG.addColorStop(0.1, 'rgba(255,170,85,' + (rA * 0.5) + ')');
+            rG.addColorStop(0.25, 'rgba(255,160,75,' + (rA * 0.85) + ')');
+            rG.addColorStop(0.45, 'rgba(255,150,65,' + (rA * 1.1) + ')');
+            rG.addColorStop(0.65, 'rgba(255,135,50,' + (rA * 0.8) + ')');
+            rG.addColorStop(0.82, 'rgba(255,120,38,' + (rA * 0.4) + ')');
             rG.addColorStop(1, 'rgba(255,105,28,0)');
             ctx.fillStyle = rG;
             ctx.beginPath();
