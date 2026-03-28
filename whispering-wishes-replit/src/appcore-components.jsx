@@ -2825,7 +2825,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             // Seed changes very slowly so arc holds shape
             var seedT = Math.floor(et * 0.2 + ei * 0.1);
             var _es = (ei * 1640531527 + seedT * 9973) | 0;
-            function eRng() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; }
+            var eRng = function() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; };
             // Main arc — 5-7 segments for longer, more detailed path
             var nSeg = 5 + (ei % 3);
             var mainDir = arcAng + (eRng() - 0.5) * 0.6;
@@ -3569,37 +3569,35 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
             const gripBr = 0.05 + lit * 0.08;
             // Gladius blade — fractured into 3-4 floating pieces
-            function glBW(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); }
-            const glLitL = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
-            const glLitR = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
-            const glFrags = getBladeFragments(s.idx, gBL, 0, gBW * 2);
+            var glLitL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
+            var glLitR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+            var glFrags = getBladeFragments(s.idx, gBL, 0, gBW * 2);
             for (var _gfi = 0; _gfi < glFrags.length; _gfi++) {
               var gf = glFrags[_gfi];
               var gTopPts = gf.topCrack || [{x: 0, y: -gBL}];
               var gBotPts = gf.botCrack || [{x: 0, y: 0}];
+              var gtW = gBW * Math.max(0, Math.min(1, (gTopPts[0].y + gBL) / gBL));
+              var gbW = gBW * Math.max(0, Math.min(1, (gBotPts[0].y + gBL) / gBL));
               ctx.save();
               ctx.translate(gf.dx, gf.dy);
               ctx.rotate(gf.r);
-              // Left half polygon
+              // Left half
               ctx.fillStyle = glLitL;
               ctx.beginPath();
-              ctx.moveTo(0, gTopPts[0].y);
+              ctx.moveTo(-gtW, gTopPts[0].y);
               for (var gti = 0; gti < gTopPts.length; gti++) ctx.lineTo(Math.min(0, gTopPts[gti].x), gTopPts[gti].y);
-              ctx.lineTo(0, gTopPts[gTopPts.length-1].y);
               ctx.lineTo(0, gBotPts[gBotPts.length-1].y);
               for (var gbi = gBotPts.length-1; gbi >= 0; gbi--) ctx.lineTo(Math.min(0, gBotPts[gbi].x), gBotPts[gbi].y);
-              ctx.lineTo(-glBW(gBotPts[0].y), gBotPts[0].y);
-              ctx.lineTo(-glBW(gTopPts[0].y), gTopPts[0].y);
+              ctx.lineTo(-gbW, gBotPts[0].y);
               ctx.closePath(); ctx.fill();
-              // Right half polygon
+              // Right half
               ctx.fillStyle = glLitR;
               ctx.beginPath();
-              ctx.moveTo(0, gTopPts[0].y);
+              ctx.moveTo(gtW, gTopPts[0].y);
               for (var gti2 = 0; gti2 < gTopPts.length; gti2++) ctx.lineTo(Math.max(0, gTopPts[gti2].x), gTopPts[gti2].y);
-              ctx.lineTo(glBW(gTopPts[gTopPts.length-1].y), gTopPts[gTopPts.length-1].y);
-              ctx.lineTo(glBW(gBotPts[gBotPts.length-1].y), gBotPts[gBotPts.length-1].y);
+              ctx.lineTo(0, gBotPts[gBotPts.length-1].y);
               for (var gbi2 = gBotPts.length-1; gbi2 >= 0; gbi2--) ctx.lineTo(Math.max(0, gBotPts[gbi2].x), gBotPts[gbi2].y);
-              ctx.lineTo(0, gBotPts[0].y);
+              ctx.lineTo(gbW, gBotPts[0].y);
               ctx.closePath(); ctx.fill();
               ctx.restore();
             }
@@ -3659,47 +3657,37 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           } else {
 
           // === LONGSWORD — fractured 3D blade (3-4 floating pieces) ===
-          // Blade width at any Y: linear taper from tip (0) to base (bladeW/2)
-          function lsBW(y) { return (bladeW / 2) * Math.max(0, Math.min(1, (y + bladeH) / (bladeH + guardH))); }
-          const lsFrags = getBladeFragments(s.idx, bladeH, guardH, bladeW);
-          // Color strings
-          const lsLitL = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
-          const lsLitR = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
+          var lsFrags = getBladeFragments(s.idx, bladeH, guardH, bladeW);
+          var lsLitL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
+          var lsLitR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+          var lsBH = bladeH, lsGH = guardH, lsHW = bladeW / 2;
           for (var _fi = 0; _fi < lsFrags.length; _fi++) {
             var frag = lsFrags[_fi];
-            // Get top and bottom boundary points
-            var topPts = frag.topCrack || [{x: 0, y: -bladeH}];
-            var botPts = frag.botCrack || [{x: 0, y: guardH}];
+            var topPts = frag.topCrack || [{x: 0, y: -lsBH}];
+            var botPts = frag.botCrack || [{x: 0, y: lsGH}];
+            // Blade half-width at Y (linear taper)
+            var topW = lsHW * Math.max(0, Math.min(1, (topPts[0].y + lsBH) / (lsBH + lsGH)));
+            var botW = lsHW * Math.max(0, Math.min(1, (botPts[0].y + lsBH) / (lsBH + lsGH)));
             ctx.save();
             ctx.translate(frag.dx, frag.dy);
             ctx.rotate(frag.r);
-            // Draw piece as polygon: top crack → right edge → bottom crack → left edge
-            // Left half
+            // Left half — polygon: tip/topCrack → center line down → botCrack → left edge up
             ctx.fillStyle = lsLitL;
             ctx.beginPath();
-            ctx.moveTo(0, topPts[0].y);
+            ctx.moveTo(-topW, topPts[0].y);
             for (var ti = 0; ti < topPts.length; ti++) ctx.lineTo(Math.min(0, topPts[ti].x), topPts[ti].y);
-            // Right edge going down (but left half, so center line)
-            ctx.lineTo(0, topPts[topPts.length-1].y);
             ctx.lineTo(0, botPts[botPts.length-1].y);
-            // Bottom crack reversed
             for (var bi = botPts.length-1; bi >= 0; bi--) ctx.lineTo(Math.min(0, botPts[bi].x), botPts[bi].y);
-            ctx.lineTo(-lsBW(botPts[0].y), botPts[0].y);
-            // Left blade edge going up
-            ctx.lineTo(-lsBW(topPts[0].y), topPts[0].y);
+            ctx.lineTo(-botW, botPts[0].y);
             ctx.closePath(); ctx.fill();
             // Right half
             ctx.fillStyle = lsLitR;
             ctx.beginPath();
-            ctx.moveTo(0, topPts[0].y);
+            ctx.moveTo(topW, topPts[0].y);
             for (var ti2 = 0; ti2 < topPts.length; ti2++) ctx.lineTo(Math.max(0, topPts[ti2].x), topPts[ti2].y);
-            ctx.lineTo(lsBW(topPts[topPts.length-1].y), topPts[topPts.length-1].y);
-            // Right blade edge going down
-            ctx.lineTo(lsBW(botPts[botPts.length-1].y), botPts[botPts.length-1].y);
-            // Bottom crack reversed
+            ctx.lineTo(0, botPts[botPts.length-1].y);
             for (var bi2 = botPts.length-1; bi2 >= 0; bi2--) ctx.lineTo(Math.max(0, botPts[bi2].x), botPts[bi2].y);
-            ctx.lineTo(0, botPts[0].y);
-            ctx.lineTo(0, topPts[0].y);
+            ctx.lineTo(botW, botPts[0].y);
             ctx.closePath(); ctx.fill();
             ctx.restore();
           }
