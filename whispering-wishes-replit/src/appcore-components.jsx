@@ -2643,6 +2643,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
       // (all pre-battleground effects removed — only sky + sun in battleground)
 
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.scale(honourScale, honourScale);
 
