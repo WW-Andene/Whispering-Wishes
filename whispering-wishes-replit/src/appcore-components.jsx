@@ -3343,8 +3343,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGuardR = gBW * 1.15, gGuardTh = gO * 0.015;
             const gGripL = gO * 0.13, gGripW = gBW * 0.9;
             const gPomR = gBW * 0.7, gKnobR = gGripW * 0.3;
-            const gBury = gBL * 0.7;
-            const gTip = -gBL + gBury, gBase = gBury;
+            // Base at y=0 (ground level), tip at y=-gBL (up)
+            const gTip = -gBL, gBase = 0;
             const gGripTop = gBase + gGuardTh + gGuardR - gGripW * 0.3;
             const gGripBot = gGripTop + gGripL;
             const gPomCY = gGripBot + gPomR * 0.8;
