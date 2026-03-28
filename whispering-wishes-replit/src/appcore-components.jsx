@@ -3303,8 +3303,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const pomRy = pomDia / 2;            // height stays constant
 
           ctx.save();
-          // Flip sword so blade points down into ground, hilt sticks up
-          const buried = bladeH * (0.55 + rng(s.idx, 777) * 0.1);
+          const gO2 = isGladius ? overall * 0.7 : 0;
+          const actualBladeH = isGladius ? gO2 * 0.72 : bladeH;
+          const buried = actualBladeH * (0.55 + rng(s.idx, 777) * 0.1);
           ctx.beginPath();
           ctx.rect(0, 0, W, s.scrY);
           ctx.clip();
@@ -3342,9 +3343,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGuardR = gBW * 1.15, gGuardTh = gO * 0.015;
             const gGripL = gO * 0.13, gGripW = gBW * 0.9;
             const gPomR = gBW * 0.7, gKnobR = gGripW * 0.3;
-            // Shift down so gladius ground level matches sword ground level
             const gBury = gBL * 0.7;
-            ctx.translate(0, buried - gBury);
             const gTip = -gBL + gBury, gBase = gBury;
             const gGripTop = gBase + gGuardTh + gGuardR - gGripW * 0.3;
             const gGripBot = gGripTop + gGripL;
