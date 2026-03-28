@@ -3570,8 +3570,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             _gcr(); _gcr();
             var _gnc = 3 + (_gcr() * 2 | 0);
             var _gcrackYs = [];
-            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + (0.10 + _gcr() * 0.75) * gBL);
-            _gcrackYs.sort(function(a, b) { return a - b; });
+            var _gsegH = gBL * 0.7 / _gnc;
+            for (var _gci = 0; _gci < _gnc; _gci++) _gcrackYs.push(-gBL + gBL * 0.12 + _gci * _gsegH + _gcr() * _gsegH * 0.6);
             var _gcracks = [];
             for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
               var _gy = _gcrackYs[_gci2];
@@ -3690,12 +3690,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nc = 3 + (_cr() * 2 | 0); // 3-4 cracks
           var _hw = bladeW / 2;
           var _totalH = bladeH + guardH;
-          // Crack Y positions spread across 10%-85% of blade
+          // Crack Y positions — evenly spaced with random jitter, guaranteed min gap
           var _crackYs = [];
+          var _segH = _totalH * 0.7 / _nc; // divide 70% of blade evenly
           for (var _ci = 0; _ci < _nc; _ci++) {
-            _crackYs.push(-bladeH + (0.10 + _cr() * 0.75) * _totalH);
+            _crackYs.push(-bladeH + _totalH * 0.12 + _ci * _segH + _cr() * _segH * 0.6);
           }
-          _crackYs.sort(function(a, b) { return a - b; });
           // Each crack: gentle diagonal (~10-20°), 3-4 zigzag points, edge to edge
           var _cracks = [];
           for (var _ci2 = 0; _ci2 < _nc; _ci2++) {
