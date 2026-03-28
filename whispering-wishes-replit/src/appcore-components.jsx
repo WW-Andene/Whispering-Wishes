@@ -3325,41 +3325,31 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          // Dark side: warm dark amber (reflected sky light baked in)
-          const dR = Math.round(22 + lit * 28), dG = Math.round(14 + lit * 12), dB = Math.round(8 + lit * 4);
-          // Light side: bright amber metallic
-          const lR = Math.round(65 + lit * 110), lG = Math.round(50 + lit * 60), lB = Math.round(30 + lit * 18);
-          const darkSide = `rgb(${dR},${dG},${dB})`;
-          const lightSide = `rgb(${lR},${lG},${lB})`;
+          // Color palette — metallic with reflected ambient light
+          const dR = Math.round(15 + lit * 20), dG = Math.round(13 + lit * 12), dB = Math.round(15 + lit * 5);
+          const mR = Math.round(35 + lit * 50), mG = Math.round(32 + lit * 30), mB = Math.round(35 + lit * 12);
+          const lR = Math.round(70 + lit * 120), lG = Math.round(65 + lit * 70), lB = Math.round(60 + lit * 25);
+          const hR = Math.min(255, Math.round(120 + lit * 135)), hG = Math.min(255, Math.round(110 + lit * 85)), hB = Math.round(90 + lit * 30);
+          // Reflected light — warm amber from sky bouncing off environment onto shadow side
+          const rR = Math.round(50 + lit * 80), rG = Math.round(30 + lit * 40), rB = Math.round(12 + lit * 10);
 
-          // === RIM LIGHT — thick amber stroke BEFORE fill ===
-          const rimAlpha = 0.3 + lit * 0.5;
-          const rimW = Math.max(1.5, bladeW * 0.7 + lit * bladeW * 0.5);
-          ctx.strokeStyle = 'rgba(220,120,25,' + rimAlpha + ')';
-          ctx.lineWidth = rimW;
-          ctx.lineJoin = 'round';
-          ctx.lineCap = 'round';
-          // Stroke the blade outline
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5, -bladeW * 0.5, tipEnd - pomDia, -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, ov);
-          ctx.lineTo(bladeW / 2, ov);
-          ctx.lineTo(bladeW / 2, tipEnd);
-          ctx.bezierCurveTo(bladeW * 0.5, tipEnd - pomDia, bladeW * 0.25, -bladeH + pomDia * 0.5, 0, -bladeH);
-          ctx.closePath();
-          ctx.stroke();
-          // Stroke guard
-          ctx.strokeRect(-guardW / 2, 0, guardW, guardH);
-          // Stroke grip + pommel area
-          ctx.beginPath();
-          ctx.rect(-gripW / 2, guardH, gripW, gripH);
-          ctx.arc(0, gripBot + pomRy, pomRy, 0, Math.PI * 2);
-          ctx.stroke();
+          // Light side gradient: edge→highlight→mid (metallic gradient)
+          const lightGrad = ctx.createLinearGradient(0, 0, leftLight ? -bladeW / 2 : bladeW / 2, 0);
+          lightGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
+          lightGrad.addColorStop(0.3, `rgb(${hR},${hG},${hB})`);
+          lightGrad.addColorStop(0.7, `rgb(${lR},${lG},${lB})`);
+          lightGrad.addColorStop(1, `rgb(${mR},${mG},${mB})`);
 
-          // === SWORD FILL — covers interior, rim peeks out edges ===
+          // Dark side gradient: mid→dark→reflected light at far edge
+          const darkGrad = ctx.createLinearGradient(0, 0, leftLight ? bladeW / 2 : -bladeW / 2, 0);
+          darkGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
+          darkGrad.addColorStop(0.25, `rgb(${dR},${dG},${dB})`);
+          darkGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
+          darkGrad.addColorStop(1, `rgb(${rR},${rG},${rB})`);
+
+          // === NORMAL SWORD FILL ===
           // Left half
-          ctx.fillStyle = leftLight ? lightSide : darkSide;
+          ctx.fillStyle = leftLight ? lightGrad : darkGrad;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3370,7 +3360,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = leftLight ? darkSide : lightSide;
+          ctx.fillStyle = leftLight ? darkGrad : lightGrad;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3380,7 +3370,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          ctx.fillStyle = darkSide;
+          // Guard — varies per sword
+          const guardGrad = ctx.createLinearGradient(-guardW / 2, 0, guardW / 2, 0);
+          guardGrad.addColorStop(0, leftLight ? `rgb(${lR},${lG},${lB})` : `rgb(${rR},${rG},${rB})`);
+          guardGrad.addColorStop(0.3, `rgb(${dR},${dG},${dB})`);
+          guardGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
+          guardGrad.addColorStop(1, leftLight ? `rgb(${rR},${rG},${rB})` : `rgb(${lR},${lG},${lB})`);
+          ctx.fillStyle = guardGrad;
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
           if (guardType === 1) {
