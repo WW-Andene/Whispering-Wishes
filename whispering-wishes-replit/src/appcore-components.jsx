@@ -3674,7 +3674,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const dTop = ridgeTop + ridgeH;
           const dW = crossW * 0.85;
           const dH = bScale * 1.6;
-          const cellSize = 10;
+          const cellSize = Math.sqrt(10);
           const gridX = Math.max(2, Math.round(dW / cellSize));
           const gridY = Math.max(2, Math.round(dH / cellSize));
 
