@@ -3770,7 +3770,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.stroke();
 
           // Straight gold line at the bottom
-          const botRow = Math.round(gridY * 0.92);
+          const botRow = Math.round(gridY - outOff);
           const botL = gp(0, botRow), botR = gp(gridX, botRow);
           ctx.beginPath();
           ctx.moveTo(botL.x, botL.y); ctx.lineTo(botR.x, botR.y);
