@@ -2383,9 +2383,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       // Brighter amber palette + per-cloud brightness variation
       const bVar = 0.75 + hash(depth * 127 + proximity * 311) * 0.5;
       // Dramatic dark palette — near-black shadows, deep crimson mids, fiery highlights
-      const shR = Math.round((3 + ds * 2 + lr * 1) * bVar), shG = Math.round((1 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
-      const ltR = Math.min(255, Math.round((80 + ds * 7 + proximity * 5) * bVar)), ltG = Math.min(255, Math.round((62 + ds * 6 + proximity * 4) * bVar)), ltB = Math.min(255, Math.round((42 + ds * 5 + proximity * 3) * bVar));
-      const rmR = Math.min(255, Math.round((100 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((78 + ds * 5 + proximity * 4) * bVar)), rmB = Math.min(255, Math.round((52 + ds * 4 + proximity * 3) * bVar));
+      const shR = Math.round((5 + ds * 2 + lr * 1) * bVar), shG = Math.round((2 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
+      const ltR = Math.min(255, Math.round((95 + ds * 8 + proximity * 6) * bVar)), ltG = Math.min(255, Math.round((58 + ds * 5 + proximity * 3) * bVar)), ltB = Math.min(255, Math.round((28 + ds * 3 + proximity * 2) * bVar));
+      const rmR = Math.min(255, Math.round((115 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((70 + ds * 5 + proximity * 3) * bVar)), rmB = Math.min(255, Math.round((35 + ds * 3 + proximity * 2) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2403,11 +2403,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           else if (levels === 3) sL = sL > 0.6 ? 0.88 : sL > 0.3 ? 0.50 : 0.32;
           else { sL = sL > 0.65 ? 0.9 : sL > 0.48 ? 0.65 : sL > 0.3 ? 0.42 : sL > 0.15 ? 0.32 : 0.22; }
           sL *= lr;
-          // Darken bottom of cloud, brighten center-top
+          // Darken bottom (dark orange), brighten center-top (light orange)
           const botT = py / h, botDark = botT > 0.55 ? 1 - (botT - 0.55) / 0.45 * 0.6 : 1;
           const topCen = botT < 0.4 ? (1 - botT / 0.4) * (1 - Math.abs(px / w - 0.5) * 2) : 0;
-          sL = sL * botDark + topCen * 0.25;
+          sL = sL * botDark + topCen * 0.3;
           let r = Math.round(shR+(ltR-shR)*sL), g = Math.round(shG+(ltG-shG)*sL), bv = Math.round(shB+(ltB-shB)*sL);
+          // Dark orange tint at bottom
+          if (botT > 0.55) { const botStr = (botT - 0.55) / 0.45; r = Math.min(255, r + Math.round(botStr * 25)); g += Math.round(botStr * 6); }
+          // Light orange tint at center-top
+          if (topCen > 0) { r = Math.min(255, r + Math.round(topCen * 35)); g = Math.min(255, g + Math.round(topCen * 18)); bv = Math.min(255, bv + Math.round(topCen * 5)); }
           if (levels >= 2) { r = Math.min(255,r+Math.round(rmR*rim*0.4*lr)); g = Math.min(255,g+Math.round(rmG*rim*0.4*lr)); bv = Math.min(255,bv+Math.round(rmB*rim*0.4*lr)); }
           let alpha; if (def.alphaCurve===0) alpha=bAlpha*thick; else if (def.alphaCurve===1) alpha=bAlpha*thick*(0.4+thick*0.6); else alpha=bAlpha*thick*thick*(0.3+thick*0.7);
           od[idx]=r; od[idx+1]=g; od[idx+2]=bv; od[idx+3]=Math.round(alpha*255);
