@@ -3478,9 +3478,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const pomCY = gripBot2 + pomBallR * 0.8;
           const knobY = pomCY + pomBallR + knobR * 0.5;
 
-          // Blade left — light steel, curved taper + outward edge
+          // Same shading as other swords
+          const gSdx = W * 0.5 - sunX, gSdy = H * 0.77 - sunY;
+          const gSunDist = Math.sqrt(gSdx * gSdx + gSdy * gSdy);
+          const gLit = Math.pow(Math.max(0, 1 - gSunDist / (Math.max(W, H) * 0.7)), 2);
+          const gLeftLight = W * 0.5 > sunX;
+          const gFaceCatch = 0.7;
+          const gLightB = (0.25 + gLit * 0.75) * gFaceCatch;
+          const gDarkB = 0.08 + gLit * 0.12 + 0.3 * 0.06;
+          const gLR = Math.round(30 + 195 * gLightB), gLG = Math.round(28 + 180 * gLightB), gLB = Math.round(26 + 150 * gLightB);
+          const gDR = Math.round(18 + 95 * gDarkB), gDG = Math.round(17 + 88 * gDarkB), gDB = Math.round(16 + 70 * gDarkB);
+          const gGuardB = (gLightB + gDarkB) * 0.4;
+          const gGR = Math.round(18 + 95 * gGuardB), gGG = Math.round(17 + 88 * gGuardB), gGB = Math.round(16 + 70 * gGuardB);
+
+          // Blade left
           const taperY = bladeTip + bladeL - taperAt;
-          ctx.fillStyle = 'rgb(175,168,155)';
+          ctx.fillStyle = gLeftLight ? `rgb(${gLR},${gLG},${gLB})` : `rgb(${gDR},${gDG},${gDB})`;
           ctx.beginPath();
           ctx.moveTo(0, bladeTip);
           ctx.quadraticCurveTo(-bladeW * 0.4, bladeTip + (bladeL - taperAt) * 0.4, -bladeW, taperY);
@@ -3489,8 +3502,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
 
-          // Blade right — dark steel
-          ctx.fillStyle = 'rgb(100,95,88)';
+          // Blade right
+          ctx.fillStyle = gLeftLight ? `rgb(${gDR},${gDG},${gDB})` : `rgb(${gLR},${gLG},${gLB})`;
           ctx.beginPath();
           ctx.moveTo(0, bladeTip);
           ctx.quadraticCurveTo(bladeW * 0.4, bladeTip + (bladeL - taperAt) * 0.4, bladeW, taperY);
@@ -3500,7 +3513,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
 
           // Grip first (guard draws on top)
-          ctx.fillStyle = 'rgb(50,22,15)';
+          const gripBr = 0.05 + gLit * 0.08;
+          ctx.fillStyle = `rgb(${Math.round(20 + 40 * gripBr)},${Math.round(12 + 20 * gripBr)},${Math.round(8 + 10 * gripBr)})`;
           ctx.beginPath();
           const g = gripTop, gl = gripL;
           ctx.moveTo(-gripW2 * 0.9, g);
@@ -3520,7 +3534,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
 
           // Guard — half circle (dome facing grip), drawn on top
-          ctx.fillStyle = 'rgb(95,78,55)';
+          ctx.fillStyle = `rgb(${gGR},${gGG},${gGB})`;
           ctx.beginPath();
           ctx.moveTo(-guardR, bladeBase);
           ctx.lineTo(guardR, bladeBase);
@@ -3529,18 +3543,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
 
           // Pommel — round ball
-          ctx.fillStyle = 'rgb(85,70,50)';
+          ctx.fillStyle = `rgb(${gGR},${gGG},${gGB})`;
           ctx.beginPath();
           ctx.arc(0, pomCY, pomBallR, 0, Math.PI * 2);
           ctx.fill();
           // Pommel highlight
-          ctx.fillStyle = 'rgba(140,125,100,0.4)';
+          ctx.fillStyle = `rgba(${gLR},${gLG},${gLB},0.3)`;
           ctx.beginPath();
           ctx.arc(-pomBallR * 0.2, pomCY - pomBallR * 0.25, pomBallR * 0.3, 0, Math.PI * 2);
           ctx.fill();
 
           // Top knob
-          ctx.fillStyle = 'rgb(75,62,45)';
+          ctx.fillStyle = `rgb(${gGR},${gGG},${gGB})`;
           ctx.beginPath();
           ctx.arc(0, knobY, knobR, 0, Math.PI * 2);
           ctx.fill();
