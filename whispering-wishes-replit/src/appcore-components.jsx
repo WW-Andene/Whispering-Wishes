@@ -2876,18 +2876,89 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.restore();
         }
+        // Static electricity — slow arcs with branches near clouds
+        var _drawSparks = function(startIdx, endIdx) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          var et = cloudTime * 0.15;
+          for (var ei = startIdx; ei < endIdx; ei += 8) {
+            var cl1 = sceneClouds[ei];
+            if (!cl1 || !cl1.baked || cl1.cloudType < 2) continue;
+            var ca1 = cl1.angle, flat1 = cl1.orbitFlatten || 0.7;
+            var cx1 = cl1.sunX + Math.cos(ca1) * cl1.orbitDist;
+            var cy1 = cl1.sunY + Math.sin(ca1) * cl1.orbitDist * flat1;
+            var phase = Math.sin(et * 0.08 + ei * 1.3) * Math.sin(et * 0.05 + ei * 0.9);
+            if (phase < 0.5) continue;
+            var alpha = (phase - 0.5) * 1.5;
+            var bw = cl1.baked.w, bh = cl1.baked.h;
+            var arcLen = Math.max(bw, bh) * (0.5 + Math.sin(ei * 3.7) * 0.2);
+            var arcAng = et * 0.04 + ei * 2.1;
+            var ox = cx1 + cl1.baked.ox + bw * 0.5;
+            var oy = cy1 + cl1.baked.oy + bh * 0.5;
+            var ax0 = ox + Math.cos(arcAng) * bw * 0.3;
+            var ay0 = oy + Math.sin(arcAng) * bh * 0.2;
+            var seedT = Math.floor(et * 0.2 + ei * 0.1);
+            var _es = (ei * 1640531527 + seedT * 9973) | 0;
+            var eRng = function() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; };
+            var nSeg = 5 + (ei % 3);
+            var mainDir = arcAng + (eRng() - 0.5) * 0.6;
+            var mpx = [ax0], mpy = [ay0];
+            for (var si = 1; si <= nSeg; si++) {
+              mpx.push(ax0 + (si / nSeg) * arcLen * Math.cos(mainDir) + (eRng() - 0.5) * arcLen * 0.2);
+              mpy.push(ay0 + (si / nSeg) * arcLen * Math.sin(mainDir) + (eRng() - 0.5) * arcLen * 0.15);
+            }
+            // Main arc
+            ctx.beginPath();
+            ctx.moveTo(mpx[0], mpy[0]);
+            for (var mi = 1; mi < mpx.length; mi++) ctx.lineTo(mpx[mi], mpy[mi]);
+            ctx.strokeStyle = 'rgba(255,140,45,' + (alpha * 0.15) + ')';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,220,160,' + (alpha * 0.45) + ')';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            // 2-3 branch arms
+            var nBranch = 2 + (ei % 2);
+            for (var bi = 0; bi < nBranch; bi++) {
+              var brIdx = 1 + Math.floor(eRng() * (mpx.length - 2));
+              var brAng = mainDir + (eRng() - 0.5) * 1.5;
+              var brLen = arcLen * (0.2 + eRng() * 0.3);
+              var brSegs = 3 + (bi % 2);
+              ctx.beginPath();
+              ctx.moveTo(mpx[brIdx], mpy[brIdx]);
+              for (var bsi = 1; bsi <= brSegs; bsi++) {
+                ctx.lineTo(
+                  mpx[brIdx] + (bsi / brSegs) * brLen * Math.cos(brAng) + (eRng() - 0.5) * brLen * 0.25,
+                  mpy[brIdx] + (bsi / brSegs) * brLen * Math.sin(brAng) + (eRng() - 0.5) * brLen * 0.2
+                );
+              }
+              ctx.strokeStyle = 'rgba(255,160,70,' + (alpha * 0.1) + ')';
+              ctx.lineWidth = 2;
+              ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,230,180,' + (alpha * 0.3) + ')';
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+          ctx.restore();
+        };
+
         // Layer 0: rays group 0 behind all clouds (4 rays)
         drawRays(0.6, 0);
         // Layer 1: back clouds
         drawCloudRange(0, splits[1]);
+        _drawSparks(0, splits[1]);
         // Layer 2: rays group 1 between cloud layers (4 rays)
         drawRays(1.0, 1);
         // Layer 3: mid clouds
         drawCloudRange(splits[1], splits[2]);
+        _drawSparks(splits[1], splits[2]);
         // Layer 4: rays group 2 in front of mid clouds (4 rays)
         drawRays(0.5, 2);
         // Layer 5: front clouds
         drawCloudRange(splits[2], sceneClouds.length);
+        _drawSparks(splits[2], sceneClouds.length);
         } // end if (sceneClouds)
 
         // Dynamic ambient — clouds darken the sky behind them
