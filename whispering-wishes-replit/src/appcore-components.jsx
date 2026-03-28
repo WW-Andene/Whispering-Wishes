@@ -2302,10 +2302,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     // === Cloud system from cloud-demo ===
     const CLOUD_DEFS = [
-      { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.06, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
-      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.42, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
-      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.52, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
-      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.58, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
+      { name: "fume", wispN: 3, densMul: 2.8, densPeak: 50, densFall: [0.4, 0.15, 0.04], baseAlpha: 0.10, hazeThresh: 2, maxDens: 40, depthLevels: 1, alphaCurve: 0 },
+      { name: "small", wispN: 4, densMul: 2.2, densPeak: 100, densFall: [0.55, 0.22, 0.06], baseAlpha: 0.55, hazeThresh: 5, maxDens: 120, depthLevels: 2, alphaCurve: 1 },
+      { name: "medium", wispN: 5, densMul: 2.0, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.65, hazeThresh: 4, maxDens: 140, depthLevels: 3, alphaCurve: 2 },
+      { name: "big", wispN: 6, densMul: 1.8, densPeak: 100, densFall: [0.55, 0.25, 0.08], baseAlpha: 0.72, hazeThresh: 4, maxDens: 140, depthLevels: 4, alphaCurve: 2 }
     ];
     function generateBalls(seed, baseRadius, cloudType) {
         const def = CLOUD_DEFS[cloudType];
@@ -2381,10 +2381,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       // Sunset palette — matching warm amber-brown reference
       // Shadow: deep warm brown (like dark amber/chocolate, not olive)
       // Brighter amber palette + per-cloud brightness variation
-      const bVar = 0.8 + hash(depth * 127 + proximity * 311) * 0.4;
-      const shR = Math.round((65 + ds * 20 + lr * 15) * bVar), shG = Math.round((25 + ds * 10 + lr * 6) * bVar), shB = Math.round((8 + ds * 4 + lr * 3) * bVar);
-      const ltR = Math.min(255, Math.round((235 + ds * 20 + proximity * 10) * bVar)), ltG = Math.min(255, Math.round((165 + ds * 20 + proximity * 10) * bVar)), ltB = Math.min(255, Math.round((85 + ds * 12 + proximity * 6) * bVar));
-      const rmR = Math.min(255, Math.round((245 + ds * 10) * bVar)), rmG = Math.min(255, Math.round((175 + ds * 15 + proximity * 8) * bVar)), rmB = Math.min(255, Math.round((75 + ds * 10 + proximity * 5) * bVar));
+      const bVar = 0.75 + hash(depth * 127 + proximity * 311) * 0.5;
+      // Dramatic dark palette — near-black shadows, deep crimson mids, fiery highlights
+      const shR = Math.round((30 + ds * 15 + lr * 10) * bVar), shG = Math.round((10 + ds * 5 + lr * 3) * bVar), shB = Math.round((5 + ds * 2 + lr * 1) * bVar);
+      const ltR = Math.min(255, Math.round((245 + ds * 10 + proximity * 10) * bVar)), ltG = Math.min(255, Math.round((140 + ds * 20 + proximity * 15) * bVar)), ltB = Math.min(255, Math.round((45 + ds * 10 + proximity * 8) * bVar));
+      const rmR = Math.min(255, Math.round((255 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((160 + ds * 10 + proximity * 8) * bVar)), rmB = Math.min(255, Math.round((50 + ds * 8 + proximity * 5) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2658,28 +2659,32 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         if (!skyCache || skyCache.width !== W || skyCache.height !== H) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
-          // Base vertical gradient
+          // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
-          sk.addColorStop(0,"rgb(35,18,10)");sk.addColorStop(0.15,"rgb(65,30,12)");sk.addColorStop(0.3,"rgb(120,55,20)");
-          sk.addColorStop(0.45,"rgb(180,95,40)");sk.addColorStop(0.6,"rgb(230,150,75)");sk.addColorStop(0.75,"rgb(250,190,95)");
-          sk.addColorStop(0.88,"rgb(255,215,120)");sk.addColorStop(1,"rgb(255,235,155)");
+          sk.addColorStop(0,"rgb(8,4,2)");sk.addColorStop(0.1,"rgb(18,8,4)");sk.addColorStop(0.2,"rgb(40,14,6)");
+          sk.addColorStop(0.35,"rgb(85,28,10)");sk.addColorStop(0.5,"rgb(140,50,15)");sk.addColorStop(0.65,"rgb(190,80,25)");
+          sk.addColorStop(0.78,"rgb(220,120,40)");sk.addColorStop(0.88,"rgb(240,160,60)");sk.addColorStop(1,"rgb(250,190,80)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
-          // Sun warm radial glow
-          const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.6);
-          sg.addColorStop(0,"rgba(255,240,180,0.5)");sg.addColorStop(0.1,"rgba(255,210,120,0.35)");sg.addColorStop(0.25,"rgba(255,180,80,0.2)");sg.addColorStop(0.5,"rgba(255,140,50,0.08)");sg.addColorStop(1,"rgba(255,100,30,0)");
+          // Sun warm radial glow — intense fire
+          const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
+          sg.addColorStop(0,"rgba(255,220,140,0.7)");sg.addColorStop(0.08,"rgba(255,180,80,0.5)");sg.addColorStop(0.2,"rgba(255,120,40,0.3)");sg.addColorStop(0.4,"rgba(200,60,15,0.12)");sg.addColorStop(0.7,"rgba(120,25,5,0.04)");sg.addColorStop(1,"rgba(40,8,2,0)");
           sc.fillStyle=sg;sc.fillRect(0,0,W,H);
-          // Hot inner glow
-          const sg2=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,H*0.25);
-          sg2.addColorStop(0,"rgba(255,245,200,0.6)");sg2.addColorStop(0.2,"rgba(255,220,140,0.35)");sg2.addColorStop(0.5,"rgba(255,180,90,0.12)");sg2.addColorStop(1,"rgba(200,120,50,0)");
+          // Hot inner glow — brighter core
+          const sg2=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,H*0.22);
+          sg2.addColorStop(0,"rgba(255,240,190,0.75)");sg2.addColorStop(0.15,"rgba(255,200,100,0.5)");sg2.addColorStop(0.4,"rgba(255,140,50,0.2)");sg2.addColorStop(0.7,"rgba(180,60,15,0.05)");sg2.addColorStop(1,"rgba(100,20,5,0)");
           sc.fillStyle=sg2;sc.fillRect(0,0,W,H);
           // Sun disc core
           const sd = sc.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR);
           sd.addColorStop(0,"rgba(255,255,240,1)");sd.addColorStop(0.3,"rgba(255,250,200,0.9)");sd.addColorStop(0.6,"rgba(255,225,140,0.5)");sd.addColorStop(1,"rgba(255,190,80,0)");
           sc.fillStyle=sd;sc.beginPath();sc.arc(sunX,sunY,sunR*1.8,0,Math.PI*2);sc.fill();
-          // Horizon haze band
-          const hz=sc.createLinearGradient(0,H*0.58,0,H*0.75+15);
-          hz.addColorStop(0,"rgba(200,140,60,0)");hz.addColorStop(0.4,"rgba(200,140,60,0.05)");hz.addColorStop(0.75,"rgba(185,115,45,0.12)");hz.addColorStop(1,"rgba(170,100,38,0.18)");
-          sc.fillStyle=hz;sc.fillRect(0,H*0.58,W,H*0.75+15-H*0.58);
+          // Horizon haze band — warm glow at horizon
+          const hz=sc.createLinearGradient(0,H*0.55,0,H*0.78);
+          hz.addColorStop(0,"rgba(160,70,20,0)");hz.addColorStop(0.3,"rgba(180,90,25,0.08)");hz.addColorStop(0.6,"rgba(200,110,35,0.15)");hz.addColorStop(1,"rgba(220,130,45,0.22)");
+          sc.fillStyle=hz;sc.fillRect(0,H*0.55,W,H*0.78-H*0.55);
+          // Edge vignette on sky — darken corners/edges
+          const vig=sc.createRadialGradient(sunX,sunY,H*0.15,sunX,sunY,Math.max(W,H)*0.85);
+          vig.addColorStop(0,"rgba(0,0,0,0)");vig.addColorStop(0.4,"rgba(0,0,0,0)");vig.addColorStop(0.7,"rgba(5,2,1,0.3)");vig.addColorStop(0.85,"rgba(5,2,1,0.55)");vig.addColorStop(1,"rgba(5,2,1,0.75)");
+          sc.fillStyle=vig;sc.fillRect(0,0,W,H);
         }
         ctx.drawImage(skyCache, 0, 0);
 
@@ -2884,14 +2889,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
-            const contrast=0.55+dT*0.45,warmShift=(1-dT)*35,baseVal=35+dC*85;
-            const t0r=baseVal*0.58+warmShift*0.3, t0g=baseVal*0.48+warmShift*0.18, t0b=baseVal*0.38+warmShift*0.08;
-            const t1r=baseVal*0.78+warmShift*0.4, t1g=baseVal*0.65+warmShift*0.24, t1b=baseVal*0.48+warmShift*0.1;
-            // Mid-tone: warm amber influenced by sun — distinct from shadow and highlight
-            const tmR=baseVal*1.0+warmShift*0.65, tmG=baseVal*0.78+warmShift*0.4, tmB=baseVal*0.45+warmShift*0.08;
-            // Light tones: amber ember glow — warm, not oversaturated
-            const t2r=baseVal*1.22+warmShift*0.75, t2g=baseVal*0.92+warmShift*0.48, t2b=baseVal*0.52+warmShift*0.1;
-            const t3r=baseVal*1.42+warmShift*0.88, t3g=baseVal*1.08+warmShift*0.55, t3b=baseVal*0.55+warmShift*0.12;
+            const contrast=0.6+dT*0.4,warmShift=(1-dT)*25,baseVal=18+dC*55;
+            // Deep dramatic ground — dark shadows, fiery highlights
+            const t0r=baseVal*0.35+warmShift*0.2, t0g=baseVal*0.22+warmShift*0.08, t0b=baseVal*0.18+warmShift*0.03;
+            const t1r=baseVal*0.55+warmShift*0.32, t1g=baseVal*0.38+warmShift*0.14, t1b=baseVal*0.28+warmShift*0.05;
+            // Mid-tone: deep amber
+            const tmR=baseVal*0.8+warmShift*0.5, tmG=baseVal*0.52+warmShift*0.25, tmB=baseVal*0.3+warmShift*0.06;
+            // Light tones: fiery ember glow
+            const t2r=baseVal*1.1+warmShift*0.7, t2g=baseVal*0.72+warmShift*0.35, t2b=baseVal*0.32+warmShift*0.06;
+            const t3r=baseVal*1.4+warmShift*0.9, t3g=baseVal*0.9+warmShift*0.45, t3b=baseVal*0.35+warmShift*0.08;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
@@ -2968,7 +2974,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           gctx.fillStyle=gShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.globalCompositeOperation="multiply";
           const amberShade=gctx.createLinearGradient(0,edgeY-curveH,0,edgeY+groundH);
-          amberShade.addColorStop(0,"rgba(252,230,180,1)");amberShade.addColorStop(0.3,"rgba(245,215,160,1)");amberShade.addColorStop(0.7,"rgba(235,195,135,1)");amberShade.addColorStop(1,"rgba(220,175,115,1)");
+          amberShade.addColorStop(0,"rgba(200,150,80,1)");amberShade.addColorStop(0.3,"rgba(180,120,55,1)");amberShade.addColorStop(0.7,"rgba(150,90,35,1)");amberShade.addColorStop(1,"rgba(120,65,25,1)");
           gctx.fillStyle=amberShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.restore();
           } // end if gW>=4&&gHt>=4
@@ -3411,6 +3417,17 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
+        // Full-scene dramatic vignette
+        ctx.save();
+        const scVig = ctx.createRadialGradient(W*0.5, H*0.3, H*0.1, W*0.5, H*0.5, Math.max(W,H)*0.8);
+        scVig.addColorStop(0, "rgba(0,0,0,0)");
+        scVig.addColorStop(0.35, "rgba(0,0,0,0)");
+        scVig.addColorStop(0.6, "rgba(3,1,0,0.2)");
+        scVig.addColorStop(0.8, "rgba(5,2,1,0.45)");
+        scVig.addColorStop(1, "rgba(5,2,1,0.7)");
+        ctx.fillStyle = scVig;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
       } // end BATTLEGROUND block
       ctx.restore();
     };
