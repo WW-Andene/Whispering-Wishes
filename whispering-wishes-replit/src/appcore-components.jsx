@@ -3326,9 +3326,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const lightB = (0.25 + lit * 0.75) * faceCatch;
           // Dark face: low ambient + faint warm reflected sky
           const darkB = 0.08 + lit * 0.12 + (1 - faceCatch) * 0.06;
-          // Lerp between dark ambient (15,12,10) and lit amber (180,125,50)
-          const lR = Math.round(15 + 165 * lightB), lG = Math.round(12 + 113 * lightB), lB2 = Math.round(10 + 40 * lightB);
-          const dR = Math.round(15 + 165 * darkB), dG = Math.round(12 + 113 * darkB), dB = Math.round(10 + 40 * darkB);
+          // Steel metallic — warm silver tinted by sunset, not amber
+          const lR = Math.round(30 + 195 * lightB), lG = Math.round(28 + 180 * lightB), lB2 = Math.round(26 + 150 * lightB);
+          const dR = Math.round(18 + 95 * darkB), dG = Math.round(17 + 88 * darkB), dB = Math.round(16 + 70 * darkB);
 
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
