@@ -3628,18 +3628,29 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const crossW = bScale * 0.7;
           ctx.fillRect(bScrX - crossW / 2, crossY - barThick / 2, crossW, barThick);
 
-          // Diamond end caps
+          // Spearhead end caps — elongated outward
           const diaR = barThick * 1.2;
-          for (const dx of [bScrX - crossW / 2, bScrX + crossW / 2]) {
-            ctx.beginPath();
-            ctx.moveTo(dx, crossY - diaR); ctx.lineTo(dx + diaR, crossY);
-            ctx.lineTo(dx, crossY + diaR); ctx.lineTo(dx - diaR, crossY);
-            ctx.closePath(); ctx.fill();
-          }
-          // Top diamond on vertical arm
+          const diaL = barThick * 2.5; // long axis (outward point)
+          // Left crossbar end — point left
           ctx.beginPath();
-          ctx.moveTo(bScrX, poleTop - armH - diaR); ctx.lineTo(bScrX + diaR, poleTop - armH);
-          ctx.lineTo(bScrX, poleTop - armH + diaR); ctx.lineTo(bScrX - diaR, poleTop - armH);
+          ctx.moveTo(bScrX - crossW / 2 - diaL, crossY);
+          ctx.lineTo(bScrX - crossW / 2, crossY - diaR);
+          ctx.lineTo(bScrX - crossW / 2 + diaR * 0.5, crossY);
+          ctx.lineTo(bScrX - crossW / 2, crossY + diaR);
+          ctx.closePath(); ctx.fill();
+          // Right crossbar end — point right
+          ctx.beginPath();
+          ctx.moveTo(bScrX + crossW / 2 + diaL, crossY);
+          ctx.lineTo(bScrX + crossW / 2, crossY - diaR);
+          ctx.lineTo(bScrX + crossW / 2 - diaR * 0.5, crossY);
+          ctx.lineTo(bScrX + crossW / 2, crossY + diaR);
+          ctx.closePath(); ctx.fill();
+          // Top vertical arm — point up
+          ctx.beginPath();
+          ctx.moveTo(bScrX, poleTop - armH - diaL);
+          ctx.lineTo(bScrX + diaR, poleTop - armH);
+          ctx.lineTo(bScrX, poleTop - armH + diaR * 0.5);
+          ctx.lineTo(bScrX - diaR, poleTop - armH);
           ctx.closePath(); ctx.fill();
 
           // Vertical ridged columns
