@@ -2568,15 +2568,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Convert screen position to orbit params around sun
         const skyBot = H * 0.72; // just above horizon
         const flatR = 0.7;
-        const gCols = 8, gRows = 6;
+        const gCols = 8, gRows = 8;
         let gIdx = 0;
         for (let gr = 0; gr < gRows; gr++) {
             for (let gc2 = 0; gc2 < gCols; gc2++) {
                 const gs = 90000 + gIdx * 71;
                 const grng = seededRandom(gs);
-                // Target screen position with jitter
+                // Target screen position with jitter — bias rows toward bottom half
                 const sx = ((gc2 + 0.15 + grng() * 0.7) / gCols) * W;
-                const sy = ((gr + 0.15 + grng() * 0.7) / gRows) * skyBot;
+                const rowT = (gr + 0.15 + grng() * 0.7) / gRows;
+                const sy = sunY * 0.3 + Math.pow(rowT, 0.7) * (skyBot - sunY * 0.3);
                 // Convert to orbit distance + angle from sun center
                 const dx = sx - sunX, dy = (sy - sunY) / flatR;
                 const gDist = Math.max(minDist, Math.sqrt(dx * dx + dy * dy));
