@@ -3779,35 +3779,45 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Triangle outline below the gold — inverted V shape
           // Triangle outline below gold — same shape, shifted down uniformly
-          // Outline frame — follows cloth displacement, same padding all around
-          const outOff = Math.round(gridY * 0.06);
-          const sidePad = Math.max(1, Math.round(gridX * 0.06));
-          const outM = gp(Math.round(gridX / 2), outOff);
-          const botRow = Math.round(gridY - outOff);
-          const triOutRow = triRow + outOff;
+          // Outline frame — exact same shape as gold triangle, inset uniformly
+          // The gold triangle: edges at (0, triRow) and (gridX, triRow), peak at (gridX/2, 0)
+          // Outline: same shape shrunk inward by pad on all sides
+          const pad = Math.round(gridY * 0.05);
+          const padX = Math.max(1, Math.round(gridX * 0.08));
+          // Peak: shifted down by pad from row 0
+          const oMid = gp(Math.round(gridX / 2), pad);
+          // Triangle sides: same row as gold (triRow), inset from edges by padX
+          const oTL = gp(padX, triRow);
+          const oTR = gp(gridX - padX, triRow);
+          // Bottom corners: inset from bottom by pad, inset from edges by padX
+          const botRow = gridY - pad;
+          const oBL = gp(padX, botRow);
+          const oBR = gp(gridX - padX, botRow);
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
           ctx.beginPath();
-          // Start at bottom-left, trace up left side following cloth
-          let p = gp(sidePad, botRow);
+          // Bottom-left, up left side following cloth
+          let p = gp(padX, botRow);
           ctx.moveTo(p.x, p.y);
-          for (let gy = botRow - 1; gy >= triOutRow; gy--) { p = gp(sidePad, gy); ctx.lineTo(p.x, p.y); }
-          // Triangle V peak
-          ctx.lineTo(outM.x, outM.y);
-          // Down right side following cloth
-          for (let gy = triOutRow; gy <= botRow; gy++) { p = gp(gridX - sidePad, gy); ctx.lineTo(p.x, p.y); }
-          // Bottom line back to start
-          p = gp(sidePad, botRow);
+          for (let gy = botRow - 1; gy >= triRow; gy--) { p = gp(padX, gy); ctx.lineTo(p.x, p.y); }
+          // Triangle V — left side up to peak
+          ctx.lineTo(oMid.x, oMid.y);
+          // Peak down to right side
+          p = gp(gridX - padX, triRow);
           ctx.lineTo(p.x, p.y);
+          // Right side down following cloth
+          for (let gy = triRow + 1; gy <= botRow; gy++) { p = gp(gridX - padX, gy); ctx.lineTo(p.x, p.y); }
+          // Bottom line
+          ctx.closePath();
           ctx.stroke();
 
           // Small 4-branch star below triangle peak
-          const starY = outM.y + bScale * 0.08;
+          const starY = oMid.y + bScale * 0.08;
           const starR = bScale * 0.04;
           ctx.fillStyle = 'rgba(210,165,50,0.5)';
           for (let si = 0; si < 4; si++) {
             const sAng = si * Math.PI / 2 - Math.PI / 2;
-            ctx.save(); ctx.translate(outM.x, starY); ctx.rotate(sAng);
+            ctx.save(); ctx.translate(oMid.x, starY); ctx.rotate(sAng);
             ctx.beginPath(); ctx.moveTo(0, -starR * 0.25); ctx.lineTo(starR, 0); ctx.lineTo(0, starR * 0.25);
             ctx.closePath(); ctx.fill(); ctx.restore();
           }
