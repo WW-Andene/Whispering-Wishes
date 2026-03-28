@@ -3779,26 +3779,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Triangle outline below the gold — inverted V shape
           // Triangle outline below gold — same shape, shifted down uniformly
-          // Outline frame — parallel to gold triangle, same padding all around
+          // Outline frame — follows cloth displacement, same padding all around
           const outOff = Math.round(gridY * 0.06);
           const sidePad = Math.max(1, Math.round(gridX * 0.06));
-          // Triangle outline: same shape as gold, shifted down by outOff
-          const outL = gp(sidePad, triRow + outOff);
-          const outR = gp(gridX - sidePad, triRow + outOff);
           const outM = gp(Math.round(gridX / 2), outOff);
-          // Bottom line
           const botRow = Math.round(gridY - outOff);
-          const botL = gp(sidePad, botRow), botR = gp(gridX - sidePad, botRow);
+          const triOutRow = triRow + outOff;
           ctx.strokeStyle = 'rgba(210,165,50,0.45)';
           ctx.lineWidth = Math.max(0.8, bScale * 0.008);
           ctx.beginPath();
-          // Bottom left → up left side → triangle V → down right side → bottom right → close
-          ctx.moveTo(botL.x, botL.y);
-          ctx.lineTo(outL.x, outL.y);
+          // Start at bottom-left, trace up left side following cloth
+          let p = gp(sidePad, botRow);
+          ctx.moveTo(p.x, p.y);
+          for (let gy = botRow - 1; gy >= triOutRow; gy--) { p = gp(sidePad, gy); ctx.lineTo(p.x, p.y); }
+          // Triangle V peak
           ctx.lineTo(outM.x, outM.y);
-          ctx.lineTo(outR.x, outR.y);
-          ctx.lineTo(botR.x, botR.y);
-          ctx.closePath();
+          // Down right side following cloth
+          for (let gy = triOutRow; gy <= botRow; gy++) { p = gp(gridX - sidePad, gy); ctx.lineTo(p.x, p.y); }
+          // Bottom line back to start
+          p = gp(sidePad, botRow);
+          ctx.lineTo(p.x, p.y);
           ctx.stroke();
 
           // Small 4-branch star below triangle peak
