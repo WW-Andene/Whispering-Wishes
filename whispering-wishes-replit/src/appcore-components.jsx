@@ -2724,61 +2724,41 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.drawImage(bkSrc, cx2 + bk.ox, cy2 + bk.oy, drawW, drawH);
           }
         }
-        // God rays — bright hopeful light descending on battlefield
-        const rayLandings = [];
+        // God rays — fan downward from sun toward ground, matching camera angle
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        const rayCount = 16;
-        const rayCenterAngle = Math.PI * 0.5;
-        const rayConeSpread = Math.PI * 0.6;
+        const rayCount = 12;
+        // Rays fan from sun downward toward the ground plane
+        // Camera looks up at sun (sun at 30% height, horizon at 75%)
+        // Center ray direction: straight down from sun to ground center
+        const rayCenterAngle = Math.PI * 0.5; // straight down
+        const rayConeSpread = Math.PI * 0.55; // wide fan covering most of the ground
         for (let ri2 = 0; ri2 < rayCount; ri2++) {
           const rayRng = seededRandom(ri2 * 777 + 42);
-          const t = (ri2 + rayRng() * 0.5 - 0.25) / (rayCount - 1);
+          // Distribute rays across the cone with randomized spacing
+          const t = (ri2 + rayRng() * 0.6 - 0.3) / (rayCount - 1);
           const rayAngle = rayCenterAngle - rayConeSpread * 0.5 + t * rayConeSpread;
-          const rayLen = (H - sunY) * (1.1 + rayRng() * 0.3);
-          const rayW = sunR * (0.4 + rayRng() * 1.5);
+          // Rays extend from sun all the way to bottom of screen
+          const rayLen = (H - sunY) * (1.0 + rayRng() * 0.3);
+          // Width varies — some thick, some thin, like real crepuscular rays
+          const rayW = sunR * (0.3 + rayRng() * 1.2);
           const ex = sunX + Math.cos(rayAngle) * rayLen;
           const ey = sunY + Math.sin(rayAngle) * rayLen;
-          // White-gold — hope through darkness
-          const rayAlpha = 0.06 + rayRng() * 0.10;
+          // Warm golden color, varying opacity
+          const rayAlpha = 0.03 + rayRng() * 0.05;
           const rayGrad = ctx.createLinearGradient(sunX, sunY, ex, ey);
-          rayGrad.addColorStop(0, 'rgba(255,252,235,' + (rayAlpha * 1.5) + ')');
-          rayGrad.addColorStop(0.1, 'rgba(255,245,210,' + (rayAlpha * 1.2) + ')');
-          rayGrad.addColorStop(0.3, 'rgba(255,235,180,' + (rayAlpha * 0.8) + ')');
-          rayGrad.addColorStop(0.55, 'rgba(255,220,150,' + (rayAlpha * 0.4) + ')');
-          rayGrad.addColorStop(0.8, 'rgba(255,200,120,' + (rayAlpha * 0.15) + ')');
-          rayGrad.addColorStop(1, 'rgba(255,180,100,0)');
+          rayGrad.addColorStop(0, 'rgba(255,240,170,' + (rayAlpha * 1.2) + ')');
+          rayGrad.addColorStop(0.15, 'rgba(255,215,120,' + rayAlpha + ')');
+          rayGrad.addColorStop(0.5, 'rgba(255,180,70,' + (rayAlpha * 0.4) + ')');
+          rayGrad.addColorStop(0.8, 'rgba(255,140,40,' + (rayAlpha * 0.12) + ')');
+          rayGrad.addColorStop(1, 'rgba(255,100,20,0)');
           ctx.fillStyle = rayGrad;
           ctx.beginPath();
           const perpX = -Math.sin(rayAngle), perpY = Math.cos(rayAngle);
-          ctx.moveTo(sunX + perpX * rayW * 0.08, sunY + perpY * rayW * 0.08);
-          ctx.lineTo(sunX - perpX * rayW * 0.08, sunY - perpY * rayW * 0.08);
-          ctx.lineTo(ex - perpX * rayW * 4, ey - perpY * rayW * 4);
-          ctx.lineTo(ex + perpX * rayW * 4, ey + perpY * rayW * 4);
-          ctx.closePath(); ctx.fill();
-          rayLandings.push({ x: ex, w: rayW * 4, alpha: rayAlpha });
-        }
-        // Second pass — bright accent rays
-        for (let ri3 = 0; ri3 < 6; ri3++) {
-          const rRng = seededRandom(ri3 * 1337 + 99);
-          const t2 = (ri3 + rRng() * 0.4) / 5;
-          const rAng = rayCenterAngle - rayConeSpread * 0.35 + t2 * rayConeSpread * 0.7;
-          const rLen = (H - sunY) * (1.2 + rRng() * 0.2);
-          const rW = sunR * (0.8 + rRng() * 1.8);
-          const rex = sunX + Math.cos(rAng) * rLen;
-          const rey = sunY + Math.sin(rAng) * rLen;
-          const rA = 0.04 + rRng() * 0.06;
-          const rGrad = ctx.createLinearGradient(sunX, sunY, rex, rey);
-          rGrad.addColorStop(0, 'rgba(255,255,245,' + (rA * 1.8) + ')');
-          rGrad.addColorStop(0.2, 'rgba(255,248,220,' + rA + ')');
-          rGrad.addColorStop(0.5, 'rgba(255,240,190,' + (rA * 0.35) + ')');
-          rGrad.addColorStop(1, 'rgba(255,220,160,0)');
-          ctx.fillStyle = rGrad;
-          ctx.beginPath();
-          const px2 = -Math.sin(rAng), py2 = Math.cos(rAng);
-          ctx.moveTo(sunX + px2 * rW * 0.05, sunY + py2 * rW * 0.05);
-          ctx.lineTo(sunX - px2 * rW * 0.05, sunY - py2 * rW * 0.05);
-          ctx.lineTo(rex - px2 * rW * 3, rey - py2 * rW * 3);
-          ctx.lineTo(rex + px2 * rW * 3, rey + py2 * rW * 3);
+          // Narrow at sun, widens as it reaches the ground
+          ctx.moveTo(sunX + perpX * rayW * 0.1, sunY + perpY * rayW * 0.1);
+          ctx.lineTo(sunX - perpX * rayW * 0.1, sunY - perpY * rayW * 0.1);
+          ctx.lineTo(ex - perpX * rayW * 3.5, ey - perpY * rayW * 3.5);
+          ctx.lineTo(ex + perpX * rayW * 3.5, ey + perpY * rayW * 3.5);
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
@@ -3000,26 +2980,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           } // end if gW>=4&&gHt>=4
         }
         ctx.drawImage(groundCache, 0, 0);
-
-        // God ray light pools on ground — no scale transforms
-        if (rayLandings && rayLandings.length > 0) {
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          const groundY = H * 0.75;
-          for (let li = 0; li < rayLandings.length; li++) {
-            const rl = rayLandings[li];
-            const poolW = rl.w * 2.5;
-            const poolA = rl.alpha * 2.5;
-            const pg = ctx.createRadialGradient(rl.x, groundY, 0, rl.x, groundY, poolW);
-            pg.addColorStop(0, 'rgba(255,245,210,' + Math.min(0.3, poolA * 1.2) + ')');
-            pg.addColorStop(0.3, 'rgba(255,235,180,' + Math.min(0.15, poolA * 0.6) + ')');
-            pg.addColorStop(0.6, 'rgba(255,220,150,' + Math.min(0.06, poolA * 0.2) + ')');
-            pg.addColorStop(1, 'rgba(255,200,120,0)');
-            ctx.fillStyle = pg;
-            ctx.fillRect(rl.x - poolW, groundY - poolW * 0.3, poolW * 2, poolW * 0.6);
-          }
-          ctx.restore();
-        }
 
         // === EMBER/SPARK PARTICLE SYSTEM from ground-background.jsx ===
         if (!honourParticles) {
