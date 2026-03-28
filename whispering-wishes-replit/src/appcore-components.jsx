@@ -2725,6 +2725,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
         }
         // God rays — bright hopeful light descending through dark sky
+        const rayLandings = [];
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
         const rayCount = 16;
         const rayCenterAngle = Math.PI * 0.5;
@@ -2754,6 +2755,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(ex - perpX * rayW * 4, ey - perpY * rayW * 4);
           ctx.lineTo(ex + perpX * rayW * 4, ey + perpY * rayW * 4);
           ctx.closePath(); ctx.fill();
+          // Store where ray hits ground for light pools
+          rayLandings.push({ x: ex, w: rayW * 4, alpha: rayAlpha });
         }
         // Second pass — fewer bright accent rays for emphasis
         for (let ri3 = 0; ri3 < 6; ri3++) {
@@ -2998,6 +3001,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           } // end if gW>=4&&gHt>=4
         }
         ctx.drawImage(groundCache, 0, 0);
+
+        // God ray light pools on ground — where rays land
+        if (rayLandings.length > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          const groundY = H * 0.75;
+          for (let li = 0; li < rayLandings.length; li++) {
+            const rl = rayLandings[li];
+            const poolX = rl.x;
+            const poolW = rl.w * 2.5;
+            const poolH = H * 0.12;
+            const poolAlpha = rl.alpha * 2.5;
+            // Elliptical light pool on ground plane
+            const pg = ctx.createRadialGradient(poolX, groundY, 0, poolX, groundY, poolW);
+            pg.addColorStop(0, 'rgba(255,245,210,' + Math.min(0.35, poolAlpha * 1.5) + ')');
+            pg.addColorStop(0.3, 'rgba(255,235,180,' + Math.min(0.2, poolAlpha * 0.9) + ')');
+            pg.addColorStop(0.6, 'rgba(255,220,150,' + Math.min(0.08, poolAlpha * 0.3) + ')');
+            pg.addColorStop(1, 'rgba(255,200,120,0)');
+            ctx.save();
+            ctx.scale(1, poolH / poolW);
+            ctx.fillStyle = pg;
+            ctx.beginPath();
+            ctx.arc(poolX, groundY * (poolW / poolH), poolW, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+          ctx.restore();
+        }
 
         // === EMBER/SPARK PARTICLE SYSTEM from ground-background.jsx ===
         if (!honourParticles) {
