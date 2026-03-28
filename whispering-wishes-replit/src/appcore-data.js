@@ -3,7 +3,7 @@
 // Pure data, constants, game databases. No React. Leaf module (no imports).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '3.2.3';
+const APP_VERSION = '3.2.4';
 const MAX_IMPORT_SIZE_MB = 5; // P7-FIX: Import file size limit constant (7E)
 
 // Header icon (uploaded app icon)
@@ -807,7 +807,7 @@ const EVENTS = {
     color: 'cyan',
     // Tue, 03 Feb 2026 10:45 - Sun, 05 Apr 2026 03:59 (Europe)
     // P9-FIX: Apr 5 is after DST spring-forward (Mar 29) — Europe is CEST (UTC+2)
-    // Apr 5, 03:59 CEST = Apr 5, 01:59 UTC (was incorrectly 02:59 UTC assuming CET)
+    // Apr 5, 03:59 CEST = Apr 5, 01:59 UTC (corrected for DST spring-forward)
     currentEnd: '2026-04-05T01:59:00Z',
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
@@ -819,7 +819,12 @@ const EVENTS = {
     subtitle: 'Pilot', 
     description: 'High difficulty boss rush', 
     resetType: 'Version update', 
-    color: 'pink', 
+    color: 'purple',
+    rewards: 'Challenge Rewards',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
+    accentColor: 'purple',
+    imageUrl: ''
+  },lor: 'pink', 
     // Wed, 11 Feb 2026 21:00 - Thu, 19 Mar 2026 04:00 (Europe)
     // Mar 19, 04:00 Europe = Mar 19, 03:00 UTC
     currentEnd: '2026-03-19T03:00:00Z',
@@ -1428,6 +1433,20 @@ const TAB_ORDER = ['tracker', 'events', 'calculator', 'planner', 'analytics', 'g
 // Podium medal colors (gold, silver, bronze) for leaderboard/ranking displays
 const MEDAL_COLORS = ['#edaf18', '#c0c0c0', '#cd7f32'];
 
+// [SECTION:CHANGELOG]
+const CHANGELOG = [
+  { date: '2026-03-16', category: 'Banners', text: 'Filled characterBannerImage' },
+  { date: '2026-03-16', category: 'Banners', text: 'Filled weaponBannerImage' },
+  { date: '2026-03-16', category: 'Fixes', text: 'Update APP_VERSION from 3.2.2 to 3.2.3 to match current state' },
+  { date: '2026-03-16', category: 'Data', text: 'Fix tacticalHologram event end time - April 5 CEST should be 01:59 UTC after DST' },
+  { date: '2026-03-16', category: 'Data', text: 'Complete truncated doubledPawns event definition with proper structure' },
+  { date: '2026-03-16', category: 'Code', text: 'Update file header version comment from 3.2.2 to 3.2.3' },
+  { date: '2026-03-16', category: 'Accessibility', text: 'Add safe area padding for notched devices to prevent content cutoff' },
+  { date: '2026-03-16', category: 'UI', text: 'Improve image loading UX by using visibility:hidden to prevent layout shift' },
+  { date: '2026-03-16', category: 'Agent', text: 'Agent shell swapped to new version' },
+  { date: '2026-03-16', category: 'Version', text: '3.2.3 → 3.2.4' }
+];
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // EXPORTS - Used by App.jsx (WhisperingWishesInner)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1449,4 +1468,5 @@ export {
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
   TAB_ORDER, MEDAL_COLORS,
+  CHANGELOG,
 };

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 — appcore-engine.js
+// WHISPERING WISHES v3.2.3 — appcore-engine.js
 // Time utilities, gacha simulation, state/reducer, calcStats. No React.
 // ═══════════════════════════════════════════════════════════════════════════════
 

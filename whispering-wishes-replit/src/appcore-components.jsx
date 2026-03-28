@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 — appcore-components.jsx
+// WHISPERING WISHES v3.2.3 — appcore-components.jsx
 // All React UI components: cards, modals, banners, backgrounds, collection grid.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -18,8 +18,7 @@ import {
 } from './appcore-engine.js';
 import { useFocusTrap, useEscapeKey } from './appcore-providers.jsx';
 
-// P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
-// AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
+// Shared image error handler — prevents layout shift on broken images
 const hideOnError = (e) => { e.target.style.visibility = 'hidden'; };
 
 // Material item display helper — shows [icon] name ×qty

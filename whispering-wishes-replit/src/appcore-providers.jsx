@@ -337,8 +337,7 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-    /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
-       is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
+    /* Safe area insets for notched/dynamic-island devices */
     @supports (padding-top: env(safe-area-inset-top)) {
       body {
         /* Top/bottom safe areas handled by sticky header and main content respectively */

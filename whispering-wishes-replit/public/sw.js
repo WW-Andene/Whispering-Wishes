@@ -5,7 +5,7 @@
 // proper SW update lifecycle. A static file fixes all three issues.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '3.2.3';
+const APP_VERSION = '3.2.4';
 const APP_CACHE = `ww-app-v${APP_VERSION}`;
 const IMG_CACHE = `ww-images-v${APP_VERSION}`;
 const CDN_CACHE = `ww-cdn-v${APP_VERSION}`;

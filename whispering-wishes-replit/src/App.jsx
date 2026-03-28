@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES v3.2.2 - App (Main Application Component)
+// WHISPERING WISHES v3.2.3 - App (Main Application Component)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Main app module — WhisperingWishesInner + default export with providers.
