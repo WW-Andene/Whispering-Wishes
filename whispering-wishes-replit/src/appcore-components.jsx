@@ -3428,31 +3428,78 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Sort back-to-front
         swords.sort((a, b) => b.wz - a.wz);
 
-        // Blade fracture — compute crack positions + fragment offsets
+        // Blade fracture — jagged crack paths + fragment offsets
         function getBladeFragments(idx, bH, gH, bW) {
           var fs = (idx * 2246822519 + 314159) | 0;
           function fr() { fs = (fs * 1103515245 + 12345) & 0x7fffffff; return fs / 0x7fffffff; }
           fr(); fr();
+          var hw = bW * 0.5;
           var nc = 2 + (fr() * 2 | 0); // 2-3 cracks → 3-4 pieces
-          var crackYs = [];
+          // Generate jagged crack paths (each is array of {x,y} points across blade)
+          var cracks = [];
           for (var ci = 0; ci < nc; ci++) {
             var t = 0.12 + ci * (0.65 / nc) + fr() * (0.2 / nc);
-            crackYs.push(-bH + t * (bH + gH));
+            var baseY = -bH + t * (bH + gH);
+            var wAtCrack = hw * Math.min(1, t * 1.8);
+            // 4-6 jagged points from left edge to right edge
+            var nPts = 4 + (ci % 3);
+            var pts = [];
+            for (var pi = 0; pi <= nPts; pi++) {
+              var u = pi / nPts;
+              pts.push({
+                x: -wAtCrack * 1.5 + u * wAtCrack * 3,
+                y: baseY + (fr() - 0.5) * bW * 0.8
+              });
+            }
+            cracks.push(pts);
           }
-          crackYs.sort(function(a,b){ return a - b; });
-          // Build segment list: first stays in place, rest drift outward
-          var segs = [{ y0: -bH - 10, y1: crackYs[0], dx: 0, dy: 0, r: 0 }];
-          for (var i = 0; i < crackYs.length; i++) {
-            var yEnd = (i < crackYs.length - 1) ? crackYs[i + 1] : gH + 10;
+          // Build segments — each has top crack path, bottom crack path, and offset
+          var wide = bW * 5; // extra wide margin for clip
+          var segs = [];
+          for (var si = 0; si <= cracks.length; si++) {
+            var topCrack = (si > 0) ? cracks[si - 1] : null;
+            var botCrack = (si < cracks.length) ? cracks[si] : null;
             segs.push({
-              y0: crackYs[i],
-              y1: yEnd,
-              dx: (fr() > 0.5 ? 1 : -1) * bW * (0.8 + fr() * 1.2),
-              dy: (fr() - 0.5) * bW * 0.6,
-              r: (fr() - 0.5) * 0.12
+              topCrack: topCrack,
+              botCrack: botCrack,
+              topY: topCrack ? Math.min.apply(null, topCrack.map(function(p){return p.y})) : -bH - 20,
+              botY: botCrack ? Math.max.apply(null, botCrack.map(function(p){return p.y})) : gH + 20,
+              dx: si === 0 ? 0 : (fr() > 0.5 ? 1 : -1) * bW * (0.5 + fr() * 0.8),
+              dy: si === 0 ? 0 : (fr() - 0.5) * bW * 0.4,
+              r: si === 0 ? 0 : (fr() - 0.5) * 0.08,
+              wide: wide
             });
           }
           return segs;
+        }
+        // Clip to a segment bounded by jagged crack lines
+        function clipFragment(ctx2, frag, bW) {
+          var w = frag.wide;
+          ctx2.beginPath();
+          if (frag.topCrack) {
+            // Start from top-left corner, follow top crack left→right
+            ctx2.moveTo(frag.topCrack[0].x, frag.topCrack[0].y);
+            for (var i = 1; i < frag.topCrack.length; i++) ctx2.lineTo(frag.topCrack[i].x, frag.topCrack[i].y);
+            // Go to top-right far corner
+            ctx2.lineTo(w, frag.topCrack[frag.topCrack.length-1].y - 5);
+          } else {
+            ctx2.moveTo(-w, frag.topY);
+            ctx2.lineTo(w, frag.topY);
+          }
+          if (frag.botCrack) {
+            // Go down to bottom-right, follow bottom crack right→left
+            ctx2.lineTo(w, frag.botCrack[frag.botCrack.length-1].y + 5);
+            for (var j = frag.botCrack.length - 1; j >= 0; j--) ctx2.lineTo(frag.botCrack[j].x, frag.botCrack[j].y);
+            ctx2.lineTo(-w, frag.botCrack[0].y + 5);
+          } else {
+            ctx2.lineTo(w, frag.botY);
+            ctx2.lineTo(-w, frag.botY);
+          }
+          if (frag.topCrack) {
+            ctx2.lineTo(-w, frag.topCrack[0].y - 5);
+          }
+          ctx2.closePath();
+          ctx2.clip();
         }
 
         for (const s of swords) {
@@ -3526,9 +3573,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             for (var _gfi = 0; _gfi < glFrags.length; _gfi++) {
               var gf = glFrags[_gfi];
               ctx.save();
-              ctx.beginPath();
-              ctx.rect(-gBW * 6, gf.y0, gBW * 12, gf.y1 - gf.y0);
-              ctx.clip();
+              clipFragment(ctx, gf, gBW * 2);
               ctx.translate(gf.dx, gf.dy);
               ctx.rotate(gf.r);
               // Left
@@ -3617,9 +3662,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _fi = 0; _fi < lsFrags.length; _fi++) {
             var frag = lsFrags[_fi];
             ctx.save();
-            ctx.beginPath();
-            ctx.rect(-bladeW * 4, frag.y0, bladeW * 8, frag.y1 - frag.y0);
-            ctx.clip();
+            clipFragment(ctx, frag, bladeW);
             ctx.translate(frag.dx, frag.dy);
             ctx.rotate(frag.r);
             // Left half
