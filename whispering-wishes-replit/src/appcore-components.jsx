@@ -3341,8 +3341,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
                             -bladeW * 0.5, tipEnd - pomDia,
                             -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, guardH * 0.5);
-          ctx.lineTo(0, guardH * 0.5);
+          ctx.lineTo(-bladeW / 2, guardH);
+          ctx.lineTo(0, guardH);
           ctx.closePath();
           ctx.fill();
           // Right half
@@ -3352,8 +3352,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
                             bladeW * 0.5, tipEnd - pomDia,
                             bladeW / 2, tipEnd);
-          ctx.lineTo(bladeW / 2, guardH * 0.5);
-          ctx.lineTo(0, guardH * 0.5);
+          ctx.lineTo(bladeW / 2, guardH);
+          ctx.lineTo(0, guardH);
           ctx.closePath();
           ctx.fill();
           // Guard — darker, between both faces
