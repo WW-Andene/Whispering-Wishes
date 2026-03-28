@@ -2796,77 +2796,67 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.restore();
         }
-        // Static electricity helper — draws sparks for a cloud range
-        function drawStaticSparks(startIdx, endIdx) {
-          if (!sceneClouds) return;
+        // Layer 0: rays group 0 behind all clouds (4 rays)
+        drawRays(0.6, 0);
+        // Layer 1: back clouds
+        drawCloudRange(0, splits[1]);
+        // Layer 2: rays group 1 between cloud layers (4 rays)
+        drawRays(1.0, 1);
+        // Layer 3: mid clouds
+        drawCloudRange(splits[1], splits[2]);
+        // Layer 4: rays group 2 in front of mid clouds (4 rays)
+        drawRays(0.5, 2);
+        // Layer 5: front clouds
+        drawCloudRange(splits[2], sceneClouds.length);
+        } // end if (sceneClouds)
+
+        // === ANIMATED STATIC ELECTRICITY crackling through clouds ===
+        if (sceneClouds) {
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
           ctx.lineCap = 'round';
-          var et = cloudTime * 0.4; // slow drift
-          for (var ei = startIdx; ei < endIdx; ei += 4) {
+          // Pick cloud pairs near each other, draw small arcs between/around them
+          var et = cloudTime * 2.5; // faster than cloud movement
+          for (var ei = 0; ei < sceneClouds.length; ei += 3) {
             var cl1 = sceneClouds[ei];
             if (!cl1 || !cl1.baked) continue;
             var ca1 = cl1.angle, flat1 = cl1.orbitFlatten || 0.7;
             var cx1 = cl1.sunX + Math.cos(ca1) * cl1.orbitDist;
             var cy1 = cl1.sunY + Math.sin(ca1) * cl1.orbitDist * flat1;
-            // Slow fade in/out — each spark visible ~30% of time
-            var phase = Math.sin(et * 0.12 + ei * 1.7) * Math.sin(et * 0.07 + ei * 2.3);
-            if (phase < 0.4) continue;
-            var alpha = (phase - 0.4) * 1.2;
-            // Arc between cloud edge and a nearby point
-            var bw = cl1.baked.w, bh = cl1.baked.h;
-            var arcLen = Math.max(bw, bh) * (0.2 + Math.sin(ei * 3.7) * 0.1);
-            // Slowly rotating start angle
-            var arcAng = et * 0.08 + ei * 2.1;
-            var ox = cx1 + cl1.baked.ox + bw * 0.5;
-            var oy = cy1 + cl1.baked.oy + bh * 0.5;
-            var ax0 = ox + Math.cos(arcAng) * bw * 0.35;
-            var ay0 = oy + Math.sin(arcAng) * bh * 0.25;
-            // 3-4 segment jagged path — seeded so it holds shape briefly
-            var seedT = Math.floor(et * 0.5 + ei * 0.3); // changes slowly
-            var _es = (ei * 1640531527 + seedT * 9973) | 0;
-            var nSeg = 3 + (ei % 2);
+            // Arc appears/disappears based on time — each spark lives briefly
+            var sparkPhase = Math.sin(et * 0.3 + ei * 1.7) * Math.sin(et * 0.17 + ei * 2.3);
+            if (sparkPhase < 0.3) continue; // only visible part of the time
+            var alpha = (sparkPhase - 0.3) * 1.4;
+            // Small jagged arc near cloud edge
+            var arcLen = cl1.baked.w * (0.3 + Math.sin(ei * 3.7) * 0.2);
+            var arcAng = et * 0.4 + ei * 2.1;
+            var ax0 = cx1 + cl1.baked.ox + cl1.baked.w * 0.5 + Math.cos(arcAng) * arcLen * 0.5;
+            var ay0 = cy1 + cl1.baked.oy + cl1.baked.h * 0.5 + Math.sin(arcAng) * arcLen * 0.3;
+            // 3-5 segment jagged path
+            var nSeg = 3 + ((ei * 7 + Math.floor(et * 2)) % 3);
             ctx.beginPath();
             ctx.moveTo(ax0, ay0);
+            var _es = (ei * 1640531527 + Math.floor(et * 3)) | 0;
             for (var si = 1; si <= nSeg; si++) {
               _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13);
               var erx = ((_es >>> 0) % 1000) / 1000 - 0.5;
               _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13);
               var ery = ((_es >>> 0) % 1000) / 1000 - 0.5;
-              ctx.lineTo(
-                ax0 + (si / nSeg) * arcLen * Math.cos(arcAng + 0.4) + erx * arcLen * 0.3,
-                ay0 + (si / nSeg) * arcLen * Math.sin(arcAng + 0.4) + ery * arcLen * 0.25
-              );
+              var segX = ax0 + (si / nSeg) * arcLen * Math.cos(arcAng + 0.5) + erx * arcLen * 0.4;
+              var segY = ay0 + (si / nSeg) * arcLen * Math.sin(arcAng + 0.5) + ery * arcLen * 0.3;
+              ctx.lineTo(segX, segY);
             }
-            ctx.strokeStyle = 'rgba(255,150,50,' + (alpha * 0.2) + ')';
-            ctx.lineWidth = 2.5;
+            // Glow layer
+            ctx.strokeStyle = 'rgba(255,150,50,' + (alpha * 0.25) + ')';
+            ctx.lineWidth = 3;
             ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,225,170,' + (alpha * 0.5) + ')';
-            ctx.lineWidth = 0.8;
+            // Core layer
+            ctx.strokeStyle = 'rgba(255,220,160,' + (alpha * 0.6) + ')';
+            ctx.lineWidth = 1;
             ctx.stroke();
           }
           ctx.restore();
         }
-
-        // Layer 0: rays group 0 behind all clouds (4 rays)
-        drawRays(0.6, 0);
-        // Layer 1: back clouds
-        drawCloudRange(0, splits[1]);
-        // Static electricity between back and mid clouds
-        drawStaticSparks(0, splits[1]);
-        // Layer 2: rays group 1 between cloud layers (4 rays)
-        drawRays(1.0, 1);
-        // Layer 3: mid clouds
-        drawCloudRange(splits[1], splits[2]);
-        // Static electricity between mid and front clouds
-        drawStaticSparks(splits[1], splits[2]);
-        // Layer 4: rays group 2 in front of mid clouds (4 rays)
-        drawRays(0.5, 2);
-        // Layer 5: front clouds
-        drawCloudRange(splits[2], sceneClouds.length);
-        // Static electricity on front clouds
-        drawStaticSparks(splits[2], sceneClouds.length);
-        } // end if (sceneClouds)
 
         // Dynamic ambient — clouds darken the sky behind them
         // First pass: draw dark shadow under each cloud to occlude the bright sky
@@ -3405,65 +3395,36 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Sort back-to-front
         swords.sort((a, b) => b.wz - a.wz);
 
-        // Blade fracture — cracks + floating shard fragments
-        function drawFractures(ctx2, idx, bW, bH, gH, lR2, lG2, lB22, lit2) {
-          var fs = (idx * 2246822519 + 314159) | 0;
+        // Blade fracture — split blade into displaced floating shards
+        // Returns array of {y, offX, offY} crack positions for use in blade drawing
+        function getFractures(idx, bH, gH) {
+          var fs = idx * 2246822519 + 314159;
           function fr() { fs = (fs * 1103515245 + 12345) & 0x7fffffff; return fs / 0x7fffffff; }
           fr(); fr();
           var nc = 2 + (fr() * 2 | 0); // 2-3 cracks
-          var hw = bW * 0.5;
+          var cracks = [];
           for (var ci = 0; ci < nc; ci++) {
-            var t = 0.15 + ci * (0.55 / Math.max(1, nc)) + fr() * (0.3 / Math.max(1, nc));
-            var cy = -bH + t * (bH + gH);
-            // Blade width at crack height (narrows near tip)
-            var wFrac = Math.min(1, t * 1.8);
-            var lw = hw * wFrac;
-            // Jagged crack line — 3-4 segments
-            var ns = 3 + (ci % 2);
-            var cpx = [], cpy = [];
-            for (var si = 0; si <= ns; si++) {
-              cpx.push(-lw + (si / ns) * lw * 2);
-              cpy.push(cy + (fr() - 0.5) * bW * 0.5);
-            }
-            // Dark crack gap
-            ctx2.strokeStyle = 'rgba(2,0,0,0.9)';
-            ctx2.lineWidth = Math.max(1.2, bW * 0.15);
-            ctx2.beginPath();
-            ctx2.moveTo(cpx[0], cpy[0]);
-            for (var pi = 1; pi <= ns; pi++) ctx2.lineTo(cpx[pi], cpy[pi]);
-            ctx2.stroke();
-            // Bright crack edge
-            ctx2.strokeStyle = 'rgba(' + Math.min(255, lR2 + 100) + ',' + Math.min(255, lG2 + 90) + ',' + Math.min(255, lB22 + 70) + ',' + (0.3 + lit2 * 0.4) + ')';
-            ctx2.lineWidth = Math.max(0.5, bW * 0.04);
-            ctx2.beginPath();
-            ctx2.moveTo(cpx[0], cpy[0] - Math.max(0.8, bW * 0.08));
-            for (var pi2 = 1; pi2 <= ns; pi2++) ctx2.lineTo(cpx[pi2], cpy[pi2] - Math.max(0.8, bW * 0.08));
-            ctx2.stroke();
-            // Floating shard — small triangular piece drifting from crack
-            var shardX = (fr() - 0.5) * lw * 1.2;
-            var shardY = cy;
-            var sdx = (fr() - 0.5) * bW * 0.8; // drift X
-            var sdy = (fr() - 0.5) * bW * 0.5; // drift Y
-            var shardW = lw * (0.15 + fr() * 0.2);
-            var shardH = bW * (0.4 + fr() * 0.4);
-            // Draw shard as displaced triangle
-            ctx2.save();
-            ctx2.translate(shardX + sdx, shardY + sdy);
-            ctx2.rotate((fr() - 0.5) * 0.3);
-            var shBr = 0.3 + lit2 * 0.5;
-            ctx2.fillStyle = 'rgb(' + Math.round(30 + 180 * shBr) + ',' + Math.round(22 + 130 * shBr) + ',' + Math.round(14 + 65 * shBr) + ')';
-            ctx2.beginPath();
-            ctx2.moveTo(0, -shardH * 0.5);
-            ctx2.lineTo(shardW * 0.5, shardH * 0.3);
-            ctx2.lineTo(-shardW * 0.4, shardH * 0.5);
-            ctx2.closePath();
-            ctx2.fill();
-            // Bright edge on shard
-            ctx2.strokeStyle = 'rgba(' + Math.min(255, lR2 + 80) + ',' + Math.min(255, lG2 + 70) + ',' + Math.min(255, lB22 + 50) + ',0.4)';
-            ctx2.lineWidth = Math.max(0.3, bW * 0.03);
-            ctx2.stroke();
-            ctx2.restore();
+            var t = 0.15 + ci * (0.6 / nc) + fr() * (0.5 / nc);
+            cracks.push({
+              y: -bH + t * (bH + gH),         // Y position of crack
+              offX: (fr() - 0.5) * 3.0,        // fragment X displacement (pixels)
+              offY: (fr() - 0.5) * 2.0,        // fragment Y displacement
+              ang: (fr() - 0.5) * 0.04         // slight rotation per shard
+            });
           }
+          cracks.sort(function(a, b) { return a.y - b.y; });
+          return cracks;
+        }
+        // Draw a blade segment clipped between y0 and y1, offset by dx/dy
+        function drawBladeSegment(ctx2, y0, y1, dx, dy, ang, bladeDrawFn) {
+          ctx2.save();
+          ctx2.beginPath();
+          ctx2.rect(-50, y0, 100, y1 - y0);
+          ctx2.clip();
+          ctx2.translate(dx, dy);
+          ctx2.rotate(ang);
+          bladeDrawFn();
+          ctx2.restore();
         }
 
         for (const s of swords) {
@@ -3532,7 +3493,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGB = (lightB + darkB) * 0.4;
             const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
             const gripBr = 0.05 + lit * 0.08;
-            // Gladius blade — draw then fracture
+            // Gladius blade — fractured floating shards
             const gBlGL = ctx.createLinearGradient(0, 0, -gBW, 0);
             if (leftLight) {
               gBlGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
@@ -3543,12 +3504,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               gBlGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
               gBlGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
             }
-            ctx.fillStyle = gBlGL;
-            ctx.beginPath();
-            ctx.moveTo(0, gTip);
-            ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
-            ctx.quadraticCurveTo(-gBW * 1.08, (gTaperY + gBase) * 0.5, -gBW * 0.95, gBase);
-            ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
             const gBlGR = ctx.createLinearGradient(0, 0, gBW, 0);
             if (leftLight) {
               gBlGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
@@ -3559,18 +3514,34 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               gBlGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
               gBlGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
             }
-            ctx.fillStyle = gBlGR;
-            ctx.beginPath();
-            ctx.moveTo(0, gTip);
-            ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
-            ctx.quadraticCurveTo(gBW * 1.08, (gTaperY + gBase) * 0.5, gBW * 0.95, gBase);
-            ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
-            // Ridge
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-            ctx.lineWidth = Math.max(0.3, gBW * 0.08);
-            ctx.beginPath(); ctx.moveTo(0, gTip + 1); ctx.lineTo(0, gBase); ctx.stroke();
-            // Fractures
-            drawFractures(ctx, s.idx, gBW * 2, gBL, 0, lR, lG, lB2, lit);
+            const gRidgeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+            const drawGladiusBlade = () => {
+              ctx.fillStyle = gBlGL;
+              ctx.beginPath();
+              ctx.moveTo(0, gTip);
+              ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
+              ctx.quadraticCurveTo(-gBW * 1.08, (gTaperY + gBase) * 0.5, -gBW * 0.95, gBase);
+              ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
+              ctx.fillStyle = gBlGR;
+              ctx.beginPath();
+              ctx.moveTo(0, gTip);
+              ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
+              ctx.quadraticCurveTo(gBW * 1.08, (gTaperY + gBase) * 0.5, gBW * 0.95, gBase);
+              ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
+              ctx.strokeStyle = gRidgeStyle; ctx.lineWidth = Math.max(0.3, gBW * 0.08);
+              ctx.beginPath(); ctx.moveTo(0, gTip + 1); ctx.lineTo(0, gBase); ctx.stroke();
+            };
+            const gCracks = getFractures(s.idx, gBL, 0);
+            const gBounds = [-gBL - 5];
+            for (var gci = 0; gci < gCracks.length; gci++) gBounds.push(gCracks[gci].y);
+            gBounds.push(5);
+            for (var gsi = 0; gsi < gBounds.length - 1; gsi++) {
+              var gc = gCracks[Math.min(gsi, gCracks.length - 1)];
+              var gdx = gsi === 0 ? 0 : gc.offX;
+              var gdy = gsi === 0 ? 0 : gc.offY;
+              var gda = gsi === 0 ? 0 : gc.ang;
+              drawBladeSegment(ctx, gBounds[gsi], gBounds[gsi + 1], gdx, gdy, gda, drawGladiusBlade);
+            }
             // Grip (drawn before guard) — cylindrical gradient
             const gGripGrad = ctx.createLinearGradient(-gGripW, 0, gGripW, 0);
             const gkR = Math.round(20 + 40 * gripBr), gkG = Math.round(12 + 20 * gripBr), gkB = Math.round(8 + 10 * gripBr);
@@ -3626,7 +3597,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — 3D blade with fractures ===
+          // === LONGSWORD — 3D fractured blade ===
           const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
           if (leftLight) {
             blGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
@@ -3637,12 +3608,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             blGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
             blGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
           }
-          ctx.fillStyle = blGL;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5, -bladeW * 0.5, tipEnd - pomDia, -bladeW / 2, tipEnd);
-          ctx.lineTo(-bladeW / 2, guardH); ctx.lineTo(0, guardH);
-          ctx.closePath(); ctx.fill();
           const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
           if (leftLight) {
             blGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
@@ -3653,24 +3618,42 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             blGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
             blGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
           }
-          ctx.fillStyle = blGR;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5, bladeW * 0.5, tipEnd - pomDia, bladeW / 2, tipEnd);
-          ctx.lineTo(bladeW / 2, guardH); ctx.lineTo(0, guardH);
-          ctx.closePath(); ctx.fill();
-          // Ridge + fuller
-          ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+          const ridgeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
           const fullerOff = bladeW * 0.18;
-          ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
-          ctx.beginPath();
-          ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
-          ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
-          ctx.stroke();
-          // Fracture cracks + floating shards
-          drawFractures(ctx, s.idx, bladeW, bladeH, guardH, lR, lG, lB2, lit);
+          // Full blade draw function (both halves + ridge + fuller)
+          const drawFullBlade = () => {
+            ctx.fillStyle = blGL;
+            ctx.beginPath();
+            ctx.moveTo(0, -bladeH);
+            ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5, -bladeW * 0.5, tipEnd - pomDia, -bladeW / 2, tipEnd);
+            ctx.lineTo(-bladeW / 2, guardH); ctx.lineTo(0, guardH);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = blGR;
+            ctx.beginPath();
+            ctx.moveTo(0, -bladeH);
+            ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5, bladeW * 0.5, tipEnd - pomDia, bladeW / 2, tipEnd);
+            ctx.lineTo(bladeW / 2, guardH); ctx.lineTo(0, guardH);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = ridgeStyle; ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+            ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
+            ctx.beginPath();
+            ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
+            ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
+            ctx.stroke();
+          };
+          // Draw blade in fractured segments
+          const cracks = getFractures(s.idx, bladeH, guardH);
+          const boundaries = [-bladeH - 5];
+          for (var ci = 0; ci < cracks.length; ci++) boundaries.push(cracks[ci].y);
+          boundaries.push(guardH + 5);
+          for (var si = 0; si < boundaries.length - 1; si++) {
+            var crack = cracks[Math.min(si, cracks.length - 1)];
+            var dx = si === 0 ? 0 : crack.offX;
+            var dy = si === 0 ? 0 : crack.offY;
+            var da = si === 0 ? 0 : crack.ang;
+            drawBladeSegment(ctx, boundaries[si], boundaries[si + 1], dx, dy, da, drawFullBlade);
+          }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
           const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
