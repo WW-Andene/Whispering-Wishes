@@ -3289,7 +3289,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         swords.sort((a, b) => b.wz - a.wz);
 
         for (const s of swords) {
-          // Overall 114.7cm: blade 90.3, guard ~1, grip 18.4, pommel ~5
+          const isGladius = (s.idx * 2654435761 >>> 0) % 4 === 0; // 1/4 are gladius
           const overall = s.size;
           const bladeH = overall * (90.3 / 114.7);
           const mod = bladeH / 8;
@@ -3333,6 +3333,76 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
           const gripBot = guardH + gripH;
+
+          if (isGladius) {
+            // Gladius proportions from overall size
+            const gBL = overall * 0.72, gBW = overall * 0.048;
+            const gTaperAt = gBL * 0.65;
+            const gGuardR = gBW * 1.15, gGuardTh = overall * 0.015;
+            const gGripL = overall * 0.13, gGripW = gBW * 0.9;
+            const gPomR = gBW * 0.7, gKnobR = gGripW * 0.3;
+            const gBury = gBL * 0.55;
+            const gTip = -gBL + gBury, gBase = gBury;
+            const gGripTop = gBase + gGuardTh + gGuardR - gGripW * 0.3;
+            const gGripBot = gGripTop + gGripL;
+            const gPomCY = gGripBot + gPomR * 0.8;
+            const gKnobY = gPomCY + gPomR + gKnobR * 0.5;
+            const gTaperY = gTip + gBL - gTaperAt;
+            const gGB = (lightB + darkB) * 0.4;
+            const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
+            const gripBr = 0.05 + lit * 0.08;
+            // Blade left
+            ctx.fillStyle = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
+            ctx.beginPath();
+            ctx.moveTo(0, gTip);
+            ctx.quadraticCurveTo(-gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, -gBW, gTaperY);
+            ctx.quadraticCurveTo(-gBW * 1.08, (gTaperY + gBase) * 0.5, -gBW * 0.95, gBase);
+            ctx.lineTo(0, gBase);
+            ctx.closePath();
+            ctx.fill();
+            // Blade right
+            ctx.fillStyle = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
+            ctx.beginPath();
+            ctx.moveTo(0, gTip);
+            ctx.quadraticCurveTo(gBW * 0.4, gTip + (gBL - gTaperAt) * 0.4, gBW, gTaperY);
+            ctx.quadraticCurveTo(gBW * 1.08, (gTaperY + gBase) * 0.5, gBW * 0.95, gBase);
+            ctx.lineTo(0, gBase);
+            ctx.closePath();
+            ctx.fill();
+            // Grip (drawn before guard)
+            ctx.fillStyle = `rgb(${Math.round(20 + 40 * gripBr)},${Math.round(12 + 20 * gripBr)},${Math.round(8 + 10 * gripBr)})`;
+            ctx.beginPath();
+            const gg2 = gGripTop, ggl = gGripL;
+            ctx.moveTo(-gGripW * 0.9, gg2);
+            ctx.quadraticCurveTo(-gGripW * 0.5, gg2 + ggl * 0.1, -gGripW * 0.85, gg2 + ggl * 0.2);
+            ctx.quadraticCurveTo(-gGripW * 1.05, gg2 + ggl * 0.35, -gGripW * 0.6, gg2 + ggl * 0.5);
+            ctx.quadraticCurveTo(-gGripW * 1.05, gg2 + ggl * 0.65, -gGripW * 0.85, gg2 + ggl * 0.8);
+            ctx.quadraticCurveTo(-gGripW * 0.5, gg2 + ggl * 0.9, -gGripW * 0.9, gg2 + ggl);
+            ctx.lineTo(gGripW * 0.9, gg2 + ggl);
+            ctx.quadraticCurveTo(gGripW * 0.5, gg2 + ggl * 0.9, gGripW * 0.85, gg2 + ggl * 0.8);
+            ctx.quadraticCurveTo(gGripW * 1.05, gg2 + ggl * 0.65, gGripW * 0.6, gg2 + ggl * 0.5);
+            ctx.quadraticCurveTo(gGripW * 1.05, gg2 + ggl * 0.35, gGripW * 0.85, gg2 + ggl * 0.2);
+            ctx.quadraticCurveTo(gGripW * 0.5, gg2 + ggl * 0.1, gGripW * 0.9, gg2);
+            ctx.closePath();
+            ctx.fill();
+            // Guard on top
+            ctx.fillStyle = `rgb(${gGR2},${gGG2},${gGBl})`;
+            ctx.beginPath();
+            ctx.moveTo(-gGuardR, gBase);
+            ctx.lineTo(gGuardR, gBase);
+            ctx.arc(0, gBase + gGuardTh, gGuardR, 0, Math.PI);
+            ctx.closePath();
+            ctx.fill();
+            // Pommel
+            ctx.fillStyle = `rgb(${gGR2},${gGG2},${gGBl})`;
+            ctx.beginPath();
+            ctx.arc(0, gPomCY, gPomR, 0, Math.PI * 2);
+            ctx.fill();
+            // Knob
+            ctx.beginPath();
+            ctx.arc(0, gKnobY, gKnobR, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
 
           // Left half
           ctx.fillStyle = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
@@ -3448,6 +3518,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath();
           }
           ctx.fill();
+
+          } // end else (normal sword)
 
           ctx.restore();
         }
