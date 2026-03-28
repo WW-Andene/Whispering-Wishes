@@ -2661,9 +2661,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
           const sk = sc.createLinearGradient(0,0,0,H);
-          sk.addColorStop(0,"rgb(140,55,15)");sk.addColorStop(0.1,"rgb(155,62,18)");sk.addColorStop(0.25,"rgb(175,75,20)");
-          sk.addColorStop(0.4,"rgb(195,90,25)");sk.addColorStop(0.55,"rgb(215,110,30)");sk.addColorStop(0.7,"rgb(235,130,35)");
-          sk.addColorStop(0.82,"rgb(248,155,45)");sk.addColorStop(0.92,"rgb(255,180,60)");sk.addColorStop(1,"rgb(255,200,80)");
+          sk.addColorStop(0,"rgb(45,18,5)");sk.addColorStop(0.12,"rgb(60,24,7)");sk.addColorStop(0.25,"rgb(80,32,10)");
+          sk.addColorStop(0.4,"rgb(110,45,14)");sk.addColorStop(0.55,"rgb(145,60,18)");sk.addColorStop(0.68,"rgb(185,80,22)");
+          sk.addColorStop(0.8,"rgb(220,110,30)");sk.addColorStop(0.9,"rgb(245,150,45)");sk.addColorStop(1,"rgb(255,185,65)");
           sc.fillStyle=sk;sc.fillRect(0,0,W,H);
           // Sun warm radial glow — intense fire
           const sg=sc.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.max(W,H)*0.55);
