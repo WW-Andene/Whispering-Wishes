@@ -3329,47 +3329,50 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          // === AMBER GLOW BEHIND SWORD ===
-          // X: wx<0 → glow shifts left, wx>0 → glow shifts right
+          // === AMBER GLOW — colored blur on sword outer edge ===
+          // X: wx<0 → glow on RIGHT, wx>0 → glow on LEFT (light from center)
           const xNorm = Math.max(-1, Math.min(1, s.wx / 25));
-          const glowOffX = xNorm * bladeW * 3;
-          // Z: close → top only, far → whole sword
+          const glowOffX = -xNorm * bladeW * 3;
+          // Z: close (z<25) → mostly top, far (z>25) → extends to whole sword
           const zT = Math.max(0, Math.min(1, (s.wz - 8) / 42));
-          // Coverage: how far down the glow extends (0=none, 1=full)
-          const coverage = zT < 0.4 ? 0.15 + zT * 1.5 : 0.75 + (zT - 0.4) * 0.42;
-          const glowScale = 1.3 + zT * 0.2;
-          const glowAlpha = 0.25 + lit * 0.2;
-          // Draw glow — enlarged offset amber silhouette clipped by coverage
+          // Coverage: close=full sword, far=top only → then reverses
+          const coverage = zT < 0.4 ? 0.75 - zT * 1.2 : 0.27 + (zT - 0.4) * 1.2;
+          const glowAlpha = 0.3 + lit * 0.25;
+          const blurW = Math.max(1.5, bladeW * 0.8);
+          // Draw outline glow with blur
           ctx.save();
           ctx.translate(glowOffX, 0);
-          ctx.scale(glowScale, glowScale);
-          // Clip to coverage height (top of sword down to coverage fraction)
+          // Clip to coverage (top of sword down)
           const swordTop = -bladeH - pomDia;
           const swordBot = gripBot + pomDia * 1.5;
           const swordFullH = swordBot - swordTop;
           const clipBot = swordTop + swordFullH * coverage;
           ctx.beginPath();
-          ctx.rect(-guardW, swordTop - 10, guardW * 2, clipBot - swordTop + 10);
+          ctx.rect(-guardW * 2, swordTop - 10, guardW * 4, clipBot - swordTop + 10);
           ctx.clip();
-          // Draw full sword shape as amber glow
-          ctx.fillStyle = 'rgba(255,140,30,' + glowAlpha + ')';
+          ctx.strokeStyle = 'rgba(255,140,30,' + glowAlpha + ')';
+          ctx.lineWidth = blurW;
+          ctx.shadowColor = 'rgba(255,120,20,0.7)';
+          ctx.shadowBlur = blurW * 4;
+          // Trace full sword outline
           ctx.beginPath();
-          // Blade
           ctx.moveTo(0, -bladeH);
-          ctx.bezierCurveTo(-bladeW * 0.3, -bladeH + pomDia * 0.5, -bladeW * 0.55, tipEnd - pomDia, -bladeW * 0.55, tipEnd);
-          ctx.lineTo(-bladeW * 0.55, ov);
-          ctx.lineTo(bladeW * 0.55, ov);
-          ctx.lineTo(bladeW * 0.55, tipEnd);
-          ctx.bezierCurveTo(bladeW * 0.55, tipEnd - pomDia, bladeW * 0.3, -bladeH + pomDia * 0.5, 0, -bladeH);
+          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5, -bladeW * 0.5, tipEnd - pomDia, -bladeW / 2, tipEnd);
+          ctx.lineTo(-bladeW / 2, ov);
+          ctx.lineTo(-guardW / 2, 0);
+          ctx.lineTo(-guardW / 2, guardH);
+          ctx.lineTo(-gripW / 2, guardH);
+          ctx.lineTo(-gripW / 2, gripBot);
+          ctx.arc(0, gripBot + pomRy, pomRy, Math.PI, 0);
+          ctx.lineTo(gripW / 2, gripBot);
+          ctx.lineTo(gripW / 2, guardH);
+          ctx.lineTo(guardW / 2, guardH);
+          ctx.lineTo(guardW / 2, 0);
+          ctx.lineTo(bladeW / 2, ov);
+          ctx.lineTo(bladeW / 2, tipEnd);
+          ctx.bezierCurveTo(bladeW * 0.5, tipEnd - pomDia, bladeW * 0.25, -bladeH + pomDia * 0.5, 0, -bladeH);
           ctx.closePath();
-          ctx.fill();
-          // Guard
-          ctx.fillRect(-guardW * 0.55, -guardH * 0.3, guardW * 1.1, guardH * 1.6);
-          // Grip + pommel
-          ctx.fillRect(-gripW * 0.45, guardH - 1, gripW * 0.9, gripH + 2);
-          ctx.beginPath();
-          ctx.arc(0, gripBot + pomRy, pomRy * 1.2, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.stroke();
           ctx.restore();
 
           // === NORMAL SWORD FILL ===
