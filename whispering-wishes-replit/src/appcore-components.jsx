@@ -3683,15 +3683,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Per-row wave: each row has its own phase offset propagating down
           function rowWave(row) {
             const v = row / gridY;
-            const freedom = v * v; // bottom rows move more
-            const rowPhase = row * 0.7; // each row offset in wave phase
-            // X: wind push + per-row ripple
-            const wx = freedom * bScale * 0.4 * (0.6 + Math.sin(wt * 0.35) * 0.4)
-                     + Math.sin(rowPhase - wt * 2.0) * v * bScale * 0.06
-                     + Math.sin(rowPhase * 0.6 - wt * 1.2) * v * bScale * 0.04;
+            const freedom = v; // linear — even mid-rows move significantly
+            const rowPhase = row * 0.7;
+            // X: strong wind push + large ripple — cloth visibly blows sideways
+            const gust = 0.65 + Math.sin(wt * 0.35) * 0.35;
+            const wx = freedom * bScale * 1.2 * gust
+                     + Math.sin(rowPhase - wt * 2.0) * v * bScale * 0.15
+                     + Math.sin(rowPhase * 0.6 - wt * 1.2) * v * bScale * 0.1;
             // Y: vertical ripple
-            const wy = Math.sin(rowPhase * 1.3 - wt * 1.5) * v * bScale * 0.05
-                     + Math.sin(rowPhase * 0.4 - wt * 0.8 + 1.2) * v * bScale * 0.03;
+            const wy = Math.sin(rowPhase * 1.3 - wt * 1.5) * v * bScale * 0.06
+                     + Math.sin(rowPhase * 0.4 - wt * 0.8 + 1.2) * v * bScale * 0.04;
             // Z: depth billow (positive = toward viewer = bigger+brighter, negative = away = smaller+darker)
             const wz = Math.sin(rowPhase * 0.9 - wt * 1.0 + 0.5) * v * 0.15
                      + Math.sin(rowPhase * 0.3 - wt * 0.5 + 2) * v * 0.08;
