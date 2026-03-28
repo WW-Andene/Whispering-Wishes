@@ -2569,7 +2569,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Convert screen position to orbit params around sun
         const skyBot = H * 0.72; // just above horizon
         const flatR = 0.7;
-        const gCols = 8, gRows = 8;
+        const gCols = 8, gRows = 16;
         let gIdx = 0;
         for (let gr = 0; gr < gRows; gr++) {
             for (let gc2 = 0; gc2 < gCols; gc2++) {
