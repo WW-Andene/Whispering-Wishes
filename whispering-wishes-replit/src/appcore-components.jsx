@@ -3685,8 +3685,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const wz = totalH * freedom * 0.2;
               const zScale = 1 + wz * 0.4;
               const slopeShift = slopeX * freedom * bScale * 0.4;
+              // Bottom tapers to triangle — width narrows below 70%
+              const taper = v < 0.7 ? 1 : 1 - (v - 0.7) / 0.3;
               pts[gy * (gridX + 1) + gx] = {
-                x: bScrX + (u - 0.5) * dW * zScale + windX + slopeShift,
+                x: bScrX + (u - 0.5) * dW * taper * zScale + windX + slopeShift,
                 y: dTop + v * dH + windY,
                 z: wz
               };
@@ -3777,6 +3779,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (let gx = gridX - 1; gx >= 0; gx--) { const p = gp(gx, gridY); ctx.lineTo(p.x, p.y); }
           for (let gy = gridY - 1; gy >= 0; gy--) { const p = gp(0, gy); ctx.lineTo(p.x, p.y); }
           ctx.closePath(); ctx.stroke();
+
+          // Gold top corner accents — triangular tabs where cloth meets crossbar
+          const tl = gp(0, 0), tr = gp(gridX, 0);
+          const cornerS = bScale * 0.06;
+          ctx.fillStyle = gM;
+          // Left corner
+          ctx.beginPath();
+          ctx.moveTo(tl.x, tl.y);
+          ctx.lineTo(tl.x + cornerS, tl.y);
+          ctx.lineTo(tl.x, tl.y + cornerS);
+          ctx.closePath(); ctx.fill();
+          // Right corner
+          ctx.beginPath();
+          ctx.moveTo(tr.x, tr.y);
+          ctx.lineTo(tr.x - cornerS, tr.y);
+          ctx.lineTo(tr.x, tr.y + cornerS);
+          ctx.closePath(); ctx.fill();
 
           // Gold crest — on top of everything, centered on crossbar
           const crestR = bScale * 0.12;
