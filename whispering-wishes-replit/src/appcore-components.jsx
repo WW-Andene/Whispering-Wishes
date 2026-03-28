@@ -3603,6 +3603,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.translate(bScrX, bScrY);
           ctx.rotate(bannerLean);
           ctx.translate(-bScrX, -bScrY);
+          try {
 
           // Pole shaft
           const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
@@ -3635,7 +3636,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.beginPath(); ctx.arc(bScrX, poleTop - armH, dotR, 0, Math.PI * 2); ctx.fill();
 
           // Vertical ridged columns
-          const ridgeTop = crossY + crossH / 2;
+          const ridgeTop = crossY + barThick / 2;
           const ridgeH = bScale * 0.12;
           const ridgeW = crossW * 0.85;
           for (let ri = 0; ri < 7; ri++) {
@@ -3766,6 +3767,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = gH;
           ctx.beginPath(); ctx.arc(bScrX, crossY, crestR * 0.15, 0, Math.PI * 2); ctx.fill();
 
+          } catch(e) { /* prevent rotation leak */ }
           ctx.restore();
         }
 
