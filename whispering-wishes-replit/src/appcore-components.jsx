@@ -3371,10 +3371,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
             ctx.closePath();
           } else if (guardType === 2) {
-            // Curved guard — straight bar with curved bottom edge
+            // Curved down — flat top connects to blade, curves down at ends
             ctx.moveTo(-guardW / 2, -ov);
-            ctx.lineTo(-guardW / 2, guardH * 0.5);
-            ctx.quadraticCurveTo(0, guardH * 2.5, guardW / 2, guardH * 0.5);
+            ctx.lineTo(-guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
             ctx.lineTo(guardW / 2, -ov);
             ctx.lineTo(-guardW / 2, -ov);
             ctx.closePath();
@@ -3396,7 +3396,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const pommelType = (ph >>> 0) % 2;
           // Grip — tapers toward pommel if round
           if (pommelType === 1) {
-            const taperW = gripW * 0.65;
+            const taperW = gripW * 0.35;
             ctx.beginPath();
             ctx.moveTo(-gripW / 2, guardH - ov);
             ctx.lineTo(gripW / 2, guardH - ov);
