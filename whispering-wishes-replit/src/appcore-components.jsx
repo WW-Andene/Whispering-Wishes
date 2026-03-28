@@ -3325,9 +3325,54 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const darkSide = `rgb(${dR},${dG},${dB})`;
           const lightSide = `rgb(${lR},${lG},${lB})`;
 
-          // Blade — split into two halves along Y axis
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
+          const gripBot = guardH + gripH;
+
+          // === AMBER GLOW BEHIND SWORD ===
+          // X: wx<0 → glow shifts left, wx>0 → glow shifts right
+          const xNorm = Math.max(-1, Math.min(1, s.wx / 25));
+          const glowOffX = xNorm * bladeW * 3;
+          // Z: close → top only, far → whole sword
+          const zT = Math.max(0, Math.min(1, (s.wz - 8) / 42));
+          // Coverage: how far down the glow extends (0=none, 1=full)
+          const coverage = zT < 0.4 ? 0.15 + zT * 1.5 : 0.75 + (zT - 0.4) * 0.42;
+          const glowScale = 1.3 + zT * 0.2;
+          const glowAlpha = 0.25 + lit * 0.2;
+          // Draw glow — enlarged offset amber silhouette clipped by coverage
+          ctx.save();
+          ctx.translate(glowOffX, 0);
+          ctx.scale(glowScale, glowScale);
+          // Clip to coverage height (top of sword down to coverage fraction)
+          const swordTop = -bladeH - pomDia;
+          const swordBot = gripBot + pomDia * 1.5;
+          const swordFullH = swordBot - swordTop;
+          const clipBot = swordTop + swordFullH * coverage;
+          ctx.beginPath();
+          ctx.rect(-guardW, swordTop - 10, guardW * 2, clipBot - swordTop + 10);
+          ctx.clip();
+          // Draw full sword shape as amber glow
+          ctx.fillStyle = 'rgba(255,140,30,' + glowAlpha + ')';
+          ctx.beginPath();
+          // Blade
+          ctx.moveTo(0, -bladeH);
+          ctx.bezierCurveTo(-bladeW * 0.3, -bladeH + pomDia * 0.5, -bladeW * 0.55, tipEnd - pomDia, -bladeW * 0.55, tipEnd);
+          ctx.lineTo(-bladeW * 0.55, ov);
+          ctx.lineTo(bladeW * 0.55, ov);
+          ctx.lineTo(bladeW * 0.55, tipEnd);
+          ctx.bezierCurveTo(bladeW * 0.55, tipEnd - pomDia, bladeW * 0.3, -bladeH + pomDia * 0.5, 0, -bladeH);
+          ctx.closePath();
+          ctx.fill();
+          // Guard
+          ctx.fillRect(-guardW * 0.55, -guardH * 0.3, guardW * 1.1, guardH * 1.6);
+          // Grip + pommel
+          ctx.fillRect(-gripW * 0.45, guardH - 1, gripW * 0.9, gripH + 2);
+          ctx.beginPath();
+          ctx.arc(0, gripBot + pomRy, pomRy * 1.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // === NORMAL SWORD FILL ===
           // Left half
           ctx.fillStyle = leftLight ? lightSide : darkSide;
           ctx.beginPath();
@@ -3385,7 +3430,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.fill();
           // Grip — straight rectangle (overlap into guard and pommel)
-          const gripBot = guardH + gripH;
           ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
           // Pommel — sits directly on grip
           let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
@@ -3416,31 +3460,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           ctx.restore();
         }
-
-        // Sword amber light reflection — screen-space glow pass
-        ctx.save();
-        ctx.globalCompositeOperation = 'lighter';
-        for (let si2 = 0; si2 < swords.length; si2++) {
-          const sw = swords[si2];
-          const sdx3 = sw.scrX - sunX, sdy3 = sw.scrY - sunY;
-          const sDist3 = Math.sqrt(sdx3 * sdx3 + sdy3 * sdy3);
-          const sLit = Math.max(0, 1 - sDist3 / (Math.max(W, H) * 0.7));
-          if (sLit < 0.08) continue;
-          const sSize = sw.size;
-          const overall2 = sSize * (40 / 2.8);
-          const visH = overall2 * 0.45;
-          const glowAlpha = sLit * sLit * 0.18;
-          const glowWidth = Math.max(1, sSize * 0.8);
-          // Vertical amber line at sword position
-          const gg = ctx.createLinearGradient(sw.scrX, sw.scrY - visH, sw.scrX, sw.scrY);
-          gg.addColorStop(0, 'rgba(255,180,60,0)');
-          gg.addColorStop(0.3, 'rgba(255,170,50,' + glowAlpha + ')');
-          gg.addColorStop(0.7, 'rgba(255,150,40,' + (glowAlpha * 0.6) + ')');
-          gg.addColorStop(1, 'rgba(255,130,30,0)');
-          ctx.fillStyle = gg;
-          ctx.fillRect(sw.scrX - glowWidth, sw.scrY - visH, glowWidth * 2, visH);
-        }
-        ctx.restore();
 
         // Full-scene dramatic vignette
         ctx.save();
