@@ -3325,31 +3325,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          // Color palette — metallic with reflected ambient light
-          const dR = Math.round(15 + lit * 20), dG = Math.round(13 + lit * 12), dB = Math.round(15 + lit * 5);
-          const mR = Math.round(35 + lit * 50), mG = Math.round(32 + lit * 30), mB = Math.round(35 + lit * 12);
-          const lR = Math.round(70 + lit * 120), lG = Math.round(65 + lit * 70), lB = Math.round(60 + lit * 25);
-          const hR = Math.min(255, Math.round(120 + lit * 135)), hG = Math.min(255, Math.round(110 + lit * 85)), hB = Math.round(90 + lit * 30);
-          // Reflected light — warm amber from sky bouncing off environment onto shadow side
-          const rR = Math.round(50 + lit * 80), rG = Math.round(30 + lit * 40), rB = Math.round(12 + lit * 10);
+          const dR = Math.round(20 + lit * 30), dG = Math.round(20 + lit * 18), dB = Math.round(22 + lit * 8);
+          const lR = Math.round(55 + lit * 100), lG = Math.round(52 + lit * 60), lB = Math.round(55 + lit * 25);
+          const darkSide = `rgb(${dR},${dG},${dB})`;
+          const lightSide = `rgb(${lR},${lG},${lB})`;
 
-          // Light side gradient: edge→highlight→mid (metallic gradient)
-          const lightGrad = ctx.createLinearGradient(0, 0, leftLight ? -bladeW / 2 : bladeW / 2, 0);
-          lightGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
-          lightGrad.addColorStop(0.3, `rgb(${hR},${hG},${hB})`);
-          lightGrad.addColorStop(0.7, `rgb(${lR},${lG},${lB})`);
-          lightGrad.addColorStop(1, `rgb(${mR},${mG},${mB})`);
-
-          // Dark side gradient: mid→dark→reflected light at far edge
-          const darkGrad = ctx.createLinearGradient(0, 0, leftLight ? bladeW / 2 : -bladeW / 2, 0);
-          darkGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
-          darkGrad.addColorStop(0.25, `rgb(${dR},${dG},${dB})`);
-          darkGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
-          darkGrad.addColorStop(1, `rgb(${rR},${rG},${rB})`);
-
-          // === NORMAL SWORD FILL ===
           // Left half
-          ctx.fillStyle = leftLight ? lightGrad : darkGrad;
+          ctx.fillStyle = leftLight ? lightSide : darkSide;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3360,7 +3342,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath();
           ctx.fill();
           // Right half
-          ctx.fillStyle = leftLight ? darkGrad : lightGrad;
+          ctx.fillStyle = leftLight ? darkSide : lightSide;
           ctx.beginPath();
           ctx.moveTo(0, -bladeH);
           ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
@@ -3370,13 +3352,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineTo(0, ov);
           ctx.closePath();
           ctx.fill();
-          // Guard — varies per sword
-          const guardGrad = ctx.createLinearGradient(-guardW / 2, 0, guardW / 2, 0);
-          guardGrad.addColorStop(0, leftLight ? `rgb(${lR},${lG},${lB})` : `rgb(${rR},${rG},${rB})`);
-          guardGrad.addColorStop(0.3, `rgb(${dR},${dG},${dB})`);
-          guardGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
-          guardGrad.addColorStop(1, leftLight ? `rgb(${rR},${rG},${rB})` : `rgb(${lR},${lG},${lB})`);
-          ctx.fillStyle = guardGrad;
+          ctx.fillStyle = darkSide;
           const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
           ctx.beginPath();
           if (guardType === 1) {
