@@ -3884,7 +3884,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           cBg.addColorStop(0, 'rgb(120,30,18)'); cBg.addColorStop(0.6, 'rgb(95,22,12)'); cBg.addColorStop(1, 'rgb(75,16,8)');
           ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = gM; ctx.lineWidth = barThick; ctx.stroke();
+          // Bottom half — full thickness (matches crossbar)
+          ctx.strokeStyle = gM; ctx.lineWidth = barThick;
+          ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI); ctx.stroke();
+          // Top half — half thickness
+          ctx.lineWidth = barThick * 0.5;
+          ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, Math.PI, Math.PI * 2); ctx.stroke();
           // 4-branch star
           ctx.fillStyle = gM;
           for (let si = 0; si < 4; si++) {
