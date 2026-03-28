@@ -3614,16 +3614,25 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // Gold crossbar — arms extend past flag width
+          // Vertical gold arm extending above the crossbar
+          const armH = bScale * 0.35;
+          const armW = poleW * 1.2;
+          const armGrad = ctx.createLinearGradient(bScrX - armW, 0, bScrX + armW, 0);
+          armGrad.addColorStop(0, gD); armGrad.addColorStop(0.4, gM); armGrad.addColorStop(0.5, gH);
+          armGrad.addColorStop(0.6, gM); armGrad.addColorStop(1, gD);
+          ctx.fillStyle = armGrad;
+          ctx.fillRect(bScrX - armW / 2, poleTop - armH, armW, armH);
+
+          // Thin gold crossbar — arms extend past flag
           const crossY = poleTop + bScale * 0.04;
           const crossW = bScale * 0.7;
-          const crossH = Math.max(2, poleW * 0.8);
+          const crossH = Math.max(1, poleW * 0.5);
           const cbGrad = ctx.createLinearGradient(bScrX - crossW / 2, 0, bScrX + crossW / 2, 0);
           cbGrad.addColorStop(0, gD); cbGrad.addColorStop(0.3, gM); cbGrad.addColorStop(0.5, gH);
           cbGrad.addColorStop(0.7, gM); cbGrad.addColorStop(1, gD);
           ctx.fillStyle = cbGrad;
           ctx.fillRect(bScrX - crossW / 2, crossY - crossH / 2, crossW, crossH);
-          const capR = crossH * 1.2;
+          const capR = Math.max(1.5, poleW * 0.6);
           ctx.fillStyle = gM;
           ctx.beginPath(); ctx.arc(bScrX - crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
           ctx.beginPath(); ctx.arc(bScrX + crossW / 2, crossY, capR, 0, Math.PI * 2); ctx.fill();
@@ -3747,7 +3756,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Gold crest — on top of everything, centered on crossbar
           const crestR = bScale * 0.12;
           const cBg = ctx.createRadialGradient(bScrX, crossY, 0, bScrX, crossY, crestR);
-          cBg.addColorStop(0, 'rgb(100,65,20)'); cBg.addColorStop(0.6, 'rgb(80,50,15)'); cBg.addColorStop(1, 'rgb(65,40,12)');
+          cBg.addColorStop(0, 'rgb(120,30,18)'); cBg.addColorStop(0.6, 'rgb(95,22,12)'); cBg.addColorStop(1, 'rgb(75,16,8)');
           ctx.fillStyle = cBg;
           ctx.beginPath(); ctx.arc(bScrX, crossY, crestR, 0, Math.PI * 2); ctx.fill();
           ctx.strokeStyle = gM; ctx.lineWidth = Math.max(1, bScale * 0.015); ctx.stroke();
