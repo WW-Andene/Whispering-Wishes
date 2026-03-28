@@ -3687,9 +3687,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rowPhase = row * 0.7;
             // X: strong wind push + large ripple — cloth visibly blows sideways
             const gust = 0.65 + Math.sin(wt * 0.35) * 0.35;
-            const wx = freedom * bScale * 1.2 * gust
-                     + Math.sin(rowPhase - wt * 2.0) * v * bScale * 0.15
-                     + Math.sin(rowPhase * 0.6 - wt * 1.2) * v * bScale * 0.1;
+            const wx = freedom * bScale * 0.5 * gust
+                     + Math.sin(rowPhase - wt * 2.0) * v * bScale * 0.08
+                     + Math.sin(rowPhase * 0.6 - wt * 1.2) * v * bScale * 0.05;
             // Y: vertical ripple
             const wy = Math.sin(rowPhase * 1.3 - wt * 1.5) * v * bScale * 0.06
                      + Math.sin(rowPhase * 0.4 - wt * 0.8 + 1.2) * v * bScale * 0.04;
@@ -3699,15 +3699,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             return { x: wx, y: wy, z: wz };
           }
 
-          // Compute grid point using row wave
+          // Compute grid point — row wave + per-point column ripple
           function gridPt(gx, gy) {
             const u = gx / gridX, v = gy / gridY;
             const rw = rowWave(gy);
-            // Z affects scale: closer = wider, further = narrower
+            // Per-point displacement — varies by both column and row
+            const ptPhase = gx * 1.3 + gy * 0.5;
+            const ptX = Math.sin(ptPhase - wt * 1.8 + u * 3) * v * bScale * 0.04
+                      + Math.sin(ptPhase * 0.7 + wt * 1.1) * v * bScale * 0.025;
+            const ptY = Math.sin(ptPhase * 1.1 - wt * 1.4 + u * 2) * v * bScale * 0.03
+                      + Math.sin(ptPhase * 0.5 + wt * 0.7 + 1.5) * v * bScale * 0.02;
+            // Z affects scale
             const zScale = 1 + rw.z * 0.3;
             const centerX = bScrX + rw.x;
-            const baseX = centerX + (u - 0.5) * dW * zScale;
-            const baseY = dTop + v * dH + rw.y;
+            const baseX = centerX + (u - 0.5) * dW * zScale + ptX;
+            const baseY = dTop + v * dH + rw.y + ptY;
             return { x: baseX, y: baseY, z: rw.z };
           }
 
