@@ -2756,7 +2756,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         // Ray drawing function
         function drawRays(alphaScale, group) {
           ctx.save(); ctx.globalCompositeOperation = 'lighter';
-          ctx.filter = 'blur(' + Math.max(3, Math.round(H * 0.016)) + 'px)';
+          ctx.filter = 'blur(' + Math.max(2, Math.round(H * 0.01)) + 'px)';
           const rCount = 12;
           const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
           for (let ri2 = 0; ri2 < rCount; ri2++) {
@@ -2770,13 +2770,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rey = sunY + Math.sin(rAng) * rLen;
             const rA = (0.28 + rRng() * 0.18) * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
-            rG.addColorStop(0, 'rgba(255,190,110,' + (rA * 0.25) + ')');
-            rG.addColorStop(0.1, 'rgba(255,170,85,' + (rA * 0.5) + ')');
-            rG.addColorStop(0.25, 'rgba(255,160,75,' + (rA * 0.85) + ')');
-            rG.addColorStop(0.45, 'rgba(255,150,65,' + (rA * 1.1) + ')');
-            rG.addColorStop(0.65, 'rgba(255,135,50,' + (rA * 0.8) + ')');
-            rG.addColorStop(0.82, 'rgba(255,120,38,' + (rA * 0.4) + ')');
-            rG.addColorStop(1, 'rgba(255,105,28,0)');
+            rG.addColorStop(0, 'rgba(255,235,150,' + (rA * 0.25) + ')');
+            rG.addColorStop(0.1, 'rgba(255,220,120,' + (rA * 0.5) + ')');
+            rG.addColorStop(0.25, 'rgba(255,210,105,' + (rA * 0.85) + ')');
+            rG.addColorStop(0.45, 'rgba(255,200,90,' + (rA * 1.1) + ')');
+            rG.addColorStop(0.65, 'rgba(255,185,75,' + (rA * 0.8) + ')');
+            rG.addColorStop(0.82, 'rgba(255,170,60,' + (rA * 0.4) + ')');
+            rG.addColorStop(1, 'rgba(255,155,45,0)');
             ctx.fillStyle = rG;
             ctx.beginPath();
             const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
