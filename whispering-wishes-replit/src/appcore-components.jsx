@@ -2754,12 +2754,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           if (sceneClouds[di].depth >= depthCuts[1]) { splits[2] = di; break; }
         }
         // Ray drawing function
-        function drawRays(alphaScale) {
+        function drawRays(alphaScale, group) {
           ctx.save(); ctx.globalCompositeOperation = 'lighter';
           ctx.filter = 'blur(' + Math.max(5, Math.round(H * 0.025)) + 'px)';
           const rCount = 12;
           const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
           for (let ri2 = 0; ri2 < rCount; ri2++) {
+            if (ri2 % 3 !== group) continue;
             const rRng = seededRandom(ri2 * 777 + 42);
             const t2 = (ri2 + rRng() * 0.6 - 0.3) / (rCount - 1);
             const rAng = rCenter - rSpread * 0.5 + t2 * rSpread;
@@ -2787,16 +2788,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.restore();
         }
-        // Layer 0: rays behind all clouds
-        drawRays(0.6);
+        // Layer 0: rays group 0 behind all clouds (4 rays)
+        drawRays(0.6, 0);
         // Layer 1: back clouds
         drawCloudRange(0, splits[1]);
-        // Layer 2: rays between cloud layers
-        drawRays(1.0);
+        // Layer 2: rays group 1 between cloud layers (4 rays)
+        drawRays(1.0, 1);
         // Layer 3: mid clouds
         drawCloudRange(splits[1], splits[2]);
-        // Layer 4: rays in front of mid clouds
-        drawRays(0.5);
+        // Layer 4: rays group 2 in front of mid clouds (4 rays)
+        drawRays(0.5, 2);
         // Layer 5: front clouds
         drawCloudRange(splits[2], sceneClouds.length);
         } // end if (sceneClouds)
