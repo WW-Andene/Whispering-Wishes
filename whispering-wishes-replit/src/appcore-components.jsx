@@ -3716,7 +3716,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               if (edgeDist > triW) isGold = true;
             }
             // Gold border: edges of cloth
-            if (u0 < 0.08 || u0 > 0.92 || v0 < 0.02 || v0 > 0.97) isGold = true;
+            if (u0 < 0.04 || u0 > 0.96 || v0 < 0.01 || v0 > 0.985) isGold = true;
             const shCol = isGold ? shGold : shRed;
             const ltCol = isGold ? ltGold : ltRed;
             // Surface normal from cross product of edges + Z
