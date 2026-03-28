@@ -3764,6 +3764,37 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
             ctx.stroke();
           }
+          // Floating shards — broken-off chips hover near the blade edge
+          var _shardBr = 0.3 + lit * 0.4;
+          var _shardCol = 'rgb('+Math.round(30+180*_shardBr)+','+Math.round(22+130*_shardBr)+','+Math.round(14+60*_shardBr)+')';
+          for (var _sli = 0; _sli < _notchesL.length; _sli++) {
+            var _sn = _notchesL[_sli];
+            var _gap = _hw * (0.12 + _cr() * 0.15); // hover gap
+            var _sx = -_hw - _gap;
+            var _sy = _sn.y + _sn.h * 0.1;
+            var _sw = _sn.d * (0.6 + _cr() * 0.3);
+            var _sh = _sn.h * (0.5 + _cr() * 0.4);
+            ctx.fillStyle = _shardCol;
+            ctx.beginPath();
+            ctx.moveTo(_sx, _sy);
+            ctx.lineTo(_sx - _sw * 0.6, _sy + _sh * 0.4);
+            ctx.lineTo(_sx - _sw * 0.2, _sy + _sh);
+            ctx.closePath(); ctx.fill();
+          }
+          for (var _sri = 0; _sri < _notchesR.length; _sri++) {
+            var _snr = _notchesR[_sri];
+            var _gapR = _hw * (0.12 + _cr() * 0.15);
+            var _sxr = _hw + _gapR;
+            var _syr = _snr.y + _snr.h * 0.1;
+            var _swr = _snr.d * (0.6 + _cr() * 0.3);
+            var _shr = _snr.h * (0.5 + _cr() * 0.4);
+            ctx.fillStyle = _shardCol;
+            ctx.beginPath();
+            ctx.moveTo(_sxr, _syr);
+            ctx.lineTo(_sxr + _swr * 0.6, _syr + _shr * 0.4);
+            ctx.lineTo(_sxr + _swr * 0.2, _syr + _shr);
+            ctx.closePath(); ctx.fill();
+          }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
           const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
