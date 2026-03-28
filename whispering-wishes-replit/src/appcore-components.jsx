@@ -3576,7 +3576,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             for (var _gci2 = 0; _gci2 < _gnc; _gci2++) {
               var _gy = _gcrackYs[_gci2];
               var _gw2 = gBW * Math.min(1, (_gy + gBL) / gBL * 1.8);
-              var _gspan = gBW * 2 * (0.6 + _gcr() * 0.8);
+              var _gspan = gBW * 2 * (0.3 + _gcr() * 0.4);
               var _gdir = _gcr() > 0.5 ? 1 : -1;
               var _gyS = _gy - _gdir * _gspan * 0.5;
               var _gyE = _gy + _gdir * _gspan * 0.5;
@@ -3702,7 +3702,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _y = _crackYs[_ci2];
             var _w = _hw * Math.min(1, (_y + bladeH) / _totalH * 1.8);
             // Overall diagonal: one edge higher, other lower
-            var _span = bladeW * (0.6 + _cr() * 0.8); // total Y span of crack
+            var _span = bladeW * (0.3 + _cr() * 0.4); // gentle diagonal
             var _dir = _cr() > 0.5 ? 1 : -1; // which side is higher
             var _yStart = _y - _dir * _span * 0.5;
             var _yEnd = _y + _dir * _span * 0.5;
