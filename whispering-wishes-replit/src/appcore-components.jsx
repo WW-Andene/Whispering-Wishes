@@ -2586,7 +2586,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const gRad = 18 + grng() * 50;
                 const gT = gRad > 55 ? 3 : gRad > 35 ? 2 : gRad > 18 ? 1 : 0;
                 const gDep = 0.15 + grng() * 0.55;
-                const gSpd = 0.08 / (0.5 + gRad / 60) * (0.55 + gDep * 0.45) / (0.3 + gDist / (H * 0.5));
+                const gSpd = Math.max(0.015, 0.08 / (0.5 + gRad / 60) * (0.55 + gDep * 0.45) / (0.3 + gDist / (H * 0.5)));
                 addC(gs, gDist, gAng, gRad, gDep, gSpd, gT);
                 // Companion cloud nearby
                 const cs2 = gs + 500;
@@ -2596,7 +2596,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 const cDist = Math.max(minDist, gDist + (crng() - 0.5) * gRad * 3);
                 const cAng2 = gAng + (crng() - 0.5) * 0.8;
                 const cDep = Math.max(0, Math.min(1, gDep + (crng() - 0.5) * 0.2));
-                addC(cs2, cDist, cAng2, cRad, cDep, 0.1 / (0.5 + cRad / 60) * (0.55 + cDep * 0.45) / (0.3 + cDist / (H * 0.5)), cT2);
+                addC(cs2, cDist, cAng2, cRad, cDep, Math.max(0.015, 0.1 / (0.5 + cRad / 60) * (0.55 + cDep * 0.45) / (0.3 + cDist / (H * 0.5))), cT2);
                 gIdx++;
             }
         }
@@ -3320,8 +3320,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
           const lit = sunProx2 * sunProx2;
           const leftLight = s.scrX > sunX;
-          const dR = Math.round(20 + lit * 30), dG = Math.round(20 + lit * 18), dB = Math.round(22 + lit * 8);
-          const lR = Math.round(55 + lit * 100), lG = Math.round(52 + lit * 60), lB = Math.round(55 + lit * 25);
+          const dR = Math.round(18 + lit * 25), dG = Math.round(16 + lit * 12), dB = Math.round(18 + lit * 5);
+          const lR = Math.round(50 + lit * 120), lG = Math.round(40 + lit * 65), lB = Math.round(30 + lit * 15);
           const darkSide = `rgb(${dR},${dG},${dB})`;
           const lightSide = `rgb(${lR},${lG},${lB})`;
 
@@ -3413,6 +3413,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath();
           }
           ctx.fill();
+
+          // Amber light edge — sun reflection on sword outline
+          const edgeAlpha = 0.3 + lit * 0.5;
+          const edgeSide = leftLight ? -1 : 1;
+          ctx.strokeStyle = 'rgba(' + Math.round(255 * (0.6 + lit * 0.4)) + ',' + Math.round(160 * (0.4 + lit * 0.6)) + ',' + Math.round(40 + lit * 30) + ',' + edgeAlpha + ')';
+          ctx.lineWidth = Math.max(0.5, bladeW * 0.25);
+          ctx.beginPath();
+          // Blade edge on sun-facing side
+          ctx.moveTo(edgeSide * bladeW / 2, ov);
+          ctx.lineTo(edgeSide * bladeW / 2, tipEnd);
+          ctx.bezierCurveTo(edgeSide * bladeW * 0.25, tipEnd + pomDia * 0.5, 0, -bladeH + pomDia * 0.2, 0, -bladeH);
+          ctx.stroke();
+          // Guard edge
+          ctx.beginPath();
+          ctx.moveTo(-guardW / 2, guardH * 0.5);
+          ctx.lineTo(guardW / 2, guardH * 0.5);
+          ctx.stroke();
 
           ctx.restore();
         }
