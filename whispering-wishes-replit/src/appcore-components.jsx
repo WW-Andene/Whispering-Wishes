@@ -3325,70 +3325,118 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const ov = 1;
           const gripBot = guardH + gripH;
 
-          // Base dark fill color
-          const bR = Math.round(18 + lit * 22), bG = Math.round(16 + lit * 14), bB = Math.round(18 + lit * 6);
-          const baseFill = `rgb(${bR},${bG},${bB})`;
+          // Color palette — metallic with reflected ambient light
+          const dR = Math.round(15 + lit * 20), dG = Math.round(13 + lit * 12), dB = Math.round(15 + lit * 5);
+          const mR = Math.round(35 + lit * 50), mG = Math.round(32 + lit * 30), mB = Math.round(35 + lit * 12);
+          const lR = Math.round(70 + lit * 120), lG = Math.round(65 + lit * 70), lB = Math.round(60 + lit * 25);
+          const hR = Math.min(255, Math.round(120 + lit * 135)), hG = Math.min(255, Math.round(110 + lit * 85)), hB = Math.round(90 + lit * 30);
+          // Reflected light — warm amber from sky bouncing off environment onto shadow side
+          const rR = Math.round(50 + lit * 80), rG = Math.round(30 + lit * 40), rB = Math.round(12 + lit * 10);
 
-          // === Define full sword outline path (reusable) ===
-          function swordPath() {
-            ctx.beginPath();
-            // Blade left edge
-            ctx.moveTo(0, -bladeH);
-            ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
-                              -bladeW * 0.5, tipEnd - pomDia,
-                              -bladeW / 2, tipEnd);
-            ctx.lineTo(-bladeW / 2, ov);
-            // Guard left
-            ctx.lineTo(-guardW / 2, 0);
+          // Light side gradient: edge→highlight→mid (metallic gradient)
+          const lightGrad = ctx.createLinearGradient(0, 0, leftLight ? -bladeW / 2 : bladeW / 2, 0);
+          lightGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
+          lightGrad.addColorStop(0.3, `rgb(${hR},${hG},${hB})`);
+          lightGrad.addColorStop(0.7, `rgb(${lR},${lG},${lB})`);
+          lightGrad.addColorStop(1, `rgb(${mR},${mG},${mB})`);
+
+          // Dark side gradient: mid→dark→reflected light at far edge
+          const darkGrad = ctx.createLinearGradient(0, 0, leftLight ? bladeW / 2 : -bladeW / 2, 0);
+          darkGrad.addColorStop(0, `rgb(${mR},${mG},${mB})`);
+          darkGrad.addColorStop(0.25, `rgb(${dR},${dG},${dB})`);
+          darkGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
+          darkGrad.addColorStop(1, `rgb(${rR},${rG},${rB})`);
+
+          // === NORMAL SWORD FILL ===
+          // Left half
+          ctx.fillStyle = leftLight ? lightGrad : darkGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.bezierCurveTo(-bladeW * 0.25, -bladeH + pomDia * 0.5,
+                            -bladeW * 0.5, tipEnd - pomDia,
+                            -bladeW / 2, tipEnd);
+          ctx.lineTo(-bladeW / 2, ov);
+          ctx.lineTo(0, ov);
+          ctx.closePath();
+          ctx.fill();
+          // Right half
+          ctx.fillStyle = leftLight ? darkGrad : lightGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.bezierCurveTo(bladeW * 0.25, -bladeH + pomDia * 0.5,
+                            bladeW * 0.5, tipEnd - pomDia,
+                            bladeW / 2, tipEnd);
+          ctx.lineTo(bladeW / 2, ov);
+          ctx.lineTo(0, ov);
+          ctx.closePath();
+          ctx.fill();
+          // Guard — varies per sword
+          const guardGrad = ctx.createLinearGradient(-guardW / 2, 0, guardW / 2, 0);
+          guardGrad.addColorStop(0, leftLight ? `rgb(${lR},${lG},${lB})` : `rgb(${rR},${rG},${rB})`);
+          guardGrad.addColorStop(0.3, `rgb(${dR},${dG},${dB})`);
+          guardGrad.addColorStop(0.7, `rgb(${dR},${dG},${dB})`);
+          guardGrad.addColorStop(1, leftLight ? `rgb(${rR},${rG},${rB})` : `rgb(${lR},${lG},${lB})`);
+          ctx.fillStyle = guardGrad;
+          const guardType = ((s.idx * 2654435761 >>> 0) ^ (s.idx * 40503 >>> 0)) % 4;
+          ctx.beginPath();
+          if (guardType === 1) {
+            // Tapered — wider at ends, narrow in middle, spans 0 to guardH
+            const endH = guardH * 2;
+            ctx.moveTo(-guardW / 2, guardH / 2 - endH / 2);
+            ctx.lineTo(-guardW / 2, guardH / 2 + endH / 2);
+            ctx.bezierCurveTo(-guardW / 4, guardH, guardW / 4, guardH, guardW / 2, guardH / 2 + endH / 2);
+            ctx.lineTo(guardW / 2, guardH / 2 - endH / 2);
+            ctx.bezierCurveTo(guardW / 4, 0, -guardW / 4, 0, -guardW / 2, guardH / 2 - endH / 2);
+            ctx.closePath();
+          } else if (guardType === 2) {
+            // Curved down — flat ends, spans 0 to guardH
+            ctx.moveTo(-guardW / 2, 0);
             ctx.lineTo(-guardW / 2, guardH);
-            // Grip left
-            ctx.lineTo(-gripW / 2, guardH);
-            ctx.lineTo(-gripW / 2, gripBot);
-            // Pommel
-            ctx.arc(0, gripBot + pomRy, pomRy, Math.PI, 0);
-            // Grip right
-            ctx.lineTo(gripW / 2, gripBot);
-            ctx.lineTo(gripW / 2, guardH);
-            // Guard right
-            ctx.lineTo(guardW / 2, guardH);
+            ctx.quadraticCurveTo(0, guardH * 3, guardW / 2, guardH);
             ctx.lineTo(guardW / 2, 0);
-            // Blade right edge
-            ctx.lineTo(bladeW / 2, ov);
-            ctx.lineTo(bladeW / 2, tipEnd);
-            ctx.bezierCurveTo(bladeW * 0.5, tipEnd - pomDia,
-                              bladeW * 0.25, -bladeH + pomDia * 0.5,
-                              0, -bladeH);
+            ctx.quadraticCurveTo(0, guardH * 2, -guardW / 2, 0);
+            ctx.closePath();
+          } else if (guardType === 3) {
+            // Three segmented — center block + two end blocks
+            const segW = guardW * 0.12;
+            const segH = guardH * 1.5;
+            ctx.rect(-guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
+            ctx.rect(-segW / 2, 0, segW, guardH);
+            ctx.rect(guardW / 2 - segW / 2, -segH / 2 + guardH / 2, segW, segH);
+            ctx.rect(-guardW / 2, 0, guardW, guardH);
+          } else {
+            // Straight (default)
+            ctx.rect(-guardW / 2, 0, guardW, guardH);
+          }
+          ctx.fill();
+          // Grip — straight rectangle (overlap into guard and pommel)
+          ctx.fillRect(-gripW / 2, guardH - ov, gripW, gripH + ov * 2);
+          // Pommel — sits directly on grip
+          let ph = (s.idx * 2246822519 + 400) | 0; ph = Math.imul(ph ^ (ph >>> 16), 0x45d9f3b); ph = Math.imul(ph ^ (ph >>> 13), 0x45d9f3b); ph = ph ^ (ph >>> 16);
+          const pommelType = (ph >>> 0) % 2;
+          ctx.beginPath();
+          if (pommelType === 1) {
+            // Circle
+            ctx.arc(0, gripBot + pomRy, pomRy, 0, Math.PI * 2);
+          } else {
+            // Fan — narrow flat bottom at grip, inward curved sides, wide curved top
+            const fanBotW = gripW * 0.6;    // half-width at bottom (narrow, at grip)
+            const fanTopW = bladeW * 0.8;   // half-width at top
+            const fanH = pomDia;
+            ctx.moveTo(-fanBotW, gripBot);  // flat bottom-left (grip connection)
+            ctx.lineTo(fanBotW, gripBot);   // flat bottom-right
+            // Right side — curves inward
+            ctx.quadraticCurveTo(fanBotW * 0.5, gripBot + fanH * 0.5,
+                                  fanTopW, gripBot + fanH);
+            // Top — curves outward (away from grip)
+            ctx.quadraticCurveTo(0, gripBot + fanH + fanH * 0.5,
+                                  -fanTopW, gripBot + fanH);
+            // Left side — curves inward
+            ctx.quadraticCurveTo(-fanBotW * 0.5, gripBot + fanH * 0.5,
+                                  -fanBotW, gripBot);
             ctx.closePath();
           }
-
-          // 1. Fill entire sword dark
-          swordPath();
-          ctx.fillStyle = baseFill;
           ctx.fill();
-
-          // 2. Clip to sword shape, then paint lighting
-          ctx.save();
-          swordPath();
-          ctx.clip();
-
-          // 3. Highlight from sun side — wide gradient across whole sword
-          const sunSide = leftLight ? -1 : 1;
-          const hlGrad = ctx.createLinearGradient(sunSide * guardW * 0.6, 0, -sunSide * guardW * 0.3, 0);
-          hlGrad.addColorStop(0, 'rgba(' + Math.min(255, 140 + lit * 115) + ',' + Math.min(255, 110 + lit * 80) + ',' + Math.round(60 + lit * 30) + ',' + (0.5 + lit * 0.35) + ')');
-          hlGrad.addColorStop(0.35, 'rgba(' + Math.round(80 + lit * 70) + ',' + Math.round(65 + lit * 45) + ',' + Math.round(45 + lit * 15) + ',' + (0.25 + lit * 0.15) + ')');
-          hlGrad.addColorStop(0.7, 'rgba(0,0,0,0)');
-          ctx.fillStyle = hlGrad;
-          ctx.fillRect(-guardW, -bladeH - pomDia, guardW * 2, bladeH + gripH + pomDia * 4);
-
-          // 4. Reflected light from shadow side — warm amber, softer
-          const refGrad = ctx.createLinearGradient(-sunSide * guardW * 0.5, 0, sunSide * guardW * 0.2, 0);
-          refGrad.addColorStop(0, 'rgba(200,100,25,' + (0.3 + lit * 0.25) + ')');
-          refGrad.addColorStop(0.25, 'rgba(160,70,15,' + (0.15 + lit * 0.1) + ')');
-          refGrad.addColorStop(0.5, 'rgba(0,0,0,0)');
-          ctx.fillStyle = refGrad;
-          ctx.fillRect(-guardW, -bladeH - pomDia, guardW * 2, bladeH + gripH + pomDia * 4);
-
-          ctx.restore(); // unclip
 
           ctx.restore();
         }
