@@ -3695,9 +3695,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nBk = _breakCracks.length;
           var _fdx = [0], _fdy = [0], _frot = [0];
           for (var _fi3 = 0; _fi3 < _nBk; _fi3++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.15 + _cr() * 0.2));
-            _fdy.push((_cr() - 0.5) * bladeW * 0.12);
-            _frot.push((_cr() - 0.5) * 0.015);
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(2, bladeW * 0.35));
+            _fdy.push((_cr() - 0.5) * Math.max(1, bladeW * 0.2));
+            _frot.push((_cr() - 0.5) * 0.03);
           }
           // Notches
           var _nNotches = 4 + (_cr() * 4 | 0);
@@ -3722,7 +3722,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _si = 0; _si <= _nBk; _si++) {
             var _yT = _segBounds[_si], _yB = _segBounds[_si + 1];
             // Gap follows crack diagonal — offset Y by crack's dy
-            var _gapAmt = bladeW * 0.12;
+            var _gapAmt = Math.max(1.5, bladeW * 0.2);
             var _yTd = _si === 0 ? _yT : _yT + _gapAmt;
             var _wT = _hw * Math.max(0.05, Math.min(1, (_yTd + bladeH) / _totalH));
             var _wB = _hw * Math.max(0.05, Math.min(1, (_yB + bladeH) / _totalH));
@@ -3792,7 +3792,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
           for (var _sli = 0; _sli < _notchesL.length; _sli++) {
-            var _sn = _notchesL[_sli]; var _sg = _hw * (0.1+_cr()*0.12);
+            var _sn = _notchesL[_sli]; var _sg = Math.max(1.5, _hw * (0.15+_cr()*0.15));
             var _wS = _hw * Math.max(0.05, (_sn.y+bladeH)/_totalH);
             // Shard mirrors the notch shape: pointy tip matches notch peak direction
             ctx.beginPath();
@@ -3802,7 +3802,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath(); ctx.fill();
           }
           for (var _sri = 0; _sri < _notchesR.length; _sri++) {
-            var _snr = _notchesR[_sri]; var _sgR = _hw * (0.1+_cr()*0.12);
+            var _snr = _notchesR[_sri]; var _sgR = Math.max(1.5, _hw * (0.15+_cr()*0.15));
             var _wSR = _hw * Math.max(0.05, (_snr.y+bladeH)/_totalH);
             ctx.beginPath();
             ctx.moveTo(_wSR+_sgR, _snr.y);
