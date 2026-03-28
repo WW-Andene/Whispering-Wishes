@@ -3993,6 +3993,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             return 'rgb(' + r + ',' + g + ',' + b + ')';
           }
 
+          // Solid backdrop to fill subpixel gaps between triangles
+          ctx.fillStyle = 'rgb(100,30,18)';
+          ctx.beginPath();
+          for (let gx = 0; gx <= gridX; gx++) { const p = gp(gx, 0); if (gx === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); }
+          for (let gy2 = 1; gy2 <= gridY; gy2++) { const p = gp(gridX, gy2); ctx.lineTo(p.x, p.y); }
+          for (let gx2 = gridX - 1; gx2 >= 0; gx2--) { const p = gp(gx2, gridY); ctx.lineTo(p.x, p.y); }
+          for (let gy3 = gridY - 1; gy3 >= 0; gy3--) { const p = gp(0, gy3); ctx.lineTo(p.x, p.y); }
+          ctx.closePath(); ctx.fill();
+
           for (let gy = 0; gy < gridY; gy++) {
             const v0 = gy / gridY;
             for (let gx = 0; gx < gridX; gx++) {
