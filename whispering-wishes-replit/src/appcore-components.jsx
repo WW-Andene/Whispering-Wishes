@@ -3472,31 +3472,32 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           return segs;
         }
-        // Clip to a segment bounded by jagged crack lines
-        // Polygon: top edge (crack or flat) → right side down → bottom edge (crack or flat) → left side up
+        // Clip to a fragment region bounded by jagged cracks
         function clipFragment(ctx2, frag) {
           var w = frag.wide;
-          ctx2.beginPath();
-          // Top edge: far-left → follow top crack left-to-right → far-right
+          // Build polygon points: top boundary → right → bottom boundary → left
+          var topPts, botPts;
           if (frag.topCrack) {
-            ctx2.moveTo(-w, frag.topCrack[0].y);
-            for (var i = 0; i < frag.topCrack.length; i++) ctx2.lineTo(frag.topCrack[i].x, frag.topCrack[i].y);
-            ctx2.lineTo(w, frag.topCrack[frag.topCrack.length - 1].y);
+            topPts = frag.topCrack;
           } else {
-            ctx2.moveTo(-w, frag.topY);
-            ctx2.lineTo(w, frag.topY);
+            topPts = [{x: -w, y: frag.topY}, {x: w, y: frag.topY}];
           }
-          // Right side: go down to bottom edge level
           if (frag.botCrack) {
-            ctx2.lineTo(w, frag.botCrack[frag.botCrack.length - 1].y);
-            // Bottom edge: follow bottom crack right-to-left
-            for (var j = frag.botCrack.length - 1; j >= 0; j--) ctx2.lineTo(frag.botCrack[j].x, frag.botCrack[j].y);
-            ctx2.lineTo(-w, frag.botCrack[0].y);
+            botPts = frag.botCrack;
           } else {
-            ctx2.lineTo(w, frag.botY);
-            ctx2.lineTo(-w, frag.botY);
+            botPts = [{x: -w, y: frag.botY}, {x: w, y: frag.botY}];
           }
-          // Left side: closes back up to start
+          ctx2.beginPath();
+          // Top boundary left→right
+          ctx2.moveTo(-w, topPts[0].y);
+          for (var i = 0; i < topPts.length; i++) ctx2.lineTo(topPts[i].x, topPts[i].y);
+          ctx2.lineTo(w, topPts[topPts.length - 1].y);
+          // Right side down
+          ctx2.lineTo(w, botPts[botPts.length - 1].y);
+          // Bottom boundary right→left
+          for (var j = botPts.length - 1; j >= 0; j--) ctx2.lineTo(botPts[j].x, botPts[j].y);
+          ctx2.lineTo(-w, botPts[0].y);
+          // Left side up (closePath handles this)
           ctx2.closePath();
           ctx2.clip();
         }
@@ -3568,37 +3569,38 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const gGR2 = Math.round(18 + 95 * gGB), gGG2 = Math.round(17 + 88 * gGB), gGBl = Math.round(16 + 70 * gGB);
             const gripBr = 0.05 + lit * 0.08;
             // Gladius blade — fractured into 3-4 floating pieces
+            function glBW(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); }
+            const glLitL = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
+            const glLitR = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
             const glFrags = getBladeFragments(s.idx, gBL, 0, gBW * 2);
             for (var _gfi = 0; _gfi < glFrags.length; _gfi++) {
               var gf = glFrags[_gfi];
+              var gTopPts = gf.topCrack || [{x: 0, y: -gBL}];
+              var gBotPts = gf.botCrack || [{x: 0, y: 0}];
               ctx.save();
-              clipFragment(ctx, gf);
               ctx.translate(gf.dx, gf.dy);
               ctx.rotate(gf.r);
-              // Left
-              var gBlGL = ctx.createLinearGradient(0, 0, -gBW, 0);
-              if (leftLight) { gBlGL.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);gBlGL.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);gBlGL.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
-              else { gBlGL.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);gBlGL.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);gBlGL.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
-              ctx.fillStyle = gBlGL;
+              // Left half polygon
+              ctx.fillStyle = glLitL;
               ctx.beginPath();
-              ctx.moveTo(0, gTip);
-              ctx.quadraticCurveTo(-gBW*0.4, gTip+(gBL-gTaperAt)*0.4, -gBW, gTaperY);
-              ctx.quadraticCurveTo(-gBW*1.08, (gTaperY+gBase)*0.5, -gBW*0.95, gBase);
-              ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
-              // Right
-              var gBlGR = ctx.createLinearGradient(0, 0, gBW, 0);
-              if (leftLight) { gBlGR.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);gBlGR.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);gBlGR.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
-              else { gBlGR.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);gBlGR.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);gBlGR.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
-              ctx.fillStyle = gBlGR;
+              ctx.moveTo(0, gTopPts[0].y);
+              for (var gti = 0; gti < gTopPts.length; gti++) ctx.lineTo(Math.min(0, gTopPts[gti].x), gTopPts[gti].y);
+              ctx.lineTo(0, gTopPts[gTopPts.length-1].y);
+              ctx.lineTo(0, gBotPts[gBotPts.length-1].y);
+              for (var gbi = gBotPts.length-1; gbi >= 0; gbi--) ctx.lineTo(Math.min(0, gBotPts[gbi].x), gBotPts[gbi].y);
+              ctx.lineTo(-glBW(gBotPts[0].y), gBotPts[0].y);
+              ctx.lineTo(-glBW(gTopPts[0].y), gTopPts[0].y);
+              ctx.closePath(); ctx.fill();
+              // Right half polygon
+              ctx.fillStyle = glLitR;
               ctx.beginPath();
-              ctx.moveTo(0, gTip);
-              ctx.quadraticCurveTo(gBW*0.4, gTip+(gBL-gTaperAt)*0.4, gBW, gTaperY);
-              ctx.quadraticCurveTo(gBW*1.08, (gTaperY+gBase)*0.5, gBW*0.95, gBase);
-              ctx.lineTo(0, gBase); ctx.closePath(); ctx.fill();
-              // Ridge
-              ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-              ctx.lineWidth = Math.max(0.3, gBW * 0.08);
-              ctx.beginPath(); ctx.moveTo(0, gTip+1); ctx.lineTo(0, gBase); ctx.stroke();
+              ctx.moveTo(0, gTopPts[0].y);
+              for (var gti2 = 0; gti2 < gTopPts.length; gti2++) ctx.lineTo(Math.max(0, gTopPts[gti2].x), gTopPts[gti2].y);
+              ctx.lineTo(glBW(gTopPts[gTopPts.length-1].y), gTopPts[gTopPts.length-1].y);
+              ctx.lineTo(glBW(gBotPts[gBotPts.length-1].y), gBotPts[gBotPts.length-1].y);
+              for (var gbi2 = gBotPts.length-1; gbi2 >= 0; gbi2--) ctx.lineTo(Math.max(0, gBotPts[gbi2].x), gBotPts[gbi2].y);
+              ctx.lineTo(0, gBotPts[0].y);
+              ctx.closePath(); ctx.fill();
               ctx.restore();
             }
             // Grip (drawn before guard) — cylindrical gradient
@@ -3657,49 +3659,48 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           } else {
 
           // === LONGSWORD — fractured 3D blade (3-4 floating pieces) ===
+          // Blade width at any Y: linear taper from tip (0) to base (bladeW/2)
+          function lsBW(y) { return (bladeW / 2) * Math.max(0, Math.min(1, (y + bladeH) / (bladeH + guardH))); }
           const lsFrags = getBladeFragments(s.idx, bladeH, guardH, bladeW);
+          // Color strings
+          const lsLitL = leftLight ? `rgb(${lR},${lG},${lB2})` : `rgb(${dR},${dG},${dB})`;
+          const lsLitR = leftLight ? `rgb(${dR},${dG},${dB})` : `rgb(${lR},${lG},${lB2})`;
           for (var _fi = 0; _fi < lsFrags.length; _fi++) {
             var frag = lsFrags[_fi];
+            // Get top and bottom boundary points
+            var topPts = frag.topCrack || [{x: 0, y: -bladeH}];
+            var botPts = frag.botCrack || [{x: 0, y: guardH}];
             ctx.save();
-            clipFragment(ctx, frag);
             ctx.translate(frag.dx, frag.dy);
             ctx.rotate(frag.r);
+            // Draw piece as polygon: top crack → right edge → bottom crack → left edge
             // Left half
-            var blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
-            if (leftLight) {
-              blGL.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-              blGL.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-              blGL.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
-            } else {
-              blGL.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-              blGL.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-              blGL.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
-            }
-            ctx.fillStyle = blGL;
+            ctx.fillStyle = lsLitL;
             ctx.beginPath();
-            ctx.moveTo(0, -bladeH);
-            ctx.bezierCurveTo(-bladeW*0.25, -bladeH+pomDia*0.5, -bladeW*0.5, tipEnd-pomDia, -bladeW/2, tipEnd);
-            ctx.lineTo(-bladeW/2, guardH); ctx.lineTo(0, guardH); ctx.closePath(); ctx.fill();
+            ctx.moveTo(0, topPts[0].y);
+            for (var ti = 0; ti < topPts.length; ti++) ctx.lineTo(Math.min(0, topPts[ti].x), topPts[ti].y);
+            // Right edge going down (but left half, so center line)
+            ctx.lineTo(0, topPts[topPts.length-1].y);
+            ctx.lineTo(0, botPts[botPts.length-1].y);
+            // Bottom crack reversed
+            for (var bi = botPts.length-1; bi >= 0; bi--) ctx.lineTo(Math.min(0, botPts[bi].x), botPts[bi].y);
+            ctx.lineTo(-lsBW(botPts[0].y), botPts[0].y);
+            // Left blade edge going up
+            ctx.lineTo(-lsBW(topPts[0].y), topPts[0].y);
+            ctx.closePath(); ctx.fill();
             // Right half
-            var blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
-            if (leftLight) {
-              blGR.addColorStop(0, `rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);
-              blGR.addColorStop(0.2, `rgb(${dR},${dG},${dB})`);
-              blGR.addColorStop(1, `rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`);
-            } else {
-              blGR.addColorStop(0, `rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);
-              blGR.addColorStop(0.2, `rgb(${lR},${lG},${lB2})`);
-              blGR.addColorStop(1, `rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`);
-            }
-            ctx.fillStyle = blGR;
+            ctx.fillStyle = lsLitR;
             ctx.beginPath();
-            ctx.moveTo(0, -bladeH);
-            ctx.bezierCurveTo(bladeW*0.25, -bladeH+pomDia*0.5, bladeW*0.5, tipEnd-pomDia, bladeW/2, tipEnd);
-            ctx.lineTo(bladeW/2, guardH); ctx.lineTo(0, guardH); ctx.closePath(); ctx.fill();
-            // Ridge
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            ctx.beginPath(); ctx.moveTo(0, -bladeH+1); ctx.lineTo(0, guardH); ctx.stroke();
+            ctx.moveTo(0, topPts[0].y);
+            for (var ti2 = 0; ti2 < topPts.length; ti2++) ctx.lineTo(Math.max(0, topPts[ti2].x), topPts[ti2].y);
+            ctx.lineTo(lsBW(topPts[topPts.length-1].y), topPts[topPts.length-1].y);
+            // Right blade edge going down
+            ctx.lineTo(lsBW(botPts[botPts.length-1].y), botPts[botPts.length-1].y);
+            // Bottom crack reversed
+            for (var bi2 = botPts.length-1; bi2 >= 0; bi2--) ctx.lineTo(Math.max(0, botPts[bi2].x), botPts[bi2].y);
+            ctx.lineTo(0, botPts[0].y);
+            ctx.lineTo(0, topPts[0].y);
+            ctx.closePath(); ctx.fill();
             ctx.restore();
           }
           // Guard — 3D gradient top-to-bottom
